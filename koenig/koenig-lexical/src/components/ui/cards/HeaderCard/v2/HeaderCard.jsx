@@ -294,7 +294,8 @@ export function HeaderCard({alignment,
                             placeholderClassName={clsx(
                                 '!font-bold !leading-[1.1] !tracking-tight opacity-50',
                                 (alignment === 'center') && 'text-center',
-                                (layout === 'regular' || layout === 'wide' || layout === 'split') && 'text-3xl sm:text-4xl md:text-5xl',
+                                (layout === 'regular') && 'text-3xl sm:text-4xl',
+                                (layout === 'wide' || layout === 'split') && 'text-3xl sm:text-4xl md:text-5xl',
                                 (layout === 'full') && 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl'
                             )}
                             placeholderText={headerPlaceholder}
@@ -304,7 +305,8 @@ export function HeaderCard({alignment,
                                 'koenig-lexical-heading relative w-full whitespace-normal font-bold caret-current',
                                 (!isEditing && isEditorEmpty(headerTextEditor)) ? 'hidden' : 'peer',
                                 (alignment === 'center') && 'text-center [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left',
-                                (layout === 'regular' || layout === 'wide' || layout === 'split') && 'heading-medium',
+                                (layout === 'regular') && 'heading-small',
+                                (layout === 'wide' || layout === 'split') && 'heading-medium',
                                 (layout === 'full') && 'heading-large',
                             )}
                         />}

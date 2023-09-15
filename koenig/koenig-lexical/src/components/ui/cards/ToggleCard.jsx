@@ -27,7 +27,7 @@ export function ToggleCard({
                             placeholderClassName={'!font-sans !text-2xl !leading-[1.1] !font-bold !tracking-tight text-black dark:text-grey-50 opacity-40'}
                             placeholderText={headingPlaceholder}
                             singleParagraph={true}
-                            textClassName={'koenig-lexical-heading heading-small whitespace-normal text-black dark:text-grey-50 opacity-100'}
+                            textClassName={'koenig-lexical-heading heading-xsmall whitespace-normal text-black dark:text-grey-50 opacity-100'}
                         />
                     </div>
                     <div className='z-20 !mt-[-1px] ml-auto flex h-8 w-8 shrink-0 items-center justify-center'>

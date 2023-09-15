@@ -64,7 +64,7 @@ export function ProductCard({
                                     placeholderClassName="whitespace-normal !font-sans !text-2xl !leading-[1.1] !font-bold !tracking-tight text-black dark:text-grey-50 opacity-40"
                                     placeholderText="Product title"
                                     singleParagraph={true}
-                                    textClassName="koenig-lexical-heading heading-small whitespace-normal"
+                                    textClassName="koenig-lexical-heading heading-xsmall whitespace-normal"
                                 />
                             </div>
                         )

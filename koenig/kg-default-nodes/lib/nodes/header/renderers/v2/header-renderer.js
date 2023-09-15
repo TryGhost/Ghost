@@ -23,7 +23,7 @@ function cardTemplate(nodeData) {
 
     const subheader = () => {
         if (nodeData.subheader) {
-            return `<h3 id="${slugify(nodeData.subheader)}" class="kg-header-card-subheading" style="color: ${nodeData.textColor};" data-text-color="${nodeData.textColor}">${nodeData.subheader}</h3>`;
+            return `<p id="${slugify(nodeData.subheader)}" class="kg-header-card-subheading" style="color: ${nodeData.textColor};" data-text-color="${nodeData.textColor}">${nodeData.subheader}</p>`;
         }
         return '';
     };
@@ -64,7 +64,7 @@ function emailTemplate(nodeData) {
             ` : ''}
             <div class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
                 <h2 class="kg-header-card-heading" style="color:${nodeData.textColor};">${nodeData.header}</h2>
-                <h3 class="kg-header-card-subheading" style="color:${nodeData.textColor};">${nodeData.subheader}</h3>
+                <p class="kg-header-card-subheading" style="color:${nodeData.textColor};">${nodeData.subheader}</p>
                 ${nodeData.buttonEnabled && nodeData.buttonUrl && nodeData.buttonUrl.trim() !== '' ? `
                     <a class="kg-header-card-button" href="${nodeData.buttonUrl}" style="color: ${nodeData.buttonTextColor}; ${buttonStyle} ${buttonAccent}">${nodeData.buttonText}</a>
                 ` : ''}
@@ -118,9 +118,9 @@ export function renderHeaderNodeV2(dataset, options = {}) {
     }
 
     if (node.subheader === '') {
-        const h3Element = element.querySelector('.kg-header-card-subheading');
-        if (h3Element) {
-            h3Element.remove();
+        const pElement = element.querySelector('.kg-header-card-subheading');
+        if (pElement) {
+            pElement.remove();
         }
     }
 

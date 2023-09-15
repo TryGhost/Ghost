@@ -140,7 +140,7 @@ export function HeaderCard({isEditing,
                                 '!text-center !font-medium !leading-snug !tracking-tight opacity-50',
                                 (size === 'small') && 'text-lg sm:text-xl',
                                 (size === 'medium') && 'text-lg sm:text-xl md:text-[2.2rem]',
-                                (size === 'large') && 'text-lg sm:text-xl md:text-[2.2rem] lg:text-[2.6rem]',
+                                (size === 'large') && 'text-lg sm:text-xl md:text-[2.2rem] lg:text-2xl',
                                 (HEADER_TEXT_COLORS[type])
                             )}
                             placeholderText={subheaderPlaceholder}

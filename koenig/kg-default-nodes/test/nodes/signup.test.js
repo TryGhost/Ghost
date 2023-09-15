@@ -172,7 +172,7 @@ describe('SignupNode', function () {
                     <div class="kg-signup-card-content">
                         <div class="kg-signup-card-text kg-align-center">
                             <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
-                            <h3 class="kg-signup-card-subheading" style="color:#000000">Subheader</h3>
+                            <p class="kg-signup-card-subheading" style="color:#000000">Subheader</p>
                             <form class="kg-signup-card-form" data-members-form="signup">
                                 <input data-members-label="" type="hidden" value="label 1">
                                 <input data-members-label="" type="hidden" value="label 2">
@@ -235,7 +235,7 @@ describe('SignupNode', function () {
                     <div class="kg-signup-card-content">
                         <div class="kg-signup-card-text kg-align-center">
                             <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
-                            <h3 class="kg-signup-card-subheading" style="color:#000000">Subheader</h3>
+                            <p class="kg-signup-card-subheading" style="color:#000000">Subheader</p>
                             <form class="kg-signup-card-form" data-members-form="signup">
                                 <input data-members-label="" type="hidden" value="label 1">
                                 <input data-members-label="" type="hidden" value="label 2">
@@ -267,7 +267,7 @@ describe('SignupNode', function () {
                         <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
                         <div class="kg-signup-card-text kg-align-center">
                             <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
-                            <h3 class="kg-signup-card-subheading" style="color:#000000">Subheader</h3>
+                            <p class="kg-signup-card-subheading" style="color:#000000">Subheader</p>
                             <form class="kg-signup-card-form" data-members-form="signup">
                                 <input data-members-label="" type="hidden" value="label 1">
                                 <input data-members-label="" type="hidden" value="label 2">
@@ -300,7 +300,7 @@ describe('SignupNode', function () {
                         <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
                         <div class="kg-signup-card-text kg-align-center">
                             <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
-                            <h3 class="kg-signup-card-subheading" style="color:#000000">Subheader</h3>
+                            <p class="kg-signup-card-subheading" style="color:#000000">Subheader</p>
                             <form class="kg-signup-card-form" data-members-form="signup">
                                 <input data-members-label="" type="hidden" value="label 1">
                                 <input data-members-label="" type="hidden" value="label 2">
@@ -333,7 +333,7 @@ describe('SignupNode', function () {
                         <picture><img class="kg-signup-card-image" src="https://example.com/image.jpg" alt=""></picture>
                         <div class="kg-signup-card-text kg-align-center">
                             <h2 class="kg-signup-card-heading" style="color:#000000">Header</h2>
-                            <h3 class="kg-signup-card-subheading" style="color:#000000">Subheader</h3>
+                            <p class="kg-signup-card-subheading" style="color:#000000">Subheader</p>
                             <form class="kg-signup-card-form" data-members-form="signup">
                                 <input data-members-label="" type="hidden" value="label 1">
                                 <input data-members-label="" type="hidden" value="label 2">

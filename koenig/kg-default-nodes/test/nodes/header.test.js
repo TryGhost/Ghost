@@ -359,7 +359,7 @@ describe('HeaderNode', function () {
                         <div class="kg-header-card-content">
                             <div class="kg-header-card-text kg-align-center">
                                 <h2 class="kg-header-card-heading" data-text-color="#abcdef">Header</h2>
-                                <h3 class="kg-header-card-subheading" data-text-color="#abcdef">Subheader</h3>
+                                <p class="kg-header-card-subheading" data-text-color="#abcdef">Subheader</p>
                                 <a href="https://example.com" class="kg-header-card-button" data-button-color="#abcdef" data-button-text-color="#abcdef">Button</a>
                             </div>
                         </div>
@@ -446,7 +446,7 @@ describe('HeaderNode', function () {
                     <div class="kg-header-card-content">
                         <div class="kg-header-card-text kg-align-center">
                             <h2 id="this-is-the-header-card" class="kg-header-card-heading" style="color: #000000;" data-text-color="#000000">This is the header card</h2>
-                            <h3 id="hello" class="kg-header-card-subheading" style="color: #000000;" data-text-color="#000000">hello</h3>
+                            <p id="hello" class="kg-header-card-subheading" style="color: #000000;" data-text-color="#000000">hello</p>
                             <a href="https://example.com/" class="kg-header-card-button " style="background-color: #000000;color: #FFFFFF;" data-button-color="#000000" data-button-text-color="#FFFFFF">The button</a>
                         </div>
                     </div>
