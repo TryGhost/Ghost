@@ -144,7 +144,7 @@ describe('RouterController', function () {
                 req.body.newsletters = newsletters.map(newsletter => ({name: newsletter.name}));
 
                 const newsletterNames = newsletters.map(newsletter => newsletter.name);
-                const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/"/g, '\\"').replace(/'/g, `\\'`)}'`);
+                const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
                 const newslettersServiceStub = {
                     browse: sinon.stub()
                 };
