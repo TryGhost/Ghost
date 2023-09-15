@@ -98,7 +98,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             {inputs}
             <div className='items-center-mt-1 flex justify-between'>
-                <Button color='green' label='Export' link={true} onClick={exportPosts} />
+                <Button color='green' label='Export' link linkWithPadding onClick={exportPosts} />
                 <a className='text-sm text-green' href="https://ghost.org/help/post-analytics/" rel="noopener noreferrer" target="_blank">Learn about analytics</a>
             </div>
         </SettingGroup>
