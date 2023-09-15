@@ -3,12 +3,12 @@ const errors = require('@tryghost/errors');
 const urlUtils = require('../../shared/url-utils');
 const config = require('../../shared/config');
 const storage = require('../adapters/storage');
-const serializePosts = require('../api/endpoints/utils/serializers/output/posts').all;
 
 let nodes;
 let lexicalHtmlRenderer;
 let urlTransformMap;
 let postsService;
+let serializePosts;
 
 function populateNodes() {
     const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
@@ -33,6 +33,9 @@ module.exports = {
         if (!postsService) {
             const getPostServiceInstance = require('../services/posts/posts-service');
             postsService = getPostServiceInstance();
+        }
+        if (!serializePosts) {
+            serializePosts = require('../api/endpoints/utils/serializers/output/posts').all;
         }
 
         const getCollectionPosts = async (collectionSlug, postCount) => {
