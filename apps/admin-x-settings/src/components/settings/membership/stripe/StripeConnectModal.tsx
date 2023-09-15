@@ -15,7 +15,7 @@ import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {ApiError} from '../../../../utils/apiRequests';
+import {JSONError} from '../../../../utils/errors';
 import {ReactComponent as StripeVerified} from '../../../../assets/images/stripe-verified.svg';
 import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '../../../../api/settings';
 import {getGhostPaths} from '../../../../utils/helpers';
@@ -81,7 +81,7 @@ const Connect: React.FC = () => {
                     await editTier(tier);
                     break;
                 } catch (e) {
-                    if (e instanceof ApiError && e.data?.errors?.[0].code === 'STRIPE_NOT_CONFIGURED') {
+                    if (e instanceof JSONError && e.data?.errors?.[0].code === 'STRIPE_NOT_CONFIGURED') {
                         pollTimeout += RETRY_PRODUCT_SAVE_POLL_LENGTH;
                         // no-op: will try saving again as stripe is not ready
                         continue;
@@ -108,7 +108,7 @@ const Connect: React.FC = () => {
                     {key: 'portal_plans', value: JSON.stringify(['free', 'monthly', 'yearly'])}
                 ]);
             } catch (e) {
-                if (e instanceof ApiError && e.data?.errors) {
+                if (e instanceof JSONError && e.data?.errors) {
                     setError('Invalid secure key');
                     return;
                 }
@@ -228,7 +228,7 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
             await handleSave();
             onClose();
         } catch (e) {
-            if (e instanceof ApiError) {
+            if (e instanceof JSONError) {
                 showToast({
                     type: 'pageError',
                     message: 'Failed to save settings. Please check you copied both keys correctly.'
