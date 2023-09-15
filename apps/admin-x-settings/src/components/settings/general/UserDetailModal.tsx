@@ -482,11 +482,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         }
     };
 
-    let suspendUserLabel = userData?.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
-
     let menuItems: MenuItem[] = [];
 
-    if (isAdminUser(userData)) {
+    if (isOwnerUser(currentUser) && isAdminUser(userData) && userData.status !== 'inactive') {
         menuItems.push({
             id: 'make-owner',
             label: 'Make owner',
@@ -494,30 +492,32 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         });
     }
 
-    menuItems = menuItems.concat([
-        {
+    if (userData.id !== currentUser.id) {
+        let suspendUserLabel = userData.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
+
+        menuItems.push({
             id: 'delete-user',
             label: 'Delete user',
             onClick: () => {
                 confirmDelete(user, {owner: ownerUser});
             }
-        },
-        {
+        }, {
             id: 'suspend-user',
             label: suspendUserLabel,
             onClick: () => {
                 confirmSuspend(userData);
             }
-        },
-        {
-            id: 'view-user-activity',
-            label: 'View user activity',
-            onClick: () => {
-                mainModal.remove();
-                updateRoute(`history/view/${userData.id}`);
-            }
+        });
+    }
+
+    menuItems.push({
+        id: 'view-user-activity',
+        label: 'View user activity',
+        onClick: () => {
+            mainModal.remove();
+            updateRoute(`history/view/${userData.id}`);
         }
-    ]);
+    });
 
     let okLabel = saveState === 'saved' ? 'Saved' : 'Save & close';
 
