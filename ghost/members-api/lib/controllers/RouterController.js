@@ -18,8 +18,7 @@ const messages = {
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
     invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
-    archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
-    ambiguousNewsletters: 'Cannot subscribe to ambiguous newsletters {newsletters}'
+    archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}'
 };
 
 module.exports = class RouterController {
@@ -487,7 +486,7 @@ module.exports = class RouterController {
 
                 if (requestedNewsletters && requestedNewsletters.length > 0 && requestedNewsletters.every(newsletter => newsletter.name !== undefined)) {
                     const newsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
-                    const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/"/g, '\\"').replace(/'/g, `\\'`)}'`);
+                    const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, "\\$1")}'`);
                     const newsletters = await this._newslettersService.browse({
                         filter: `name:[${newsletterNamesFilter}]`,
                         columns: ['id','name','status']
