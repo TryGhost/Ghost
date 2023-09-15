@@ -16,7 +16,11 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleSave
     } = useSettingGroup();
 
-    const {pagination, data: {recommendations} = {}, isLoading} = useBrowseRecommendations();
+    const {pagination, data: {recommendations} = {}, isLoading} = useBrowseRecommendations({
+        searchParams: {
+            include: 'count.clicks,count.subscribers'
+        }
+    });
     const [selectedTab, setSelectedTab] = useState('your-recommendations');
 
     const {updateRoute} = useRouting();
