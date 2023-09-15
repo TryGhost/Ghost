@@ -15,7 +15,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {data: {newsletters} = {}} = useBrowseNewsletters();
 
     const buttons = (
-        <Button color='green' label='Add newsletter' link={true} onClick={() => {
+        <Button color='green' label='Add newsletter' link linkWithPadding onClick={() => {
             openNewsletterModal();
         }} />
     );
