@@ -47,7 +47,7 @@ export class Recommendation {
         this.#deleted = false;
     }
 
-    static async validate(properties: AddRecommendation) {
+    static validate(properties: AddRecommendation) {
         if (properties.url.protocol !== 'http:' && properties.url.protocol !== 'https:') {
             throw new errors.ValidationError({
                 message: 'url must be a valid URL'
