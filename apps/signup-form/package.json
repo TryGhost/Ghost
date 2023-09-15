@@ -39,7 +39,7 @@
         "react-dom": "18.2.0"
     },
     "devDependencies": {
-        "@playwright/test": "1.37.1",
+        "@playwright/test": "1.38.0",
         "@storybook/addon-essentials": "7.4.0",
         "@storybook/addon-interactions": "7.4.0",
         "@storybook/addon-links": "7.4.0",
