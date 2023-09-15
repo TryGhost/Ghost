@@ -6,4 +6,10 @@ export class InMemoryRecommendationRepository extends InMemoryRepository<string,
     toPrimitive(entity: Recommendation): object {
         return entity;
     }
+
+    getByUrl(url: URL): Promise<Recommendation | null> {
+        return this.getAll().then((recommendations) => {
+            return recommendations.find(recommendation => recommendation.url.toString() === url.toString()) || null;
+        });
+    }
 }
