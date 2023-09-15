@@ -3,6 +3,7 @@ const errors = require('@tryghost/errors');
 const urlUtils = require('../../shared/url-utils');
 const config = require('../../shared/config');
 const storage = require('../adapters/storage');
+const serializePosts = require('../api/endpoints/utils/serializers/output/posts').all;
 
 let nodes;
 let lexicalHtmlRenderer;
@@ -35,15 +36,30 @@ module.exports = {
         }
 
         const getCollectionPosts = async (collectionSlug, postCount) => {
+            const frame = {
+                options: {
+                    columns: ['url','excerpt']
+                },
+                original: {
+                    context: {
+                        member: {
+                            status: 'paid'
+                        }
+                    }
+                },
+                apiType: 'content',
+                response: {}
+            };
+    
             const transacting = userOptions.transacting;
-            const {data} = await postsService.browsePosts({
+            const response = await postsService.browsePosts({
                 context: {public: true}, // mimic Content API request
                 collection: collectionSlug,
                 limit: postCount,
                 transacting
             });
-            let posts = data.map(p => p.toJSON());
-            return posts;
+            await serializePosts(response, null, frame);
+            return frame.response.posts;
         };
 
         const options = Object.assign({
