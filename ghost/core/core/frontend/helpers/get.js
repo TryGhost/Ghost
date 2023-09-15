@@ -33,6 +33,9 @@ const RESOURCES = {
     },
     tiers: {
         alias: 'tiersPublic'
+    },
+    newsletters: {
+        alias: 'newslettersPublic'
     }
 };
 
