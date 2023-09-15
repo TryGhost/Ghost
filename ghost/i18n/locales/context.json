@@ -202,6 +202,7 @@
     "Update": "A button to update the billing information",
     "Update your preferences": "A button for updating member preferences in their account area",
     "Upgrade now": "Button text in the comments section, when you need to be a paid member in order to post a comment",
+    "Verification link sent, check your inbox": "",
     "Verify your email address is correct": "A section title in the email receiving FAQ",
     "View plans": "A button to view available plans",
     "We couldn't unsubscribe you as the email address was not found. Please contact the site owner.": "An error message when an unsubscribe link is clicked, but we don't have any record of the address being unsubscribed. Probably because the email address on the account has been changed.",

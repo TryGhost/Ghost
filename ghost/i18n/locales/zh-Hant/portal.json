@@ -132,6 +132,7 @@
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "取消接收電子報不會取消您對 {{title}} 的付費訂閱。",
     "Update": "更新",
     "Update your preferences": "更新您的偏好設定",
+    "Verification link sent, check your inbox": "",
     "Verify your email address is correct": "確認你的 email 地址無誤",
     "View plans": "查詢訂閱方案",
     "We couldn't unsubscribe you as the email address was not found. Please contact the site owner.": "我們無法取消您的訂閱，因為找不到該 email 地址。請聯繫網站擁有者。",

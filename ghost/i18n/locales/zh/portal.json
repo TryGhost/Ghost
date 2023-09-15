@@ -132,6 +132,7 @@
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "取消邮件订阅不会取消您对 {{title}} 的付费订阅。",
     "Update": "更新",
     "Update your preferences": "更新您的偏好设置",
+    "Verification link sent, check your inbox": "",
     "Verify your email address is correct": "确认您的电子邮件地址是正确的",
     "View plans": "查阅订阅计划",
     "We couldn't unsubscribe you as the email address was not found. Please contact the site owner.": "我们无法取消您的订阅，因为找不到该电子邮件地址。请联系网站所有者。",
