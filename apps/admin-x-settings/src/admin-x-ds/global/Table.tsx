@@ -3,6 +3,7 @@ import Hint from './Hint';
 import Pagination from './Pagination';
 import React from 'react';
 import Separator from './Separator';
+import TableRow from './TableRow';
 import clsx from 'clsx';
 import {LoadingIndicator} from './LoadingIndicator';
 import {PaginationData} from '../../hooks/usePagination';
@@ -12,6 +13,7 @@ interface TableProps {
      * If the table is the primary content on a page (e.g. Members table) then you can set a pagetitle to be consistent
      */
     pageTitle?: string;
+    header?: React.ReactNode;
     children?: React.ReactNode;
     borderTop?: boolean;
     hint?: string;
@@ -29,7 +31,7 @@ const OptionalPagination = ({pagination}: {pagination?: PaginationData}) => {
     return <Pagination {...pagination}/>;
 };
 
-const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, pageTitle, className, pagination, isLoading}) => {
+const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSeparator, pageTitle, className, pagination, isLoading}) => {
     const tableClasses = clsx(
         (borderTop || pageTitle) && 'border-t border-grey-300',
         'w-full',
@@ -38,7 +40,7 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
     );
 
     // We want to avoid layout jumps when we load a new page of the table, or when data is invalidated
-    const table = React.useRef<HTMLTableElement>(null);
+    const table = React.useRef<HTMLTableSectionElement>(null);
     const [tableHeight, setTableHeight] = React.useState<number | undefined>(undefined);
 
     React.useEffect(() => {
@@ -72,11 +74,14 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
               
                 {/* TODO: make this div have the same height across all pages */}
                 <div>
-                    {!isLoading && <table ref={table} className={tableClasses}>
-                        <tbody>
+                    <table className={tableClasses}>
+                        {header && <thead className='border-b border-grey-200 dark:border-grey-600'>
+                            <TableRow bgOnHover={false} separator={false}>{header}</TableRow>
+                        </thead>}
+                        {!isLoading && <tbody ref={table}>
                             {children}
-                        </tbody>
-                    </table>}
+                        </tbody>}
+                    </table>
                 </div>
 
                 {isLoading && <LoadingIndicator delay={200} size='lg' style={loadingStyle} />}
