@@ -70,10 +70,25 @@ const ZapierModal = NiceModal.create(() => {
                 updateRoute('integrations');
             }}
             cancelLabel=''
+            footer={
+                <div className='mx-8 flex w-full items-center justify-between'>
+                    <a
+                        className='mt-1 self-baseline text-sm font-bold'
+                        href='https://zapier.com/apps/ghost/integrations?utm_medium=partner_api&utm_source=widget&utm_campaign=Widget'
+                        rel='noopener noreferrer'
+                        target='_blank'>
+                        View more Ghost integrations powered by <span><Logo className='relative top-[-2px] inline-block h-6' /></span>
+                    </a>
+                    <Button color='black' label='Close' onClick={() => {
+                        modal.remove();
+                    }} />
+                </div>
+            }
             okColor='black'
             okLabel='Close'
             testId='zapier-modal'
             title=''
+            stickyFooter
             onOk={() => {
                 updateRoute('integrations');
                 modal.remove();
@@ -81,7 +96,7 @@ const ZapierModal = NiceModal.create(() => {
         >
             <IntegrationHeader
                 detail='Automation for your favorite apps'
-                extra={<APIKeys keys={[
+                extra={<div className='-mb-4 mt-1'><APIKeys keys={[
                     {
                         label: 'Admin API key',
                         text: adminApiKey?.secret,
@@ -89,17 +104,17 @@ const ZapierModal = NiceModal.create(() => {
                         onRegenerate: handleRegenerate
                     },
                     {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
-                ]} />}
+                ]} /></div>}
                 icon={<Icon className='h-14 w-14' />}
                 title='Zapier'
             />
 
-            <List className='mt-6'>
+            <List className='-mb-8'>
                 {zapierTemplates.map(template => (
                     <ListItem
                         action={<Button className='whitespace-nowrap text-sm font-semibold text-[#FF4A00]' href={template.url} label='Use this Zap' tag='a' target='_blank' link unstyled />}
                         bgOnHover={false}
-                        className='flex items-center gap-3 py-2'
+                        className='flex items-center gap-3 py-2 pl-3'
                         title={
                             <div className='flex flex-col gap-4 md:flex-row md:items-center'>
                                 <div className='flex shrink-0 flex-nowrap items-center gap-2'>
@@ -114,16 +129,6 @@ const ZapierModal = NiceModal.create(() => {
                     />
                 ))}
             </List>
-
-            <div className='mt-6'>
-                <a
-                    className='mt-6 self-baseline text-sm font-bold'
-                    href='https://zapier.com/apps/ghost/integrations?utm_medium=partner_api&utm_source=widget&utm_campaign=Widget'
-                    rel='noopener noreferrer'
-                    target='_blank'>
-                    View more Ghost integrations powered by <span><Logo className='relative top-[-2px] inline-block h-6' /></span>
-                </a>
-            </div>
         </Modal>
     );
 });

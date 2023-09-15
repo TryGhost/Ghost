@@ -11,7 +11,7 @@ const History: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <SettingGroup
-            customButtons={<Button color='green' label='View history' link onClick={openHistoryModal}/>}
+            customButtons={<Button color='green' label='View history' link linkWithPadding onClick={openHistoryModal}/>}
             description="View system event log"
             keywords={keywords}
             navid='history'

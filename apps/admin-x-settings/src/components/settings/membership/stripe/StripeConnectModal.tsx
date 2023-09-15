@@ -185,7 +185,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     return (
         <section>
             <div className='flex items-center justify-between'>
-                <Button className='dark:text-white' disabled={isFetchingMembers} icon='link-broken' iconColorClass='dark:text-white' label='Disconnect' link onClick={openDisconnectStripeModal} />
+                <Button color='red' disabled={isFetchingMembers} icon='link-broken' iconColorClass='text-red' label='Disconnect' link onClick={openDisconnectStripeModal} />
                 <Button icon='close' iconColorClass='dark:text-white' label='Close' size='sm' hideLabel link onClick={onClose} />
             </div>
             <div className='my-20 flex flex-col items-center'>

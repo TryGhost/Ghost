@@ -64,12 +64,12 @@ const NavigationModal = NiceModal.create(() => {
                     tabs={[
                         {
                             id: 'primary-nav',
-                            title: 'Primary navigation',
+                            title: 'Primary',
                             contents: <NavigationEditForm baseUrl={siteData!.url} navigation={navigation} />
                         },
                         {
                             id: 'secondary-nav',
-                            title: 'Secondary navigation',
+                            title: 'Secondary',
                             contents: <NavigationEditForm baseUrl={siteData!.url} navigation={secondaryNavigation} />
                         }
                     ]}

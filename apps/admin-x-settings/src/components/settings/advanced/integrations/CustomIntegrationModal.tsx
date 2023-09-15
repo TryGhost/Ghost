@@ -123,26 +123,24 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                         onKeyDown={() => clearError('name')}
                     />
                     <TextField title='Description' value={formState.description || ''} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
-                    <div>
-                        <APIKeys keys={[
-                            {
-                                label: 'Content API key',
-                                text: contentApiKey?.secret,
-                                hint: contentKeyRegenerated ? <div className='text-green'>Content API Key was successfully regenerated</div> : undefined,
-                                onRegenerate: () => contentApiKey && handleRegenerate(contentApiKey, setContentKeyRegenerated)
-                            },
-                            {
-                                label: 'Admin API key',
-                                text: adminApiKey?.secret,
-                                hint: adminKeyRegenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
-                                onRegenerate: () => adminApiKey && handleRegenerate(adminApiKey, setAdminKeyRegenerated)
-                            },
-                            {
-                                label: 'API URL',
-                                text: window.location.origin + getGhostPaths().subdir
-                            }
-                        ]} />
-                    </div>
+                    <APIKeys keys={[
+                        {
+                            label: 'Content API key',
+                            text: contentApiKey?.secret,
+                            hint: contentKeyRegenerated ? <div className='text-green'>Content API Key was successfully regenerated</div> : undefined,
+                            onRegenerate: () => contentApiKey && handleRegenerate(contentApiKey, setContentKeyRegenerated)
+                        },
+                        {
+                            label: 'Admin API key',
+                            text: adminApiKey?.secret,
+                            hint: adminKeyRegenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
+                            onRegenerate: () => adminApiKey && handleRegenerate(adminApiKey, setAdminKeyRegenerated)
+                        },
+                        {
+                            label: 'API URL',
+                            text: window.location.origin + getGhostPaths().subdir
+                        }
+                    ]} />
                 </Form>
             </div>
         </div>

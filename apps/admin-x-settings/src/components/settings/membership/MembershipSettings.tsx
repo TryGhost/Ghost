@@ -25,8 +25,8 @@ const MembershipSettings: React.FC = () => {
 
     return (
         <SettingSection keywords={Object.values(searchKeywords).flat()} title='Membership'>
-            <Portal keywords={searchKeywords.portal} />
             <Access keywords={searchKeywords.access} />
+            <Portal keywords={searchKeywords.portal} />
             <Tiers keywords={searchKeywords.tiers} />
             {hasTipsAndDonations && <TipsOrDonations keywords={searchKeywords.tips} />}
             <EmbedSignupForm keywords={searchKeywords.embedSignupForm} />

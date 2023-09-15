@@ -63,8 +63,8 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 <SettingNavSection keywords={Object.values(membershipSearchKeywords).flat()} title="Membership">
-                    <SettingNavItem keywords={membershipSearchKeywords.portal} navid='portal' title="Portal" onClick={handleSectionClick} />
                     <SettingNavItem keywords={membershipSearchKeywords.access} navid='access' title="Access" onClick={handleSectionClick} />
+                    <SettingNavItem keywords={membershipSearchKeywords.portal} navid='portal' title="Portal" onClick={handleSectionClick} />
                     <SettingNavItem keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
                     {hasTipsAndDonations && <SettingNavItem keywords={membershipSearchKeywords.tips} navid='tips-or-donations' title="Tips or donations" onClick={handleSectionClick} />}
                     <SettingNavItem keywords={membershipSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Embeddable signup form" onClick={handleSectionClick} />

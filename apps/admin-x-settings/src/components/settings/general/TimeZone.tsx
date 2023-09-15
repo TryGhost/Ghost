@@ -63,10 +63,10 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
         <SettingGroupContent values={[
             {
                 key: 'site-timezone',
-                value: publicationTimezone,
-                hint: (
-                    <Hint timezone={publicationTimezone} />
-                )
+                value: <div className='flex flex-col'>
+                    {publicationTimezone}
+                    <span className='text-sm'><Hint timezone={publicationTimezone} /></span>
+                </div>
             }
         ]} />
     );

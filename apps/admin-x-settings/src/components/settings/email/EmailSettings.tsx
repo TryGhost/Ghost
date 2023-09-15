@@ -19,12 +19,12 @@ const EmailSettings: React.FC = () => {
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     return (
-        <SettingSection keywords={Object.values(searchKeywords).flat()} title='Email newsletters'>
+        <SettingSection keywords={Object.values(searchKeywords).flat()} title='Email newsletter'>
             <EnableNewsletters keywords={searchKeywords.enableNewsletters} />
             {newslettersEnabled !== 'disabled' && (
                 <>
-                    <Newsletters keywords={searchKeywords.newsletters} />
                     <DefaultRecipients keywords={searchKeywords.defaultRecipients} />
+                    <Newsletters keywords={searchKeywords.newsletters} />
                     {!config.mailgunIsConfigured && <MailGun keywords={searchKeywords.mailgun} />}
                 </>
             )}
