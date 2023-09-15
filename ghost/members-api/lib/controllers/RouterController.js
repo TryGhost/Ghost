@@ -17,7 +17,8 @@ const messages = {
     memberNotFoundSignUp: 'No member exists with this e-mail address. Please sign up first.',
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
-    invalidNewsletterId: 'Cannot subscribe to invalid newsletter {ids}'
+    invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
+    archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}'
 };
 
 module.exports = class RouterController {
@@ -483,19 +484,30 @@ module.exports = class RouterController {
                 // Validate requested newsletters
                 let {newsletters: requestedNewsletters} = req.body;
 
-                if (requestedNewsletters && requestedNewsletters.length > 0) {
-                    const newsletterIds = requestedNewsletters.map(newsletter => newsletter.id);
+                if (requestedNewsletters && requestedNewsletters.length > 0 && requestedNewsletters.every(newsletter => newsletter.name !== undefined)) {
+                    const newsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
+                    const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
                     const newsletters = await this._newslettersService.browse({
-                        filter: `id:[${newsletterIds}]`,
-                        columns: ['id','status']
+                        filter: `name:[${newsletterNamesFilter}]`,
+                        columns: ['id','name','status']
                     });
 
-                    if (newsletters.length !== newsletterIds.length) {
-                        const validNewsletterIds = newsletters.map(newsletter => newsletter.id);
-                        const invalidNewsletterIds = newsletterIds.filter(id => !validNewsletterIds.includes(id));
+                    if (newsletters.length !== newsletterNames.length) { //check for invalid newsletters
+                        const validNewsletters = newsletters.map(newsletter => newsletter.name);
+                        const invalidNewsletters = newsletterNames.filter(newsletter => !validNewsletters.includes(newsletter));
 
                         throw new errors.BadRequestError({
-                            message: tpl(messages.invalidNewsletterId, {ids: invalidNewsletterIds})
+                            message: tpl(messages.invalidNewsletters, {newsletters: invalidNewsletters})
+                        });
+                    }
+
+                    //validation for archived newsletters
+                    const archivedNewsletters = newsletters
+                        .filter(newsletter => newsletter.status === 'archived')
+                        .map(newsletter => newsletter.name);
+                    if (archivedNewsletters && archivedNewsletters.length > 0) {
+                        throw new errors.BadRequestError({
+                            message: tpl(messages.archivedNewsletters, {newsletters: archivedNewsletters})
                         });
                     }
 
