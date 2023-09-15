@@ -57,6 +57,6 @@ export default defineConfig({
         command: `yarn dev:test`,
         url: `http://localhost:${E2E_PORT}/comments-ui.min.js`,
         reuseExistingServer: !process.env.CI,
-        timeout: 10000
+        timeout: 20000
     }
 });
