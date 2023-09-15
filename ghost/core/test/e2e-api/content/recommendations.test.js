@@ -2,6 +2,7 @@ const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-frame
 const recommendationsService = require('../../../core/server/services/recommendations');
 const {Recommendation} = require('@tryghost/recommendations');
 const {anyObjectId, anyISODateTime} = matchers;
+const assert = require('assert/strict');
 
 describe('Recommendations Content API', function () {
     let agent;
@@ -62,5 +63,27 @@ describe('Recommendations Content API', function () {
                     updated_at: anyISODateTime
                 })
             });
+    });
+
+    it('Does not allow includes', async function () {
+        const {body} = await agent.get(`recommendations/?include=count.clicks,count.subscribers`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': matchers.anyContentVersion,
+                etag: matchers.anyEtag
+            })
+            .matchBodySnapshot({
+                recommendations: new Array(5).fill({
+                    id: anyObjectId,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime
+                })
+            });
+
+        assert(body.recommendations[0].count === undefined);
+        assert(body.recommendations[1].count === undefined);
+        assert(body.recommendations[2].count === undefined);
+        assert(body.recommendations[3].count === undefined);
+        assert(body.recommendations[4].count === undefined);
     });
 });

@@ -55,6 +55,9 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
         updateRoute({route: `recommendations/${recommendation.id}`});
     };
 
+    const showSubscribes = recommendation.one_click_subscribe && (recommendation.count?.subscribers || recommendation.count?.clicks === 0);
+    const count = (showSubscribes ? recommendation.count?.subscribers : recommendation.count?.clicks) || 0;
+
     return (
         <TableRow action={action} hideActions>
             <TableCell onClick={showDetails}>
@@ -70,11 +73,8 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
             </TableCell>
             <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
-                    {/* If it's 0 */}
-                    {/* <span className="text-grey-500">-</span> */}
-                    {/* If it's more than 0 */}
-                    <span>12</span>
-                    <span className='whitespace-nowrap text-xs text-grey-700'>Subscribers from you</span>
+                    {count === 0 ? <span className="text-grey-500">-</span> : <span>{count}</span>}
+                    <span className='whitespace-nowrap text-xs text-grey-700'>{showSubscribes ? 'Subscribers from you' : 'Clicks from you'}</span>
                 </div>
             </TableCell>
         </TableRow>
