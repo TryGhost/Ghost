@@ -4440,15 +4440,12 @@
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
-"@playwright/test@1.37.1":
-  version "1.37.1"
-  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.37.1.tgz#e7f44ae0faf1be52d6360c6bbf689fd0057d9b6f"
-  integrity sha512-bq9zTli3vWJo8S3LwB91U0qDNQDpEXnw7knhxLM0nwDvexQAwx9tO8iKDZSqqneVq+URd/WIoz+BALMqUTgdSg==
+"@playwright/test@1.38.0":
+  version "1.38.0"
+  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.38.0.tgz#0ad33f62394d6a9cb768d0ddfa93b12304c64e13"
+  integrity sha512-xis/RXXsLxwThKnlIXouxmIvvT3zvQj1JE39GsNieMUrMpb3/GySHDh2j8itCG22qKVD4MYLBp7xB73cUW/UUw==
   dependencies:
-    "@types/node" "*"
-    playwright-core "1.37.1"
-  optionalDependencies:
-    fsevents "2.3.2"
+    playwright "1.38.0"
 
 "@polka/url@^1.0.0-next.20":
   version "1.0.0-next.21"
@@ -25249,10 +25246,19 @@ pkg-up@^3.1.0:
   dependencies:
     find-up "^3.0.0"
 
-playwright-core@1.37.1:
-  version "1.37.1"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.37.1.tgz#cb517d52e2e8cb4fa71957639f1cd105d1683126"
-  integrity sha512-17EuQxlSIYCmEMwzMqusJ2ztDgJePjrbttaefgdsiqeLWidjYz9BxXaTaZWxH1J95SHGk6tjE+dwgWILJoUZfA==
+playwright-core@1.38.0:
+  version "1.38.0"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.38.0.tgz#cb8e135da1c0b1918b070642372040ed9aa7009a"
+  integrity sha512-f8z1y8J9zvmHoEhKgspmCvOExF2XdcxMW8jNRuX4vkQFrzV4MlZ55iwb5QeyiFQgOFCUolXiRHgpjSEnqvO48g==
+
+playwright@1.38.0:
+  version "1.38.0"
+  resolved "https://registry.yarnpkg.com/playwright/-/playwright-1.38.0.tgz#0ee19d38512b7b1f961c0eb44008a6fed373d206"
+  integrity sha512-fJGw+HO0YY+fU/F1N57DMO+TmXHTrmr905J05zwAQE9xkuwP/QLDk63rVhmyxh03dYnEhnRbsdbH9B0UVVRB3A==
+  dependencies:
+    playwright-core "1.38.0"
+  optionalDependencies:
+    fsevents "2.3.2"
 
 pluralize@8.0.0, pluralize@^8.0.0:
   version "8.0.0"
