@@ -11,7 +11,7 @@ import NewsletterPreview from './NewsletterPreview';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import Select, {SelectOption} from '../../../../admin-x-ds/global/form/Select';
-import StickyFooter from '../../../../admin-x-ds/global/StickyFooter';
+import Separator from '../../../../admin-x-ds/global/Separator';
 import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
@@ -110,6 +110,26 @@ const Sidebar: React.FC<{
                         onChange={e => updateNewsletter({subscribe_on_signup: e.target.checked})}
                     />
                 </Form>
+                <Separator />
+                <div className='my-5 flex w-full items-start'>
+                    <span>
+                        <Icon className='mr-2 mt-[-1px]' colorClass='text-red' name='heart'/>
+                    </span>
+                    <Form marginBottom={false}>
+                        <Toggle
+                            checked={newsletter.show_badge}
+                            direction='rtl'
+                            label={
+                                <div className='flex flex-col gap-0.5'>
+                                    <span className='text-sm md:text-base'>Promote independent publishing</span>
+                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you’re a part of the indie publishing movement with a small badge in the footer</span>
+                                </div>
+                            }
+                            labelStyle='value'
+                            onChange={e => updateNewsletter({show_badge: e.target.checked})}
+                        />
+                    </Form>
+                </div>
             </>
         },
         {
@@ -136,9 +156,9 @@ const Sidebar: React.FC<{
                                     updateNewsletter({header_image: imageUrl});
                                 }}
                             >
-                        Upload header image
+                                <Icon colorClass='text-grey-700 dark:text-grey-300' name='picture' />
                             </ImageUpload>
-                            <Hint>Optional, recommended size 1200x600</Hint>
+                            <Hint>1200x600, optional</Hint>
                         </div>
                     </div>
                     <ToggleGroup>
@@ -146,21 +166,18 @@ const Sidebar: React.FC<{
                             checked={newsletter.show_header_icon}
                             direction="rtl"
                             label='Publication icon'
-                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_header_icon: e.target.checked})}
                         />}
                         <Toggle
                             checked={newsletter.show_header_title}
                             direction="rtl"
                             label='Publication title'
-                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_header_title: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_header_name}
                             direction="rtl"
                             label='Newsletter name'
-                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_header_name: e.target.checked})}
                         />
                     </ToggleGroup>
@@ -292,28 +309,24 @@ const Sidebar: React.FC<{
                             checked={newsletter.feedback_enabled}
                             direction="rtl"
                             label='Ask your readers for feedback'
-                            labelStyle='heading'
                             onChange={e => updateNewsletter({feedback_enabled: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_comment_cta}
                             direction="rtl"
                             label='Add a link to your comments'
-                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_comment_cta: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_latest_posts}
                             direction="rtl"
                             label='Share your latest posts'
-                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_latest_posts: e.target.checked})}
                         />
                         <Toggle
                             checked={newsletter.show_subscription_details}
                             direction="rtl"
                             label='Show subscription details'
-                            labelStyle='heading'
                             onChange={e => updateNewsletter({show_subscription_details: e.target.checked})}
                         />
                     </ToggleGroup>
@@ -336,31 +349,10 @@ const Sidebar: React.FC<{
     };
 
     return (
-        <div className='flex h-full flex-col justify-between'>
+        <div className='flex flex-col'>
             <div className='px-7 pb-7 pt-5'>
                 <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={handleTabChange} />
             </div>
-            <StickyFooter height={96}>
-                <div className='flex w-full items-start px-7'>
-                    <span>
-                        <Icon className='mr-2 mt-[-1px]' colorClass='text-red' name='heart'/>
-                    </span>
-                    <Form marginBottom={false}>
-                        <Toggle
-                            checked={newsletter.show_badge}
-                            direction='rtl'
-                            label={
-                                <div className='flex flex-col gap-0.5'>
-                                    <span className='text-sm md:text-base'>Promote independent publishing</span>
-                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you’re a part of the indie publishing movement with a small badge in the footer</span>
-                                </div>
-                            }
-                            labelStyle='value'
-                            onChange={e => updateNewsletter({show_badge: e.target.checked})}
-                        />
-                    </Form>
-                </div>
-            </StickyFooter>
         </div>
     );
 };
