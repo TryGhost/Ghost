@@ -27261,10 +27261,10 @@ redis-parser@^3.0.0:
   dependencies:
     redis-errors "^1.0.0"
 
-reframe.js@4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/reframe.js/-/reframe.js-4.0.1.tgz#a577c2b7398a70dd52db95e54e9c750279c7e7aa"
-  integrity sha512-DJsyJ6Kqps9UJBi3it2hN5cn3Gmp1gi9IhaleP3eCi8QMnbdCzUJ/EUhM3LHuw59GtR6FJ6NDGJSDuI5UQXlnQ==
+reframe.js@4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/reframe.js/-/reframe.js-4.0.2.tgz#07f5f8fb40e0eb6f2d783ce952030d3e14dca7b7"
+  integrity sha512-cWeYXeAdPIZoL9U+hrsALRwjaMbZR0/tFDh9xF2JmTUCSHi2OaeioC91Exmc00C3jpmEj41++2UnNZXIXL5pMA==
 
 regenerate-unicode-properties@^10.1.0:
   version "10.1.0"
