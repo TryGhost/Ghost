@@ -3,6 +3,8 @@ const errors = require('@tryghost/errors');
 const urlUtils = require('../../shared/url-utils');
 const config = require('../../shared/config');
 const storage = require('../adapters/storage');
+const getPostServiceInstance = require('../services/posts/posts-service');
+const postsService = getPostServiceInstance();
 
 let nodes;
 let lexicalHtmlRenderer;
@@ -28,6 +30,13 @@ module.exports = {
     },
 
     async render(lexical, userOptions = {}) {
+        const getCollectionPosts = async (collectionSlug, postCount) => {
+            const transacting = userOptions.transacting;
+            const {data} = await postsService.browsePosts({collection: collectionSlug, limit: postCount, transacting});
+            let posts = data.map(p => p.toJSON());
+            return posts;
+        };
+
         const options = Object.assign({
             siteUrl: config.get('url'),
             imageOptimization: config.get('imageOptimization'),
@@ -43,7 +52,8 @@ module.exports = {
             createDocument() {
                 const {JSDOM} = require('jsdom');
                 return (new JSDOM()).window.document;
-            }
+            },
+            getCollectionPosts
         }, userOptions);
 
         return await this.lexicalHtmlRenderer.render(lexical, options);
