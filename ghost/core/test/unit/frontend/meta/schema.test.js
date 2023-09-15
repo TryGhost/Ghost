@@ -576,6 +576,115 @@ describe('getSchema', function () {
             '@context': 'https://schema.org',
             '@type': 'Person',
             description: 'This is the author description!',
+            image: {
+                '@type': 'ImageObject',
+                height: 500,
+                url: 'http://mysite.com/author/image/url/me.jpg',
+                width: 500
+            },
+            mainEntityOfPage: 'http://mysite.com/author/me/',
+            name: 'Author Name',
+            sameAs: [
+                'http://myblogsite.com/?user&#x3D;bambedibu&amp;a&#x3D;&lt;script&gt;alert(&quot;bambedibu&quot;)&lt;/script&gt;',
+                'https://twitter.com/testuser'
+            ],
+            url: 'http://mysite.com/author/me/'
+        });
+    });
+
+    it('should return author schema if context starts with author and prefer the author profile image if also a cover image is given', function () {
+        const metadata = {
+            site: {
+                title: 'Site Title',
+                url: 'http://mysite.com'
+            },
+            authorImage: {
+                url: 'http://mysite.com/author/image/url/me.jpg',
+                dimensions: {
+                    width: 500,
+                    height: 500
+                }
+            },
+            coverImage: {
+                url: 'http://mysite.com/author/cover/url/me.jpg',
+                dimensions: {
+                    width: 1024,
+                    height: 500
+                }
+            },
+            authorUrl: 'http://mysite.com/author/me/',
+            metaDescription: 'This is the author description!'
+        };
+
+        const data = {
+            context: ['author'],
+            author: {
+                name: 'Author Name',
+                website: 'http://myblogsite.com/?user=bambedibu&a=<script>alert("bambedibu")</script>',
+                twitter: '@testuser'
+            }
+        };
+
+        const schema = getSchema(metadata, data);
+
+        should.deepEqual(schema, {
+            '@context': 'https://schema.org',
+            '@type': 'Person',
+            description: 'This is the author description!',
+            image: {
+                '@type': 'ImageObject',
+                height: 500,
+                url: 'http://mysite.com/author/image/url/me.jpg',
+                width: 500
+            },
+            mainEntityOfPage: 'http://mysite.com/author/me/',
+            name: 'Author Name',
+            sameAs: [
+                'http://myblogsite.com/?user&#x3D;bambedibu&amp;a&#x3D;&lt;script&gt;alert(&quot;bambedibu&quot;)&lt;/script&gt;',
+                'https://twitter.com/testuser'
+            ],
+            url: 'http://mysite.com/author/me/'
+        });
+    });
+
+    it('should return author schema if context starts with author and fall back to the cover image if given', function () {
+        const metadata = {
+            site: {
+                title: 'Site Title',
+                url: 'http://mysite.com'
+            },
+            coverImage: {
+                url: 'http://mysite.com/author/cover/url/me.jpg',
+                dimensions: {
+                    width: 1024,
+                    height: 500
+                }
+            },
+            authorUrl: 'http://mysite.com/author/me/',
+            metaDescription: 'This is the author description!'
+        };
+
+        const data = {
+            context: ['author'],
+            author: {
+                name: 'Author Name',
+                website: 'http://myblogsite.com/?user=bambedibu&a=<script>alert("bambedibu")</script>',
+                twitter: '@testuser'
+            }
+        };
+
+        const schema = getSchema(metadata, data);
+
+        should.deepEqual(schema, {
+            '@context': 'https://schema.org',
+            '@type': 'Person',
+            description: 'This is the author description!',
+            image: {
+                '@type': 'ImageObject',
+                height: 500,
+                url: 'http://mysite.com/author/cover/url/me.jpg',
+                width: 1024
+            },
             mainEntityOfPage: 'http://mysite.com/author/me/',
             name: 'Author Name',
             sameAs: [
