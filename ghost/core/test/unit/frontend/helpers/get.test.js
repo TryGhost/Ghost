@@ -96,6 +96,35 @@ describe('{{#get}} helper', function () {
         });
     });
 
+    describe('newsletters', function () {
+        const meta = {pagination: {}};
+
+        beforeEach(function () {
+            locals = {root: {_locals: {}}};
+
+            sinon.stub(api, 'newslettersPublic').get(() => {
+                return {
+                    browse: sinon.stub().resolves({newsletters: [], meta: meta})
+                };
+            });
+        });
+
+        it('browse newsletters', function (done) {
+            get.call(
+                {},
+                'newsletters',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            ).then(function () {
+                fn.called.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('newsletters');
+                fn.firstCall.args[0].newsletters.should.eql([]);
+                inverse.called.should.be.false();
+
+                done();
+            }).catch(done);
+        });
+    });
+
     describe('general error handling', function () {
         it('should return an error for an unknown resource', function (done) {
             get.call(

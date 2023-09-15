@@ -1,9 +1,11 @@
-import {OrderOption} from '@tryghost/bookshelf-repository';
+import {BookshelfRepository, OrderOption} from '@tryghost/bookshelf-repository';
 import {AddRecommendation, Recommendation} from './Recommendation';
 import {RecommendationRepository} from './RecommendationRepository';
 import {WellknownService} from './WellknownService';
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
+import {ClickEvent} from './ClickEvent';
+import {SubscribeEvent} from './SubscribeEvent';
 
 type MentionSendingService = {
     sendAll(options: {url: URL, links: URL[]}): Promise<void>
@@ -20,12 +22,17 @@ const messages = {
 
 export class RecommendationService {
     repository: RecommendationRepository;
+    clickEventRepository: BookshelfRepository<string, ClickEvent>;
+    subscribeEventRepository: BookshelfRepository<string, SubscribeEvent>;
+
     wellknownService: WellknownService;
     mentionSendingService: MentionSendingService;
     recommendationEnablerService: RecommendationEnablerService;
 
     constructor(deps: {
         repository: RecommendationRepository,
+        clickEventRepository: BookshelfRepository<string, ClickEvent>,
+        subscribeEventRepository: BookshelfRepository<string, SubscribeEvent>,
         wellknownService: WellknownService,
         mentionSendingService: MentionSendingService,
         recommendationEnablerService: RecommendationEnablerService,
@@ -34,6 +41,8 @@ export class RecommendationService {
         this.wellknownService = deps.wellknownService;
         this.mentionSendingService = deps.mentionSendingService;
         this.recommendationEnablerService = deps.recommendationEnablerService;
+        this.clickEventRepository = deps.clickEventRepository;
+        this.subscribeEventRepository = deps.subscribeEventRepository;
     }
 
     async init() {
@@ -67,6 +76,15 @@ export class RecommendationService {
 
     async addRecommendation(addRecommendation: AddRecommendation) {
         const recommendation = Recommendation.create(addRecommendation);
+
+        // If a recommendation with this URL already exists, throw an error
+        const existing = await this.repository.getByUrl(recommendation.url);
+        if (existing) {
+            throw new errors.ValidationError({
+                message: 'A recommendation with this URL already exists.'
+            });
+        }
+
         await this.repository.save(recommendation);
 
         const recommendations = await this.listRecommendations();
@@ -125,5 +143,15 @@ export class RecommendationService {
 
     async countRecommendations({filter}: { filter?: string }) {
         return await this.repository.getCount({filter});
+    }
+
+    async trackClicked({id, memberId}: { id: string, memberId?: string }) {
+        const clickEvent = ClickEvent.create({recommendationId: id, memberId});
+        await this.clickEventRepository.save(clickEvent);
+    }
+
+    async trackSubscribed({id, memberId}: { id: string, memberId: string }) {
+        const subscribeEvent = SubscribeEvent.create({recommendationId: id, memberId});
+        await this.subscribeEventRepository.save(subscribeEvent);
     }
 }

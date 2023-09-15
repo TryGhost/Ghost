@@ -132,6 +132,7 @@
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "이메일 구독 취소는 {{title}}에 대한 유료 구독을 취소하지 않습니다",
     "Update": "업데이트",
     "Update your preferences": "설정 업데이트",
+    "Verification link sent, check your inbox": "",
     "Verify your email address is correct": "이메일 주소가 올바른지 확인하세요",
     "View plans": "플랜 보기",
     "We couldn't unsubscribe you as the email address was not found. Please contact the site owner.": "이메일 주소를 찾을 수 없어 구독을 취소할 수 없습니다. 사이트 관리자에게 문의하세요.",

@@ -3,8 +3,9 @@ import Hint from './Hint';
 import Pagination from './Pagination';
 import React from 'react';
 import Separator from './Separator';
+import TableRow from './TableRow';
 import clsx from 'clsx';
-import {CenteredLoadingIndicator} from './LoadingIndicator';
+import {LoadingIndicator} from './LoadingIndicator';
 import {PaginationData} from '../../hooks/usePagination';
 
 interface TableProps {
@@ -12,6 +13,7 @@ interface TableProps {
      * If the table is the primary content on a page (e.g. Members table) then you can set a pagetitle to be consistent
      */
     pageTitle?: string;
+    header?: React.ReactNode;
     children?: React.ReactNode;
     borderTop?: boolean;
     hint?: string;
@@ -29,7 +31,7 @@ const OptionalPagination = ({pagination}: {pagination?: PaginationData}) => {
     return <Pagination {...pagination}/>;
 };
 
-const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, pageTitle, className, pagination, isLoading}) => {
+const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSeparator, pageTitle, className, pagination, isLoading}) => {
     const tableClasses = clsx(
         (borderTop || pageTitle) && 'border-t border-grey-300',
         'w-full',
@@ -38,7 +40,7 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
     );
 
     // We want to avoid layout jumps when we load a new page of the table, or when data is invalidated
-    const table = React.useRef<HTMLTableElement>(null);
+    const table = React.useRef<HTMLTableSectionElement>(null);
     const [tableHeight, setTableHeight] = React.useState<number | undefined>(undefined);
 
     React.useEffect(() => {
@@ -69,16 +71,25 @@ const Table: React.FC<TableProps> = ({children, borderTop, hint, hintSeparator, 
         <>
             <div className='w-full overflow-x-auto'>
                 {pageTitle && <Heading>{pageTitle}</Heading>}
-                {!isLoading && <table ref={table} className={tableClasses}>
-                    <tbody>
-                        {children}
-                    </tbody>
-                </table>}
-                {isLoading && <CenteredLoadingIndicator delay={200} style={loadingStyle} />}
+              
+                {/* TODO: make this div have the same height across all pages */}
+                <div>
+                    <table className={tableClasses}>
+                        {header && <thead className='border-b border-grey-200 dark:border-grey-600'>
+                            <TableRow bgOnHover={false} separator={false}>{header}</TableRow>
+                        </thead>}
+                        {!isLoading && <tbody ref={table}>
+                            {children}
+                        </tbody>}
+                    </table>
+                </div>
+
+                {isLoading && <LoadingIndicator delay={200} size='lg' style={loadingStyle} />}
+
                 {(hint || pagination) &&
                 <div className="-mt-px">
                     {(hintSeparator || pagination) && <Separator />}
-                    <div className="flex flex-col-reverse items-start justify-between gap-1 pt-2 md:flex-row md:items-center md:gap-0 md:pt-0 ">
+                    <div className="flex flex-col-reverse items-start justify-between gap-1 pt-2 md:flex-row md:items-center md:gap-0 md:pt-0">
                         <Hint>{hint ?? ' '}</Hint>
                         <OptionalPagination pagination={pagination} />
                     </div>

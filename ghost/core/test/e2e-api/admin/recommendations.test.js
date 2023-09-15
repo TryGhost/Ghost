@@ -4,6 +4,17 @@ const assert = require('assert/strict');
 const recommendationsService = require('../../../core/server/services/recommendations');
 const {Recommendation} = require('@tryghost/recommendations');
 
+async function addDummyRecommendation(agent) {
+    await agent.post('recommendations/').body({
+        recommendations: [{
+            title: 'Dog Pictures',
+            url: 'https://dogpictures.com'
+        }]
+    });
+    const id = (await recommendationsService.repository.getAll())[0].id;
+    return id;
+}
+
 describe('Recommendations Admin API', function () {
     let agent;
 
@@ -11,15 +22,14 @@ describe('Recommendations Admin API', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();
+    });
 
-        // Clear placeholders
+    afterEach(async function () {
         for (const recommendation of (await recommendationsService.repository.getAll())) {
             recommendation.delete();
             await recommendationsService.repository.save(recommendation);
         }
-    });
 
-    afterEach(function () {
         mockManager.restore();
     });
 
@@ -94,13 +104,32 @@ describe('Recommendations Admin API', function () {
         assert.equal(body.recommendations[0].one_click_subscribe, true);
     });
 
+    it('Cannot add the same recommendation twice', async function () {
+        await agent.post('recommendations/')
+            .body({
+                recommendations: [{
+                    title: 'Dog Pictures',
+                    url: 'https://dogpictures.com'
+                }]
+            });
+
+        await agent.post('recommendations/')
+            .body({
+                recommendations: [{
+                    title: 'Dog Pictures 2',
+                    url: 'https://dogpictures.com'
+                }]
+            })
+            .expectStatus(422);
+    });
+
     it('Can edit recommendation', async function () {
-        const id = (await recommendationsService.repository.getAll())[0].id;
+        const id = await addDummyRecommendation(agent);
         const {body} = await agent.put(`recommendations/${id}/`)
             .body({
                 recommendations: [{
                     title: 'Cat Pictures',
-                    url: 'https://catpictures.com',
+                    url: 'https://dogpictures.com',
                     reason: 'Because cats are cute',
                     excerpt: 'Cats are cute',
                     featured_image: 'https://catpictures.com/cat.jpg',
@@ -126,7 +155,7 @@ describe('Recommendations Admin API', function () {
         // Check everything is set correctly
         assert.equal(body.recommendations[0].id, id);
         assert.equal(body.recommendations[0].title, 'Cat Pictures');
-        assert.equal(body.recommendations[0].url, 'https://catpictures.com/');
+        assert.equal(body.recommendations[0].url, 'https://dogpictures.com/');
         assert.equal(body.recommendations[0].reason, 'Because cats are cute');
         assert.equal(body.recommendations[0].excerpt, 'Cats are cute');
         assert.equal(body.recommendations[0].featured_image, 'https://catpictures.com/cat.jpg');
@@ -135,16 +164,17 @@ describe('Recommendations Admin API', function () {
     });
 
     it('Cannot use invalid protocols when editing', async function () {
-        const id = (await recommendationsService.repository.getAll())[0].id;
+        const id = await addDummyRecommendation(agent);
+
         await agent.put(`recommendations/${id}/`)
             .body({
                 recommendations: [{
                     title: 'Cat Pictures',
-                    url: 'https://catpictures.com',
+                    url: 'https://dogpictures.com',
                     reason: 'Because cats are cute',
                     excerpt: 'Cats are cute',
-                    featured_image: 'ftp://catpictures.com/cat.jpg',
-                    favicon: 'ftp://catpictures.com/favicon.ico',
+                    featured_image: 'ftp://dogpictures.com/dog.jpg',
+                    favicon: 'ftp://dogpictures.com/favicon.ico',
                     one_click_subscribe: false
                 }]
             })
@@ -163,7 +193,7 @@ describe('Recommendations Admin API', function () {
     });
 
     it('Can delete recommendation', async function () {
-        const id = (await recommendationsService.repository.getAll())[0].id;
+        const id = await addDummyRecommendation(agent);
         await agent.delete(`recommendations/${id}/`)
             .expectStatus(204)
             .matchHeaderSnapshot({
@@ -174,6 +204,8 @@ describe('Recommendations Admin API', function () {
     });
 
     it('Can browse', async function () {
+        await addDummyRecommendation(agent);
+
         await agent.get('recommendations/')
             .expectStatus(200)
             .matchHeaderSnapshot({
@@ -227,7 +259,7 @@ describe('Recommendations Admin API', function () {
         assert.equal(page1.meta.pagination.pages, 2);
         assert.equal(page1.meta.pagination.next, 2);
         assert.equal(page1.meta.pagination.prev, null);
-        assert.equal(page1.meta.pagination.total, 16);
+        assert.equal(page1.meta.pagination.total, 15);
 
         const {body: page2} = await agent.get('recommendations/?page=2&limit=10')
             .expectStatus(200)
@@ -236,7 +268,7 @@ describe('Recommendations Admin API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                recommendations: new Array(6).fill({
+                recommendations: new Array(5).fill({
                     id: anyObjectId,
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime
@@ -248,7 +280,7 @@ describe('Recommendations Admin API', function () {
         assert.equal(page2.meta.pagination.pages, 2);
         assert.equal(page2.meta.pagination.next, null);
         assert.equal(page2.meta.pagination.prev, 1);
-        assert.equal(page2.meta.pagination.total, 16);
+        assert.equal(page2.meta.pagination.total, 15);
     });
 
     it('Uses default limit of 5', async function () {

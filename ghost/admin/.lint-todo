@@ -588,3 +588,4 @@ remove|ember-template-lint|no-action|465|46|465|46|f2f0f3f512f141fdd821333c873f5
 remove|ember-template-lint|no-unused-block-params|1|0|1|0|e25f7866ab4ee682b08edf3b29a1351e4079538e|1688342400000|1698714000000|1703898000000|lib/koenig-editor/addon/components/koenig-card-header.hbs
 remove|ember-template-lint|no-invalid-interactive|7|32|7|32|508e64575a985432d0588f3291a126c4b62e68d8|1688342400000|1698714000000|1703898000000|app/components/gh-nav-menu/design.hbs
 add|ember-template-lint|no-invalid-interactive|7|32|7|32|2da5baf637c4f17f4acd498968b6022ffc0f3105|1692316800000|1702688400000|1707872400000|app/components/gh-nav-menu/design.hbs
+add|ember-template-lint|no-unknown-arguments-for-builtin-components|99|93|99|93|156670ca427c49c51f0a94f862b286ccc9466d92|1694649600000|1705021200000|1710205200000|app/components/gh-nav-menu/footer.hbs
