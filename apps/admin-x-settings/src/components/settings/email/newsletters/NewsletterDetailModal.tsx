@@ -371,7 +371,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsl
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
 
-    const {formState, updateForm, handleSave, validate, errors, clearError} = useForm({
+    const {formState, saveState, updateForm, handleSave, validate, errors, clearError} = useForm({
         initialState: newsletter,
         onSave: async () => {
             const {newsletters, meta} = await editNewsletter(formState);
@@ -420,6 +420,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsl
     return <PreviewModalContent
         afterClose={() => updateRoute('newsletters')}
         deviceSelector={false}
+        dirty={saveState === 'unsaved'}
         okLabel='Save & close'
         preview={preview}
         previewBgColor={'grey'}

@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
-    "@sentry/node": "7.66.0",
+    "@sentry/node": "7.69.0",
     "@tryghost/adapter-base-cache": "0.1.5",
     "@tryghost/adapter-cache-redis": "0.0.0",
     "@tryghost/adapter-manager": "0.0.0",
@@ -231,7 +231,7 @@
   },
   "devDependencies": {
     "@actions/core": "1.10.1",
-    "@playwright/test": "1.37.1",
+    "@playwright/test": "1.38.0",
     "@tryghost/express-test": "0.13.7",
     "@tryghost/webhook-mock-receiver": "0.2.6",
     "@types/common-tags": "1.8.2",
