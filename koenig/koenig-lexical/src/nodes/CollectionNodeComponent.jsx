@@ -26,8 +26,8 @@ export function CollectionNodeComponent({
 
     // fetch collection posts on mount
     React.useEffect(() => {
-        if (cardConfig?.fetchCollectionPosts && collection?.slug) {
-            fetchCollectionPosts(collection?.slug);
+        if (cardConfig?.fetchCollectionPosts && collection) {
+            fetchCollectionPosts(collection);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -53,7 +53,7 @@ export function CollectionNodeComponent({
     const handleCollectionChange = (value) => {
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
-            node.collection = {slug: value};
+            node.collection = value;
         });
         fetchCollectionPosts(value);
     };

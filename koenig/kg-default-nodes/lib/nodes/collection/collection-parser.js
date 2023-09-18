@@ -29,7 +29,7 @@ export function collectionParser(CollectionNode) {
                 return {
                     conversion(domNode) {
                         const postCount = parseInt(domNode.getAttribute('data-kg-collection-limit'));
-                        const collection = {slug: domNode.getAttribute('data-kg-collection-slug')};
+                        const collection = domNode.getAttribute('data-kg-collection-slug');
                         const layout = getLayout(domNode);
                         const header = domNode.querySelector('.kg-collection-card-title')?.textContent || '';
                         const columns = layout === 'list' ? 3 : getColumns(domNode); // default to 3 if switched to grid

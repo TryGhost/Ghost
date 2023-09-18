@@ -34,7 +34,7 @@ function cardTemplate(node, posts) {
         + ((layout === 'grid' && columns === 4) ? ' columns-4' : '');
 
     return (
-        `<div class="${cardClass}" data-kg-collection-slug="${collection.slug}" data-kg-collection-limit="${postCount}">
+        `<div class="${cardClass}" data-kg-collection-slug="${collection}" data-kg-collection-limit="${postCount}">
             ${header ? `<h4 class="${headerClass}">${header}</h4>` : ''}
             <div class="${collectionClass}">
                 ${posts.map(post => postTemplate(post, layout, columns)).join('')}

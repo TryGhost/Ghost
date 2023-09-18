@@ -179,7 +179,6 @@ export function CollectionCard({
     headerEditorInitialState
 }) {
     // collections should be passed in as the editor loads via cardConfig
-    // TODO: we shouldn't be getting collections without posts from the editor load
     const collectionOptions = collections?.filter((item) => {
         // always show default collections
         if (item.slug === 'latest' || item.slug === 'featured') {
@@ -274,7 +273,7 @@ export function CollectionCard({
                         dataTestId='collections-dropdown'
                         label='Collection'
                         menu={collectionOptions}
-                        value={collection?.slug}
+                        value={collection}
                         onChange={onCollectionChange}
                     />
                     <ButtonGroupSetting
@@ -313,7 +312,7 @@ export function CollectionCard({
 }
 
 CollectionCard.propTypes = {
-    collection: PropTypes.object,
+    collection: PropTypes.string,
     collections: PropTypes.array,
     columns: PropTypes.number,
     layout: PropTypes.oneOf(['list', 'grid']),

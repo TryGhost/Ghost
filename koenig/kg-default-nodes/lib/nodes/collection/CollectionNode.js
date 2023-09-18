@@ -5,7 +5,7 @@ import {collectionParser} from './collection-parser';
 
 export class CollectionNode extends generateDecoratorNode({nodeType: 'collection',
     properties: [
-        {name: 'collection', default: {slug: 'latest'}}, // start with empty object; might want to just store the slug
+        {name: 'collection', default: 'latest'}, // start with empty object; might want to just store the slug
         {name: 'postCount', default: 3},
         {name: 'layout', default: 'grid'},
         {name: 'columns', default: 3},
@@ -26,7 +26,7 @@ export class CollectionNode extends generateDecoratorNode({nodeType: 'collection
 
     async getDynamicData(options = {}) {
         const key = this.getKey();
-        const collection = this.__collection.slug;
+        const collection = this.__collection;
         const postCount = this.__postCount;
         
         if (!options?.getCollectionPosts) {

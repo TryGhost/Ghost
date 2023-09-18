@@ -59,7 +59,7 @@ describe('CollectionNode', function () {
         editor = createHeadlessEditor({nodes: editorNodes});
 
         dataset = {
-            collection: {slug: 'featured'},
+            collection: 'featured',
             postCount: 3,
             layout: 'list',
             columns: 1,
@@ -91,8 +91,8 @@ describe('CollectionNode', function () {
 
         it ('has setters for all properties', editorTest(function () {
             const node = $createCollectionNode(dataset);
-            node.collection = {title: 'latest', id: 123456};
-            node.collection.should.deepEqual({title: 'latest', id: 123456});
+            node.collection = 'latest';
+            node.collection.should.deepEqual('latest');
             node.postCount = 5;
             node.postCount.should.equal(5);
             node.layout = 'grid';
@@ -242,7 +242,7 @@ describe('CollectionNode', function () {
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
             const node = nodes[0];
-            node.collection.slug.should.equal('latest');
+            node.collection.should.equal('latest');
             node.layout.should.equal('grid');
             node.postCount.should.equal(3);
             node.columns.should.equal(3);
