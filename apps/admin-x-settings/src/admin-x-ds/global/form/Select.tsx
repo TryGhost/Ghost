@@ -8,6 +8,7 @@ import clsx from 'clsx';
 export interface SelectOption {
     value: string;
     label: string;
+    hint?: string;
     key?: string;
     className?: string;
 }
@@ -56,6 +57,7 @@ const DropdownIndicator: React.FC<DropdownIndicatorProps<SelectOption, false> & 
 const Option: React.FC<OptionProps<SelectOption, false>> = ({children, ...optionProps}) => (
     <components.Option {...optionProps}>
         <span data-testid="select-option">{children}</span>
+        {optionProps.data.hint && <span className="block text-xs text-grey-700 dark:text-grey-300">{optionProps.data.hint}</span>}
     </components.Option>
 );
 
