@@ -62,7 +62,7 @@ function postTemplate(post, layout, columns) {
                 </div>`}
             <div class="kg-collection-card-content">
                 <h2 class=${titleClass}>${title}</h2>
-                <p class=${excerptClass}>${excerpt}</p>
+                ${excerpt ? `<p class=${excerptClass}>${excerpt}</p>` : ''}
                 <div class=${metaClass}>
                     ${publishDate && `<p>${DateTime.fromISO(publishDate).toFormat('d LLL yyyy')}</p>`}
                     ${readTime > 0 ? `<p>&nbsp;&middot; ${readTime} min</p>` : ''}
