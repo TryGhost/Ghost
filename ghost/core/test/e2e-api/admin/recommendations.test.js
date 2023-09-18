@@ -9,10 +9,10 @@ async function addDummyRecommendation(i = 0) {
         title: `Recommendation ${i}`,
         reason: `Reason ${i}`,
         url: new URL(`https://recommendation${i}.com`),
-        favicon: null,
-        featuredImage: null,
-        excerpt: null,
-        oneClickSubscribe: false,
+        favicon: new URL(`https://recommendation${i}.com/favicon.ico`),
+        featuredImage: new URL(`https://recommendation${i}.com/featured.jpg`),
+        excerpt: 'Test excerpt',
+        oneClickSubscribe: true,
         createdAt: new Date(i * 5000) // Reliable ordering
     });
 
@@ -24,6 +24,48 @@ async function addDummyRecommendations(amount = 15) {
     // Add 15 recommendations using the repository
     for (let i = 0; i < amount; i++) {
         await addDummyRecommendation(i);
+    }
+}
+
+async function addClicksAndSubscribers({memberId}) {
+    const recommendations = await recommendationsService.repository.getAll({order: [{field: 'createdAt', direction: 'desc'}]});
+
+    // Create 2 clicks for 1st
+    for (let i = 0; i < 2; i++) {
+        const clickEvent = ClickEvent.create({
+            recommendationId: recommendations[0].id
+        });
+
+        await recommendationsService.clickEventRepository.save(clickEvent);
+    }
+
+    // Create 3 clicks for 2nd
+    for (let i = 0; i < 3; i++) {
+        const clickEvent = ClickEvent.create({
+            recommendationId: recommendations[1].id
+        });
+
+        await recommendationsService.clickEventRepository.save(clickEvent);
+    }
+
+    // Create 3 subscribers for 1st
+    for (let i = 0; i < 3; i++) {
+        const subscribeEvent = SubscribeEvent.create({
+            recommendationId: recommendations[0].id,
+            memberId
+        });
+
+        await recommendationsService.subscribeEventRepository.save(subscribeEvent);
+    }
+
+    // Create 2 subscribers for 3rd
+    for (let i = 0; i < 2; i++) {
+        const subscribeEvent = SubscribeEvent.create({
+            recommendationId: recommendations[2].id,
+            memberId
+        });
+
+        await recommendationsService.subscribeEventRepository.save(subscribeEvent);
     }
 }
 
@@ -206,6 +248,74 @@ describe('Recommendations Admin API', function () {
         assert.equal(body.recommendations[0].one_click_subscribe, false);
     });
 
+    it('Can edit recommendation and set nullable fields to null', async function () {
+        const id = await addDummyRecommendation();
+        const {body} = await agent.put(`recommendations/${id}/`)
+            .body({
+                recommendations: [{
+                    reason: null,
+                    excerpt: null,
+                    featured_image: null,
+                    favicon: null
+                }]
+            })
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                recommendations: [
+                    {
+                        id: anyObjectId,
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
+                    }
+                ]
+            });
+
+        // Check everything is set correctly
+        assert.equal(body.recommendations[0].id, id);
+        assert.equal(body.recommendations[0].reason, null);
+        assert.equal(body.recommendations[0].excerpt, null);
+        assert.equal(body.recommendations[0].featured_image, null);
+        assert.equal(body.recommendations[0].favicon, null);
+    });
+
+    it('Can edit some fields of a recommendation without changing others', async function () {
+        const id = await addDummyRecommendation();
+        const {body} = await agent.put(`recommendations/${id}/`)
+            .body({
+                recommendations: [{
+                    title: 'Changed'
+                }]
+            })
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                recommendations: [
+                    {
+                        id: anyObjectId,
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
+                    }
+                ]
+            });
+
+        // Check everything is set correctly
+        assert.equal(body.recommendations[0].id, id);
+        assert.equal(body.recommendations[0].title, 'Changed');
+        assert.equal(body.recommendations[0].url, 'https://recommendation0.com/');
+        assert.equal(body.recommendations[0].reason, 'Reason 0');
+        assert.equal(body.recommendations[0].excerpt, 'Test excerpt');
+        assert.equal(body.recommendations[0].featured_image, 'https://recommendation0.com/featured.jpg');
+        assert.equal(body.recommendations[0].favicon, 'https://recommendation0.com/favicon.ico');
+        assert.equal(body.recommendations[0].one_click_subscribe, true);
+    });
+
     it('Cannot use invalid protocols when editing', async function () {
         const id = await addDummyRecommendation();
 
@@ -327,45 +437,7 @@ describe('Recommendations Admin API', function () {
 
     it('Can include click and subscribe counts', async function () {
         await addDummyRecommendations(5);
-        const recommendations = await recommendationsService.repository.getAll({order: [{field: 'createdAt', direction: 'desc'}]});
-
-        // Create 2 clicks for 1st
-        for (let i = 0; i < 2; i++) {
-            const clickEvent = ClickEvent.create({
-                recommendationId: recommendations[0].id
-            });
-
-            await recommendationsService.clickEventRepository.save(clickEvent);
-        }
-
-        // Create 3 clicks for 2nd
-        for (let i = 0; i < 3; i++) {
-            const clickEvent = ClickEvent.create({
-                recommendationId: recommendations[1].id
-            });
-
-            await recommendationsService.clickEventRepository.save(clickEvent);
-        }
-
-        // Create 3 subscribers for 1st
-        for (let i = 0; i < 3; i++) {
-            const subscribeEvent = SubscribeEvent.create({
-                recommendationId: recommendations[0].id,
-                memberId
-            });
-
-            await recommendationsService.subscribeEventRepository.save(subscribeEvent);
-        }
-
-        // Create 2 subscribers for 3rd
-        for (let i = 0; i < 2; i++) {
-            const subscribeEvent = SubscribeEvent.create({
-                recommendationId: recommendations[2].id,
-                memberId
-            });
-
-            await recommendationsService.subscribeEventRepository.save(subscribeEvent);
-        }
+        await addClicksAndSubscribers({memberId});
 
         const {body: page1} = await agent.get('recommendations/?include=count.clicks,count.subscribers')
             .expectStatus(200)
@@ -383,6 +455,58 @@ describe('Recommendations Admin API', function () {
 
         assert.equal(page1.recommendations[0].count.clicks, 2);
         assert.equal(page1.recommendations[1].count.clicks, 3);
+
+        assert.equal(page1.recommendations[0].count.subscribers, 3);
+        assert.equal(page1.recommendations[1].count.subscribers, 0);
+        assert.equal(page1.recommendations[2].count.subscribers, 2);
+    });
+
+    it('Can include only clicks', async function () {
+        await addDummyRecommendations(5);
+        await addClicksAndSubscribers({memberId});
+
+        const {body: page1} = await agent.get('recommendations/?include=count.clicks')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                recommendations: new Array(5).fill({
+                    id: anyObjectId,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime
+                })
+            });
+
+        assert.equal(page1.recommendations[0].count.clicks, 2);
+        assert.equal(page1.recommendations[1].count.clicks, 3);
+
+        assert.equal(page1.recommendations[0].count.subscribers, undefined);
+        assert.equal(page1.recommendations[1].count.subscribers, undefined);
+        assert.equal(page1.recommendations[2].count.subscribers, undefined);
+    });
+
+    it('Can include only subscribers', async function () {
+        await addDummyRecommendations(5);
+        await addClicksAndSubscribers({memberId});
+
+        const {body: page1} = await agent.get('recommendations/?include=count.subscribers')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                recommendations: new Array(5).fill({
+                    id: anyObjectId,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime
+                })
+            });
+
+        assert.equal(page1.recommendations[0].count.clicks, undefined);
+        assert.equal(page1.recommendations[1].count.clicks, undefined);
 
         assert.equal(page1.recommendations[0].count.subscribers, 3);
         assert.equal(page1.recommendations[1].count.subscribers, 0);
