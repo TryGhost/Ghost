@@ -37,7 +37,6 @@ interface ThemeModalContentProps {
 const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     currentTab,
     setCurrentTab,
-    modal,
     themes
 }) => {
     const {updateRoute} = useRouting();
@@ -63,7 +62,6 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
     const onClose = () => {
         updateRoute('design/edit');
-        modal.remove();
     };
 
     const handleThemeUpload = async ({
@@ -216,7 +214,7 @@ const ThemeModalContent: React.FC<ThemeModalContentProps> = ({
     return null;
 };
 
-const ChangeThemeModal = NiceModal.create(() => {
+const ChangeThemeModal = () => {
     const [currentTab, setCurrentTab] = useState('official');
     const [selectedTheme, setSelectedTheme] = useState<OfficialTheme|null>(null);
     const [previewMode, setPreviewMode] = useState('desktop');
@@ -291,7 +289,6 @@ const ChangeThemeModal = NiceModal.create(() => {
                 installedTheme: installedTheme!,
                 onActivate: () => {
                     updateRoute('design/edit');
-                    modal.remove();
                 }
             });
         };
@@ -323,7 +320,6 @@ const ChangeThemeModal = NiceModal.create(() => {
                             }}
                             onClose={() => {
                                 updateRoute('design/edit');
-                                modal.remove();
                             }}
                             onInstall={onInstall} />
                     }
@@ -348,6 +344,6 @@ const ChangeThemeModal = NiceModal.create(() => {
             </div>
         </Modal>
     );
-});
+};
 
 export default ChangeThemeModal;
