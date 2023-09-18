@@ -1,6 +1,7 @@
 import Icon from '../../../../admin-x-ds/global/Icon';
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
+import clsx from 'clsx';
 import useRouting from '../../../../hooks/useRouting';
 import {Tier} from '../../../../api/tiers';
 import {TrialDaysLabel} from './TierDetailPreview';
@@ -16,7 +17,9 @@ interface TierCardProps {
     tier: Tier;
 }
 
-const cardContainerClasses = 'group/tiercard flex min-[900px]:min-h-[200px] flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-transparent bg-grey-100 p-4 transition-all hover:shadow-sm hover:border-grey-100 hover:bg-grey-75 dark:hover:border-grey-800 dark:bg-grey-950';
+const cardContainerClasses = clsx(
+    'group/tiercard flex cursor-pointer flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-transparent bg-grey-100 p-4 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800 min-[900px]:min-h-[200px]'
+);
 
 const TierCard: React.FC<TierCardProps> = ({tier}) => {
     const {updateRoute} = useRouting();
@@ -25,7 +28,7 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
 
     return (
         <div className={cardContainerClasses} data-testid='tier-card'>
-            <div className='w-full grow cursor-pointer' onClick={() => {
+            <div className='w-full grow' onClick={() => {
                 updateRoute({route: `tiers/show/${tier.id}`});
             }}>
                 <div className='text-[1.65rem] font-bold leading-tight tracking-tight text-pink'>{tier.name}</div>
