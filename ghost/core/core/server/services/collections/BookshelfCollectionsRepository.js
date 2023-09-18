@@ -83,13 +83,10 @@ module.exports = class BookshelfCollectionsRepository {
     }
 
     /**
-     * @param {object} [options]
-     * @param {string} [options.filter]
-     * @param {string} [options.order]
+     * @param {object} options
      * @param {string[]} [options.withRelated]
-     * @param {import('knex').Transaction} [options.transaction]
      */
-    async getAll(options = {}) {
+    #filterOptions(options) {
         const filteredOptions = Object.assign({}, options);
         // NOTE: There is no need to do count queries as these are done on serializer level with available Entity data
         //       We also don't allow for nay other relations to be fetched with collections, so the count.posts would
@@ -98,8 +95,19 @@ module.exports = class BookshelfCollectionsRepository {
             filteredOptions.withRelated = filteredOptions.withRelated.filter(item => item !== 'count.posts');
         }
 
+        return filteredOptions;
+    }
+
+    /**
+     * @param {object} [options]
+     * @param {string} [options.filter]
+     * @param {string} [options.order]
+     * @param {string[]} [options.withRelated]
+     * @param {import('knex').Transaction} [options.transaction]
+     */
+    async getAll(options = {}) {
         const models = await this.#model.findAll({
-            ...filteredOptions,
+            ...this.#filterOptions(options),
             transacting: options.transaction
         });
 
