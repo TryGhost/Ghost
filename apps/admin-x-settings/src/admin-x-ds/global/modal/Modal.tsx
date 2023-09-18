@@ -238,9 +238,7 @@ const Modal: React.FC<ModalProps> = ({
         footerContent = (
             <div className={footerClasses}>
                 <div>
-                    {leftButtonProps &&
-                    <Button {...leftButtonProps} />
-                    }
+                    {leftButtonProps && <Button {...leftButtonProps} />}
                 </div>
                 <div className='flex gap-3'>
                     <ButtonGroup buttons={buttons}/>

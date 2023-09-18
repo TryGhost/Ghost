@@ -1,9 +1,8 @@
-import Button from '../../../../admin-x-ds/global/Button';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
 import useRouting from '../../../../hooks/useRouting';
-import {Tier, useEditTier} from '../../../../api/tiers';
+import {Tier} from '../../../../api/tiers';
 import {TrialDaysLabel} from './TierDetailPreview';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {numberWithCommas} from '../../../../utils/helpers';
@@ -17,11 +16,10 @@ interface TierCardProps {
     tier: Tier;
 }
 
-const cardContainerClasses = 'group/tiercard flex min-[900px]:min-h-[200px] flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-grey-300 p-4 transition-all hover:border-grey-400 dark:border-grey-900 dark:hover:border-grey-700';
+const cardContainerClasses = 'group/tiercard flex min-[900px]:min-h-[200px] flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-transparent bg-grey-100 p-4 transition-all hover:shadow-sm hover:border-grey-100 hover:bg-grey-75 dark:hover:border-grey-800 dark:bg-grey-950';
 
 const TierCard: React.FC<TierCardProps> = ({tier}) => {
     const {updateRoute} = useRouting();
-    const {mutateAsync: updateTier} = useEditTier();
     const currency = tier?.currency || 'USD';
     const currencySymbol = currency ? getSymbol(currency) : '$';
 
@@ -46,16 +44,6 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
                     {tier.description || <span className='opacity-50'>No description</span>}
                 </div>
             </div>
-            {tier.monthly_price && (
-                tier.active ?
-                    <Button className='group group-hover/tiercard:opacity-100 tablet:opacity-0' color='red' label='Archive' link onClick={() => {
-                        updateTier({...tier, active: false});
-                    }}/>
-                    :
-                    <Button className='group group-hover/tiercard:opacity-100 tablet:opacity-0' color='green' label='Activate' link onClick={() => {
-                        updateTier({...tier, active: true});
-                    }}/>
-            )}
         </div>
     );
 };
