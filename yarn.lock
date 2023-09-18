@@ -7878,22 +7878,7 @@
     lexical "^0.12.2"
     prettier "^3.0.0"
 
-"@tryghost/kg-markdown-html-renderer@^6.0.10":
-  version "6.0.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-6.0.10.tgz#2847962029eaf96ec8cb6af866741672767af601"
-  integrity sha512-4/XOv387HPm05nHhQ/utYJ48B7AMcPwe1tYKrUgok5KicJvBZNGvBvyn6O9PznXvjOIkivnGTGbvscPOgNUl6w==
-  dependencies:
-    "@tryghost/kg-utils" "^1.0.18"
-    markdown-it "^13.0.0"
-    markdown-it-footnote "^3.0.3"
-    markdown-it-image-lazy-loading "^1.1.0"
-    markdown-it-lazy-headers "^0.1.3"
-    markdown-it-mark "^3.0.0"
-    markdown-it-sub "^1.0.0"
-    markdown-it-sup "^1.0.0"
-    semver "^7.3.5"
-
-"@tryghost/kg-markdown-html-renderer@^6.0.11":
+"@tryghost/kg-markdown-html-renderer@^6.0.10", "@tryghost/kg-markdown-html-renderer@^6.0.11":
   version "6.0.11"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-6.0.11.tgz#59ea4960cbdf5106033af25820e86e907b40eb4f"
   integrity sha512-/oS+7S2S6ACBmryAeHrsOGz8vrc03t1WzxcU76Q7fz7kvvSP0Q+3Hl5Pmi0DTIJWFfkYmQLrDPCXfX/mFUBtoQ==
@@ -7928,13 +7913,6 @@
   version "1.11.2"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-simplemde/-/kg-simplemde-1.11.2.tgz#0fc19fe4bc55a2e6e7acd53da096593900466767"
   integrity sha512-IukMySWtpYAyaVECqK0w7p6O0KM7mvpaX9t1qz/H2WRoxvT11vqufXWW3Dk2sNK3gliFWSfhdxnTyOHMTSReBQ==
-
-"@tryghost/kg-utils@^1.0.18":
-  version "1.0.18"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-utils/-/kg-utils-1.0.18.tgz#24b789e6e49f6841ce25062b61f1848ccad87a09"
-  integrity sha512-Yby3QZ469ZSh0CznW9eAjyMbZPg3PnppFM23oUw/vYCyTgOE9pAs39kYfcCOsQUzV8KApLfTxs3coQeUUXdYnw==
-  dependencies:
-    semver "^7.3.5"
 
 "@tryghost/kg-utils@^1.0.19":
   version "1.0.19"
@@ -8636,9 +8614,9 @@
     "@types/node" "*"
 
 "@types/node@*", "@types/node@>=10.0.0", "@types/node@>=12.12.47", "@types/node@>=13.7.0", "@types/node@>=8.1.0", "@types/node@^20.5.7":
-  version "20.6.1"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.6.1.tgz#8b589bba9b2af0128796461a0979764562687e6f"
-  integrity sha512-4LcJvuXQlv4lTHnxwyHQZ3uR9Zw2j7m1C9DfuwoTFQQP4Pmu04O6IfLYgMmHoOCt0nosItLLZAH+sOrRE0Bo8g==
+  version "20.6.2"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.6.2.tgz#a065925409f59657022e9063275cd0b9bd7e1b12"
+  integrity sha512-Y+/1vGBHV/cYk6OI1Na/LHzwnlNCAfU3ZNGrc1LdRe/LAIbdDPTTv/HU3M7yXN448aTVDq3eKRm2cg7iKLb8gw==
 
 "@types/node@^10.0.3":
   version "10.17.60"
@@ -8646,9 +8624,9 @@
   integrity sha512-F0KIgDJfy2nA3zMLmWGKxcH2ZVEtCZXHHdOQs2gSaQ27+lNeEfGxzkIw90aXswATX7AZ33tahPbzy6KAfUreVw==
 
 "@types/node@^16.0.0":
-  version "16.18.51"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.18.51.tgz#f56210dd99e6fd51d8765488c6b8e5684ca47039"
-  integrity sha512-LKA7ZhY30I8PiUOzBzhtnIULQTACpiEpPXLiYMWyS+tPAORf+rmXUadHZXB/KFrFyMjeHeKc1GFvLd+3f7LE3w==
+  version "16.18.52"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.18.52.tgz#70c56b55d0d7e15fafa875127e95a92605c59c9b"
+  integrity sha512-sm2aph6cRSsTMFYFgI+RpPLunXO9ClJkpizUVdT7KmGeyfQ14xnjTMT/f3MHcfKqevXqGT6BgVFzW8wcEoDUtA==
 
 "@types/node@^8.0.0":
   version "8.10.66"
