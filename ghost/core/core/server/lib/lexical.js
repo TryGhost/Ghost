@@ -41,7 +41,7 @@ module.exports = {
         const getCollectionPosts = async (collectionSlug, postCount) => {
             const frame = {
                 options: {
-                    columns: ['url','excerpt']
+                    columns: ['url','excerpt','reading_time']
                 },
                 original: {
                     context: {
