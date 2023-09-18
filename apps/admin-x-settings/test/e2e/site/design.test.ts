@@ -1,5 +1,5 @@
+import {chooseOptionInSelect, globalDataRequests, mockApi, mockSitePreview, responseFixtures} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, mockSitePreview, responseFixtures} from '../../utils/e2e';
 
 test.describe('Design settings', async () => {
     test('Working with the preview', async ({page}) => {
@@ -129,7 +129,7 @@ test.describe('Design settings', async () => {
 
         await modal.getByRole('tab', {name: 'Site wide'}).click();
 
-        await modal.getByLabel('Navigation layout').selectOption('Logo in the middle');
+        await chooseOptionInSelect(modal.getByLabel('Navigation layout'), 'Logo in the middle');
         await modal.getByRole('button', {name: 'Save'}).click();
 
         const expectedSettings = {navigation_layout: 'Logo in the middle'};

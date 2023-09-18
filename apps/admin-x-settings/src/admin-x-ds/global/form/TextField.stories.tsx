@@ -97,11 +97,12 @@ export const WithDropdown: Story = {
         rightPlaceholder: (
             <Select
                 border={false}
+                containerClassName='w-14'
+                fullWidth={false}
                 options={[
                     {label: 'USD', value: 'usd'},
                     {label: 'EUR', value: 'eur'}
                 ]}
-                selectClassName='w-auto'
                 onSelect={() => {}}
             />
         )

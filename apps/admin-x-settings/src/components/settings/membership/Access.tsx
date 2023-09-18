@@ -10,22 +10,62 @@ import {getSettingValues} from '../../../api/settings';
 import {useBrowseTiers} from '../../../api/tiers';
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
-    {value: 'all', label: 'Anyone can sign up'},
-    {value: 'invite', label: 'Only people I invite'},
-    {value: 'none', label: 'Nobody'}
+    {
+        value: 'all',
+        label: 'Anyone can sign up',
+        hint: 'All visitors will be able to subscribe and sign in'
+    },
+    {
+        value: 'invite',
+        label: 'Only people I invite',
+        hint: 'People can sign in from your site but won\'t be able to sign up'
+    },
+    {
+        value: 'none',
+        label: 'Nobody',
+        hint: 'Disable all member features, including newsletters'
+    }
 ];
 
 const DEFAULT_CONTENT_VISIBILITY_OPTIONS = [
-    {value: 'public', label: 'Public'},
-    {value: 'members', label: 'Members only'},
-    {value: 'paid', label: 'Paid-members only'},
-    {value: 'tiers', label: 'Specific tiers'}
+    {
+        value: 'public',
+        label: 'Public',
+        hint: 'All site visitors to your site, no login required'
+    },
+    {
+        value: 'members',
+        label: 'Members only',
+        hint: 'All logged-in members'
+    },
+    {
+        value: 'paid',
+        label: 'Paid-members only',
+        hint: 'Only logged-in members with an active Stripe subscription'
+    },
+    {
+        value: 'tiers',
+        label: 'Specific tiers',
+        hint: 'Members with any of the selected tiers'
+    }
 ];
 
 const COMMENTS_ENABLED_OPTIONS = [
-    {value: 'all', label: 'All members'},
-    {value: 'paid', label: 'Paid-members only'},
-    {value: 'off', label: 'Nobody'}
+    {
+        value: 'all',
+        label: 'All members',
+        hint: 'Logged-in members'
+    },
+    {
+        value: 'paid',
+        label: 'Paid-members only',
+        hint: 'Only logged-in members with an active Stripe subscription'
+    },
+    {
+        value: 'off',
+        label: 'Nobody',
+        hint: 'Disable commenting completely'
+    }
 ];
 
 const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -98,7 +138,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 selectedOption={membersSignupAccess}
                 title="Subscription access"
                 onSelect={(value) => {
-                    updateSetting('members_signup_access', value);
+                    updateSetting('members_signup_access', value || null);
                 }}
             />
             <Select
@@ -107,7 +147,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 selectedOption={defaultContentVisibility}
                 title="Default post access"
                 onSelect={(value) => {
-                    updateSetting('default_content_visibility', value);
+                    updateSetting('default_content_visibility', value || null);
                 }}
             />
             {defaultContentVisibility === 'tiers' && (
@@ -126,7 +166,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 selectedOption={commentsEnabled}
                 title="Commenting"
                 onSelect={(value) => {
-                    updateSetting('comments_enabled', value);
+                    updateSetting('comments_enabled', value || null);
                 }}
             />
         </SettingGroupContent>

@@ -83,7 +83,9 @@ const PortalLinks: React.FC = () => {
                             options={tierOptions}
                             selectedOption={selectedTier}
                             onSelect={(value) => {
-                                setSelectedTier(value);
+                                if (value) {
+                                    setSelectedTier(value);
+                                }
                             }}
                         />
                     </div>

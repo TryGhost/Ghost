@@ -98,10 +98,11 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 rightPlaceholder={(
                     <Select
                         border={false}
+                        containerClassName='w-14'
+                        fullWidth={false}
                         options={currencySelectGroups()}
-                        selectClassName='w-auto'
                         selectedOption={donationsCurrency}
-                        onSelect={currency => updateSetting('donations_currency', currency)}
+                        onSelect={currency => updateSetting('donations_currency', currency || 'USD')}
                     />
                 )}
                 title='Suggested amount'
