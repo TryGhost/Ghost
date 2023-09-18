@@ -53,7 +53,7 @@ module.exports = {
                 apiType: 'content',
                 response: {}
             };
-    
+
             const transacting = userOptions.transacting;
             const response = await postsService.browsePosts({
                 context: {public: true}, // mimic Content API request
