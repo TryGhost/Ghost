@@ -21,7 +21,6 @@ interface TableProps {
     className?: string;
     isLoading?: boolean;
     pagination?: PaginationData;
-    itemCount?: number;
 }
 
 const OptionalPagination = ({pagination}: {pagination?: PaginationData}) => {
@@ -32,7 +31,7 @@ const OptionalPagination = ({pagination}: {pagination?: PaginationData}) => {
     return <Pagination {...pagination}/>;
 };
 
-const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSeparator, pageTitle, className, pagination, isLoading, itemCount}) => {
+const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSeparator, pageTitle, className, pagination, isLoading}) => {
     const tableClasses = clsx(
         (borderTop || pageTitle) && 'border-t border-grey-300',
         'w-full',
@@ -42,18 +41,26 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
 
     // We want to avoid layout jumps when we load a new page of the table, or when data is invalidated
     const table = React.useRef<HTMLTableSectionElement>(null);
+    const maxTableHeight = React.useRef(0);
     const [tableHeight, setTableHeight] = React.useState<number | undefined>(undefined);
 
     React.useEffect(() => {
+        // If there is only one page, leave the table height to auto
         if (!pagination || pagination.pages === 1) {
             setTableHeight(undefined);
             return;
         }
 
+        // Otherwise, observe the table height of the first page (max height),
+        // and keep other pages to the same height
         if (table.current) {
             const resizeObserver = new ResizeObserver((entries) => {
                 const height = entries[0].target.clientHeight;
                 setTableHeight(height);
+
+                if (height > maxTableHeight.current) {
+                    maxTableHeight.current = height;
+                }
             });
 
             resizeObserver.observe(table.current);
@@ -62,9 +69,9 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
                 resizeObserver.disconnect();
             };
         }
-    }, [isLoading, itemCount, pagination]);
+    }, [isLoading, pagination]);
 
-    const tableHeightStyle = React.useMemo(() => {
+    const loadingStyle = React.useMemo(() => {
         if (tableHeight === undefined) {
             return {
                 height: 'auto'
@@ -72,25 +79,38 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
         }
 
         return {
-            height: tableHeight
+            height: maxTableHeight.current
         };
-    }, [tableHeight]);
+    }, [maxTableHeight, tableHeight]);
+
+    const spaceHeightStyle = React.useMemo(() => {
+        if (tableHeight === undefined) {
+            return {
+                height: 0
+            };
+        }
+
+        return {
+            height: maxTableHeight.current - tableHeight
+        };
+    }, [maxTableHeight, tableHeight]);
 
     return (
         <>
             <div className='w-full overflow-x-auto'>
                 {pageTitle && <Heading>{pageTitle}</Heading>}
 
-                <table className={tableClasses} style={tableHeightStyle}>
+                <table className={tableClasses}>
                     {header && <thead className='border-b border-grey-200 dark:border-grey-600'>
                         <TableRow bgOnHover={false} separator={false}>{header}</TableRow>
                     </thead>}
                     {!isLoading && <tbody ref={table}>
                         {children}
                     </tbody>}
+                    <div style={spaceHeightStyle} />
                 </table>
 
-                {isLoading && <LoadingIndicator delay={200} size='lg' style={tableHeightStyle} />}
+                {isLoading && <LoadingIndicator delay={200} size='lg' style={loadingStyle} />}
 
                 {(hint || pagination) &&
                 <div className="-mt-px">

@@ -49,7 +49,7 @@ const IncomingRecommendationItem: React.FC<{mention: Mention}> = ({mention}) => 
 
 const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({mentions, pagination, isLoading}) => {
     if (isLoading || mentions.length) {
-        return <Table isLoading={isLoading} itemCount={mentions.length} pagination={pagination}>
+        return <Table isLoading={isLoading} pagination={pagination}>
             {mentions.map(mention => <IncomingRecommendationItem key={mention.id} mention={mention} />)}
         </Table>;
     } else {
