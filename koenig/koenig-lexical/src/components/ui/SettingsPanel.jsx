@@ -52,8 +52,8 @@ export function SliderSetting({label, onChange, max, min, value, defaultValue, d
             <div className="flex items-center justify-between font-sans text-[1.3rem] font-normal">
                 <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
                 <div className="text-grey-500 dark:text-grey-600">
-                    <span className="text-grey-900 dark:text-grey-100">{value}</span>
-                    <span className="px-[2px]">/</span>{max}
+                    <span className="text-grey-900 dark:text-grey-100" data-testid={`${dataTestId}-value`}>{value}</span>
+                    <span className="px-[2px]" data-testid={`${dataTestId}-max`}>/</span>{max}
                 </div>
             </div>
             <Slider dataTestId={dataTestId} defaultValue={defaultValue} max={max} min={min} value={value} onChange={onChange} />
@@ -125,11 +125,12 @@ export function InputListSetting({dataTestId, description, label, listOptions, o
     );
 }
 
-export function DropdownSetting({label, description, value, menu, onChange}) {
+export function DropdownSetting({label, description, value, menu, onChange, dataTestId}) {
     return (
         <div className="mt-2 flex w-full flex-col justify-between gap-2 text-[1.3rem] first:mt-0">
-            <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
+            <div className="font-bold text-grey-900 dark:text-grey-200" data-testid={`${dataTestId}-label`}>{label}</div>
             <Dropdown
+                dataTestId={dataTestId}
                 menu={menu}
                 value={value}
                 onChange={onChange}
@@ -168,7 +169,7 @@ export function MultiSelectDropdownSetting({label, description, placeholder = ''
     );
 }
 
-export function ButtonGroupSetting({label, onClick, selectedName, buttons, dataTestId}) {
+export function ButtonGroupSetting({label, onClick, selectedName, buttons}) {
     return (
         <div className="mt-2 flex w-full items-center justify-between text-[1.3rem] first:mt-0">
             <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>

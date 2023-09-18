@@ -198,12 +198,14 @@ export function CollectionCard({
         {
             label: 'List',
             name: 'list',
-            Icon: ListLayoutIcon
+            Icon: ListLayoutIcon,
+            dataTestId: 'collection-layout-list'
         },
         {
             label: 'Grid',
             name: 'grid',
-            Icon: GridLayoutIcon
+            Icon: GridLayoutIcon,
+            dataTestId: 'collection-layout-grid'
         }
     ];
 
@@ -243,6 +245,7 @@ export function CollectionCard({
             {(isEditing || !isEditorEmpty(headerEditor)) && (
                 <KoenigNestedEditor
                     autoFocus={true}
+                    dataTestId={'collection-header'}
                     hasSettingsPanel={true}
                     initialEditor={headerEditor}
                     initialState={headerEditorInitialState}
@@ -260,7 +263,9 @@ export function CollectionCard({
                 (layout === 'grid' && columns === 2) && 'grid-cols-2 gap-10',
                 (layout === 'grid' && columns === 3) && 'grid-cols-3 gap-8',
                 (layout === 'grid' && columns === 4) && 'grid-cols-4 gap-6'
-            )}>
+            )}
+            data-testid='collection-posts-container'
+            >
                 <Collection columns={columns} isLoading={isLoading} layout={layout} postCount={postCount} posts={posts} />
             </div>
             {isEditing && (
@@ -274,11 +279,13 @@ export function CollectionCard({
                     />
                     <ButtonGroupSetting
                         buttons={layoutOptions}
+                        dataTestId={'collection-layout'}
                         label="Layout"
                         selectedName={layout}
                         onClick={handleLayoutChange}
                     />
                     <SliderSetting
+                        dataTestId={'collection-post-count'}
                         defaultValue={3}
                         label="Post Count"
                         max={12}
@@ -288,6 +295,7 @@ export function CollectionCard({
                     />
                     {layout === 'grid' ?
                         <SliderSetting
+                            dataTestId={'collection-columns'}
                             defaultValue={3}
                             label="Columns"
                             max={4}
