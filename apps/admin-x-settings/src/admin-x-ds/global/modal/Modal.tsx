@@ -260,7 +260,7 @@ const Modal: React.FC<ModalProps> = ({
     );
 
     return (
-        <div className={backdropClasses} id='modal-backdrop' onClick={handleBackdropClick}>
+        <div className={backdropClasses} id='modal-backdrop' onMouseDown={handleBackdropClick}>
             <div className={clsx(
                 'pointer-events-none fixed inset-0 z-0',
                 (backDrop && !formSheet) && topLevelBackdropClasses,
