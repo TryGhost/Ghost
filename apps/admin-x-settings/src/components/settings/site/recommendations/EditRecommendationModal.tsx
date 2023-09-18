@@ -1,10 +1,11 @@
+import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationReasonForm from './RecommendationReasonForm';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
-import {Recommendation, useBrowseRecommendations, useEditRecommendation} from '../../../../api/recommendations';
+import {Recommendation, useBrowseRecommendations, useDeleteRecommendation, useEditRecommendation} from '../../../../api/recommendations';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
@@ -18,6 +19,7 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {mutateAsync: editRecommendation} = useEditRecommendation();
+    const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
 
     const {formState, updateForm, handleSave, saveState, errors} = useForm({
         initialState: {
@@ -45,6 +47,38 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
         okLabel = 'Saved';
     }
 
+    let leftButtonProps = {
+        label: 'Remove recommendation',
+        link: true,
+        color: 'red' as const,
+        size: 'sm' as const,
+        onClick: () => {
+            modal.remove();
+            NiceModal.show(ConfirmationModal, {
+                title: 'Remove recommendation',
+                prompt: <>
+                    <p>Your recommendation <strong>{recommendation.title}</strong> will no longer be visible to your audience.</p>
+                </>,
+                okLabel: 'Remove',
+                onOk: async (deleteModal) => {
+                    try {
+                        await deleteRecommendation(recommendation);
+                        deleteModal?.remove();
+                        showToast({
+                            message: 'Successfully removed the recommendation',
+                            type: 'success'
+                        });
+                    } catch (_) {
+                        showToast({
+                            message: 'Failed to remove the recommendation. Please try again later.',
+                            type: 'error'
+                        });
+                    }
+                }
+            });
+        }
+    };
+
     return <Modal
         afterClose={() => {
             // Closed without saving: reset route
@@ -53,6 +87,7 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
         animate={animate ?? true}
         backDropClick={false}
         cancelLabel={'Cancel'}
+        leftButtonProps={leftButtonProps}
         okColor='black'
         okLabel={okLabel}
         size='sm'
