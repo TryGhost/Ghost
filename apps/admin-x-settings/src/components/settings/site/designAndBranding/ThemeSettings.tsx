@@ -49,7 +49,7 @@ const ThemeSetting: React.FC<{
                 options={setting.options.map(option => ({label: option, value: option}))}
                 selectedOption={setting.value}
                 title={humanizeSettingKey(setting.key)}
-                onSelect={value => setSetting(value)}
+                onSelect={value => setSetting(value || null)}
             />
         );
     case 'color':
