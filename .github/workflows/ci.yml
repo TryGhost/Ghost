@@ -237,7 +237,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn workspace ghost-admin run test
+      - run: yarn nx run ghost-admin:test
         env:
           BROWSER: Chrome
 

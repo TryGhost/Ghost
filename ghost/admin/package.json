@@ -16,7 +16,7 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "ember serve",
+    "dev": "ember serve",
     "build": "ember build --environment=production --silent",
     "build:dev": "yarn build --environment=development",
     "test:unit": "true",
@@ -181,5 +181,30 @@
     "jose": "4.14.6",
     "path-browserify": "1.0.1",
     "webpack": "5.88.2"
+  },
+  "nx": {
+    "targets": {
+      "build:dev": {
+        "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/admin-x-settings"
+            ],
+            "target": "build"
+          }
+        ]
+      },
+      "build": {
+        "dependsOn": [
+          "build",
+          {
+            "projects": [
+              "@tryghost/admin-x-settings"
+            ],
+            "target": "build"
+          }
+        ]
+      }
+    }
   }
 }
