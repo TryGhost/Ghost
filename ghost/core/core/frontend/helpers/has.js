@@ -108,7 +108,7 @@ function evaluateSlugList(expr, slug) {
 }
 
 function handleSlug(data, attrs) {
-    if (!attrs.slug) {
+    if (!attrs.slug || !data.slug) {
       return false;
     }
     
