@@ -55,8 +55,8 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
         };
     });
 
-    const handleTimezoneChange = (value: string) => {
-        updateSetting('timezone', value);
+    const handleTimezoneChange = (value?: string) => {
+        updateSetting('timezone', value || null);
     };
 
     const viewContent = (

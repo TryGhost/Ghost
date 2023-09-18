@@ -163,8 +163,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 <div className='w-10'>
                                     <Select
                                         border={false}
+                                        containerClassName='font-medium'
+                                        controlClasses={{menu: 'w-14'}}
                                         options={currencySelectGroups()}
-                                        selectClassName='font-medium'
                                         selectedOption={formState.currency}
                                         size='xs'
                                         onSelect={currency => updateForm(state => ({...state, currency}))}

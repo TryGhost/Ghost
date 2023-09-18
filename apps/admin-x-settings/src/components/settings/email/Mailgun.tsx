@@ -6,8 +6,7 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getSettingValues} from '../../../api/settings';
-import {useEditSettings} from '../../../api/settings';
+import {getSettingValues, useEditSettings} from '../../../api/settings';
 
 const MAILGUN_REGIONS = [
     {label: '🇺🇸 US', value: 'https://api.mailgun.net/v3'},
@@ -67,7 +66,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     selectedOption={mailgunRegion}
                     title="Mailgun region"
                     onSelect={(value) => {
-                        updateSetting('mailgun_base_url', value);
+                        updateSetting('mailgun_base_url', value || null);
                     }}
                 />
                 <TextField
