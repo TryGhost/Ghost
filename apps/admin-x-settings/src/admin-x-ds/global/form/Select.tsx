@@ -55,7 +55,7 @@ const DropdownIndicator: React.FC<DropdownIndicatorProps<SelectOption, false> & 
 
 const Option: React.FC<OptionProps<SelectOption, false>> = ({children, ...optionProps}) => (
     <components.Option {...optionProps}>
-        <span data-testid="multiselect-option">{children}</span>
+        <span data-testid="select-option">{children}</span>
     </components.Option>
 );
 
