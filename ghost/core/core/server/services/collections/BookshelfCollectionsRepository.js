@@ -54,6 +54,26 @@ module.exports = class BookshelfCollectionsRepository {
     }
 
     /**
+     * NOTE: we are only fetching post_id column here to save memory on
+     *       instances with a large amount of posts
+     *
+     *       The method could be further optimized to fetch posts for
+     *       multiple collections at a time.
+     *
+     * @param {string} collectionId collection to fetch post ids for
+     * @param {Object} options bookshelf options
+     *
+     * @returns {Promise<Array<{post_id: string}>>}
+     */
+    async #fetchCollectionPostIds(collectionId, options = {}) {
+        return await this.#relationModel
+            .query()
+            .select('post_id')
+            .where('collection_id', collectionId)
+            .transacting(options.transaction);
+    }
+
+    /**
      * @param {object} [options]
      * @param {string} [options.filter]
      * @param {string} [options.order]
@@ -62,9 +82,15 @@ module.exports = class BookshelfCollectionsRepository {
     async getAll(options = {}) {
         const models = await this.#model.findAll({
             ...options,
-            transacting: options.transaction,
-            withRelated: ['collectionPosts']
+            transacting: options.transaction
         });
+
+        for (const model of models) {
+            // NOTE: Ideally collection posts would be fetching as a part of findAll query.
+            //       Because bookshelf introduced a massive processing and memory overhead
+            //       we are fetching collection post ids separately using raw knex query
+            model.collectionPostIds = await this.#fetchCollectionPostIds(model.id, options);
+        }
 
         return (await Promise.all(models.map(model => this.#modelToCollection(model)))).filter(entity => !!entity);
     }
@@ -78,6 +104,10 @@ module.exports = class BookshelfCollectionsRepository {
         }
 
         try {
+            // NOTE: collectionPostIds are not a part of serialized model
+            //       and are fetched separately to save memory
+            const posts = json.collectionPosts || model.collectionPostIds;
+
             return await Collection.create({
                 id: json.id,
                 slug: json.slug,
@@ -86,7 +116,7 @@ module.exports = class BookshelfCollectionsRepository {
                 filter: filter,
                 type: json.type,
                 featureImage: json.feature_image,
-                posts: json.collectionPosts.map(collectionPost => collectionPost.post_id),
+                posts: posts.map(collectionPost => collectionPost.post_id),
                 createdAt: json.created_at,
                 updatedAt: json.updated_at
             });
