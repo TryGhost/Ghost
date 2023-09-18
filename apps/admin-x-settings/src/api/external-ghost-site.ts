@@ -30,7 +30,8 @@ export const useExternalGhostSite = () => {
             try {
                 const result = await fetchApi(url, {
                     method: 'GET',
-                    credentials: 'omit' // Allow CORS wildcard
+                    credentials: 'omit', // Allow CORS wildcard,
+                    timeout: 5000
                 });
 
                 // We need to validate all data types here for extra safety
