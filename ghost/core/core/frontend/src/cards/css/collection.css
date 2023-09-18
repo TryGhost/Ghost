@@ -1,6 +1,16 @@
 .kg-collection-card {
     width: 100%;
+    margin-top: 8vmin;
 }
+
+.kg-collection-card + * { 
+    margin-top: 8vmin; 
+}
+
+.kg-collection-card + .kg-collection-card { 
+    margin-top: 6vmin; 
+}
+
 
 .kg-collection-card-title {
     padding: .8rem 0 1.6rem 0;
@@ -162,12 +172,6 @@ p.kg-collection-card-post-excerpt {
         font-size: 2.4rem;
     }
 }
-
-/* @media (min-width: 768px) {
-    .kg-collection-card-grid.columns-1 h2.kg-collection-card-post-title {
-        font-size: 2.4rem;
-    }
-} */
 
 @media (min-width: 1024px) {
     .kg-collection-card-grid.columns-1 h2.kg-collection-card-post-title {
