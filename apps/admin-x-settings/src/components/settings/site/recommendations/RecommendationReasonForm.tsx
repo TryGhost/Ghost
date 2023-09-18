@@ -5,28 +5,42 @@ import React from 'react';
 import RecommendationIcon from './RecommendationIcon';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
+import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
 import {EditOrAddRecommendation, Recommendation} from '../../../../api/recommendations';
 import {ErrorMessages} from '../../../../hooks/useForm';
 
 interface Props<T extends EditOrAddRecommendation> {
+    showURL?: boolean,
     formState: T,
     errors: ErrorMessages,
     updateForm: (fn: (state: T) => T) => void
 }
 
-const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recommendation>> = ({formState, updateForm, errors}) => {
+const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recommendation>> = ({showURL, formState, updateForm, errors}) => {
     return <Form
         marginBottom={false}
         marginTop
     >
+        {showURL && <URLTextField
+            disabled={true}
+            title='URL'
+            value={formState.url}
+            onChange={u => updateForm((state) => {
+                return {
+                    ...state,
+                    url: u
+                };
+            })}
+        />}
+
         <div>
             <Heading className='mb-2 block text-2xs font-semibold uppercase tracking-wider' grey={true} level={6}>Preview</Heading>
             <a className='flex flex-col rounded-sm border border-grey-300 p-3' href={formState.url} rel="noopener noreferrer" target="_blank">
-                <div className="mb-1 flex items-center gap-2">
+                <div className="flex items-center gap-2">
                     <RecommendationIcon {...formState} />
-                    <span className='line-clamp-1 font-medium'>{formState.title}</span>
+                    <span className='text-[1.6rem] font-semibold text-grey-900'>{formState.title}</span>
                 </div>
-                <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{formState.url}</span>
+                <span className='mb-1 text-md font-medium leading-snug text-grey-700'>{formState.reason}</span>
             </a>
             {formState.one_click_subscribe && <Hint>This is a Ghost site, so your readers can subscribe with just one click</Hint>}
         </div>

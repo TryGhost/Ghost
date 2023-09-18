@@ -41,7 +41,7 @@ module.exports = {
         const getCollectionPosts = async (collectionSlug, postCount) => {
             const frame = {
                 options: {
-                    columns: ['url','excerpt']
+                    columns: ['url','excerpt','reading_time']
                 },
                 original: {
                     context: {
@@ -53,7 +53,7 @@ module.exports = {
                 apiType: 'content',
                 response: {}
             };
-    
+
             const transacting = userOptions.transacting;
             const response = await postsService.browsePosts({
                 context: {public: true}, // mimic Content API request
