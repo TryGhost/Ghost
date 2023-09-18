@@ -29,11 +29,11 @@ test.describe('Design settings', async () => {
 
         // Homepage and post preview
 
-        await expect(modal.frameLocator('[data-testid="theme-preview"]').getByText('homepage preview')).toHaveCount(1);
+        await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('homepage preview')).toHaveCount(1);
 
         await modal.getByTestId('design-toolbar').getByRole('tab', {name: 'Post'}).click();
 
-        await expect(modal.frameLocator('[data-testid="theme-preview"]').getByText('post preview')).toHaveCount(1);
+        await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('post preview')).toHaveCount(1);
 
         // Desktop and mobile preview
 
@@ -49,11 +49,11 @@ test.describe('Design settings', async () => {
 
         await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Homepage'}).click();
 
-        await expect(modal.frameLocator('[data-testid="theme-preview"]').getByText('homepage preview')).toHaveCount(1);
+        await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('homepage preview')).toHaveCount(1);
 
         await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Post'}).click();
 
-        await expect(modal.frameLocator('[data-testid="theme-preview"]').getByText('post preview')).toHaveCount(1);
+        await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('post preview')).toHaveCount(1);
     });
 
     test('Editing brand settings', async ({page}) => {
@@ -77,7 +77,7 @@ test.describe('Design settings', async () => {
 
         const modal = page.getByTestId('design-modal');
 
-        await expect(modal.frameLocator('[data-testid="theme-preview"]').getByText('homepage preview')).toHaveCount(1);
+        await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('homepage preview')).toHaveCount(1);
 
         await modal.getByLabel('Site description').fill('new description');
         // set timeout of 500ms to wait for the debounce
