@@ -77,7 +77,7 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
         return {
             height: maxTableHeight.current
         };
-    }, [maxTableHeight, tableHeight]);
+    }, [tableHeight]);
 
     const spaceHeightStyle = React.useMemo(() => {
         if (tableHeight === undefined) {
@@ -89,7 +89,7 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
         return {
             height: maxTableHeight.current - tableHeight
         };
-    }, [maxTableHeight, tableHeight]);
+    }, [tableHeight]);
 
     return (
         <>
