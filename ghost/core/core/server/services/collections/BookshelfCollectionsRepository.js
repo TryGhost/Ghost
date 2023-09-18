@@ -28,12 +28,14 @@ module.exports = class BookshelfCollectionsRepository {
     async getById(id, options = {}) {
         const model = await this.#model.findOne({id}, {
             require: false,
-            withRelated: ['collectionPosts'],
             transacting: options.transaction
         });
         if (!model) {
             return null;
         }
+
+        model.collectionPostIds = await this.#fetchCollectionPostIds(model.id, options);
+
         return this.#modelToCollection(model);
     }
 
@@ -44,12 +46,15 @@ module.exports = class BookshelfCollectionsRepository {
     async getBySlug(slug, options = {}) {
         const model = await this.#model.findOne({slug}, {
             require: false,
-            withRelated: ['collectionPosts'],
             transacting: options.transaction
         });
+
         if (!model) {
             return null;
         }
+
+        model.collectionPostIds = await this.#fetchCollectionPostIds(model.id, options);
+
         return this.#modelToCollection(model);
     }
 
@@ -75,9 +80,11 @@ module.exports = class BookshelfCollectionsRepository {
             });
         }
 
+        const toSelect = options.columns || ['post_id'];
+
         return await this.#relationModel
             .query()
-            .select('post_id')
+            .select(toSelect)
             .where('collection_id', collectionId)
             .transacting(options.transaction);
     }
@@ -130,9 +137,9 @@ module.exports = class BookshelfCollectionsRepository {
         }
 
         try {
-            // NOTE: collectionPostIds are not a part of serialized model
+            // NOTE: collectionPosts are not a part of serialized model
             //       and are fetched separately to save memory
-            const posts = json.collectionPosts || model.collectionPostIds;
+            const posts = model.collectionPostIds;
 
             return await Collection.create({
                 id: json.id,
@@ -191,8 +198,7 @@ module.exports = class BookshelfCollectionsRepository {
             {id: data.id},
             {
                 require: false,
-                transacting: options.transaction,
-                withRelated: ['collectionPosts']
+                transacting: options.transaction
             }
         );
 
@@ -231,7 +237,11 @@ module.exports = class BookshelfCollectionsRepository {
             if (collection.type === 'manual') {
                 await this.#relationModel.query().delete().where('collection_id', collection.id).transacting(options.transaction);
             } else {
-                const existingRelations = existing.toJSON().collectionPosts;
+                const collectionPostsOptions = {
+                    transaction: options.transaction,
+                    columns: ['id', 'post_id']
+                };
+                const existingRelations = await this.#fetchCollectionPostIds(collection.id, collectionPostsOptions);
 
                 for (const existingRelation of existingRelations) {
                     const found = collectionPostsRelations.find((thing) => {
