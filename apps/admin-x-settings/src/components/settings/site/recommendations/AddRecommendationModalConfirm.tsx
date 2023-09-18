@@ -111,7 +111,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             }
         }}
     >
-        <RecommendationReasonForm errors={errors} formState={formState} updateForm={updateForm}/>
+        <RecommendationReasonForm errors={errors} formState={formState} showURL={false} updateForm={updateForm}/>
     </Modal>;
 };
 
