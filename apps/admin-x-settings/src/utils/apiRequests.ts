@@ -23,6 +23,7 @@ interface RequestOptions {
         'Content-Type'?: string;
     };
     credentials?: 'include' | 'omit' | 'same-origin';
+    timeout?: number;
 }
 
 export const useFetchApi = () => {
@@ -38,18 +39,35 @@ export const useFetchApi = () => {
             defaultHeaders['content-type'] = 'application/json';
         }
         const headers = options?.headers || {};
-        const response = await fetch(endpoint, {
-            headers: {
-                ...defaultHeaders,
-                ...headers
-            },
-            method: 'GET',
-            mode: 'cors',
-            credentials: 'include',
-            ...options
-        });
 
-        return handleResponse(response);
+        const controller = new AbortController();
+        const {timeout} = options;
+
+        if (timeout) {
+            setTimeout(() => controller.abort(), timeout);
+        }
+
+        try {
+            const response = await fetch(endpoint, {
+                headers: {
+                    ...defaultHeaders,
+                    ...headers
+                },
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'include',
+                signal: controller.signal,
+                ...options
+            });
+
+            return handleResponse(response);
+        } catch (error: any) {
+            if (error.name === 'AbortError') {
+                throw new Error('Request timed out');
+            }
+
+            throw error;
+        };
     };
 };
 

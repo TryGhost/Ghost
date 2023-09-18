@@ -25,7 +25,8 @@ export const useGetOembed = () => {
             const url = apiUrl(path, searchParams);
             try {
                 const result = await fetchApi(url, {
-                    method: 'GET'
+                    method: 'GET',
+                    timeout: 5000
                 });
                 return result as OembedResponse;
             } catch (e) {
