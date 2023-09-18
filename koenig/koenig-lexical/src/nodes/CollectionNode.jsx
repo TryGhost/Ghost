@@ -22,7 +22,8 @@ export class CollectionNode extends BaseCollectionNode {
         matches: ['collection', 'post'],
         priority: 18,
         postType: 'page',
-        isHidden: ({config}) => !config?.feature?.collectionsCard || !config?.feature?.collections // hide if missing collections or collectionsCard flags
+        isHidden: ({config}) => !config?.feature?.collectionsCard || !config?.feature?.collections, // hide if missing collections or collectionsCard flags
+        insertParams: () => ({header: 'Latest'})
     }];
 
     constructor(dataset = {}, key) {

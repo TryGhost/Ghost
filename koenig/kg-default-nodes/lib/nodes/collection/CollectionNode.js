@@ -9,7 +9,7 @@ export class CollectionNode extends generateDecoratorNode({nodeType: 'collection
         {name: 'postCount', default: 3},
         {name: 'layout', default: 'grid'},
         {name: 'columns', default: 3},
-        {name: 'header', default: 'Latest', wordCount: true}
+        {name: 'header', default: '', wordCount: true}
     ]}
 ) {
     static importDOM() {

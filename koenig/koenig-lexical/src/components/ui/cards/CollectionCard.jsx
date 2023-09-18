@@ -217,8 +217,8 @@ export function CollectionCard({
         if (value !== 'latest' && value !== 'featured') {
             return;
         }
-        const header = headerEditor.getEditorState().read(() => ($getRoot().getTextContent()));
-        if (value === 'latest' && header === 'Featured') {
+        const header = headerEditor.getEditorState().read(() => ($getRoot().getTextContent())).toLowerCase(); // we use block lettering so we can't differentiate between latest and Latest
+        if (value === 'latest' && header === 'featured') {
             headerEditor.update(() => {
                 const newHeader = $createParagraphNode().append($createTextNode('Latest'));
                 const root = $getRoot();
@@ -227,7 +227,7 @@ export function CollectionCard({
                 root.selectEnd();
             });
         }
-        if (value === 'featured' && header === 'Latest') {
+        if (value === 'featured' && header === 'latest') {
             headerEditor.update(() => {
                 const newHeader = $createParagraphNode().append($createTextNode('Featured'));
                 const root = $getRoot();
