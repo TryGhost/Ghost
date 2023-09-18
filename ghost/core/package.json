@@ -223,7 +223,7 @@
     "ws": "8.14.1",
     "xml": "1.0.1",
     "y-protocols": "1.0.5",
-    "yjs": "13.6.7"
+    "yjs": "13.6.8"
   },
   "optionalDependencies": {
     "@tryghost/html-to-mobiledoc": "2.0.33",
