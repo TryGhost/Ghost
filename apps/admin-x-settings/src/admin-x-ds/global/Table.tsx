@@ -39,20 +39,16 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
         className
     );
 
-    // We want to avoid layout jumps when we load a new page of the table, or when data is invalidated
     const table = React.useRef<HTMLTableSectionElement>(null);
     const maxTableHeight = React.useRef(0);
     const [tableHeight, setTableHeight] = React.useState<number | undefined>(undefined);
 
-    React.useEffect(() => {
-        // If there is only one page, leave the table height to auto
-        if (!pagination || pagination.pages === 1) {
-            setTableHeight(undefined);
-            return;
-        }
+    const multiplePages = pagination && pagination.pages && pagination.pages > 1;
 
-        // Otherwise, observe the table height of the first page (max height),
-        // and keep other pages to the same height
+    // Observe the height of the table content. This is used to:
+    // 1) avoid layout jumps when loading a new page of the table
+    // 2) keep the same table height between pages, cf. https://github.com/TryGhost/Product/issues/3881
+    React.useEffect(() => {
         if (table.current) {
             const resizeObserver = new ResizeObserver((entries) => {
                 const height = entries[0].target.clientHeight;
@@ -107,7 +103,8 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
                     {!isLoading && <tbody ref={table}>
                         {children}
                     </tbody>}
-                    <div style={spaceHeightStyle} />
+
+                    {multiplePages && <div style={spaceHeightStyle} />}
                 </table>
 
                 {isLoading && <LoadingIndicator delay={200} size='lg' style={loadingStyle} />}
