@@ -25,7 +25,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "concurrently \"vite preview\" \"vite build --watch\"",
+    "dev": "vite build --watch",
     "dev:start": "vite",
     "build": "tsc && vite build",
     "lint": "yarn run lint:js",
@@ -36,11 +36,7 @@
     "test:e2e:full": "ALL_BROWSERS=1 yarn test:e2e",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "preship": "yarn lint",
-    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
-    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
-    "prepublishOnly": "yarn build"
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@codemirror/lang-html": "^6.4.5",
