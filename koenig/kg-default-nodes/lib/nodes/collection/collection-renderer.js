@@ -56,15 +56,16 @@ function postTemplate(post, layout, columns) {
 
     return (
         `<div class="kg-collection-card-post">
-            ${image && 
-                `<div class=${imageWrapperClass}>
+            ${image ? 
+            `<div class=${imageWrapperClass}>
                     <img class=${imageClass} src="${image}" alt="${title}" />
-                </div>`}
+                </div>`
+            : ''}
             <div class="kg-collection-card-content">
-                <h2 class=${titleClass}>${title}</h2>
+                ${title ? `<h2 class=${titleClass}>${title}</h2>` : ''}
                 ${excerpt ? `<p class=${excerptClass}>${excerpt}</p>` : ''}
                 <div class=${metaClass}>
-                    ${publishDate && `<p>${DateTime.fromISO(publishDate).toFormat('d LLL yyyy')}</p>`}
+                    ${publishDate ? `<p>${DateTime.fromISO(publishDate).toFormat('d LLL yyyy')}</p>` : ''}
                     ${readTime > 0 ? `<p>&nbsp;&middot; ${readTime} min</p>` : ''}
                 </div>
             </div>
