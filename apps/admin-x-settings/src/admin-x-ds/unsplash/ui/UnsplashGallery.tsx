@@ -8,10 +8,10 @@ interface MasonryColumnProps {
 }
 
 interface UnsplashGalleryColumnsProps {
-    columns?: any[]; // Replace 'any' with a more appropriate type if available
+    columns?: Photo[][] | []; // Replace 'any' with a more appropriate type if available
     insertImage?: any; // Replace 'any' with a more appropriate type if available
     selectImg?: any; // Replace 'any' with a more appropriate type if available
-    zoomed?: any; // Replace 'any' with a more appropriate type if available
+    zoomed?: Photo | null; // Replace 'any' with a more appropriate type if available
 }
 
 interface GalleryLayoutProps {
@@ -68,7 +68,7 @@ const UnsplashGalleryColumns: React.FC<UnsplashGalleryColumnsProps> = (props) =>
                             urls={payload.urls}
                             user={payload.user}
                             width={payload.width}
-                            zoomed={props?.zoomed}
+                            zoomed={props?.zoomed || null}
                         />
                     ))
                 }

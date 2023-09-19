@@ -175,6 +175,14 @@ const zapierTemplates = [{
     url: 'https://zapier.com/webintent/create-zap?template=359342'
 }];
 
+export const defaultUnsplashHeaders = {
+    Authorization: `Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980`,
+    'Accept-Version': 'v1',
+    'Content-Type': 'application/json',
+    'App-Pragma': 'no-cache',
+    'X-Unsplash-Cache': true
+};
+
 class ErrorHandler extends React.Component {
     state = {
         hasError: false
@@ -316,6 +324,7 @@ export default class AdminXSettings extends Component {
                             zapierTemplates={zapierTemplates}
                             externalNavigate={this.externalNavigate}
                             darkMode={this.feature.nightShift}
+                            unsplashConfig={defaultUnsplashHeaders}
                         />
                     </Suspense>
                 </ErrorHandler>

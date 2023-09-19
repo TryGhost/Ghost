@@ -69,6 +69,7 @@ export type Photo = {
     topic_submissions: []; // You could make this more specific
     user: User;
     ratio: number;
+    src? : string;
   };
   
 export type UnsplashAPIOutput = {
@@ -77,3 +78,10 @@ export type UnsplashAPIOutput = {
     results: Photo[];
   };
   
+export type DefaultHeaderTypes = {
+    Authorization: string;
+    'Accept-Version': string;
+    'Content-Type': string;
+    'App-Pragma': string;
+    'X-Unsplash-Cache': boolean;
+};

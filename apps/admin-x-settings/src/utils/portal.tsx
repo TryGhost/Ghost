@@ -18,7 +18,7 @@ const Portal: React.FC<PortalProps> = ({children, to}) => {
     };
 
     return createPortal(
-        <div onMouseDown={cancelEvents}>
+        <div className='admin-x-settings' onMouseDown={cancelEvents}>
             <div>
                 {children}
             </div>

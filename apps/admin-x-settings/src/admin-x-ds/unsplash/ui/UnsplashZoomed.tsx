@@ -1,5 +1,5 @@
-import React, {FC} from 'react';
 import UnsplashImage, {UnsplashImageProps} from './UnsplashImage';
+import {FC} from 'react';
 
 import {Photo} from '../../../utils/unsplash/UnsplashTypes';
 
