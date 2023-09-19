@@ -223,7 +223,7 @@
     "uuid": "9.0.1",
     "ws": "8.14.1",
     "xml": "1.0.1",
-    "y-protocols": "1.0.5",
+    "y-protocols": "1.0.6",
     "yjs": "13.6.8"
   },
   "optionalDependencies": {
