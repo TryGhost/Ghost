@@ -188,15 +188,13 @@ const fixtures = {
                 throw new Error('Trying to add more posts_tags than the number of posts.');
             }
 
-            return models.Base.transaction((transacting) => {
-                return Promise.all(posts.slice(0, max).map((post) => {
-                    post.tags = post.tags ? post.tags : [];
+            return Promise.all(posts.slice(0, max).map((post) => {
+                post.tags = post.tags ? post.tags : [];
 
-                    return models.Post.edit({
-                        tags: post.tags.concat([_.find(DataGenerator.Content.tags, {id: injectionTagId})])
-                    }, _.merge({id: post.id, transacting}, context.internal));
-                }));
-            });
+                return models.Post.edit({
+                    tags: post.tags.concat([_.find(DataGenerator.Content.tags, {id: injectionTagId})])
+                }, _.merge({id: post.id}, context.internal));
+            }));
         });
     },
 
