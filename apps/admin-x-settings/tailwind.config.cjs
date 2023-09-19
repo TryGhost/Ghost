@@ -12,7 +12,7 @@ module.exports = {
             md: '640px',
             lg: '1024px',
             xl: '1280px',
-            tablet: '800px'
+            tablet: '860px'
         },
         colors: {
             transparent: 'transparent',
