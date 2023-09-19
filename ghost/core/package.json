@@ -249,7 +249,7 @@
     "monobundle": "TryGhost/monobundle#44fdf2c8e304e797a04858bfd7339b2a1fa47441",
     "nock": "13.3.3",
     "papaparse": "5.3.2",
-    "postcss": "8.4.29",
+    "postcss": "8.4.30",
     "postcss-cli": "10.1.0",
     "rewire": "6.0.0",
     "should": "13.2.3",
