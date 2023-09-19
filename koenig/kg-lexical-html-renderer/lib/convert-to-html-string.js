@@ -31,7 +31,7 @@ function $convertToHtmlString(options = {}) {
         output.pop();
     }
 
-    return output.join('\n');
+    return output.join('');
 }
 
 function exportTopLevelElementOrDecorator(node, options) {

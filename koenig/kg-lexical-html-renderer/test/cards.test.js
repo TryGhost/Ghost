@@ -76,9 +76,7 @@ describe('Cards', function () {
 
         const output = await Prettier.format(renderedInput, {parser: 'html'});
 
-        const expected =
-`<!--members-only-->
-`;
+        const expected = `<!--members-only-->\n`;
         output.should.equal(expected);
     });
 
@@ -93,7 +91,7 @@ describe('Cards', function () {
                     format: 0,
                     mode: 'normal',
                     style: '',
-                    text: 'Testing',
+                    text: 'Testing this',
                     type: 'text',
                     version: 1
                 }
@@ -111,13 +109,7 @@ describe('Cards', function () {
         const renderer = new Renderer({nodes});
         const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
 
-        const output = await Prettier.format(renderedInput, {parser: 'html'});
-
-        const expected =
-`<div style="color: red">
-  <p>Testing</p>
-</div>
-`;
-        output.should.equal(expected);
+        const expected = `<div style="color: red"><p>Testing this</p></div>`;
+        renderedInput.should.equal(expected);
     });
 });

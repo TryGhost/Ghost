@@ -9,8 +9,7 @@ describe('render()', function () {
 
         const html = await renderer.render(editorState);
 
-        html.should.eql(`<p>First paragraph</p>
-<p>Second paragraph</p>`);
+        html.should.eql(`<p>First paragraph</p><p>Second paragraph</p>`);
     });
 
     it('escapes text content', shouldRender({
