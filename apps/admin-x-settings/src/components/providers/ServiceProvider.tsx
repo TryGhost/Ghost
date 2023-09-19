@@ -15,7 +15,8 @@ interface ServicesContextProps {
     ghostVersion: string
     officialThemes: OfficialTheme[];
     zapierTemplates: ZapierTemplate[];
-    search: SearchService
+    search: SearchService;
+    toggleFeatureFlag: (flag: string, enabled: boolean) => void;
 }
 
 interface ServicesProviderProps {
@@ -23,16 +24,18 @@ interface ServicesProviderProps {
     ghostVersion: string;
     zapierTemplates: ZapierTemplate[];
     officialThemes: OfficialTheme[];
+    toggleFeatureFlag: (flag: string, enabled: boolean) => void;
 }
 
 const ServicesContext = createContext<ServicesContextProps>({
     ghostVersion: '',
     officialThemes: [],
     zapierTemplates: [],
-    search: {filter: '', setFilter: () => {}, checkVisible: () => true}
+    search: {filter: '', setFilter: () => {}, checkVisible: () => true},
+    toggleFeatureFlag: () => {}
 });
 
-const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes}) => {
+const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, toggleFeatureFlag}) => {
     const search = useSearchService();
 
     return (
@@ -40,7 +43,8 @@ const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersi
             ghostVersion,
             officialThemes,
             zapierTemplates,
-            search
+            search,
+            toggleFeatureFlag
         }}>
             {children}
         </ServicesContext.Provider>
