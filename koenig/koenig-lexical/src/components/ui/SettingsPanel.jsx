@@ -51,10 +51,7 @@ export function SliderSetting({label, onChange, max, min, value, defaultValue, d
         <div className="my-2 flex w-full flex-col gap-1">
             <div className="flex items-center justify-between font-sans text-[1.3rem] font-normal">
                 <div className="font-bold text-grey-900 dark:text-grey-200">{label}</div>
-                <div className="text-grey-500 dark:text-grey-600">
-                    <span className="text-grey-900 dark:text-grey-100" data-testid={`${dataTestId}-value`}>{value}</span>
-                    <span className="px-[2px]" data-testid={`${dataTestId}-max`}>/</span>{max}
-                </div>
+                <div className="text-grey-900 dark:text-grey-100" data-testid={`${dataTestId}-value`}>{value}</div>
             </div>
             <Slider dataTestId={dataTestId} defaultValue={defaultValue} max={max} min={min} value={value} onChange={onChange} />
         </div>
