@@ -6,6 +6,7 @@ import Heading from '../../../../admin-x-ds/global/Heading';
 import MultiSelect, {MultiSelectOption} from '../../../../admin-x-ds/global/form/MultiSelect';
 import Radio from '../../../../admin-x-ds/global/form/Radio';
 import React from 'react';
+import StickyFooter from '../../../../admin-x-ds/global/StickyFooter';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import {Label} from '../../../../api/labels';
 import {MultiValue} from 'react-select';
@@ -31,14 +32,14 @@ type SidebarProps = {
     customColor?: {active: boolean};
 };
 
-const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout, 
-    accentColor, 
-    handleColorToggle, 
-    selectedColor, 
-    labels, 
-    selectedLabels, 
-    handleLabelClick, 
-    embedScript, 
+const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
+    accentColor,
+    handleColorToggle,
+    selectedColor,
+    labels,
+    selectedLabels,
+    handleLabelClick,
+    embedScript,
     handleLayoutSelect,
     handleCopyClick,
     customColor,
@@ -51,7 +52,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
         };
     }).filter(Boolean) : [];
     return (
-        <div className='flex h-full flex-col justify-between'>
+        <div className='flex h-full max-h-[645px] flex-col justify-between overflow-y-scroll border-l border-grey-75 p-6 pb-0 dark:border-grey-900'>
             <div>
                 <Heading className='mb-4' level={4}>Embed signup form</Heading>
                 <Form>
@@ -110,8 +111,8 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
 
                     {
                         selectedLayout === 'all-in-one' && customColor?.active &&
-                        <ColorPicker 
-                            clearButtonValue={'#d74780'}
+                        <ColorPicker
+                            containerClassName='!-mt-4'
                             eyedropper={false}
                             hexValue={selectedColor || '#d74780'}
                             onChange={(e) => {
@@ -143,7 +144,11 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
                     />
                 </Form>
             </div>
-            <Button className='self-end' color={isCopied ? 'green' : 'black'} label={isCopied ? 'Copied!' : 'Copy code'} onClick={handleCopyClick} />
+            <StickyFooter height={74}>
+                <div className='flex w-full justify-end'>
+                    <Button color={isCopied ? 'green' : 'black'} label={isCopied ? 'Copied!' : 'Copy code'} onClick={handleCopyClick} />
+                </div>
+            </StickyFooter>
         </div>
     );
 };
