@@ -9,6 +9,14 @@ const ColorPickerContext = createContext<{colorPickers: Array<{ id: string; setE
     colorPickers: []
 });
 
+const to6DigitHex = (hex: string) => {
+    if (hex.length === 4) {
+        return hex.replace(/#(.)(.)(.)/, '#$1$1$2$2$3$3');
+    } else {
+        return hex;
+    }
+};
+
 const ColorPickerField = ({testId, title, direction, value, hint, error, eyedropper, clearButtonValue, onChange, swatches = [], alwaysOpen = false, debounceMs}: {
     testId?: string;
     title?: ReactNode;
@@ -29,7 +37,15 @@ const ColorPickerField = ({testId, title, direction, value, hint, error, eyedrop
     const id = useId();
 
     useEffect(() => {
-        setLocalValue(value);
+        setLocalValue((currentValue) => {
+            // If the current value is the 3-digit equivalent of the new value,
+            // the user probably typed it as 3 digits so keep showing it that way in the UI
+            if (to6DigitHex(currentValue || '') === value) {
+                return currentValue;
+            }
+
+            return value;
+        });
     }, [value]);
 
     useEffect(() => {
@@ -66,7 +82,7 @@ const ColorPickerField = ({testId, title, direction, value, hint, error, eyedrop
 
     const handleChange = (newValue: string | null) => {
         setLocalValue(newValue);
-        debouncedOnChange?.(newValue);
+        debouncedOnChange?.(newValue ? to6DigitHex(newValue) : null);
     };
 
     let content = (

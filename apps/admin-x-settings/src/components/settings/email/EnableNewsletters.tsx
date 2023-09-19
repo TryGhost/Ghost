@@ -10,7 +10,9 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
 
-    const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
+    const [newslettersEnabled, membersSignupAccess] = getSettingValues<string>(settings, ['editor_default_email_recipients', 'members_signup_access']);
+
+    const isDisabled = membersSignupAccess === 'none';
 
     const handleToggleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const updates: Setting[] = [
@@ -27,8 +29,9 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const enableToggle = (
         <>
             <Toggle
-                checked={newslettersEnabled !== 'disabled'}
+                checked={isDisabled ? false : newslettersEnabled !== 'disabled'}
                 direction='rtl'
+                disabled={isDisabled}
                 onChange={handleToggleChange}
             />
         </>
@@ -46,7 +49,7 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
             values={[
                 {
                     key: 'private',
-                    value: newslettersEnabled !== 'disabled' ? (
+                    value: (!isDisabled && newslettersEnabled !== 'disabled') ? (
                         <div className='flex items-center gap-2'>
                             <Icon colorClass='text-green' name='check' size='sm' />
                             <span>Enabled</span>
@@ -54,7 +57,10 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     ) : (
                         <div className='flex items-center gap-2 text-grey-900'>
                             <Icon colorClass='text-grey-600' name='mail-block' size='sm' />
-                            <span>Disabled</span>
+                            <span>
+                                Disabled
+                                {isDisabled && ' by Access settings'}
+                            </span>
                         </div>
                     )
                 }

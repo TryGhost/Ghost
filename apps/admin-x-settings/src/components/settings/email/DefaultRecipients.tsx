@@ -120,7 +120,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
         },
         {
             label: 'Active Tiers',
-            options: tiers?.filter(({active}) => active).map(tier => ({value: tier.id, label: tier.name, color: 'black'})) || []
+            options: tiers?.filter(({active, type}) => active && type !== 'free').map(tier => ({value: tier.id, label: tier.name, color: 'black'})) || []
         },
         {
             label: 'Archived Tiers',
