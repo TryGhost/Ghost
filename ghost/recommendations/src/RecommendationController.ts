@@ -82,6 +82,7 @@ export class RecommendationController {
         const page = options.optionalKey('page')?.integer ?? 1;
         const limit = options.optionalKey('limit')?.integer ?? 5;
         const include = options.optionalKey('withRelated')?.array.map(item => item.enum<RecommendationIncludeFields>(['count.clicks', 'count.subscribers'])) ?? [];
+        const filter = options.optionalKey('filter')?.string;
 
         const order = [
             {
@@ -91,7 +92,7 @@ export class RecommendationController {
         ];
 
         const count = await this.service.countRecommendations({});
-        const recommendations = (await this.service.listRecommendations({page, limit, order, include}));
+        const recommendations = (await this.service.listRecommendations({page, limit, filter, include, order}));
 
         return this.#serialize(
             recommendations,
