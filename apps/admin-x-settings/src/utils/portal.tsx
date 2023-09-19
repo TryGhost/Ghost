@@ -14,7 +14,6 @@ const Portal: React.FC<PortalProps> = ({children, to}) => {
     }
 
     const cancelEvents = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    // prevent card from losing selection when interacting with element in portal (포털)
         event.stopPropagation();
     };
 
