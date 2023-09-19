@@ -48,7 +48,7 @@ module.exports = {
         const adminXSettingsPath = '../../apps/admin-x-settings/dist';
         const assetsAdminXPath = `${assetsOut}/assets/libs/admin-x-settings`;
 
-        if (fs.existsSync(assetsAdminXPath)) {
+        if (fs.existsSync(adminXSettingsPath)) {
             if (this.env === 'production') {
                 fs.copySync(adminXSettingsPath, assetsAdminXPath, {overwrite: true, dereference: true});
             } else {
