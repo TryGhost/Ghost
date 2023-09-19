@@ -52,7 +52,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
         };
     }).filter(Boolean) : [];
     return (
-        <div className='flex h-full max-h-[645px] flex-col justify-between overflow-y-scroll border-l border-grey-75 p-6 pb-0 dark:border-grey-900'>
+        <div className='flex h-full max-h-[645px] flex-col justify-between overflow-y-scroll border-l border-grey-200 p-6 pb-0 dark:border-grey-900'>
             <div>
                 <Heading className='mb-4' level={4}>Embed signup form</Heading>
                 <Form>
