@@ -46,7 +46,7 @@ module.exports = function apiRoutes() {
     router.del('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
     router.post('/posts/:id/copy', mw.authAdminApi, http(api.posts.copy));
 
-    router.get('/mentions', labs.enabledMiddleware('webmentions'), mw.authAdminApi, http(api.mentions.browse));
+    router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
 
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
 
