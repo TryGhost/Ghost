@@ -115,7 +115,7 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
 };
 
 const EditRecommendationModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {data: {recommendations} = {}} = useBrowseRecommendations();
+    const {data: {recommendations} = {}} = useBrowseRecommendations({searchParams: {limit: 'all'}});
     const recommendation = recommendations?.find(({id}) => id === params?.id);
 
     if (recommendation) {

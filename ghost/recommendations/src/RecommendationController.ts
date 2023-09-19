@@ -69,7 +69,8 @@ export class RecommendationController {
         const options = new UnsafeData(frame.options);
 
         const page = options.optionalKey('page')?.integer ?? 1;
-        const limit = options.optionalKey('limit')?.integer ?? 5;
+        const all = options.optionalKey('limit')?.string === 'all';
+        const limit = all ? 'all' : options.optionalKey('limit')?.integer ?? 5;
         const include = options.optionalKey('withRelated')?.array.map(item => item.enum<RecommendationIncludeFields>(['count.clicks', 'count.subscribers'])) ?? [];
 
         const order = [
@@ -186,7 +187,7 @@ export class RecommendationController {
         };
     }
 
-    #serializePagination({page, limit, count}: {page: number, limit: number, count: number}) {
+    #serializePagination({page, limit, count}: {page: number, limit: number | 'all', count: number}) {
         const pages = Math.ceil(count / limit);
 
         return {

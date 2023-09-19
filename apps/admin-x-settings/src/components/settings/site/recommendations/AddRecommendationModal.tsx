@@ -23,7 +23,7 @@ const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommen
     const {updateRoute} = useRouting();
     const {query: queryOembed} = useGetOembed();
     const {query: queryExternalGhostSite} = useExternalGhostSite();
-    const {data: {recommendations} = {}} = useBrowseRecommendations();
+    const {data: {recommendations} = {}} = useBrowseRecommendations({searchParams: {limit: 'all'}});
 
     const {formState, updateForm, handleSave, errors, validate, saveState, clearError} = useForm({
         initialState: recommendation ?? {
