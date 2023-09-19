@@ -106,7 +106,7 @@
     "@tryghost/kg-default-cards": "9.1.4",
     "@tryghost/kg-default-nodes": "0.1.32",
     "@tryghost/kg-html-to-lexical": "0.0.8",
-    "@tryghost/kg-lexical-html-renderer": "0.3.28",
+    "@tryghost/kg-lexical-html-renderer": "0.3.29",
     "@tryghost/kg-mobiledoc-html-renderer": "6.0.11",
     "@tryghost/limit-service": "1.2.6",
     "@tryghost/link-redirects": "0.0.0",
