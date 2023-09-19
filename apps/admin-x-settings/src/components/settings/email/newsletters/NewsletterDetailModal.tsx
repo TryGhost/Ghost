@@ -8,6 +8,7 @@ import Hint from '../../../../admin-x-ds/global/Hint';
 import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
+import LimitModal from '../../../../admin-x-ds/global/modal/LimitModal';
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
@@ -23,6 +24,7 @@ import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
+import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '../../../../api/newsletters';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
@@ -31,16 +33,18 @@ import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {getSettingValues} from '../../../../api/settings';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
-import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const Sidebar: React.FC<{
     newsletter: Newsletter;
+    onlyOne: boolean;
     updateNewsletter: (fields: Partial<Newsletter>) => void;
     validate: () => void;
     errors: ErrorMessages;
     clearError: (field: string) => void;
-}> = ({newsletter, updateNewsletter, validate, errors, clearError}) => {
+}> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
+    const {mutateAsync: editNewsletter} = useEditNewsletter();
+    const limiter = useLimiter();
     const {settings, siteData, config} = useGlobalData();
     const [membersSupportAddress, icon] = getSettingValues<string>(settings, ['members_support_address', 'icon']);
     const {mutateAsync: uploadImage} = useUploadImage();
@@ -70,7 +74,56 @@ const Sidebar: React.FC<{
     };
 
     const confirmStatusChange = () => {
-        alert('Archive / activate');
+        if (newsletter.status === 'active') {
+            NiceModal.show(ConfirmationModal, {
+                title: 'Archive newsletter',
+                prompt: <>
+                    <p>Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</p>
+                    <p>Existing posts previously sent as this newsletter will remain unchanged.</p>
+                </>,
+                okLabel: 'Archive',
+                okColor: 'red',
+                onOk: async (modal) => {
+                    await editNewsletter({...newsletter, status: 'archived'});
+                    modal?.remove();
+                    showToast({
+                        type: 'success',
+                        message: 'Newsletter archived successfully'
+                    });
+                }
+            });
+        } else {
+            async () => {
+                try {
+                    await limiter?.errorIfWouldGoOverLimit('newsletters');
+                } catch (error) {
+                    if (error instanceof HostLimitError) {
+                        NiceModal.show(LimitModal, {
+                            prompt: error.message || `Your current plan doesn't support more newsletters.`
+                        });
+                        return;
+                    } else {
+                        throw error;
+                    }
+                }
+
+                NiceModal.show(ConfirmationModal, {
+                    title: 'Reactivate newsletter',
+                    prompt: <>
+                        Reactivating <strong>{newsletter.name}</strong> will immediately make it visible to members and re-enable it as an option when publishing new posts.
+                    </>,
+                    okLabel: 'Reactivate',
+                    onOk: async (modal) => {
+                        await editNewsletter({...newsletter, status: 'active'});
+                        modal?.remove();
+                        showToast({
+                            type: 'success',
+                            message: 'Newsletter reactivated successfully'
+                        });
+                    }
+                });
+            };
+        }
     };
 
     const tabs: Tab[] = [
@@ -137,7 +190,7 @@ const Sidebar: React.FC<{
                 </div>
                 <Separator />
                 <div className='mb-5 mt-10'>
-                    <Button color='red' label='Archive newsletter' link onClick={confirmStatusChange} />
+                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' label='Archive newsletter' link onClick={confirmStatusChange} />) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
                 </div>
             </>
         },
@@ -366,7 +419,7 @@ const Sidebar: React.FC<{
     );
 };
 
-const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
+const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: boolean;}> = ({newsletter, onlyOne}) => {
     const modal = useModal();
     const {siteData} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
@@ -416,7 +469,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsl
     };
 
     const preview = <NewsletterPreview newsletter={formState} />;
-    const sidebar = <Sidebar clearError={clearError} errors={errors} newsletter={formState} updateNewsletter={updateNewsletter} validate={validate} />;
+    const sidebar = <Sidebar clearError={clearError} errors={errors} newsletter={formState} onlyOne={onlyOne} updateNewsletter={updateNewsletter} validate={validate} />;
 
     return <PreviewModalContent
         afterClose={() => updateRoute('newsletters')}
@@ -449,7 +502,7 @@ const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     const newsletter = newsletters?.find(({id}) => id === params?.id);
 
     if (newsletter) {
-        return <NewsletterDetailModalContent newsletter={newsletter} />;
+        return <NewsletterDetailModalContent newsletter={newsletter} onlyOne={newsletters!.length === 1} />;
     } else {
         return null;
     }

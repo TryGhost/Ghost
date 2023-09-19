@@ -126,6 +126,10 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                 onOk: (confirmModal) => {
                     updateTier({...tier, active: !tier.active});
                     confirmModal?.remove();
+                    showToast({
+                        type: 'success',
+                        message: `Tier ${tier.active ? 'archived' : 'reactivated'} successfully`
+                    });
                 }
             });
         }
@@ -159,7 +163,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         okLabel='Save & close'
         size='lg'
         testId='tier-detail-modal'
-        title={(tier ? (tier.active ? 'Edit active tier' : 'Edit archived tier') : 'New tier')}
+        title={(tier ? (tier.active ? 'Edit tier' : 'Edit archived tier') : 'New tier')}
         stickyFooter
         onOk={async () => {
             toast.remove();
