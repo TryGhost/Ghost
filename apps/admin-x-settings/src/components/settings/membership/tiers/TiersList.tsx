@@ -44,7 +44,7 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
                     : ''
                 }
                 <div className='mt-2 line-clamp-2 text-[1.4rem] font-medium'>
-                    {tier.description || <span className='opacity-50'>No description</span>}
+                    {tier.description || <span className='opacity-30'>No description</span>}
                 </div>
             </div>
         </div>

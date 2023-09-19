@@ -70,7 +70,7 @@ const NewsletterItem: React.FC<{newsletter: Newsletter, onlyOne: boolean}> = ({n
     };
 
     return (
-        <TableRow action={action} hideActions>
+        <TableRow action={<Button color='green' label='Edit' link onClick={showDetails} />} hideActions onClick={showDetails}>
             <TableCell onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
                     <span className='font-medium'>{newsletter.name}</span>

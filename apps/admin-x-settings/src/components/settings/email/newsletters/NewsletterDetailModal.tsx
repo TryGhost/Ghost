@@ -1,3 +1,4 @@
+import Button from '../../../../admin-x-ds/global/Button';
 import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
 import ColorPickerField from '../../../../admin-x-ds/global/form/ColorPickerField';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
@@ -68,6 +69,10 @@ const Sidebar: React.FC<{
         return textColorForBackgroundColor(newsletter.background_color).hex().toLowerCase() === '#ffffff';
     };
 
+    const confirmStatusChange = () => {
+        alert('Archive / activate');
+    };
+
     const tabs: Tab[] = [
         {
             id: 'generalSettings',
@@ -129,6 +134,10 @@ const Sidebar: React.FC<{
                             onChange={e => updateNewsletter({show_badge: e.target.checked})}
                         />
                     </Form>
+                </div>
+                <Separator />
+                <div className='mb-5 mt-10'>
+                    <Button color='red' label='Archive newsletter' link onClick={confirmStatusChange} />
                 </div>
             </>
         },
@@ -411,9 +420,10 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsl
 
     return <PreviewModalContent
         afterClose={() => updateRoute('newsletters')}
+        cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
-        okLabel='Save & close'
+        okLabel='Save'
         preview={preview}
         previewBgColor={'grey'}
         previewToolbar={false}
@@ -422,9 +432,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsl
         testId='newsletter-modal'
         title='Newsletter'
         onOk={async () => {
-            toast.remove();
             if (await handleSave()) {
-                modal.remove();
                 updateRoute('newsletters');
             } else {
                 showToast({
