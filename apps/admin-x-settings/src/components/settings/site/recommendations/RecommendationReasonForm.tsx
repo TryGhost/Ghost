@@ -39,7 +39,7 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
                 <div className='flex flex-col gap-1'>
                     <div className="flex items-center gap-2">
                         <RecommendationIcon {...formState} />
-                        <span className='text-[1.6rem] font-semibold text-grey-900'>{formState.title}</span>
+                        <span className='line-clamp-1 text-[1.6rem] font-semibold text-grey-900'>{formState.title}</span>
                     </div>
                     {formState.reason && <span className='text-md font-medium leading-snug text-grey-700'>{formState.reason}</span>}
                 </div>
@@ -57,8 +57,9 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
         />
         <TextArea
             clearBg={true}
+            hint='Optional, try to keep it under 156 characters'
             rows={3}
-            title="Description (optional)"
+            title="Description"
             value={formState.reason ?? ''}
             onChange={e => updateForm(state => ({...state, reason: e.target.value}))}
         />
