@@ -18,6 +18,17 @@ export class RecommendationController {
         this.service = deps.service;
     }
 
+    async read(frame: Frame) {
+        const options = new UnsafeData(frame.options);
+        const id = options.key('id').string;
+
+        const recommendation = await this.service.readRecommendation(id);
+
+        return this.#serialize(
+            [recommendation]
+        );
+    }
+
     async add(frame: Frame) {
         const data = new UnsafeData(frame.data);
         const recommendation = data.key('recommendations').index(0);
