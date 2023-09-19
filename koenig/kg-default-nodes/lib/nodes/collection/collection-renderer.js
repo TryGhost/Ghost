@@ -44,7 +44,7 @@ function cardTemplate(node, posts) {
 }
 
 function postTemplate(post, layout, columns) {
-    const {title, published_at: publishDate, excerpt, feature_image: image, reading_time: readTime} = post;
+    const {title, published_at: publishDate, excerpt, feature_image: image, reading_time: readTime, url} = post;
 
     const imageWrapperClass = 'kg-collection-card-img';
     const imageClass = '' 
@@ -53,22 +53,25 @@ function postTemplate(post, layout, columns) {
     const titleClass = 'kg-collection-card-post-title';
     const excerptClass = 'kg-collection-card-post-excerpt';
     const metaClass = 'kg-collection-card-post-meta';
+    const postWrapperClass = 'kg-collection-card-post-wrapper';
 
     return (
-        `<div class="kg-collection-card-post">
-            ${image ? 
+        `<a href=${url} class=${postWrapperClass}>
+            <div class="kg-collection-card-post">
+                ${image ? 
             `<div class=${imageWrapperClass}>
-                    <img class=${imageClass} src="${image}" alt="${title}" />
-                </div>`
+                        <img class=${imageClass} src="${image}" alt="${title}" />
+                    </div>`
             : ''}
-            <div class="kg-collection-card-content">
-                ${title ? `<h2 class=${titleClass}>${title}</h2>` : ''}
-                ${excerpt ? `<p class=${excerptClass}>${excerpt}</p>` : ''}
-                <div class=${metaClass}>
-                    ${publishDate ? `<p>${DateTime.fromISO(publishDate).toFormat('d LLL yyyy')}</p>` : ''}
-                    ${readTime > 0 ? `<p>&nbsp;&middot; ${readTime} min</p>` : ''}
+                <div class="kg-collection-card-content">
+                    ${title ? `<h2 class=${titleClass}>${title}</h2>` : ''}
+                    ${excerpt ? `<p class=${excerptClass}>${excerpt}</p>` : ''}
+                    <div class=${metaClass}>
+                        ${publishDate ? `<p>${DateTime.fromISO(publishDate).toFormat('d LLL yyyy')}</p>` : ''}
+                        ${readTime > 0 ? `<p>&nbsp;&middot; ${readTime} min</p>` : ''}
+                    </div>
                 </div>
             </div>
-        </div>`
+        </a>`
     );
 }

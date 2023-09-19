@@ -148,43 +148,51 @@ describe('CollectionNode', function () {
                 <div class="kg-card kg-collection-card" data-kg-collection-slug="featured" data-kg-collection-limit="3">
                     <h4 class="kg-collection-card-title">Featured Posts</h4>
                     <div class="kg-collection-card-feed kg-collection-card-list">
-                        <div class="kg-collection-card-post">
-                    <div class="kg-collection-card-img">
-                            <img class="aspect-[3/2]" src="https://placekitten.com/230/250" alt="The Secret Life of Kittens: Uncovering Their Mischievous Master Plans">
-                        </div>
-                    <div class="kg-collection-card-content">
-                        <h2 class="kg-collection-card-post-title">The Secret Life of Kittens: Uncovering Their Mischievous Master Plans</h2>
-                        <p class="kg-collection-card-post-excerpt">Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet</p>
-                        <div class="kg-collection-card-post-meta">
-                            <p>8 Jul 2023</p>
-                            <p>&nbsp;· 3 min</p>
-                        </div>
-                    </div>
-                </div><div class="kg-collection-card-post">
-                    <div class="kg-collection-card-img">
-                            <img class="aspect-[3/2]" src="https://placekitten.com/251/250" alt="Kittens Gone Wild: Epic Adventures of Feline Daredevils">
-                        </div>
-                    <div class="kg-collection-card-content">
-                        <h2 class="kg-collection-card-post-title">Kittens Gone Wild: Epic Adventures of Feline Daredevils</h2>
-                        <p class="kg-collection-card-post-excerpt">Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet</p>
-                        <div class="kg-collection-card-post-meta">
-                            <p>17 Aug 2023</p>
-                            <p>&nbsp;· 5 min</p>
-                        </div>
-                    </div>
-                </div><div class="kg-collection-card-post">
-                    <div class="kg-collection-card-img">
-                            <img class="aspect-[3/2]" src="https://placekitten.com/249/251" alt="The Kitten Olympics: Hilarious Competitions and Paw-some Winners">
-                        </div>
-                    <div class="kg-collection-card-content">
-                        <h2 class="kg-collection-card-post-title">The Kitten Olympics: Hilarious Competitions and Paw-some Winners</h2>
-                        <p class="kg-collection-card-post-excerpt">Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet</p>
-                        <div class="kg-collection-card-post-meta">
-                            <p>11 Sep 2023</p>
-                            <p>&nbsp;· 9 min</p>
-                        </div>
-                    </div>
-                </div>
+                        <a href="https://www.google.com" class="kg-collection-card-post-wrapper">
+                            <div class="kg-collection-card-post">
+                                <div class="kg-collection-card-img">
+                                    <img class="aspect-[3/2]" src="https://placekitten.com/230/250" alt="The Secret Life of Kittens: Uncovering Their Mischievous Master Plans">
+                                </div>
+                                <div class="kg-collection-card-content">
+                                    <h2 class="kg-collection-card-post-title">The Secret Life of Kittens: Uncovering Their Mischievous Master Plans</h2>
+                                    <p class="kg-collection-card-post-excerpt">Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet</p>
+                                    <div class="kg-collection-card-post-meta">
+                                        <p>8 Jul 2023</p>
+                                        <p>&nbsp;· 3 min</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="https://www.google.com" class="kg-collection-card-post-wrapper">
+                            <div class="kg-collection-card-post">
+                                <div class="kg-collection-card-img">
+                                    <img class="aspect-[3/2]" src="https://placekitten.com/251/250" alt="Kittens Gone Wild: Epic Adventures of Feline Daredevils">
+                                </div>
+                                <div class="kg-collection-card-content">
+                                    <h2 class="kg-collection-card-post-title">Kittens Gone Wild: Epic Adventures of Feline Daredevils</h2>
+                                    <p class="kg-collection-card-post-excerpt">Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet</p>
+                                    <div class="kg-collection-card-post-meta">
+                                        <p>17 Aug 2023</p>
+                                        <p>&nbsp;· 5 min</p>
+                                    </div>
+                               </div>
+                           </div>
+                        </a>
+                        <a href="https://www.google.com" class="kg-collection-card-post-wrapper">
+                            <div class="kg-collection-card-post">
+                                <div class="kg-collection-card-img">
+                                    <img class="aspect-[3/2]" src="https://placekitten.com/249/251" alt="The Kitten Olympics: Hilarious Competitions and Paw-some Winners">
+                                </div>
+                                <div class="kg-collection-card-content">
+                                    <h2 class="kg-collection-card-post-title">The Kitten Olympics: Hilarious Competitions and Paw-some Winners</h2>
+                                    <p class="kg-collection-card-post-excerpt">Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet</p>
+                                    <div class="kg-collection-card-post-meta">
+                                        <p>11 Sep 2023</p>
+                                        <p>&nbsp;· 9 min</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
                     </div>
                 </div>
             `;
@@ -198,43 +206,50 @@ describe('CollectionNode', function () {
                 <div class="kg-card kg-collection-card kg-width-wide" data-kg-collection-slug="latest" data-kg-collection-limit="3">
                     <h4 class="kg-collection-card-title"><span style="white-space: pre-wrap;">Latest</span></h4>
                     <div class="kg-collection-card-feed kg-collection-card-grid columns-3">
-                        <div class="kg-collection-card-post">
-                    <div class="kg-collection-card-img">
-                            <img class="aspect-[3/2]" src="https://placekitten.com/230/250" alt="The Secret Life of Kittens: Uncovering Their Mischievous Master Plans">
-                        </div>
-                    <div class="kg-collection-card-content">
-                        <h2 class="kg-collection-card-post-title">The Secret Life of Kittens: Uncovering Their Mischievous Master Plans</h2>
-                        <p class="kg-collection-card-post-excerpt">Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet</p>
-                        <div class="kg-collection-card-post-meta">
-                            <p>8 Sep 2023</p>
-                            
-                        </div>
-                    </div>
-                </div><div class="kg-collection-card-post">
-                    <div class="kg-collection-card-img">
-                            <img class="aspect-[3/2]" src="https://placekitten.com/251/250" alt="Kittens Gone Wild: Epic Adventures of Feline Daredevils">
-                        </div>
-                    <div class="kg-collection-card-content">
-                        <h2 class="kg-collection-card-post-title">Kittens Gone Wild: Epic Adventures of Feline Daredevils</h2>
-                        <p class="kg-collection-card-post-excerpt">Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet</p>
-                        <div class="kg-collection-card-post-meta">
-                            <p>9 Jun 2023</p>
-                            <p>&nbsp;· 2 min</p>
-                        </div>
-                    </div>
-                </div><div class="kg-collection-card-post">
-                    <div class="kg-collection-card-img">
-                            <img class="aspect-[3/2]" src="https://placekitten.com/249/251" alt="The Kitten Olympics: Hilarious Competitions and Paw-some Winners">
-                        </div>
-                    <div class="kg-collection-card-content">
-                        <h2 class="kg-collection-card-post-title">The Kitten Olympics: Hilarious Competitions and Paw-some Winners</h2>
-                        <p class="kg-collection-card-post-excerpt">Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet</p>
-                        <div class="kg-collection-card-post-meta">
-                            <p>17 Aug 2023</p>
-                            <p>&nbsp;· 8 min</p>
-                        </div>
-                    </div>
-                </div>
+                        <a href="https://www.google.com" class="kg-collection-card-post-wrapper">
+                            <div class="kg-collection-card-post">
+                                <div class="kg-collection-card-img">
+                                    <img class="aspect-[3/2]" src="https://placekitten.com/230/250" alt="The Secret Life of Kittens: Uncovering Their Mischievous Master Plans">
+                                </div>
+                                <div class="kg-collection-card-content">
+                                    <h2 class="kg-collection-card-post-title">The Secret Life of Kittens: Uncovering Their Mischievous Master Plans</h2>
+                                    <p class="kg-collection-card-post-excerpt">Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet</p>
+                                    <div class="kg-collection-card-post-meta">
+                                        <p>8 Sep 2023</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="https://www.google.com" class="kg-collection-card-post-wrapper">
+                            <div class="kg-collection-card-post">
+                                <div class="kg-collection-card-img">
+                                    <img class="aspect-[3/2]" src="https://placekitten.com/251/250" alt="Kittens Gone Wild: Epic Adventures of Feline Daredevils">
+                                </div>
+                                <div class="kg-collection-card-content">
+                                    <h2 class="kg-collection-card-post-title">Kittens Gone Wild: Epic Adventures of Feline Daredevils</h2>
+                                    <p class="kg-collection-card-post-excerpt">Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet</p>
+                                    <div class="kg-collection-card-post-meta">
+                                        <p>9 Jun 2023</p>
+                                        <p>&nbsp;· 2 min</p>
+                                    </div>
+                               </div>
+                           </div>
+                        </a>
+                        <a href="https://www.google.com" class="kg-collection-card-post-wrapper">
+                            <div class="kg-collection-card-post">
+                                <div class="kg-collection-card-img">
+                                    <img class="aspect-[3/2]" src="https://placekitten.com/249/251" alt="The Kitten Olympics: Hilarious Competitions and Paw-some Winners">
+                                </div>
+                                <div class="kg-collection-card-content">
+                                    <h2 class="kg-collection-card-post-title">The Kitten Olympics: Hilarious Competitions and Paw-some Winners</h2>
+                                    <p class="kg-collection-card-post-excerpt">Lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet</p>
+                                    <div class="kg-collection-card-post-meta">
+                                        <p>17 Aug 2023</p>
+                                        <p>&nbsp;· 8 min</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
                     </div>
                 </div>
             `;
