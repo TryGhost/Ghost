@@ -73,7 +73,7 @@ const Sidebar: React.FC<{
         return textColorForBackgroundColor(newsletter.background_color).hex().toLowerCase() === '#ffffff';
     };
 
-    const confirmStatusChange = () => {
+    const confirmStatusChange = async () => {
         if (newsletter.status === 'active') {
             NiceModal.show(ConfirmationModal, {
                 title: 'Archive newsletter',
@@ -93,36 +93,34 @@ const Sidebar: React.FC<{
                 }
             });
         } else {
-            async () => {
-                try {
-                    await limiter?.errorIfWouldGoOverLimit('newsletters');
-                } catch (error) {
-                    if (error instanceof HostLimitError) {
-                        NiceModal.show(LimitModal, {
-                            prompt: error.message || `Your current plan doesn't support more newsletters.`
-                        });
-                        return;
-                    } else {
-                        throw error;
-                    }
+            try {
+                await limiter?.errorIfWouldGoOverLimit('newsletters');
+            } catch (error) {
+                if (error instanceof HostLimitError) {
+                    NiceModal.show(LimitModal, {
+                        prompt: error.message || `Your current plan doesn't support more newsletters.`
+                    });
+                    return;
+                } else {
+                    throw error;
                 }
+            }
 
-                NiceModal.show(ConfirmationModal, {
-                    title: 'Reactivate newsletter',
-                    prompt: <>
+            NiceModal.show(ConfirmationModal, {
+                title: 'Reactivate newsletter',
+                prompt: <>
                         Reactivating <strong>{newsletter.name}</strong> will immediately make it visible to members and re-enable it as an option when publishing new posts.
-                    </>,
-                    okLabel: 'Reactivate',
-                    onOk: async (modal) => {
-                        await editNewsletter({...newsletter, status: 'active'});
-                        modal?.remove();
-                        showToast({
-                            type: 'success',
-                            message: 'Newsletter reactivated successfully'
-                        });
-                    }
-                });
-            };
+                </>,
+                okLabel: 'Reactivate',
+                onOk: async (modal) => {
+                    await editNewsletter({...newsletter, status: 'active'});
+                    modal?.remove();
+                    showToast({
+                        type: 'success',
+                        message: 'Newsletter reactivated successfully'
+                    });
+                }
+            });
         }
     };
 
