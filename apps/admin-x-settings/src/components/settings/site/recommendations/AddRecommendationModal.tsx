@@ -7,6 +7,7 @@ import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {EditOrAddRecommendation, useBrowseRecommendations} from '../../../../api/recommendations';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {arePathsEqual, trimSearchAndHash} from '../../../../utils/url';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
@@ -18,7 +19,7 @@ interface AddRecommendationModalProps {
     animate?: boolean
 }
 
-const AddRecommendationModal: React.FC<AddRecommendationModalProps> = ({recommendation, animate}) => {
+const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModalProps> = ({recommendation, animate}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {query: queryOembed} = useGetOembed();
