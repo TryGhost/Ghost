@@ -73,11 +73,14 @@ module.exports = class BookshelfCollectionsRepository {
     async #fetchCollectionPostIds(collectionId, options = {}) {
         const toSelect = options.columns || ['post_id'];
 
-        return await this.#relationModel
-            .query()
+        const query = this.#relationModel.query();
+        if (options.transaction) {
+            query.transacting(options.transaction);
+        }
+
+        return await query
             .select(toSelect)
-            .where('collection_id', collectionId)
-            .transacting(options.transaction);
+            .where('collection_id', collectionId);
     }
 
     /**
