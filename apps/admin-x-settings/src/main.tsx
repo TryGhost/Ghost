@@ -29,6 +29,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 ref: 'TryGhost/Edition',
                 image: 'assets/img/themes/Edition.png'
             }]}
+            toggleFeatureFlag={() => {}}
             zapierTemplates={[]}
         />
     </React.StrictMode>

@@ -275,6 +275,10 @@ export default class AdminXSettings extends Component {
         this.router.transitionTo(route, ...models);
     };
 
+    toggleFeatureFlag = (flag, value) => {
+        this.feature.set(flag, value);
+    };
+
     editorResource = fetchSettings();
 
     AdminXApp = (props) => {
@@ -310,6 +314,7 @@ export default class AdminXSettings extends Component {
                             officialThemes={officialThemes}
                             zapierTemplates={zapierTemplates}
                             externalNavigate={this.externalNavigate}
+                            toggleFeatureFlag={this.toggleFeatureFlag}
                             darkMode={this.feature.nightShift}
                         />
                     </Suspense>
