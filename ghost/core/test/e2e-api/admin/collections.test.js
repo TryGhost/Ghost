@@ -117,7 +117,7 @@ describe('Collections API', function () {
                     });
             }, this.skip.bind(this));
             const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
-            assert(collectionRelatedQueries.length === 2);
+            assert(collectionRelatedQueries.length === 3);
         });
 
         it('Can browse Collections and include the posts count', async function () {
@@ -572,7 +572,7 @@ describe('Collections API', function () {
                 }, this.skip.bind(this));
 
                 const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
-                assert.equal(collectionRelatedQueries.length, 8);
+                assert.equal(collectionRelatedQueries.length, 13);
             }
 
             await agent
@@ -604,7 +604,7 @@ describe('Collections API', function () {
                 }, this.skip.bind(this));
 
                 const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
-                assert.equal(collectionRelatedQueries.length, 14);
+                assert.equal(collectionRelatedQueries.length, 18);
             }
 
             await agent

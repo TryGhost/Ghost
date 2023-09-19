@@ -29,7 +29,11 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return collectionsService.api.getAll(frame.options);
+            return collectionsService.api.getAll({
+                filter: frame.options.filter,
+                limit: frame.options.limit,
+                page: frame.options.page
+            });
         }
     },
 
