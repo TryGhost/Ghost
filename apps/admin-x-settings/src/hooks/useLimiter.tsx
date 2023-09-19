@@ -61,7 +61,7 @@ export const useLimiter = () => {
         enabled: false
     });
     const {refetch: fetchNewsletters} = useBrowseNewsletters({
-        searchParams: {filter: 'status:active', limit: 'all'},
+        searchParams: {filter: 'status:active', limit: '1'},
         enabled: false
     });
 
@@ -100,8 +100,8 @@ export const useLimiter = () => {
 
         if (limits.newsletters) {
             limits.newsletters.currentCountQuery = async () => {
-                const {data: {newsletters} = {newsletters: []}} = await fetchNewsletters();
-                return newsletters?.length || 0;
+                const {data: {pages} = {pages: []}} = await fetchNewsletters();
+                return pages[0].meta?.pagination.total || 0;
             };
         }
 

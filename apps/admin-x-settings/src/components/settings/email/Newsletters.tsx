@@ -13,7 +13,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateRoute('newsletters/add');
     };
     const [selectedTab, setSelectedTab] = useState('active-newsletters');
-    const {data: {newsletters} = {}} = useBrowseNewsletters();
+    const {data: {newsletters, isEnd} = {}, fetchNextPage} = useBrowseNewsletters();
 
     const buttons = (
         <Button color='green' label='Add newsletter' link linkWithPadding onClick={() => {
@@ -43,6 +43,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
             title='Newsletters'
         >
             <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+            {!isEnd && <Button label='Load more' link onClick={() => fetchNextPage()} />}
         </SettingGroup>
     );
 };

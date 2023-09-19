@@ -218,21 +218,24 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
 
 type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'returnData'> & {
     returnData: NonNullable<QueryOptions<ResponseData>['returnData']>
+    defaultNextPageParams?: (data: ResponseData, params: Record<string, string>) => Record<string, string>;
 }
 
 type InfiniteQueryHookOptions<ResponseData> = UseInfiniteQueryOptions<ResponseData> & {
     searchParams?: Record<string, string>;
     defaultErrorHandler?: boolean;
-    getNextPageParams: (data: ResponseData, params: Record<string, string>) => Record<string, string>|undefined;
+    getNextPageParams?: (data: ResponseData, params: Record<string, string>) => Record<string, string>;
 };
 
-export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<ResponseData>) => ({searchParams, getNextPageParams, ...query}: InfiniteQueryHookOptions<ResponseData>) => {
+export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<ResponseData>) => ({searchParams, getNextPageParams, ...query}: InfiniteQueryHookOptions<ResponseData> = {}) => {
     const fetchApi = useFetchApi();
+
+    const nextPageParams = getNextPageParams || options.defaultNextPageParams || (() => ({}));
 
     const result = useInfiniteQuery<ResponseData>({
         queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams)],
         queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams)),
-        getNextPageParam: data => getNextPageParams(data, searchParams || options.defaultSearchParams || {}),
+        getNextPageParam: data => nextPageParams(data, searchParams || options.defaultSearchParams || {}),
         ...query
     });
 

@@ -510,8 +510,14 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
 };
 
 const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {data: {newsletters} = {}} = useBrowseNewsletters();
+    const {data: {newsletters, isEnd} = {}, fetchNextPage} = useBrowseNewsletters();
     const newsletter = newsletters?.find(({id}) => id === params?.id);
+
+    useEffect(() => {
+        if (!newsletter && !isEnd) {
+            fetchNextPage();
+        }
+    }, [fetchNextPage, isEnd, newsletter]);
 
     if (newsletter) {
         return <NewsletterDetailModalContent newsletter={newsletter} onlyOne={newsletters!.length === 1} />;
