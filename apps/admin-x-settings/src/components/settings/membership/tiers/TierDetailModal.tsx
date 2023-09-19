@@ -146,11 +146,13 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         placeholder='Bronze'
                         title='Name'
                         value={formState.name || ''}
+                        autoFocus
                         onBlur={() => validators.name()}
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                     />}
                     <TextField
                         autoComplete='off'
+                        autoFocus={isFreeTier}
                         placeholder={isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content'}
                         title='Description'
                         value={formState.description || ''}
