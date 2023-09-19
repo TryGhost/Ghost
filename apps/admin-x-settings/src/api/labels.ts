@@ -17,6 +17,5 @@ const dataType = 'LabelsResponseType';
 
 export const useBrowseLabels = createQuery<LabelsResponseType>({
     dataType,
-    path: '/labels/',
-    defaultSearchParams: {limit: 'all'}
+    path: '/labels/'
 });

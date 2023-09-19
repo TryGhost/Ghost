@@ -33,7 +33,8 @@ export const useFetchApi = () => {
     const {ghostVersion} = useServices();
     const sentrydsn = useSentryDSN();
 
-    return async <Response>(endpoint: string | URL, options: RequestOptions = {}) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return async <Response = any>(endpoint: string | URL, options: RequestOptions = {}) => {
         // By default, we set the Content-Type header to application/json
         const defaultHeaders: Record<string, string> = {
             'app-pragma': 'no-cache',
