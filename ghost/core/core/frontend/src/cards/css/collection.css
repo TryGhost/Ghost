@@ -43,6 +43,7 @@
 }
 
 h2.kg-collection-card-post-title {
+    margin: 0;
     font-size: 1.9rem;
     overflow: hidden;
     display: -webkit-box;
