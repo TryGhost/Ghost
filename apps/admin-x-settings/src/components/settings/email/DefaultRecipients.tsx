@@ -3,13 +3,11 @@ import React, {useState} from 'react';
 import Select from '../../../admin-x-ds/global/form/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import useDefaultRecipientsOptions from './useDefaultRecipientsOptions';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {GroupBase, MultiValue} from 'react-select';
+import {MultiValue} from 'react-select';
 import {getOptionLabel} from '../../../utils/helpers';
 import {getSettingValues} from '../../../api/settings';
-import {useBrowseLabels} from '../../../api/labels';
-import {useBrowseOffers} from '../../../api/offers';
-import {useBrowseTiers} from '../../../api/tiers';
 import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 type RefipientValueArgs = {
@@ -37,16 +35,6 @@ const RECIPIENT_FILTER_OPTIONS = [{
     label: 'Usually nobody',
     hint: 'Newsletters are off for new posts, but can be enabled when needed',
     value: 'none'
-}];
-
-const SIMPLE_SEGMENT_OPTIONS: MultiSelectOption[] = [{
-    label: 'Free members',
-    value: 'status:free',
-    color: 'green'
-}, {
-    label: 'Paid members',
-    value: 'status:-free',
-    color: 'pink'
 }];
 
 function getDefaultRecipientValue({
@@ -88,9 +76,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
         defaultEmailRecipientsFilter
     }));
 
-    const {data: {tiers} = {}} = useBrowseTiers();
-    const {data: {labels} = {}} = useBrowseLabels();
-    const {data: {offers} = {}} = useBrowseOffers();
+    const {loadOptions, selectedSegments, setSelectedSegments} = useDefaultRecipientsOptions(selectedOption, defaultEmailRecipientsFilter);
 
     const setDefaultRecipientValue = (value: string) => {
         if (['visibility', 'disabled'].includes(value)) {
@@ -115,34 +101,9 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
         setSelectedOption(value);
     };
 
-    const segmentOptionGroups: GroupBase<MultiSelectOption>[] = [
-        {
-            options: SIMPLE_SEGMENT_OPTIONS
-        },
-        {
-            label: 'Active Tiers',
-            options: tiers?.filter(({active, type}) => active && type !== 'free').map(tier => ({value: tier.id, label: tier.name, color: 'black'})) || []
-        },
-        {
-            label: 'Archived Tiers',
-            options: tiers?.filter(({active}) => !active).map(tier => ({value: tier.id, label: tier.name, color: 'black'})) || []
-        },
-        {
-            label: 'Labels',
-            options: labels?.map(label => ({value: `label:${label.slug}`, label: label.name, color: 'grey'})) || []
-        },
-        {
-            label: 'Offers',
-            options: offers?.map(offer => ({value: `offer_redemptions:${offer.id}`, label: offer.name, color: 'black'})) || []
-        }
-    ];
+    const updateSelectedSegments = (selected: MultiValue<MultiSelectOption>) => {
+        setSelectedSegments(selected);
 
-    const filters = defaultEmailRecipientsFilter?.split(',') || [];
-    const selectedSegments = segmentOptionGroups
-        .flatMap(({options}) => options)
-        .filter(({value}) => filters.includes(value));
-
-    const setSelectedSegments = (selected: MultiValue<MultiSelectOption>) => {
         if (selected.length) {
             const selectedGroups = selected?.map(({value}) => value).join(',');
             updateSetting('editor_default_email_recipients_filter', selectedGroups);
@@ -177,13 +138,15 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     }
                 }}
             />
-            {(selectedOption === 'segment') && (
+            {(selectedOption === 'segment') && selectedSegments && (
                 <MultiSelect
-                    options={segmentOptionGroups.filter(group => group.options.length > 0)}
+                    loadOptions={loadOptions}
                     title='Filter'
                     values={selectedSegments}
+                    async
                     clearBg
-                    onChange={setSelectedSegments}
+                    defaultOptions
+                    onChange={updateSelectedSegments}
                 />
             )}
         </SettingGroupContent>

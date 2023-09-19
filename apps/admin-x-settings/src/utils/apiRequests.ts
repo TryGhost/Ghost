@@ -33,7 +33,7 @@ export const useFetchApi = () => {
     const {ghostVersion} = useServices();
     const sentrydsn = useSentryDSN();
 
-    return async (endpoint: string | URL, options: RequestOptions = {}) => {
+    return async <Response>(endpoint: string | URL, options: RequestOptions = {}) => {
         // By default, we set the Content-Type header to application/json
         const defaultHeaders: Record<string, string> = {
             'app-pragma': 'no-cache',
@@ -91,7 +91,7 @@ export const useFetchApi = () => {
                     Sentry.captureMessage('Request took multiple attempts', {extra: {attempts, retryingMs, endpoint: endpoint.toString()}});
                 }
 
-                return handleResponse(response);
+                return handleResponse(response) as Response;
             } catch (error) {
                 retryingMs = Date.now() - startTime;
 
@@ -280,7 +280,7 @@ const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, o
         requestBody = JSON.stringify(generatedBody);
     }
 
-    return fetchApi(url, {
+    return fetchApi<ResponseData>(url, {
         body: requestBody,
         ...requestOptions
     });
