@@ -186,6 +186,7 @@
     "targets": {
       "build:dev": {
         "dependsOn": [
+          "build:dev",
           {
             "projects": [
               "@tryghost/admin-x-settings"
