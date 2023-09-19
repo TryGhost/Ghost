@@ -67,7 +67,7 @@ test.describe('Newsletter settings', async () => {
         const modal = page.getByTestId('newsletter-modal');
 
         await modal.getByPlaceholder('Weekly Roundup').fill('');
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
 
         await expect(page.getByTestId('toast')).toHaveText(/Can't save newsletter/);
         await expect(modal).toHaveText(/Please enter a name/);
@@ -77,7 +77,7 @@ test.describe('Newsletter settings', async () => {
         await modal.getByRole('tab', {name: 'Design'}).click();
         await chooseOptionInSelect(modal.getByLabel('Body style'), 'Clean sans-serif');
 
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
 
         await expect(section.getByText('Updated newsletter')).toHaveCount(1);
 
@@ -111,7 +111,7 @@ test.describe('Newsletter settings', async () => {
         const modal = page.getByTestId('newsletter-modal');
 
         await modal.getByLabel('Sender email').fill('test@test.com');
-        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await modal.getByRole('button', {name: 'Save'}).click();
 
         await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm newsletter email address/);
@@ -136,8 +136,12 @@ test.describe('Newsletter settings', async () => {
         await section.getByRole('tab', {name: 'Archived'}).click();
 
         await section.getByText('Average newsletter').hover();
-        await section.getByRole('button', {name: 'Activate'}).click();
+        await section.getByRole('button', {name: 'Edit'}).click();
+
+        const archivedNewsletterModal = page.getByTestId('newsletter-modal');
+        await archivedNewsletterModal.getByRole('button', {name: 'Reactivate newsletter'}).click();
         await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Reactivate'}).click();
+        await archivedNewsletterModal.getByRole('button', {name: 'Close'}).click();
 
         await section.getByRole('tab', {name: 'Active'}).click();
 
@@ -163,8 +167,12 @@ test.describe('Newsletter settings', async () => {
         }});
 
         await section.getByText('Awesome newsletter').hover();
-        await section.getByRole('button', {name: 'Archive'}).click();
+        await section.getByRole('button', {name: 'Edit'}).click();
+
+        const activeNewsletterModal = page.getByTestId('newsletter-modal');
+        await activeNewsletterModal.getByRole('button', {name: 'Archive newsletter'}).click();
         await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Archive'}).click();
+        await activeNewsletterModal.getByRole('button', {name: 'Close'}).click();
 
         await section.getByRole('tab', {name: 'Archived'}).click();
 
@@ -214,7 +222,10 @@ test.describe('Newsletter settings', async () => {
         await section.getByRole('tab', {name: 'Archived'}).click();
 
         await section.getByText('Average newsletter').hover();
-        await section.getByRole('button', {name: 'Activate'}).click();
+        await section.getByRole('button', {name: 'Edit'}).click();
+
+        const newsletterModal = page.getByTestId('newsletter-modal');
+        await newsletterModal.getByRole('button', {name: 'Reactivate newsletter'}).click();
 
         await expect(page.getByTestId('limit-modal')).toHaveText(/Your plan supports up to 1 newsletters/);
     });

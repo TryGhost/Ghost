@@ -164,15 +164,9 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
         // const hasActiveStripeSubscriptions = false; //...
         // this.ghostPaths.url.api('/members/') + '?filter=status:paid&limit=0';
         NiceModal.show(ConfirmationModal, {
-            title: 'Are you sure you want to disconnect?',
-            prompt: <>
-                {hasActiveStripeSubscriptions && <p className="text-red">
-                    Cannot disconnect while there are members with active Stripe subscriptions.
-                </p>}
-
-                You&lsquo;re about to disconnect your Stripe account {stripeConnectAccountName}
-                from this site. This will automatically turn off paid memberships on this site.
-            </>,
+            title: 'Disconnect Stripe',
+            prompt: (hasActiveStripeSubscriptions ? 'Cannot disconnect while there are members with active Stripe subscriptions.' : <>You&lsquo;re about to disconnect your Stripe account {stripeConnectAccountName}
+                from this site. This will automatically turn off paid memberships on this site.</>),
             okLabel: hasActiveStripeSubscriptions ? '' : 'Disconnect',
             onOk: async (modal) => {
                 await deleteStripeSettings(null);

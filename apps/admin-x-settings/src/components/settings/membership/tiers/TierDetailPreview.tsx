@@ -27,7 +27,7 @@ export const TrialDaysLabel: React.FC<{size?: 'sm' | 'md'; trialDays: number;}> 
     return (
         <span className={containerClassName}>
             <span className="absolute inset-0 block rounded-full bg-pink opacity-20"></span>
-            {trialDays} days free
+            <span className='dark:text-pink'>{trialDays} days free</span>
         </span>
     );
 };

@@ -16,6 +16,7 @@ export interface ModalProps {
      * Possible values are: `sm`, `md`, `lg`, `xl, `full`, `bleed`. Yu can also use any number to set an arbitrary width.
      */
     size?: ModalSize;
+    maxHeight?: number;
 
     testId?: string;
     title?: string;
@@ -46,6 +47,7 @@ export const topLevelBackdropClasses = 'bg-[rgba(98,109,121,0.2)] backdrop-blur-
 
 const Modal: React.FC<ModalProps> = ({
     size = 'md',
+    maxHeight,
     testId,
     title,
     okLabel = 'OK',
@@ -225,9 +227,15 @@ const Modal: React.FC<ModalProps> = ({
         }
     };
 
-    const modalStyles = (typeof size === 'number') ? {
-        maxWidth: size + 'px'
-    } : {};
+    let modalStyles:{maxWidth?: string; maxHeight?: string;} = {};
+
+    if (typeof size === 'number') {
+        modalStyles.maxWidth = size + 'px';
+    }
+
+    if (maxHeight) {
+        modalStyles.maxHeight = maxHeight + 'px';
+    }
 
     let footerContent;
     if (footer) {
@@ -238,9 +246,7 @@ const Modal: React.FC<ModalProps> = ({
         footerContent = (
             <div className={footerClasses}>
                 <div>
-                    {leftButtonProps &&
-                    <Button {...leftButtonProps} />
-                    }
+                    {leftButtonProps && <Button {...leftButtonProps} />}
                 </div>
                 <div className='flex gap-3'>
                     <ButtonGroup buttons={buttons}/>

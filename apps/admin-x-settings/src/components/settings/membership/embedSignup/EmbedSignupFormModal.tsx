@@ -75,7 +75,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
     const handleColorToggle = (e:string) => {
         setSelectedColor(e);
     };
-    
+
     const addSelectedLabel = (selected: MultiValue<MultiSelectOption>) => {
         if (selected?.length) {
             const chosenLabels = selected?.map(({value}) => ({label: value, value: value}));
@@ -92,12 +92,14 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             }}
             cancelLabel=''
             footer={false}
+            maxHeight={645}
+            padding={false}
             size={1120}
             testId='embed-signup-form'
             title=''
             topRightContent='close'
         >
-            <div className='grid grid-cols-[5.5fr_2.5fr] gap-6 pb-8'>
+            <div className='grid grid-cols-[5.2fr_2.8fr]'>
                 <EmbedSignupPreview
                     html={embedScript}
                     style={selectedLayout}

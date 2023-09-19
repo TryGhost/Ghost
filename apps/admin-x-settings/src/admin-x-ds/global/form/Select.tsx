@@ -108,7 +108,7 @@ const Select: React.FC<SelectProps> = ({
         valueContainer: clsx('gap-1', controlClasses?.valueContainer),
         placeHolder: clsx('text-grey-500 dark:text-grey-800', controlClasses?.placeHolder),
         menu: clsx(
-            'z-50 rounded-b bg-white py-2 shadow dark:border dark:border-grey-900 dark:bg-black',
+            'z-[300] rounded-b bg-white py-2 shadow dark:border dark:border-grey-900 dark:bg-black',
             size === 'xs' && 'text-xs',
             controlClasses?.menu
         ),
@@ -136,7 +136,7 @@ const Select: React.FC<SelectProps> = ({
             <div className={containerClasses}>
                 <ReactSelect<SelectOption, false>
                     classNames={{
-                        menuList: () => 'z-50',
+                        menuList: () => 'z-[300]',
                         valueContainer: () => customClasses.valueContainer,
                         control: () => customClasses.control,
                         placeholder: () => customClasses.placeHolder,
