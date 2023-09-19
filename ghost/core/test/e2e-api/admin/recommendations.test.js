@@ -260,6 +260,26 @@ describe('Recommendations Admin API', function () {
 
             assert.equal(page1.recommendations.length, 0);
         });
+
+        it('can fetch recommendations filtered by an exact title', async function () {
+            await addDummyRecommendations(5);
+
+            const {body} = await agent.get(`recommendations/?filter=title:'Recommendation 1'`)
+                .expectStatus(200);
+
+            assert.equal(body.recommendations.length, 1);
+            assert.equal(body.recommendations[0].title, 'Recommendation 1');
+        });
+
+        it('can fetch recommendations filtered by a partial URL', async function () {
+            await addDummyRecommendations(5);
+
+            const {body} = await agent.get(`recommendations/?filter=url:~'recommendation1.com'`)
+                .expectStatus(200);
+
+            assert.equal(body.recommendations.length, 1);
+            assert.equal(body.recommendations[0].url, 'https://recommendation1.com/');
+        });
     });
 
     describe('read', function () {
