@@ -1,3 +1,4 @@
+import Button from '../../../../admin-x-ds/global/Button';
 import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
 import ColorPickerField from '../../../../admin-x-ds/global/form/ColorPickerField';
 import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
@@ -7,9 +8,10 @@ import Hint from '../../../../admin-x-ds/global/Hint';
 import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
+import LimitModal from '../../../../admin-x-ds/global/modal/LimitModal';
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Select, {SelectOption} from '../../../../admin-x-ds/global/form/Select';
 import Separator from '../../../../admin-x-ds/global/Separator';
 import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
@@ -22,6 +24,7 @@ import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
+import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '../../../../api/newsletters';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
@@ -30,16 +33,18 @@ import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {getSettingValues} from '../../../../api/settings';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
-import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const Sidebar: React.FC<{
     newsletter: Newsletter;
+    onlyOne: boolean;
     updateNewsletter: (fields: Partial<Newsletter>) => void;
     validate: () => void;
     errors: ErrorMessages;
     clearError: (field: string) => void;
-}> = ({newsletter, updateNewsletter, validate, errors, clearError}) => {
+}> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
+    const {mutateAsync: editNewsletter} = useEditNewsletter();
+    const limiter = useLimiter();
     const {settings, siteData, config} = useGlobalData();
     const [membersSupportAddress, icon] = getSettingValues<string>(settings, ['members_support_address', 'icon']);
     const {mutateAsync: uploadImage} = useUploadImage();
@@ -66,6 +71,57 @@ const Sidebar: React.FC<{
             return false;
         }
         return textColorForBackgroundColor(newsletter.background_color).hex().toLowerCase() === '#ffffff';
+    };
+
+    const confirmStatusChange = async () => {
+        if (newsletter.status === 'active') {
+            NiceModal.show(ConfirmationModal, {
+                title: 'Archive newsletter',
+                prompt: <>
+                    <p>Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</p>
+                    <p>Existing posts previously sent as this newsletter will remain unchanged.</p>
+                </>,
+                okLabel: 'Archive',
+                okColor: 'red',
+                onOk: async (modal) => {
+                    await editNewsletter({...newsletter, status: 'archived'});
+                    modal?.remove();
+                    showToast({
+                        type: 'success',
+                        message: 'Newsletter archived successfully'
+                    });
+                }
+            });
+        } else {
+            try {
+                await limiter?.errorIfWouldGoOverLimit('newsletters');
+            } catch (error) {
+                if (error instanceof HostLimitError) {
+                    NiceModal.show(LimitModal, {
+                        prompt: error.message || `Your current plan doesn't support more newsletters.`
+                    });
+                    return;
+                } else {
+                    throw error;
+                }
+            }
+
+            NiceModal.show(ConfirmationModal, {
+                title: 'Reactivate newsletter',
+                prompt: <>
+                        Reactivating <strong>{newsletter.name}</strong> will immediately make it visible to members and re-enable it as an option when publishing new posts.
+                </>,
+                okLabel: 'Reactivate',
+                onOk: async (modal) => {
+                    await editNewsletter({...newsletter, status: 'active'});
+                    modal?.remove();
+                    showToast({
+                        type: 'success',
+                        message: 'Newsletter reactivated successfully'
+                    });
+                }
+            });
+        }
     };
 
     const tabs: Tab[] = [
@@ -129,6 +185,10 @@ const Sidebar: React.FC<{
                             onChange={e => updateNewsletter({show_badge: e.target.checked})}
                         />
                     </Form>
+                </div>
+                <Separator />
+                <div className='mb-5 mt-10'>
+                    {newsletter.status === 'active' ? (!onlyOne && <Button color='red' label='Archive newsletter' link onClick={confirmStatusChange} />) : <Button color='green' label='Reactivate newsletter' link onClick={confirmStatusChange} />}
                 </div>
             </>
         },
@@ -357,13 +417,13 @@ const Sidebar: React.FC<{
     );
 };
 
-const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
+const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: boolean;}> = ({newsletter, onlyOne}) => {
     const modal = useModal();
     const {siteData} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
 
-    const {formState, saveState, updateForm, handleSave, validate, errors, clearError} = useForm({
+    const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError} = useForm({
         initialState: newsletter,
         onSave: async () => {
             const {newsletters, meta} = await editNewsletter(formState);
@@ -406,14 +466,19 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsl
         updateForm(state => ({...state, ...fields}));
     };
 
+    useEffect(() => {
+        setFormState(() => newsletter);
+    }, [setFormState, newsletter]);
+
     const preview = <NewsletterPreview newsletter={formState} />;
-    const sidebar = <Sidebar clearError={clearError} errors={errors} newsletter={formState} updateNewsletter={updateNewsletter} validate={validate} />;
+    const sidebar = <Sidebar clearError={clearError} errors={errors} newsletter={formState} onlyOne={onlyOne} updateNewsletter={updateNewsletter} validate={validate} />;
 
     return <PreviewModalContent
         afterClose={() => updateRoute('newsletters')}
+        cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
-        okLabel='Save & close'
+        okLabel='Save'
         preview={preview}
         previewBgColor={'grey'}
         previewToolbar={false}
@@ -422,9 +487,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter}> = ({newsl
         testId='newsletter-modal'
         title='Newsletter'
         onOk={async () => {
-            toast.remove();
             if (await handleSave()) {
-                modal.remove();
                 updateRoute('newsletters');
             } else {
                 showToast({
@@ -441,7 +504,7 @@ const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     const newsletter = newsletters?.find(({id}) => id === params?.id);
 
     if (newsletter) {
-        return <NewsletterDetailModalContent newsletter={newsletter} />;
+        return <NewsletterDetailModalContent newsletter={newsletter} onlyOne={newsletters!.length === 1} />;
     } else {
         return null;
     }
