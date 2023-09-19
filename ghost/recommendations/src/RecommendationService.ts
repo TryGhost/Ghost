@@ -89,6 +89,18 @@ export class RecommendationService {
         }).catch(console.error); // eslint-disable-line no-console
     }
 
+    async readRecommendation(id: string): Promise<RecommendationPlain> {
+        const recommendation = await this.repository.getById(id);
+
+        if (!recommendation) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.notFound, {id})
+            });
+        }
+
+        return recommendation.plain;
+    }
+
     async addRecommendation(addRecommendation: AddRecommendation): Promise<RecommendationPlain> {
         const recommendation = Recommendation.create(addRecommendation);
 
