@@ -46,7 +46,7 @@ module.exports = {
 
         // copy the @tryghost/admin-x-settings assets
         const adminXSettingsPath = '../../apps/admin-x-settings/dist';
-        const assetsAdminXPath = `${assetsOut}/assets/libs/admin-x-settings`;
+        const assetsAdminXPath = `${assetsOut}/assets/admin-x-settings`;
 
         if (fs.existsSync(adminXSettingsPath)) {
             if (this.env === 'production') {
