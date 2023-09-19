@@ -71,15 +71,6 @@ module.exports = class BookshelfCollectionsRepository {
      * @returns {Promise<Array<{post_id: string}>>}
      */
     async #fetchCollectionPostIds(collectionId, options = {}) {
-        if (!options.transaction) {
-            return this.createTransaction((transaction) => {
-                return this.#fetchCollectionPostIds(collectionId, {
-                    ...options,
-                    transaction
-                });
-            });
-        }
-
         const toSelect = options.columns || ['post_id'];
 
         return await this.#relationModel
