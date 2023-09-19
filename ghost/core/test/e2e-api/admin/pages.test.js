@@ -1,3 +1,5 @@
+const {mobiledocToLexical} = require('@tryghost/kg-converters');
+const models = require('../../../core/server/models');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {anyArray, anyBoolean, anyContentVersion, anyEtag, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyUuid} = matchers;
 
@@ -28,6 +30,7 @@ describe('Pages API', function () {
     let agent;
 
     before(async function () {
+        mockManager.mockLabsEnabled('collectionsCard');
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();
@@ -35,6 +38,44 @@ describe('Pages API', function () {
 
     afterEach(function () {
         mockManager.restore();
+    });
+
+    describe('Read', function () {
+        it('Re-renders html when null', async function () {
+            // "queue" an existing page for re-render as happens when a published page is updated/destroyed
+            const page = await models.Post.findOne({slug: 'static-page-test'});
+            // NOTE: re-rendering only occurs for lexical pages
+            const lexical = mobiledocToLexical(page.get('mobiledoc'));
+            await page.save({mobiledoc: null, lexical: lexical, html: null}, {patch: true});
+
+            await agent
+                .get(`/pages/${page.id}/?formats=mobiledoc,lexical,html`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    pages: [Object.assign({}, matchPageShallowIncludes)]
+                });
+        });
+    });
+
+    describe('Browse', function () {
+        it('Re-renders html when null', async function () {
+            // convert inserted pages to lexical and set html=null so we can test re-render
+            const pages = await models.Post.where('type', 'page').fetchAll();
+            for (const page of pages) {
+                if (!page.get('mobiledoc')) {
+                    continue;
+                }
+                const lexical = mobiledocToLexical(page.get('mobiledoc'));
+                await page.save({mobiledoc: null, lexical, html: null}, {patch: true});
+            }
+
+            await agent
+                .get('/pages/?formats=mobiledoc,lexical,html')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    pages: Array(pages.length).fill(Object.assign({}, matchPageShallowIncludes))
+                });
+        });
     });
 
     describe('Create', function () {
