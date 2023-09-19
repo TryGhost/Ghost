@@ -5,10 +5,14 @@ const escapeNqlString = (value: string) => {
     return '\'' + value.replace(/'/g, '\\\'') + '\'';
 };
 
-const useFilterableApi = <Data extends {id: string}, Key extends string = string>({path, filterKey, responseKey, limit = 20}: {
+const useFilterableApi = <
+    Data extends {id: string} & {[Key in FilterKey]: string},
+    ResponseKey extends string = string,
+    FilterKey extends string = string
+>({path, filterKey, responseKey, limit = 20}: {
     path: string
-    filterKey: string
-    responseKey: Key
+    filterKey: FilterKey
+    responseKey: ResponseKey
     limit?: number
 }) => {
     const fetchApi = useFetchApi();
@@ -21,11 +25,11 @@ const useFilterableApi = <Data extends {id: string}, Key extends string = string
 
     const loadData = async (input: string) => {
         if ((result.current.allLoaded || result.current.lastInput === input) && result.current.data) {
-            return result.current.data;
+            return result.current.data.filter(item => item[filterKey]?.toLowerCase().includes(input.toLowerCase()));
         }
 
-        const response = await fetchApi<{meta?: Meta} & {[k in Key]: Data[]}>(apiUrl(path, {
-            filter: `${filterKey}:~${escapeNqlString(input)}`,
+        const response = await fetchApi<{meta?: Meta} & {[k in ResponseKey]: Data[]}>(apiUrl(path, {
+            filter: input ? `${filterKey}:~${escapeNqlString(input)}` : '',
             limit: limit.toString()
         }));
 
@@ -46,7 +50,7 @@ const useFilterableApi = <Data extends {id: string}, Key extends string = string
             const missingIds = ids.filter(id => !result.current.data?.find(({id: dataId}) => dataId === id));
 
             if (missingIds.length) {
-                const additionalData = await fetchApi<{meta?: Meta} & {[k in Key]: Data[]}>(apiUrl(path, {
+                const additionalData = await fetchApi<{meta?: Meta} & {[k in ResponseKey]: Data[]}>(apiUrl(path, {
                     filter: `id:[${missingIds.join(',')}]`,
                     limit: 'all'
                 }));

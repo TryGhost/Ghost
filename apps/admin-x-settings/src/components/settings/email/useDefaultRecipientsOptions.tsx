@@ -18,9 +18,9 @@ const SIMPLE_SEGMENT_OPTIONS: MultiSelectOption[] = [{
 }];
 
 const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipientsFilter?: string | null) => {
-    const tiers = useFilterableApi<Tier>({path: '/tiers', filterKey: 'name', responseKey: 'tiers'});
-    const labels = useFilterableApi<Label>({path: '/labels', filterKey: 'name', responseKey: 'labels'});
-    const offers = useFilterableApi<Offer>({path: '/offers', filterKey: 'name', responseKey: 'offers'});
+    const tiers = useFilterableApi<Tier, 'tiers', 'name'>({path: '/tiers', filterKey: 'name', responseKey: 'tiers'});
+    const labels = useFilterableApi<Label, 'labels', 'name'>({path: '/labels', filterKey: 'name', responseKey: 'labels'});
+    const offers = useFilterableApi<Offer, 'offers', 'name'>({path: '/offers', filterKey: 'name', responseKey: 'offers'});
 
     const [selectedSegments, setSelectedSegments] = useState<MultiValue<MultiSelectOption> | null>(null);
 
