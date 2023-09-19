@@ -1,6 +1,7 @@
-import NiceModal, {NiceModalHocProps} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {createContext, useCallback, useEffect, useState} from 'react';
 import {ScrollSectionProvider} from '../../hooks/useScrollSection';
+import type {ModalComponent, ModalName} from './routing/modals';
 
 export type RouteParams = {[key: string]: string}
 
@@ -32,32 +33,7 @@ export type RoutingModalProps = {
     params?: Record<string, string>
 }
 
-const modals: {[key: string]: () => Promise<{default: React.FC<NiceModalHocProps & RoutingModalProps>}>} = {
-    AddIntegrationModal: () => import('../settings/advanced/integrations/AddIntegrationModal'),
-    AddNewsletterModal: () => import('../settings/email/newsletters/AddNewsletterModal'),
-    AddRecommendationModal: () => import('../settings/site/recommendations/AddRecommendationModal'),
-    AmpModal: () => import('../settings/advanced/integrations/AmpModal'),
-    CustomIntegrationModal: () => import('../settings/advanced/integrations/CustomIntegrationModal'),
-    DesignAndThemeModal: () => import('../settings/site/DesignAndThemeModal'),
-    EditRecommendationModal: () => import('../settings/site/recommendations/EditRecommendationModal'),
-    FirstpromoterModal: () => import('../settings/advanced/integrations/FirstPromoterModal'),
-    HistoryModal: () => import('../settings/advanced/HistoryModal'),
-    InviteUserModal: () => import('../settings/general/InviteUserModal'),
-    NavigationModal: () => import('../settings/site/NavigationModal'),
-    NewsletterDetailModal: () => import('../settings/email/newsletters/NewsletterDetailModal'),
-    PinturaModal: () => import('../settings/advanced/integrations/PinturaModal'),
-    PortalModal: () => import('../settings/membership/portal/PortalModal'),
-    SlackModal: () => import('../settings/advanced/integrations/SlackModal'),
-    StripeConnectModal: () => import('../settings/membership/stripe/StripeConnectModal'),
-    TierDetailModal: () => import('../settings/membership/tiers/TierDetailModal'),
-    UnsplashModal: () => import('../settings/advanced/integrations/UnsplashModal'),
-    UserDetailModal: () => import('../settings/general/UserDetailModal'),
-    ZapierModal: () => import('../settings/advanced/integrations/ZapierModal'),
-    AnnouncementBarModal: () => import('../settings/site/AnnouncementBarModal'),
-    EmbedSignupFormModal: () => import('../settings/membership/embedSignup/EmbedSignupFormModal')
-};
-
-const modalPaths: {[key: string]: keyof typeof modals} = {
+const modalPaths: {[key: string]: ModalName} = {
     'design/edit/themes': 'DesignAndThemeModal',
     'design/edit': 'DesignAndThemeModal',
     'navigation/edit': 'NavigationModal',
@@ -118,8 +94,8 @@ const handleNavigation = (currentRoute: string | undefined) => {
             pathName,
             changingModal: modalName && modalName !== currentModalName,
             modal: (path && modalName) ?
-                modals[modalName]().then(({default: component}) => {
-                    NiceModal.show(component, {pathName, params: matchRoute(pathName, path)});
+                import('./routing/modals').then(({default: modals}) => {
+                    NiceModal.show(modals[modalName] as ModalComponent, {pathName, params: matchRoute(pathName, path)});
                 }) :
                 undefined
         };
@@ -147,7 +123,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
     useEffect(() => {
         // Preload all the modals after initial render to avoid a delay when opening them
         setTimeout(() => {
-            Object.values(modalPaths).forEach(modal => modals[modal]());
+            import('./routing/modals');
         }, 1000);
     }, []);
 
