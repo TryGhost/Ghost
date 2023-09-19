@@ -11,7 +11,7 @@ import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import LimitModal from '../../../../admin-x-ds/global/modal/LimitModal';
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Select, {SelectOption} from '../../../../admin-x-ds/global/form/Select';
 import Separator from '../../../../admin-x-ds/global/Separator';
 import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
@@ -423,7 +423,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
 
-    const {formState, saveState, updateForm, handleSave, validate, errors, clearError} = useForm({
+    const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError} = useForm({
         initialState: newsletter,
         onSave: async () => {
             const {newsletters, meta} = await editNewsletter(formState);
@@ -465,6 +465,10 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
     const updateNewsletter = (fields: Partial<Newsletter>) => {
         updateForm(state => ({...state, ...fields}));
     };
+
+    useEffect(() => {
+        setFormState(() => newsletter);
+    }, [setFormState, newsletter]);
 
     const preview = <NewsletterPreview newsletter={formState} />;
     const sidebar = <Sidebar clearError={clearError} errors={errors} newsletter={formState} onlyOne={onlyOne} updateNewsletter={updateNewsletter} validate={validate} />;
