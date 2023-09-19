@@ -201,8 +201,8 @@ export const importSettings = async () => {
         return window['@tryghost/admin-x-settings'];
     }
 
-    const baseUrl = (config.cdnUrl || ghostPaths().assetRootWithHost);
-    const url = new URL(`${baseUrl}libs/admin-x-settings/admin-x-settings.js`);
+    const baseUrl = (config.cdnUrl ? `${config.cdnUrl}assets/` : ghostPaths().assetRootWithHost);
+    const url = new URL(`${baseUrl}admin-x-settings/admin-x-settings.js`);
 
     if (url.protocol === 'http:') {
         window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}`);
