@@ -33,13 +33,13 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                             <RecommendationIcon {...recommendation} />
                             <span className='line-clamp-1'>{recommendation.title}</span>
                         </div>
-                        <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{recommendation.reason || 'No reason added'}</span>
+                        <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{recommendation.url || 'No reason added'}</span>
                     </div>
                 </div>
             </TableCell>
             <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
-                    {count === 0 ? <span className="text-grey-500">-</span> : <span>{count}</span>}
+                    {count === 0 ? <span className="text-grey-500">0</span> : <span>{count}</span>}
                     <span className='whitespace-nowrap text-xs text-grey-700'>{showSubscribes ? 'Subscribers from you' : 'Clicks from you'}</span>
                 </div>
             </TableCell>
