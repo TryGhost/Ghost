@@ -5,10 +5,10 @@ import InfiniteScrollListener from '../../../admin-x-ds/global/InfiniteScrollLis
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
-import MultiSelect, {MultiSelectOption} from '../../../admin-x-ds/global/form/MultiSelect';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
 import Popover from '../../../admin-x-ds/global/Popover';
+import Select, {SelectOption} from '../../../admin-x-ds/global/form/Select';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../admin-x-ds/global/form/ToggleGroup';
 import useRouting from '../../../hooks/useRouting';
@@ -74,11 +74,13 @@ const HistoryFilter: React.FC<{
 }> = ({excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
     const {updateRoute} = useRouting();
     const {users} = useStaffUsers();
-    const [searchedStaff, setSearchStaff] = useState<MultiSelectOption | null>();
+    const [searchedStaff, setSearchStaff] = useState<SelectOption | null>();
 
     const resetStaff = () => {
         setSearchStaff(null);
     };
+
+    const userOptions = users.map(user => ({label: user.name, value: user.id}));
 
     return (
         <div className='flex items-center gap-4'>
@@ -99,16 +101,15 @@ const HistoryFilter: React.FC<{
                 </div>
             </Popover>
             <div className='w-[200px]'>
-                <MultiSelect
-                    fieldStyle='text'
-                    options={users.map(user => ({label: user.name, value: user.id}))}
+                <Select
+                    options={userOptions}
                     placeholder='Search staff'
-                    size='sm'
-                    values={(searchedStaff ? [searchedStaff] : [])}
-                    onChange={(options) => {
-                        if (options.length) {
-                            setSearchStaff(options[options.length - 1]);
-                            updateRoute(`history/view/${options[options.length - 1].value}`);
+                    value={searchedStaff}
+                    isClearable
+                    onSelect={(value) => {
+                        if (value) {
+                            setSearchStaff(userOptions.find(option => option.value === value)!);
+                            updateRoute(`history/view/${value}`);
                         } else {
                             resetStaff();
                             updateRoute('history/view');
