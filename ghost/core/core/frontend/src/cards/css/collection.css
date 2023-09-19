@@ -11,11 +11,15 @@
     margin-top: 6vmin; 
 }
 
-
 .kg-collection-card-title {
     padding: .8rem 0 1.6rem 0;
     font-size: 1.5rem;
     text-transform: uppercase;
+}
+
+a.kg-collection-card-post-wrapper {
+    text-decoration: none;
+    color: var(--text-color);
 }
 
 .kg-collection-card-post {
