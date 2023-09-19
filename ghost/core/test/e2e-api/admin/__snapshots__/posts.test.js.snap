@@ -2118,14 +2118,6 @@ Object {
               "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
               "sort_order": 19,
             },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 20,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 21,
-            },
           ],
           "slug": "latest",
           "title": "Latest",
@@ -2222,7 +2214,7 @@ exports[`Posts API Update Can add and remove collections 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5407",
+  "content-length": "5307",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2345,14 +2337,6 @@ Object {
               "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
               "sort_order": 19,
             },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 20,
-            },
-            Object {
-              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-              "sort_order": 21,
-            },
           ],
           "slug": "latest",
           "title": "Latest",
@@ -2449,7 +2433,7 @@ exports[`Posts API Update Can add and remove collections 6: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5401",
+  "content-length": "5301",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
