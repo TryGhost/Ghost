@@ -2,26 +2,82 @@ const {agentProvider, fixtureManager, mockManager, matchers} = require('../../ut
 const {anyObjectId, anyErrorId, anyISODateTime, anyContentVersion, anyLocationFor, anyEtag} = matchers;
 const assert = require('assert/strict');
 const recommendationsService = require('../../../core/server/services/recommendations');
-const {Recommendation} = require('@tryghost/recommendations');
+const {Recommendation, ClickEvent, SubscribeEvent} = require('@tryghost/recommendations');
 
-async function addDummyRecommendation(agent) {
-    await agent.post('recommendations/').body({
-        recommendations: [{
-            title: 'Dog Pictures',
-            url: 'https://dogpictures.com'
-        }]
+async function addDummyRecommendation(i = 0) {
+    const recommendation = Recommendation.create({
+        title: `Recommendation ${i}`,
+        reason: `Reason ${i}`,
+        url: new URL(`https://recommendation${i}.com`),
+        favicon: new URL(`https://recommendation${i}.com/favicon.ico`),
+        featuredImage: new URL(`https://recommendation${i}.com/featured.jpg`),
+        excerpt: 'Test excerpt',
+        oneClickSubscribe: true,
+        createdAt: new Date(i * 5000) // Reliable ordering
     });
-    const id = (await recommendationsService.repository.getAll())[0].id;
-    return id;
+
+    await recommendationsService.repository.save(recommendation);
+    return recommendation.id;
+}
+
+async function addDummyRecommendations(amount = 15) {
+    // Add 15 recommendations using the repository
+    for (let i = 0; i < amount; i++) {
+        await addDummyRecommendation(i);
+    }
+}
+
+async function addClicksAndSubscribers({memberId}) {
+    const recommendations = await recommendationsService.repository.getAll({order: [{field: 'createdAt', direction: 'desc'}]});
+
+    // Create 2 clicks for 1st
+    for (let i = 0; i < 2; i++) {
+        const clickEvent = ClickEvent.create({
+            recommendationId: recommendations[0].id
+        });
+
+        await recommendationsService.clickEventRepository.save(clickEvent);
+    }
+
+    // Create 3 clicks for 2nd
+    for (let i = 0; i < 3; i++) {
+        const clickEvent = ClickEvent.create({
+            recommendationId: recommendations[1].id
+        });
+
+        await recommendationsService.clickEventRepository.save(clickEvent);
+    }
+
+    // Create 3 subscribers for 1st
+    for (let i = 0; i < 3; i++) {
+        const subscribeEvent = SubscribeEvent.create({
+            recommendationId: recommendations[0].id,
+            memberId
+        });
+
+        await recommendationsService.subscribeEventRepository.save(subscribeEvent);
+    }
+
+    // Create 2 subscribers for 3rd
+    for (let i = 0; i < 2; i++) {
+        const subscribeEvent = SubscribeEvent.create({
+            recommendationId: recommendations[2].id,
+            memberId
+        });
+
+        await recommendationsService.subscribeEventRepository.save(subscribeEvent);
+    }
 }
 
 describe('Recommendations Admin API', function () {
-    let agent;
+    let agent, memberId;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('posts');
+        await fixtureManager.init('posts', 'members');
         await agent.loginAsOwner();
+
+        memberId = fixtureManager.get('members', 0).id;
     });
 
     afterEach(async function () {
@@ -29,8 +85,22 @@ describe('Recommendations Admin API', function () {
             recommendation.delete();
             await recommendationsService.repository.save(recommendation);
         }
-
         mockManager.restore();
+    });
+
+    it('Can fetch recommendations with relations when there are no recommendations', async function () {
+        const recommendations = await recommendationsService.repository.getCount();
+        assert.equal(recommendations, 0, 'This test expects there to be no recommendations');
+
+        const {body: page1} = await agent.get('recommendations/?include=count.clicks,count.subscribers')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({});
+
+        assert.equal(page1.recommendations.length, 0);
     });
 
     it('Can add a minimal recommendation', async function () {
@@ -111,6 +181,14 @@ describe('Recommendations Admin API', function () {
                     title: 'Dog Pictures',
                     url: 'https://dogpictures.com'
                 }]
+            })
+            .matchBodySnapshot({
+                recommendations: [
+                    {
+                        id: anyObjectId,
+                        created_at: anyISODateTime
+                    }
+                ]
             });
 
         await agent.post('recommendations/')
@@ -120,11 +198,18 @@ describe('Recommendations Admin API', function () {
                     url: 'https://dogpictures.com'
                 }]
             })
-            .expectStatus(422);
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [
+                    {
+                        id: anyErrorId
+                    }
+                ]
+            });
     });
 
     it('Can edit recommendation', async function () {
-        const id = await addDummyRecommendation(agent);
+        const id = await addDummyRecommendation();
         const {body} = await agent.put(`recommendations/${id}/`)
             .body({
                 recommendations: [{
@@ -163,8 +248,76 @@ describe('Recommendations Admin API', function () {
         assert.equal(body.recommendations[0].one_click_subscribe, false);
     });
 
+    it('Can edit recommendation and set nullable fields to null', async function () {
+        const id = await addDummyRecommendation();
+        const {body} = await agent.put(`recommendations/${id}/`)
+            .body({
+                recommendations: [{
+                    reason: null,
+                    excerpt: null,
+                    featured_image: null,
+                    favicon: null
+                }]
+            })
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                recommendations: [
+                    {
+                        id: anyObjectId,
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
+                    }
+                ]
+            });
+
+        // Check everything is set correctly
+        assert.equal(body.recommendations[0].id, id);
+        assert.equal(body.recommendations[0].reason, null);
+        assert.equal(body.recommendations[0].excerpt, null);
+        assert.equal(body.recommendations[0].featured_image, null);
+        assert.equal(body.recommendations[0].favicon, null);
+    });
+
+    it('Can edit some fields of a recommendation without changing others', async function () {
+        const id = await addDummyRecommendation();
+        const {body} = await agent.put(`recommendations/${id}/`)
+            .body({
+                recommendations: [{
+                    title: 'Changed'
+                }]
+            })
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                recommendations: [
+                    {
+                        id: anyObjectId,
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
+                    }
+                ]
+            });
+
+        // Check everything is set correctly
+        assert.equal(body.recommendations[0].id, id);
+        assert.equal(body.recommendations[0].title, 'Changed');
+        assert.equal(body.recommendations[0].url, 'https://recommendation0.com/');
+        assert.equal(body.recommendations[0].reason, 'Reason 0');
+        assert.equal(body.recommendations[0].excerpt, 'Test excerpt');
+        assert.equal(body.recommendations[0].featured_image, 'https://recommendation0.com/featured.jpg');
+        assert.equal(body.recommendations[0].favicon, 'https://recommendation0.com/favicon.ico');
+        assert.equal(body.recommendations[0].one_click_subscribe, true);
+    });
+
     it('Cannot use invalid protocols when editing', async function () {
-        const id = await addDummyRecommendation(agent);
+        const id = await addDummyRecommendation();
 
         await agent.put(`recommendations/${id}/`)
             .body({
@@ -193,7 +346,7 @@ describe('Recommendations Admin API', function () {
     });
 
     it('Can delete recommendation', async function () {
-        const id = await addDummyRecommendation(agent);
+        const id = await addDummyRecommendation();
         await agent.delete(`recommendations/${id}/`)
             .expectStatus(204)
             .matchHeaderSnapshot({
@@ -204,7 +357,7 @@ describe('Recommendations Admin API', function () {
     });
 
     it('Can browse', async function () {
-        await addDummyRecommendation(agent);
+        await addDummyRecommendation();
 
         await agent.get('recommendations/')
             .expectStatus(200)
@@ -225,20 +378,7 @@ describe('Recommendations Admin API', function () {
 
     it('Can request pages', async function () {
         // Add 15 recommendations using the repository
-        for (let i = 0; i < 15; i++) {
-            const recommendation = Recommendation.create({
-                title: `Recommendation ${i}`,
-                reason: `Reason ${i}`,
-                url: new URL(`https://recommendation${i}.com`),
-                favicon: null,
-                featuredImage: null,
-                excerpt: null,
-                oneClickSubscribe: false,
-                createdAt: new Date(i * 5000) // Reliable ordering
-            });
-
-            await recommendationsService.repository.save(recommendation);
-        }
+        await addDummyRecommendations(15);
 
         const {body: page1} = await agent.get('recommendations/?page=1&limit=10')
             .expectStatus(200)
@@ -284,6 +424,7 @@ describe('Recommendations Admin API', function () {
     });
 
     it('Uses default limit of 5', async function () {
+        await addDummyRecommendations(6);
         const {body: page1} = await agent.get('recommendations/')
             .expectStatus(200)
             .matchHeaderSnapshot({
@@ -292,5 +433,83 @@ describe('Recommendations Admin API', function () {
             });
 
         assert.equal(page1.meta.pagination.limit, 5);
+    });
+
+    it('Can include click and subscribe counts', async function () {
+        await addDummyRecommendations(5);
+        await addClicksAndSubscribers({memberId});
+
+        const {body: page1} = await agent.get('recommendations/?include=count.clicks,count.subscribers')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                recommendations: new Array(5).fill({
+                    id: anyObjectId,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime
+                })
+            });
+
+        assert.equal(page1.recommendations[0].count.clicks, 2);
+        assert.equal(page1.recommendations[1].count.clicks, 3);
+
+        assert.equal(page1.recommendations[0].count.subscribers, 3);
+        assert.equal(page1.recommendations[1].count.subscribers, 0);
+        assert.equal(page1.recommendations[2].count.subscribers, 2);
+    });
+
+    it('Can include only clicks', async function () {
+        await addDummyRecommendations(5);
+        await addClicksAndSubscribers({memberId});
+
+        const {body: page1} = await agent.get('recommendations/?include=count.clicks')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                recommendations: new Array(5).fill({
+                    id: anyObjectId,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime
+                })
+            });
+
+        assert.equal(page1.recommendations[0].count.clicks, 2);
+        assert.equal(page1.recommendations[1].count.clicks, 3);
+
+        assert.equal(page1.recommendations[0].count.subscribers, undefined);
+        assert.equal(page1.recommendations[1].count.subscribers, undefined);
+        assert.equal(page1.recommendations[2].count.subscribers, undefined);
+    });
+
+    it('Can include only subscribers', async function () {
+        await addDummyRecommendations(5);
+        await addClicksAndSubscribers({memberId});
+
+        const {body: page1} = await agent.get('recommendations/?include=count.subscribers')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                recommendations: new Array(5).fill({
+                    id: anyObjectId,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime
+                })
+            });
+
+        assert.equal(page1.recommendations[0].count.clicks, undefined);
+        assert.equal(page1.recommendations[1].count.clicks, undefined);
+
+        assert.equal(page1.recommendations[0].count.subscribers, 3);
+        assert.equal(page1.recommendations[1].count.subscribers, 0);
+        assert.equal(page1.recommendations[2].count.subscribers, 2);
     });
 });

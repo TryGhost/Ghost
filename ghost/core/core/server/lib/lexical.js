@@ -8,6 +8,7 @@ let nodes;
 let lexicalHtmlRenderer;
 let urlTransformMap;
 let postsService;
+let serializePosts;
 
 function populateNodes() {
     const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
@@ -33,17 +34,35 @@ module.exports = {
             const getPostServiceInstance = require('../services/posts/posts-service');
             postsService = getPostServiceInstance();
         }
+        if (!serializePosts) {
+            serializePosts = require('../api/endpoints/utils/serializers/output/posts').all;
+        }
 
         const getCollectionPosts = async (collectionSlug, postCount) => {
+            const frame = {
+                options: {
+                    columns: ['url','excerpt','reading_time']
+                },
+                original: {
+                    context: {
+                        member: {
+                            status: 'paid'
+                        }
+                    }
+                },
+                apiType: 'content',
+                response: {}
+            };
+
             const transacting = userOptions.transacting;
-            const {data} = await postsService.browsePosts({
+            const response = await postsService.browsePosts({
                 context: {public: true}, // mimic Content API request
                 collection: collectionSlug,
                 limit: postCount,
                 transacting
             });
-            let posts = data.map(p => p.toJSON());
-            return posts;
+            await serializePosts(response, null, frame);
+            return frame.response.posts;
         };
 
         const options = Object.assign({

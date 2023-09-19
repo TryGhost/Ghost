@@ -39,31 +39,55 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
         className
     );
 
-    // We want to avoid layout jumps when we load a new page of the table, or when data is invalidated
     const table = React.useRef<HTMLTableSectionElement>(null);
+    const maxTableHeight = React.useRef(0);
     const [tableHeight, setTableHeight] = React.useState<number | undefined>(undefined);
 
+    const multiplePages = pagination && pagination.pages && pagination.pages > 1;
+
+    // Observe the height of the table content. This is used to:
+    // 1) avoid layout jumps when loading a new page of the table
+    // 2) keep the same table height between pages, cf. https://github.com/TryGhost/Product/issues/3881
     React.useEffect(() => {
-        // Add resize observer to table
         if (table.current) {
             const resizeObserver = new ResizeObserver((entries) => {
                 const height = entries[0].target.clientHeight;
                 setTableHeight(height);
+
+                if (height > maxTableHeight.current) {
+                    maxTableHeight.current = height;
+                }
             });
+
             resizeObserver.observe(table.current);
+
             return () => {
                 resizeObserver.disconnect();
             };
         }
-    }, [isLoading]);
+    }, [isLoading, pagination]);
 
     const loadingStyle = React.useMemo(() => {
         if (tableHeight === undefined) {
-            return undefined;
+            return {
+                height: 'auto'
+            };
         }
 
         return {
-            height: tableHeight
+            height: maxTableHeight.current
+        };
+    }, [tableHeight]);
+
+    const spaceHeightStyle = React.useMemo(() => {
+        if (tableHeight === undefined) {
+            return {
+                height: 0
+            };
+        }
+
+        return {
+            height: maxTableHeight.current - tableHeight
         };
     }, [tableHeight]);
 
@@ -71,18 +95,17 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
         <>
             <div className='w-full overflow-x-auto'>
                 {pageTitle && <Heading>{pageTitle}</Heading>}
-              
-                {/* TODO: make this div have the same height across all pages */}
-                <div>
-                    <table className={tableClasses}>
-                        {header && <thead className='border-b border-grey-200 dark:border-grey-600'>
-                            <TableRow bgOnHover={false} separator={false}>{header}</TableRow>
-                        </thead>}
-                        {!isLoading && <tbody ref={table}>
-                            {children}
-                        </tbody>}
-                    </table>
-                </div>
+
+                <table className={tableClasses}>
+                    {header && <thead className='border-b border-grey-200 dark:border-grey-600'>
+                        <TableRow bgOnHover={false} separator={false}>{header}</TableRow>
+                    </thead>}
+                    {!isLoading && <tbody ref={table}>
+                        {children}
+                    </tbody>}
+
+                    {multiplePages && <div style={spaceHeightStyle} />}
+                </table>
 
                 {isLoading && <LoadingIndicator delay={200} size='lg' style={loadingStyle} />}
 

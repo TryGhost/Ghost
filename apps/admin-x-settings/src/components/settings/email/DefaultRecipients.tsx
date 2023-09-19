@@ -18,18 +18,23 @@ type RefipientValueArgs = {
 
 const RECIPIENT_FILTER_OPTIONS = [{
     label: 'Whoever has access to the post',
+    hint: 'Free posts to everyone, premium posts sent to paid members',
     value: 'visibility'
 }, {
     label: 'All members',
+    hint: 'Everyone who is subscribed to newsletter updates, whether free or paid members',
     value: 'all-members'
 }, {
     label: 'Paid-members only',
+    hint: 'People who have a premium subscription',
     value: 'paid-only'
 }, {
     label: 'Specific people',
+    hint: 'Only people with any of the selected tiers or labels',
     value: 'segment'
 }, {
     label: 'Usually nobody',
+    hint: 'Newsletters are off for new posts, but can be enabled when needed',
     value: 'none'
 }];
 
@@ -166,7 +171,9 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 selectedOption={selectedOption}
                 title="Default Newsletter recipients"
                 onSelect={(value) => {
-                    setDefaultRecipientValue(value);
+                    if (value) {
+                        setDefaultRecipientValue(value);
+                    }
                 }}
             />
             {(selectedOption === 'segment') && (

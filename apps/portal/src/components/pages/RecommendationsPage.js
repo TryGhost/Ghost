@@ -194,10 +194,7 @@ const RecommendationItem = (recommendation) => {
                 siteUrl: url,
                 throwErrors: true
             });
-            if (!clicked) {
-                onAction('trackRecommendationSubscribed', {recommendationId: recommendation.id});
-                setClicked(true);
-            }
+            onAction('trackRecommendationSubscribed', {recommendationId: recommendation.id});
             setSubscribed(true);
         } catch (_) {
             // Open portal signup page
@@ -254,8 +251,14 @@ const RecommendationsPage = () => {
 
     useEffect(() => {
         api.site.recommendations({limit: 100}).then((data) => {
+            const withOneClickSubscribe = data.recommendations.filter(recommendation => recommendation.one_click_subscribe);
+            const withoutOneClickSubscribe = data.recommendations.filter(recommendation => !recommendation.one_click_subscribe);
+
             setRecommendations(
-                shuffleRecommendations(data.recommendations)
+                [
+                    ...shuffleRecommendations(withOneClickSubscribe),
+                    ...shuffleRecommendations(withoutOneClickSubscribe)
+                ]
             );
         }).catch((err) => {
             // eslint-disable-next-line no-console

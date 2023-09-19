@@ -15,7 +15,7 @@ module.exports = {
         permissions: true,
         validation: {},
         async query(frame) {
-            return await recommendations.controller.listRecommendations(frame);
+            return await recommendations.controller.browse(frame);
         }
     },
 

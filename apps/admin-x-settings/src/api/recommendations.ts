@@ -10,7 +10,8 @@ export type Recommendation = {
     url: string
     one_click_subscribe: boolean
     created_at: string,
-    updated_at: string|null
+    updated_at: string|null,
+    count?: {subscribers?: number, clicks?: number}
 }
 
 export type EditOrAddRecommendation = Omit<Recommendation, 'id'|'created_at'|'updated_at'> & {id?: string};

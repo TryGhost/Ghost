@@ -3,9 +3,9 @@ import {ConfigResponseType} from '../../src/api/config';
 import {CustomThemeSettingsResponseType} from '../../src/api/customThemeSettings';
 import {InvitesResponseType} from '../../src/api/invites';
 import {LabelsResponseType} from '../../src/api/labels';
+import {Locator, Page} from '@playwright/test';
 import {NewslettersResponseType} from '../../src/api/newsletters';
 import {OffersResponseType} from '../../src/api/offers';
-import {Page} from '@playwright/test';
 import {RolesResponseType} from '../../src/api/roles';
 import {SettingsResponseType} from '../../src/api/settings';
 import {SiteResponseType} from '../../src/api/site';
@@ -145,4 +145,9 @@ export async function mockSitePreview({page, url, response}: {page: Page, url: s
     });
 
     return lastRequest;
+}
+
+export async function chooseOptionInSelect(select: Locator, optionText: string | RegExp) {
+    await select.click();
+    await select.page().locator('[data-testid="select-option"]', {hasText: optionText}).click();
 }

@@ -1,7 +1,7 @@
 import {Integration, IntegrationsResponseType} from '../../../../src/api/integrations';
 import {Webhook, WebhooksResponseType} from '../../../../src/api/webhooks';
+import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/e2e';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/e2e';
 
 test.describe('Custom integrations', async () => {
     test('Supports creating an integration and adding webhooks', async ({page}) => {
@@ -146,10 +146,8 @@ test.describe('Custom integrations', async () => {
 
         await webhookModal.getByLabel('Name').fill('My webhook');
         await webhookModal.getByLabel('Target URL').fill('https://example.com');
-        await webhookModal.getByLabel('Event').selectOption('Post created');
+        await chooseOptionInSelect(webhookModal.getByLabel('Event'), 'Post created');
 
-        // Playwright fails unless you click twice, for some reason (timing issue with validations?)
-        await webhookModal.getByRole('button', {name: 'Add'}).click();
         await webhookModal.getByRole('button', {name: 'Add'}).click();
 
         await expect(modal).toHaveText(/My webhook/);

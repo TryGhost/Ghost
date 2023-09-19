@@ -163,7 +163,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>
                     {customButtons ? customButtons :
-                        (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link={true} />)}
+                        (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link linkWithPadding />)}
                 </SettingGroupHeader>
             }
             {children}
