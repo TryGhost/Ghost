@@ -6,11 +6,10 @@ import React, {useEffect, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import useRouting from '../../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {useCreateIntegration} from '../../../../api/integrations';
 
-interface AddIntegrationModalProps {}
-
-const AddIntegrationModal: React.FC<AddIntegrationModalProps> = () => {
+const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const [name, setName] = useState('');

@@ -9,14 +9,13 @@ import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 import {useAddNewsletter} from '../../../../api/newsletters';
 import {useBrowseMembers} from '../../../../api/members';
 
-interface AddNewsletterModalProps {}
-
-const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
+const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
 
