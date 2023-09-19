@@ -46,6 +46,12 @@ export const RecommendationsPageStyles = `
         position: relative;
     }
 
+    .gh-portal-recommendation-item .gh-portal-recommendation-description-container p {
+        font-size: 1.35rem;
+        padding-left: 28px;
+        font-weight: 300;
+    }
+
     .gh-portal-recommendation-description-hidden {
         visibility: hidden;
     }
