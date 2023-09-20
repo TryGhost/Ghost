@@ -108,7 +108,7 @@ export function CollectionNodeComponent({
 
             <ActionToolbar
                 data-kg-card-toolbar="collection"
-                isVisible={isSelected && !isEditing}
+                isVisible={isSelected && !isEditing && !showSnippetToolbar}
             >
                 <ToolbarMenu>
                     <ToolbarMenuItem dataTestId="edit-collection-card" icon="edit" isActive={false} label="Edit" onClick={handleToolbarEdit} />
