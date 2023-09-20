@@ -49,6 +49,6 @@ describe('UnsplashService', () => {
     it('can load next page', async function () {
         await unsplashService.loadNextPage();
         const photos = unsplashService.photos;
-        expect(photos.length).toBe(1);
+        expect(photos.length).toBe(2);
     });
 });
