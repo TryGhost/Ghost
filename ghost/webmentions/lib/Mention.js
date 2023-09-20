@@ -19,6 +19,17 @@ module.exports = class Mention {
         return this.#verified;
     }
 
+    /** @type {boolean} */
+    #deleted = false;
+
+    get deleted() {
+        return this.#deleted;
+    }
+
+    delete() {
+        this.#deleted = true;
+    }
+
     /**
      * @param {string} html
      * @param {string} contentType
@@ -175,11 +186,6 @@ module.exports = class Mention {
         this.#sourceAuthor = sourceAuthor;
         this.#sourceFavicon = sourceFavicon;
         this.#sourceFeaturedImage = sourceFeaturedImage;
-    }
-
-    #deleted = false;
-    delete() {
-        this.#deleted = true;
     }
 
     toJSON() {

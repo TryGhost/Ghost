@@ -19,6 +19,7 @@ const mockResourceService = {
         };
     }
 };
+
 const mockWebmentionMetadata = {
     async fetch() {
         return {
@@ -221,6 +222,52 @@ describe('MentionsAPI', function () {
         assert(page.meta.pagination.total === 2);
         assert(page.data[0].id === mentionOne.id, 'First mention should be the first one in ascending order');
         assert(page.data[1].id === mentionTwo.id, 'Second mention should be the second one in ascending order');
+    });
+
+    it('Can update recommendations', async function () {
+        const repository = new InMemoryMentionRepository();
+        const api = new MentionsAPI({
+            repository,
+            routingService: mockRoutingService,
+            resourceService: mockResourceService,
+            webmentionMetadata: {
+                fetch: sinon.stub()
+                    .onFirstCall().resolves(mockWebmentionMetadata.fetch())
+                    .onSecondCall().resolves(mockWebmentionMetadata.fetch())
+                    .onThirdCall().resolves(mockWebmentionMetadata.fetch())
+                    .onCall(3).rejects()
+            }
+        });
+
+        await api.processWebmention({
+            source: new URL('https://source.com'),
+            target: new URL('https://target.com'),
+            payload: {}
+        });
+
+        sinon.useFakeTimers(addMinutes(new Date(), 10).getTime());
+
+        await api.processWebmention({
+            source: new URL('https://source2.com'),
+            target: new URL('https://target.com'),
+            payload: {}
+        });
+
+        let page = await api.listMentions({
+            limit: 'all'
+        });
+        assert(page.meta.pagination.total === 2);
+
+        // Now we invalidate the second mention
+
+        await api.refreshMentions({
+            limit: 'all'
+        });
+
+        page = await api.listMentions({
+            limit: 'all'
+        });
+        assert(page.meta.pagination.total === 1);
     });
 
     it('Can handle updating mentions', async function () {
