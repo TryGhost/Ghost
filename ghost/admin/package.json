@@ -48,7 +48,7 @@
     "@tryghost/kg-converters": "0.0.14",
     "@tryghost/kg-parser-plugins": "3.0.33",
     "@tryghost/kg-simplemde": "1.11.2",
-    "@tryghost/limit-service": "1.2.6",
+    "@tryghost/limit-service": "1.2.10",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.2",
     "@tryghost/nql": "0.11.0",
