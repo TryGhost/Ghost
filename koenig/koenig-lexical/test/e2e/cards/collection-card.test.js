@@ -148,7 +148,7 @@ test.describe('Collection card', async () => {
             const postsContainer = await page.getByTestId('collection-posts-container');
             await expect(postsContainer).toHaveClass('grid w-full grid-cols-3 gap-8');
             await page.getByTestId('collection-layout-list').click();
-            await expect(postsContainer).toHaveClass('grid w-full gap-5');
+            await expect(postsContainer).toHaveClass('grid w-full gap-8');
         });
 
         test('can change post count', async function () {

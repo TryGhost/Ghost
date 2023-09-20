@@ -809,7 +809,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-                    @apply text-md uppercase font-sans leading-normal font-bold tracking-tight;
+                    @apply text-md uppercase font-sans leading-normal font-bold tracking-[-.01em];
         }
         :where(
                     strong

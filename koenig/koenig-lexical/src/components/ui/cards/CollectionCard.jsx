@@ -38,12 +38,12 @@ function PostImage({image, layout, columns, isLoading}) {
 function PostTitle({title, layout, columns, isLoading}) {
     return (
         <div className={clsx(
-            'font-bold tracking-normal text-black dark:text-grey-100',
-            layout === 'list' && 'text-xl leading-snug',
-            (layout === 'grid' && columns === 1) && 'text-4xl leading-tight',
-            (layout === 'grid' && columns === 2) && 'text-2xl leading-snug',
-            (layout === 'grid' && columns === 3) && 'text-xl leading-snug',
-            (layout === 'grid' && columns === 4) && 'text-[1.7rem] leading-snug',
+            'font-bold leading-tight tracking-normal text-black dark:text-grey-100',
+            layout === 'list' && 'text-2xl',
+            (layout === 'grid' && columns === 1) && 'text-4xl',
+            (layout === 'grid' && columns === 2) && 'text-2xl',
+            (layout === 'grid' && columns === 3) && 'text-xl',
+            (layout === 'grid' && columns === 4) && 'text-[1.7rem]',
             isLoading && 'h-3 w-full animate-pulse rounded-full bg-grey-200 dark:bg-grey-950'
         )}>
             {isLoading ? ' ' : title}</div>
@@ -53,12 +53,12 @@ function PostTitle({title, layout, columns, isLoading}) {
 function PostExcerpt({excerpt, layout, columns, isLoading}) {
     return (
         <div className={clsx(
-            'overflow-y-hidden font-normal leading-snug text-grey-900 dark:text-grey-600',
-            layout === 'list' && 'mt-2 line-clamp-3 max-h-[62px] text-md',
-            (layout === 'grid' && columns === 1) && 'mt-3 line-clamp-3 max-h-[75px] text-lg',
-            (layout === 'grid' && columns === 2) && 'mt-3 line-clamp-3 max-h-[66px] text-[1.6rem]',
-            (layout === 'grid' && columns === 3) && 'mt-2 line-clamp-2 max-h-[42px] text-md',
-            (layout === 'grid' && columns === 4) && 'mt-2 line-clamp-2 max-h-[42px] text-md',
+            'overflow-y-hidden font-normal leading-snug tracking-[-.01em] text-grey-900 dark:text-grey-600',
+            layout === 'list' && 'mt-3 line-clamp-3 max-h-[62px] text-[1.6rem]',
+            (layout === 'grid' && columns === 1) && 'mt-4 line-clamp-3 max-h-[75px] text-lg',
+            (layout === 'grid' && columns === 2) && 'mt-4 line-clamp-3 max-h-[66px] text-[1.6rem]',
+            (layout === 'grid' && columns === 3) && 'mt-3 line-clamp-2 max-h-[42px] text-md',
+            (layout === 'grid' && columns === 4) && 'mt-3 line-clamp-2 max-h-[42px] text-md',
             isLoading && 'w-1/2 animate-pulse rounded-full bg-grey-200 dark:bg-grey-950'
         )}>
             {isLoading ? 
@@ -74,12 +74,12 @@ function PostMeta({publishDate, readTime, layout, columns, isLoading}) {
     }
     return (
         <div className={clsx(
-            'flex font-normal leading-snug text-grey-600 dark:text-grey-400',
-            layout === 'list' && 'mt-2 text-md',
-            (layout === 'grid' && columns === 1) && 'mt-3 text-lg',
-            (layout === 'grid' && columns === 2) && 'mt-3 text-[1.6rem]',
-            (layout === 'grid' && columns === 3) && 'mt-2 text-md',
-            (layout === 'grid' && columns === 4) && 'mt-2 text-md',
+            'flex font-medium leading-snug text-grey-600 dark:text-grey-400',
+            layout === 'list' && 'mt-3 text-[1.3rem]',
+            (layout === 'grid' && columns === 1) && 'mt-4 text-sm',
+            (layout === 'grid' && columns === 2) && 'mt-4 text-[1.3rem]',
+            (layout === 'grid' && columns === 3) && 'mt-3 text-[1.25rem]',
+            (layout === 'grid' && columns === 4) && 'mt-3 text-[1.25rem]',
         )}>
             {publishDate ? 
                 (<div>{DateTime.fromISO(publishDate).toFormat('d LLL yyyy')}</div>)
@@ -119,7 +119,7 @@ export function CollectionPost({
     return (
         <div className={clsx(
             'not-kg-prose relative w-full bg-transparent font-sans',
-            layout === 'list' && 'grid grid-cols-3 gap-5',
+            layout === 'list' && 'grid grid-cols-3 gap-8',
             layout === 'grid' && 'flex flex-col',
             (layout === 'grid' && columns === 1) && 'gap-5',
             (layout === 'grid' && columns === 2) && 'gap-4',
@@ -249,7 +249,7 @@ export function CollectionCard({
                     initialEditor={headerEditor}
                     initialState={headerEditorInitialState}
                     nodes="minimal"
-                    placeholderClassName={'text-md uppercase font-sans leading-normal font-bold tracking-tight text-black dark:text-grey-50 opacity-40'}
+                    placeholderClassName={'text-md uppercase font-sans leading-normal font-bold tracking-[-.01em] text-black dark:text-grey-50 opacity-40'}
                     placeholderText="Collection title"
                     singleParagraph={true}
                     textClassName={'koenig-lexical-section-title whitespace-normal text-black dark:text-grey-50 opacity-100 pt-2 pb-4'}
@@ -257,7 +257,7 @@ export function CollectionCard({
             }
             <div className={clsx(
                 'grid w-full',
-                layout === 'list' && 'gap-5',
+                layout === 'list' && 'gap-8',
                 (layout === 'grid' && columns === 1) && 'grid-cols-1 gap-y-12',
                 (layout === 'grid' && columns === 2) && 'grid-cols-2 gap-10',
                 (layout === 'grid' && columns === 3) && 'grid-cols-3 gap-8',
