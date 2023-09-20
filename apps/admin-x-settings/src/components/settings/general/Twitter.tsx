@@ -7,6 +7,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/twitter-logo.svg';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -115,4 +116,4 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Twitter;
+export default withErrorBoundary(Twitter, 'Twitter card');

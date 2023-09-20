@@ -5,6 +5,7 @@ import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import validator from 'validator';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 function validateFacebookUrl(newUrl: string) {
     const errMessage = 'The URL must be in a format like https://www.facebook.com/yourPage';
@@ -199,4 +200,4 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default SocialAccounts;
+export default withErrorBoundary(SocialAccounts, 'Social accounts');

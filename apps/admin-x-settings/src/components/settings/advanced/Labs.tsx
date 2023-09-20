@@ -8,6 +8,7 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupHeader from '../../../admin-x-ds/settings/SettingGroupHeader';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 type LabsTab = 'labs-migration-options' | 'labs-alpha-features' | 'labs-beta-features';
 
@@ -66,4 +67,4 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Labs;
+export default withErrorBoundary(Labs, 'Labs');
