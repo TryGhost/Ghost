@@ -4,6 +4,8 @@ import RecommendationIcon from './RecommendationIcon';
 import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 // import TableHead from '../../../../admin-x-ds/global/TableHead';
+import EditRecommendationModal from './EditRecommendationModal';
+import NiceModal from '@ebay/nice-modal-react';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
 import {PaginationData} from '../../../../hooks/usePagination';
@@ -16,10 +18,16 @@ interface RecommendationListProps {
 }
 
 const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recommendation}) => {
-    const {updateRoute} = useRouting();
+    const {route} = useRouting();
 
+    // Navigate to the edit page, without changing the route
+    // This helps to avoid fetching the recommendation
     const showDetails = () => {
-        updateRoute({route: `recommendations/${recommendation.id}`});
+        NiceModal.show(EditRecommendationModal, {
+            pathName: route,
+            animate: false,
+            recommendation: recommendation
+        });
     };
 
     const showSubscribes = recommendation.one_click_subscribe && (recommendation.count?.subscribers || recommendation.count?.clicks === 0);
