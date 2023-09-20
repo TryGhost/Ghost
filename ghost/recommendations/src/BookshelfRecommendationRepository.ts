@@ -75,8 +75,8 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
         } as Record<keyof Recommendation, string>;
     }
 
-    async getByUrl(url: URL): Promise<Recommendation | null> {
-        const model = await (this.Model as RecommendationModelClass<string>).findOne({url: url.toString()}, {require: false});
-        return model ? this.modelToEntity(model) : null;
+    async getByUrl(url: URL): Promise<Recommendation[]> {
+        const urlFilter = `url:~'${url.host.replace('www.', '')}${url.pathname.replace(/\/$/, '')}'`;
+        return this.getPage({filter: urlFilter, page: 1, limit: 1});
     }
 }

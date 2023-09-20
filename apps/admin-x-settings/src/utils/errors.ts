@@ -37,3 +37,9 @@ export class ValidationError extends JSONError {
         super(response, data, data.errors[0].message);
     }
 }
+
+export class AlreadyExistsError extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}
