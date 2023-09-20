@@ -30,7 +30,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
         });
     };
 
-    const showSubscribes = recommendation.one_click_subscribe && (recommendation.count?.subscribers || recommendation.count?.clicks === 0);
+    const showSubscribes = recommendation.one_click_subscribe;
     const count = (showSubscribes ? recommendation.count?.subscribers : recommendation.count?.clicks) || 0;
 
     return (
