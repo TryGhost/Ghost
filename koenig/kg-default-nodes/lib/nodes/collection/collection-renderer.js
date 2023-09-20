@@ -23,8 +23,7 @@ export function renderCollectionNode(node, options = {}) {
 function cardTemplate(node, posts) {
     const {collection, postCount, layout, columns, header} = node.getDataset();
 
-    const cardClass = 'kg-card kg-collection-card'
-        + (layout === 'grid' ? ' kg-width-wide' : '');
+    const cardClass = 'kg-card kg-collection-card kg-width-wide';
     const headerClass = 'kg-collection-card-title';
     const collectionClass = 'kg-collection-card-feed'
         + (layout === 'list' ? ' kg-collection-card-list' : ' kg-collection-card-grid')

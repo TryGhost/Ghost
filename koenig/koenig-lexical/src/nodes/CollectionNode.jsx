@@ -67,7 +67,7 @@ export class CollectionNode extends BaseCollectionNode {
         return (
             <KoenigCardWrapper
                 nodeKey={this.getKey()}
-                width={this.layout === 'grid' ? 'wide' : null}
+                width={'wide'}
             >
                 <CollectionNodeComponent
                     collection={this.collection}

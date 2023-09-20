@@ -145,7 +145,7 @@ describe('CollectionNode', function () {
             exportOptions.renderData = renderData;
             const {element} = collectionNode.exportDOM(exportOptions);
             const expectedElement = html`
-                <div class="kg-card kg-collection-card" data-kg-collection-slug="featured" data-kg-collection-limit="3">
+                <div class="kg-card kg-collection-card kg-width-wide" data-kg-collection-slug="featured" data-kg-collection-limit="3">
                     <h4 class="kg-collection-card-title">Featured Posts</h4>
                     <div class="kg-collection-card-feed kg-collection-card-list">
                         <a href="https://www.google.com" class="kg-collection-card-post-wrapper">
