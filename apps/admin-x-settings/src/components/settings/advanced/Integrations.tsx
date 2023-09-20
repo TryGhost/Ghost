@@ -8,6 +8,7 @@ import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
+import handleError from '../../../utils/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
@@ -171,12 +172,16 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                                 okColor: 'red',
                                 okLabel: 'Delete Integration',
                                 onOk: async (confirmModal) => {
-                                    await deleteIntegration(integration.id);
-                                    confirmModal?.remove();
-                                    showToast({
-                                        message: 'Integration deleted',
-                                        type: 'success'
-                                    });
+                                    try {
+                                        await deleteIntegration(integration.id);
+                                        confirmModal?.remove();
+                                        showToast({
+                                            message: 'Integration deleted',
+                                            type: 'success'
+                                        });
+                                    } catch (e) {
+                                        handleError(e);
+                                    }
                                 }
                             });
                         }}

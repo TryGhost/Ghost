@@ -1,4 +1,5 @@
 import handleResponse from './handleResponse';
+import {APIError, ServerUnreachableError, TimeoutError} from './errors';
 import {QueryClient, UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {getGhostPaths} from './helpers';
 import {useMemo} from 'react';
@@ -61,12 +62,18 @@ export const useFetchApi = () => {
             });
 
             return handleResponse(response);
-        } catch (error: any) {
-            if (error.name === 'AbortError') {
-                throw new Error('Request timed out');
+        } catch (error) {
+            if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
+                throw new TimeoutError();
             }
 
-            throw error;
+            let newError = error;
+
+            if (!(error instanceof APIError)) {
+                newError = new ServerUnreachableError({cause: error});
+            }
+
+            throw newError;
         };
     };
 };
