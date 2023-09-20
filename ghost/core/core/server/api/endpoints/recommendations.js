@@ -10,12 +10,27 @@ module.exports = {
         options: [
             'limit',
             'page',
-            'include'
+            'include',
+            'filter'
         ],
         permissions: true,
         validation: {},
         async query(frame) {
             return await recommendations.controller.browse(frame);
+        }
+    },
+
+    read: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        permissions: true,
+        validation: {},
+        async query(frame) {
+            return await recommendations.controller.read(frame);
         }
     },
 

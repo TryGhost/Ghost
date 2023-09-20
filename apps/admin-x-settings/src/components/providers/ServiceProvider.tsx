@@ -17,7 +17,8 @@ interface ServicesContextProps {
     officialThemes: OfficialTheme[];
     zapierTemplates: ZapierTemplate[];
     search: SearchService;
-    unsplashConfig: DefaultHeaderTypes
+    unsplashConfig: DefaultHeaderTypes;
+    toggleFeatureFlag: (flag: string, enabled: boolean) => void;
 }
 
 interface ServicesProviderProps {
@@ -25,7 +26,8 @@ interface ServicesProviderProps {
     ghostVersion: string;
     zapierTemplates: ZapierTemplate[];
     officialThemes: OfficialTheme[];
-    unsplashConfig: DefaultHeaderTypes
+    toggleFeatureFlag: (flag: string, enabled: boolean) => void;
+    unsplashConfig: DefaultHeaderTypes;
 }
 
 const ServicesContext = createContext<ServicesContextProps>({
@@ -33,6 +35,7 @@ const ServicesContext = createContext<ServicesContextProps>({
     officialThemes: [],
     zapierTemplates: [],
     search: {filter: '', setFilter: () => {}, checkVisible: () => true},
+    toggleFeatureFlag: () => {},
     unsplashConfig: {
         Authorization: '',
         'Accept-Version': '',
@@ -42,7 +45,7 @@ const ServicesContext = createContext<ServicesContextProps>({
     }
 });
 
-const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, unsplashConfig}) => {
+const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, toggleFeatureFlag, unsplashConfig}) => {
     const search = useSearchService();
 
     return (
@@ -51,7 +54,8 @@ const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersi
             officialThemes,
             zapierTemplates,
             search,
-            unsplashConfig
+            unsplashConfig,
+            toggleFeatureFlag
         }}>
             {children}
         </ServicesContext.Provider>

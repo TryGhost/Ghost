@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.63.0",
+  "version": "5.64.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -16,7 +16,7 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "ember serve",
+    "dev": "ember serve",
     "build": "ember build --environment=production --silent",
     "build:dev": "yarn build --environment=development",
     "test:unit": "true",
@@ -48,7 +48,7 @@
     "@tryghost/kg-converters": "0.0.14",
     "@tryghost/kg-parser-plugins": "3.0.33",
     "@tryghost/kg-simplemde": "1.11.2",
-    "@tryghost/limit-service": "1.2.6",
+    "@tryghost/limit-service": "1.2.10",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.2",
     "@tryghost/nql": "0.11.0",
@@ -181,5 +181,31 @@
     "jose": "4.14.6",
     "path-browserify": "1.0.1",
     "webpack": "5.88.2"
+  },
+  "nx": {
+    "targets": {
+      "build:dev": {
+        "dependsOn": [
+          "build:dev",
+          {
+            "projects": [
+              "@tryghost/admin-x-settings"
+            ],
+            "target": "build"
+          }
+        ]
+      },
+      "build": {
+        "dependsOn": [
+          "build",
+          {
+            "projects": [
+              "@tryghost/admin-x-settings"
+            ],
+            "target": "build"
+          }
+        ]
+      }
+    }
   }
 }

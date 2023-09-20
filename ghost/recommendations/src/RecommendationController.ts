@@ -18,6 +18,17 @@ export class RecommendationController {
         this.service = deps.service;
     }
 
+    async read(frame: Frame) {
+        const options = new UnsafeData(frame.options);
+        const id = options.key('id').string;
+
+        const recommendation = await this.service.readRecommendation(id);
+
+        return this.#serialize(
+            [recommendation]
+        );
+    }
+
     async add(frame: Frame) {
         const data = new UnsafeData(frame.data);
         const recommendation = data.key('recommendations').index(0);
@@ -71,6 +82,7 @@ export class RecommendationController {
         const page = options.optionalKey('page')?.integer ?? 1;
         const limit = options.optionalKey('limit')?.integer ?? 5;
         const include = options.optionalKey('withRelated')?.array.map(item => item.enum<RecommendationIncludeFields>(['count.clicks', 'count.subscribers'])) ?? [];
+        const filter = options.optionalKey('filter')?.string;
 
         const order = [
             {
@@ -80,7 +92,7 @@ export class RecommendationController {
         ];
 
         const count = await this.service.countRecommendations({});
-        const recommendations = (await this.service.listRecommendations({page, limit, order, include}));
+        const recommendations = (await this.service.listRecommendations({page, limit, filter, include, order}));
 
         return this.#serialize(
             recommendations,

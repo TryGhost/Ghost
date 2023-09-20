@@ -32,6 +32,7 @@ const Toggle: React.FC<ToggleProps> = ({
     separator,
     error,
     checked,
+    disabled,
     onChange
 }) => {
     const id = useId();
@@ -83,7 +84,16 @@ const Toggle: React.FC<ToggleProps> = ({
         <div>
             <div className={`group flex items-start gap-2 dark:text-white ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'}`}>
                 <input checked={checked}
-                    className={`${toggleBgClass} appearance-none rounded-full bg-grey-300 transition after:absolute after:ml-0.5 after:mt-0.5 after:rounded-full after:border-none after:bg-white after:transition-[background-color_0.2s,transform_0.2s] after:content-[''] checked:after:absolute checked:after:rounded-full checked:after:border-none checked:after:bg-white checked:after:transition-[background-color_0.2s,transform_0.2s] checked:after:content-[''] hover:cursor-pointer group-hover:opacity-80 dark:bg-grey-800 ${sizeStyles} ${direction === 'rtl' && ' order-2'}`}
+                    className={clsx(
+                        toggleBgClass,
+                        'appearance-none rounded-full bg-grey-300 transition dark:bg-grey-800',
+                        `after:absolute after:ml-0.5 after:mt-0.5 after:rounded-full after:border-none after:bg-white after:transition-[background-color_0.2s,transform_0.2s] after:content-['']`,
+                        `checked:after:absolute checked:after:rounded-full checked:after:border-none checked:after:bg-white checked:after:transition-[background-color_0.2s,transform_0.2s] checked:after:content-['']`,
+                        'enabled:hover:cursor-pointer disabled:opacity-40 enabled:group-hover:opacity-80',
+                        sizeStyles,
+                        direction === 'rtl' && ' order-2'
+                    )}
+                    disabled={disabled}
                     id={id}
                     role="switch"
                     type="checkbox"
