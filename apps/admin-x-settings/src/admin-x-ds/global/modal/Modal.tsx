@@ -308,7 +308,7 @@ const Modal: React.FC<ModalProps> = ({
     );
 
     footerClasses = clsx(
-        `${paddingClasses} ${stickyFooter ? 'py-6' : 'pt-0'}`,
+        `${paddingClasses} ${stickyFooter ? 'py-6' : ''}`,
         'flex w-full items-center justify-between'
     );
 
