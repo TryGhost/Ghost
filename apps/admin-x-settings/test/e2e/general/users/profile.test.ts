@@ -1,18 +1,20 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, responseFixtures} from '../../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures} from '../../../utils/e2e';
 
 test.describe('User profile', async () => {
     test('Supports editing user profiles', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            users: {
-                edit: {
-                    users: [{
-                        ...responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!,
-                        email: 'newadmin@test.com',
-                        name: 'New Admin'
-                    }]
-                }
-            }
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                users: [{
+                    ...userToEdit,
+                    email: 'newadmin@test.com',
+                    name: 'New Admin'
+                }]
+            }}
         }});
 
         await page.goto('/');
@@ -32,7 +34,7 @@ test.describe('User profile', async () => {
         await modal.getByLabel('Email').fill('newadmin@test.com');
         await modal.getByLabel('Slug').fill('newadmin');
         await modal.getByLabel('Location').fill('some location');
-        await modal.getByLabel('Website').fill('some site');
+        await modal.getByLabel('Website').fill('https://example.com');
         await modal.getByLabel('Facebook profile').fill('some fb');
         await modal.getByLabel('Twitter profile').fill('some tw');
         await modal.getByLabel('Bio').fill('some bio');
@@ -40,22 +42,20 @@ test.describe('User profile', async () => {
         await modal.getByLabel(/New paid members/).uncheck();
         await modal.getByLabel(/Paid member cancellations/).check();
 
-        await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
 
         await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
-
-        await modal.getByRole('button', {name: 'Close'}).click();
 
         await expect(listItem.getByText('New Admin')).toBeVisible();
         await expect(listItem.getByText('newadmin@test.com')).toBeVisible();
 
-        expect(lastApiRequests.users.edit.body).toMatchObject({
+        expect(lastApiRequests.editUser?.body).toMatchObject({
             users: [{
                 email: 'newadmin@test.com',
                 name: 'New Admin',
                 slug: 'newadmin',
                 location: 'some location',
-                website: 'some site',
+                website: 'https://example.com',
                 facebook: 'some fb',
                 twitter: 'some tw',
                 bio: 'some bio',
@@ -66,7 +66,11 @@ test.describe('User profile', async () => {
     });
 
     test('Supports changing password', async ({page}) => {
-        const lastApiRequests = await mockApi({page});
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            updatePassword: {method: 'PUT', path: '/users/password/', response: {}}
+        }});
 
         await page.goto('/');
 
@@ -83,17 +87,17 @@ test.describe('User profile', async () => {
 
         await modal.getByRole('button', {name: 'Change password'}).click();
 
-        await modal.getByLabel('New password').fill('newpassword');
-        await modal.getByLabel('Verify password').fill('newpassword');
+        await modal.getByLabel('New password').fill('newpasshere');
+        await modal.getByLabel('Verify password').fill('newpasshere');
 
         await modal.getByRole('button', {name: 'Change password'}).click();
 
         await expect(modal.getByRole('button', {name: 'Updated'})).toBeVisible();
 
-        expect(lastApiRequests.users.updatePassword.body).toMatchObject({
+        expect(lastApiRequests.updatePassword?.body).toMatchObject({
             password: [{
-                newPassword: 'newpassword',
-                ne2Password: 'newpassword',
+                newPassword: 'newpasshere',
+                ne2Password: 'newpasshere',
                 oldPassword: '',
                 user_id: responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!.id
             }]
@@ -101,7 +105,20 @@ test.describe('User profile', async () => {
     });
 
     test('Supports uploading profile picture', async ({page}) => {
-        const lastApiRequests = await mockApi({page});
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'owner@test.com')!;
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            uploadImage: {method: 'POST', path: '/images/upload/', response: {images: [{url: 'http://example.com/image.png', ref: null}]}},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                users: [{
+                    ...userToEdit,
+                    profile_image: 'http://example.com/image.png',
+                    cover_image: 'http://example.com/image.png'
+                }]
+            }}
+        }});
 
         await page.goto('/');
 
@@ -109,7 +126,7 @@ test.describe('User profile', async () => {
 
         const wrapper = section.getByTestId('owner-user');
         await wrapper.hover();
-        await wrapper.getByRole('button', {name: 'Edit'}).click();
+        await wrapper.getByRole('button', {name: 'View profile'}).click();
 
         // Upload profile picture
 
@@ -141,7 +158,7 @@ test.describe('User profile', async () => {
 
         await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
 
-        expect(lastApiRequests.users.edit.body).toMatchObject({
+        expect(lastApiRequests.editUser?.body).toMatchObject({
             users: [{
                 email: 'owner@test.com',
                 profile_image: 'http://example.com/image.png',

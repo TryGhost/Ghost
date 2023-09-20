@@ -1,26 +1,13 @@
 import {InMemoryRepository} from '@tryghost/in-memory-repository';
+import {CollectionPost} from '../../src/CollectionPost';
 
-type CollectionPost = {
-    id: string;
-    slug: string;
-    featured: boolean;
-    published_at: Date;
-    deleted: boolean;
-};
-
-export class PostsRepositoryInMemory extends InMemoryRepository<string, CollectionPost> {
+export class PostsRepositoryInMemory extends InMemoryRepository<string, CollectionPost & {deleted: false}> {
     protected toPrimitive(entity: CollectionPost): object {
         return {
             id: entity.id,
-            slug: entity.slug,
             featured: entity.featured,
-            published_at: entity.published_at
+            published_at: entity.published_at,
+            tags: entity.tags.map(tag => tag.slug)
         };
-    }
-
-    getBulk(ids: string[]): Promise<CollectionPost[]> {
-        return this.getAll({
-            filter: `id:[${ids.join(',')}]`
-        });
     }
 }

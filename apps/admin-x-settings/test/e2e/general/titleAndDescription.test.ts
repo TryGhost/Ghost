@@ -1,15 +1,14 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
+import {globalDataRequests, mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Title and description settings', async () => {
     test('Supports editing the title and description', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {key: 'title', value: 'New Site Title'},
-                    {key: 'description', value: 'New Site Description'}
-                ])
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: /^\/settings\/$/, response: updatedSettingsResponse([
+                {key: 'title', value: 'New Site Title'},
+                {key: 'description', value: 'New Site Description'}
+            ])}
         }});
 
         await page.goto('/');
@@ -31,7 +30,7 @@ test.describe('Title and description settings', async () => {
         await expect(section.getByText('New Site Title')).toHaveCount(1);
         await expect(section.getByText('New Site Description')).toHaveCount(1);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'title', value: 'New Site Title'},
                 {key: 'description', value: 'New Site Description'}

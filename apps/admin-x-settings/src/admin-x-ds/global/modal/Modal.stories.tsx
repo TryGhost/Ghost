@@ -1,4 +1,5 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import {ReactNode} from 'react';
+import type {Meta, StoryContext, StoryObj} from '@storybook/react';
 
 import Modal from './Modal';
 import ModalContainer from './ModalContainer';
@@ -9,7 +10,14 @@ const meta = {
     title: 'Global / Modal',
     component: Modal,
     tags: ['autodocs'],
-    decorators: [(_story: any, context: any) => (
+    argTypes: {
+        topRightContent: {
+            control: {
+                type: 'text'
+            }
+        }
+    },
+    decorators: [(_story: () => ReactNode, context: StoryContext) => (
         <NiceModal.Provider>
             <ModalContainer {...context.args} />
         </NiceModal.Provider>
@@ -27,6 +35,8 @@ export const Default: Story = {
         onOk: () => {
             alert('Clicked OK!');
         },
+        onCancel: undefined,
+        topRightContent: 'close',
         title: 'Modal dialog',
         children: modalContent
     }
@@ -38,6 +48,7 @@ export const Small: Story = {
         onOk: () => {
             alert('Clicked OK!');
         },
+        onCancel: undefined,
         title: 'Small modal',
         children: modalContent
     }
@@ -49,6 +60,7 @@ export const Medium: Story = {
         onOk: () => {
             alert('Clicked OK!');
         },
+        onCancel: undefined,
         title: 'Medium modal (default size)',
         children: modalContent
     }
@@ -60,6 +72,7 @@ export const Large: Story = {
         onOk: () => {
             alert('Clicked OK!');
         },
+        onCancel: undefined,
         title: 'Large modal',
         children: modalContent
     }
@@ -71,6 +84,7 @@ export const ExtraLarge: Story = {
         onOk: () => {
             alert('Clicked OK!');
         },
+        onCancel: undefined,
         title: 'Extra large modal',
         children: modalContent
     }
@@ -82,6 +96,7 @@ export const Full: Story = {
         onOk: () => {
             alert('Clicked OK!');
         },
+        onCancel: undefined,
         title: 'Full modal',
         children: modalContent
     }
@@ -93,6 +108,7 @@ export const Bleed: Story = {
         onOk: () => {
             alert('Clicked OK!');
         },
+        onCancel: undefined,
         title: 'Full bleed modal',
         children: modalContent
     }
@@ -102,7 +118,7 @@ export const CompletePage: Story = {
     args: {
         size: 'full',
         footer: <></>,
-        noPadding: true,
+        padding: false,
         children: <>
             <ModalPage heading='Hey there full page'>
                 <p>This is a full page in a modal</p>
@@ -113,12 +129,18 @@ export const CompletePage: Story = {
 
 export const CustomButtons: Story = {
     args: {
-        leftButtonLabel: 'Extra action',
+        leftButtonProps: {
+            label: 'Left button',
+            onClick: () => {
+                alert('Left button click');
+            }
+        },
         cancelLabel: 'Nope',
         okLabel: 'Yep',
         onOk: () => {
             alert('Clicked Yep!');
         },
+        onCancel: undefined,
         title: 'Custom buttons',
         children: modalContent
     }
@@ -139,6 +161,20 @@ const longContent = (
     </>
 );
 
+export const StickyHeader: Story = {
+    args: {
+        size: 'md',
+        stickyHeader: true,
+        onOk: () => {
+            alert('Clicked OK!');
+        },
+        onCancel: undefined,
+        title: 'Sticky header',
+        stickyFooter: true,
+        children: longContent
+    }
+};
+
 export const StickyFooter: Story = {
     args: {
         size: 'md',
@@ -146,6 +182,7 @@ export const StickyFooter: Story = {
         onOk: () => {
             alert('Clicked OK!');
         },
+        onCancel: undefined,
         title: 'Sticky footer',
         children: longContent
     }
@@ -158,7 +195,21 @@ export const Dirty: Story = {
         onOk: () => {
             alert('Clicked OK!');
         },
+        onCancel: undefined,
         title: 'Dirty modal',
         children: <p>Simulates if there were unsaved changes of a form. Click on Cancel</p>
+    }
+};
+
+export const FormSheet: Story = {
+    args: {
+        onOk: () => {
+            alert('Clicked OK!');
+        },
+        onCancel: undefined,
+        size: 'sm',
+        title: 'Form sheet',
+        formSheet: true,
+        children: <p>Slightly differently styled modal that can be used to display small forms <em>inside other modals</em>. Use it sparingly!</p>
     }
 };

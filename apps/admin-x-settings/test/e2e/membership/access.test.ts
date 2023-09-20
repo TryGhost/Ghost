@@ -1,16 +1,15 @@
+import {chooseOptionInSelect, globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
-import {mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Access settings', async () => {
     test('Supports editing access', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {key: 'default_content_visibility', value: 'members'},
-                    {key: 'members_signup_access', value: 'invite'},
-                    {key: 'comments_enabled', value: 'all'}
-                ])
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'default_content_visibility', value: 'members'},
+                {key: 'members_signup_access', value: 'invite'},
+                {key: 'comments_enabled', value: 'all'}
+            ])}
         }});
 
         await page.goto('/');
@@ -23,9 +22,9 @@ test.describe('Access settings', async () => {
 
         await section.getByRole('button', {name: 'Edit'}).click();
 
-        await section.getByLabel('Subscription access').selectOption({label: 'Only people I invite'});
-        await section.getByLabel('Default post access').selectOption({label: 'Members only'});
-        await section.getByLabel('Commenting').selectOption({label: 'All members'});
+        await chooseOptionInSelect(section.getByLabel('Subscription access'), 'Only people I invite');
+        await chooseOptionInSelect(section.getByLabel('Default post access'), /^Members only$/);
+        await chooseOptionInSelect(section.getByLabel('Commenting'), 'All members');
 
         await section.getByRole('button', {name: 'Save'}).click();
 
@@ -35,7 +34,7 @@ test.describe('Access settings', async () => {
         await expect(section.getByText('Members only')).toHaveCount(1);
         await expect(section.getByText('All members')).toHaveCount(1);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'default_content_visibility', value: 'members'},
                 {key: 'members_signup_access', value: 'invite'},
@@ -45,13 +44,13 @@ test.describe('Access settings', async () => {
     });
 
     test('Supports selecting specific tiers', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {key: 'default_content_visibility', value: 'tiers'},
-                    {key: 'default_content_visibility_tiers', value: JSON.stringify(responseFixtures.tiers.tiers.map(tier => tier.id))}
-                ])
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseTiers: {method: 'GET', path: '/tiers/?limit=all', response: responseFixtures.tiers},
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'default_content_visibility', value: 'tiers'},
+                {key: 'default_content_visibility_tiers', value: JSON.stringify(responseFixtures.tiers.tiers.map(tier => tier.id))}
+            ])}
         }});
 
         await page.goto('/');
@@ -60,20 +59,20 @@ test.describe('Access settings', async () => {
 
         await section.getByRole('button', {name: 'Edit'}).click();
 
-        await section.getByLabel('Default post access').selectOption({label: 'Specific tiers'});
+        await chooseOptionInSelect(section.getByLabel('Default post access'), 'Specific tiers');
         await section.getByLabel('Select tiers').click();
 
-        await section.locator('[data-testid="multiselect-option"]', {hasText: 'Basic Supporter'}).click();
-        await section.locator('[data-testid="multiselect-option"]', {hasText: 'Ultimate Starlight Diamond Supporter'}).click();
+        await section.locator('[data-testid="select-option"]', {hasText: 'Basic Supporter'}).click();
+        await section.locator('[data-testid="select-option"]', {hasText: 'Ultimate Starlight Diamond Tier'}).click();
 
         await section.getByRole('button', {name: 'Save'}).click();
 
         await expect(section.getByText('Specific tiers')).toHaveCount(1);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'default_content_visibility', value: 'tiers'},
-                {key: 'default_content_visibility_tiers', value: JSON.stringify(responseFixtures.tiers.tiers.map(tier => tier.id))}
+                {key: 'default_content_visibility_tiers', value: JSON.stringify(responseFixtures.tiers.tiers.slice(1).map(tier => tier.id))}
             ]
         });
     });

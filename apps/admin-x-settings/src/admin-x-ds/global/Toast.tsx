@@ -1,7 +1,7 @@
 import Icon from './Icon';
 import React from 'react';
 import clsx from 'clsx';
-import {ToastOptions, toast} from 'react-hot-toast';
+import {Toast as HotToast, ToastOptions, toast} from 'react-hot-toast';
 
 export type ToastType = 'neutral' | 'success' | 'error' | 'pageError';
 
@@ -13,7 +13,7 @@ export interface ShowToastProps {
 }
 
 interface ToastProps {
-    t: any;
+    t: HotToast;
 
     /**
      * Can be a name of an icon from the icon library or a react component
@@ -96,4 +96,8 @@ export const showToast = ({
         ...options
     }
     );
+};
+
+export const dismissAllToasts = (): void => {
+    toast.dismiss();
 };

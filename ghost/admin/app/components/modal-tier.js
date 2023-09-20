@@ -2,7 +2,7 @@ import ModalBase from 'ghost-admin/components/modal-base';
 import TierBenefitItem from '../models/tier-benefit-item';
 import classic from 'ember-classic-decorator';
 import {action} from '@ember/object';
-import {currencies, getCurrencyOptions, getSymbol} from 'ghost-admin/utils/currency';
+import {currencies, getCurrencyOptions, getSymbol, minimumAmountForCurrency} from 'ghost-admin/utils/currency';
 import {A as emberA} from '@ember/array';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -214,12 +214,14 @@ export default class ModalTierPrice extends ModalBase {
             const yearlyAmount = this.stripeYearlyAmount;
             const monthlyAmount = this.stripeMonthlyAmount;
             const symbol = getSymbol(this.currency);
-            if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1) {
-                throw new TypeError(`Subscription amount must be at least ${symbol}1.00`);
+            const minimumAmount = minimumAmountForCurrency(this.currency);
+
+            if (!yearlyAmount || (yearlyAmount < minimumAmount) || !monthlyAmount || (monthlyAmount < minimumAmount)) {
+                throw new TypeError(`Subscription amount cannot be less than ${symbol}${minimumAmount}`);
             }
 
             if (yearlyAmount > MAX_AMOUNT || monthlyAmount > MAX_AMOUNT) {
-                throw new TypeError(`Subscription amount cannot be higher than ${symbol}${MAX_AMOUNT}`);
+                throw new TypeError(`Subscription amount cannot be more than ${symbol}${MAX_AMOUNT}`);
             }
         } catch (err) {
             this.stripePlanError = err.message;
@@ -266,8 +268,14 @@ export default class ModalTierPrice extends ModalBase {
             const yearlyAmount = this.stripeYearlyAmount;
             const monthlyAmount = this.stripeMonthlyAmount;
             const symbol = getSymbol(this.currency);
-            if (!yearlyAmount || yearlyAmount < 1 || !monthlyAmount || monthlyAmount < 1) {
-                throw new TypeError(`Subscription amount must be at least ${symbol}1.00`);
+            const minimumAmount = minimumAmountForCurrency(this.currency);
+
+            if (!yearlyAmount || (yearlyAmount < minimumAmount) || !monthlyAmount || (monthlyAmount < minimumAmount)) {
+                throw new TypeError(`Subscription amount cannot be less than ${symbol}${minimumAmount}`);
+            }
+
+            if (yearlyAmount > MAX_AMOUNT || monthlyAmount > MAX_AMOUNT) {
+                throw new TypeError(`Subscription amount cannot be more than ${symbol}${MAX_AMOUNT}`);
             }
         } catch (err) {
             this.stripePlanError = err.message;

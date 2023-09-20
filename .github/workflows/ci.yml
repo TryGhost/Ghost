@@ -20,6 +20,11 @@ env:
     ~/.cache/ms-playwright/
   CACHED_BUILD_PATHS: |
     ${{ github.workspace }}/ghost/*/build
+  NX_CACHE_RESTORE_KEYS: |
+    nx-Linux-${{ github.ref }}-${{ github.sha }}
+    nx-Linux-${{ github.ref }}
+    nx-Linux
+  NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -33,7 +38,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 2
@@ -51,6 +56,14 @@ jobs:
           BASE_COMMIT=$(curl --location --request GET 'https://api.github.com/repos/TryGhost/Ghost/pulls/${{ github.event.pull_request.number }}' --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r .base.sha)
           echo "Setting BASE_COMMIT to $BASE_COMMIT"
           echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
+
+      - name: Determine added packages
+        uses: dorny/paths-filter@v2.11.1
+        id: added
+        with:
+          filters: |
+            new-package:
+              - added: 'ghost/**/package.json'
 
       - name: Determine changed packages
         uses: AurorNZ/paths-filter@v3.0.1
@@ -98,9 +111,10 @@ jobs:
       changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_sodo_search: ${{ steps.changed.outputs.sodo-search }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
+      changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
       is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch') }}
-      is_git_sync: ${{ github.head_ref == 'main' || github.ref == 'refs/heads/main' }}
+      is_main: ${{ github.ref == 'refs/heads/main' }}
 
   job_install_deps:
     name: Install Dependencies
@@ -109,20 +123,40 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: 'Checkout current commit'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.HEAD_COMMIT }}
 
+      - name: Compute lockfile hash
+        run: echo "hash=lockfile-${{ hashFiles('yarn.lock') }}" >> "$GITHUB_ENV"
+
       - name: Compute dependency cache key
-        id: compute_lockfile_hash
-        run: echo "hash=${{ hashFiles('yarn.lock') }}" >> "$GITHUB_OUTPUT"
+        run: echo "cachekey=dep-cache-${{ hashFiles('yarn.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
+
+      - name: Compute dependency cache restore key
+        run: |
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "DEPENDENCY_CACHE_RESTORE_KEYS<<$EOF" >> "$GITHUB_ENV"
+          echo "dep-cache-${{ env.hash }}-${{ github.sha }}" >> "$GITHUB_ENV"
+          echo "dep-cache-${{ env.hash }}" >> "$GITHUB_ENV"
+          echo "dep-cache" >> "$GITHUB_ENV"
+          echo "$EOF" >> "$GITHUB_ENV"
+
+      - name: Nx cache
+        uses: actions/cache@v3
+        id: cache_nx
+        with:
+          path: .nxcache
+          key: nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
+          restore-keys: ${{needs.job_get_metadata.outputs.is_main == 'false' && env.NX_CACHE_RESTORE_KEYS || 'nx-never-restore'}}
 
       - name: Check dependency cache
         uses: actions/cache@v3
         id: cache_dependencies
         with:
           path: ${{ env.CACHED_DEPENDENCY_PATHS }}
-          key: ${{ steps.compute_lockfile_hash.outputs.hash }}
+          key: ${{ env.cachekey }}
+          restore-keys: ${{needs.job_get_metadata.outputs.is_main == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
 
       - name: Check build cache
         uses: actions/cache@v3
@@ -133,7 +167,6 @@ jobs:
 
       - name: Set up Node
         uses: actions/setup-node@v3
-        if: steps.cache_dependencies.outputs.cache-hit != 'true'
         env:
           FORCE_COLOR: 0
         with:
@@ -141,14 +174,13 @@ jobs:
           cache: yarn
 
       - name: Install dependencies
-        if: steps.cache_dependencies.outputs.cache-hit != 'true'
         run: yarn install --prefer-offline --frozen-lockfile
 
       - name: Build packages
         if: steps.cache_built_packages.outputs.cache-hit != 'true'
-        run: yarn prepare
+        run: yarn nx run-many -t build:ts
     outputs:
-      dependency_cache_key: ${{ steps.compute_lockfile_hash.outputs.hash }}
+      dependency_cache_key: ${{ env.cachekey }}
 
   job_lint:
     runs-on: ubuntu-latest
@@ -156,7 +188,7 @@ jobs:
     if: needs.job_get_metadata.outputs.changed_any_code == 'true'
     name: Lint
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 100
       - uses: actions/setup-node@v3
@@ -175,7 +207,7 @@ jobs:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn lint --since ${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
+      - run: yarn nx affected -t lint --base=${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
 
       - uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -195,7 +227,7 @@ jobs:
       CI: true
       COVERAGE: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: "18.12.1"
@@ -205,7 +237,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn workspace ghost-admin run test
+      - run: yarn nx run ghost-admin:test
         env:
           BROWSER: Chrome
 
@@ -231,10 +263,10 @@ jobs:
     if: needs.job_get_metadata.outputs.changed_any_code == 'true'
     strategy:
       matrix:
-        node: [ '16.14.0', '18.12.1' ]
+        node: [ '18.12.1' ]
     name: Unit tests (Node ${{ matrix.node }})
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 100
       - uses: actions/setup-node@v3
@@ -248,7 +280,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn test:unit --include-dependents --since ${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
+      - run: yarn nx affected -t test:unit --base=${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
 
       - uses: actions/upload-artifact@v3
         if: startsWith(matrix.node, '18')
@@ -269,7 +301,7 @@ jobs:
     if: needs.job_get_metadata.outputs.changed_core == 'true'
     strategy:
       matrix:
-        node: [ '16.14.0', '18.12.1' ]
+        node: [ '18.12.1' ]
         env:
           - DB: mysql8
             NODE_ENV: testing-mysql
@@ -283,7 +315,7 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Database tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -354,7 +386,7 @@ jobs:
       # Report time taken to metrics service
       # Continue on error if previous TailScale step fails
       - name: Store test duration
-        uses: tryghost/action-trigger-metric@main
+        uses: tryghost/actions/actions/trigger-metric@main
         timeout-minutes: 1
         continue-on-error: true
         if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
@@ -404,7 +436,7 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Regression tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -455,7 +487,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -508,7 +540,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -561,7 +593,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -612,7 +644,7 @@ jobs:
     if: needs.job_get_metadata.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
@@ -677,7 +709,7 @@ jobs:
     ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
@@ -733,18 +765,37 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Check for failures
-        if: contains(needs.*.result, 'failure')
+      - name: Output needs
+        run: echo "${{ toJson(needs) }}"
+
+      - name: Check if any required jobs failed or been cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: |
-          echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1
+          echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
 
   canary:
-    needs: 
-      [
-        job_get_metadata,
-        job_required_tests
-      ]
-    if: needs.job_get_metadata.outputs.is_canary_branch == 'true'
+    needs: [
+      job_get_metadata,
+      job_required_tests
+    ]
     name: Canary
-    secrets: inherit
-    uses: tryghost/actions/.github/workflows/canary.yml@main
+    runs-on: ubuntu-latest
+    if: always() && needs.job_get_metadata.outputs.is_canary_branch == 'true' && needs.job_required_tests.result == 'success' && needs.job_get_metadata.result == 'success'
+    steps:
+      - name: Output needs (for debugging)
+        run: echo "${{ toJson(needs) }}"
+
+      - name: Set env variables
+        run: |
+          echo "CANARY_BUILD_INPUTS={\"version\":\"canary\",\"environment\":\"staging\"}" >> $GITHUB_ENV
+
+      - name: Invoke build
+        uses: aurelien-baudet/workflow-dispatch@v2
+        with:
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          workflow: .github/workflows/deploy.yml
+          ref: 'refs/heads/main'
+          repo: TryGhost/Ghost-Moya
+          inputs: ${{ env.CANARY_BUILD_INPUTS }}
+          wait-for-completion-timeout: 25m
+          wait-for-completion-interval: 30s

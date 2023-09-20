@@ -5,7 +5,7 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import useNavigationEditor, {NavigationItem} from '../../../hooks/site/useNavigationEditor';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getSettingValues} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
 import {useState} from 'react';
 
 const NavigationModal = NiceModal.create(() => {
@@ -58,18 +58,18 @@ const NavigationModal = NiceModal.create(() => {
                 }
             }}
         >
-            <div className='-mb-8 mt-6'>
+            <div className='mt-6'>
                 <TabView
                     selectedTab={selectedTab}
                     tabs={[
                         {
                             id: 'primary-nav',
-                            title: 'Primary navigation',
+                            title: 'Primary',
                             contents: <NavigationEditForm baseUrl={siteData!.url} navigation={navigation} />
                         },
                         {
                             id: 'secondary-nav',
-                            title: 'Secondary navigation',
+                            title: 'Secondary',
                             contents: <NavigationEditForm baseUrl={siteData!.url} navigation={secondaryNavigation} />
                         }
                     ]}

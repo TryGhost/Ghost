@@ -1,12 +1,12 @@
 import CheckboxGroup from '../../../../admin-x-ds/global/form/CheckboxGroup';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
-import React, {useContext, useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {CheckboxProps} from '../../../../admin-x-ds/global/form/Checkbox';
-import {Setting, SettingValue, Tier} from '../../../../types/api';
-import {SettingsContext} from '../../../providers/SettingsProvider';
-import {checkStripeEnabled, getSettingValues} from '../../../../utils/helpers';
+import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '../../../../api/settings';
+import {Tier} from '../../../../api/tiers';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const SignupOptions: React.FC<{
     localSettings: Setting[]
@@ -16,7 +16,7 @@ const SignupOptions: React.FC<{
     errors: Record<string, string | undefined>
     setError: (key: string, error: string | undefined) => void
 }> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError}) => {
-    const {config} = useContext(SettingsContext);
+    const {config} = useGlobalData();
 
     const [membersSignupAccess, portalName, portalSignupTermsHtml, portalSignupCheckboxRequired, portalPlansJson] = getSettingValues(
         localSettings, ['members_signup_access', 'portal_name', 'portal_signup_terms_html', 'portal_signup_checkbox_required', 'portal_plans']
@@ -30,13 +30,18 @@ const SignupOptions: React.FC<{
         return div.innerText.length;
     }, [portalSignupTermsHtml]);
 
+    const handleError = useCallback((key: string, error: string | undefined) => {
+        setError(key, error);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
         if (signupTermsLength > signupTermsMaxLength) {
-            setError('portal_signup_terms_html', 'Signup notice is too long');
+            handleError('portal_signup_terms_html', 'Signup notice is too long');
         } else {
-            setError('portal_signup_terms_html', undefined);
+            handleError('portal_signup_terms_html', undefined);
         }
-    }, [signupTermsLength, setError]);
+    }, [signupTermsLength, handleError]);
 
     const togglePlan = (plan: string) => {
         const index = portalPlans.indexOf(plan);
@@ -78,7 +83,7 @@ const SignupOptions: React.FC<{
         });
     }
 
-    return <Form marginTop>
+    return <div className='mt-7'><Form>
         <Toggle
             checked={Boolean(portalName)}
             disabled={isDisabled}
@@ -119,9 +124,9 @@ const SignupOptions: React.FC<{
         )}
 
         <HtmlField
-            config={config as { editor: any }}
+            config={config}
             error={Boolean(errors.portal_signup_terms_html)}
-            hint={errors.portal_signup_terms_html || <>Recommended: <strong>115</strong> characters. You've used <strong className="text-green">{signupTermsLength}</strong></>}
+            hint={errors.portal_signup_terms_html || <>Recommended: <strong>115</strong> characters. You&apos;ve used <strong className="text-green">{signupTermsLength}</strong></>}
             nodes='MINIMAL_NODES'
             placeholder={`By signing up, I agree to receive emails from ...`}
             title='Display notice at signup'
@@ -129,14 +134,14 @@ const SignupOptions: React.FC<{
             onChange={html => updateSetting('portal_signup_terms_html', html)}
         />
 
-        <Toggle
+        {portalSignupTermsHtml?.toString() && <Toggle
             checked={Boolean(portalSignupCheckboxRequired)}
             disabled={isDisabled}
             label='Require agreement'
             labelStyle='heading'
             onChange={e => updateSetting('portal_signup_checkbox_required', e.target.checked)}
-        />
-    </Form>;
+        />}
+    </Form></div>;
 };
 
 export default SignupOptions;

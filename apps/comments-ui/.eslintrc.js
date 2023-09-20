@@ -2,18 +2,28 @@
 module.exports = {
     root: true,
     extends: [
-        'react-app',
-        'plugin:ghost/browser'
+        'plugin:ghost/ts',
+        'plugin:react/recommended',
+        'plugin:i18next/recommended'
     ],
     plugins: [
         'ghost',
-        'tailwindcss'
+        'tailwindcss',
+        'i18next'
     ],
+    settings: {
+        react: {
+            version: 'detect'
+        }
+    },
     rules: {
         // sort multiple import lines into alphabetical groups
         'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
         }],
+
+        // TODO: fix + remove this
+        '@typescript-eslint/no-explicit-any': 'warn',
 
         // suppress errors for missing 'import React' in JSX files, as we don't need it
         'react/react-in-jsx-scope': 'off',

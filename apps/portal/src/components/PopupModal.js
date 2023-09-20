@@ -8,7 +8,7 @@ import PopupNotification from './common/PopupNotification';
 import PoweredBy from './common/PoweredBy';
 import {getSiteProducts, isInviteOnlySite, isCookiesDisabled, hasFreeProductPrice} from '../utils/helpers';
 
-const StylesWrapper = ({member}) => {
+const StylesWrapper = () => {
     return {
         modalContainer: {
             zIndex: '3999999',

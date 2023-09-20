@@ -1,30 +1,23 @@
-import React, {useContext} from 'react';
+import React from 'react';
 
+import AdvancedSettings from './settings/advanced/AdvancedSettings';
 import EmailSettings from './settings/email/EmailSettings';
 import GeneralSettings from './settings/general/GeneralSettings';
 import MembershipSettings from './settings/membership/MembershipSettings';
 import SiteSettings from './settings/site/SiteSettings';
-import {SettingsContext} from './providers/SettingsProvider';
 
 const Settings: React.FC = () => {
-    const {settings} = useContext(SettingsContext) || {};
-
-    // Show loader while settings is first fetched
-    if (!settings) {
-        return (
-            <div className="flex h-full flex-col items-center justify-center">
-                <div className="text-center text-2xl font-bold">Loading...</div>
-            </div>
-        );
-    }
-
     return (
-        <>
+        <div className='mb-[40vh]'>
             <GeneralSettings />
             <SiteSettings />
             <MembershipSettings />
             <EmailSettings />
-        </>
+            <AdvancedSettings />
+            <div className='mt-40 text-sm'>
+                <a className='text-green' href="/ghost/#/settings">Click here</a> to open the original Admin settings.
+            </div>
+        </div>
     );
 };
 

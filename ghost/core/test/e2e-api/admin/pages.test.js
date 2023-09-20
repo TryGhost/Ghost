@@ -37,6 +37,52 @@ describe('Pages API', function () {
         mockManager.restore();
     });
 
+    describe('Create', function () {
+        it('Can create a page with html', async function () {
+            mockManager.mockLabsDisabled('lexicalEditor');
+
+            const page = {
+                title: 'HTML test',
+                html: '<p>Testing page creation with html</p>'
+            };
+
+            await agent
+                .post('/pages/?source=html&formats=mobiledoc,lexical,html')
+                .body({pages: [page]})
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    pages: [Object.assign({}, matchPageShallowIncludes, {published_at: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('pages')
+                });
+        });
+
+        it('Can create a page with html (labs.lexicalEditor)', async function () {
+            mockManager.mockLabsEnabled('lexicalEditor');
+
+            const page = {
+                title: 'HTML test',
+                html: '<p>Testing page creation with html</p>'
+            };
+
+            await agent
+                .post('/pages/?source=html&formats=mobiledoc,lexical,html')
+                .body({pages: [page]})
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    pages: [Object.assign({}, matchPageShallowIncludes, {published_at: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('pages')
+                });
+        });
+    });
+
     describe('Update', function () {
         it('Can modify show_title_and_feature_image property', async function () {
             const page = {
@@ -73,7 +119,8 @@ describe('Pages API', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'x-cache-invalidate': anyString
                 });
         });
     });
@@ -109,6 +156,81 @@ describe('Pages API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag,
                     location: anyLocationFor('pages')
+                });
+        });
+    });
+
+    describe('Convert', function () {
+        it('can convert a mobiledoc page to lexical', async function () {
+            const mobiledoc = JSON.stringify({
+                version: '0.3.1',
+                ghostVersion: '4.0',
+                markups: [],
+                atoms: [],
+                cards: [],
+                sections: [
+                    [1, 'p', [
+                        [0, [], 0, 'This is some great content.']
+                    ]]
+                ]
+            });
+            const expectedLexical = JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'This is some great content.',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+            const pageData = {
+                title: 'Test Post',
+                status: 'published',
+                mobiledoc: mobiledoc,
+                lexical: null
+            };
+
+            const {body: pageBody} = await agent
+                .post('/pages/?formats=mobiledoc,lexical,html', {
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                })
+                .body({pages: [pageData]})
+                .expectStatus(201);
+
+            const [pageResponse] = pageBody.pages;
+
+            await agent
+                .put(`/pages/${pageResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
+                .body({pages: [Object.assign({}, pageResponse)]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    pages: [Object.assign({}, matchPageShallowIncludes, {lexical: expectedLexical, mobiledoc: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
                 });
         });
     });

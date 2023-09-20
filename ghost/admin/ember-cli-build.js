@@ -105,6 +105,16 @@ if (process.env.CI) {
     denylist.push('ember-cli-eslint');
 }
 
+let publicAssetURL;
+
+if (isTesting) {
+    publicAssetURL = undefined;
+} else if (process.env.GHOST_CDN_URL) {
+    publicAssetURL = process.env.GHOST_CDN_URL + 'assets/';
+} else {
+    publicAssetURL = 'assets/';
+}
+
 module.exports = function (defaults) {
     let app = new EmberApp(defaults, {
         addons: {denylist},
@@ -135,7 +145,21 @@ module.exports = function (defaults) {
         },
         fingerprint: {
             enabled: isProduction,
-            extensions: ['js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'map', 'svg', 'ttf', 'ico']
+            prepend: process.env.GHOST_CDN_URL || '',
+            extensions: [
+                'js',
+                'css',
+                'png',
+                'jpg',
+                'jpeg',
+                'gif',
+                'map',
+                'svg',
+                'ttf',
+                'woff2',
+                'mp4',
+                'ico'
+            ]
         },
         minifyJS: {
             options: {
@@ -219,7 +243,7 @@ module.exports = function (defaults) {
             }
         },
         autoImport: {
-            publicAssetURL: isTesting ? undefined : 'assets/',
+            publicAssetURL,
             webpack: {
                 resolve: {
                     fallback: {

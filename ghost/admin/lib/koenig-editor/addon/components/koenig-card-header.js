@@ -11,6 +11,7 @@ import {set} from '@ember/object';
 export default class KoenigCardHeaderComponent extends Component {
     @service feature;
     @service store;
+    @service settings;
     @service membersUtils;
     @service ui;
 
@@ -45,7 +46,7 @@ export default class KoenigCardHeaderComponent extends Component {
             items: [{
                 buttonClass: 'fw4 flex items-center white',
                 icon: 'koenig/kg-edit',
-                iconClass: 'fill-white',
+                iconClass: 'fill-white-no-conflict',
                 title: 'Edit',
                 text: '',
                 action: run.bind(this, this.args.editCard)
@@ -62,6 +63,49 @@ export default class KoenigCardHeaderComponent extends Component {
             return ` background-image: url(${this.args.payload.backgroundImageSrc});`;
         }
         return '';
+    }
+
+    get suggestedUrls() {
+        const urls = [];
+
+        urls.push(...[{
+            name: `Homepage`,
+            url: this.config.getSiteUrl('/')
+        }, {
+            name: 'Free signup',
+            url: '#/portal/signup/free'
+        }]);
+
+        if (this.membersUtils.paidMembersEnabled) {
+            urls.push(...[{
+                name: 'Paid signup',
+                url: '#/portal/signup'
+            }, {
+                name: 'Upgrade or change plan',
+                url: '#/portal/account/plans'
+            }]);
+        }
+
+        // TODO: remove feature condition once Tips & Donations have been released
+        if (this.feature.tipsAndDonations) {
+            if (this.settings.donationsEnabled) {
+                urls.push({
+                    name: 'Tip or donation',
+                    url: '#/portal/support'
+                });
+            }
+        }
+
+        if (this.offers) {
+            this.offers.forEach((offer) => {
+                urls.push(...[{
+                    name: `Offer - ${offer.name}`,
+                    url: this.config.getSiteUrl(offer.code)
+                }]);
+            });
+        }
+
+        return urls;
     }
 
     constructor() {
@@ -157,8 +201,8 @@ export default class KoenigCardHeaderComponent extends Component {
     }
 
     @action
-    setButtonUrl(event) {
-        this._updatePayloadAttr('buttonUrl', event.target.value);
+    setButtonUrl(url) {
+        this._updatePayloadAttr('buttonUrl', url);
         if (!this.args.payload.buttonEnabled) {
             this._updatePayloadAttr('buttonEnabled', true);
         }
@@ -170,6 +214,32 @@ export default class KoenigCardHeaderComponent extends Component {
         if (!this.args.payload.buttonEnabled) {
             this._updatePayloadAttr('buttonEnabled', true);
         }
+    }
+
+    @action
+    enterLinkURL(event) {
+        event.stopPropagation();
+        const parent = event.target;
+        const child = event.target.querySelector('span');
+
+        clearTimeout(this.linkScrollerTimeout);
+        if (child.offsetWidth > parent.offsetWidth) {
+            this.linkScrollerTimeout = setTimeout(() => {
+                parent.classList.add('scroller');
+                child.style.transform = `translateX(-${(child.offsetWidth - parent.offsetWidth) + 8}px)`;
+            }, 100);
+        }
+    }
+
+    @action
+    leaveLinkURL(event) {
+        event.stopPropagation();
+        clearTimeout(this.linkScrollerTimeout);
+        const parent = event.target;
+        const child = event.target.querySelector('span');
+
+        child.style.transform = 'translateX(0)';
+        parent.classList.remove('scroller');
     }
 
     @action

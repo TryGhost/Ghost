@@ -11,26 +11,25 @@ interface StickyFooterProps {
 
 const StickyFooter: React.FC<StickyFooterProps> = ({
     shiftY,
-    footerBgColorClass = 'bg-white',
-    contentBgColorClass = 'bg-white',
+    footerBgColorClass = 'bg-white dark:bg-black',
+    contentBgColorClass = 'bg-white dark:bg-black',
     height = 96,
     children
 }) => {
     const containerClasses = clsx(
-        'w-100 sticky bottom-[-24px] z-[9997] m-0 box-border p-0'
+        'w-100 sticky bottom-[-24px] z-[297] m-0 box-border p-0'
     );
     const containerBottom = shiftY ? `calc(${shiftY} - 24px)` : '-24px';
     const containerHeight = `${height + 24}px`;
 
     const coverClasses = clsx(
-        'sticky z-[9998] block h-[24px]',
+        'sticky z-[298] block h-[24px]',
         contentBgColorClass
     );
     const coverBottom = '0';
 
     const contentClasses = clsx(
-        `sticky z-[9999] mb-[-24px] flex items-center justify-between`,
-        // 'min-h-[48px]',
+        `sticky z-[299] mb-[-24px] flex items-center justify-between`,
         'h-[96px]',
         footerBgColorClass
     );

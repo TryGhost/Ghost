@@ -1,10 +1,9 @@
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextArea from '../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getSettingValues} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
 
 const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -24,7 +23,7 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateSetting('title', e.target.value);
     };
 
-    const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('description', e.target.value);
     };
 
@@ -56,7 +55,7 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 value={title}
                 onChange={handleTitleChange}
             />
-            <TextArea
+            <TextField
                 hint="A short description, used in your theme, meta data and search results"
                 placeholder="Site description"
                 title="Site description"

@@ -3,6 +3,7 @@ module.exports = {
     corePlugins: {
         preflight: false // we're providing our own scoped CSS reset
     },
+    darkMode: 'class',
     important: '.admin-x-settings',
     content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
     theme: {
@@ -10,7 +11,8 @@ module.exports = {
             sm: '480px',
             md: '640px',
             lg: '1024px',
-            xl: '1280px'
+            xl: '1280px',
+            tablet: '860px'
         },
         colors: {
             transparent: 'transparent',
@@ -29,7 +31,8 @@ module.exports = {
                 600: '#95A1AD',
                 700: '#7C8B9A',
                 800: '#626D79',
-                900: '#394047'
+                900: '#394047',
+                950: '#222427'
             },
             green: {
                 DEFAULT: '#30CF43',
@@ -136,12 +139,59 @@ module.exports = {
                     '100%': {
                         opacity: '0'
                     }
+                },
+                fadeIn: {
+                    '0%': {
+                        opacity: '0'
+                    },
+                    '100%': {
+                        opacity: '1'
+                    }
+                },
+                fadeOut: {
+                    '0%': {
+                        opacity: '1'
+                    },
+                    '100%': {
+                        opacity: '0'
+                    }
+                },
+                modalIn: {
+                    '0%': {
+                        transform: 'translateY(32px)'
+                    },
+                    '100%': {
+                        transform: 'translateY(0px)'
+                    }
+                },
+                modalInReverse: {
+                    '0%': {
+                        transform: 'translateY(-32px)'
+                    },
+                    '100%': {
+                        transform: 'translateY(0px)'
+                    }
+                },
+                spin: {
+                    '0%': {
+                        transform: 'rotate(0deg)'
+                    },
+                    '100%': {
+                        transform: 'rotate(360deg)'
+                    }
                 }
             },
             animation: {
                 'toaster-in': 'toasterIn 0.8s cubic-bezier(0.445, 0.050, 0.550, 0.950)',
                 'toaster-out': 'toasterOut 0.4s 0s 1 ease forwards',
-                'toaster-top-in': 'toasterTopIn 0.8s cubic-bezier(0.445, 0.050, 0.550, 0.950)'
+                'toaster-top-in': 'toasterTopIn 0.8s cubic-bezier(0.445, 0.050, 0.550, 0.950)',
+                'fade-in': 'fadeIn 0.15s ease forwards',
+                'fade-out': 'fadeOut 0.15s ease forwards',
+                'setting-highlight-fade-out': 'fadeOut 0.2s 1.4s ease forwards',
+                'modal-backdrop-in': 'fadeIn 0.15s ease forwards',
+                'modal-in': 'modalIn 0.25s ease forwards',
+                'modal-in-reverse': 'modalInReverse 0.25s ease forwards',
+                spin: 'spin 1s linear infinite'
             },
             spacing: {
                 px: '1px',
@@ -214,12 +264,12 @@ module.exports = {
                 full: '9999px'
             },
             fontSize: {
-                '2xs': '0.95rem',
+                '2xs': '1.0rem',
                 base: '1.5rem',
                 xs: '1.2rem',
                 sm: '1.35rem',
                 md: '1.5rem',
-                lg: '1.8rem',
+                lg: '1.75rem',
                 xl: '2rem',
                 '2xl': '2.4rem',
                 '3xl': '3rem',

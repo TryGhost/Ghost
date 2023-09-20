@@ -1,6 +1,33 @@
-import {ConfigResponseType, CustomThemeSettingsResponseType, ImagesResponseType, InvitesResponseType, LabelsResponseType, OffersResponseType, PostsResponseType, RolesResponseType, SettingsResponseType, SiteResponseType, ThemesResponseType, TiersResponseType, UsersResponseType} from '../../src/utils/api';
-import {Page, Request} from '@playwright/test';
+import {ActionsResponseType} from '../../src/api/actions';
+import {ConfigResponseType} from '../../src/api/config';
+import {CustomThemeSettingsResponseType} from '../../src/api/customThemeSettings';
+import {InvitesResponseType} from '../../src/api/invites';
+import {LabelsResponseType} from '../../src/api/labels';
+import {Locator, Page} from '@playwright/test';
+import {NewslettersResponseType} from '../../src/api/newsletters';
+import {OffersResponseType} from '../../src/api/offers';
+import {RolesResponseType} from '../../src/api/roles';
+import {SettingsResponseType} from '../../src/api/settings';
+import {SiteResponseType} from '../../src/api/site';
+import {ThemesResponseType} from '../../src/api/themes';
+import {TiersResponseType} from '../../src/api/tiers';
+import {UsersResponseType} from '../../src/api/users';
 import {readFileSync} from 'fs';
+
+interface MockRequestConfig {
+    method: string;
+    path: string | RegExp;
+    response: unknown;
+    responseStatus?: number;
+}
+
+interface RequestRecord {
+    url?: string
+    body?: object | null
+    headers?: {[key: string]: string}
+}
+
+const siteFixture = JSON.parse(readFileSync(`${__dirname}/responses/site.json`).toString()) as SiteResponseType;
 
 export const responseFixtures = {
     settings: JSON.parse(readFileSync(`${__dirname}/responses/settings.json`).toString()) as SettingsResponseType,
@@ -8,467 +35,82 @@ export const responseFixtures = {
     users: JSON.parse(readFileSync(`${__dirname}/responses/users.json`).toString()) as UsersResponseType,
     me: JSON.parse(readFileSync(`${__dirname}/responses/me.json`).toString()) as UsersResponseType,
     roles: JSON.parse(readFileSync(`${__dirname}/responses/roles.json`).toString()) as RolesResponseType,
-    site: JSON.parse(readFileSync(`${__dirname}/responses/site.json`).toString()) as SiteResponseType,
+    site: siteFixture,
     invites: JSON.parse(readFileSync(`${__dirname}/responses/invites.json`).toString()) as InvitesResponseType,
     customThemeSettings: JSON.parse(readFileSync(`${__dirname}/responses/custom_theme_settings.json`).toString()) as CustomThemeSettingsResponseType,
     tiers: JSON.parse(readFileSync(`${__dirname}/responses/tiers.json`).toString()) as TiersResponseType,
     labels: JSON.parse(readFileSync(`${__dirname}/responses/labels.json`).toString()) as LabelsResponseType,
     offers: JSON.parse(readFileSync(`${__dirname}/responses/offers.json`).toString()) as OffersResponseType,
-    themes: JSON.parse(readFileSync(`${__dirname}/responses/themes.json`).toString()) as ThemesResponseType
+    themes: JSON.parse(readFileSync(`${__dirname}/responses/themes.json`).toString()) as ThemesResponseType,
+    newsletters: JSON.parse(readFileSync(`${__dirname}/responses/newsletters.json`).toString()) as NewslettersResponseType,
+    actions: JSON.parse(readFileSync(`${__dirname}/responses/actions.json`).toString()) as ActionsResponseType,
+    latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]}
 };
 
-interface Responses {
-    settings?: {
-        browse?: SettingsResponseType
-        edit?: SettingsResponseType
-    }
-    config?: {
-        browse?: ConfigResponseType
-    }
-    users?: {
-        browse?: UsersResponseType
-        currentUser?: UsersResponseType
-        edit?: UsersResponseType
-        delete?: UsersResponseType
-        updatePassword?: UsersResponseType
-        makeOwner?: UsersResponseType
-    }
-    roles?: {
-        browse?: RolesResponseType
-    }
-    invites?: {
-        browse?: InvitesResponseType
-        add?: InvitesResponseType
-        delete?: InvitesResponseType
-    }
-    site?: {
-        browse?: SiteResponseType
-    }
-    images?: {
-        upload?: ImagesResponseType
-    }
-    customThemeSettings?: {
-        browse?: CustomThemeSettingsResponseType
-        edit?: CustomThemeSettingsResponseType
-    }
-    latestPost?: {
-        browse?: PostsResponseType
-    }
-    tiers?: {
-        browse?: TiersResponseType
-    }
-    labels?: {
-        browse?: LabelsResponseType
-    }
-    offers?: {
-        browse?: OffersResponseType
-    }
-    themes?: {
-        browse?: ThemesResponseType
-        activate?: ThemesResponseType
-        delete?: ThemesResponseType
-        install?: ThemesResponseType
-        upload?: ThemesResponseType
-    }
-    previewHtml?: {
-        homepage?: string
-        post?: string
-    }
-}
-
-interface RequestRecord {
-    url?: string
-    body?: any
-    headers?: {[key: string]: string}
-}
-
-type LastRequests = {
-    settings: {
-        browse: RequestRecord
-        edit: RequestRecord
-    }
-    config: {
-        browse: RequestRecord
-    }
-    users: {
-        browse: RequestRecord
-        currentUser: RequestRecord
-        edit: RequestRecord
-        delete: RequestRecord
-        updatePassword: RequestRecord
-        makeOwner: RequestRecord
-    }
-    roles: {
-        browse: RequestRecord
-    }
-    invites: {
-        browse: RequestRecord
-        add: RequestRecord
-        delete: RequestRecord
-    }
-    site: {
-        browse: RequestRecord
-    }
-    images: {
-        upload: RequestRecord
-    }
-    customThemeSettings: {
-        browse: RequestRecord
-        edit: RequestRecord
-    }
-    latestPost: {
-        browse: RequestRecord
-    }
-    tiers: {
-        browse: RequestRecord
-    }
-    labels: {
-        browse: RequestRecord
-    }
-    offers: {
-        browse: RequestRecord
-    }
-    themes: {
-        browse: RequestRecord
-        activate: RequestRecord
-        delete: RequestRecord
-        install: RequestRecord
-        upload: RequestRecord
-    }
-    previewHtml: {
-        homepage: RequestRecord
-        post: RequestRecord
-    }
+export const globalDataRequests = {
+    browseSettings: {method: 'GET', path: /^\/settings\/\?group=/, response: responseFixtures.settings},
+    browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
+    browseSite: {method: 'GET', path: '/site/', response: responseFixtures.site},
+    browseMe: {method: 'GET', path: '/users/me/?include=roles', response: responseFixtures.me}
 };
 
-export async function mockApi({page,responses}: {page: Page, responses?: Responses}) {
-    const lastApiRequests: LastRequests = {
-        settings: {browse: {}, edit: {}},
-        config: {browse: {}},
-        users: {browse: {}, currentUser: {}, edit: {}, delete: {}, updatePassword: {}, makeOwner: {}},
-        roles: {browse: {}},
-        invites: {browse: {}, add: {}, delete: {}},
-        site: {browse: {}},
-        images: {upload: {}},
-        customThemeSettings: {browse: {}, edit: {}},
-        latestPost: {browse: {}},
-        tiers: {browse: {}},
-        labels: {browse: {}},
-        offers: {browse: {}},
-        themes: {browse: {}, activate: {}, delete: {}, install: {}, upload: {}},
-        previewHtml: {homepage: {}, post: {}}
-    };
+export const limitRequests = {
+    browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+    browseInvites: {method: 'GET', path: '/invites/', response: responseFixtures.invites},
+    browseRoles: {method: 'GET', path: '/roles/?limit=all', response: responseFixtures.roles},
+    browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=all', response: responseFixtures.newsletters}
+};
 
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/settings\//,
-        respondTo: {
-            GET: {
-                body: responses?.settings?.browse ?? responseFixtures.settings,
-                updateLastRequest: lastApiRequests.settings.browse
-            },
-            PUT: {
-                body: responses?.settings?.edit ?? responseFixtures.settings,
-                updateLastRequest: lastApiRequests.settings.edit
+export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests}: {page: Page, requests: Requests}) {
+    const lastApiRequests: {[key in keyof Requests]?: RequestRecord} = {};
+
+    const namedRequests = Object.entries(requests).reduce(
+        (array, [key, value]) => array.concat({name: key, ...value}),
+        [] as Array<MockRequestConfig & {name: keyof Requests}>
+    );
+
+    await page.route(/\/ghost\/api\/admin\//, async (route) => {
+        const apiPath = route.request().url().replace(/^.*\/ghost\/api\/admin/, '');
+
+        const matchingMock = namedRequests.find((request) => {
+            if (request.method !== route.request().method()) {
+                return false;
             }
-        }
-    });
 
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/config\//,
-        respondTo: {
-            GET: {
-                body: responses?.config?.browse ?? responseFixtures.config,
-                updateLastRequest: lastApiRequests.config.browse
+            if (typeof request.path === 'string') {
+                return request.path === apiPath;
             }
-        }
-    });
 
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/users\/\?/,
-        respondTo: {
-            GET: {
-                body: responses?.users?.browse ?? responseFixtures.users,
-                updateLastRequest: lastApiRequests.users.browse
-            }
-        }
-    });
+            return request.path.test(apiPath);
+        });
 
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/users\/me\//,
-        respondTo: {
-            GET: {
-                body: responses?.users?.currentUser ?? responseFixtures.me,
-                updateLastRequest: lastApiRequests.users.currentUser
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/users\/(\d+|\w{24})\//,
-        respondTo: {
-            PUT: {
-                body: responses?.users?.edit ?? responseFixtures.users,
-                updateLastRequest: lastApiRequests.users.edit
-            },
-            DELETE: {
-                body: responses?.users?.delete ?? responseFixtures.users,
-                updateLastRequest: lastApiRequests.users.delete
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/users\/owner\//,
-        respondTo: {
-            PUT: {
-                body: responses?.users?.makeOwner ?? responseFixtures.users,
-                updateLastRequest: lastApiRequests.users.makeOwner
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/users\/password\//,
-        respondTo: {
-            PUT: {
-                body: responses?.users?.updatePassword ?? responseFixtures.users,
-                updateLastRequest: lastApiRequests.users.updatePassword
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/roles\/\?/,
-        respondTo: {
-            GET: {
-                body: responses?.roles?.browse ?? responseFixtures.roles,
-                updateLastRequest: lastApiRequests.roles.browse
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/site\//,
-        respondTo: {
-            GET: {
-                body: responses?.site?.browse ?? responseFixtures.site,
-                updateLastRequest: lastApiRequests.site.browse
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/images\/upload\/$/,
-        respondTo: {
-            POST: {
-                body: responses?.images?.upload ?? {images: [{url: 'http://example.com/image.png', ref: null}]},
-                updateLastRequest: lastApiRequests.images.upload
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/invites\//,
-        respondTo: {
-            GET: {
-                body: responses?.invites?.browse ?? responseFixtures.invites,
-                updateLastRequest: lastApiRequests.invites.browse
-            },
-            POST: {
-                body: responses?.invites?.add ?? responseFixtures.invites,
-                updateLastRequest: lastApiRequests.invites.add
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/invites\/\w{24}\//,
-        respondTo: {
-            DELETE: {
-                body: responses?.invites?.delete ?? responseFixtures.invites,
-                updateLastRequest: lastApiRequests.invites.delete
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/themes\/$/,
-        respondTo: {
-            GET: {
-                body: responses?.themes?.browse ?? responseFixtures.themes,
-                updateLastRequest: lastApiRequests.themes.browse
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/themes\/(casper|edition|headline)\/$/,
-        respondTo: {
-            DELETE: {
-                body: responses?.themes?.delete ?? responseFixtures.themes,
-                updateLastRequest: lastApiRequests.themes.delete
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/themes\/\w+\/activate\/$/,
-        respondTo: {
-            PUT: {
-                body: responses?.themes?.activate ?? responseFixtures.themes,
-                updateLastRequest: lastApiRequests.themes.activate
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/themes\/install\//,
-        respondTo: {
-            POST: {
-                body: responses?.themes?.install ?? responseFixtures.themes,
-                updateLastRequest: lastApiRequests.themes.install
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/themes\/upload\/$/,
-        respondTo: {
-            POST: {
-                body: responses?.themes?.upload ?? responseFixtures.themes,
-                updateLastRequest: lastApiRequests.themes.upload
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/custom_theme_settings\/$/,
-        respondTo: {
-            GET: {
-                body: responses?.customThemeSettings?.browse ?? responseFixtures.customThemeSettings,
-                updateLastRequest: lastApiRequests.customThemeSettings.browse
-            },
-            PUT: {
-                body: responses?.customThemeSettings?.edit ?? responseFixtures.customThemeSettings,
-                updateLastRequest: lastApiRequests.customThemeSettings.edit
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/posts\/\?filter=/,
-        respondTo: {
-            GET: {
-                body: responses?.latestPost?.browse ?? {posts: [{id: '1', url: `${responseFixtures.site.site.url}/test-post/`}]},
-                updateLastRequest: lastApiRequests.latestPost.browse
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/tiers\//,
-        respondTo: {
-            GET: {
-                body: responses?.tiers?.browse ?? responseFixtures.tiers,
-                updateLastRequest: lastApiRequests.tiers.browse
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/labels\/\?limit=all$/,
-        respondTo: {
-            GET: {
-                body: responses?.labels?.browse ?? responseFixtures.labels,
-                updateLastRequest: lastApiRequests.labels.browse
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: /\/ghost\/api\/admin\/offers\/\?limit=all$/,
-        respondTo: {
-            GET: {
-                body: responses?.offers?.browse ?? responseFixtures.offers,
-                updateLastRequest: lastApiRequests.offers.browse
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: responseFixtures.site.site.url,
-        respondTo: {
-            POST: {
-                condition: request => !!request.headers()['x-ghost-preview'],
-                body: responses?.previewHtml?.homepage ?? '<html><head><style></style></head><body><div>homepage</div></body></html>',
-                updateLastRequest: lastApiRequests.previewHtml.homepage
-            }
-        }
-    });
-
-    await mockApiResponse({
-        page,
-        path: `${responseFixtures.site.site.url}/test-post/`,
-        respondTo: {
-            POST: {
-                condition: request => !!request.headers()['x-ghost-preview'],
-                body: responses?.previewHtml?.post ?? '<html><head><style></style></head><body><div>post</div></body></html>',
-                updateLastRequest: lastApiRequests.previewHtml.post
-            }
-        }
-    });
-
-    return lastApiRequests;
-}
-
-interface ResponseOptions {
-    condition?: (request: Request) => boolean
-    body: any
-    status?: number
-    updateLastRequest: RequestRecord
-}
-
-async function mockApiResponse({page, path, respondTo}: { page: Page; path: string | RegExp; respondTo: { [method: string]: ResponseOptions } }) {
-    await page.route(path, async (route) => {
-        const response = respondTo[route.request().method()];
-
-        if (!response || (response.condition && !response.condition(route.request()))) {
-            return route.continue();
+        if (!matchingMock) {
+            return route.fulfill({
+                status: 418,
+                body: [
+                    'No matching mock found. If this request is needed for the test, add it to your mockApi call',
+                    '',
+                    'Currently mocked:',
+                    ...namedRequests.map(({method, path}) => `${method} ${path}`)
+                ].join('\n')
+            });
         }
 
         const requestBody = JSON.parse(route.request().postData() || 'null');
-        response.updateLastRequest.body = requestBody;
-        response.updateLastRequest.url = route.request().url();
-        response.updateLastRequest.headers = route.request().headers();
+
+        lastApiRequests[matchingMock.name] = {
+            body: requestBody,
+            url: route.request().url(),
+            headers: route.request().headers()
+        };
 
         await route.fulfill({
-            status: response.status || 200,
-            body: JSON.stringify(response.body)
+            status: matchingMock.responseStatus || 200,
+            body: typeof matchingMock.response === 'string' ? matchingMock.response : JSON.stringify(matchingMock.response)
         });
     });
+
+    return {lastApiRequests};
 }
 
 export function updatedSettingsResponse(newSettings: Array<{ key: string, value: string | boolean | null }>) {
@@ -480,4 +122,32 @@ export function updatedSettingsResponse(newSettings: Array<{ key: string, value:
             return {key: setting.key, value: newSetting?.value || setting.value};
         })
     };
+}
+
+export async function mockSitePreview({page, url, response}: {page: Page, url: string, response: string}) {
+    let lastRequest: {previewHeader?: string} = {};
+
+    await page.route(url, async (route) => {
+        if (route.request().method() !== 'POST') {
+            return route.continue();
+        }
+
+        if (!route.request().headers()['x-ghost-preview']) {
+            return route.continue();
+        }
+
+        lastRequest.previewHeader = route.request().headers()['x-ghost-preview'];
+
+        await route.fulfill({
+            status: 200,
+            body: response
+        });
+    });
+
+    return lastRequest;
+}
+
+export async function chooseOptionInSelect(select: Locator, optionText: string | RegExp) {
+    await select.click();
+    await select.page().locator('[data-testid="select-option"]', {hasText: optionText}).click();
 }

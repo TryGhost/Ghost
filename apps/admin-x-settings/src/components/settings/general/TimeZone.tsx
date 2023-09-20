@@ -4,7 +4,8 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import timezoneData from '@tryghost/timezone-data';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getLocalTime, getSettingValues} from '../../../utils/helpers';
+import {getLocalTime} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
 
 interface TimezoneDataDropdownOption {
     name: string;
@@ -54,18 +55,18 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
         };
     });
 
-    const handleTimezoneChange = (value: string) => {
-        updateSetting('timezone', value);
+    const handleTimezoneChange = (value?: string) => {
+        updateSetting('timezone', value || null);
     };
 
     const viewContent = (
         <SettingGroupContent values={[
             {
                 key: 'site-timezone',
-                value: publicationTimezone,
-                hint: (
-                    <Hint timezone={publicationTimezone} />
-                )
+                value: <div className='flex flex-col'>
+                    {publicationTimezone}
+                    <span className='text-sm'><Hint timezone={publicationTimezone} /></span>
+                </div>
             }
         ]} />
     );

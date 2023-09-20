@@ -186,6 +186,15 @@ describe('Front-end members behavior', function () {
             getJsonResponse.should.not.have.property('id');
             getJsonResponse.newsletters.should.have.length(1);
 
+            // NOTE: these should be snapshots not code
+            Object.keys(getJsonResponse.newsletters[0]).should.have.length(4);
+            getJsonResponse.newsletters[0].should.have.properties([
+                'id',
+                'name',
+                'description',
+                'sort_order'
+            ]);
+
             // Can update newsletter subscription
             const originalNewsletters = getJsonResponse.newsletters;
             const originalNewsletterName = originalNewsletters[0].name;
@@ -215,36 +224,12 @@ describe('Front-end members behavior', function () {
             restoreJsonResponse.should.not.have.property('id');
             restoreJsonResponse.newsletters.should.have.length(1);
             // @NOTE: this seems like too much exposed information, needs a review
+            Object.keys(restoreJsonResponse.newsletters[0]).should.have.length(4);
             restoreJsonResponse.newsletters[0].should.have.properties([
                 'id',
-                'uuid',
                 'name',
                 'description',
-                'feedback_enabled',
-                'slug',
-                'sender_name',
-                'sender_email',
-                'sender_reply_to',
-                'status',
-                'visibility',
-                'subscribe_on_signup',
-                'sort_order',
-                'header_image',
-                'show_header_icon',
-                'show_header_title',
-                'title_font_category',
-                'title_alignment',
-                'show_feature_image',
-                'body_font_category',
-                'footer_content',
-                'show_badge',
-                'show_header_name',
-                'show_post_title_section',
-                'show_comment_cta',
-                'show_subscription_details',
-                'show_latest_posts',
-                'created_at',
-                'updated_at'
+                'sort_order'
             ]);
 
             should.equal(restoreJsonResponse.newsletters[0].name, originalNewsletterName);
@@ -486,6 +471,43 @@ describe('Front-end members behavior', function () {
                         should.exist(redirectUrl.searchParams.get('success'));
                         redirectUrl.searchParams.get('success').should.eql('true');
                     });
+            });
+
+            it('can fetch member data', async function () {
+                const res = await request.get('/members/api/member')
+                    .expect(200);
+
+                const memberData = res.body;
+                should.exist(memberData);
+
+                // @NOTE: this should be a snapshot test not code
+                memberData.should.have.properties([
+                    'uuid',
+                    'email',
+                    'name',
+                    'firstname',
+                    'expertise',
+                    'avatar_image',
+                    'subscribed',
+                    'subscriptions',
+                    'paid',
+                    'created_at',
+                    'enable_comment_notifications',
+                    'newsletters',
+                    'email_suppression'
+                ]);
+                Object.keys(memberData).should.have.length(13);
+                memberData.should.not.have.property('id');
+                memberData.newsletters.should.have.length(1);
+
+                // @NOTE: this should be a snapshot test not code
+                Object.keys(memberData.newsletters[0]).should.have.length(4);
+                memberData.newsletters[0].should.have.properties([
+                    'id',
+                    'name',
+                    'description',
+                    'sort_order'
+                ]);
             });
 
             it('can read public post content', async function () {

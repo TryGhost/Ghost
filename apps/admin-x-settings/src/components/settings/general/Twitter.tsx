@@ -1,13 +1,12 @@
 import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
-import React, {useContext} from 'react';
+import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextArea from '../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {FileService, ServicesContext} from '../../providers/ServiceProvider';
 import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/twitter-logo.svg';
-import {getSettingValues} from '../../../utils/helpers';
+import {getImageUrl, useUploadImage} from '../../../api/images';
+import {getSettingValues} from '../../../api/settings';
 
 const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -21,7 +20,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange
     } = useSettingGroup();
 
-    const {fileService} = useContext(ServicesContext) as {fileService: FileService};
+    const {mutateAsync: uploadImage} = useUploadImage();
 
     const [
         twitterTitle, twitterDescription, twitterImage, siteTitle, siteDescription
@@ -31,16 +30,16 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateSetting('twitter_title', e.target.value);
     };
 
-    const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('twitter_description', e.target.value);
     };
 
     const handleImageUpload = async (file: File) => {
         try {
-            const imageUrl = await fileService.uploadImage(file);
+            const imageUrl = getImageUrl(await uploadImage({file}));
             updateSetting('twitter_image', imageUrl);
-        } catch (err: any) {
-            // handle error
+        } catch (err) {
+            // TODO: handle error
         }
     };
 
@@ -53,20 +52,20 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     const inputFields = (
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 md:flex-row">
             <div className="pt-1">
                 <TwitterLogo className='-mb-1 h-10 w-10' />
             </div>
-            <div className="mr-[52px] w-full">
+            <div className="w-full md:mr-[52px]">
                 <div className="mb-2">
-                    <span className="mr-1 font-semibold text-grey-900">{siteTitle}</span>
+                    <span className="mr-1 font-semibold text-grey-900 dark:text-grey-300">{siteTitle}</span>
                     <span className="text-grey-700">&#183; 2h</span>
                 </div>
-                <div className="mb-2 h-3 w-full rounded bg-grey-200"></div>
-                <div className="mb-4 h-3 w-3/5 rounded bg-grey-200"></div>
-                <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300">
+                <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
+                <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
+                <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
                     <ImageUpload
-                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black'
+                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black dark:border-grey-900'
                         height='300px'
                         id='twitter-image'
                         imageURL={twitterImage}
@@ -84,10 +83,9 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             value={twitterTitle}
                             onChange={handleTitleChange}
                         />
-                        <TextArea
+                        <TextField
                             clearBg={true}
                             placeholder={siteDescription}
-                            rows={2}
                             title="Twitter description"
                             value={twitterDescription}
                             onChange={handleDescriptionChange}

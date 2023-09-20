@@ -2,6 +2,7 @@ import {expect} from '@playwright/test';
 import {initialize} from '../utils/e2e';
 import {test} from '@playwright/test';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function testHistory({page, embeddedOnUrl, path, urlHistory, localStorageHistory}: {page: any, embeddedOnUrl?: string, path: string, urlHistory: any[], localStorageHistory?: any[]}) {
     const {frame, lastApiRequest} = await initialize({page, title: 'Sign up', embeddedOnUrl, path});
 

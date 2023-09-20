@@ -1,8 +1,8 @@
 import React from 'react';
 import clsx from 'clsx';
 
-export type Tab = {
-    id: string;
+export type Tab<ID = string> = {
+    id: ID;
     title: string;
 
     /**
@@ -11,21 +11,21 @@ export type Tab = {
     contents?: React.ReactNode;
 }
 
-interface TabViewProps {
-    tabs: Tab[];
-    onTabChange: (id: string) => void;
-    selectedTab?: string;
-    border?:boolean;
+interface TabViewProps<ID = string> {
+    tabs: readonly Tab<ID>[];
+    onTabChange: (id: ID) => void;
+    selectedTab?: ID;
+    border?: boolean;
     width?: 'narrow' | 'normal' | 'wide';
 }
 
-const TabView: React.FC<TabViewProps> = ({
+function TabView<ID extends string = string>({
     tabs,
     onTabChange,
     selectedTab,
     border = true,
     width = 'normal'
-}) => {
+}: TabViewProps<ID>) {
     if (tabs.length !== 0 && selectedTab === undefined) {
         selectedTab = tabs[0].id;
     }
@@ -35,16 +35,16 @@ const TabView: React.FC<TabViewProps> = ({
     }
 
     const handleTabChange = (e: React.MouseEvent<HTMLButtonElement>) => {
-        const newTab = e.currentTarget.id;
+        const newTab = e.currentTarget.id as ID;
         onTabChange(newTab);
     };
 
     const containerClasses = clsx(
-        'flex',
+        'no-scrollbar flex w-full overflow-x-auto',
         width === 'narrow' && 'gap-3',
         width === 'normal' && 'gap-5',
         width === 'wide' && 'gap-7',
-        border && 'border-b border-grey-300'
+        border && 'border-b border-grey-300 dark:border-grey-900'
     );
 
     return (
@@ -55,9 +55,9 @@ const TabView: React.FC<TabViewProps> = ({
                         key={tab.id}
                         aria-selected={selectedTab === tab.id}
                         className={clsx(
-                            '-m-b-px cursor-pointer appearance-none py-1 text-sm transition-all after:invisible after:block after:h-px after:overflow-hidden after:font-bold after:text-transparent after:content-[attr(title)]',
+                            '-m-b-px cursor-pointer appearance-none whitespace-nowrap py-1 text-sm transition-all after:invisible after:block after:h-px after:overflow-hidden after:font-bold after:text-transparent after:content-[attr(title)] dark:text-white',
                             border && 'border-b-[3px]',
-                            selectedTab === tab.id && border ? 'border-black' : 'border-transparent hover:border-grey-500',
+                            selectedTab === tab.id && border ? 'border-black dark:border-white' : 'border-transparent hover:border-grey-500',
                             selectedTab === tab.id && 'font-bold'
                         )}
                         id={tab.id}

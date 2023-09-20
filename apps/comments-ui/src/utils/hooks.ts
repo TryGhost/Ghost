@@ -40,7 +40,6 @@ export function useSecondUpdate(fn: () => void, inputs: React.DependencyList) {
         }
         didMountRef.current += 1;
     // We shouldn't listen for fn changes, so ignore exhaustive-deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, inputs);
 }
 
@@ -53,7 +52,8 @@ export function usePopupOpen(type: string) {
  * Avoids a rerender of the relative time unless the date changed, and not the current timestamp changed
  */
 export function useRelativeTime(dateString: string) {
+    const {t} = useAppContext();
     return useMemo(() => {
-        return formatRelativeTime(dateString);
+        return formatRelativeTime(dateString, t);
     }, [dateString]);
 }

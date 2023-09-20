@@ -1,11 +1,12 @@
 import TaskList from './Tasklist';
+import {ReactNode} from 'react';
 
 import * as TaskStories from './Task.stories';
 
 const story = {
     component: TaskList,
     title: 'Experimental / Task List',
-    decorators: [(_story: any) => <div style={{padding: '3rem'}}>{_story()}</div>],
+    decorators: [(_story: () => ReactNode) => <div style={{padding: '3rem'}}>{_story()}</div>],
     tags: ['autodocs']
 };
 

@@ -1,12 +1,15 @@
+import Heading from '../Heading';
 import React from 'react';
-import Separator from '../Separator';
 import clsx from 'clsx';
 
 interface FormProps {
     title?: string;
-    gap?: 'sm' | 'md' | 'lg';
+    grouped?: boolean;
+    gap?: 'none' | 'sm' | 'md' | 'lg';
+    margins?: 'none' | 'sm' | 'md' | 'lg';
     marginTop?: boolean;
     marginBottom?: boolean;
+    className?: string;
     children?: React.ReactNode;
 }
 
@@ -15,43 +18,67 @@ interface FormProps {
  */
 const Form: React.FC<FormProps> = ({
     title,
+    grouped = false,
     gap = 'md',
+    margins = 'md',
     marginTop = false,
     marginBottom = true,
+    className = '',
     children
 }) => {
     let classes = clsx(
         'flex flex-col',
-        (gap === 'sm' && 'gap-4'),
+        (gap === 'sm' && 'gap-6'),
         (gap === 'md' && 'gap-8'),
         (gap === 'lg' && 'gap-11')
     );
 
+    if (!margins) {
+        margins = gap;
+    }
+
     if (marginBottom) {
         classes = clsx(
             classes,
-            (gap === 'sm' && 'mb-4'),
-            (gap === 'md' && 'mb-8'),
-            (gap === 'lg' && 'mb-11')
+            (margins === 'sm' && 'mb-7'),
+            (margins === 'md' && 'mb-11'),
+            (margins === 'lg' && 'mb-14')
         );
     }
 
     if (marginTop) {
         classes = clsx(
             classes,
-            (gap === 'sm' && 'mt-4'),
-            (gap === 'md' && 'mt-8'),
-            (gap === 'lg' && 'mt-11')
+            (margins === 'sm' && 'mt-7'),
+            (margins === 'md' && 'mt-11'),
+            (margins === 'lg' && 'mt-14')
+        );
+    }
+
+    if (grouped) {
+        classes = clsx(
+            classes,
+            'rounded-sm border border-grey-200 p-4 dark:border-grey-900 md:p-7'
+        );
+    }
+
+    let titleClasses = clsx(
+        grouped ? 'mb-3' : 'mb-4'
+    );
+
+    if (grouped || title) {
+        return (
+            <div className={className}>
+                {title && <Heading className={titleClasses} level={5}>{title}</Heading>}
+                <div className={classes}>
+                    {children}
+                </div>
+            </div>
         );
     }
 
     return (
-        <div className={classes}>
-            {title &&
-            (<div className='-mb-4'>
-                <div className='text-sm font-semibold text-grey-800'>{title}</div>
-                <Separator />
-            </div>)}
+        <div className={classes + className}>
             {children}
         </div>
     );

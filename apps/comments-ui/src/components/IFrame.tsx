@@ -36,7 +36,12 @@ export default class IFrame extends Component<any> {
             this.forceUpdate();
 
             if (this.props.onResize) {
-                (new ResizeObserver(_ => this.props.onResize(this.iframeRoot)))?.observe?.(this.iframeRoot);
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                (new ResizeObserver((_) => {
+                    window.requestAnimationFrame(() => {
+                        this.props.onResize(this.iframeRoot);
+                    });
+                }))?.observe?.(this.iframeRoot);
             }
 
             // This is a bit hacky, but prevents us to need to attach even listeners to all the iframes we have
@@ -57,7 +62,7 @@ export default class IFrame extends Component<any> {
     }
 
     render() {
-        const {children, head, title = '', style = {}, onResize, ...rest} = this.props;
+        const {children, head, title = '', style = {}, ...rest} = this.props;
         return (
             <iframe srcDoc={`<!DOCTYPE html>`} {...rest} ref={this.setNode} frameBorder="0" style={style} title={title}>
                 {this.iframeHead && createPortal(head, this.iframeHead)}

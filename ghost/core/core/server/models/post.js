@@ -19,6 +19,8 @@ const {Tag} = require('./tag');
 const {Newsletter} = require('./newsletter');
 const {BadRequestError} = require('@tryghost/errors');
 const {PostRevisions} = require('@tryghost/post-revisions');
+const {mobiledocToLexical} = require('@tryghost/kg-converters');
+const labs = require('../../shared/labs');
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
@@ -550,6 +552,16 @@ Post = ghostBookshelf.Model.extend({
         let tagsToSave;
         const ops = [];
 
+        // normally we don't allow both mobiledoc & lexical through at the API level but there's
+        // an exception for ?source=html which always sets both when the lexical editor is enabled.
+        // That's necessary because at the input serializer layer we don't have access to the
+        // actual model to check if this would result in a change of format
+        if (this.previous('mobiledoc') && this.get('lexical')) {
+            this.set('lexical', null);
+        } else if (this.get('mobiledoc') && this.get('lexical')) {
+            this.set('mobiledoc', null);
+        }
+
         // CASE: disallow published -> scheduled
         // @TODO: remove when we have versioning based on updated_at
         if (newStatus !== olderStatus && newStatus === 'scheduled' && olderStatus === 'published') {
@@ -651,7 +663,7 @@ Post = ghostBookshelf.Model.extend({
 
         // If we're force re-rendering we want to make sure that all image cards
         // have original dimensions stored in the payload for use by card renderers
-        if (options.force_rerender) {
+        if (options.force_rerender && this.get('mobiledoc')) {
             this.set('mobiledoc', await mobiledocLib.populateImageSizes(this.get('mobiledoc')));
         }
 
@@ -688,7 +700,7 @@ Post = ghostBookshelf.Model.extend({
             )
         ) {
             try {
-                this.set('html', lexicalLib.render(this.get('lexical')));
+                this.set('html', await lexicalLib.render(this.get('lexical'), {transacting: options.transacting}));
             } catch (err) {
                 throw new errors.ValidationError({
                     message: tpl(messages.invalidLexicalStructure),
@@ -910,6 +922,16 @@ Post = ghostBookshelf.Model.extend({
                 };
                 const newRevisions = await postRevisions.getRevisions(current, revisions, revisionOptions);
                 model.set('post_revisions', newRevisions);
+            });
+        }
+
+        // CASE: Convert post to lexical on the fly
+        if (labs.isSet('lexicalEditor') && options.convert_to_lexical) {
+            ops.push(async function convertToLexical() {
+                const mobiledoc = model.get('mobiledoc');
+                const lexical = mobiledocToLexical(mobiledoc);
+                model.set('lexical', lexical);
+                model.set('mobiledoc', null);
             });
         }
 
@@ -1154,9 +1176,10 @@ Post = ghostBookshelf.Model.extend({
         const validOptions = {
             findOne: ['columns', 'importing', 'withRelated', 'require', 'filter'],
             findPage: ['status'],
+
             findAll: ['columns', 'filter'],
             destroy: ['destroyAll', 'destroyBy'],
-            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter', 'save_revision']
+            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter', 'save_revision', 'convert_to_lexical']
         };
 
         // The post model additionally supports having a formats option

@@ -1,4 +1,4 @@
-import {getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData} from './helpers';
+import {getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed} from './helpers';
 import * as Fixtures from './fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from '../utils/test-fixtures';
 import {isComplimentaryMember} from '../utils/helpers';
@@ -137,12 +137,55 @@ describe('Helpers - ', () => {
     });
 
     describe('isInviteOnlySite - ', () => {
-        test('returns true for invite only site', () => {
-            const value = isInviteOnlySite({site: FixturesSite.singleTier.inviteOnly});
+        test('returns true for a site without plans', () => {
+            const value = isInviteOnlySite({site: FixturesSite.singleTier.withoutPlans});
+            expect(value).toBe(true);
+        });
+        test('returns true for a site with invite-only members', () => {
+            const value = isInviteOnlySite({site: FixturesSite.singleTier.membersInviteOnly});
             expect(value).toBe(true);
         });
         test('returns false for non invite only site', () => {
             const value = isInviteOnlySite({site: FixturesSite.singleTier.basic});
+            expect(value).toBe(false);
+        });
+    });
+
+    describe('isSigninAllowed - ', () => {
+        test('returns true for a site with members enabled', () => {
+            const value = isSigninAllowed({site: FixturesSite.singleTier.basic});
+            expect(value).toBe(true);
+        });
+
+        test('returns true for a site with invite-only members', () => {
+            const value = isSigninAllowed({site: FixturesSite.singleTier.membersInviteOnly});
+            expect(value).toBe(true);
+        });
+
+        test('returns false for a site with members disabled', () => {
+            const value = isSigninAllowed({site: FixturesSite.singleTier.membersDisabled});
+            expect(value).toBe(false);
+        });
+    });
+
+    describe('isSignupAllowed - ', () => {
+        test('returns true for a site with members enabled, and with Stripe configured', () => {
+            const value = isSignupAllowed({site: FixturesSite.singleTier.basic});
+            expect(value).toBe(true);
+        });
+
+        test('returns true for a site with members enabled, without Stripe configured, but with only free tiers', () => {
+            const value = isSignupAllowed({site: FixturesSite.singleTier.onlyFreePlanWithoutStripe});
+            expect(value).toBe(true);
+        });
+
+        test('returns false for a site with invite-only members', () => {
+            const value = isSignupAllowed({site: FixturesSite.singleTier.membersInviteOnly});
+            expect(value).toBe(false);
+        });
+
+        test('returns false for a site with members disabled', () => {
+            const value = isSignupAllowed({site: FixturesSite.singleTier.membersDisabled});
             expect(value).toBe(false);
         });
     });

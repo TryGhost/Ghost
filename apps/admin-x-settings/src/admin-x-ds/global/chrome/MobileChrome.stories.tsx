@@ -1,3 +1,4 @@
+import {ReactNode} from 'react';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import MobileChrome from './MobileChrome';
@@ -6,7 +7,7 @@ const meta = {
     title: 'Global / Chrome / Mobile Chrome',
     component: MobileChrome,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{padding: '40px', backgroundColor: '#efefef', display: 'flex', justifyContent: 'center'}}>{_story()}</div>)]
+    decorators: [(_story: () => ReactNode) => (<div style={{padding: '40px', backgroundColor: '#efefef', display: 'flex', justifyContent: 'center'}}>{_story()}</div>)]
 } satisfies Meta<typeof MobileChrome>;
 
 export default meta;

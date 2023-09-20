@@ -1,3 +1,4 @@
+import {ReactNode} from 'react';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import Radio, {RadioOption} from './Radio';
@@ -6,7 +7,7 @@ const meta = {
     title: 'Global / Form / Radio',
     component: Radio,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
+    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
     argTypes: {
         hint: {
             control: 'text'

@@ -18,6 +18,14 @@ test.describe('CTA', async () => {
         await expect(ctaBox).toContainText('Join the discussion');
         await expect(ctaBox).toContainText('Become a member of Publisher Weekly to start commenting');
         await expect(ctaBox).toContainText('Sign in');
+
+        // Does not show the reply buttons if not logged in
+        const replyButton = frame.getByTestId('reply-button');
+        await expect(replyButton).toHaveCount(0);
+
+        // Does not show the main form
+        const form = frame.getByTestId('form');
+        await expect(form).toHaveCount(0);
     });
 
     test('Shows different CTA if no comments', async ({page}) => {
@@ -57,6 +65,37 @@ test.describe('CTA', async () => {
 
         // Don't show sign in button
         await expect(ctaBox).not.toContainText('Sign in');
+
+        // No replies or comments possible
+        const replyButton = frame.getByTestId('reply-button');
+        await expect(replyButton).toHaveCount(0);
+
+        const form = frame.getByTestId('form');
+        await expect(form).toHaveCount(0);
+    });
+
+    test('No CTA when logged in', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.addComments(2);
+        mockedApi.setMember({
+            status: 'free'
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly'
+        });
+
+        const ctaBox = await frame.getByTestId('cta-box');
+        await expect(ctaBox).not.toBeVisible();
+
+        // No replies or comments possible
+        const replyButton = frame.getByTestId('reply-button');
+        await expect(replyButton).toHaveCount(2);
+
+        const form = frame.getByTestId('form');
+        await expect(form).toHaveCount(1);
     });
 });
 

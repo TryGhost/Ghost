@@ -1,53 +1,50 @@
-import React, {createContext, useContext, useMemo} from 'react';
-import setupGhostApi from '../../utils/api';
-import useDataService, {DataService, bulkEdit} from '../../utils/dataService';
+import React, {createContext, useContext} from 'react';
 import useSearchService, {SearchService} from '../../utils/search';
-import {OfficialTheme} from '../../models/themes';
-import {Tier} from '../../types/api';
+import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
 
-export interface FileService {
-    uploadImage: (file: File) => Promise<string>;
-}
+export type OfficialTheme = {
+    name: string;
+    category: string;
+    previewUrl: string;
+    ref: string;
+    image: string;
+    url?: string;
+};
+
 interface ServicesContextProps {
-    api: ReturnType<typeof setupGhostApi>;
-    fileService: FileService|null;
+    ghostVersion: string
     officialThemes: OfficialTheme[];
-    search: SearchService
-    tiers: DataService<Tier>
+    zapierTemplates: ZapierTemplate[];
+    search: SearchService;
+    toggleFeatureFlag: (flag: string, enabled: boolean) => void;
 }
 
 interface ServicesProviderProps {
     children: React.ReactNode;
     ghostVersion: string;
+    zapierTemplates: ZapierTemplate[];
     officialThemes: OfficialTheme[];
+    toggleFeatureFlag: (flag: string, enabled: boolean) => void;
 }
 
 const ServicesContext = createContext<ServicesContextProps>({
-    api: setupGhostApi({ghostVersion: ''}),
-    fileService: null,
+    ghostVersion: '',
     officialThemes: [],
+    zapierTemplates: [],
     search: {filter: '', setFilter: () => {}, checkVisible: () => true},
-    tiers: {data: [], update: async () => {}}
+    toggleFeatureFlag: () => {}
 });
 
-const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, officialThemes}) => {
-    const apiService = useMemo(() => setupGhostApi({ghostVersion}), [ghostVersion]);
-    const fileService = useMemo(() => ({
-        uploadImage: async (file: File): Promise<string> => {
-            const response = await apiService.images.upload({file});
-            return response.images[0].url;
-        }
-    }), [apiService]);
+const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, toggleFeatureFlag}) => {
     const search = useSearchService();
-    const tiers = useDataService({key: 'tiers', browse: apiService.tiers.browse, edit: bulkEdit('tiers', apiService.tiers.edit)});
 
     return (
         <ServicesContext.Provider value={{
-            api: apiService,
-            fileService,
+            ghostVersion,
             officialThemes,
+            zapierTemplates,
             search,
-            tiers
+            toggleFeatureFlag
         }}>
             {children}
         </ServicesContext.Provider>
@@ -58,10 +55,6 @@ export {ServicesContext, ServicesProvider};
 
 export const useServices = () => useContext(ServicesContext);
 
-export const useApi = () => useServices().api;
-
 export const useOfficialThemes = () => useServices().officialThemes;
 
 export const useSearch = () => useServices().search;
-
-export const useTiers = () => useServices().tiers;

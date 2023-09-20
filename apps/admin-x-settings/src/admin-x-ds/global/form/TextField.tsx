@@ -12,6 +12,7 @@ export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     value?: string;
     error?: boolean;
     placeholder?: string;
+    rightPlaceholder?: React.ReactNode;
     hint?: React.ReactNode;
     clearBg?: boolean;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -22,17 +23,19 @@ export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     hintClassName?: string;
     unstyled?: boolean;
     disabled?: boolean;
+    border?: boolean;
+    autoFocus?: boolean;
 }
 
 const TextField: React.FC<TextFieldProps> = ({
     type = 'text',
     inputRef,
     title,
-    titleColor = 'auto',
     hideTitle,
     value,
     error,
     placeholder,
+    rightPlaceholder,
     hint,
     clearBg = true,
     onChange,
@@ -43,20 +46,29 @@ const TextField: React.FC<TextFieldProps> = ({
     hintClassName = '',
     unstyled = false,
     disabled,
+    border = true,
     ...props
 }) => {
     const id = useId();
 
+    const disabledBorderClasses = border && 'border-grey-300 dark:border-grey-900';
+    const enabledBorderClasses = border && 'border-grey-500 hover:border-grey-700 focus:border-black dark:border-grey-800 dark:hover:border-grey-700 dark:focus:border-grey-500';
+
     const textFieldClasses = !unstyled && clsx(
-        'h-10 border-b py-2',
+        'peer order-2 h-8 w-full py-1 text-sm placeholder:text-grey-500 dark:text-white dark:placeholder:text-grey-800 md:h-10 md:py-2 md:text-base',
+        border && 'border-b',
+        !border && '-mb-1.5',
         clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
-        error ? `border-red` : `${disabled ? 'border-grey-300' : 'border-grey-500 hover:border-grey-700 focus:border-black'}`,
+        error && border ? `border-red` : `${disabled ? disabledBorderClasses : enabledBorderClasses}`,
         (title && !hideTitle && !clearBg) && `mt-2`,
-        (disabled ? 'text-grey-700' : ''),
+        (disabled ? 'cursor-not-allowed text-grey-700 opacity-60 dark:text-grey-800' : ''),
+        rightPlaceholder && 'w-0 grow',
         className
     );
 
-    const field = <input
+    let field = <></>;
+
+    const inputField = <input
         ref={inputRef}
         className={textFieldClasses || className}
         disabled={disabled}
@@ -69,18 +81,42 @@ const TextField: React.FC<TextFieldProps> = ({
         onChange={onChange}
         {...props} />;
 
+    if (rightPlaceholder) {
+        const rightPHEnabledBorderClasses = 'border-grey-500 dark:border-grey-800 peer-hover:border-grey-700 peer-focus:border-black dark:peer-focus:border-grey-500';
+        const rightPHClasses = !unstyled && clsx(
+            'order-3',
+            border && 'border-b',
+            !border && '-mb-1.5',
+            (typeof (rightPlaceholder) === 'string') ? 'h-8 py-1 text-right text-sm text-grey-500 md:h-10 md:py-2 md:text-base' : 'h-10',
+            error && border ? `border-red` : `${disabled ? disabledBorderClasses : rightPHEnabledBorderClasses}`
+        );
+
+        field = (
+            <div className='order-2 flex w-full items-center'>
+                {inputField}
+                <span className={rightPHClasses || ''}>{rightPlaceholder}</span>
+            </div>
+        );
+    } else {
+        field = inputField;
+    }
+
+    hintClassName = clsx(
+        'order-3',
+        hintClassName
+    );
+
+    containerClassName = clsx(
+        'flex flex-col',
+        containerClassName
+    );
+
     if (title || hint) {
-        let titleGrey = false;
-        if (titleColor === 'auto') {
-            titleGrey = value ? true : false;
-        } else {
-            titleGrey = titleColor === 'grey' ? true : false;
-        }
         return (
-            <div className={`flex flex-col ${containerClassName}`}>
-                {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={titleGrey} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+            <div className={containerClassName}>
                 {field}
-                {hint && <Hint className={hintClassName} color={error ? 'red' : ''}>{hint}</Hint>}
+                {title && <Heading className={hideTitle ? 'sr-only' : 'order-1 !text-grey-700 peer-focus:!text-black dark:!text-grey-300 dark:peer-focus:!text-white'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+                {hint && <Hint className={hintClassName} color={error ? 'red' : 'default'}>{hint}</Hint>}
             </div>
         );
     } else {

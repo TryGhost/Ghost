@@ -2,8 +2,8 @@ const {
     CollectionsService
 } = require('@tryghost/collections');
 const BookshelfCollectionsRepository = require('./BookshelfCollectionsRepository');
-const labs = require('../../../shared/labs');
 
+let inited = false;
 class CollectionsServiceWrapper {
     /** @type {CollectionsService} */
     api;
@@ -12,15 +12,17 @@ class CollectionsServiceWrapper {
         const DomainEvents = require('@tryghost/domain-events');
         const postsRepository = require('./PostsRepository').getInstance();
         const models = require('../../models');
-        const collectionsRepositoryInMemory = new BookshelfCollectionsRepository(models.Collection);
+        const collectionsRepositoryInMemory = new BookshelfCollectionsRepository(models.Collection, models.CollectionPost);
 
         const collectionsService = new CollectionsService({
             collectionsRepository: collectionsRepositoryInMemory,
             postsRepository: postsRepository,
             DomainEvents: DomainEvents,
             slugService: {
-                async generate(input) {
-                    return models.Collection.generateSlug(models.Collection, input, {});
+                async generate(input, options) {
+                    return models.Collection.generateSlug(models.Collection, input, {
+                        transacting: options.transaction
+                    });
                 }
             }
         });
@@ -29,34 +31,18 @@ class CollectionsServiceWrapper {
     }
 
     async init() {
-        if (!labs.isSet('collections')) {
-            return;
+        const config = require('../../../shared/config');
+        const labs = require('../../../shared/labs');
+
+        // host setting OR labs "collections" flag has to be enabled to run collections service
+        if (config.get('hostSettings:collections:enabled') || labs.isSet('collections')) {
+            if (inited) {
+                return;
+            }
+
+            inited = true;
+            this.api.subscribeToEvents();
         }
-
-        const existingBuiltins = await this.api.getAll({filter: 'slug:featured'});
-
-        if (!existingBuiltins.data.length) {
-            await this.api.createCollection({
-                title: 'Index',
-                slug: 'index',
-                description: 'Collection with all posts',
-                type: 'automatic',
-                deletable: false,
-                filter: 'status:published'
-            });
-
-            await this.api.createCollection({
-                title: 'Featured Posts',
-                slug: 'featured',
-                description: 'Collection of featured posts',
-                type: 'automatic',
-                deletable: false,
-                filter: 'featured:true'
-            });
-        }
-
-        this.api.subscribeToEvents();
-        require('./intercept-events')();
     }
 }
 

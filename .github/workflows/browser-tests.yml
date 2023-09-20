@@ -52,9 +52,13 @@ jobs:
     - name: Install dependencies
       run: yarn
 
+    - name: Build packages
+      run: yarn nx run-many -t build:ts
+
     - name: Run migrations
       working-directory: ghost/core
-      run: yarn setup
+      run: yarn knex-migrator init
+
     - name: Get Playwright version
       id: playwright-version
       run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT

@@ -6,7 +6,7 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getSettingValues} from '../../../utils/helpers';
+import {getSettingValues, useEditSettings} from '../../../api/settings';
 
 const MAILGUN_REGIONS = [
     {label: '🇺🇸 US', value: 'https://api.mailgun.net/v3'},
@@ -23,6 +23,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateSetting,
         handleEditingChange
     } = useSettingGroup();
+    const {mutateAsync: editSettings} = useEditSettings();
 
     const [mailgunRegion, mailgunDomain, mailgunApiKey] = getSettingValues(localSettings, [
         'mailgun_base_url', 'mailgun_domain', 'mailgun_api_key'
@@ -57,7 +58,6 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const apiKeysHint = (
         <>Find your Mailgun API keys <Link href="https://app.mailgun.com/app/account/security/api_keys" rel="noopener noreferrer" target="_blank">here</Link></>
     );
-
     const inputs = (
         <SettingGroupContent>
             <div className='grid grid-cols-[120px_auto] gap-x-3 gap-y-6'>
@@ -66,7 +66,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     selectedOption={mailgunRegion}
                     title="Mailgun region"
                     onSelect={(value) => {
-                        updateSetting('mailgun_base_url', value);
+                        updateSetting('mailgun_base_url', value || null);
                     }}
                 />
                 <TextField
@@ -106,7 +106,16 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
             title='Mailgun'
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
-            onSave={handleSave}
+            onSave={async () => {
+                // this is a special case where we need to set the region to the default if it's not set,
+                // since when the Mailgun Region is not changed, the value doesn't get set in the updateSetting
+                // resulting in the mailgun base url remaining null
+                // this should not fire if the user has changed the region or if the region is already set
+                if (!mailgunRegion) {
+                    await editSettings([{key: 'mailgun_base_url', value: MAILGUN_REGIONS[0].value}]);
+                }
+                handleSave();
+            }}
         >
             {isEditing ? inputs : values}
         </SettingGroup>

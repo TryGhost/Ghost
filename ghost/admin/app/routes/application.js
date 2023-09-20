@@ -1,9 +1,12 @@
-import * as Sentry from '@sentry/ember';
 import AuthConfiguration from 'ember-simple-auth/configuration';
+import React from 'react';
+import ReactDOM from 'react-dom';
 import Route from '@ember/routing/route';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
+import {InitSentryForEmber} from '@sentry/ember';
+import {importSettings} from '../components/admin-x/settings';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
     isAjaxError,
@@ -25,6 +28,11 @@ let shortcuts = {};
 
 shortcuts.esc = {action: 'closeMenus', scope: 'default'};
 shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
+
+// make globals available for any pulled in UMD components
+// - avoids external components needing to bundle React and running into multiple version errors
+window.React = React;
+window.ReactDOM = ReactDOM;
 
 export default Route.extend(ShortcutsRoute, {
     ajax: service(),
@@ -161,7 +169,7 @@ export default Route.extend(ShortcutsRoute, {
         // init Sentry here rather than app.js so that we can use API-supplied
         // sentry_dsn and sentry_env rather than building it into release assets
         if (this.config.sentry_dsn) {
-            Sentry.init({
+            InitSentryForEmber({
                 dsn: this.config.sentry_dsn,
                 environment: this.config.sentry_env,
                 release: `ghost@${this.config.version}`,
@@ -171,18 +179,6 @@ export default Route.extend(ShortcutsRoute, {
                     event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
                     return event;
                 },
-
-                // Enable collecting Replay events
-                integrations: [
-                    new Sentry.Replay()
-                ],
-
-                // Don't collect any Replays for general users
-                replaysSessionSampleRate: 0,
-
-                // Collect all Replays coming from errors
-                replaysOnErrorSampleRate: 1.0,
-
                 // TransitionAborted errors surface from normal application behaviour
                 // - https://github.com/emberjs/ember.js/issues/12505
                 ignoreErrors: [/^TransitionAborted$/]
@@ -203,6 +199,9 @@ export default Route.extend(ShortcutsRoute, {
             // enforce opening the BMA in a force upgrade state
             this.billing.openBillingWindow(this.router.currentURL, '/pro');
         }
+
+        // Preload settings to avoid a delay when opening
+        setTimeout(importSettings, 1000);
     }
 
 });

@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useState} from 'react';
+import React, {CSSProperties, ChangeEvent, useState} from 'react';
 
 export interface FileUploadProps {
     id: string;
@@ -11,7 +11,7 @@ export interface FileUploadProps {
     children?: string | React.ReactNode;
     className?: string;
     onUpload: (file: File) => void;
-    style?: {}
+    style?: CSSProperties;
     unstyled?: boolean;
 }
 
@@ -30,7 +30,7 @@ const FileUpload: React.FC<FileUploadProps> = ({id, onUpload, children, style, u
         <label htmlFor={id} style={style} {...props}>
             <input key={fileKey} id={id} type="file" hidden onChange={handleFileChange} />
             {(typeof children === 'string') ?
-                <div className={!unstyled ? `inline-flex h-[34px] cursor-pointer items-center justify-center rounded px-4 text-sm font-semibold hover:bg-grey-100` : ''}>
+                <div className={!unstyled ? `inline-flex h-[34px] cursor-pointer items-center justify-center rounded px-4 text-sm font-semibold hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900` : ''}>
                     {children}
                 </div>
                 :

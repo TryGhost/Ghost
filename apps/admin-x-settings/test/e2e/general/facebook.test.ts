@@ -1,12 +1,12 @@
 import {expect, test} from '@playwright/test';
-import {mockApi} from '../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures} from '../../utils/e2e';
 
 test.describe('Facebook settings', async () => {
     test('Supports editing the facebook card', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            images: {
-                upload: {images: [{url: 'http://example.com/image.png', ref: null}]}
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            uploadImage: {method: 'POST', path: '/images/upload/', response: {images: [{url: 'http://example.com/image.png', ref: null}]}},
+            editSettings: {method: 'PUT', path: '/settings/', response: responseFixtures.settings}
         }});
 
         await page.goto('/');
@@ -31,7 +31,7 @@ test.describe('Facebook settings', async () => {
 
         await expect(section.getByLabel('Facebook title')).toHaveCount(0);
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'og_image', value: 'http://example.com/image.png'},
                 {key: 'og_title', value: 'Facetitle'},

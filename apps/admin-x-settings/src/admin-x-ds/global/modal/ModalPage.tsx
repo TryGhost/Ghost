@@ -10,7 +10,7 @@ interface ModalPageProps {
 
 const ModalPage: React.FC<ModalPageProps> = ({heading, children, className}) => {
     className = clsx(
-        'h-full w-full p-[8vmin] pt-5',
+        'w-full p-[8vmin] pt-5',
         className
     );
     return (

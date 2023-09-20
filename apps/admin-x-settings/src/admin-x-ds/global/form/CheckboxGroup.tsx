@@ -18,7 +18,7 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
 }) => {
     return (
         <div>
-            {title && <Heading level={6}>{title}</Heading>}
+            {title && <Heading grey={true} level={6}>{title}</Heading>}
             <div className='mt-2 flex flex-col gap-1'>
                 {checkboxes?.map(({key, ...props}) => (
                     <Checkbox key={key} {...props} />

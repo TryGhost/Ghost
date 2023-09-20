@@ -82,6 +82,7 @@ const FullHeightFrame: React.FC<ResizableFrameProps> = ({children, style, title}
         if (!element) {
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const observer = new ResizeObserver(_ => onResize(element));
         observer.observe(element);
 

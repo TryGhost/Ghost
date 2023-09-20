@@ -25,7 +25,7 @@ let commands = [];
 const COMMAND_GHOST = {
     name: 'ghost',
     // Note: if this isn't working for you, please use Node 18 and above
-    command: 'node --watch index.js',
+    command: 'nx run ghost:dev',
     cwd: path.resolve(__dirname, '../../ghost/core'),
     prefixColor: 'blue',
     env: {}
@@ -33,58 +33,26 @@ const COMMAND_GHOST = {
 
 const COMMAND_ADMIN = {
     name: 'admin',
-    command: `yarn start --live-reload-base-url=${liveReloadBaseUrl} --live-reload-port=4201`,
+    command: `nx run ghost-admin:dev --live-reload-base-url=${liveReloadBaseUrl} --live-reload-port=4201`,
     cwd: path.resolve(__dirname, '../../ghost/admin'),
     prefixColor: 'green',
     env: {}
 };
 
+const COMMAND_TYPESCRIPT = {
+    name: 'ts',
+    command: 'nx watch --projects=ghost/collections,ghost/in-memory-repository,ghost/bookshelf-repository,ghost/mail-events,ghost/model-to-domain-event-interceptor,ghost/post-revisions,ghost/nql-filter-expansions,ghost/post-events,ghost/donations,ghost/recommendations -- nx run \\$NX_PROJECT_NAME:build:ts',
+    cwd: path.resolve(__dirname, '../../'),
+    prefixColor: 'cyan',
+    env: {}
+};
+
 if (DASH_DASH_ARGS.includes('ghost')) {
-    commands = [COMMAND_GHOST];
+    commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT];
 } else if (DASH_DASH_ARGS.includes('admin')) {
     commands = [COMMAND_ADMIN];
 } else {
-    commands = [COMMAND_GHOST, COMMAND_ADMIN];
-}
-
-if (DASH_DASH_ARGS.includes('revisions') || DASH_DASH_ARGS.includes('all')) {
-    commands.push({
-        name: 'post-revisions',
-        command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../../ghost/post-revisions'),
-        prefixColor: 'green',
-        env: {}
-    });
-}
-
-if (DASH_DASH_ARGS.includes('in-memory-repository') || DASH_DASH_ARGS.includes('all')) {
-    commands.push({
-        name: 'in-memory-repository',
-        command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../../ghost/in-memory-repository'),
-        prefixColor: 'pink',
-        env: {}
-    });
-}
-
-if (DASH_DASH_ARGS.includes('collections') || DASH_DASH_ARGS.includes('all')) {
-    commands.push({
-        name: 'collections',
-        command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../../ghost/collections'),
-        prefixColor: 'pink',
-        env: {}
-    });
-}
-
-if (DASH_DASH_ARGS.includes('mail-events') || DASH_DASH_ARGS.includes('all')) {
-    commands.push({
-        name: 'collections',
-        command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../../ghost/mail-events'),
-        prefixColor: 'pink',
-        env: {}
-    });
+    commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN];
 }
 
 if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || DASH_DASH_ARGS.includes('adminX') || DASH_DASH_ARGS.includes('all')) {
@@ -95,7 +63,6 @@ if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || D
         prefixColor: '#C35831',
         env: {}
     });
-    COMMAND_GHOST.env['adminX__url'] = 'http://localhost:4174/admin-x-settings.umd.js';
 }
 
 if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
@@ -140,7 +107,7 @@ if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('anno
         prefixColor: '#DC9D00',
         env: {}
     });
-    COMMAND_GHOST.env['announcementBar__url'] = 'http://localhost:5371/announcement-bar';
+    COMMAND_GHOST.env['announcementBar__url'] = 'http://localhost:4177/announcement-bar.min.js';
 }
 
 if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
@@ -151,8 +118,8 @@ if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
         prefixColor: '#23de43',
         env: {}
     });
-    COMMAND_GHOST.env['sodoSearch__url'] = 'http://localhost:5370/umd/sodo-search.min.js';
-    COMMAND_GHOST.env['sodoSearch__styles'] = 'http://localhost:5370/umd/main.css';
+    COMMAND_GHOST.env['sodoSearch__url'] = 'http://localhost:4178/sodo-search.min.js';
+    COMMAND_GHOST.env['sodoSearch__styles'] = 'http://localhost:4178/main.css';
 }
 
 if (DASH_DASH_ARGS.includes('lexical')) {
@@ -160,11 +127,11 @@ if (DASH_DASH_ARGS.includes('lexical')) {
         // Safari needs HTTPS for it to work
         // To make this work, you'll need a CADDY server running in front
         // Note the port is different because of this extra layer. Use the following Caddyfile:
-        //    https://localhost:4174 {
+        //    https://localhost:41730 {
         //        reverse_proxy http://127.0.0.1:4173
         //    }
 
-        COMMAND_GHOST.env['editor__url'] = 'https://localhost:4174/koenig-lexical.umd.js';
+        COMMAND_GHOST.env['editor__url'] = 'https://localhost:41730/koenig-lexical.umd.js';
     } else {
         COMMAND_GHOST.env['editor__url'] = 'http://localhost:4173/koenig-lexical.umd.js';
     }

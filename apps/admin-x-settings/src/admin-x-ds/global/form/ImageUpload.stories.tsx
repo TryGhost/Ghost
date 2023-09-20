@@ -1,3 +1,4 @@
+import {ReactNode} from 'react';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import ImageUpload from './ImageUpload';
@@ -6,7 +7,7 @@ const meta = {
     title: 'Global / Form / Image upload',
     component: ImageUpload,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{maxWidth: '600px'}}>{_story()}</div>)]
+    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '600px'}}>{_story()}</div>)]
 } satisfies Meta<typeof ImageUpload>;
 
 export default meta;

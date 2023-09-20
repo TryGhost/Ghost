@@ -182,6 +182,7 @@ function createApiInstance(config) {
             }
         },
         models: {
+            DonationPaymentEvent: models.DonationPaymentEvent,
             EmailRecipient: models.EmailRecipient,
             StripeCustomer: models.MemberStripeCustomer,
             StripeCustomerSubscription: models.StripeCustomerSubscription,
@@ -214,7 +215,8 @@ function createApiInstance(config) {
         labsService: labsService,
         newslettersService: newslettersService,
         memberAttributionService: memberAttributionService.service,
-        emailSuppressionList
+        emailSuppressionList,
+        settingsCache
     });
 
     return membersApiInstance;

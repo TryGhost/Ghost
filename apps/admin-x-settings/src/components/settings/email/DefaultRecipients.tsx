@@ -1,13 +1,15 @@
 import MultiSelect, {MultiSelectOption} from '../../../admin-x-ds/global/form/MultiSelect';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import Select from '../../../admin-x-ds/global/form/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
-import {Label, Offer, Tier} from '../../../types/api';
-import {ServicesContext} from '../../providers/ServiceProvider';
-import {getOptionLabel, getPaidActiveTiers, getSettingValues} from '../../../utils/helpers';
+import {getOptionLabel} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
+import {useBrowseLabels} from '../../../api/labels';
+import {useBrowseOffers} from '../../../api/offers';
+import {useBrowseTiers} from '../../../api/tiers';
 
 type RefipientValueArgs = {
     defaultEmailRecipients: string;
@@ -16,18 +18,23 @@ type RefipientValueArgs = {
 
 const RECIPIENT_FILTER_OPTIONS = [{
     label: 'Whoever has access to the post',
+    hint: 'Free posts to everyone, premium posts sent to paid members',
     value: 'visibility'
 }, {
     label: 'All members',
+    hint: 'Everyone who is subscribed to newsletter updates, whether free or paid members',
     value: 'all-members'
 }, {
     label: 'Paid-members only',
+    hint: 'People who have a premium subscription',
     value: 'paid-only'
 }, {
     label: 'Specific people',
+    hint: 'Only people with any of the selected tiers or labels',
     value: 'segment'
 }, {
     label: 'Usually nobody',
+    hint: 'Newsletters are off for new posts, but can be enabled when needed',
     value: 'none'
 }];
 
@@ -80,24 +87,9 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
         defaultEmailRecipientsFilter
     }));
 
-    const {api} = useContext(ServicesContext);
-    const [tiers, setTiers] = useState<Tier[]>([]);
-    const [labels, setLabels] = useState<Label[]>([]);
-    const [offers, setOffers] = useState<Offer[]>([]);
-
-    useEffect(() => {
-        api.tiers.browse().then((response) => {
-            setTiers(getPaidActiveTiers(response.tiers));
-        });
-
-        api.labels.browse().then((response) => {
-            setLabels(response.labels);
-        });
-
-        api.offers.browse().then((response) => {
-            setOffers(response.offers);
-        });
-    }, [api]);
+    const {data: {tiers} = {}} = useBrowseTiers();
+    const {data: {labels} = {}} = useBrowseLabels();
+    const {data: {offers} = {}} = useBrowseOffers();
 
     const setDefaultRecipientValue = (value: string) => {
         if (['visibility', 'disabled'].includes(value)) {
@@ -128,19 +120,19 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
         },
         {
             label: 'Active Tiers',
-            options: tiers.filter(({active}) => active).map(tier => ({value: tier.id, label: tier.name, color: 'black'}))
+            options: tiers?.filter(({active, type}) => active && type !== 'free').map(tier => ({value: tier.id, label: tier.name, color: 'black'})) || []
         },
         {
             label: 'Archived Tiers',
-            options: tiers.filter(({active}) => !active).map(tier => ({value: tier.id, label: tier.name, color: 'black'}))
+            options: tiers?.filter(({active}) => !active).map(tier => ({value: tier.id, label: tier.name, color: 'black'})) || []
         },
         {
             label: 'Labels',
-            options: labels.map(label => ({value: `label:${label.slug}`, label: label.name, color: 'grey'}))
+            options: labels?.map(label => ({value: `label:${label.slug}`, label: label.name, color: 'grey'})) || []
         },
         {
             label: 'Offers',
-            options: offers.map(offer => ({value: `offer_redemptions:${offer.id}`, label: offer.name, color: 'black'}))
+            options: offers?.map(offer => ({value: `offer_redemptions:${offer.id}`, label: offer.name, color: 'black'})) || []
         }
     ];
 
@@ -179,13 +171,15 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 selectedOption={selectedOption}
                 title="Default Newsletter recipients"
                 onSelect={(value) => {
-                    setDefaultRecipientValue(value);
+                    if (value) {
+                        setDefaultRecipientValue(value);
+                    }
                 }}
             />
             {(selectedOption === 'segment') && (
                 <MultiSelect
                     options={segmentOptionGroups.filter(group => group.options.length > 0)}
-                    title='Select tiers'
+                    title='Filter'
                     values={selectedSegments}
                     clearBg
                     onChange={setSelectedSegments}

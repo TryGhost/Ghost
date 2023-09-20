@@ -20,6 +20,7 @@ export default class GhPostSettingsMenu extends Component {
     @service slugGenerator;
     @service session;
     @service settings;
+    @service themeManagement;
     @service ui;
 
     @inject config;
@@ -161,6 +162,10 @@ export default class GhPostSettingsMenu extends Component {
         }
 
         return true;
+    }
+
+    get themeMissingShowTitleAndFeatureImage() {
+        return !this.themeManagement.activeTheme.hasPageBuilderFeature('show_title_and_feature_image');
     }
 
     willDestroyElement() {
@@ -638,5 +643,6 @@ export default class GhPostSettingsMenu extends Component {
 
     setSidebarWidthVariable(width) {
         document.documentElement.style.setProperty('--editor-sidebar-width', `${width}px`);
+        document.documentElement.style.setProperty('--kg-breakout-adjustment', `${width}px`);
     }
 }

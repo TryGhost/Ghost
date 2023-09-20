@@ -1,17 +1,16 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, updatedSettingsResponse} from '../../utils/e2e';
+import {globalDataRequests, mockApi, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Analytics settings', async () => {
     test('Supports toggling analytics settings', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            settings: {
-                edit: updatedSettingsResponse([
-                    {key: 'members_track_sources', value: false},
-                    {key: 'email_track_opens', value: false},
-                    {key: 'email_track_clicks', value: false},
-                    {key: 'outbound_link_tagging', value: false}
-                ])
-            }
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'members_track_sources', value: false},
+                {key: 'email_track_opens', value: false},
+                {key: 'email_track_clicks', value: false},
+                {key: 'outbound_link_tagging', value: false}
+            ])}
         }});
 
         await page.goto('/');
@@ -30,7 +29,7 @@ test.describe('Analytics settings', async () => {
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.settings.edit.body).toEqual({
+        expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
                 {key: 'members_track_sources', value: false},
                 {key: 'email_track_opens', value: false},
@@ -38,5 +37,21 @@ test.describe('Analytics settings', async () => {
                 {key: 'outbound_link_tagging', value: false}
             ]
         });
+    });
+
+    test('Supports downloading analytics csv export', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            postsExport: {method: 'GET', path: '/posts/export/?limit=1000', response: 'csv data'}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('analytics');
+
+        await section.getByRole('button', {name: 'Export'}).click();
+
+        const hasDownloadUrl = lastApiRequests.postsExport?.url?.includes('/posts/export/?limit=1000');
+        expect(hasDownloadUrl).toBe(true);
     });
 });

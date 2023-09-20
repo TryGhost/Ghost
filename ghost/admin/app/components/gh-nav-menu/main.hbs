@@ -34,7 +34,9 @@
                     </li>
                     {{#if (gh-user-can-admin this.session.user)}}
                     <li class="relative">
-                        <LinkTo @route="explore" title="Ghost Explore" data-test-nav="explore">{{svg-jar "globe-simple"}} Explore</LinkTo>
+                        <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active"}} {{on "click" (fn this.toggleExploreWindow "")}} data-test-nav="explore">
+                            {{svg-jar "globe-simple"}} Explore
+                        </a>
                     </li>
                     {{/if}}
                 </ul>
@@ -119,11 +121,6 @@
                                 <LinkTo @route="offers" @current-when="offers offer offer.new" @alt="Offers" data-test-nav="offers">{{svg-jar "percentage"}}Offers</LinkTo>
                             </li>
                         {{/if}}
-                    {{/if}}
-                    {{#if (and (gh-user-can-admin this.session.user) (feature "adminXSettings"))}}
-                            <li>
-                                <LinkTo @route="settings-x" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}} AdminX Settings</LinkTo>
-                            </li>
                     {{/if}}
                 </ul>
 

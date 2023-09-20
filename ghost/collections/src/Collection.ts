@@ -1,7 +1,9 @@
 import {UniqueChecker} from './UniqueChecker';
 import {ValidationError} from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
-import nql = require('@tryghost/nql');
+import nql from '@tryghost/nql';
+import {posts as postExpansions} from '@tryghost/nql-filter-expansions';
+import {CollectionPost} from './CollectionPost';
 
 import ObjectID from 'bson-objectid';
 
@@ -16,10 +18,49 @@ const messages = {
     slugMustBeUnique: 'Slug must be unique'
 };
 
-type CollectionPost = {
-    id: string;
-    featured?: boolean;
-    published_at?: Date;
+function validateFilter(filter: string | null, type: 'manual' | 'automatic', isAllowedEmpty = false) {
+    const allowedProperties = ['featured', 'published_at', 'tag', 'tags'];
+    if (type === 'manual') {
+        if (filter !== null) {
+            throw new ValidationError({
+                message: tpl(messages.invalidFilterProvided.message),
+                context: tpl(messages.invalidFilterProvided.context)
+            });
+        }
+        return;
+    }
+
+    // type === 'automatic' now
+    if (filter === null) {
+        throw new ValidationError({
+            message: tpl(messages.invalidFilterProvided.message),
+            context: tpl(messages.invalidFilterProvided.context)
+        });
+    }
+
+    if (filter.trim() === '' && !isAllowedEmpty) {
+        throw new ValidationError({
+            message: tpl(messages.invalidFilterProvided.message),
+            context: tpl(messages.invalidFilterProvided.context)
+        });
+    }
+
+    try {
+        const parsedFilter = nql(filter);
+        const keysUsed: string[] = [];
+        nql.utils.mapQuery(parsedFilter.toJSON(), function (value: unknown, key: string) {
+            keysUsed.push(key);
+        });
+        if (keysUsed.some(key => !allowedProperties.includes(key))) {
+            throw new ValidationError({
+                message: tpl(messages.invalidFilterProvided.message)
+            });
+        }
+    } catch (err) {
+        throw new ValidationError({
+            message: tpl(messages.invalidFilterProvided.message)
+        });
+    }
 }
 
 export class Collection {
@@ -44,12 +85,22 @@ export class Collection {
     }
     description: string;
     type: 'manual' | 'automatic';
-    filter: string | null;
+    _filter: string | null;
+    get filter() {
+        return this._filter;
+    }
+    set filter(value) {
+        if (this.slug === 'latest' || this.slug === 'featured') {
+            return;
+        }
+        validateFilter(value, this.type);
+        this._filter = value;
+    }
     featureImage: string | null;
     createdAt: Date;
     updatedAt: Date;
     get deletable() {
-        return this.slug !== 'index' && this.slug !== 'featured';
+        return this.slug !== 'latest' && this.slug !== 'featured';
     }
     private _deleted: boolean = false;
 
@@ -68,39 +119,10 @@ export class Collection {
         }
     }
 
-    public async edit(data: Partial<Collection>, uniqueChecker: UniqueChecker) {
-        if (this.type === 'automatic' && this.slug !== 'index' && (data.filter === null || data.filter === '')) {
-            throw new ValidationError({
-                message: tpl(messages.invalidFilterProvided.message),
-                context: tpl(messages.invalidFilterProvided.context)
-            });
-        }
-
-        if (data.title !== undefined) {
-            this.title = data.title;
-        }
-
-        if (data.slug !== undefined) {
-            await this.setSlug(data.slug, uniqueChecker);
-        }
-
-        if (data.description !== undefined) {
-            this.description = data.description;
-        }
-
-        if (data.filter !== undefined) {
-            this.filter = data.filter;
-        }
-
-        if (data.featureImage !== undefined) {
-            this.featureImage = data.featureImage;
-        }
-
-        return this;
-    }
-
     postMatchesFilter(post: CollectionPost) {
-        const filterNql = nql(this.filter);
+        const filterNql = nql(this.filter, {
+            expansions: postExpansions
+        });
         return filterNql.queryJSON(post);
     }
 
@@ -143,13 +165,14 @@ export class Collection {
         this._posts = [];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private constructor(data: any) {
         this.id = data.id;
         this.title = data.title;
         this._slug = data.slug;
         this.description = data.description;
         this.type = data.type;
-        this.filter = data.filter;
+        this._filter = data.filter;
         this.featureImage = data.featureImage;
         this.createdAt = data.createdAt;
         this.updatedAt = data.updatedAt;
@@ -172,6 +195,7 @@ export class Collection {
         };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static validateDateField(date: any, fieldName: string): Date {
         if (!date) {
             return new Date();
@@ -186,6 +210,7 @@ export class Collection {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static async create(data: any): Promise<Collection> {
         let id;
 
@@ -201,13 +226,9 @@ export class Collection {
             });
         }
 
-        if (data.type === 'automatic' && (data.slug !== 'index') && !data.filter) {
-            // @NOTE: add filter validation here
-            throw new ValidationError({
-                message: tpl(messages.invalidFilterProvided.message),
-                context: tpl(messages.invalidFilterProvided.context)
-            });
-        }
+        const type = data.type === 'automatic' ? 'automatic' : 'manual';
+        const filter = typeof data.filter === 'string' ? data.filter : null;
+        validateFilter(filter, type, data.slug === 'latest');
 
         if (!data.title) {
             throw new ValidationError({
@@ -220,8 +241,8 @@ export class Collection {
             title: data.title,
             slug: data.slug,
             description: data.description || null,
-            type: data.type || 'manual',
-            filter: data.filter || null,
+            type: type,
+            filter: filter,
             featureImage: data.feature_image || null,
             createdAt: Collection.validateDateField(data.created_at, 'created_at'),
             updatedAt: Collection.validateDateField(data.updated_at, 'updated_at'),

@@ -1,3 +1,4 @@
+import {ReactNode} from 'react';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import Toggle from './Toggle';
@@ -6,7 +7,7 @@ const meta = {
     title: 'Global / Form / Toggle',
     component: Toggle,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)]
+    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)]
 } satisfies Meta<typeof Toggle>;
 
 export default meta;
@@ -54,6 +55,13 @@ export const WithLabelAndHint: Story = {
     }
 };
 
+export const CustomLabelStyle: Story = {
+    args: {
+        label: 'Check me',
+        labelClasses: 'text-sm translate-y-[1px]'
+    }
+};
+
 export const LeftToRight: Story = {
     args: {
         label: 'Check me',
@@ -68,6 +76,12 @@ export const WithSeparator: Story = {
         hint: 'But only if you dare',
         direction: 'rtl',
         separator: true
+    }
+};
+
+export const CustomBgColor: Story = {
+    args: {
+        toggleBg: 'stripetest'
     }
 };
 

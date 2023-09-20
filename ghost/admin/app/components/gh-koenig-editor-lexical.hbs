@@ -5,6 +5,8 @@
         class="gh-koenig-editor-pane flex flex-column mih-100"
         {{on "mousedown" this.trackMousedown}}
         {{on "mouseup" this.focusEditor}}
+        {{on "dragover" this.editorPaneDragover}}
+        {{on "drop" this.editorPaneDrop}}
     >
         <GhEditorFeatureImage
             @image={{@featureImage}}
@@ -15,18 +17,18 @@
             @caption={{@featureImageCaption}}
             @updateCaption={{@setFeatureImageCaption}}
             @forceButtonDisplay={{or (not @title) (eq @title "(Untitled)") this.titleIsHovered this.titleIsFocused}}
-            @isHidden={{and (feature 'pageImprovements') (not @cardOptions.post.showTitleAndFeatureImage)}}
+            @isHidden={{or (not @cardOptions.post.showTitleAndFeatureImage) false}}
         />
 
-        <div class="gh-editor-title-container {{if (feature "pageImprovements") "page-improvements"}}">
-            {{#if (and (feature 'pageImprovements') (not @cardOptions.post.showTitleAndFeatureImage) (not @featureImage))}}
+        <div class="gh-editor-title-container page-improvements">
+            {{#if (and (not @cardOptions.post.showTitleAndFeatureImage) (not @featureImage))}}
                 <span class="gh-editor-hidden-indicator" data-tooltip="Post title is hidden on page">
                     {{svg-jar "eye-closed"}}
                 </span>
             {{/if}}
 
             <GhTextarea
-                @class="gh-editor-title {{if (and (not @cardOptions.post.showTitleAndFeatureImage) (feature 'pageImprovements') (not this.titleIsFocused)) "faded"}}"
+                @class="gh-editor-title {{if (and (not @cardOptions.post.showTitleAndFeatureImage) (not this.titleIsFocused)) "faded"}}"
                 @placeholder={{@titlePlaceholder}}
                 @shouldFocus={{or @titleAutofocus false}}
                 @tabindex="1"

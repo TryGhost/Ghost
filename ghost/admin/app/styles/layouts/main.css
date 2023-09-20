@@ -1431,7 +1431,8 @@
 
 .gh-expandable-content input:not(:focus),
 .gh-expandable-content .gh-input:not(:focus),
-.gh-expandable-content .ember-power-select-multiple-trigger {
+.gh-expandable-content .ember-power-select-multiple-trigger,
+.gh-expandable-content select:not(:focus) {
     border-color: var(--whitegrey-d1);
 }
 

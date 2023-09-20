@@ -17,30 +17,23 @@ module.exports = {
             'limit',
             'order',
             'page',
-            'filter'
+            'filter',
+            'include'
         ],
+        validation: {
+            options: {
+                include: {
+                    values: ['count.posts']
+                }
+            }
+        },
         permissions: true,
         query(frame) {
-            return collectionsService.api.getAll(frame.options);
-        }
-    },
-
-    browsePosts: {
-        headers: {
-            cacheInvalidate: false
-        },
-        data: [
-            'id'
-        ],
-        options: [
-            'limit',
-            'page'
-        ],
-        permissions: {
-            method: 'browse'
-        },
-        query(frame) {
-            return collectionsService.api.getAllPosts(frame.data.id, frame.options);
+            return collectionsService.api.getAll({
+                filter: frame.options.filter,
+                limit: frame.options.limit,
+                page: frame.options.page
+            });
         }
     },
 
@@ -48,12 +41,28 @@ module.exports = {
         headers: {
             cacheInvalidate: false
         },
-        data: [
-            'id'
+        options: [
+            'include'
         ],
+        data: [
+            'id',
+            'slug'
+        ],
+        validation: {
+            options: {
+                include: {
+                    values: ['count.posts']
+                }
+            }
+        },
         permissions: true,
         async query(frame) {
-            const model = await collectionsService.api.getById(frame.data.id);
+            let model;
+            if (frame.data.id) {
+                model = await collectionsService.api.getById(frame.data.id);
+            } else {
+                model = await collectionsService.api.getBySlug(frame.data.slug);
+            }
 
             if (!model) {
                 throw new errors.NotFoundError({

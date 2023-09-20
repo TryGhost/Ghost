@@ -17,6 +17,20 @@ export const Default: Story = {
     }
 };
 
+export const Error: Story = {
+    args: {
+        children: 'This is a hint that should be red',
+        color: 'red'
+    }
+};
+
+export const Success: Story = {
+    args: {
+        children: 'This is a hint that should be green',
+        color: 'green'
+    }
+};
+
 export const UsingReactNode: Story = {
     args: {
         children: (

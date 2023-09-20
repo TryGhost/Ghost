@@ -4,11 +4,13 @@ import HtmlEditor, {HtmlEditorProps} from './HtmlEditor';
 import React from 'react';
 import clsx from 'clsx';
 
+export type EditorConfig = { editor: { url: string; version: string; } }
+
 export type HtmlFieldProps = HtmlEditorProps & {
     /**
      * Should be passed the Ghost instance config to get the editor JS URL
      */
-    config: { editor: { url: string; version: string; } };
+    config: EditorConfig;
     title?: string;
     hideTitle?: boolean;
     error?: boolean;
@@ -47,7 +49,7 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
 
     return (
         <div className={`flex flex-col ${containerClassName}`}>
-            {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={value ? true : false} useLabelTag={true}>{title}</Heading>}
+            {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={true} useLabelTag={true}>{title}</Heading>}
             <div className={textFieldClasses}>
                 <HtmlEditor {...props} value={value} />
             </div>

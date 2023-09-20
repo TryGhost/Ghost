@@ -10,12 +10,14 @@ export interface HtmlEditorProps {
 
 declare global {
     interface Window {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         '@tryghost/koenig-lexical': any;
     }
 }
 
 const fetchKoenig = function ({editorUrl, editorVersion}: { editorUrl: string; editorVersion: string; }) {
     let status = 'pending';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let response: any;
 
     const fetchPackage = async () => {
@@ -64,7 +66,7 @@ class ErrorHandler extends React.Component<{ children: ReactNode }> {
         return {hasError: true};
     }
 
-    componentDidCatch(error: any, errorInfo: any) {
+    componentDidCatch(error: unknown, errorInfo: unknown) {
         console.error(error, errorInfo); // eslint-disable-line
     }
 
@@ -87,7 +89,7 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
     placeholder,
     nodes
 }) => {
-    const onError = useCallback((error: any) => {
+    const onError = useCallback((error: unknown) => {
         // ensure we're still showing errors in development
         console.error(error); // eslint-disable-line
 
@@ -105,6 +107,7 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
         // don't rethrow, Lexical will attempt to gracefully recover
     }, []);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const koenig = useMemo(() => new Proxy({} as { [key: string]: any }, {
         get: (_target, prop) => {
             return editor.read()[prop];
@@ -115,6 +118,26 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
         DEFAULT_NODES: koenig.DEFAULT_TRANSFORMERS,
         BASIC_NODES: koenig.BASIC_TRANSFORMERS,
         MINIMAL_NODES: koenig.MINIMAL_TRANSFORMERS
+    };
+
+    const handleSetHtml = (html: string) => {
+        // Workaround for a bug in Lexical where it adds style attributes everywhere with white-space: pre-wrap
+        // Likely related: https://github.com/facebook/lexical/issues/4255
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const elements = doc.querySelectorAll('*') as NodeListOf<HTMLElement>;
+
+        elements.forEach((element) => {
+            element.style.removeProperty('white-space');
+            if (!element.getAttribute('style')) {
+                element.removeAttribute('style');
+            }
+        });
+
+        // Koenig sends this event on load without changing the value, so this prevents forms from being marked as unsaved
+        if (doc.body.innerHTML !== value) {
+            onChange?.(doc.body.innerHTML);
+        }
     };
 
     return (
@@ -132,7 +155,7 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
                 singleParagraph={true}
                 onBlur={onBlur}
             >
-                <koenig.HtmlOutputPlugin html={value} setHtml={onChange} />
+                <koenig.HtmlOutputPlugin html={value} setHtml={handleSetHtml} />
             </koenig.KoenigComposableEditor>
         </koenig.KoenigComposer>
     );

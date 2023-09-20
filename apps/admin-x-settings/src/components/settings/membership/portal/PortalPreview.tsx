@@ -1,7 +1,8 @@
 import PortalFrame from './PortalFrame';
 import PortalLinks from './PortalLinks';
 import React from 'react';
-import {Setting, Tier} from '../../../../types/api';
+import {Setting} from '../../../../api/settings';
+import {Tier} from '../../../../api/tiers';
 
 interface PortalPreviewProps {
     selectedTab: string;

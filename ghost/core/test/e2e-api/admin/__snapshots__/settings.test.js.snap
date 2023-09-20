@@ -305,6 +305,18 @@ Object {
       "value": null,
     },
     Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -313,12 +325,20 @@ Object {
       "value": false,
     },
     Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
       "key": "paid_members_enabled",
       "value": true,
     },
     Object {
       "key": "firstpromoter_account",
       "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
     },
   ],
 }
@@ -695,12 +715,28 @@ Object {
       "value": null,
     },
     Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
     Object {
       "key": "members_invite_only",
       "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
     },
     Object {
       "key": "paid_members_enabled",
@@ -710,6 +746,10 @@ Object {
       "key": "firstpromoter_account",
       "value": null,
     },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
+    },
   ],
 }
 `;
@@ -718,7 +758,7 @@ exports[`Settings API Edit Can edit a setting 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4012",
+  "content-length": "4234",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1033,6 +1073,18 @@ Object {
       "value": null,
     },
     Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1041,12 +1093,20 @@ Object {
       "value": false,
     },
     Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
       "key": "paid_members_enabled",
       "value": true,
     },
     Object {
       "key": "firstpromoter_account",
       "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
     },
   ],
 }
@@ -1370,6 +1430,18 @@ Object {
       "value": null,
     },
     Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1378,12 +1450,20 @@ Object {
       "value": false,
     },
     Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
       "key": "paid_members_enabled",
       "value": true,
     },
     Object {
       "key": "firstpromoter_account",
       "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
     },
   ],
 }
@@ -1712,6 +1792,18 @@ Object {
       "value": null,
     },
     Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1720,12 +1812,20 @@ Object {
       "value": false,
     },
     Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
       "key": "paid_members_enabled",
       "value": true,
     },
     Object {
       "key": "firstpromoter_account",
       "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
     },
   ],
 }
@@ -2142,6 +2242,18 @@ Object {
       "value": null,
     },
     Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -2150,12 +2262,20 @@ Object {
       "value": false,
     },
     Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
       "key": "paid_members_enabled",
       "value": true,
     },
     Object {
       "key": "firstpromoter_account",
       "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
     },
   ],
 }
@@ -2544,6 +2664,18 @@ Object {
       "value": null,
     },
     Object {
+      "key": "donations_currency",
+      "value": "USD",
+    },
+    Object {
+      "key": "donations_suggested_amount",
+      "value": "0",
+    },
+    Object {
+      "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -2552,12 +2684,20 @@ Object {
       "value": false,
     },
     Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
       "key": "paid_members_enabled",
       "value": true,
     },
     Object {
       "key": "firstpromoter_account",
       "value": null,
+    },
+    Object {
+      "key": "donations_enabled",
+      "value": true,
     },
   ],
 }

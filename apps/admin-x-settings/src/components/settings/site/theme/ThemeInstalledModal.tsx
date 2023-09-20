@@ -5,9 +5,8 @@ import ListItem from '../../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {ReactNode, useState} from 'react';
 import {ConfirmationModalContent} from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import {InstalledTheme, Theme, ThemeProblem} from '../../../../types/api';
+import {InstalledTheme, ThemeProblem, useActivateTheme} from '../../../../api/themes';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
-import {useApi} from '../../../providers/ServiceProvider';
 
 const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);
@@ -44,10 +43,9 @@ const ThemeInstalledModal: React.FC<{
     title: string
     prompt: ReactNode
     installedTheme: InstalledTheme;
-    setThemes: (callback: (themes: Theme[]) => Theme[]) => void;
     onActivate?: () => void;
-}> = ({title, prompt, installedTheme, setThemes, onActivate}) => {
-    const api = useApi();
+}> = ({title, prompt, installedTheme, onActivate}) => {
+    const {mutateAsync: activateTheme} = useActivateTheme();
 
     let errorPrompt = null;
     if (installedTheme.errors) {
@@ -87,21 +85,8 @@ const ThemeInstalledModal: React.FC<{
         title={title}
         onOk={async (activateModal) => {
             if (!installedTheme.active) {
-                const resData = await api.themes.activate(installedTheme.name);
+                const resData = await activateTheme(installedTheme.name);
                 const updatedTheme = resData.themes[0];
-
-                setThemes((_themes) => {
-                    const updatedThemes: Theme[] = _themes.map((t) => {
-                        if (t.name === updatedTheme.name) {
-                            return updatedTheme;
-                        }
-                        return {
-                            ...t,
-                            active: false
-                        };
-                    });
-                    return updatedThemes;
-                });
 
                 showToast({
                     type: 'success',

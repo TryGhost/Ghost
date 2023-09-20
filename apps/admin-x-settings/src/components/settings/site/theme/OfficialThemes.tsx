@@ -1,9 +1,9 @@
 import Heading from '../../../../admin-x-ds/global/Heading';
+import MarketplaceBgImage from '../../../../assets/images/footer-marketplace-bg.png';
 import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import React from 'react';
-import {OfficialTheme} from '../../../../models/themes';
-import {getGhostPaths} from '../../../../utils/helpers';
-import {useOfficialThemes} from '../../../providers/ServiceProvider';
+import {OfficialTheme, useOfficialThemes} from '../../../providers/ServiceProvider';
+import {getGhostPaths, resolveAsset} from '../../../../utils/helpers';
 
 const OfficialThemes: React.FC<{
     onSelectTheme?: (theme: OfficialTheme) => void;
@@ -26,7 +26,7 @@ const OfficialThemes: React.FC<{
                                 <img
                                     alt={`${theme.name} Theme`}
                                     className='h-full w-full object-contain'
-                                    src={`${adminRoot}${theme.image}`}
+                                    src={resolveAsset(theme.image, adminRoot)}
                                 />
                             </div>
                             <div className='mt-3'>
@@ -36,6 +36,13 @@ const OfficialThemes: React.FC<{
                         </button>
                     );
                 })}
+            </div>
+            <div className='mx-[-8vmin] mb-[-8vmin] mt-[8vmin] bg-black px-[8vmin] py-16 text-center text-lg text-white' style={
+                {
+                    background: `#15171a url(${MarketplaceBgImage}) 100% 100% / 35vw no-repeat`
+                }
+            }>
+                Find and buy third-party, premium themes from independent developers in the <a className='inline-block font-semibold text-lime' href="https://ghost.org/themes/" rel="noopener noreferrer" target="_blank">Ghost Marketplace &rarr;</a>
             </div>
         </ModalPage>
     );

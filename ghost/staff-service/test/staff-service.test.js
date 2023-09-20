@@ -909,6 +909,27 @@ describe('StaffService', function () {
             });
         });
 
+        describe('notifyDonationReceived', function () {
+            it('send donation email', async function () {
+                const donationPaymentEvent = {
+                    amount: 1500,
+                    currency: 'eur',
+                    name: 'Simon',
+                    email: 'simon@example.com'
+                };
+
+                await service.emails.notifyDonationReceived({donationPaymentEvent});
+
+                getEmailAlertUsersStub.calledWith('donation').should.be.true();
+
+                mailStub.calledOnce.should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('One-time payment received: €15.00 from Simon'))
+                ).should.be.true();
+            });
+        });
+
         describe('renderText for webmentions', function () {
             it('renders plaintext report for mentions', async function () {
                 const textTemplate = await service.emails.renderText('mention-report', {

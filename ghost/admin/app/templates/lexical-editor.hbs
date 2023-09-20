@@ -86,6 +86,7 @@
                 @cardOptions={{hash
                     post=this.post
                     snippets=this.snippets
+                    collections=this.collections
                     deleteSnippet=(if this.canManageSnippets this.confirmDeleteSnippet)
                     createSnippet=(if this.canManageSnippets this.createSnippet)
                 }}
@@ -99,7 +100,6 @@
                 <div class="gh-editor-wordcount">
                     {{gh-pluralize this.wordCount "word"}}
                 </div>
-                {{!-- <a href="https://github.com/TryGhost/Koenig/tree/main/packages/koenig-lexical" target="_blank" rel="noopener noreferrer" class="gh-lexical-indicator">Lexical</a> --}}
                 <a href="https://ghost.org/help/using-the-editor/" class="flex" target="_blank" rel="noopener noreferrer">{{svg-jar "help"}}</a>
             </div>
 

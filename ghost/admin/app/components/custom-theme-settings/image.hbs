@@ -21,7 +21,7 @@
                     <div class="gh-branding-image-container largeimg justify-start">
                         <img class="blog-cover" src={{@setting.value}} {{on "click" uploader.triggerFileDialog}}>
                         <button type="button" class="gh-setting-action-largeimg-delete" {{on "click" (fn this.updateValue null)}} data-test-delete-image="icon">
-                            {{svg-jar "trash" class="w4 h4 fill-white"}}
+                            {{svg-jar "trash" class="w4 h4 fill-white-no-conflict"}}
                         </button>
                     </div>
                 {{else}}

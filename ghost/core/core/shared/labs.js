@@ -38,11 +38,12 @@ const ALPHA_FEATURES = [
     'emailCustomization',
     'collections',
     'adminXSettings',
-    'pageImprovements',
-    'flatUrls',
     'mailEvents',
     'collectionsCard',
-    'headerUpgrade'
+    'tipsAndDonations',
+    'importMemberTier',
+    'recommendations',
+    'lexicalIndicators'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

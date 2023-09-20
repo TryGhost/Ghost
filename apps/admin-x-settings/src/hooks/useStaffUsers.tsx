@@ -1,8 +1,8 @@
-import React, {useContext} from 'react';
-import {RolesContext} from '../components/providers/RolesProvider';
-import {User} from '../types/api';
-import {UserInvite} from '../utils/api';
-import {UsersContext} from '../components/providers/UsersProvider';
+import {User, useBrowseUsers} from '../api/users';
+import {UserInvite, useBrowseInvites} from '../api/invites';
+import {useBrowseRoles} from '../api/roles';
+import {useGlobalData} from '../components/providers/GlobalDataProvider';
+import {useMemo} from 'react';
 
 export type UsersHook = {
     users: User[];
@@ -13,9 +13,7 @@ export type UsersHook = {
     authorUsers: User[];
     contributorUsers: User[];
     currentUser: User|null;
-    updateUser?: (user: User) => Promise<void>;
-    setInvites: (invites: UserInvite[]) => void;
-    setUsers: React.Dispatch<React.SetStateAction<User[]>>
+    isLoading: boolean;
 };
 
 function getUsersByRole(users: User[], role: string): User[] {
@@ -31,22 +29,25 @@ function getOwnerUser(users: User[]): User {
 }
 
 const useStaffUsers = (): UsersHook => {
-    const {users, currentUser, updateUser, invites, setInvites, setUsers} = useContext(UsersContext);
-    const {roles} = useContext(RolesContext);
-    const ownerUser = getOwnerUser(users);
-    const adminUsers = getUsersByRole(users, 'Administrator');
-    const editorUsers = getUsersByRole(users, 'Editor');
-    const authorUsers = getUsersByRole(users, 'Author');
-    const contributorUsers = getUsersByRole(users, 'Contributor');
-    const mappedInvites = invites?.map((invite) => {
-        let role = roles.find((r) => {
+    const {currentUser} = useGlobalData();
+    const {data: {users} = {users: []}, isLoading: usersLoading} = useBrowseUsers();
+    const {data: {invites} = {invites: []}, isLoading: invitesLoading} = useBrowseInvites();
+    const {data: {roles} = {}, isLoading: rolesLoading} = useBrowseRoles();
+
+    const ownerUser = useMemo(() => getOwnerUser(users), [users]);
+    const adminUsers = useMemo(() => getUsersByRole(users, 'Administrator'), [users]);
+    const editorUsers = useMemo(() => getUsersByRole(users, 'Editor'), [users]);
+    const authorUsers = useMemo(() => getUsersByRole(users, 'Author'), [users]);
+    const contributorUsers = useMemo(() => getUsersByRole(users, 'Contributor'), [users]);
+    const mappedInvites = useMemo(() => invites.map((invite) => {
+        let role = roles?.find((r) => {
             return invite.role_id === r.id;
         });
         return {
             ...invite,
             role: role?.name
         };
-    });
+    }), [invites, roles]);
 
     return {
         users,
@@ -57,9 +58,7 @@ const useStaffUsers = (): UsersHook => {
         contributorUsers,
         currentUser,
         invites: mappedInvites,
-        updateUser,
-        setInvites,
-        setUsers
+        isLoading: usersLoading || invitesLoading || rolesLoading
     };
 };
 

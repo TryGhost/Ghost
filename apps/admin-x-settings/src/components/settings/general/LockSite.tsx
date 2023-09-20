@@ -6,7 +6,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getSettingValues} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
 
 const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -16,8 +16,20 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleSave,
         handleCancel,
         updateSetting,
-        handleEditingChange
-    } = useSettingGroup();
+        handleEditingChange,
+        errors,
+        clearError
+    } = useSettingGroup({
+        onValidate: () => {
+            if (passwordEnabled && !password) {
+                return {
+                    password: 'Password must be supplied'
+                };
+            }
+
+            return {};
+        }
+    });
 
     const [passwordEnabled, password] = getSettingValues(localSettings, ['is_private', 'password']) as [boolean, string];
 
@@ -40,8 +52,8 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             <span>Your site is password protected</span>
                         </div>
                     ) : (
-                        <div className='flex items-center gap-1 text-grey-900'>
-                            <Icon colorClass='text-black' name='lock-unlocked' size='sm' />
+                        <div className='flex items-center gap-1 text-grey-900 dark:text-grey-400'>
+                            <Icon colorClass='text-black dark:text-white' name='lock-unlocked' size='sm' />
                             <span>Your site is not password protected</span>
                         </div>
                     )
@@ -51,7 +63,7 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     const hint = (
-        <>A private RSS feed is available at <Link href="http://localhost:2368/51aa059ba6eb50c24c14047d4255ac/rss">http://localhost:2368/51aa059ba6eb50c24c14047d4255ac/rss</Link></>
+        <>A private RSS feed is available at <Link className='break-all' href="http://localhost:2368/51aa059ba6eb50c24c14047d4255ac/rss">http://localhost:2368/51aa059ba6eb50c24c14047d4255ac/rss</Link></>
     );
 
     const inputs = (
@@ -65,12 +77,14 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             {passwordEnabled &&
                 <TextField
-                    hint={hint}
+                    error={!!errors.password}
+                    hint={errors.password || hint}
                     placeholder="Enter password"
                     title="Site password"
                     value={password}
                     hideTitle
                     onChange={handlePasswordChange}
+                    onKeyDown={() => clearError('password')}
                 />
             }
         </SettingGroupContent>

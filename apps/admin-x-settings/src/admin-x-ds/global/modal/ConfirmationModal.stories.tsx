@@ -1,4 +1,5 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import {ReactNode} from 'react';
+import type {Meta, StoryContext, StoryObj} from '@storybook/react';
 
 import ConfirmationModal from './ConfirmationModal';
 import ConfirmationModalContainer from './ConfirmationModalContainer';
@@ -8,7 +9,7 @@ const meta = {
     title: 'Global / Modal / Confirmation Modal',
     component: ConfirmationModal,
     tags: ['autodocs'],
-    decorators: [(_story: any, context: any) => (
+    decorators: [(_story: () => ReactNode, context: StoryContext) => (
         <NiceModal.Provider>
             <ConfirmationModalContainer {...context.args} />
         </NiceModal.Provider>

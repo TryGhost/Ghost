@@ -2,9 +2,11 @@ import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import config from 'ghost-admin/config/environment';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
+import {tracked} from '@glimmer/tracking';
 
 // TODO: Long term move asset management directly in AdminX
 const officialThemes = [{
@@ -127,6 +129,53 @@ const officialThemes = [{
     image: 'assets/img/themes/Journal.png'
 }];
 
+const zapierTemplates = [{
+    ghostImage: 'assets/img/logos/orb-black-1.png',
+    appImage: 'assets/img/twitter.svg',
+    title: 'Share new posts to Twitter',
+    url: 'https://zapier.com/webintent/create-zap?template=50909'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-2.png',
+    appImage: 'assets/img/slackicon.png',
+    title: 'Share scheduled posts with your team in Slack',
+    url: 'https://zapier.com/webintent/create-zap?template=359499'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-3.png',
+    appImage: 'assets/img/patreon.svg',
+    title: 'Connect Patreon to your Ghost membership site',
+    url: 'https://zapier.com/webintent/create-zap?template=75801'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-4.png',
+    appImage: 'assets/img/zero-bounce.png',
+    title: 'Protect email delivery with email verification',
+    url: 'https://zapier.com/webintent/create-zap?template=359415'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-5.png',
+    appImage: 'assets/img/paypal.svg',
+    title: 'Add members for successful sales in PayPal',
+    url: 'https://zapier.com/webintent/create-zap?template=184423'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-3.png',
+    appImage: 'assets/img/paypal.svg',
+    title: 'Unsubscribe members who cancel a subscription in PayPal',
+    url: 'https://zapier.com/webintent/create-zap?template=359348'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-1.png',
+    appImage: 'assets/img/google-docs.svg',
+    title: 'Send new post drafts from Google Docs to Ghost',
+    url: 'https://zapier.com/webintent/create-zap?template=50924'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-4.png',
+    appImage: 'assets/img/typeform.svg',
+    title: 'Survey new members using Typeform',
+    url: 'https://zapier.com/webintent/create-zap?template=359407'
+}, {
+    ghostImage: 'assets/img/logos/orb-black-1.png',
+    appImage: 'assets/img/mailchimp.svg',
+    title: 'Sync email subscribers in Ghost + Mailchimp',
+    url: 'https://zapier.com/webintent/create-zap?template=359342'
+}];
+
 class ErrorHandler extends React.Component {
     state = {
         hasError: false
@@ -147,34 +196,28 @@ class ErrorHandler extends React.Component {
     }
 }
 
-const fetchKoenig = function () {
+export const importSettings = async () => {
+    if (window['@tryghost/admin-x-settings']) {
+        return window['@tryghost/admin-x-settings'];
+    }
+
+    const baseUrl = (config.cdnUrl ? `${config.cdnUrl}assets/` : ghostPaths().assetRootWithHost);
+    const url = new URL(`${baseUrl}admin-x-settings/admin-x-settings.js`);
+
+    if (url.protocol === 'http:') {
+        window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}`);
+    } else {
+        window['@tryghost/admin-x-settings'] = await import(`https://${url.host}${url.pathname}`);
+    }
+
+    return window['@tryghost/admin-x-settings'];
+};
+
+const fetchSettings = function () {
     let status = 'pending';
     let response;
 
-    const fetchPackage = async () => {
-        if (window['@tryghost/admin-x-settings']) {
-            return window['@tryghost/admin-x-settings'];
-        }
-
-        // the manual specification of the protocol in the import template string is
-        // required to work around ember-auto-import complaining about an unknown dynamic import
-        // during the build step
-        const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const urlTemplate = GhostAdmin.__container__.lookup('config:main').adminX?.url;
-        const urlVersion = GhostAdmin.__container__.lookup('config:main').adminX?.version;
-
-        const url = new URL(urlTemplate.replace('{version}', urlVersion));
-
-        if (url.protocol === 'http:') {
-            await import(`http://${url.host}${url.pathname}`);
-        } else {
-            await import(`https://${url.host}${url.pathname}`);
-        }
-
-        return window['@tryghost/admin-x-settings'];
-    };
-
-    const suspender = fetchPackage().then(
+    const suspender = importSettings().then(
         (res) => {
             status = 'success';
             response = res;
@@ -199,13 +242,6 @@ const fetchKoenig = function () {
     return {read};
 };
 
-const editorResource = fetchKoenig();
-
-const AdminXApp = (props) => {
-    const {AdminXApp: _AdminXApp} = editorResource.read();
-    return <_AdminXApp {...props} />;
-};
-
 export default class AdminXSettings extends Component {
     @service ajax;
     @service feature;
@@ -213,8 +249,11 @@ export default class AdminXSettings extends Component {
     @service session;
     @service store;
     @service settings;
+    @service router;
 
     @inject config;
+
+    @tracked display = 'none';
 
     @action
     onError(error) {
@@ -232,15 +271,51 @@ export default class AdminXSettings extends Component {
         // don't rethrow, app should attempt to gracefully recover
     }
 
+    externalNavigate = ({route, models = []}) => {
+        this.router.transitionTo(route, ...models);
+    };
+
+    toggleFeatureFlag = (flag, value) => {
+        this.feature.set(flag, value);
+    };
+
+    editorResource = fetchSettings();
+
+    AdminXApp = (props) => {
+        const {AdminXApp: _AdminXApp} = this.editorResource.read();
+        return <_AdminXApp {...props} />;
+    };
+
     ReactComponent = () => {
+        const fallback = (
+            <div className="admin-x-settings-container--loading" style={{
+                width: '100vw',
+                height: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingBottom: '8vh'
+            }}>
+                <video width="100" height="100" loop autoPlay muted playsInline preload="metadata" style={{
+                    width: '100px',
+                    height: '100px'
+                }}>
+                    <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
+                    <div className="gh-loading-spinner"></div>
+                </video>
+            </div>
+        );
         return (
-            <div className={['admin-x-settings-container-', this.args.className].filter(Boolean).join(' ')}>
+            <div className={['admin-x-settings-container-', (this.feature.nightShift && 'dark'), this.args.className].filter(Boolean).join(' ')}>
                 <ErrorHandler>
-                    <Suspense fallback={<p className="admin-x-settings-container--loading">Loading settings...</p>}>
-                        <AdminXApp
+                    <Suspense fallback={fallback}>
+                        <this.AdminXApp
                             ghostVersion={config.APP.version}
                             officialThemes={officialThemes}
-                            setDirty={this.args.setDirty}
+                            zapierTemplates={zapierTemplates}
+                            externalNavigate={this.externalNavigate}
+                            toggleFeatureFlag={this.toggleFeatureFlag}
+                            darkMode={this.feature.nightShift}
                         />
                     </Suspense>
                 </ErrorHandler>

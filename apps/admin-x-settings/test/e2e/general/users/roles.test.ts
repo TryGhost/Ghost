@@ -1,9 +1,12 @@
 import {expect, test} from '@playwright/test';
-import {mockApi, responseFixtures} from '../../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures} from '../../../utils/e2e';
 
 test.describe('User roles', async () => {
     test('Shows users under their role', async ({page}) => {
-        await mockApi({page});
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users}
+        }});
 
         await page.goto('/');
 
@@ -35,15 +38,19 @@ test.describe('User roles', async () => {
     });
 
     test('Supports changing user role', async ({page}) => {
-        const lastApiRequests = await mockApi({page, responses: {
-            users: {
-                edit: {
-                    users: [{
-                        ...responseFixtures.users.users.find(user => user.email === 'author@test.com')!,
-                        roles: [responseFixtures.roles.roles.find(role => role.name === 'Editor')!]
-                    }]
-                }
-            }
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'author@test.com')!;
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseRoles: {method: 'GET', path: '/roles/?limit=all', response: responseFixtures.roles},
+            browseAssignableRoles: {method: 'GET', path: '/roles/?limit=all&permissions=assign', response: responseFixtures.roles},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                users: [{
+                    ...userToEdit,
+                    roles: [responseFixtures.roles.roles.find(role => role.name === 'Editor')!]
+                }]
+            }}
         }});
 
         await page.goto('/');
@@ -61,13 +68,11 @@ test.describe('User roles', async () => {
 
         await modal.locator('input[value=editor]').check();
 
-        await modal.getByRole('button', {name: 'Save'}).click();
+        await modal.getByRole('button', {name: 'Save & close'}).click();
 
         await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
 
-        await modal.getByRole('button', {name: 'Close'}).click();
-
-        await expect(activeTab).toHaveText(/No users found/);
+        await expect(activeTab).toHaveText(/No authors found./);
 
         await section.getByRole('tab', {name: 'Editors'}).click();
 
@@ -78,7 +83,7 @@ test.describe('User roles', async () => {
             /editor@test\.com/
         ]);
 
-        expect(lastApiRequests.users.edit.body).toMatchObject({
+        expect(lastApiRequests.editUser?.body).toMatchObject({
             users: [{
                 email: 'author@test.com',
                 roles: [{

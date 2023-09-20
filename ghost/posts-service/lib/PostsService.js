@@ -4,6 +4,14 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
+const DomainEvents = require('@tryghost/domain-events');
+const {
+    PostsBulkDestroyedEvent,
+    PostsBulkUnpublishedEvent,
+    PostsBulkFeaturedEvent,
+    PostsBulkUnfeaturedEvent,
+    PostsBulkAddTagsEvent
+} = require('@tryghost/post-events');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
@@ -35,11 +43,11 @@ class PostsService {
      */
     async browsePosts(options) {
         let posts;
-        if (this.isSet('collections') && options.collection) {
-            let collection = await this.collectionsService.getById(options.collection);
+        if (options.collection) {
+            let collection = await this.collectionsService.getById(options.collection, {transaction: options.transacting});
 
             if (!collection) {
-                collection = await this.collectionsService.getBySlug(options.collection);
+                collection = await this.collectionsService.getBySlug(options.collection, {transaction: options.transacting});
             }
 
             if (!collection) {
@@ -49,8 +57,26 @@ class PostsService {
             }
 
             const postIds = collection.posts;
-            options.filter = `id:[${postIds.join(',')}]+type:post`;
-            posts = await this.models.Post.findPage(options);
+
+            if (postIds.length !== 0) {
+                options.filter = `id:[${postIds.join(',')}]+type:post`;
+                options.status = 'all';
+                posts = await this.models.Post.findPage(options);
+            } else {
+                posts = {
+                    data: [],
+                    meta: {
+                        pagination: {
+                            page: 1,
+                            pages: 1,
+                            total: 0,
+                            limit: options.limit || 15,
+                            next: null,
+                            prev: null
+                        }
+                    }
+                };
+            }
         } else {
             posts = await this.models.Post.findPage(options);
         }
@@ -135,6 +161,11 @@ class PostsService {
                 });
             }
             for (const existingCollection of existingCollections) {
+                // we only remove posts from manual collections
+                if (existingCollection.type !== 'manual') {
+                    continue;
+                }
+
                 if (frame.data.posts[0].collections.find((item) => {
                     if (typeof item === 'string') {
                         return item === existingCollection.id;
@@ -210,13 +241,22 @@ class PostsService {
 
     async bulkEdit(data, options) {
         if (data.action === 'unpublish') {
-            return await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter), context: options.context, actionName: 'unpublished'});
+            const updateResult = await this.#updatePosts({status: 'draft'}, {filter: this.#mergeFilters('status:published', options.filter), context: options.context, actionName: 'unpublished'});
+            DomainEvents.dispatch(PostsBulkUnpublishedEvent.create(updateResult.editIds));
+
+            return updateResult;
         }
         if (data.action === 'feature') {
-            return await this.#updatePosts({featured: true}, {filter: options.filter, context: options.context, actionName: 'featured'});
+            const updateResult = await this.#updatePosts({featured: true}, {filter: options.filter, context: options.context, actionName: 'featured'});
+            DomainEvents.dispatch(PostsBulkFeaturedEvent.create(updateResult.editIds));
+
+            return updateResult;
         }
         if (data.action === 'unfeature') {
-            return await this.#updatePosts({featured: false}, {filter: options.filter, context: options.context, actionName: 'unfeatured'});
+            const updateResult = await this.#updatePosts({featured: false}, {filter: options.filter, context: options.context, actionName: 'unfeatured'});
+            DomainEvents.dispatch(PostsBulkUnfeaturedEvent.create(updateResult.editIds));
+
+            return updateResult;
         }
         if (data.action === 'access') {
             if (!['public', 'members', 'paid', 'tiers'].includes(data.meta.visibility)) {
@@ -253,7 +293,11 @@ class PostsService {
                     });
                 }
             }
-            return await this.#bulkAddTags({tags: data.meta.tags}, {filter: options.filter, context: options.context});
+
+            const bulkResult = await this.#bulkAddTags({tags: data.meta.tags}, {filter: options.filter, context: options.context});
+            DomainEvents.dispatch(PostsBulkAddTagsEvent.create(bulkResult.editIds));
+
+            return bulkResult;
         }
         throw new errors.IncorrectUsageError({
             message: tpl(messages.unsupportedBulkAction)
@@ -267,6 +311,7 @@ class PostsService {
      * @param {string} options.filter - An NQL Filter
      * @param {object} options.context
      * @param {object} [options.transacting]
+     * @returns {Promise<{successful: number, unsuccessful: number, editIds: string[]}>}
      */
     async #bulkAddTags(data, options) {
         if (!options.transacting) {
@@ -307,12 +352,18 @@ class PostsService {
         await this.models.Post.addActions('edited', postRows.map(p => p.id), options);
 
         return {
+            editIds: postRows.map(p => p.id),
             successful: postRows.length,
             unsuccessful: 0
         };
     }
 
-    async bulkDestroy(options) {
+    /**
+     *
+     * @param {Object} options
+     * @returns Promise<{successful: number, unsuccessful: number, deleteIds: string[]}>
+     */
+    async #bulkDestroy(options) {
         if (!options.transacting) {
             return await this.models.Post.transaction(async (transacting) => {
                 return await this.bulkDestroy({
@@ -379,7 +430,18 @@ class PostsService {
 
         // Posts and emails
         await this.models.Post.bulkDestroy(deleteEmailIds, 'emails', {transacting: options.transacting, throwErrors: true});
-        return await this.models.Post.bulkDestroy(deleteIds, 'posts', {...options, throwErrors: true});
+        const result = await this.models.Post.bulkDestroy(deleteIds, 'posts', {...options, throwErrors: true});
+
+        result.deleteIds = deleteIds;
+
+        return result;
+    }
+
+    async bulkDestroy(options) {
+        const result = await this.#bulkDestroy(options);
+        DomainEvents.dispatch(PostsBulkDestroyedEvent.create(result.deleteIds));
+
+        return result;
     }
 
     async export(frame) {
@@ -444,6 +506,8 @@ class PostsService {
                 throwErrors: true
             });
         }
+
+        result.editIds = editIds;
 
         return result;
     }
