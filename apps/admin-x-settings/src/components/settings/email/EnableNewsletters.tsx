@@ -1,14 +1,17 @@
+import Banner from '../../../admin-x-ds/global/Banner';
 import Icon from '../../../admin-x-ds/global/Icon';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import useRouting from '../../../hooks/useRouting';
 import {Setting, getSettingValues, useEditSettings} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
+    const {updateRoute} = useRouting();
 
     const [newslettersEnabled, membersSignupAccess] = getSettingValues<string>(settings, ['editor_default_email_recipients', 'members_signup_access']);
 
@@ -29,9 +32,8 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const enableToggle = (
         <>
             <Toggle
-                checked={isDisabled ? false : newslettersEnabled !== 'disabled'}
+                checked={newslettersEnabled !== 'disabled'}
                 direction='rtl'
-                disabled={isDisabled}
                 onChange={handleToggleChange}
             />
         </>
@@ -46,23 +48,27 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         title='Newsletter sending'
     >
         <SettingGroupContent
+            columns={1}
             values={[
                 {
                     key: 'private',
-                    value: (!isDisabled && newslettersEnabled !== 'disabled') ? (
+                    value: (newslettersEnabled !== 'disabled') ? (<div className='w-full'>
                         <div className='flex items-center gap-2'>
                             <Icon colorClass='text-green' name='check' size='sm' />
                             <span>Enabled</span>
                         </div>
-                    ) : (
+                        {isDisabled &&
+                        <Banner className='mt-6 text-sm' color='grey'>
+                            Your <button className='!underline' type="button" onClick={() => {
+                                updateRoute('access');
+                            }}>Subscription access</button> is set to &lsquo;Nobody&rsquo;, only existing members will receive newsletters.
+                        </Banner>
+                        }
+                    </div>) :
                         <div className='flex items-center gap-2 text-grey-900'>
                             <Icon colorClass='text-grey-600' name='mail-block' size='sm' />
-                            <span>
-                                Disabled
-                                {isDisabled && ' by Access settings'}
-                            </span>
+                            <span>Disabled</span>
                         </div>
-                    )
                 }
             ]}
         />
