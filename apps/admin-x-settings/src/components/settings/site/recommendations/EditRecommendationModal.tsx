@@ -5,17 +5,17 @@ import React from 'react';
 import RecommendationReasonForm from './RecommendationReasonForm';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
-import {Recommendation, useBrowseRecommendations, useDeleteRecommendation, useEditRecommendation} from '../../../../api/recommendations';
+import {Recommendation, useDeleteRecommendation, useEditRecommendation} from '../../../../api/recommendations';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 
-interface AddRecommendationModalProps {
+interface EditRecommendationModalProps {
     recommendation: Recommendation,
     animate?: boolean
 }
 
-const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({recommendation, animate}) => {
+const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationModalProps> = ({recommendation, animate}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {mutateAsync: editRecommendation} = useEditRecommendation();
@@ -112,17 +112,6 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
     >
         <RecommendationReasonForm errors={errors} formState={formState} showURL={true} updateForm={updateForm as any}/>
     </Modal>;
-};
-
-const EditRecommendationModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {data: {recommendations} = {}} = useBrowseRecommendations();
-    const recommendation = recommendations?.find(({id}) => id === params?.id);
-
-    if (recommendation) {
-        return <EditRecommendationModalConfirm recommendation={recommendation} />;
-    } else {
-        return null;
-    }
 };
 
 export default NiceModal.create(EditRecommendationModal);
