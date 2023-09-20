@@ -35,7 +35,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const {mutateAsync: updateTier} = useEditTier();
     const {mutateAsync: createTier} = useAddTier();
     const [hasFreeTrial, setHasFreeTrial] = React.useState(!!tier?.trial_days);
-    const {localSettings} = useSettingGroup();
+    const {localSettings, siteData} = useSettingGroup();
     const siteTitle = getSettingValues(localSettings, ['title']) as string[];
 
     const [errors, setErrors] = useState<{ [key in keyof Tier]?: string }>({}); // eslint-disable-line no-unused-vars
@@ -208,65 +208,69 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         value={formState.description || ''}
                         onChange={e => updateForm(state => ({...state, description: e.target.value}))}
                     />
-                    {!isFreeTier && <div className='flex flex-col gap-10 md:flex-row'>
-                        <div className='basis-1/2'>
-                            <div className='mb-1 flex h-6 items-center justify-between'>
-                                <Heading level={6}>Prices</Heading>
-                                <div className='w-10'>
-                                    <Select
-                                        border={false}
-                                        containerClassName='font-medium'
-                                        controlClasses={{menu: 'w-14'}}
-                                        options={currencySelectGroups()}
-                                        selectedOption={formState.currency}
-                                        size='xs'
-                                        onSelect={currency => updateForm(state => ({...state, currency}))}
+                    {!isFreeTier &&
+                    (<>
+                        <div className='flex flex-col gap-10 md:flex-row'>
+                            <div className='basis-1/2'>
+                                <div className='mb-1 flex h-6 items-center justify-between'>
+                                    <Heading level={6}>Prices</Heading>
+                                    <div className='w-10'>
+                                        <Select
+                                            border={false}
+                                            containerClassName='font-medium'
+                                            controlClasses={{menu: 'w-14'}}
+                                            options={currencySelectGroups()}
+                                            selectedOption={formState.currency}
+                                            size='xs'
+                                            onSelect={currency => updateForm(state => ({...state, currency}))}
+                                        />
+                                    </div>
+                                </div>
+                                <div className='flex flex-col gap-2'>
+                                    <CurrencyField
+                                        error={Boolean(errors.monthly_price)}
+                                        hint={errors.monthly_price}
+                                        placeholder='1'
+                                        rightPlaceholder={`${formState.currency}/month`}
+                                        title='Monthly price'
+                                        valueInCents={formState.monthly_price || ''}
+                                        hideTitle
+                                        onBlur={() => validators.monthly_price()}
+                                        onChange={price => updateForm(state => ({...state, monthly_price: price}))}
+                                    />
+                                    <CurrencyField
+                                        error={Boolean(errors.yearly_price)}
+                                        hint={errors.yearly_price}
+                                        placeholder='10'
+                                        rightPlaceholder={`${formState.currency}/year`}
+                                        title='Yearly price'
+                                        valueInCents={formState.yearly_price || ''}
+                                        hideTitle
+                                        onBlur={() => validators.yearly_price()}
+                                        onChange={price => updateForm(state => ({...state, yearly_price: price}))}
                                     />
                                 </div>
                             </div>
-                            <div className='flex flex-col gap-2'>
-                                <CurrencyField
-                                    error={Boolean(errors.monthly_price)}
-                                    hint={errors.monthly_price}
-                                    placeholder='1'
-                                    rightPlaceholder={`${formState.currency}/month`}
-                                    title='Monthly price'
-                                    valueInCents={formState.monthly_price || ''}
-                                    hideTitle
-                                    onBlur={() => validators.monthly_price()}
-                                    onChange={price => updateForm(state => ({...state, monthly_price: price}))}
-                                />
-                                <CurrencyField
-                                    error={Boolean(errors.yearly_price)}
-                                    hint={errors.yearly_price}
-                                    placeholder='10'
-                                    rightPlaceholder={`${formState.currency}/year`}
-                                    title='Yearly price'
-                                    valueInCents={formState.yearly_price || ''}
-                                    hideTitle
-                                    onBlur={() => validators.yearly_price()}
-                                    onChange={price => updateForm(state => ({...state, yearly_price: price}))}
-                                />
-                            </div>
-                        </div>
-                        <div className='basis-1/2'>
-                            <div className='mb-1 flex h-6 flex-col justify-center'>
-                                <Toggle checked={hasFreeTrial} label='Add a free trial' labelStyle='heading' onChange={toggleFreeTrial} />
-                            </div>
-                            <TextField
-                                disabled={!hasFreeTrial}
-                                hint={<div className='mt-1'>
+                            <div className='basis-1/2'>
+                                <div className='mb-1 flex h-6 flex-col justify-center'>
+                                    <Toggle checked={hasFreeTrial} label='Add a free trial' labelStyle='heading' onChange={toggleFreeTrial} />
+                                </div>
+                                <TextField
+                                    disabled={!hasFreeTrial}
+                                    hint={<div className='mt-1'>
                                     Members will be subscribed at full price once the trial ends. <a className='text-green' href="https://ghost.org/" rel="noreferrer" target="_blank">Learn more</a>
-                                </div>}
-                                placeholder='0'
-                                rightPlaceholder='days'
-                                title='Trial days'
-                                value={formState.trial_days}
-                                hideTitle
-                                onChange={e => updateForm(state => ({...state, trial_days: e.target.value.replace(/[^\d]/, '')}))}
-                            />
+                                    </div>}
+                                    placeholder='0'
+                                    rightPlaceholder='days'
+                                    title='Trial days'
+                                    value={formState.trial_days}
+                                    hideTitle
+                                    onChange={e => updateForm(state => ({...state, trial_days: e.target.value.replace(/[^\d]/, '')}))}
+                                />
+                            </div>
                         </div>
-                    </div>}
+                        <TextField hint='Redirect to this URL after signup for premium membership' placeholder={siteData?.url} title='Welcome page' />
+                    </>)}
                 </Form>
 
                 <Form gap='none' title='Benefits' grouped>
