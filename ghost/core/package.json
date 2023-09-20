@@ -108,7 +108,7 @@
     "@tryghost/kg-html-to-lexical": "0.0.8",
     "@tryghost/kg-lexical-html-renderer": "0.3.29",
     "@tryghost/kg-mobiledoc-html-renderer": "6.0.11",
-    "@tryghost/limit-service": "1.2.6",
+    "@tryghost/limit-service": "1.2.10",
     "@tryghost/link-redirects": "0.0.0",
     "@tryghost/link-replacer": "0.0.0",
     "@tryghost/link-tracking": "0.0.0",
