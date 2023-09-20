@@ -17,7 +17,7 @@ interface AppProps {
     externalNavigate: (link: ExternalLink) => void;
     toggleFeatureFlag: (flag: string, enabled: boolean) => void;
     darkMode?: boolean;
-    unsplashConfig?: DefaultHeaderTypes
+    unsplashConfig: DefaultHeaderTypes
 }
 
 const queryClient = new QueryClient({
@@ -29,7 +29,6 @@ const queryClient = new QueryClient({
         }
     }
 });
-
 
 function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, toggleFeatureFlag, darkMode = false, unsplashConfig}: AppProps) {
     const appClassName = clsx(

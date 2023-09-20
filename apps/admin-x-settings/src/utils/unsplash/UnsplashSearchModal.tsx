@@ -21,9 +21,7 @@ const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageIns
     const photoUseCase = useMemo(() => new PhotoUseCases(unsplashRepo), [unsplashRepo]);
     const masonryService = useMemo(() => new MasonryService(3), []);
     const UnsplashLib = useMemo(() => new UnsplashService(photoUseCase, masonryService), [photoUseCase, masonryService]);
-    // const UnsplashLib = useMemo(() => new UnsplashService({API_URL, HEADERS: unsplashConf.defaultHeaders}), [unsplashConf.defaultHeaders]);
-
-    const galleryRef = useRef<HTMLElement | null>(null);
+    const galleryRef = useRef<HTMLDivElement | null>(null);
     const [scrollPos, setScrollPos] = useState<number>(0);
     const [lastScrollPos, setLastScrollPos] = useState<number>(0);
     const [isLoading, setIsLoading] = useState<boolean>(UnsplashLib.searchIsRunning() || true);
@@ -100,10 +98,13 @@ const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageIns
     const search = React.useCallback(async () => {
         if (searchTerm) {
             setIsLoading(true);
+            setDataset([]);
             UnsplashLib.clearPhotos();
             await UnsplashLib.updateSearch(searchTerm);
             const columns = UnsplashLib.getColumns();
-            setDataset(columns || []);
+            if (columns) {
+                setDataset(columns);
+            }
             if (galleryRef.current && galleryRef.current.scrollTop !== 0) {
                 galleryRef.current.scrollTop = 0;
             }

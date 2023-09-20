@@ -16,7 +16,7 @@ interface UnsplashGalleryColumnsProps {
 
 interface GalleryLayoutProps {
     children?: ReactNode;
-    galleryRef?: RefObject<HTMLDivElement>; //
+    galleryRef: RefObject<HTMLDivElement>;
     isLoading?: boolean;
     zoomed?: Photo | null;
 }
