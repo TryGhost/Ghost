@@ -49,7 +49,8 @@ export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item .gh-portal-recommendation-description-container p {
         font-size: 1.35rem;
         padding-left: 28px;
-        font-weight: 300;
+        font-weight: 400;
+        letter-spacing: 0.1px;
     }
 
     .gh-portal-recommendation-description-hidden {
