@@ -1,4 +1,5 @@
-import Button from '../../../../admin-x-ds/global/Button';
+import Button, {ButtonProps} from '../../../../admin-x-ds/global/Button';
+import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import CurrencyField from '../../../../admin-x-ds/global/form/CurrencyField';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Heading from '../../../../admin-x-ds/global/Heading';
@@ -105,15 +106,64 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         didInitialRender.current = true;
     }, [formState.currency]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    const confirmTierStatusChange = () => {
+        if (tier) {
+            const promptTitle = tier.active ? 'Archive tier' : 'Reactivate tier';
+            const prompt = tier.active ? <>
+                <div className='mb-6'>Members will no longer be able to subscribe to <strong>{tier.name}</strong> and it will be removed from the list of available tiers in portal.</div>
+                <div>Existing members on this tier will remain unchanged.</div>
+            </> : <>
+                <div className='mb-6'>Reactivating <strong>{tier.name}</strong> will re-enable it as an option in portal and allow new members to subscribe to this tier.</div>
+                <div>Existing members will remain unchanged.</div>
+            </>;
+            const okLabel = tier.active ? 'Archive' : 'Reactivate';
+            NiceModal.show(ConfirmationModal, {
+                title: promptTitle,
+                prompt: prompt,
+                okLabel: okLabel,
+                cancelLabel: 'Cancel',
+                okColor: tier.active ? 'red' : 'black',
+                onOk: (confirmModal) => {
+                    updateTier({...tier, active: !tier.active});
+                    confirmModal?.remove();
+                    showToast({
+                        type: 'success',
+                        message: `Tier ${tier.active ? 'archived' : 'reactivated'} successfully`
+                    });
+                }
+            });
+        }
+    };
+
+    let leftButtonProps: ButtonProps = {};
+    if (tier) {
+        if (tier.active) {
+            leftButtonProps = {
+                label: 'Archive tier',
+                color: 'red',
+                link: true,
+                onClick: confirmTierStatusChange
+            };
+        } else {
+            leftButtonProps = {
+                label: 'Reactivate tier',
+                color: 'green',
+                link: true,
+                onClick: confirmTierStatusChange
+            };
+        }
+    }
+
     return <Modal
         afterClose={() => {
             updateRoute('tiers');
         }}
         dirty={saveState === 'unsaved'}
+        leftButtonProps={leftButtonProps}
         okLabel='Save & close'
         size='lg'
         testId='tier-detail-modal'
-        title='Tier'
+        title={(tier ? (tier.active ? 'Edit tier' : 'Edit archived tier') : 'New tier')}
         stickyFooter
         onOk={async () => {
             toast.remove();
@@ -146,11 +196,13 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         placeholder='Bronze'
                         title='Name'
                         value={formState.name || ''}
+                        autoFocus
                         onBlur={() => validators.name()}
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                     />}
                     <TextField
                         autoComplete='off'
+                        autoFocus={isFreeTier}
                         placeholder={isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content'}
                         title='Description'
                         value={formState.description || ''}
@@ -163,8 +215,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 <div className='w-10'>
                                     <Select
                                         border={false}
+                                        containerClassName='font-medium'
+                                        controlClasses={{menu: 'w-14'}}
                                         options={currencySelectGroups()}
-                                        selectClassName='font-medium'
                                         selectedOption={formState.currency}
                                         size='xs'
                                         onSelect={currency => updateForm(state => ({...state, currency}))}

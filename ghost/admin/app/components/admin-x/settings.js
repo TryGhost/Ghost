@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import config from 'ghost-admin/config/environment';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
@@ -200,14 +201,8 @@ export const importSettings = async () => {
         return window['@tryghost/admin-x-settings'];
     }
 
-    // the manual specification of the protocol in the import template string is
-    // required to work around ember-auto-import complaining about an unknown dynamic import
-    // during the build step
-    const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-    const urlTemplate = GhostAdmin.__container__.lookup('config:main').adminX?.url;
-    const urlVersion = GhostAdmin.__container__.lookup('config:main').adminX?.version;
-
-    const url = new URL(urlTemplate.replace('{version}', urlVersion));
+    const baseUrl = (config.cdnUrl ? `${config.cdnUrl}assets/` : ghostPaths().assetRootWithHost);
+    const url = new URL(`${baseUrl}admin-x-settings/admin-x-settings.js`);
 
     if (url.protocol === 'http:') {
         window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}`);
@@ -280,6 +275,10 @@ export default class AdminXSettings extends Component {
         this.router.transitionTo(route, ...models);
     };
 
+    toggleFeatureFlag = (flag, value) => {
+        this.feature.set(flag, value);
+    };
+
     editorResource = fetchSettings();
 
     AdminXApp = (props) => {
@@ -315,6 +314,7 @@ export default class AdminXSettings extends Component {
                             officialThemes={officialThemes}
                             zapierTemplates={zapierTemplates}
                             externalNavigate={this.externalNavigate}
+                            toggleFeatureFlag={this.toggleFeatureFlag}
                             darkMode={this.feature.nightShift}
                         />
                     </Suspense>

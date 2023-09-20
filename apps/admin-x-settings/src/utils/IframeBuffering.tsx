@@ -49,6 +49,7 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, class
             <iframe
                 ref={iframes[0]}
                 className={`${className} ${visibleIframeIndex !== 0 ? 'z-10 opacity-0' : 'z-20 opacity-100'}`}
+                data-visible={visibleIframeIndex === 0}
                 frameBorder="0"
                 height={height}
                 title="Buffered Preview 1"
@@ -58,6 +59,7 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, class
             <iframe
                 ref={iframes[1]}
                 className={`${className} ${visibleIframeIndex !== 1 ? 'z-10 opacity-0' : 'z-20 opacity-100'}`}
+                data-visible={visibleIframeIndex === 1}
                 frameBorder="0"
                 height={height}
                 title="Buffered Preview 2"

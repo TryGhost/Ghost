@@ -15,7 +15,7 @@ interface AddRecommendationModalProps {
 
 const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({recommendation, animate}) => {
     const modal = useModal();
-    const {updateRoute} = useRouting();
+    const {updateRoute, route} = useRouting();
     const {mutateAsync: addRecommendation} = useAddRecommendation();
 
     const {formState, updateForm, handleSave, saveState, errors} = useForm({
@@ -62,6 +62,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             // Switch modal without changing the route, but pass along any changes that were already made
             modal.remove();
             NiceModal.show(AddRecommendationModal, {
+                pathName: route,
                 animate: false,
                 recommendation: {
                     ...formState
@@ -111,7 +112,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             }
         }}
     >
-        <RecommendationReasonForm errors={errors} formState={formState} updateForm={updateForm}/>
+        <RecommendationReasonForm errors={errors} formState={formState} showURL={false} updateForm={updateForm}/>
     </Modal>;
 };
 

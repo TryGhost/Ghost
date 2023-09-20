@@ -77,7 +77,7 @@ const LookAndFeel: React.FC<{
             ]}
             selectedOption={portalButtonStyle as string}
             title='Portal button style'
-            onSelect={option => updateSetting('portal_button_style', option)}
+            onSelect={option => updateSetting('portal_button_style', option || null)}
         />
         {portalButtonStyle?.toString()?.includes('icon') &&
             <div className='flex flex-col gap-2'>

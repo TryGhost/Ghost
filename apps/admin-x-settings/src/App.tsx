@@ -14,6 +14,7 @@ interface AppProps {
     officialThemes: OfficialTheme[];
     zapierTemplates: ZapierTemplate[];
     externalNavigate: (link: ExternalLink) => void;
+    toggleFeatureFlag: (flag: string, enabled: boolean) => void;
     darkMode?: boolean;
 }
 
@@ -27,7 +28,7 @@ const queryClient = new QueryClient({
     }
 });
 
-function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false}: AppProps) {
+function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, toggleFeatureFlag, darkMode = false}: AppProps) {
     const appClassName = clsx(
         'admin-x-settings h-[100vh] w-full overflow-y-auto overflow-x-hidden',
         darkMode && 'dark'
@@ -35,7 +36,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
 
     return (
         <QueryClientProvider client={queryClient}>
-            <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} zapierTemplates={zapierTemplates}>
+            <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} toggleFeatureFlag={toggleFeatureFlag} zapierTemplates={zapierTemplates}>
                 <GlobalDataProvider>
                     <RoutingProvider externalNavigate={externalNavigate}>
                         <GlobalDirtyStateProvider>

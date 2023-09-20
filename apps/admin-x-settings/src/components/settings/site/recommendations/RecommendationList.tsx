@@ -1,6 +1,3 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import NiceModal from '@ebay/nice-modal-react';
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
 import RecommendationIcon from './RecommendationIcon';
@@ -9,8 +6,7 @@ import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
 import {PaginationData} from '../../../../hooks/usePagination';
-import {Recommendation, useDeleteRecommendation} from '../../../../api/recommendations';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {Recommendation} from '../../../../api/recommendations';
 
 interface RecommendationListProps {
     recommendations: Recommendation[],
@@ -20,36 +16,6 @@ interface RecommendationListProps {
 
 const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recommendation}) => {
     const {updateRoute} = useRouting();
-    const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
-
-    const action = (
-        <div className="flex items-center justify-end">
-            <Button color='red' label='Remove' link onClick={() => {
-                NiceModal.show(ConfirmationModal, {
-                    title: 'Remove recommendation',
-                    prompt: <>
-                        <p>Your recommendation <strong>{recommendation.title}</strong> will no longer be visible to your audience.</p>
-                    </>,
-                    okLabel: 'Remove',
-                    onOk: async (modal) => {
-                        try {
-                            await deleteRecommendation(recommendation);
-                            modal?.remove();
-                            showToast({
-                                message: 'Successfully removed the recommendation',
-                                type: 'success'
-                            });
-                        } catch (_) {
-                            showToast({
-                                message: 'Failed to remove the recommendation. Please try again later.',
-                                type: 'error'
-                            });
-                        }
-                    }
-                });
-            }} />
-        </div>
-    );
 
     const showDetails = () => {
         updateRoute({route: `recommendations/${recommendation.id}`});
@@ -59,21 +25,22 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     const count = (showSubscribes ? recommendation.count?.subscribers : recommendation.count?.clicks) || 0;
 
     return (
-        <TableRow action={action} hideActions>
+        <TableRow>
             <TableCell onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
-                        <div className="mb-1 flex items-center gap-2">
+                        <div className="mb-0.5 flex items-center gap-2">
                             <RecommendationIcon {...recommendation} />
-                            <span className='line-clamp-1'>{recommendation.title}</span>
+                            <span className='line-clamp-1 font-medium'>{recommendation.title}</span>
+                            {showSubscribes && <span className='-mb-px inline-flex h-[19px] shrink-0 items-center rounded-full bg-grey-200 px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wide text-grey-700'>1-click subscribe</span>}
                         </div>
-                        <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{recommendation.reason || 'No reason added'}</span>
+                        <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{recommendation.url || 'No reason added'}</span>
                     </div>
                 </div>
             </TableCell>
             <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
-                    {count === 0 ? <span className="text-grey-500">-</span> : <span>{count}</span>}
+                    {count === 0 ? <span className="text-grey-500">0</span> : <span>{count}</span>}
                     <span className='whitespace-nowrap text-xs text-grey-700'>{showSubscribes ? 'Subscribers from you' : 'Clicks from you'}</span>
                 </div>
             </TableCell>

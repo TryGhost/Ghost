@@ -2,7 +2,6 @@ import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettin
 // import Button from '../../../admin-x-ds/global/Button';
 // import ChangeThemeModal from './ThemeModal';
 import Icon from '../../../admin-x-ds/global/Icon';
-import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
@@ -21,7 +20,6 @@ import {useGlobalData} from '../../providers/GlobalDataProvider';
 const Sidebar: React.FC<{
     brandSettings: BrandSettingValues
     themeSettingSections: Array<{id: string, title: string, settings: CustomThemeSetting[]}>
-    modal: NiceModalHandler<Record<string, unknown>>;
     updateBrandSetting: (key: string, value: SettingValue) => void
     updateThemeSetting: (updated: CustomThemeSetting) => void
     onTabChange: (id: string) => void
@@ -29,7 +27,6 @@ const Sidebar: React.FC<{
 }> = ({
     brandSettings,
     themeSettingSections,
-    modal,
     updateBrandSetting,
     updateThemeSetting,
     onTabChange,
@@ -68,7 +65,6 @@ const Sidebar: React.FC<{
                 <div className='w-full px-7'>
                     <button className='group flex w-full items-center justify-between text-sm font-medium opacity-80 transition-all hover:opacity-100' data-testid='change-theme' type='button' onClick={async () => {
                         await handleSave();
-                        modal.remove();
                         updateRoute('design/edit/themes');
                     }}>
                         <div className='text-left'>
@@ -84,8 +80,6 @@ const Sidebar: React.FC<{
 };
 
 const DesignModal: React.FC = () => {
-    const modal = useModal();
-
     const {settings, siteData} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {posts: [latestPost]} = {posts: []}} = useBrowsePosts({
@@ -110,10 +104,10 @@ const DesignModal: React.FC = () => {
     } = useForm({
         initialState: {
             settings: settings as Array<Setting & { dirty?: boolean }>,
-            themeSettings: (themeSettings?.custom_theme_settings || []) as Array<CustomThemeSetting & { dirty?: boolean }>
+            themeSettings: themeSettings ? (themeSettings.custom_theme_settings as Array<CustomThemeSetting & { dirty?: boolean }>) : undefined
         },
         onSave: async () => {
-            if (formState.themeSettings.some(setting => setting.dirty)) {
+            if (formState.themeSettings?.some(setting => setting.dirty)) {
                 const response = await editThemeSettings(formState.themeSettings);
                 updateForm(state => ({...state, themeSettings: response.custom_theme_settings}));
             }
@@ -138,14 +132,14 @@ const DesignModal: React.FC = () => {
     };
 
     const updateThemeSetting = (updated: CustomThemeSetting) => {
-        updateForm(state => ({...state, themeSettings: state.themeSettings.map(setting => (
+        updateForm(state => ({...state, themeSettings: state.themeSettings?.map(setting => (
             setting.key === updated.key ? {...updated, dirty: true} : setting
         ))}));
     };
 
     const [description, accentColor, icon, logo, coverImage] = getSettingValues(formState.settings, ['description', 'accent_color', 'icon', 'logo', 'cover_image']) as string[];
 
-    const themeSettingGroups = formState.themeSettings.reduce((groups, setting) => {
+    const themeSettingGroups = (formState.themeSettings || []).reduce((groups, setting) => {
         const group = (setting.group === 'homepage' || setting.group === 'post') ? setting.group : 'site-wide';
 
         return {
@@ -208,7 +202,6 @@ const DesignModal: React.FC = () => {
         <Sidebar
             brandSettings={{description, accentColor, icon, logo, coverImage}}
             handleSave={handleSave}
-            modal={modal}
             themeSettingSections={themeSettingSections}
             updateBrandSetting={updateBrandSetting}
             updateThemeSetting={updateThemeSetting}
@@ -240,4 +233,4 @@ const DesignModal: React.FC = () => {
     />;
 };
 
-export default NiceModal.create(DesignModal);
+export default DesignModal;
