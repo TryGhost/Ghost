@@ -58,7 +58,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 updatedRecommendation.excerpt = externalGhostSite.site.description ?? formState.excerpt ?? null;
                 updatedRecommendation.featured_image = externalGhostSite.site.cover_image?.toString() ?? formState.featured_image ?? null;
                 updatedRecommendation.favicon = externalGhostSite.site.icon?.toString() ?? externalGhostSite.site.logo?.toString() ?? formState.favicon ?? null;
-                updatedRecommendation.one_click_subscribe = externalGhostSite.site.allow_self_signup;
+                updatedRecommendation.one_click_subscribe = externalGhostSite.site.allow_external_signup;
             } else {
                 // For non-Ghost sites, we use the Oemebd API to fetch metadata
                 const oembed = await queryOembed({

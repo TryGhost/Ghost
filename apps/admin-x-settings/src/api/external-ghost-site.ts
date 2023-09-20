@@ -7,7 +7,7 @@ export type GhostSiteResponse = {
         logo: URL | null,
         icon: URL | null,
         cover_image : URL | null,
-        allow_self_signup: boolean,
+        allow_external_signup: boolean,
         url: URL,
     }
 }
@@ -35,7 +35,20 @@ export const useExternalGhostSite = () => {
                 });
 
                 // We need to validate all data types here for extra safety
-                if (typeof result !== 'object' || !result.site || typeof result.site !== 'object' || typeof result.site.title !== 'string' || typeof result.site.allow_self_signup !== 'boolean' || typeof result.site.url !== 'string') {
+                if (typeof result !== 'object' || !result.site || typeof result.site !== 'object') {
+                    // eslint-disable-next-line no-console
+                    console.warn('Received invalid response from external Ghost site API', result);
+                    return null;
+                }
+
+                // Temporary mapping (should get removed!)
+                // allow_self_signup was replaced by allow_external_signup
+                if (typeof result.site.allow_self_signup === 'boolean' && typeof result.site.allow_external_signup !== 'boolean') {
+                    result.site.allow_external_signup = result.site.allow_self_signup;
+                }
+
+                // We need to validate all data types here for extra safety
+                if (typeof result.site.title !== 'string' || typeof result.site.allow_external_signup !== 'boolean' || typeof result.site.url !== 'string') {
                     // eslint-disable-next-line no-console
                     console.warn('Received invalid response from external Ghost site API', result);
                     return null;
@@ -74,7 +87,7 @@ export const useExternalGhostSite = () => {
                             logo: result.site.logo ? new URL(result.site.logo) : null,
                             icon: result.site.icon ? new URL(result.site.icon) : null,
                             cover_image: result.site.cover_image ? new URL(result.site.cover_image) : null,
-                            allow_self_signup: result.site.allow_self_signup,
+                            allow_external_signup: result.site.allow_external_signup,
                             url: new URL(result.site.url)
                         }
                     };
