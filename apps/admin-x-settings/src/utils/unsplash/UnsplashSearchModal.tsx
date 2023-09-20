@@ -1,22 +1,27 @@
+import MasonryService from './masonry/MasonryService';
 import Portal from '../portal';
 import React, {useMemo, useRef, useState} from 'react';
 import UnsplashGallery from '../../admin-x-ds/unsplash/ui/UnsplashGallery';
 import UnsplashSelector from '../../admin-x-ds/unsplash/ui/UnsplashSelector';
-import UnsplashService from './UnsplashService';
 import {DefaultHeaderTypes, Photo} from './UnsplashTypes';
+import {PhotoUseCases} from './photo/PhotoUseCase';
+import {UnsplashRepository} from './api/UnsplashRepository';
+import {UnsplashService} from './UnsplashService';
 
 interface UnsplashModalProps {
     onClose: () => void;
-    onImageInsert: (image: Photo) => void; // Replace 'any' with a more specific type if available
+    onImageInsert: (image: Photo) => void;
     unsplashConf: {
-      defaultHeaders: DefaultHeaderTypes; // Replace 'any' with a more specific type if available
+      defaultHeaders: DefaultHeaderTypes;
     };
   }
-  
-const API_URL = 'https://api.unsplash.com';
 
 const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageInsert, unsplashConf}) => {
-    const UnsplashLib = useMemo(() => new UnsplashService({API_URL, HEADERS: unsplashConf.defaultHeaders}), [unsplashConf.defaultHeaders]);
+    const unsplashRepo = useMemo(() => new UnsplashRepository(unsplashConf.defaultHeaders), [unsplashConf.defaultHeaders]);
+    const photoUseCase = useMemo(() => new PhotoUseCases(unsplashRepo), [unsplashRepo]);
+    const masonryService = useMemo(() => new MasonryService(3), []);
+    const UnsplashLib = useMemo(() => new UnsplashService(photoUseCase, masonryService), [photoUseCase, masonryService]);
+    // const UnsplashLib = useMemo(() => new UnsplashService({API_URL, HEADERS: unsplashConf.defaultHeaders}), [unsplashConf.defaultHeaders]);
 
     const galleryRef = useRef<HTMLElement | null>(null);
     const [scrollPos, setScrollPos] = useState<number>(0);
@@ -71,7 +76,7 @@ const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageIns
             UnsplashLib.clearPhotos();
             await UnsplashLib.loadNew();
             const columns = UnsplashLib.getColumns();
-            setDataset(columns);
+            setDataset(columns || []);
             if (galleryRef.current && galleryRef.current.scrollTop !== 0) {
                 galleryRef.current.scrollTop = 0;
             }
@@ -98,7 +103,7 @@ const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageIns
             UnsplashLib.clearPhotos();
             await UnsplashLib.updateSearch(searchTerm);
             const columns = UnsplashLib.getColumns();
-            setDataset(columns);
+            setDataset(columns || []);
             if (galleryRef.current && galleryRef.current.scrollTop !== 0) {
                 galleryRef.current.scrollTop = 0;
             }
@@ -124,7 +129,7 @@ const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageIns
         setIsLoading(true);
         await UnsplashLib.loadNextPage();
         const columns = UnsplashLib.getColumns();
-        setDataset(columns);
+        setDataset(columns || []);
         setIsLoading(false);
     }, [UnsplashLib]);
 

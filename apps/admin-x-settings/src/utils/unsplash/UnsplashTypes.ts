@@ -4,7 +4,6 @@ export type URLS = {
     regular: string;
     small: string;
     thumb: string;
-    small_s3?: string; // Optional because it may not always exist
   };
   
 export type Links = {
@@ -71,13 +70,7 @@ export type Photo = {
     ratio: number;
     src? : string;
   };
-  
-export type UnsplashAPIOutput = {
-    total: number;
-    total_pages: number;
-    results: Photo[];
-  };
-  
+
 export type DefaultHeaderTypes = {
     Authorization: string;
     'Accept-Version': string;

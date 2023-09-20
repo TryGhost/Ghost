@@ -8,24 +8,24 @@ interface MasonryColumnProps {
 }
 
 interface UnsplashGalleryColumnsProps {
-    columns?: Photo[][] | []; // Replace 'any' with a more appropriate type if available
-    insertImage?: any; // Replace 'any' with a more appropriate type if available
-    selectImg?: any; // Replace 'any' with a more appropriate type if available
-    zoomed?: Photo | null; // Replace 'any' with a more appropriate type if available
+    columns?: Photo[][] | [];
+    insertImage?: any;
+    selectImg?: any;
+    zoomed?: Photo | null;
 }
 
 interface GalleryLayoutProps {
     children?: ReactNode;
-    galleryRef?: RefObject<any>; // Replace 'any' with a more appropriate type if available
+    galleryRef?: RefObject<HTMLDivElement>; //
     isLoading?: boolean;
-    zoomed?: any; // Replace 'any' with a more appropriate type if available
+    zoomed?: Photo | null;
 }
 
 interface UnsplashGalleryProps extends GalleryLayoutProps {
     error?: string | null;
-    dataset?: any[]; // Replace 'any' with a more appropriate type if available
-    selectImg?: any; // Replace 'any' with a more appropriate type if available
-    insertImage?: any; // Replace 'any' with a more appropriate type if available
+    dataset?: Photo[][] | [];
+    selectImg?: any;
+    insertImage?: any;
 }
 
 const UnsplashGalleryLoading: React.FC = () => {

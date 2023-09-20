@@ -1,4 +1,4 @@
-import {Photo} from './UnsplashTypes';
+import {Photo} from '../UnsplashTypes';
 
 export default class MasonryService {
     public columnCount: number;
@@ -12,10 +12,9 @@ export default class MasonryService {
     }
   
     reset(): void {
-        let columns: Photo[][] = []; // <-- Change this type and initialize it
+        let columns: Photo[][] = [];
         let columnHeights: number[] = [];
-        
-        // pre-fill column arrays based on columnCount
+
         for (let i = 0; i < this.columnCount; i += 1) {
             columns[i] = [];
             columnHeights[i] = 0;
@@ -46,7 +45,7 @@ export default class MasonryService {
     getColumns(): Photo[][] | null {
         return this.columns;
     }
-  
+
     changeColumnCount(newColumnCount: number): void {
         if (newColumnCount !== this.columnCount) {
             this.columnCount = newColumnCount;

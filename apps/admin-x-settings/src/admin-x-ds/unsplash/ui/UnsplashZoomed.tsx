@@ -5,7 +5,7 @@ import {Photo} from '../../../utils/unsplash/UnsplashTypes';
 
 interface UnsplashZoomedProps extends Omit<UnsplashImageProps, 'zoomed'> {
   zoomed: Photo | null;
-  selectImg: (photo: Photo | null) => void; // You might want to specify a more detailed type
+  selectImg: (photo: Photo | null) => void;
 }
 
 const UnsplashZoomed: FC<UnsplashZoomedProps> = ({payload, insertImage, selectImg, zoomed}) => {
