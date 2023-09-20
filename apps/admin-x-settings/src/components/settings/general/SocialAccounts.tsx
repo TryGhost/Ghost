@@ -87,10 +87,10 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const twitterInputRef = useRef<HTMLInputElement>(null);
 
-    const [facebookHandle, twitterHandle] = getSettingValues(localSettings, ['facebook', 'twitter']) as string[];
+    const [facebookHandle, twitterHandle] = getSettingValues<string | null>(localSettings, ['facebook', 'twitter']);
 
-    const [facebookUrl, setFacebookUrl] = useState(facebookHandleToUrl(facebookHandle));
-    const [twitterUrl, setTwitterUrl] = useState(twitterHandleToUrl(twitterHandle));
+    const [facebookUrl, setFacebookUrl] = useState(facebookHandle ? facebookHandleToUrl(facebookHandle) : '');
+    const [twitterUrl, setTwitterUrl] = useState(twitterHandle ? twitterHandleToUrl(twitterHandle) : '');
 
     const values = (
         <SettingGroupContent
