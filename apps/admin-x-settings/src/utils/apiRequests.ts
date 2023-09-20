@@ -1,5 +1,5 @@
 import handleResponse from './handleResponse';
-import {APIError, ServerUnreachableError, TimeoutError} from './errors';
+import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from './errors';
 import {QueryClient, UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {getGhostPaths} from './helpers';
 import {useMemo} from 'react';
@@ -48,33 +48,77 @@ export const useFetchApi = () => {
             setTimeout(() => controller.abort(), timeout);
         }
 
-        try {
-            const response = await fetch(endpoint, {
-                headers: {
-                    ...defaultHeaders,
-                    ...headers
-                },
-                method: 'GET',
-                mode: 'cors',
-                credentials: 'include',
-                signal: controller.signal,
-                ...options
-            });
+        // attempt retries for 15 seconds in two situations:
+        // 1. Server Unreachable error from the browser (code 0 or TypeError), typically from short internet blips
+        // 2. Maintenance error from Ghost, upgrade in progress so API is temporarily unavailable
+        let attempts = 0;
+        let retryingMs = 0;
+        const startTime = Date.now();
+        const maxRetryingMs = 15_000;
+        const retryPeriods = [500, 1000];
+        const retryableErrors = [ServerUnreachableError, MaintenanceError, TypeError];
 
-            return handleResponse(response);
-        } catch (error) {
-            if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
-                throw new TimeoutError();
-            }
+        // const getErrorData = (error?: APIError, response?: Response) => {
+        //     const data: Record<string, unknown> = {
+        //         errorName: error?.name,
+        //         attempts,
+        //         totalSeconds: retryingMs / 1000
+        //     };
+        //     if (endpoint.toString().includes('/ghost/api/')) {
+        //         data.server = response?.headers.get('server');
+        //     }
+        //     return data;
+        // };
 
-            let newError = error;
+        while (true) {
+            try {
+                const response = await fetch(endpoint, {
+                    headers: {
+                        ...defaultHeaders,
+                        ...headers
+                    },
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'include',
+                    signal: controller.signal,
+                    ...options
+                });
 
-            if (!(error instanceof APIError)) {
-                newError = new ServerUnreachableError({cause: error});
-            }
+                // TODO: Add Sentry integration
+                // if (attempts !== 0 && config.sentry_dsn) {
+                //     captureMessage('Request took multiple attempts', {extra: getErrorData()});
+                // }
 
-            throw newError;
-        };
+                return handleResponse(response);
+            } catch (error) {
+                retryingMs = Date.now() - startTime;
+
+                if (import.meta.env.MODE !== 'development' && retryableErrors.some(errorClass => error instanceof errorClass) && retryingMs <= maxRetryingMs) {
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1]);
+                    });
+                    attempts += 1;
+                    continue;
+                }
+
+                // TODO: Add Sentry integration
+                // if (attempts > 0 && config.sentry_dsn) {
+                //     captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
+                // }
+
+                if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
+                    throw new TimeoutError();
+                }
+
+                let newError = error;
+
+                if (!(error instanceof APIError)) {
+                    newError = new ServerUnreachableError({cause: error});
+                }
+
+                throw newError;
+            };
+        }
     };
 };
 

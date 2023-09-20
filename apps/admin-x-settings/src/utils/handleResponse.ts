@@ -1,7 +1,9 @@
-import {APIError, EmailError, ErrorResponse, HostLimitError, JSONError, MaintenanceError, RequestEntityTooLargeError, ThemeValidationError, UnsupportedMediaTypeError, ValidationError, VersionMismatchError} from './errors';
+import {APIError, EmailError, ErrorResponse, HostLimitError, JSONError, MaintenanceError, RequestEntityTooLargeError, ServerUnreachableError, ThemeValidationError, UnsupportedMediaTypeError, ValidationError, VersionMismatchError} from './errors';
 
 const handleResponse = async (response: Response) => {
-    if (response.status === 503) {
+    if (response.status === 0) {
+        throw new ServerUnreachableError();
+    } else if (response.status === 503) {
         throw new MaintenanceError(response, await response.text());
     } else if (response.status === 415) {
         throw new UnsupportedMediaTypeError(response, await response.text());
