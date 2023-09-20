@@ -48,29 +48,29 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
     }
 
     let leftButtonProps = {
-        label: 'Remove recommendation',
+        label: 'Delete',
         link: true,
         color: 'red' as const,
         size: 'sm' as const,
         onClick: () => {
             modal.remove();
             NiceModal.show(ConfirmationModal, {
-                title: 'Remove recommendation',
+                title: 'Delete recommendation',
                 prompt: <>
                     <p>Your recommendation <strong>{recommendation.title}</strong> will no longer be visible to your audience.</p>
                 </>,
-                okLabel: 'Remove',
+                okLabel: 'Delete',
                 onOk: async (deleteModal) => {
                     try {
                         await deleteRecommendation(recommendation);
                         deleteModal?.remove();
                         showToast({
-                            message: 'Successfully removed the recommendation',
+                            message: 'Successfully deleted the recommendation',
                             type: 'success'
                         });
                     } catch (_) {
                         showToast({
-                            message: 'Failed to remove the recommendation. Please try again later.',
+                            message: 'Failed to delete the recommendation. Please try again later.',
                             type: 'error'
                         });
                     }
