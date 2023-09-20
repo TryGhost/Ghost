@@ -23,7 +23,7 @@ const Sidebar: React.FC = () => {
     // Focus in on search field when pressing CMD+K/CTRL+K
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            if (e.key === '/') {
                 e?.preventDefault();
                 if (searchInputRef.current) {
                     searchInputRef.current.focus();
@@ -69,7 +69,7 @@ const Sidebar: React.FC = () => {
                 <TextField autoComplete="off" className='border-b border-grey-500 bg-transparent px-3 py-1.5 pl-[24px] text-sm dark:text-white' inputRef={searchInputRef} placeholder="Search" title="Search" value={filter} hideTitle unstyled onChange={updateSearch} />
                 {filter ? <Button className='absolute -right-1 top-1 p-1 tablet:top-9' icon='close' iconColorClass='text-grey-700 !w-3  !h-3' size='sm' unstyled onClick={() => {
                     setFilter('');
-                }} /> : <div className='absolute right-0 top-[22px] hidden rounded-sm bg-grey-200 px-1 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 tablet:!visible tablet:top-[38px] tablet:!block'>CMD+K</div>}
+                }} /> : <div className='absolute right-0 top-[22px] hidden rounded-sm bg-grey-200 px-1 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:top-[38px] tablet:!block'>/</div>}
             </div>
             <div className="no-scrollbar hidden pt-10 tablet:!visible tablet:!block tablet:h-[calc(100vh-5vmin-84px-64px)] tablet:w-[240px] tablet:overflow-y-auto" id='admin-x-settings-sidebar'>
                 <SettingNavSection keywords={Object.values(generalSearchKeywords).flat()} title="General">

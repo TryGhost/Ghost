@@ -55,7 +55,7 @@ const MainContent: React.FC = () => {
                 <div className='-mx-6 h-[84px] bg-white px-6 tablet:m-0 tablet:bg-transparent tablet:p-0'>
                     <Heading>Settings</Heading>
                 </div>
-                <div className="relative mt-[-32px] w-full overflow-x-hidden bg-white">
+                <div className="relative mt-[-32px] w-full overflow-x-hidden bg-white dark:bg-black">
                     <Sidebar />
                 </div>
             </div>
