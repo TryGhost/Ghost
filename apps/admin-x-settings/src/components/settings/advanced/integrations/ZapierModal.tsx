@@ -109,7 +109,7 @@ const ZapierModal = NiceModal.create(() => {
                 title='Zapier'
             />
 
-            <List className='-mb-8'>
+            <List>
                 {zapierTemplates.map(template => (
                     <ListItem
                         action={<Button className='whitespace-nowrap text-sm font-semibold text-[#FF4A00]' href={template.url} label='Use this Zap' tag='a' target='_blank' link unstyled />}
