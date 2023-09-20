@@ -316,7 +316,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     </div>
                 </Form>
             </div>
-            <div className='sticky top-[94px] hidden shrink-0 basis-[380px] min-[920px]:!visible min-[920px]:!block'>
+            <div className='sticky top-[96px] hidden shrink-0 basis-[380px] min-[920px]:!visible min-[920px]:!block'>
                 <TierDetailPreview isFreeTier={isFreeTier} tier={formState} />
             </div>
         </div>

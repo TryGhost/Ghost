@@ -58,7 +58,7 @@ const NavigationModal = NiceModal.create(() => {
                 }
             }}
         >
-            <div className='-mb-8 mt-6'>
+            <div className='mt-6'>
                 <TabView
                     selectedTab={selectedTab}
                     tabs={[
