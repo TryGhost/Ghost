@@ -209,6 +209,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
             scrolling={true}
             size='md'
             stickyFooter={true}
+            stickyHeader={true}
             testId='history-modal'
             title='History'
             topRightContent={<HistoryFilter
