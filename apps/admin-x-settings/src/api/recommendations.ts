@@ -1,4 +1,4 @@
-import {Meta, createMutation, createPaginatedQuery} from '../utils/apiRequests';
+import {Meta, apiUrl, createMutation, createPaginatedQuery, useFetchApi} from '../utils/apiRequests';
 
 export type Recommendation = {
     id: string
@@ -69,3 +69,26 @@ export const useAddRecommendation = createMutation<RecommendationResponseType, P
         dataType
     }
 });
+
+export const useGetRecommendationByUrl = () => {
+    const fetchApi = useFetchApi();
+    const path = '/recommendations/';
+
+    return {
+        async query(url: URL): Promise<RecommendationResponseType | null> {
+            const urlFilter = `url:~'${url.host.replace('www.', '')}${url.pathname.replace(/\/$/, '')}'`;
+            const endpoint = apiUrl(path, {filter: urlFilter, limit: '1'});
+            try {
+                const result = await fetchApi(endpoint, {
+                    method: 'GET',
+                    timeout: 5000
+                });
+                return result as RecommendationResponseType;
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.error(e);
+                return null;
+            }
+        }
+    };
+};

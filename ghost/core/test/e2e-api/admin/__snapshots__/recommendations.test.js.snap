@@ -1213,6 +1213,76 @@ Object {
 }
 `;
 
+exports[`Recommendations Admin API add Can add a recommendation with the same hostname but different paths 1: [body] 1`] = `
+Object {
+  "recommendations": Array [
+    Object {
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "excerpt": null,
+      "favicon": null,
+      "featured_image": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": false,
+      "reason": null,
+      "title": "Recommendation 3 with a different path",
+      "updated_at": null,
+      "url": "https://recommendation3.com/path-1",
+    },
+  ],
+}
+`;
+
+exports[`Recommendations Admin API add Can add a recommendation with the same hostname but different paths 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "299",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/recommendations\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Recommendations Admin API add Cannot add the same recommendation URL twice (exact URL match) 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "A recommendation with this URL already exists.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save recommendation.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Recommendations Admin API add Cannot add the same recommendation twice (partial URL match) 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "A recommendation with this URL already exists.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot save recommendation.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
 exports[`Recommendations Admin API add Cannot add the same recommendation twice 1: [body] 1`] = `
 Object {
   "recommendations": Array [

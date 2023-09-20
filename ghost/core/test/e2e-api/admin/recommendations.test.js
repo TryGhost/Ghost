@@ -544,13 +544,22 @@ describe('Recommendations Admin API', function () {
             assert.equal(body.recommendations[0].one_click_subscribe, true);
         });
 
-        it('Cannot add the same recommendation twice', async function () {
+        it('Can add a recommendation with the same hostname but different paths', async function () {
+            // Add a recommendation with URL https://recommendation3.com
+            await addDummyRecommendation(3);
+
             await agent.post('recommendations/')
                 .body({
                     recommendations: [{
-                        title: 'Dog Pictures',
-                        url: 'https://dogpictures.com'
+                        title: 'Recommendation 3 with a different path',
+                        url: 'https://recommendation3.com/path-1'
                     }]
+                })
+                .expectStatus(201)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('recommendations')
                 })
                 .matchBodySnapshot({
                     recommendations: [
@@ -560,12 +569,38 @@ describe('Recommendations Admin API', function () {
                         }
                     ]
                 });
+        });
+
+        it('Cannot add the same recommendation URL twice (exact URL match)', async function () {
+            // Add a recommendation with URL https://recommendation3.com
+            await addDummyRecommendation(3);
 
             await agent.post('recommendations/')
                 .body({
                     recommendations: [{
-                        title: 'Dog Pictures 2',
-                        url: 'https://dogpictures.com'
+                        title: 'Recommendation 3 with the exact same URL',
+                        url: 'https://recommendation3.com'
+                    }]
+                })
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [
+                        {
+                            id: anyErrorId
+                        }
+                    ]
+                });
+        });
+
+        it('Cannot add the same recommendation twice (partial URL match)', async function () {
+            // Add a recommendation with URL https://recommendation3.com
+            await addDummyRecommendation(3);
+
+            await agent.post('recommendations/')
+                .body({
+                    recommendations: [{
+                        title: 'Recommendation 3 with the same hostname and pathname, but with different protocol, www, query params and hash fragement',
+                        url: 'http://www.recommendation3.com/?query=1#hash'
                     }]
                 })
                 .expectStatus(422)
