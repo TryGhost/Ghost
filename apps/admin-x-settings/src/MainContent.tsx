@@ -59,7 +59,7 @@ const MainContent: React.FC = () => {
                     <Sidebar />
                 </div>
             </div>
-            <div className="relative flex-auto pt-[10vmin] tablet:ml-[300px] tablet:pt-[85px]">
+            <div className="relative flex-auto pt-[10vmin] tablet:ml-[300px] tablet:pt-[94px]">
                 <Settings />
             </div>
         </Page>

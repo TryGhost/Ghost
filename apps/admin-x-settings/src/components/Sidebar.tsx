@@ -1,5 +1,5 @@
 import Icon from '../admin-x-ds/global/Icon';
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import SettingNavItem from '../admin-x-ds/settings/SettingNavItem';
 import SettingNavSection from '../admin-x-ds/settings/SettingNavSection';
 import TextField from '../admin-x-ds/global/form/TextField';
@@ -17,6 +17,30 @@ import {useSearch} from './providers/ServiceProvider';
 const Sidebar: React.FC = () => {
     const {filter, setFilter} = useSearch();
     const {updateRoute} = useRouting();
+    const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+    // Focus in on search field when pressing CMD+K/CTRL+K
+    useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e?.preventDefault();
+                if (searchInputRef.current) {
+                    searchInputRef.current.focus();
+                }
+            }
+        };
+        window.addEventListener('keydown', handleKeyPress);
+        return () => {
+            window.removeEventListener('keydown', handleKeyPress);
+        };
+    }, []);
+
+    // Auto-focus on searchfield on page load
+    useEffect(() => {
+        if (searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    }, []);
 
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
@@ -41,7 +65,8 @@ const Sidebar: React.FC = () => {
         <div>
             <div className='relative md:pt-4 tablet:h-[64px] tablet:pt-[32px]'>
                 <Icon className='absolute top-2 md:top-6 tablet:top-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
-                <TextField autoComplete="off" className='border-b border-grey-500 bg-transparent px-3 py-1.5 pl-[24px] text-sm dark:text-white' placeholder="Search" title="Search" value={filter} hideTitle unstyled onChange={updateSearch} />
+                <TextField autoComplete="off" className='border-b border-grey-500 bg-transparent px-3 py-1.5 pl-[24px] text-sm dark:text-white' inputRef={searchInputRef} placeholder="Search" title="Search" value={filter} hideTitle unstyled onChange={updateSearch} />
+                {!filter && <div className='absolute right-0 top-[22px] rounded-sm bg-grey-200 px-1 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 tablet:top-[38px]'>CMD+K</div>}
             </div>
             <div className="no-scrollbar hidden pt-10 tablet:!visible tablet:!block tablet:h-[calc(100vh-5vmin-84px-64px)] tablet:w-[240px] tablet:overflow-y-auto" id='admin-x-settings-sidebar'>
                 <SettingNavSection keywords={Object.values(generalSearchKeywords).flat()} title="General">
