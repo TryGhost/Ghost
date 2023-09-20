@@ -27,8 +27,8 @@ const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageIns
     const [isLoading, setIsLoading] = useState<boolean>(UnsplashLib.searchIsRunning() || true);
     const initLoadRef = useRef<boolean>(false);
     const [searchTerm, setSearchTerm] = useState<string>('');
-    const [zoomedImg, setZoomedImg] = useState<Photo | null>(null); // Replace 'any' with a more specific type if available
-    const [dataset, setDataset] = useState<Photo[][] | []>([]); // Replace 'any' with a more specific type if available
+    const [zoomedImg, setZoomedImg] = useState<Photo | null>(null);
+    const [dataset, setDataset] = useState<Photo[][] | []>([]);
 
     React.useEffect(() => {
         if (galleryRef.current && zoomedImg === null && lastScrollPos !== 0) {

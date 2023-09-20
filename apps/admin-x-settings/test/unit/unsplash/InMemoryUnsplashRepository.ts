@@ -1,51 +1,55 @@
 // for testing purposes
 import {IUnsplashRepository} from '../../../src/utils/unsplash/api/UnsplashRepository';
 import {Photo} from '../../../src/utils/unsplash/UnsplashTypes';
+import {fixturePhotos} from './unsplashFixtures';
 
 export class InMemoryUnsplashRepository implements IUnsplashRepository {
-    private photos: Photo[] = []; // Mock data
-    pagination: { [key: string]: string } = {};
-    private currentPage: number = 1;
-    private searchTerm: string = '';
-    error: string | null = null;
-
-    constructor(photoset: Photo[] = []) {
-        this.photos = photoset;
-    }
+    photos: Photo[] = fixturePhotos;
+    PAGINATION: { [key: string]: string } = {};
+    REQUEST_IS_RUNNING: boolean = false;
+    SEARCH_IS_RUNNING: boolean = false;
+    LAST_REQUEST_URL: string = '';
+    ERROR: string | null = null;
+    IS_LOADING: boolean = false;
+    currentPage: number = 1;
 
     public async fetchPhotos(): Promise<Photo[]> {
+        this.IS_LOADING = true;
+
         const start = (this.currentPage - 1) * 30;
         const end = this.currentPage * 30;
         this.currentPage += 1;
+
+        this.IS_LOADING = false;
 
         return this.photos.slice(start, end);
     }
 
     public async fetchNextPage(): Promise<Photo[] | null> {
-        if (this.searchTerm) {
-            return null; // Simulate no next page when search is active
+        if (this.REQUEST_IS_RUNNING || this.SEARCH_IS_RUNNING) {
+            return null;
         }
 
         const photos = await this.fetchPhotos();
-
-        return photos;
+        return photos.length > 0 ? photos : null;
     }
 
     public async searchPhotos(term: string): Promise<Photo[]> {
-        this.searchTerm = term;
+        this.SEARCH_IS_RUNNING = true;
         const filteredPhotos = this.photos.filter(photo => photo.description?.includes(term) || photo.alt_description?.includes(term)
         );
+        this.SEARCH_IS_RUNNING = false;
 
         return filteredPhotos;
     }
 
-    public triggerDownload(photo: Photo): void {
+    searchIsRunning(): boolean {
+        return this.SEARCH_IS_RUNNING;
+    }
+
+    triggerDownload(photo: Photo): void {
         () => {
             photo;
         };
-    }
-
-    searchIsRunning(): boolean {
-        return false;
     }
 }

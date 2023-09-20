@@ -5,17 +5,19 @@ import {PhotoUseCases} from './photo/PhotoUseCase';
 export interface IUnsplashService {
     loadNew(): Promise<void>;
     layoutPhotos(): void;
-    getColumns(): Photo[][] | [];
+    getColumns(): Photo[][] | [] | null;
     updateSearch(term: string): Promise<void>;
     loadNextPage(): Promise<void>;
     clearPhotos(): void;
     triggerDownload(photo: Photo): void;
+    photos: Photo[];
+    searchIsRunning(): boolean;
 }
 
-export class UnsplashService {
+export class UnsplashService implements IUnsplashService {
     private photoUseCases: PhotoUseCases;
     private masonryService: MasonryService;
-    private photos: Photo[] = [];
+    public photos: Photo[] = [];
   
     constructor(photoUseCases: PhotoUseCases, masonryService: MasonryService) {
         this.photoUseCases = photoUseCases;
@@ -43,7 +45,6 @@ export class UnsplashService {
     async updateSearch(term: string) {
         let results = await this.photoUseCases.searchPhotos(term);
         this.photos = results;
-        // this.photos = await this.photoUseCases.searchPhotos(term);
         this.layoutPhotos();
     }
   
