@@ -45,11 +45,17 @@ if (parentPort) {
     await tiers.init();
     // Finished INIT
 
-    await updateCheck({
-        rethrowErrors: true,
-        forceUpdate: workerData.forceUpdate,
-        updateCheckUrl: workerData.updateCheckUrl
-    });
+    try {
+        await updateCheck({
+            rethrowErrors: true,
+            forceUpdate: workerData.forceUpdate,
+            updateCheckUrl: workerData.updateCheckUrl
+        });
+    } catch (error) {
+        postParentPortMessage(`Failed to run update check, error:\n${error.toString()}`);
+        postParentPortMessage('done');
+        process.exit(0);
+    }
 
     postParentPortMessage(`Ran update check`);
 
