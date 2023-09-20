@@ -26,6 +26,14 @@ export default class PostsLoadingController extends Controller {
         return this.postsController.availableVisibilities;
     }
 
+    get selectedSchema() {
+        return this.postsController.selectedSchema;
+    }
+
+    get availableSchemas() {
+        return this.postsController.availableSchemas;
+    }
+
     get availableTags() {
         return this.postsController.availableTags;
     }

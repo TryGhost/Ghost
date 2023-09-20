@@ -8,6 +8,7 @@ export default BaseValidator.create({
         'title',
         'authors',
         'customExcerpt',
+        'schema',
         'canonicalUrl',
         'codeinjectionHead',
         'codeinjectionFoot',
@@ -70,6 +71,13 @@ export default BaseValidator.create({
     visibility(model) {
         if (isBlank(model.visibility) && !model.isNew) {
             model.errors.add('visibility', 'Please select at least one tier');
+            this.invalidate();
+        }
+    },
+
+    schema(model) {
+        if (isBlank(model.schema) && !model.isNew) {
+            model.errors.add('schema', 'Please select at least one schema');
             this.invalidate();
         }
     },

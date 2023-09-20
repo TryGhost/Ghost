@@ -1,0 +1,11 @@
+<span class="gh-select">
+    <OneWaySelect @value={{this.selectedSchema}}
+        @options={{this.availableSchemas}}
+        @optionValuePath="name"
+        @optionLabelPath="label"
+        @optionTargetPath="name"
+        @update={{action "updateSchema"}}
+        @data-test-select="post-schema"
+    />
+    {{svg-jar "arrow-down-small"}}
+</span>

@@ -5,6 +5,7 @@ export default Factory.extend({
     createdBy: 1,
     description(i) { return `Description for tag ${i}.`; },
     visibility: 'public',
+    schema: 'article',
     featureImage(i) { return `/content/images/2015/10/tag-${i}.jpg`; },
     metaDescription(i) { return `Meta description for tag ${i}.`; },
     metaTitle(i) { return `Meta Title for tag ${i}`; },

@@ -91,6 +91,7 @@ class PostsExporter {
                 featured: post.get('featured'),
                 tags: post.related('tags').map(tag => tag.get('name')).join(', '),
                 post_access: this.postAccessToString(post),
+                post_schema: this.postSchemaToString(post),
                 email_recipients: email ? this.humanReadableEmailRecipientFilter(email?.get('recipient_filter'), labels, tiers) : null,
                 newsletter_name: newsletters.length > 1 && post.get('newsletter_id') && email ? newsletters.find(newsletter => newsletter.get('id') === post.get('newsletter_id'))?.get('name') : null,
                 sends: email?.get('email_count') ?? null,
@@ -187,6 +188,18 @@ class PostsExporter {
         }
 
         return visibility;
+    }
+
+    postSchemaToString(post) {
+        const schema = post.get('schema');
+        switch (schema) {
+        case 'article':
+            return 'Article';
+        case 'newsArticle':
+            return 'News Article';
+        default:
+            return 'Article';
+        }
     }
 
     /**

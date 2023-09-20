@@ -93,6 +93,10 @@
                             {{/if}}
                         {{/if}}
 
+                        <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="schema">
+                            <label for="schema-input">{{capitalize @post.displayName}} schema</label>
+                            <GhPsmSchemaInput @post={{this.post}} @triggerId="schema-input" />
+                        </GhFormGroup>
 
                         <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="customExcerpt">
                             <label for="custom-excerpt">Excerpt</label>

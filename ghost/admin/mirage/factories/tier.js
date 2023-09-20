@@ -7,6 +7,7 @@ export default Factory.extend({
     slug(i) { return `tier-${i}`;},
     type: 'paid',
     visibility: 'none',
+    schema: 'article',
     currency: 'usd',
     monthly_price: 500,
     yearly_price: 5000

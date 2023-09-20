@@ -69,6 +69,12 @@ module.exports = {
             nullable: false,
             defaultTo: 'public'
         },
+        schema: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            defaultTo: 'article'
+        },
         email_recipient_filter: {
             type: 'text',
             maxlength: 1000000000,

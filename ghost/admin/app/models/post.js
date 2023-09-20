@@ -99,6 +99,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     emailSubject: attr('string'),
     html: attr('string'),
     visibility: attr('string'),
+    schema: attr('string'),
     metaDescription: attr('string'),
     metaTitle: attr('string'),
     mobiledoc: attr('json-string', {defaultValue: (modelInstance) => {

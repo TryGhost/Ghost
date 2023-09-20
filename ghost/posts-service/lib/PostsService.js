@@ -16,6 +16,7 @@ const {
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
     invalidVisibility: 'Invalid visibility value.',
+    invalidSchema: 'Invalid schema value.',
     invalidTiers: 'Invalid tiers value.',
     invalidTags: 'Invalid tags value.',
     invalidEmailSegment: 'The email segment parameter doesn\'t contain a valid filter',
@@ -257,6 +258,13 @@ class PostsService {
             DomainEvents.dispatch(PostsBulkUnfeaturedEvent.create(updateResult.editIds));
 
             return updateResult;
+        }
+        if (data.action === 'schema') {
+            if (!['article', 'newsArticle'].includes(data.meta.schema)) {
+                throw new errors.IncorrectUsageError({
+                    message: tpl(messages.invalidSchema)
+                });
+            }
         }
         if (data.action === 'access') {
             if (!['public', 'members', 'paid', 'tiers'].includes(data.meta.visibility)) {

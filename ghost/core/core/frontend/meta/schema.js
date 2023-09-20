@@ -85,31 +85,62 @@ function getPostSchema(metaData, data) {
 
     const context = data.page ? 'page' : 'post';
 
-    schema = {
-        '@context': 'https://schema.org',
-        '@type': 'Article',
-        publisher: schemaPublisherObject(metaData),
-        author: {
-            '@type': 'Person',
-            name: escapeExpression(data[context].primary_author.name),
-            image: schemaImageObject(metaData.authorImage),
-            url: metaData.authorUrl,
-            sameAs: trimSameAs(data, context),
-            description: data[context].primary_author.metaDescription ?
-                escapeExpression(data[context].primary_author.metaDescription) :
-                null
-        },
-        headline: escapeExpression(metaData.metaTitle),
-        url: metaData.url,
-        datePublished: metaData.publishedDate,
-        dateModified: metaData.modifiedDate,
-        image: schemaImageObject(metaData.coverImage),
-        keywords: metaData.keywords && metaData.keywords.length > 0 ?
-            metaData.keywords.join(', ') : null,
-        description: description,
-        mainEntityOfPage: metaData.url
+    const schemaAuthor = {
+        '@type': 'Person',
+        name: escapeExpression(data[context].primary_author.name),
+        image: schemaImageObject(metaData.authorImage),
+        url: metaData.authorUrl,
+        sameAs: trimSameAs(data, context),
+        description: data[context].primary_author.metaDescription ?
+            escapeExpression(data[context].primary_author.metaDescription) :
+            null
     };
-    schema.author = trimSchema(schema.author);
+
+    switch (metaData.schema) {
+    case 'newsArticle':
+        schema = {
+            '@context': 'https://schema.org',
+            '@type': 'NewsArticle',
+            mainEntityOfPage: {
+                '@type': 'WebPage',
+                '@id': metaData.url
+            },
+            // completed after
+            author: null,
+            headline: escapeExpression(metaData.metaTitle).substring(0, 100),
+            alternativeHeadline: description,
+            description: description,
+            image: schemaImageObject(metaData.coverImage),
+            datePublished: metaData.publishedDate,
+            dateModified: metaData.modifiedDate,
+            keywords: metaData.keywords && metaData.keywords.length > 0 ?
+                metaData.keywords.join(', ') : null,
+            publisher: schemaPublisherObject(metaData),
+            articleBody: data.post.excerpt,
+            articleSection: data.post.primary_tag ? data.post.primary_tag.name : null
+        };
+        break;
+    default:
+        schema = {
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            publisher: schemaPublisherObject(metaData),
+            // completed after
+            author: null,
+            headline: escapeExpression(metaData.metaTitle),
+            url: metaData.url,
+            datePublished: metaData.publishedDate,
+            dateModified: metaData.modifiedDate,
+            image: schemaImageObject(metaData.coverImage),
+            keywords: metaData.keywords && metaData.keywords.length > 0 ?
+                metaData.keywords.join(', ') : null,
+            description: description,
+            mainEntityOfPage: metaData.url
+        };
+        break;
+    }
+
+    schema.author = trimSchema(schemaAuthor);
     return trimSchema(schema);
 }
 
