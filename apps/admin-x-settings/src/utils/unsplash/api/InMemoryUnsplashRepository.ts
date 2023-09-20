@@ -1,6 +1,6 @@
 // for testing purposes
-import {IUnsplashRepository} from '../../../src/utils/unsplash/api/UnsplashRepository';
-import {Photo} from '../../../src/utils/unsplash/UnsplashTypes';
+import {IUnsplashRepository} from './UnsplashRepository';
+import {Photo} from '../UnsplashTypes';
 import {fixturePhotos} from './unsplashFixtures';
 
 export class InMemoryUnsplashRepository implements IUnsplashRepository {

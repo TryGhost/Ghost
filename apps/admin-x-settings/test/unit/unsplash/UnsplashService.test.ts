@@ -1,9 +1,9 @@
 import MasonryService from '../../../src/utils/unsplash/masonry/MasonryService';
 import {IUnsplashRepository} from '../../../src/utils/unsplash/api/UnsplashRepository';
 import {IUnsplashService, UnsplashService} from '../../../src/utils/unsplash/UnsplashService';
-import {InMemoryUnsplashRepository} from './InMemoryUnsplashRepository';
+import {InMemoryUnsplashRepository} from '../../../src/utils/unsplash/api/InMemoryUnsplashRepository';
 import {PhotoUseCases} from '../../../src/utils/unsplash/photo/PhotoUseCase';
-import {fixturePhotos} from './unsplashFixtures';
+import {fixturePhotos} from '../../../src/utils/unsplash/api/unsplashFixtures';
 
 describe('UnsplashService', () => {
     let unsplashService: IUnsplashService;

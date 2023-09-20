@@ -1,6 +1,6 @@
 import MasonryService from '../../../src/utils/unsplash/masonry/MasonryService';
 import {Photo} from '../../../src/utils/unsplash/UnsplashTypes';
-import {fixturePhotos} from './unsplashFixtures';
+import {fixturePhotos} from '../../../src/utils/unsplash/api/unsplashFixtures';
 
 describe('MasonryService', () => {
     let service: MasonryService;

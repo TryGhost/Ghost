@@ -1,4 +1,4 @@
-import {Photo} from '../../../src/utils/unsplash/UnsplashTypes';
+import {Photo} from '../UnsplashTypes';
 
 export const fixturePhotos: Photo[] = [
     {
