@@ -7927,21 +7927,12 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/limit-service@1.2.6":
-  version "1.2.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.6.tgz#43f80bcf26d434a3d5373673fb9008506e6b89a2"
-  integrity sha512-+GSycNzxOpjD9KsP6C9HpxpF81mPmiCZReMKKhXWe6BUyrsV8gEAtxwXRjOXG2NBaobi3J/zijZnXFx0XAu+dw==
+"@tryghost/limit-service@1.2.10", "@tryghost/limit-service@^1.2.10":
+  version "1.2.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.10.tgz#9e1c8b21eddc3de8c5b8a9b029ba4915ec1ac625"
+  integrity sha512-Spnlkf7uQqwmfy5npkrwWJCcNN3II5oQiyQPy8QhhVk/UlLvzpTpYneHBJmIn4mFRxKrWC7xzSXIRMlb13ClBA==
   dependencies:
-    "@tryghost/errors" "^1.2.1"
-    lodash "^4.17.21"
-    luxon "^1.26.0"
-
-"@tryghost/limit-service@^1.2.8":
-  version "1.2.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.8.tgz#ac936dc40db45f3f41e410316a247f6edd041d51"
-  integrity sha512-NyQj4LtfoBBisLMizDBo/UN65xJFp132uCOL3TsQjoAR/rqywtzLms4AW/A66sbnQTFJmoHx4xN+oS0pyDvlQw==
-  dependencies:
-    "@tryghost/errors" "^1.2.1"
+    "@tryghost/errors" "^1.2.26"
     lodash "^4.17.21"
     luxon "^1.26.0"
 
