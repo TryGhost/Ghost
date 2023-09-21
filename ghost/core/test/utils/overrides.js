@@ -26,6 +26,7 @@ mochaHooks.afterEach = async function () {
     const jobsService = require('../../core/server/services/jobs');
 
     let timeout = setTimeout(() => {
+        // eslint-disable-next-line no-console
         console.error(chalk.yellow('\n[SLOW TEST] It takes longer than 2s to wait for all jobs and events to settle in the afterEach hook\n'));
     }, 2000);
 

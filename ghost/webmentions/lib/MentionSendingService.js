@@ -122,12 +122,23 @@ module.exports = class MentionSendingService {
      * @param {string|null} [resource.previousHtml]
      */
     async sendForHTMLResource(resource) {
-        const links = resource.html ? this.getLinks(resource.html) : [];
+        let links = resource.html ? this.getLinks(resource.html) : [];
         if (resource.previousHtml) {
             // Only send for NEW or DELETED links (to avoid spamming when lots of small changes happen to a post)
+            const existingLinks = links;
+            links = [];
             const oldLinks = this.getLinks(resource.previousHtml);
+
             for (const link of oldLinks) {
-                if (!links.find(l => l.href === link.href)) {
+                if (!existingLinks.find(l => l.href === link.href)) {
+                    // Deleted link
+                    links.push(link);
+                }
+            }
+
+            for (const link of existingLinks) {
+                if (!oldLinks.find(l => l.href === link.href)) {
+                    // New link
                     links.push(link);
                 }
             }
