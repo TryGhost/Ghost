@@ -51,7 +51,7 @@ export const useBrowseRecommendations = createInfiniteQuery<RecommendationRespon
 export const useDeleteRecommendation = createMutation<RecommendationDeleteResponseType, Recommendation>({
     method: 'DELETE',
     path: recommendation => `/recommendations/${recommendation.id}/`,
-    // Clear all queries because pagination needs to be re-checked
+
     invalidateQueries: {
         dataType
     }
@@ -61,15 +61,9 @@ export const useEditRecommendation = createMutation<RecommendationEditResponseTy
     method: 'PUT',
     path: recommendation => `/recommendations/${recommendation.id}/`,
     body: recommendation => ({recommendations: [recommendation]}),
-    updateQueries: {
-        dataType,
-        update: (newData, currentData) => (currentData && {
-            ...(currentData as RecommendationResponseType),
-            recommendations: (currentData as RecommendationResponseType).recommendations.map((recommendation) => {
-                const newRecommendation = newData.recommendations.find(({id}) => id === recommendation.id);
-                return newRecommendation || recommendation;
-            })
-        })
+
+    invalidateQueries: {
+        dataType
     }
 });
 
@@ -78,7 +72,6 @@ export const useAddRecommendation = createMutation<RecommendationResponseType, P
     path: () => '/recommendations/',
     body: ({...recommendation}) => ({recommendations: [recommendation]}),
 
-    // Clear all queries because pagination needs to be re-checked
     invalidateQueries: {
         dataType
     }
