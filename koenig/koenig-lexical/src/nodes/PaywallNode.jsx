@@ -14,7 +14,8 @@ export class PaywallNode extends BasePaywallNode {
         Icon: DividerCardIcon,
         insertCommand: INSERT_PAYWALL_COMMAND,
         matches: ['public preview', 'public intro', 'members only', 'paywall'],
-        priority: 9
+        priority: 9,
+        shortcut: '/paywall'
     };
 
     getIcon() {

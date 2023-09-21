@@ -34,7 +34,8 @@ export class SignupNode extends BaseSignupNode {
             header: config?.siteTitle ? `Sign up for ${config.siteTitle}` : '',
             subheader: config?.siteDescription || '',
             disclaimer: 'No spam. Unsubscribe anytime.'
-        })
+        }),
+        shortcut: '/signup'
     };
 
     getIcon() {

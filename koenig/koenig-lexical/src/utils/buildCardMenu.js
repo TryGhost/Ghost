@@ -78,7 +78,7 @@ export function buildCardMenu(nodes, {query, config} = {}) {
             return 1;
         }
     }));
-
+    
     return {menu, maxItemIndex};
 }
 

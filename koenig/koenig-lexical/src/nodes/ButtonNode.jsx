@@ -14,7 +14,8 @@ export class ButtonNode extends BaseButtonNode {
         Icon: ButtonCardIcon,
         insertCommand: INSERT_BUTTON_COMMAND,
         matches: ['button'],
-        priority: 10
+        priority: 10,
+        shortcut: '/button'
     };
 
     static getType() {

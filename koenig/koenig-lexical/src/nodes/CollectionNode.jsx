@@ -23,6 +23,7 @@ export class CollectionNode extends BaseCollectionNode {
         priority: 18,
         postType: 'page',
         isHidden: ({config}) => !config?.feature?.collectionsCard || !config?.feature?.collections, // hide if missing collections or collectionsCard flags
+        shortcut: '/collection',
         insertParams: () => ({header: 'Latest'})
     }];
 

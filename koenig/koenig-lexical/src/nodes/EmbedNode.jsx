@@ -22,74 +22,81 @@ export class EmbedNode extends BaseEmbedNode {
     __createdWithUrl;
 
     static kgMenu = [{
-        section: 'Embed',
+        section: 'Embeds',
         label: 'Other...',
         desc: '/embed [url]',
         Icon: EmbedCardIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         matches: ['embed'],
         queryParams: ['url'],
-        priority: 100
+        priority: 100,
+        shortcut: '/embed [url]'
     },
     {
-        section: 'Embed',
+        section: 'Embeds',
         label: 'YouTube',
         desc: '/youtube [video url]',
         Icon: YouTubeIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
         matches: ['youtube'],
-        priority: 1
+        priority: 1,
+        shortcut: '/youtube [url]'
     },
     {
-        section: 'Embed',
+        section: 'Embeds',
         label: 'Twitter',
         desc: '/twitter [tweet url]',
         Icon: TwitterIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
         matches: ['twitter'],
-        priority: 2
+        priority: 2,
+        shortcut: '/twitter [url]'
     },
     {
-        section: 'Embed',
+        section: 'Embeds',
         label: 'Vimeo',
         desc: '/vimeo [video url]',
         Icon: VimeoIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
         matches: ['vimeo'],
-        priority: 4
+        priority: 4,
+        shortcut: '/vimeo [url]'
     },
     {
-        section: 'Embed',
+        section: 'Embeds',
         label: 'CodePen',
         desc: '/codepen [pen url]',
         Icon: CodePenIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
         matches: ['codepen'],
-        priority: 5
+        priority: 5,
+        shortcut: '/codepen [url]'
     },
     {
-        section: 'Embed',
+        section: 'Embeds',
         label: 'Spotify',
         desc: '/spotify [track or playlist url]',
         Icon: SpotifyIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
         matches: ['spotify'],
-        priority: 6
+        priority: 6,
+        shortcut: '/spotify [url]'
     },
     {
-        section: 'Embed',
+        section: 'Embeds',
         label: 'SoundCloud',
         desc: '/soundcloud [track or playlist url]',
         Icon: SoundCloudIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
         matches: ['soundcloud'],
-        priority: 7
+        priority: 7,
+        shortcut: '/soundcloud [url]'
     }];
 
     getIcon() {

@@ -21,7 +21,8 @@ export class CalloutNode extends BaseCalloutNode {
         Icon: CalloutCardIcon,
         insertCommand: INSERT_CALLOUT_COMMAND,
         matches: ['callout'],
-        priority: 11
+        priority: 11,
+        shortcut: '/callout'
     }];
 
     getIcon() {

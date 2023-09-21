@@ -34,7 +34,8 @@ export class HeaderNode extends BaseHeaderNode {
             }),
             isHidden: ({config}) => {
                 return config?.depreciated?.headerV1;
-            }
+            },
+            shortcut: '/header'
         },
         {
             label: 'Header',
@@ -42,10 +43,11 @@ export class HeaderNode extends BaseHeaderNode {
             Icon: HeaderCardIcon,
             insertCommand: INSERT_HEADER_COMMAND,
             matches: ['header', 'heading'],
-            priority: 18,
+            priority: 17,
             insertParams: () => ({
                 version: 2
-            })
+            }),
+            shortcut: '/header'
         }
     ];
 

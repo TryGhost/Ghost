@@ -20,7 +20,8 @@ export class FileNode extends BaseFileNode {
             triggerFileDialog: true
         },
         matches: ['file'],
-        priority: 15
+        priority: 15,
+        shortcut: '/file'
     }];
 
     static uploadType = 'file';

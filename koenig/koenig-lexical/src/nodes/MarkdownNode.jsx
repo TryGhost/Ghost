@@ -15,7 +15,8 @@ export class MarkdownNode extends BaseMarkdownNode {
         Icon: MarkdownCardIcon,
         insertCommand: INSERT_MARKDOWN_COMMAND,
         matches: ['markdown', 'md'],
-        priority: 2
+        priority: 2,
+        shortcut: '/md'
     };
 
     getIcon() {

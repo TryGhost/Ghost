@@ -23,7 +23,8 @@ export class ToggleNode extends BaseToggleNode {
         Icon: ToggleCardIcon,
         insertCommand: INSERT_TOGGLE_COMMAND,
         matches: ['toggle', 'collapse'],
-        priority: 12
+        priority: 12,
+        shortcut: '/toggle'
     }];
 
     getIcon() {

@@ -23,7 +23,8 @@ export class ProductNode extends BaseProductNode {
         Icon: ProductCardIcon,
         insertCommand: INSERT_PRODUCT_COMMAND,
         matches: ['product'],
-        priority: 16
+        priority: 16,
+        shortcut: '/product'
     }];
 
     getIcon() {

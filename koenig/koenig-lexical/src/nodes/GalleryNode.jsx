@@ -35,7 +35,8 @@ export class GalleryNode extends BaseGalleryNode {
             triggerFileDialog: true
         },
         matches: ['gallery'],
-        priority: 4
+        priority: 4,
+        shortcut: '/gallery'
     }];
 
     constructor(dataset = {}, key) {

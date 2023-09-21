@@ -30,10 +30,11 @@ export class ImageNode extends BaseImageNode {
         },
         matches: ['image', 'img'],
         queryParams: ['src'],
-        priority: 1
+        priority: 1,
+        shortcut: '/image'
     },
     {
-        section: 'Embed',
+        section: 'Embeds',
         label: 'Unsplash',
         desc: '/unsplash [search term or url]',
         Icon: UnsplashIcon,
@@ -44,7 +45,8 @@ export class ImageNode extends BaseImageNode {
         isHidden: ({config}) => !config?.unsplash,
         matches: ['unsplash', 'uns'],
         queryParams: ['src'],
-        priority: 3
+        priority: 3,
+        shortcut: '/unsplash'
     },
     {
         label: 'GIF',
@@ -56,7 +58,8 @@ export class ImageNode extends BaseImageNode {
         },
         matches: ['gif', 'giphy', 'tenor'],
         queryParams: ['src'],
-        isHidden: ({config}) => !config?.tenor
+        isHidden: ({config}) => !config?.tenor,
+        shortcut: '/gif'
     }];
 
     static uploadType = 'image';

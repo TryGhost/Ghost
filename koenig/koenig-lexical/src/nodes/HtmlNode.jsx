@@ -15,7 +15,8 @@ export class HtmlNode extends BaseHtmlNode {
         Icon: HtmlCardIcon,
         insertCommand: INSERT_HTML_COMMAND,
         matches: ['html'],
-        priority: 3
+        priority: 3,
+        shortcut: '/html'
     };
 
     getIcon() {

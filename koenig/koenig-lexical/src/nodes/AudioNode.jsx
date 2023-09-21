@@ -20,7 +20,8 @@ export class AudioNode extends BaseAudioNode {
             triggerFileDialog: true
         },
         matches: ['audio'],
-        priority: 14
+        priority: 14,
+        shortcut: '/audio'
     }];
 
     static uploadType = 'audio';
