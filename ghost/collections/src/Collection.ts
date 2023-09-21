@@ -136,6 +136,9 @@ export class Collection {
      * @param index {number} - The index to insert the post at, use negative numbers to count from the end.
      */
     addPost(post: CollectionPost, index: number = -0) {
+        if (this.slug === 'latest') {
+            return false;
+        }
         if (this.type === 'automatic') {
             const matchesFilter = this.postMatchesFilter(post);
 
@@ -268,7 +271,7 @@ export class Collection {
             createdAt: Collection.validateDateField(data.created_at, 'created_at'),
             updatedAt: Collection.validateDateField(data.updated_at, 'updated_at'),
             deleted: data.deleted || false,
-            posts: data.posts || []
+            posts: data.slug !== 'latest' ? (data.posts || []) : []
         });
     }
 }
