@@ -38,19 +38,24 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
             <TableCell onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
-                        <div className="mb-0.5 flex items-center gap-2">
+                        <div className="mb-0.5 flex items-center gap-3">
                             <RecommendationIcon showSubscribes={showSubscribes} {...recommendation} />
                             <span className='line-clamp-1 font-medium'>{recommendation.title}</span>
                         </div>
-                        <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{recommendation.url || 'No reason added'}</span>
+                        {/* <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{recommendation.url || 'No reason added'}</span> */}
                     </div>
                 </div>
             </TableCell>
-            <TableCell className='hidden w-1/3 md:!visible md:!table-cell' onClick={showDetails}>
-                {(count === 0) ? (<span className="text-grey-500">-</span>) : (<div className='flex grow flex-col'>
+            <TableCell className='hidden w-8 align-middle md:!visible md:!table-cell' onClick={showDetails}>
+                {/* {(count === 0) ? (<span className="text-grey-500">-</span>) : (<div className='flex grow flex-col'>
                     <span>{count}</span>
-                    <span className='whitespace-nowrap text-xs text-grey-700'>{showSubscribes ? ('Subscribers from you') : ('Clicks from you')}</span>
+                    <span className='whitespace-nowrap text-xs text-grey-700'>{showSubscribes ? ('New members') : ('Clicks')}</span>
+                </div>)} */}
+                {(count === 0) ? (<span className="text-grey-500">-</span>) : (<div className='-mt-px flex grow items-end gap-1'>
+                    <span>{count}</span>
+                    <span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{showSubscribes ? ('New members') : ('Clicks')}</span>
                 </div>)}
+
             </TableCell>
         </TableRow>
     );
@@ -61,7 +66,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
 
 const RecommendationList: React.FC<RecommendationListProps> = ({recommendations, pagination, isLoading}) => {
     if (isLoading || recommendations.length) {
-        return <Table hint='Readers will see your recommendations in randomized order' isLoading={isLoading} pagination={pagination} hintSeparator>
+        return <Table hint={<span>Shown randomized to your readers</span>} isLoading={isLoading} pagination={pagination} hintSeparator>
             {recommendations && recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
         </Table>;
     } else {
