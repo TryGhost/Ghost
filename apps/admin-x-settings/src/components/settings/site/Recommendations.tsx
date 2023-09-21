@@ -8,6 +8,7 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {useBrowseRecommendations} from '../../../api/recommendations';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -74,4 +75,4 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Recommendations;
+export default withErrorBoundary(Recommendations, 'Recommendations');

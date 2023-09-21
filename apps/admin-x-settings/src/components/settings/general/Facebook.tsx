@@ -8,6 +8,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as FacebookLogo} from '../../../admin-x-ds/assets/images/facebook-logo.svg';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -141,4 +142,4 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Facebook;
+export default withErrorBoundary(Facebook, 'Facebook card');

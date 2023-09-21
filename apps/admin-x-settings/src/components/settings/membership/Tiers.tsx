@@ -8,6 +8,7 @@ import useRouting from '../../../hooks/useRouting';
 import {Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '../../../api/tiers';
 import {checkStripeEnabled} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}> = ({className, onClick}) => {
     className = clsx(
@@ -83,4 +84,4 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Tiers;
+export default withErrorBoundary(Tiers, 'Tiers');

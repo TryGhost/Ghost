@@ -19,6 +19,7 @@ import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
 import {getSettingValues} from '../../../api/settings';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 interface IntegrationItemProps {
     icon?: React.ReactNode,
@@ -236,4 +237,4 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Integrations;
+export default withErrorBoundary(Integrations, 'Integrations');
