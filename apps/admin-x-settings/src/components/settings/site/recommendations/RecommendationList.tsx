@@ -31,8 +31,10 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
         });
     };
 
-    const showSubscribes = recommendation.one_click_subscribe;
-    const count = (showSubscribes ? recommendation.count?.subscribers : recommendation.count?.clicks) || 0;
+    const isGhostSite = recommendation.one_click_subscribe;
+    const count = (isGhostSite ? recommendation.count?.subscribers : recommendation.count?.clicks) || 0;
+    const newMembers = count === 1 ? 'new member' : 'new members';
+    const clicks = count === 1 ? 'click' : 'clicks';
 
     return (
         <TableRow>
@@ -40,7 +42,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
                         <div className="mb-0.5 flex items-center gap-3">
-                            <RecommendationIcon showSubscribes={showSubscribes} {...recommendation} />
+                            <RecommendationIcon isGhostSite={isGhostSite} {...recommendation} />
                             <span className='line-clamp-1 font-medium'>{recommendation.title}</span>
                         </div>
                         {/* <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{recommendation.url || 'No reason added'}</span> */}
@@ -50,11 +52,11 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
             <TableCell className='hidden w-8 align-middle md:!visible md:!table-cell' onClick={showDetails}>
                 {/* {(count === 0) ? (<span className="text-grey-500">-</span>) : (<div className='flex grow flex-col'>
                     <span>{count}</span>
-                    <span className='whitespace-nowrap text-xs text-grey-700'>{showSubscribes ? ('New members') : ('Clicks')}</span>
+                    <span className='whitespace-nowrap text-xs text-grey-700'>{isGhostSite ? newMembers : clicks}</span>
                 </div>)} */}
                 {(count === 0) ? (<span className="text-grey-500">-</span>) : (<div className='-mt-px flex grow items-end gap-1'>
                     <span>{count}</span>
-                    <span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{showSubscribes ? ('New members') : ('Clicks')}</span>
+                    <span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{isGhostSite ? newMembers : clicks}</span>
                 </div>)}
 
             </TableCell>
