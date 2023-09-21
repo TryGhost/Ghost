@@ -7,6 +7,7 @@ import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -108,4 +109,4 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default LockSite;
+export default withErrorBoundary(LockSite, 'Make site private');

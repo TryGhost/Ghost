@@ -2,6 +2,7 @@ import Button from '../../../admin-x-ds/global/Button';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import useRouting from '../../../hooks/useRouting';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
@@ -22,4 +23,4 @@ const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Portal;
+export default withErrorBoundary(Portal, 'Portal settings');

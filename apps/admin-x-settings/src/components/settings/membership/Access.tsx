@@ -8,6 +8,7 @@ import {GroupBase, MultiValue} from 'react-select';
 import {getOptionLabel} from '../../../utils/helpers';
 import {getSettingValues} from '../../../api/settings';
 import {useBrowseTiers} from '../../../api/tiers';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
     {
@@ -190,4 +191,4 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Access;
+export default withErrorBoundary(Access, 'Access');

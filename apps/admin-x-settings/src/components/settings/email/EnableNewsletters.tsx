@@ -7,6 +7,7 @@ import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useRouting from '../../../hooks/useRouting';
 import {Setting, getSettingValues, useEditSettings} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
@@ -75,4 +76,4 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     </SettingGroup>);
 };
 
-export default EnableNewsletters;
+export default withErrorBoundary(EnableNewsletters, 'Newsletter sending');

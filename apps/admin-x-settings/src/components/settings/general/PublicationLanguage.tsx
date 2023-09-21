@@ -4,6 +4,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -71,4 +72,4 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default PublicationLanguage;
+export default withErrorBoundary(PublicationLanguage, 'Publication language');

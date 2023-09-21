@@ -7,6 +7,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues, useEditSettings} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const MAILGUN_REGIONS = [
     {label: '🇺🇸 US', value: 'https://api.mailgun.net/v3'},
@@ -122,4 +123,4 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default MailGun;
+export default withErrorBoundary(MailGun, 'Mailgun');

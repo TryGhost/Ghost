@@ -7,6 +7,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as GoogleLogo} from '../../../admin-x-ds/assets/images/google-logo.svg';
 import {ReactComponent as MagnifyingGlass} from '../../../admin-x-ds/assets/icons/magnifying-glass.svg';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 interface SearchEnginePreviewProps {
     title: string;
@@ -126,4 +127,4 @@ const Metadata: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Metadata;
+export default withErrorBoundary(Metadata, 'Meta data');

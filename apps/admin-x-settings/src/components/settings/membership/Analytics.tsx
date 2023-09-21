@@ -6,6 +6,7 @@ import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../api/settings';
 import {usePostsExports} from '../../../api/posts';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -105,4 +106,4 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Analytics;
+export default withErrorBoundary(Analytics, 'Analytics');
