@@ -46,7 +46,7 @@ export function ToggleSetting({label, description, isChecked, onChange, dataTest
     );
 }
 
-export function SliderSetting({label, onChange, max, min, value, defaultValue, dataTestId}) {
+export function SliderSetting({label, onChange, max, min, value, defaultValue, description, dataTestId}) {
     return (
         <div className="my-2 flex w-full flex-col gap-1">
             <div className="flex items-center justify-between font-sans text-[1.3rem] font-normal">
@@ -54,6 +54,9 @@ export function SliderSetting({label, onChange, max, min, value, defaultValue, d
                 <div className="text-grey-900 dark:text-grey-100" data-testid={`${dataTestId}-value`}>{value}</div>
             </div>
             <Slider dataTestId={dataTestId} defaultValue={defaultValue} max={max} min={min} value={value} onChange={onChange} />
+            {description &&
+                <p className="mt-1 text-[1.25rem] font-normal leading-snug text-grey-700">{description}</p>
+            }
         </div>
     );
 }

@@ -35,7 +35,7 @@ function PostImage({image, layout, columns, isLoading}) {
     );
 }
 
-function PostTitle({title, layout, columns, isLoading}) {
+function PostTitle({title, layout, columns}) {
     return (
         <div className={clsx(
             'font-bold leading-tight tracking-normal text-black dark:text-grey-100',
@@ -44,13 +44,13 @@ function PostTitle({title, layout, columns, isLoading}) {
             (layout === 'grid' && columns === 2) && 'text-2xl',
             (layout === 'grid' && columns === 3) && 'text-xl',
             (layout === 'grid' && columns === 4) && 'text-[1.7rem]',
-            isLoading && 'h-3 w-full animate-pulse rounded-full bg-grey-200 dark:bg-grey-950'
         )}>
-            {isLoading ? ' ' : title}</div>
+            {title}
+        </div>
     );
 }
 
-function PostExcerpt({excerpt, layout, columns, isLoading}) {
+function PostExcerpt({excerpt, layout, columns}) {
     return (
         <div className={clsx(
             'overflow-y-hidden font-normal leading-snug tracking-[-.01em] text-grey-900 dark:text-grey-600',
@@ -59,19 +59,13 @@ function PostExcerpt({excerpt, layout, columns, isLoading}) {
             (layout === 'grid' && columns === 2) && 'mt-4 line-clamp-3 max-h-[66px] text-[1.6rem]',
             (layout === 'grid' && columns === 3) && 'mt-3 line-clamp-2 max-h-[42px] text-md',
             (layout === 'grid' && columns === 4) && 'mt-3 line-clamp-2 max-h-[42px] text-md',
-            isLoading && 'w-1/2 animate-pulse rounded-full bg-grey-200 dark:bg-grey-950'
         )}>
-            {isLoading ? 
-                <div className="h-3"></div>
-                : excerpt}
+            {excerpt}
         </div>
     );
 }
 
-function PostMeta({publishDate, readTime, layout, columns, isLoading}) {
-    if (isLoading) {
-        return null;
-    }
+function PostMeta({publishDate, readTime, layout, columns}) {
     return (
         <div className={clsx(
             'flex font-medium leading-snug text-grey-600 dark:text-grey-400',
@@ -97,7 +91,7 @@ export function CollectionPost({
     options,
     isLoading
 }) {
-    if (isPlaceholder) {
+    if (isPlaceholder || isLoading) {
         return (
             <div className={clsx(
                 'not-kg-prose relative w-full gap-4 bg-transparent font-sans',
@@ -106,9 +100,24 @@ export function CollectionPost({
             )}>
                 <PostImage columns={columns} image={null} isLoading={isLoading} layout={layout} />
                 <div className="col-span-2 flex flex-col items-start justify-start">
-                    <PostTitle columns={columns} isLoading={isLoading} layout={layout} title="Post title" />
-                    <PostExcerpt columns={columns} excerpt="Once you've published more posts, they'll automatically be displayed here." isLoading={isLoading} layout={layout} />
-                    <PostMeta columns={columns} isLoading={isLoading} layout={layout} publishDate={null} readTime={null} />
+                    <div className={clsx(
+                        'rounded-full bg-grey-200',
+                        layout === 'list' && 'h-5 w-3/4',
+                        (layout === 'grid' && columns === 1) && 'mt-3 h-8 w-full',
+                        (layout === 'grid' && columns === 2) && 'mt-2 h-5 w-full',
+                        (layout === 'grid' && columns === 3) && 'mt-1 h-4 w-full',
+                        (layout === 'grid' && columns === 4) && 'h-[1.4rem] w-full',
+                        isLoading && 'animate-pulse'
+                    )}></div>
+                    <div className={clsx(
+                        'rounded-full bg-grey-200',
+                        layout === 'list' && 'mt-3 h-5 w-1/3',
+                        (layout === 'grid' && columns === 1) && 'mt-3 h-8 w-1/2',
+                        (layout === 'grid' && columns === 2) && 'mt-3 h-5 w-1/2',
+                        (layout === 'grid' && columns === 3) && 'mt-[1rem] h-4 w-1/2',
+                        (layout === 'grid' && columns === 4) && 'mt-2 h-[1.4rem] w-1/2',
+                        isLoading && 'animate-pulse'
+                    )}></div>
                 </div>
             </div>
         );
@@ -128,9 +137,9 @@ export function CollectionPost({
         )}>
             {image && <PostImage columns={columns} image={image} isLoading={isLoading} layout={layout} />}
             <div className="col-span-2 flex flex-col items-start justify-start">
-                {title && <PostTitle columns={columns} isLoading={isLoading} layout={layout} title={title} />}
-                {excerpt && <PostExcerpt columns={columns} excerpt={excerpt} isLoading={isLoading} layout={layout} />}
-                <PostMeta columns={columns} isLoading={isLoading} layout={layout} publishDate={publishDate} readTime={readTime} />
+                {title && <PostTitle columns={columns} layout={layout} title={title} />}
+                {excerpt && <PostExcerpt columns={columns} excerpt={excerpt} layout={layout} />}
+                <PostMeta columns={columns} layout={layout} publishDate={publishDate} readTime={readTime} />
             </div>
         </div>
     );
@@ -286,6 +295,7 @@ export function CollectionCard({
                     <SliderSetting
                         dataTestId={'collection-post-count'}
                         defaultValue={3}
+                        description={(!isLoading && postCount > posts.length) && `This collection has ${posts.length} posts, and will continue to fill in as you publish more.`}
                         label="Post Count"
                         max={12}
                         min={1}
@@ -356,21 +366,18 @@ PostImage.propTypes = {
 PostTitle.propTypes = {
     title: PropTypes.string,
     layout: PropTypes.oneOf(['list', 'grid']),
-    columns: PropTypes.number,
-    isLoading: PropTypes.bool
+    columns: PropTypes.number
 };
 
 PostExcerpt.propTypes = {
     excerpt: PropTypes.string,
     layout: PropTypes.oneOf(['list', 'grid']),
-    columns: PropTypes.number,
-    isLoading: PropTypes.bool
+    columns: PropTypes.number
 };
 
 PostMeta.propTypes = {
     publishDate: PropTypes.string,
     readTime: PropTypes.number,
     layout: PropTypes.oneOf(['list', 'grid']),
-    columns: PropTypes.number,
-    isLoading: PropTypes.bool
+    columns: PropTypes.number
 };

@@ -68,7 +68,7 @@ test.describe('Collection card', async () => {
                             </div>
                             <div>
                                 <div></div>
-                                <div><div></div></div>
+                                <div></div>
                             </div>
                         </div>
                         <div>
@@ -78,7 +78,7 @@ test.describe('Collection card', async () => {
                             </div>
                             <div>
                                 <div></div>
-                                <div><div></div></div>
+                                <div></div>
                             </div>
                         </div>
                         <div>
@@ -88,7 +88,7 @@ test.describe('Collection card', async () => {
                             </div>
                             <div>
                                 <div></div>
-                                <div><div></div></div>
+                                <div></div>
                             </div>
                         </div>
                     </div>
