@@ -560,12 +560,20 @@ export class CollectionsService {
         });
     }
 
-    async getById(id: string, options?: {transaction: Knex.Transaction}): Promise<Collection | null> {
-        return await this.collectionsRepository.getById(id, options);
+    async getById(id: string, options?: {transaction: Knex.Transaction}): Promise<CollectionDTO | null> {
+        const collection = await this.collectionsRepository.getById(id, options);
+        if (!collection) {
+            return null;
+        }
+        return this.toDTO(collection);
     }
 
-    async getBySlug(slug: string, options?: {transaction: Knex.Transaction}): Promise<Collection | null> {
-        return await this.collectionsRepository.getBySlug(slug, options);
+    async getBySlug(slug: string, options?: {transaction: Knex.Transaction}): Promise<CollectionDTO | null> {
+        const collection = await this.collectionsRepository.getBySlug(slug, options);
+        if (!collection) {
+            return null;
+        }
+        return this.toDTO(collection);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -605,7 +613,7 @@ export class CollectionsService {
     }
 
     async destroy(id: string): Promise<Collection | null> {
-        const collection = await this.getById(id);
+        const collection = await this.collectionsRepository.getById(id);
 
         if (collection) {
             if (collection.deletable === false) {
