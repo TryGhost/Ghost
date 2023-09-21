@@ -23,8 +23,8 @@ const RecommendationIcon: React.FC<Props> = ({title, favicon, showSubscribes, fe
     const hint = showSubscribes ? 'This is a Ghost site that supports one-click subscribe' : '';
 
     return (
-        <div className="relative h-5 w-5" title={hint}>
-            <img alt={title} className="h-5 w-5 rounded-sm" src={icon} onError={clearIcon} />
+        <div className="relative h-6 w-6" title={hint}>
+            <img alt={title} className="h-6 w-6 rounded-sm" src={icon} onError={clearIcon} />
             {showSubscribes && <img alt='Ghost Logo' className='absolute bottom-[-3px] right-[-3px] h-[14px] w-[14px]' src={GhostLogo} />}
         </div>
     );
