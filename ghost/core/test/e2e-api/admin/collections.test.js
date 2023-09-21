@@ -572,7 +572,7 @@ describe('Collections API', function () {
                 }, this.skip.bind(this));
 
                 const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
-                assert.equal(collectionRelatedQueries.length, 12);
+                assert.equal(collectionRelatedQueries.length, 7);
             }
 
             await agent
