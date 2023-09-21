@@ -367,6 +367,47 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
+    onFetched: async function onFetched(model, response, options) {
+        if (!labs.isSet('collectionsCard')) {
+            return;
+        }
+
+        await this.renderIfNeeded(model, options);
+    },
+
+    onFetchedCollection: async function onFetched(collection, response, options) {
+        if (!labs.isSet('collectionsCard')) {
+            return;
+        }
+
+        for await (const model of collection.models) {
+            await this.renderIfNeeded(model, options);
+        }
+    },
+
+    renderIfNeeded: async function renderIfNeeded(model, options = {}) {
+        // pages can have their html cleared to "queue" a re-render to update dynamic data such
+        // as collection cards. Detect that and re-render here so the page is always up to date
+        if (model.get('lexical') !== null && model.get('html') === null) {
+            const html = await lexicalLib.render(model.get('lexical'));
+            const plaintext = htmlToPlaintext.excerpt(html);
+
+            // set model attributes so they are available immediately in code that uses the returned model
+            model.set('html', html);
+            model.set('plaintext', plaintext);
+
+            // update database manually using knex to avoid hooks being called multiple times
+            const query = ghostBookshelf.knex.raw('UPDATE posts SET html = ?, plaintext = ? WHERE id = ?', [html, plaintext, model.id]);
+            if (options.transacting) {
+                await query.transacting(options.transacting);
+            } else {
+                await query;
+            }
+        }
+
+        return model;
+    },
+
     /**
      * We update the tags after the Post was inserted.
      * We update the tags before the Post was updated, see `onSaving` event.
@@ -464,8 +505,24 @@ Post = ghostBookshelf.Model.extend({
         }
     },
 
-    onDestroyed: function onDestroyed(model, options) {
+    onDestroyed: async function onDestroyed(model, options) {
         ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
+
+        if (labs.isSet('collectionsCard') && model.previous('type') === 'post' && model.previous('status') === 'published') {
+            // reset all page HTML when a published post is deleted so they can be re-rendered
+            // on next fetch so any collection cards are "dynamically" updated
+            const resetPages = function resetPages(transacting) {
+                return ghostBookshelf.knex.raw('UPDATE posts set html = NULL WHERE type = \'page\' AND lexical IS NOT NULL').transacting(transacting);
+            };
+
+            if (options.transacting) {
+                await resetPages(options.transacting);
+            } else {
+                await ghostBookshelf.knex.transaction(async (transacting) => {
+                    await resetPages(transacting);
+                });
+            }
+        }
 
         if (model.previous('status') === 'published') {
             model.emitChange('unpublished', Object.assign({usePreviousAttribute: true}, options));
@@ -939,6 +996,19 @@ Post = ghostBookshelf.Model.extend({
             this.set('tiers', this.get('tiers').map(t => ({
                 id: t.id
             })));
+        }
+
+        if (labs.isSet('collectionsCard') && this.get('type') === 'post' && (newStatus === 'published' || olderStatus === 'published')) {
+            // reset all page HTML when a published post is updated so they can be re-rendered
+            // on next fetch so any collection cards are "dynamically" updated
+            ops.push(async function resetPageHTML() {
+                const query = ghostBookshelf.knex.raw('UPDATE posts set html = NULL WHERE type = ? AND lexical IS NOT NULL', ['page']);
+                if (options.transacting) {
+                    await query.transacting(options.transacting);
+                } else {
+                    await query;
+                }
+            });
         }
 
         return sequence(ops);
