@@ -3,10 +3,12 @@ import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
+import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/twitter-logo.svg';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -21,6 +23,19 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     } = useSettingGroup();
 
     const {mutateAsync: uploadImage} = useUploadImage();
+    const [pintura] = getSettingValues<boolean>(localSettings, ['pintura']);
+    const [pinturaJsUrl] = getSettingValues<string>(localSettings, ['pintura_js_url']);
+    const [pinturaCssUrl] = getSettingValues<string>(localSettings, ['pintura_css_url']);
+
+    const pinturaEnabled = Boolean(pintura) && Boolean(pinturaJsUrl) && Boolean(pinturaCssUrl);
+
+    const editor = usePinturaEditor(
+        {config: {
+            jsUrl: pinturaJsUrl || '',
+            cssUrl: pinturaCssUrl || ''
+        },
+        disabled: !pinturaEnabled}
+    );
 
     const [
         twitterTitle, twitterDescription, twitterImage, siteTitle, siteDescription
@@ -69,6 +84,18 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         height='300px'
                         id='twitter-image'
                         imageURL={twitterImage}
+                        pintura={
+                            {
+                                isEnabled: pinturaEnabled,
+                                openEditor: async () => editor.openEditor({
+                                    image: twitterImage || '',
+                                    handleSave: async (file:File) => {
+                                        const imageUrl = getImageUrl(await uploadImage({file}));
+                                        updateSetting('twitter_image', imageUrl);
+                                    }
+                                })
+                            }
+                        }
                         onDelete={handleImageDelete}
                         onUpload={handleImageUpload}
                     >
@@ -115,4 +142,4 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Twitter;
+export default withErrorBoundary(Twitter, 'Twitter card');

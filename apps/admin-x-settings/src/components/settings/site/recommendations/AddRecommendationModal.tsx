@@ -6,11 +6,12 @@ import React from 'react';
 import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
-import {EditOrAddRecommendation, useBrowseRecommendations} from '../../../../api/recommendations';
+import {AlreadyExistsError} from '../../../../utils/errors';
+import {EditOrAddRecommendation, RecommendationResponseType, useGetRecommendationByUrl} from '../../../../api/recommendations';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {arePathsEqual, trimSearchAndHash} from '../../../../utils/url';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
+import {trimSearchAndHash} from '../../../../utils/url';
 import {useExternalGhostSite} from '../../../../api/external-ghost-site';
 import {useGetOembed} from '../../../../api/oembed';
 
@@ -24,7 +25,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
     const {updateRoute} = useRouting();
     const {query: queryOembed} = useGetOembed();
     const {query: queryExternalGhostSite} = useExternalGhostSite();
-    const {data: {recommendations} = {}} = useBrowseRecommendations();
+    const {query: getRecommendationByUrl} = useGetRecommendationByUrl();
 
     const {formState, updateForm, handleSave, errors, validate, saveState, clearError} = useForm({
         initialState: recommendation ?? {
@@ -41,7 +42,13 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             validatedUrl = new URL(formState.url);
             validatedUrl = trimSearchAndHash(validatedUrl);
 
-            // First check if it s a Ghost site or not
+            // Check if the recommendation already exists
+            const {recommendations = []} = await getRecommendationByUrl(validatedUrl) as RecommendationResponseType;
+            if (recommendations && recommendations.length > 0) {
+                throw new AlreadyExistsError('A recommendation with this URL already exists.');
+            }
+
+            // Check if it s a Ghost site or not
             let externalGhostSite = validatedUrl.protocol === 'https:' ? (await queryExternalGhostSite('https://' + validatedUrl.host)) : null;
 
             // Use the hostname as fallback title
@@ -58,7 +65,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 updatedRecommendation.excerpt = externalGhostSite.site.description ?? formState.excerpt ?? null;
                 updatedRecommendation.featured_image = externalGhostSite.site.cover_image?.toString() ?? formState.featured_image ?? null;
                 updatedRecommendation.favicon = externalGhostSite.site.icon?.toString() ?? externalGhostSite.site.logo?.toString() ?? formState.favicon ?? null;
-                updatedRecommendation.one_click_subscribe = externalGhostSite.site.allow_self_signup;
+                updatedRecommendation.one_click_subscribe = externalGhostSite.site.allow_external_signup;
             } else {
                 // For non-Ghost sites, we use the Oemebd API to fetch metadata
                 const oembed = await queryOembed({
@@ -89,11 +96,6 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 // Check domain includes a dot
                 if (!u.hostname.includes('.')) {
                     newErrors.url = 'Please enter a valid URL.';
-                }
-
-                // Check that it doesn't exist already
-                if (recommendations?.find(r => arePathsEqual(r.url, u.toString()))) {
-                    newErrors.url = 'A recommendation with this URL already exists.';
                 }
             } catch (e) {
                 newErrors.url = 'Please enter a valid URL.';
@@ -133,14 +135,15 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             try {
                 await handleSave({force: true});
             } catch (e) {
+                const message = e instanceof AlreadyExistsError ? e.message : 'Something went wrong while checking this URL, please try again.';
                 showToast({
                     type: 'pageError',
-                    message: 'Something went wrong while checking this URL, please try again.'
+                    message
                 });
             }
         }}
     >
-        <p className="mt-4">This isn’t a closed network. You can recommend any site your audience will find valuable, not just those published on Ghost.</p>
+        <p className="mt-4">You can recommend any site your audience will find valuable, not just those published on Ghost.</p>
         <Form
             marginBottom={false}
             marginTop

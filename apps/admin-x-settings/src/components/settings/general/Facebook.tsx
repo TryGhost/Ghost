@@ -3,10 +3,12 @@ import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
+import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as FacebookLogo} from '../../../admin-x-ds/assets/images/facebook-logo.svg';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -21,6 +23,21 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     } = useSettingGroup();
 
     const {mutateAsync: uploadImage} = useUploadImage();
+    const [pintura] = getSettingValues<boolean>(localSettings, ['pintura']);
+    // const [unsplashEnabled] = getSettingValues<boolean>(localSettings, ['unsplash']);
+    const [pinturaJsUrl] = getSettingValues<string>(localSettings, ['pintura_js_url']);
+    const [pinturaCssUrl] = getSettingValues<string>(localSettings, ['pintura_css_url']);
+    // const [showUnsplash, setShowUnsplash] = useState<boolean>(false);
+
+    const pinturaEnabled = Boolean(pintura) && Boolean(pinturaJsUrl) && Boolean(pinturaCssUrl);
+
+    const editor = usePinturaEditor(
+        {config: {
+            jsUrl: pinturaJsUrl || '',
+            cssUrl: pinturaCssUrl || ''
+        },
+        disabled: !pinturaEnabled}
+    );
 
     const [
         facebookTitle, facebookDescription, facebookImage, siteTitle, siteDescription
@@ -67,6 +84,18 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         height='300px'
                         id='facebook-image'
                         imageURL={facebookImage}
+                        pintura={
+                            {
+                                isEnabled: pinturaEnabled,
+                                openEditor: async () => editor.openEditor({
+                                    image: facebookImage || '',
+                                    handleSave: async (file:File) => {
+                                        const imageUrl = getImageUrl(await uploadImage({file}));
+                                        updateSetting('og_image', imageUrl);
+                                    }
+                                })
+                            }
+                        }
                         onDelete={handleImageDelete}
                         onUpload={handleImageUpload}
                     >
@@ -113,4 +142,4 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Facebook;
+export default withErrorBoundary(Facebook, 'Facebook card');

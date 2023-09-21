@@ -5,11 +5,13 @@ import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import React, {useRef, useState} from 'react';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
+import UnsplashSearchModal from '../../../../utils/unsplash/UnsplashSearchModal';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {SettingValue, getSettingValues} from '../../../../api/settings';
 import {debounce} from '../../../../utils/debounce';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useServices} from '../../../providers/ServiceProvider';
 
 export interface BrandSettingValues {
     description: string
@@ -24,8 +26,11 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
     const [siteDescription, setSiteDescription] = useState(values.description);
     const {settings} = useGlobalData();
     const [pintura] = getSettingValues<boolean>(settings, ['pintura']);
+    const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
     const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
     const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
+    const [showUnsplash, setShowUnsplash] = useState<boolean>(false);
+    const {unsplashConfig} = useServices();
 
     const updateDescriptionDebouncedRef = useRef(
         debounce((value: string) => {
@@ -118,6 +123,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         height='180px'
                         id='cover'
                         imageURL={values.coverImage || ''}
+                        openUnsplash={() => setShowUnsplash(true)}
                         pintura={
                             {
                                 isEnabled: pinturaEnabled,
@@ -129,6 +135,8 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                                 })
                             }
                         }
+                        unsplashButtonClassName='!top-1 !right-1'
+                        unsplashEnabled={true}
                         onDelete={() => updateSetting('cover_image', null)}
                         onUpload={async (file) => {
                             updateSetting('cover_image', getImageUrl(await uploadImage({file})));
@@ -136,6 +144,24 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     >
                     Upload cover
                     </ImageUpload>
+                    {
+                        showUnsplash && unsplashConfig && unsplashEnabled && (
+                            <UnsplashSearchModal
+                                unsplashConf={{
+                                    defaultHeaders: unsplashConfig
+                                }}
+                                onClose={() => {
+                                    setShowUnsplash(false);
+                                }}
+                                onImageInsert={(image) => {
+                                    if (image.src) {
+                                        updateSetting('cover_image', image.src);
+                                    }
+                                    setShowUnsplash(false);
+                                }}
+                            />
+                        )
+                    }
                 </div>
             </SettingGroupContent>
         </div>

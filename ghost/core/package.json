@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.63.0",
+  "version": "5.64.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
-    "@sentry/node": "7.69.0",
+    "@sentry/node": "7.70.0",
     "@tryghost/adapter-base-cache": "0.1.5",
     "@tryghost/adapter-cache-redis": "0.0.0",
     "@tryghost/adapter-manager": "0.0.0",
@@ -108,7 +108,7 @@
     "@tryghost/kg-html-to-lexical": "0.0.8",
     "@tryghost/kg-lexical-html-renderer": "0.3.29",
     "@tryghost/kg-mobiledoc-html-renderer": "6.0.11",
-    "@tryghost/limit-service": "1.2.6",
+    "@tryghost/limit-service": "1.2.10",
     "@tryghost/link-redirects": "0.0.0",
     "@tryghost/link-replacer": "0.0.0",
     "@tryghost/link-tracking": "0.0.0",
@@ -190,7 +190,7 @@
     "glob": "8.1.0",
     "got": "11.8.6",
     "gscan": "4.37.5",
-    "human-number": "2.0.1",
+    "human-number": "2.0.3",
     "image-size": "1.0.2",
     "intl": "1.2.5",
     "intl-messageformat": "5.4.3",
@@ -221,7 +221,7 @@
     "socket.io": "4.7.2",
     "stoppable": "1.1.0",
     "uuid": "9.0.1",
-    "ws": "8.14.1",
+    "ws": "8.14.2",
     "xml": "1.0.1",
     "y-protocols": "1.0.6",
     "yjs": "13.6.8"

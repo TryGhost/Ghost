@@ -13,15 +13,15 @@ const Banner: React.FC<BannerProps> = ({color = 'grey', children, className}) =>
         color === 'grey' && 'text-black',
         color === 'blue' && 'text-blue',
         color === 'green' && 'text-green',
-        color === 'yellow' && 'text-yellow',
+        color === 'yellow' && 'text-yellow-600',
         color === 'red' && 'text-red',
 
-        `before:absolute before:inset-0 before:block before:opacity-10 before:content-['']`,
-        color === 'grey' && 'before:bg-grey-500',
-        color === 'blue' && 'before:bg-blue',
-        color === 'green' && 'before:bg-green',
-        color === 'yellow' && 'before:bg-yellow',
-        color === 'red' && 'before:bg-red',
+        `after:pointer-events-none after:absolute after:inset-0 after:block after:opacity-10 after:content-['']`,
+        color === 'grey' && 'after:bg-grey-500',
+        color === 'blue' && 'after:bg-blue',
+        color === 'green' && 'after:bg-green',
+        color === 'yellow' && 'after:bg-yellow',
+        color === 'red' && 'after:bg-red',
 
         className
     );
