@@ -16,7 +16,7 @@ module.exports = {
                 'locale',
                 'url',
                 'version',
-                'allow_self_signup',
+                'allow_external_signup',
                 'sentry_dsn',
                 'sentry_env'
             ])

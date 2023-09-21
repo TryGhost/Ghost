@@ -19577,10 +19577,10 @@ human-interval@^2.0.0:
   dependencies:
     numbered "^1.1.0"
 
-human-number@2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.1.tgz#bd220c8b13e1eb5617ba42f20ee77c8fd723fe01"
-  integrity sha512-0ibkHNHQXLiI4Exiu9Cm2EhnrBOSEt4kHRxbKhmM41rbjCIlfd35PdNptEbHohnKkqmJt6q+Z9X8A1WcDCeuNg==
+human-number@2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.3.tgz#a46eded1149b637bb386a04cee6a2a199f7c0ee7"
+  integrity sha512-vEoxBaU6VYvS/i8KgMnAxBhNfwXp5olFCFILBeB5m4RNbPMz5MvzjmFy97+NeoOd64GYGTQGpauIWC2Cd72wHQ==
   dependencies:
     round-to "~5.0.0"
 
@@ -29839,10 +29839,10 @@ terser-webpack-plugin@^5.3.7:
     serialize-javascript "^6.0.1"
     terser "^5.16.8"
 
-terser@5.19.4, terser@^5.16.8, terser@^5.3.0:
-  version "5.19.4"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.19.4.tgz#941426fa482bf9b40a0308ab2b3cd0cf7c775ebd"
-  integrity sha512-6p1DjHeuluwxDXcuT9VR8p64klWJKo1ILiy19s6C9+0Bh2+NWTX6nD9EPppiER4ICkHDVB1RkVpin/YW2nQn/g==
+terser@5.20.0, terser@^5.16.8, terser@^5.3.0:
+  version "5.20.0"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.20.0.tgz#ea42aea62578703e33def47d5c5b93c49772423e"
+  integrity sha512-e56ETryaQDyebBwJIWYB2TT6f2EZ0fL0sW/JRXNMN26zZdKi2u/E/5my5lG6jNxym6qsrVXfFRmOdV42zlAgLQ==
   dependencies:
     "@jridgewell/source-map" "^0.3.3"
     acorn "^8.8.2"

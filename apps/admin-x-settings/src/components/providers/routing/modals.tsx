@@ -47,9 +47,10 @@ const modals = {
     ZapierModal,
     AnnouncementBarModal,
     EmbedSignupFormModal
-} satisfies {[key: string]: ModalComponent};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+} satisfies {[key: string]: ModalComponent<any>};
 
 export default modals;
 
 export type ModalName = keyof typeof modals;
-export type ModalComponent = React.FC<NiceModalHocProps & RoutingModalProps>
+export type ModalComponent<Props = object> = React.FC<NiceModalHocProps & RoutingModalProps & Props>;

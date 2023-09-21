@@ -1,13 +1,9 @@
 .kg-collection-card {
     width: 100%;
-    margin-top: 8vmin;
+    margin-top: 6vmin;
 }
 
 .kg-collection-card + * { 
-    margin-top: 8vmin; 
-}
-
-.kg-collection-card + .kg-collection-card { 
     margin-top: 6vmin; 
 }
 
@@ -25,7 +21,7 @@ a.kg-collection-card-post-wrapper {
 
 .kg-collection-card-post {
     display: flex;
-    gap: 3. 2rem;
+    gap: 3.2rem;
 }
 
 .kg-collection-card-img {
