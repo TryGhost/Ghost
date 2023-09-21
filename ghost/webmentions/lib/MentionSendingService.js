@@ -124,7 +124,7 @@ module.exports = class MentionSendingService {
     async sendForHTMLResource(resource) {
         const links = resource.html ? this.getLinks(resource.html) : [];
         if (resource.previousHtml) {
-            // We also need to send webmentions for removed links
+            // Only send for NEW or DELETED links (to avoid spamming when lots of small changes happen to a post)
             const oldLinks = this.getLinks(resource.previousHtml);
             for (const link of oldLinks) {
                 if (!links.find(l => l.href === link.href)) {

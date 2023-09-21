@@ -6,6 +6,7 @@ require('../../core/server/overrides');
 const {mochaHooks} = require('@tryghost/express-test').snapshot;
 exports.mochaHooks = mochaHooks;
 
+const chalk = require('chalk');
 const mockManager = require('./e2e-framework-mock-manager');
 
 const originalBeforeAll = mochaHooks.beforeAll;
@@ -24,12 +25,18 @@ mochaHooks.afterEach = async function () {
     const mentionsJobsService = require('../../core/server/services/mentions-jobs');
     const jobsService = require('../../core/server/services/jobs');
 
+    let timeout = setTimeout(() => {
+        console.error(chalk.yellow('\n[SLOW TEST] It takes longer than 2s to wait for all jobs and events to settle in the afterEach hook\n'));
+    }, 2000);
+
     await domainEvents.allSettled();
     await mentionsJobsService.allSettled();
     await jobsService.allSettled();
 
     // Last time for events emitted during jobs
     await domainEvents.allSettled();
+
+    clearTimeout(timeout);
 
     if (originalAfterEach) {
         await originalAfterEach();

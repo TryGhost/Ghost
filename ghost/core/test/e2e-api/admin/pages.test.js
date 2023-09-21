@@ -65,7 +65,7 @@ describe('Pages API', function () {
 
             const page = {
                 title: 'HTML test',
-                html: '<p>Testing page creation with html</p>'
+                html: '<p>Testing page creation with html<a href="https://ghost.org">Test</a></p>'
             };
 
             await agent
