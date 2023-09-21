@@ -143,7 +143,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             }
         }}
     >
-        <p className="mt-4">This isn’t a closed network. You can recommend any site your audience will find valuable, not just those published on Ghost.</p>
+        <p className="mt-4">You can recommend any site your audience will find valuable, not just those published on Ghost.</p>
         <Form
             marginBottom={false}
             marginTop
