@@ -5,6 +5,7 @@ const {agentProvider, fixtureManager, mockManager, matchers} = require('../../ut
 const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 const escapeRegExp = require('lodash/escapeRegExp');
+const {mobiledocToLexical} = require('@tryghost/kg-converters');
 
 const tierSnapshot = {
     id: anyObjectId,
@@ -109,12 +110,23 @@ describe('Posts API', function () {
 
     before(async function () {
         mockManager.mockLabsEnabled('collections', true);
+        mockManager.mockLabsEnabled('collectionsCard', true);
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();
+
+        // convert inserted pages to lexical so we can test page.html reset/re-render
+        const pages = await models.Post.where('type', 'page').fetchAll();
+        for (const page of pages) {
+            const lexical = mobiledocToLexical(page.get('mobiledoc'));
+            await models.Base.knex.raw('UPDATE posts SET mobiledoc=NULL, lexical=? where id=?', [lexical, page.id]);
+        }
     });
 
-    afterEach(function () {
+    afterEach(async function () {
+        // gives pages some HTML back to alleviate test interdependence when pages are reset on create/update/delete
+        await models.Base.knex.raw('update posts set html = "<p>Testing</p>" where type = \'page\'');
+
         mockManager.restore();
     });
 
@@ -403,6 +415,50 @@ describe('Posts API', function () {
                     'content-length': anyStringNumber
                 });
         });
+
+        it('Clears all page html fields when creating published post', async function () {
+            const totalPageCount = await models.Post.where({type: 'page'}).count();
+            should.exist(totalPageCount, 'total page count');
+
+            // sanity check for pages with no html
+            const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
+            should.exist(sanityCheckEmptyPageCount);
+            sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
+
+            const post = {
+                title: 'Page reset test',
+                lexical: createLexical('Testing page.html reset when creating post'),
+                status: 'published'
+            };
+
+            await agent
+                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
+                .body({posts: [post]})
+                .expectStatus(201);
+
+            // all pages have html cleared
+            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
+            should.exist(emptyPageCount);
+            emptyPageCount.should.equal(totalPageCount, 'post-creation empty page count');
+        });
+
+        it('Does not clear page html fields when creating draft post', async function () {
+            const post = {
+                title: 'Page reset test',
+                lexical: createLexical('Testing page.html reset when creating post'),
+                status: 'draft'
+            };
+
+            await agent
+                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
+                .body({posts: [post]})
+                .expectStatus(201);
+
+            // no pages have html cleared
+            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
+            should.exist(emptyPageCount);
+            emptyPageCount.should.equal(0, 'post-creation empty page count');
+        });
     });
 
     describe('Update', function () {
@@ -583,7 +639,7 @@ describe('Posts API', function () {
                             // collectionToRemove
                             collectionMatcher,
                             // automatic "latest" collection which cannot be removed
-                            buildCollectionMatcher(20)
+                            buildCollectionMatcher(22)
                         ]})]
                 })
                 .matchHeaderSnapshot({
@@ -601,7 +657,7 @@ describe('Posts API', function () {
                             // collectionToAdd
                             collectionMatcher,
                             // automatic "latest" collection which cannot be removed
-                            buildCollectionMatcher(20)
+                            buildCollectionMatcher(22)
                         ]})]
                 })
                 .matchHeaderSnapshot({
@@ -609,6 +665,37 @@ describe('Posts API', function () {
                     etag: anyEtag,
                     'x-cache-invalidate': stringMatching(/\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)
                 });
+        });
+
+        it('Clears all page html fields when publishing a post', async function () {
+            const totalPageCount = await models.Post.where({type: 'page'}).count();
+            should.exist(totalPageCount, 'total page count');
+
+            // sanity check for pages with no html
+            const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
+            should.exist(sanityCheckEmptyPageCount);
+            sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
+
+            const {body: postBody} = await agent
+                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
+                .body({posts: [{
+                    title: 'Page reset test',
+                    lexical: createLexical('Testing page.html reset when updating post'),
+                    status: 'draft'
+                }]})
+                .expectStatus(201);
+
+            const [postResponse] = postBody.posts;
+
+            await agent
+                .put(`/posts/${postResponse.id}/?source=html&formats=mobiledoc,lexical,html`)
+                .body({posts: [Object.assign({}, postResponse, {status: 'published'})]})
+                .expectStatus(200);
+
+            // all pages have html cleared
+            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
+            should.exist(emptyPageCount);
+            emptyPageCount.should.equal(totalPageCount, 'post-update empty page count');
         });
     });
 
@@ -667,6 +754,31 @@ describe('Posts API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot();
+        });
+
+        it('Clears all page html fields when deleting a published post', async function () {
+            const totalPageCount = await models.Post.where({type: 'page'}).count();
+            should.exist(totalPageCount, 'total page count');
+
+            // sanity check for pages with no html
+            const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
+            should.exist(sanityCheckEmptyPageCount);
+            sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
+
+            const {body: postBody} = await agent
+                .get('/posts/?limit=1&filter=status:published')
+                .expectStatus(200);
+
+            const [postResponse] = postBody.posts;
+
+            await agent
+                .delete(`/posts/${postResponse.id}/`)
+                .expectStatus(204);
+
+            // all pages have html cleared
+            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
+            should.exist(emptyPageCount);
+            emptyPageCount.should.equal(totalPageCount, 'post-deletion empty page count');
         });
     });
 
