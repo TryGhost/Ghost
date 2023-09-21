@@ -150,6 +150,28 @@ describe('MentionSendingService', function () {
             assert.equal(firstCall.previousHtml, null);
         });
 
+        it('Sends on unpublish', async function () {
+            const service = new MentionSendingService({
+                isEnabled: () => true,
+                getPostUrl: () => 'https://site.com/post/',
+                jobService: jobService
+            });
+            const stub = sinon.stub(service, 'sendForHTMLResource');
+            await service.sendForPost(createModel({
+                status: 'draft',
+                html: 'same',
+                previous: {
+                    status: 'published',
+                    html: 'same'
+                }
+            }));
+            sinon.assert.calledOnce(stub);
+            const firstCall = stub.getCall(0).args[0];
+            assert.equal(firstCall.url.toString(), 'https://site.com/post/');
+            assert.equal(firstCall.html, null);
+            assert.equal(firstCall.previousHtml, 'same');
+        });
+
         it('Sends on html change', async function () {
             const service = new MentionSendingService({
                 isEnabled: () => true,

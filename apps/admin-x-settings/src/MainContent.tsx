@@ -51,15 +51,15 @@ const MainContent: React.FC = () => {
             {loadingModal && <div className={`fixed inset-0 z-40 h-[100vh] w-[100vw] ${topLevelBackdropClasses}`} />}
 
             {/* Sidebar */}
-            <div className="sticky top-[-42px] z-20 min-w-[260px] grow-0 md:top-[-52px] tablet:fixed tablet:top-[8vmin] tablet:basis-[260px]">
+            <div className="sticky top-[-47px] z-30 min-w-[260px] grow-0 md:top-[-52px] tablet:fixed tablet:top-[8vmin] tablet:basis-[260px]">
                 <div className='-mx-6 h-[84px] bg-white px-6 tablet:m-0 tablet:bg-transparent tablet:p-0'>
                     <Heading>Settings</Heading>
                 </div>
-                <div className="relative mt-[-32px] w-full overflow-x-hidden">
+                <div className="relative mt-[-32px] w-full overflow-x-hidden bg-white dark:bg-black">
                     <Sidebar />
                 </div>
             </div>
-            <div className="relative flex-auto pt-[10vmin] tablet:ml-[300px] tablet:pt-[85px]">
+            <div className="relative flex-auto pt-[10vmin] tablet:ml-[300px] tablet:pt-[94px]">
                 <Settings />
             </div>
         </Page>

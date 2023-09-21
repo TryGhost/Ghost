@@ -6,6 +6,7 @@ import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
+import handleError from '../../../../utils/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as ArrowRightIcon} from '../../../../admin-x-ds/assets/icons/arrow-right.svg';
 import {ReactComponent as Icon} from '../../../../assets/icons/zapier.svg';
@@ -57,9 +58,13 @@ const ZapierModal = NiceModal.create(() => {
             prompt: 'You will need to locate the Ghost App within your Zapier account and click on "Reconnect" to enter the new Admin API Key.',
             okLabel: 'Regenerate Admin API Key',
             onOk: async (confirmModal) => {
-                await refreshAPIKey({integrationId: integration.id, apiKeyId: adminApiKey.id});
-                setRegenerated(true);
-                confirmModal?.remove();
+                try {
+                    await refreshAPIKey({integrationId: integration.id, apiKeyId: adminApiKey.id});
+                    setRegenerated(true);
+                    confirmModal?.remove();
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -109,7 +114,7 @@ const ZapierModal = NiceModal.create(() => {
                 title='Zapier'
             />
 
-            <List className='-mb-8'>
+            <List>
                 {zapierTemplates.map(template => (
                     <ListItem
                         action={<Button className='whitespace-nowrap text-sm font-semibold text-[#FF4A00]' href={template.url} label='Use this Zap' tag='a' target='_blank' link unstyled />}

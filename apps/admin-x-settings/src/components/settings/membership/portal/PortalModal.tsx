@@ -6,14 +6,14 @@ import PortalPreview from './PortalPreview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './SignupOptions';
 import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
+import handleError from '../../../../utils/handleError';
 import useForm, {Dirtyable} from '../../../../hooks/useForm';
 import useQueryParams from '../../../../hooks/useQueryParams';
 import useRouting from '../../../../hooks/useRouting';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
-import {Setting, SettingValue, useEditSettings} from '../../../../api/settings';
+import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../../api/settings';
 import {Tier, getPaidActiveTiers, useBrowseTiers, useEditTier} from '../../../../api/tiers';
 import {fullEmailAddress} from '../../../../api/site';
-import {getSettingValues} from '../../../../api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {verifyEmailToken} from '../../../../api/emailVerification';
 
@@ -106,6 +106,7 @@ const PortalModal: React.FC = () => {
                     cancelLabel: '',
                     onOk: confirmModal => confirmModal?.remove()
                 });
+                handleError(e, {withToast: false});
             }
         };
         if (verifyEmail) {
@@ -139,7 +140,9 @@ const PortalModal: React.FC = () => {
                     onOk: confirmModal => confirmModal?.remove()
                 });
             }
-        }
+        },
+
+        onSaveError: handleError
     });
 
     const [errors, setErrors] = useState<Record<string, string | undefined>>({});

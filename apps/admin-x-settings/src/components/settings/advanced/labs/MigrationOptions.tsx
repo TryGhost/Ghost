@@ -5,6 +5,7 @@ import LabItem from './LabItem';
 import List from '../../../../admin-x-ds/global/List';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
+import handleError from '../../../../utils/handleError';
 import {downloadAllContent, useDeleteAllContent, useImportContent} from '../../../../api/db';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {useQueryClient} from '@tanstack/react-query';
@@ -18,16 +19,22 @@ const ImportModalContent = () => {
         id="import-file"
         onUpload={async (file) => {
             setUploading(true);
-            await importContent(file);
-            modal.remove();
-            NiceModal.show(ConfirmationModal, {
-                title: 'Import in progress',
-                prompt: `Your import is being processed, and you'll receive a confirmation email as soon as it's complete. Usually this only takes a few minutes, but larger imports may take longer.`,
-                cancelLabel: '',
-                okLabel: 'Got it',
-                onOk: confirmModal => confirmModal?.remove(),
-                formSheet: false
-            });
+            try {
+                await importContent(file);
+                modal.remove();
+                NiceModal.show(ConfirmationModal, {
+                    title: 'Import in progress',
+                    prompt: `Your import is being processed, and you'll receive a confirmation email as soon as it's complete. Usually this only takes a few minutes, but larger imports may take longer.`,
+                    cancelLabel: '',
+                    okLabel: 'Got it',
+                    onOk: confirmModal => confirmModal?.remove(),
+                    formSheet: false
+                });
+            } catch (e) {
+                handleError(e);
+            } finally {
+                setUploading(false);
+            }
         }}
     >
         <div className="cursor-pointer bg-grey-75 p-10 text-center dark:bg-grey-950">
@@ -56,12 +63,16 @@ const MigrationOptions: React.FC = () => {
             okColor: 'red',
             okLabel: 'Delete',
             onOk: async () => {
-                await deleteAllContent(null);
-                showToast({
-                    type: 'success',
-                    message: 'All content deleted from database.'
-                });
-                await client.refetchQueries();
+                try {
+                    await deleteAllContent(null);
+                    showToast({
+                        type: 'success',
+                        message: 'All content deleted from database.'
+                    });
+                    await client.refetchQueries();
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };

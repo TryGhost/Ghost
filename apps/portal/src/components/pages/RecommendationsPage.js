@@ -21,7 +21,7 @@ export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
     }
 
@@ -48,8 +48,10 @@ export const RecommendationsPageStyles = `
 
     .gh-portal-recommendation-item .gh-portal-recommendation-description-container p {
         font-size: 1.35rem;
-        padding-left: 28px;
-        font-weight: 300;
+        padding-left: 30px;
+        font-weight: 400;
+        letter-spacing: 0.1px;
+        margin-top: 4px;
     }
 
     .gh-portal-recommendation-description-hidden {
@@ -81,23 +83,28 @@ export const RecommendationsPageStyles = `
     opacity: 0.8;
     }
 
+    .gh-portal-recommendation-item .gh-portal-btn-list {
+        height: 28px;
+    }
+
     .gh-portal-recommendation-subscribed {
         display: flex;
+        padding-left: 30px;
         align-items: center;
-        gap: 6px;
-        font-size: 1.5rem;
-        letter-spacing: 0.3px;
+        gap: 4px;
+        font-size: 1.35rem;
+        font-weight: 400;
+        letter-spacing: 0.1px;
         line-height: 1.3em;
         animation: 0.5s ease-in-out fadeIn;
     }
 
     .gh-portal-recommendation-subscribed.with-reason {
         position: absolute;
-        margin-top: 5px;
     }
 
     .gh-portal-recommendation-subscribed.without-reason {
-        margin-top: 10px;
+        margin-top: 5px;
     }
 
     .gh-portal-recommendation-subscribed span {
@@ -105,13 +112,19 @@ export const RecommendationsPageStyles = `
     }
 
     .gh-portal-recommendation-checkmark-icon {
-        height: 20px;
+        height: 16px;
+        width: 16px;
+        padding: 0 2px;
         color: #30cf43;
     }
 
     .gh-portal-recommendation-item .gh-portal-loadingicon {
         position: relative !important;
         height: 24px;
+    }
+
+    .gh-portal-recommendation-item-action {
+        min-height: 28px;
     }
 `;
 
@@ -237,11 +250,11 @@ const RecommendationItem = (recommendation) => {
                     <ArrowIcon className="gh-portal-recommendation-arrow-icon" />
                 </div>
                 <div className="gh-portal-recommendation-description-container">
-                    {subscribed && <div className={'gh-portal-recommendation-subscribed ' + (reason ? 'with-reason' : 'without-reason')}><CheckmarkIcon className="gh-portal-recommendation-checkmark-icon" alt=''/><span>{t('Verification link sent, check your inbox')}</span></div>}
+                    {subscribed && <div className={'gh-portal-recommendation-subscribed ' + (reason ? 'with-reason' : 'without-reason')}><span>{t('Verification link sent, check your inbox')}</span><CheckmarkIcon className="gh-portal-recommendation-checkmark-icon" alt=''/></div>}
                     {reason && <p className={subscribed ? 'gh-portal-recommendation-description-hidden' : ''}>{reason}</p>}
                 </div>
             </div>
-            <div>
+            <div className="gh-portal-recommendation-item-action">
                 {!subscribed && loading && <span className='gh-portal-recommendations-loading-container'><LoaderIcon className={'gh-portal-loadingicon dark'} /></span>}
                 {!subscribed && !loading && allowOneClickSubscribe && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{t('Subscribe')}</button>}
             </div>

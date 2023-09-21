@@ -7,6 +7,7 @@ import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import clsx from 'clsx';
+import handleError from '../../../utils/handleError';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import {User, hasAdminAccess, isContributorUser, isEditorUser} from '../../../api/users';
@@ -14,6 +15,7 @@ import {UserInvite, useAddInvite, useDeleteInvite} from '../../../api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 interface OwnerProps {
     user: User;
@@ -126,13 +128,18 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                 label={revokeActionLabel}
                 link={true}
                 onClick={async () => {
-                    setRevokeState('progress');
-                    await deleteInvite(invite.id);
-                    setRevokeState('');
-                    showToast({
-                        message: `Invitation revoked (${invite.email})`,
-                        type: 'success'
-                    });
+                    try {
+                        setRevokeState('progress');
+                        await deleteInvite(invite.id);
+                        showToast({
+                            message: `Invitation revoked (${invite.email})`,
+                            type: 'success'
+                        });
+                    } catch (e) {
+                        handleError(e);
+                    } finally {
+                        setRevokeState('');
+                    }
                 }}
             />
             <Button
@@ -141,17 +148,22 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                 label={resendActionLabel}
                 link={true}
                 onClick={async () => {
-                    setResendState('progress');
-                    await deleteInvite(invite.id);
-                    await addInvite({
-                        email: invite.email,
-                        roleId: invite.role_id
-                    });
-                    setResendState('');
-                    showToast({
-                        message: `Invitation resent! (${invite.email})`,
-                        type: 'success'
-                    });
+                    try {
+                        setResendState('progress');
+                        await deleteInvite(invite.id);
+                        await addInvite({
+                            email: invite.email,
+                            roleId: invite.role_id
+                        });
+                        showToast({
+                            message: `Invitation resent! (${invite.email})`,
+                            type: 'success'
+                        });
+                    } catch (e) {
+                        handleError(e);
+                    } finally {
+                        setResendState('');
+                    }
                 }}
             />
         </div>
@@ -258,4 +270,4 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
     );
 };
 
-export default Users;
+export default withErrorBoundary(Users, 'Staff');
