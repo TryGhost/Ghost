@@ -28,7 +28,7 @@ module.exports = {
                 // run every 5 minutes, on 1,6,11..., 2,7,12..., 3,8,13..., etc
                 const m = Math.floor(Math.random() * 5); // 0-4
 
-                jobsService.addJob({
+                await jobsService.addJob({
                     at: `${s} ${m}/5 * * * *`,
                     job: path.resolve(__dirname, 'fetch-latest/index.js'),
                     name: 'email-analytics-fetch-latest'

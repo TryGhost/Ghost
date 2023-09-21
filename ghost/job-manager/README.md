@@ -11,21 +11,21 @@ const JobManager = require('@tryghost/job-manager');
 const jobManager = new JobManager({JobModel: models.Job});
 
 // register a job "function" with queued execution in current event loop
-jobManager.addJob({
+await jobManager.addJob({
     job: printWord(word) => console.log(word),
     name: 'hello',
     offloaded: false
 });
 
 // register a job "module" with queued execution in current even loop
-jobManager.addJob({
+await jobManager.addJob({
     job:'./path/to/email-module.js',
     data: {email: 'send@here.com'},
     offloaded: false
 });
 
 // register recurring job which needs execution outside of current event loop
-jobManager.addJob({
+await jobManager.addJob({
     at: 'every 5 minutes',
     job: './path/to/jobs/check-emails.js',
     name: 'email-checker'
@@ -34,14 +34,14 @@ jobManager.addJob({
 // register recurring job with cron syntax running every 5 minutes
 // job needs execution outside of current event loop
 // for cron builder check https://crontab.guru/ (first value is seconds)
-jobManager.addJob({
+await jobManager.addJob({
     at: '0 1/5 * * * *',
     job: './path/to/jobs/check-emails.js',
     name: 'email-checker-cron'
 });
 
 // register a job to run immediately running outside of current even loop
-jobManager.addJob({
+await jobManager.addJob({
     job: './path/to/jobs/check-emails.js',
     name: 'email-checker-now'
 });

@@ -6,15 +6,15 @@ const JobManager = require('../../lib/job-manager');
 const jobManager = new JobManager(console);
 
 const isJobQueueEmpty = (bree) => {
-    return (Object.keys(bree.workers).length === 0)
-        && (Object.keys(bree.intervals).length === 0)
-        && (Object.keys(bree.timeouts).length === 0);
+    return bree.workers.size === 0
+        && bree.intervals.size === 0
+        && bree.timeouts.size === 0;
 };
 
 (async () => {
     const dateInTenSeconds = addSeconds(new Date(), 10);
 
-    jobManager.addJob({
+    await jobManager.addJob({
         at: dateInTenSeconds,
         job: path.resolve(__dirname, '../jobs/timed-job.js'),
         data: {

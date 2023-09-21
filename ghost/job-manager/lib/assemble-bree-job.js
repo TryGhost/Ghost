@@ -1,14 +1,17 @@
 const isCronExpression = require('./is-cron-expression');
 
+/** @typedef {import('bree').JobOptions} JobOptions */
+
 /**
  * Creates job Object compatible with bree job definition (https://github.com/breejs/bree#job-options)
  *
+ * @param {()=>void|String} job - function or path to a module defining a job
  * @param {String | Date} [at] - Date, cron or human readable schedule format
- * @param {Function|String} job - function or path to a module defining a job
  * @param {Object} [data] - data to be passed into the job
  * @param {String} [name] - job name
+ * @returns {JobOptions} bree job definition
  */
-const assemble = (at, job, data, name) => {
+const assemble = (job, at, data, name) => {
     const breeJob = {
         name: name,
         // NOTE: both function and path syntaxes work with 'path' parameter

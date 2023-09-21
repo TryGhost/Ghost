@@ -11,13 +11,13 @@ const ghostVersion = require('@tryghost/version');
 const UpdateCheckService = require('@tryghost/update-check-service');
 
 /**
- * Initializes and triggers update check
- * @param {Object} [options]
- * @param {Boolean} [options.rethrowErrors] - if true, errors will be thrown instead of logged
- * @param {Boolean} [options.forceUpdate] - if true, the update check will be triggered regardless of the environment or scheudle, defaults to config if no value provided
- * @param {String} [options.updateCheckUrl] - the url to check for updates against, defaults to config if no value provided
- * @returns {Promise<any>}
- */
+* Initializes and triggers update check
+* @param {Object} [options]
+* @param {Boolean} [options.rethrowErrors] - if true, errors will be thrown instead of logged
+* @param {Boolean} [options.forceUpdate] - if true, the update check will be triggered regardless of the environment or scheudle, defaults to config if no value provided
+* @param {String} [options.updateCheckUrl] - the url to check for updates against, defaults to config if no value provided
+* @returns {Promise<any>}
+*/
 module.exports = async ({
     rethrowErrors = false,
     forceUpdate = config.get('updateCheck:forceUpdate'),
@@ -70,14 +70,14 @@ module.exports = async ({
     await updateChecker.check();
 };
 
-module.exports.scheduleRecurringJobs = () => {
+module.exports.scheduleRecurringJobs = async () => {
     // use a random seconds/minutes/hours value to avoid spikes to the update service API
     const s = Math.floor(Math.random() * 60); // 0-59
     const m = Math.floor(Math.random() * 60); // 0-59
     const h = Math.floor(Math.random() * 24); // 0-23
 
-    jobsService.addJob({
-        at: `${s} ${m} ${h} * * *`, // Every day
+    await jobsService.addJob({
+        at: `${s} * * * * *`, // Every day
         job: require('path').resolve(__dirname, 'run-update-check.js'),
         name: 'update-check'
     });

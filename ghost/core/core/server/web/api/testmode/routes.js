@@ -21,14 +21,14 @@ module.exports = function testRoutes() {
             res.sendStatus(200);
         }, timeout);
     });
-    router.get('/job/:timeout', (req, res) => {
+    router.get('/job/:timeout', async (req, res) => {
         if (!req.params || !req.params.timeout) {
             return res.sendStatus(200);
         }
 
         const timeout = req.params.timeout * 1000;
         logging.info('Create Slow Job with timeout of', timeout);
-        jobsService.addJob({
+        await jobsService.addJob({
             job: () => {
                 return new Promise((resolve) => {
                     logging.info('Start Slow Job');
@@ -69,13 +69,13 @@ module.exports = function testRoutes() {
 
         if (req.params.name) {
             const jobPath = path.resolve(__dirname, 'jobs', `${req.params.name}.js`);
-            jobsService.addJob({
+            await jobManager.addJob({
                 at: schedule,
                 job: jobPath,
                 name: jobName
             });
         } else {
-            jobsService.addJob({
+            await jobManager.addJob({
                 at: schedule,
                 job: () => {
                     return new Promise((resolve) => {

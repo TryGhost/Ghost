@@ -156,7 +156,7 @@ module.exports = {
         const m = Math.floor(Math.random() * 60); // 0-59
 
         // Schedules a job every hour at a random minute and second to send the latest report
-        mentionsJobs.addJob({
+        await mentionsJobs.addJob({
             name: 'mentions-email-report',
             job: require('path').resolve(__dirname, './job.js'),
             at: `${s} ${m} * * * *`

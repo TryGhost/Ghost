@@ -67,7 +67,7 @@ module.exports = {
             api,
             jobService: {
                 async addJob(name, fn) {
-                    jobsService.addJob({
+                    await jobsService.addJob({
                         name,
                         job: fn,
                         offloaded: false
@@ -101,7 +101,7 @@ module.exports = {
             isEnabled: () => !settingsCache.get('is_private'),
             jobService: {
                 async addJob(name, fn) {
-                    jobsService.addJob({
+                    await jobsService.addJob({
                         name,
                         job: fn,
                         offloaded: false

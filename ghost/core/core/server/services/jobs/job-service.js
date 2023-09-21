@@ -26,17 +26,17 @@ const initTestMode = () => {
     setInterval(() => {
         logging.warn(`${jobManager.queue.length()} jobs in the queue. Idle: ${jobManager.queue.idle()}`);
 
-        const runningScheduledjobs = Object.keys(jobManager.bree.workers);
-        if (Object.keys(jobManager.bree.workers).length) {
-            logging.warn(`${Object.keys(jobManager.bree.workers).length} jobs running: ${runningScheduledjobs}`);
+        const runningScheduledjobs = jobManager.bree.workers.keys();
+        if (jobManager.bree.workers.size) {
+            logging.warn(`${jobManager.bree.workers.size} jobs running: ${[...runningScheduledjobs]}`);
         }
 
-        const scheduledJobs = Object.keys(jobManager.bree.intervals);
-        if (Object.keys(jobManager.bree.intervals).length) {
-            logging.warn(`${Object.keys(jobManager.bree.intervals).length} scheduled jobs: ${scheduledJobs}`);
+        const scheduledJobs = jobManager.bree.intervals.keys();
+        if (jobManager.bree.intervals.size) {
+            logging.warn(`${jobManager.bree.intervals.size} scheduled jobs: ${[...scheduledJobs]}`);
         }
 
-        if (runningScheduledjobs.length === 0 && scheduledJobs.length === 0) {
+        if (jobManager.bree.workers.size === 0 && jobManager.bree.intervals.size === 0) {
             logging.warn('No scheduled or running jobs');
         }
     }, 5000);

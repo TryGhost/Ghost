@@ -410,7 +410,7 @@ async function initBackgroundServices({config}) {
     }
 
     const updateCheck = require('./server/update-check');
-    updateCheck.scheduleRecurringJobs();
+    await updateCheck.scheduleRecurringJobs();
 
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();

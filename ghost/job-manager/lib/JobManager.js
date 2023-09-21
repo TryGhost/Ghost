@@ -190,7 +190,7 @@ class JobManager {
      * @prop {Object} [GhostJob.data] - data to be passed into the job
      * @prop {Boolean} [GhostJob.offloaded] - creates an "offloaded" job running in a worker thread by default. If set to "false" runs an "inline" job on the same event loop
      */
-    addJob({name, at, job, data, offloaded = true}) {
+    async addJob({name, at, job, data, offloaded = true}) {
         if (offloaded) {
             logging.info('Adding offloaded job to the queue');
             let schedule;
@@ -225,9 +225,9 @@ class JobManager {
                 logging.info(`Scheduling job ${name} to run immediately`);
             }
 
-            const breeJob = assembleBreeJob(at, job, data, name);
-            this.bree.add(breeJob);
-            return this.bree.start(name);
+            const breeJob = assembleBreeJob(job, at, data, name);
+            await this.bree.add(breeJob);
+            return await this.bree.start(name);
         } else {
             logging.info(`Adding one-off job to queue with current length = ${this.queue.length()} called '${name || 'anonymous'}'`);
 
@@ -301,7 +301,7 @@ class JobManager {
         //       For example, it failed and the process was restarted.
         //       If we want to be able to restart within the same instance,
         //       we'd need to handle job restart/removal in Bree first
-        this.addJob({name, job, data, offloaded});
+        await this.addJob({name, job, data, offloaded});
     }
 
     /**
