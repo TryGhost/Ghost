@@ -19,6 +19,7 @@ import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
+import handleError from '../../../../utils/handleError';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
@@ -84,12 +85,16 @@ const Sidebar: React.FC<{
                 okLabel: 'Archive',
                 okColor: 'red',
                 onOk: async (modal) => {
-                    await editNewsletter({...newsletter, status: 'archived'});
-                    modal?.remove();
-                    showToast({
-                        type: 'success',
-                        message: 'Newsletter archived successfully'
-                    });
+                    try {
+                        await editNewsletter({...newsletter, status: 'archived'});
+                        modal?.remove();
+                        showToast({
+                            type: 'success',
+                            message: 'Newsletter archived successfully'
+                        });
+                    } catch (e) {
+                        handleError(e);
+                    }
                 }
             });
         } else {
@@ -212,8 +217,12 @@ const Sidebar: React.FC<{
                                     updateNewsletter({header_image: null});
                                 }}
                                 onUpload={async (file) => {
-                                    const imageUrl = getImageUrl(await uploadImage({file}));
-                                    updateNewsletter({header_image: imageUrl});
+                                    try {
+                                        const imageUrl = getImageUrl(await uploadImage({file}));
+                                        updateNewsletter({header_image: imageUrl});
+                                    } catch (e) {
+                                        handleError(e);
+                                    }
                                 }}
                             >
                                 <Icon colorClass='text-grey-700 dark:text-grey-300' name='picture' />
@@ -447,6 +456,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
                 modal.remove();
             }
         },
+        onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
 

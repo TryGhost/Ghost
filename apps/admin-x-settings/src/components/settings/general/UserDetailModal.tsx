@@ -15,6 +15,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import clsx from 'clsx';
+import handleError from '../../../utils/handleError';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
@@ -278,9 +279,13 @@ const StaffToken: React.FC<UserDetailProps> = () => {
             okLabel: 'Regenerate your Staff Access Token',
             okColor: 'red',
             onOk: async (modal) => {
-                const newAPI = await newApiKey([]);
-                setToken(newAPI?.apiKey?.secret || '');
-                modal?.remove();
+                try {
+                    const newAPI = await newApiKey([]);
+                    setToken(newAPI?.apiKey?.secret || '');
+                    modal?.remove();
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -395,13 +400,17 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     ..._user,
                     status: _user.status === 'inactive' ? 'active' : 'inactive'
                 };
-                await updateUser(updatedUserData);
-                setUserData(updatedUserData);
-                modal?.remove();
-                showToast({
-                    message: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
-                    type: 'success'
-                });
+                try {
+                    await updateUser(updatedUserData);
+                    setUserData(updatedUserData);
+                    modal?.remove();
+                    showToast({
+                        message: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
+                        type: 'success'
+                    });
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -418,13 +427,17 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             okLabel: 'Delete user',
             okColor: 'red',
             onOk: async (modal) => {
-                await deleteUser(_user?.id);
-                modal?.remove();
-                mainModal?.remove();
-                showToast({
-                    message: 'User deleted',
-                    type: 'success'
-                });
+                try {
+                    await deleteUser(_user?.id);
+                    modal?.remove();
+                    mainModal?.remove();
+                    showToast({
+                        message: 'User deleted',
+                        type: 'success'
+                    });
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -436,12 +449,16 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             okLabel: 'Yep — I\'m sure',
             okColor: 'red',
             onOk: async (modal) => {
-                await makeOwner(user.id);
-                modal?.remove();
-                showToast({
-                    message: 'Ownership transferred',
-                    type: 'success'
-                });
+                try {
+                    await makeOwner(user.id);
+                    modal?.remove();
+                    showToast({
+                        message: 'Ownership transferred',
+                        type: 'success'
+                    });
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -462,8 +479,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 });
                 break;
             }
-        } catch (err) {
-            // TODO: handle error
+        } catch (e) {
+            handleError(e);
         }
     };
 

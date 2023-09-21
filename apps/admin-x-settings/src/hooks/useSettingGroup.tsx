@@ -1,4 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
+import handleError from '../utils/handleError';
 import useForm, {ErrorMessages, SaveState} from './useForm';
 import useGlobalDirtyState from './useGlobalDirtyState';
 import {Setting, SettingValue, useEditSettings} from '../api/settings';
@@ -40,6 +41,7 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}):
         onSave: async () => {
             await editSettings?.(changedSettings());
         },
+        onSaveError: handleError,
         onValidate
     });
 

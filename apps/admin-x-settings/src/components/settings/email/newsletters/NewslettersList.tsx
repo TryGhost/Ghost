@@ -13,52 +13,7 @@ interface NewslettersListProps {
 }
 
 const NewsletterItem: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
-    // const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
-    // const limiter = useLimiter();
-    // const action = newsletter.status === 'active' ? (
-    //     <Button color='red' disabled={onlyOne} label='Archive' link onClick={() => {
-    //         NiceModal.show(ConfirmationModal, {
-    //             title: 'Archive newsletter',
-    //             prompt: <>
-    //                 <p>Your newsletter <strong>{newsletter.name}</strong> will no longer be visible to members or available as an option when publishing new posts.</p>
-    //                 <p>Existing posts previously sent as this newsletter will remain unchanged.</p>
-    //             </>,
-    //             okLabel: 'Archive',
-    //             onOk: async (modal) => {
-    //                 await editNewsletter({...newsletter, status: 'archived'});
-    //                 modal?.remove();
-    //             }
-    //         });
-    //     }} />
-    // ) : (
-    //     <Button color='green' label='Activate' link onClick={async () => {
-    //         try {
-    //             await limiter?.errorIfWouldGoOverLimit('newsletters');
-    //         } catch (error) {
-    //             if (error instanceof HostLimitError) {
-    //                 NiceModal.show(LimitModal, {
-    //                     prompt: error.message || `Your current plan doesn't support more newsletters.`
-    //                 });
-    //                 return;
-    //             } else {
-    //                 throw error;
-    //             }
-    //         }
-
-    //         NiceModal.show(ConfirmationModal, {
-    //             title: 'Reactivate newsletter',
-    //             prompt: <>
-    //                 Reactivating <strong>{newsletter.name}</strong> will immediately make it visible to members and re-enable it as an option when publishing new posts.
-    //             </>,
-    //             okLabel: 'Reactivate',
-    //             onOk: async (modal) => {
-    //                 await editNewsletter({...newsletter, status: 'active'});
-    //                 modal?.remove();
-    //             }
-    //         });
-    //     }} />
-    // );
 
     const showDetails = () => {
         updateRoute({route: `newsletters/show/${newsletter.id}`});

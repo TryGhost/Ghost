@@ -6,6 +6,7 @@ import React, {useRef, useState} from 'react';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import UnsplashSearchModal from '../../../../utils/unsplash/UnsplashSearchModal';
+import handleError from '../../../../utils/handleError';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {SettingValue, getSettingValues} from '../../../../api/settings';
 import {debounce} from '../../../../utils/debounce';
@@ -91,7 +92,11 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                             width={values.icon ? '66px' : '150px'}
                             onDelete={() => updateSetting('icon', null)}
                             onUpload={async (file) => {
-                                updateSetting('icon', getImageUrl(await uploadImage({file})));
+                                try {
+                                    updateSetting('icon', getImageUrl(await uploadImage({file})));
+                                } catch (e) {
+                                    handleError(e);
+                                }
                             }}
                         >
                         Upload icon
@@ -109,7 +114,11 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         imageURL={values.logo || ''}
                         onDelete={() => updateSetting('logo', null)}
                         onUpload={async (file) => {
-                            updateSetting('logo', getImageUrl(await uploadImage({file})));
+                            try {
+                                updateSetting('logo', getImageUrl(await uploadImage({file})));
+                            } catch (e) {
+                                handleError(e);
+                            }
                         }}
                     >
                     Upload logo
@@ -130,7 +139,11 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                                 openEditor: async () => editor.openEditor({
                                     image: values.coverImage || '',
                                     handleSave: async (file:File) => {
-                                        updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                        try {
+                                            updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                        } catch (e) {
+                                            handleError(e);
+                                        }
                                     }
                                 })
                             }
@@ -139,7 +152,11 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         unsplashEnabled={true}
                         onDelete={() => updateSetting('cover_image', null)}
                         onUpload={async (file) => {
-                            updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                            try {
+                                updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                            } catch (e) {
+                                handleError(e);
+                            }
                         }}
                     >
                     Upload cover

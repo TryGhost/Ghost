@@ -4,6 +4,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
+import handleError from '../../../../utils/handleError';
 import toast from 'react-hot-toast';
 import useForm from '../../../../hooks/useForm';
 import validator from 'validator';
@@ -30,6 +31,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                 await createWebhook({...formState, integration_id: integrationId});
             }
         },
+        onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
 

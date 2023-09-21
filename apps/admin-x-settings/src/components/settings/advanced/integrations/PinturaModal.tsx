@@ -4,6 +4,7 @@ import IntegrationHeader from './IntegrationHeader';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import handleError from '../../../../utils/handleError';
 import pinturaScreenshot from '../../../../assets/images/pintura-screenshot.png';
 import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as Icon} from '../../../../assets/icons/pintura.svg';
@@ -68,10 +69,7 @@ const PinturaModal = NiceModal.create(() => {
             });
         } catch (e) {
             setUploadingState({js: false, css: false});
-            showToast({
-                type: 'pageError',
-                message: `Can't upload Pintura ${form}!`
-            });
+            handleError(e);
         }
     };
 
