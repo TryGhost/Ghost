@@ -4,6 +4,11 @@ class PostsRepository {
         this.moment = moment;
     }
 
+    async getAllIds() {
+        const rows = await this.models.Post.query().select('id').where('type', 'post');
+
+        return rows.map(row => row.id);
+    }
     async getAll({filter, transaction}) {
         const {data: models} = await this.models.Post.findPage({
             filter: `(${filter})+type:post`,
