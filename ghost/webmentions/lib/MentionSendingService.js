@@ -63,7 +63,7 @@ module.exports = class MentionSendingService {
                 return;
             }
             // make sure we have something to parse before we create a job
-            let html = post.get('html');
+            let html = post.get('status') === 'published' ? post.get('html') : null;
             let previousHtml = post.previous('status') === 'published' ? post.previous('html') : null;
             if (html || previousHtml) {
                 await this.#jobService.addJob('sendWebmentions', async () => {
