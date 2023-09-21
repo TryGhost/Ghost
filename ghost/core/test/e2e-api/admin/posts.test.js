@@ -119,7 +119,7 @@ describe('Posts API', function () {
         const pages = await models.Post.where('type', 'page').fetchAll();
         for (const page of pages) {
             const lexical = mobiledocToLexical(page.get('mobiledoc'));
-            await page.save({mobiledoc: null, lexical}, {patch: true});
+            await models.Base.knex.raw('UPDATE posts SET mobiledoc=NULL, lexical=? where id=?', [lexical, page.id]);
         }
     });
 

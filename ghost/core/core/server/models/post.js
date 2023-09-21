@@ -386,7 +386,8 @@ Post = ghostBookshelf.Model.extend({
     },
 
     renderIfNeeded: async function renderIfNeeded(model, options = {}) {
-        // pages are rendered after saving so data can be fetched outside of a transaction
+        // pages can have their html cleared to "queue" a re-render to update dynamic data such
+        // as collection cards. Detect that and re-render here so the page is always up to date
         if (model.get('lexical') !== null && model.get('html') === null) {
             const html = await lexicalLib.render(model.get('lexical'));
             const plaintext = htmlToPlaintext.excerpt(html);

@@ -46,7 +46,7 @@ describe('Pages API', function () {
             const page = await models.Post.findOne({slug: 'static-page-test'});
             // NOTE: re-rendering only occurs for lexical pages
             const lexical = mobiledocToLexical(page.get('mobiledoc'));
-            await page.save({mobiledoc: null, lexical: lexical, html: null}, {patch: true});
+            await models.Base.knex.raw('UPDATE posts set html=NULL, mobiledoc=NULL, lexical=? WHERE id=?', [lexical, page.id]);
 
             await agent
                 .get(`/pages/${page.id}/?formats=mobiledoc,lexical,html`)
@@ -66,7 +66,7 @@ describe('Pages API', function () {
                     continue;
                 }
                 const lexical = mobiledocToLexical(page.get('mobiledoc'));
-                await page.save({mobiledoc: null, lexical, html: null}, {patch: true});
+                await models.Base.knex.raw('UPDATE posts set html=NULL, mobiledoc=NULL, lexical=? WHERE id=?', [lexical, page.id]);
             }
 
             await agent
