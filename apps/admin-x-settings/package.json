@@ -56,6 +56,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.38.0",
+    "@sentry/vite-plugin": "^2.7.1",
     "@storybook/addon-essentials": "7.4.0",
     "@storybook/addon-interactions": "7.4.0",
     "@storybook/addon-links": "7.4.0",

@@ -5,6 +5,7 @@ import svgr from 'vite-plugin-svgr';
 import {PluginOption} from 'vite';
 import {defineConfig} from 'vitest/config';
 import {resolve} from 'path';
+import {sentryVitePlugin} from '@sentry/vite-plugin';
 
 const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
@@ -43,7 +44,17 @@ export default (function viteConfig() {
                     'react-dom': 'ReactDOM'
                 }
             }),
-            cssInjectedByJsPlugin()
+            cssInjectedByJsPlugin(),
+            sentryVitePlugin({
+                org: 'ghost-foundation',
+                project: 'admin',
+                // Auth tokens can be obtained from https://sentry.io/orgredirect/organizations/:orgslug/settings/auth-tokens/
+                authToken: process.env.VITE_SENTRY_AUTH_TOKEN,
+                release: {
+                    inject: false
+                },
+                telemetry: false
+            })
         ],
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
