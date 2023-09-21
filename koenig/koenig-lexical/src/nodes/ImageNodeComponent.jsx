@@ -13,6 +13,7 @@ import {LinkInput} from '../components/ui/LinkInput';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {dataSrcToFile} from '../utils/dataSrcToFile.js';
+import {getImageFilenameFromSrc} from '../utils/getImageFilenameFromSrc';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
 import {isGif} from '../utils/isGif';
 import {openFileSelection} from '../utils/openFileSelection';
@@ -46,7 +47,12 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                 const droppedImageNode = $getNodeByKey(draggedNodeKey);
                 const galleryNode = $createGalleryNode();
 
-                galleryNode.addImages([targetImageNode.getDataset(), dataset]);
+                // images don't contain the filename dataset property so we need to add it
+                dataset.fileName = dataset?.fileName || getImageFilenameFromSrc(dataset.src);
+                const targetImageDataset = targetImageNode.getDataset();
+                targetImageDataset.fileName = targetImageDataset?.fileName || getImageFilenameFromSrc(targetImageDataset.src);
+
+                galleryNode.addImages([targetImageDataset, dataset]);
 
                 targetImageNode.replace(galleryNode);
                 droppedImageNode.remove();
