@@ -1,7 +1,7 @@
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React from 'react';
 import RecommendationIcon from './RecommendationIcon';
-import Table from '../../../../admin-x-ds/global/Table';
+import Table, {ShowMoreData} from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 // import TableHead from '../../../../admin-x-ds/global/TableHead';
 import EditRecommendationModal from './EditRecommendationModal';
@@ -13,7 +13,8 @@ import {Recommendation} from '../../../../api/recommendations';
 
 interface RecommendationListProps {
     recommendations: Recommendation[],
-    pagination: PaginationData,
+    pagination?: PaginationData,
+    showMore?: ShowMoreData,
     isLoading: boolean
 }
 
@@ -64,9 +65,9 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
 // TODO: Remove if we decide we don't need headers
 // const tableHeader = (<><TableHead>Site</TableHead><TableHead>Conversions from you</TableHead></>);
 
-const RecommendationList: React.FC<RecommendationListProps> = ({recommendations, pagination, isLoading}) => {
+const RecommendationList: React.FC<RecommendationListProps> = ({recommendations, pagination, showMore, isLoading}) => {
     if (isLoading || recommendations.length) {
-        return <Table hint={<span>Shown randomized to your readers</span>} isLoading={isLoading} pagination={pagination} hintSeparator>
+        return <Table hint={<span>Shown randomized to your readers</span>} isLoading={isLoading} pagination={pagination} showMore={showMore} hintSeparator>
             {recommendations && recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
         </Table>;
     } else {

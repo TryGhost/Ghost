@@ -7,6 +7,7 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {ShowMoreData} from '../../../admin-x-ds/global/Table';
 import {useBrowseRecommendations} from '../../../api/recommendations';
 import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
@@ -17,11 +18,37 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleSave
     } = useSettingGroup();
 
-    const {pagination, data: {recommendations} = {}, isLoading} = useBrowseRecommendations({
+    const {data: {recommendations, meta} = {}, isLoading, hasNextPage, fetchNextPage} = useBrowseRecommendations({
         searchParams: {
-            include: 'count.clicks,count.subscribers'
-        }
+            include: 'count.clicks,count.subscribers',
+            limit: '5'
+        },
+
+        // We first load 5, then load 100 at a time (= show all, but without using the dangerous 'all' limit)
+        getNextPageParams: (lastPage, otherParams) => {
+            if (!lastPage.meta) {
+                return;
+            }
+            const {limit, page, pages} = lastPage.meta.pagination;
+            if (page >= pages) {
+                return;
+            }
+
+            const newPage = limit < 100 ? 1 : (page + 1);
+
+            return {
+                ...otherParams,
+                page: newPage.toString(),
+                limit: '100'
+            };
+        },
+        keepPreviousData: true
     });
+
+    const showMore: ShowMoreData = {
+        hasMore: !!hasNextPage,
+        loadMore: fetchNextPage
+    };
     const [selectedTab, setSelectedTab] = useState('your-recommendations');
 
     const {updateRoute} = useRouting();
@@ -41,7 +68,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'your-recommendations',
             title: 'Your recommendations',
-            contents: (<RecommendationList isLoading={isLoading} pagination={pagination} recommendations={recommendations ?? []}/>)
+            contents: (<RecommendationList isLoading={isLoading} recommendations={recommendations ?? []} showMore={showMore}/>)
         },
         {
             id: 'recommending-you',
@@ -51,7 +78,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ];
 
     const groupDescription = (
-        <>Share favorite sites with your audience after they subscribe. {(pagination && pagination.total && pagination.total > 0) && <Link href={recommendationsURL} target='_blank'>Preview</Link>}</>
+        <>Share favorite sites with your audience after they subscribe. {(!!meta && !!meta.pagination.total && meta.pagination.total > 0) && <Link href={recommendationsURL} target='_blank'>Preview</Link>}</>
     );
 
     return (
