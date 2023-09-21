@@ -9,7 +9,7 @@ const handleResponse = async (response: Response) => {
         throw new UnsupportedMediaTypeError(response, await response.text());
     } else if (response.status === 413) {
         throw new RequestEntityTooLargeError(response, await response.text());
-    } else if (response.status > 299) {
+    } else if (!response.ok) {
         if (!response.headers.get('content-type')?.includes('json')) {
             throw new APIError(response, await response.text());
         }

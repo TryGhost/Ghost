@@ -3,6 +3,7 @@ import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
+import handleError from '../../../utils/handleError';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as FacebookLogo} from '../../../admin-x-ds/assets/images/facebook-logo.svg';
 import {getImageUrl, useUploadImage} from '../../../api/images';
@@ -35,8 +36,12 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const handleImageUpload = async (file: File) => {
-        const imageUrl = getImageUrl(await uploadImage({file}));
-        updateSetting('og_image', imageUrl);
+        try {
+            const imageUrl = getImageUrl(await uploadImage({file}));
+            updateSetting('og_image', imageUrl);
+        } catch (e) {
+            handleError(e);
+        }
     };
 
     const handleImageDelete = () => {

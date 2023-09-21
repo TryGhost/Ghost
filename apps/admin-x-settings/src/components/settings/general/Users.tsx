@@ -7,6 +7,7 @@ import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import clsx from 'clsx';
+import handleError from '../../../utils/handleError';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import {User, hasAdminAccess, isContributorUser, isEditorUser} from '../../../api/users';
@@ -126,13 +127,18 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                 label={revokeActionLabel}
                 link={true}
                 onClick={async () => {
-                    setRevokeState('progress');
-                    await deleteInvite(invite.id);
-                    setRevokeState('');
-                    showToast({
-                        message: `Invitation revoked (${invite.email})`,
-                        type: 'success'
-                    });
+                    try {
+                        setRevokeState('progress');
+                        await deleteInvite(invite.id);
+                        showToast({
+                            message: `Invitation revoked (${invite.email})`,
+                            type: 'success'
+                        });
+                    } catch (e) {
+                        handleError(e);
+                    } finally {
+                        setRevokeState('');
+                    }
                 }}
             />
             <Button
@@ -141,17 +147,22 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                 label={resendActionLabel}
                 link={true}
                 onClick={async () => {
-                    setResendState('progress');
-                    await deleteInvite(invite.id);
-                    await addInvite({
-                        email: invite.email,
-                        roleId: invite.role_id
-                    });
-                    setResendState('');
-                    showToast({
-                        message: `Invitation resent! (${invite.email})`,
-                        type: 'success'
-                    });
+                    try {
+                        setResendState('progress');
+                        await deleteInvite(invite.id);
+                        await addInvite({
+                            email: invite.email,
+                            roleId: invite.role_id
+                        });
+                        showToast({
+                            message: `Invitation resent! (${invite.email})`,
+                            type: 'success'
+                        });
+                    } catch (e) {
+                        handleError(e);
+                    } finally {
+                        setResendState('');
+                    }
                 }}
             />
         </div>

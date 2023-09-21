@@ -7,6 +7,7 @@ import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import clsx from 'clsx';
+import handleError from '../../../../utils/handleError';
 import {ReactComponent as PortalIcon1} from '../../../../assets/icons/portal-icon-1.svg';
 import {ReactComponent as PortalIcon2} from '../../../../assets/icons/portal-icon-2.svg';
 import {ReactComponent as PortalIcon3} from '../../../../assets/icons/portal-icon-3.svg';
@@ -52,9 +53,13 @@ const LookAndFeel: React.FC<{
     const [uploadedIcon, setUploadedIcon] = useState(isDefaultIcon ? undefined : currentIcon);
 
     const handleImageUpload = async (file: File) => {
-        const imageUrl = getImageUrl(await uploadImage({file}));
-        updateSetting('portal_button_icon', imageUrl);
-        setUploadedIcon(imageUrl);
+        try {
+            const imageUrl = getImageUrl(await uploadImage({file}));
+            updateSetting('portal_button_icon', imageUrl);
+            setUploadedIcon(imageUrl);
+        } catch (e) {
+            handleError(e);
+        }
     };
 
     const handleImageDelete = () => {

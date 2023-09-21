@@ -3,6 +3,7 @@ import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import handleError from '../../../utils/handleError';
 import {Setting, getSettingValues, useEditSettings} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
@@ -23,7 +24,11 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
             updates.push({key: 'editor_default_email_recipients_filter', value: null});
         }
 
-        await editSettings(updates);
+        try {
+            await editSettings(updates);
+        } catch (error) {
+            handleError(error);
+        }
     };
 
     const enableToggle = (

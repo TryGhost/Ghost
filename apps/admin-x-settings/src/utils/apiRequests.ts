@@ -1,8 +1,9 @@
+import handleError from './handleError';
 import handleResponse from './handleResponse';
 import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from './errors';
 import {QueryClient, UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {getGhostPaths} from './helpers';
-import {useMemo} from 'react';
+import {useEffect, useMemo} from 'react';
 import {usePage, usePagination} from '../hooks/usePagination';
 import {useServices} from '../components/providers/ServiceProvider';
 
@@ -142,7 +143,10 @@ interface QueryOptions<ResponseData> {
     returnData?: (originalData: unknown) => ResponseData;
 }
 
-type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & { searchParams?: Record<string, string> };
+type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & {
+    searchParams?: Record<string, string>;
+    defaultErrorHandler?: boolean;
+};
 
 export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}) => {
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
@@ -157,6 +161,12 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
     const data = useMemo(() => (
         (result.data && options.returnData) ? options.returnData(result.data) : result.data)
     , [result]);
+
+    useEffect(() => {
+        if (result.error && query.defaultErrorHandler !== false) {
+            handleError(result.error);
+        }
+    }, [result.error, query.defaultErrorHandler]);
 
     return {
         ...result,
@@ -192,6 +202,12 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
         meta: result.isFetching ? undefined : data?.meta
     });
 
+    useEffect(() => {
+        if (result.error && query.defaultErrorHandler !== false) {
+            handleError(result.error);
+        }
+    }, [result.error, query.defaultErrorHandler]);
+
     return {
         ...result,
         data,
@@ -205,6 +221,7 @@ type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'retu
 
 type InfiniteQueryHookOptions<ResponseData> = UseInfiniteQueryOptions<ResponseData> & {
     searchParams?: Record<string, string>;
+    defaultErrorHandler?: boolean;
     getNextPageParams: (data: ResponseData, params: Record<string, string>) => Record<string, string>;
 };
 
@@ -219,6 +236,12 @@ export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<
     });
 
     const data = useMemo(() => result.data && options.returnData(result.data), [result]);
+
+    useEffect(() => {
+        if (result.error && query.defaultErrorHandler !== false) {
+            handleError(result.error);
+        }
+    }, [result.error, query.defaultErrorHandler]);
 
     return {
         ...result,
