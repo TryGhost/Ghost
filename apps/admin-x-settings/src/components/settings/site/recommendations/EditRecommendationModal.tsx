@@ -3,6 +3,7 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationReasonForm from './RecommendationReasonForm';
+import handleError from '../../../../utils/handleError';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {Recommendation, useDeleteRecommendation, useEditRecommendation} from '../../../../api/recommendations';
@@ -30,6 +31,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
             modal.remove();
             updateRoute('recommendations');
         },
+        onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
             if (!formState.title) {
@@ -68,11 +70,12 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
                             message: 'Successfully deleted the recommendation',
                             type: 'success'
                         });
-                    } catch (_) {
+                    } catch (e) {
                         showToast({
                             message: 'Failed to delete the recommendation. Please try again later.',
                             type: 'error'
                         });
+                        handleError(e, {withToast: false});
                     }
                 }
             });

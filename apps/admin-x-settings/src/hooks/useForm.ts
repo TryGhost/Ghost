@@ -31,9 +31,10 @@ export interface FormHook<State> {
     errors: ErrorMessages;
 }
 
-const useForm = <State>({initialState, onSave, onValidate}: {
+const useForm = <State>({initialState, onSave, onSaveError, onValidate}: {
     initialState: State,
     onSave: () => void | Promise<void>
+    onSaveError?: (error: unknown) => void | Promise<void>
     onValidate?: () => ErrorMessages
 }): FormHook<State> => {
     const [formState, setFormState] = useState(initialState);
@@ -77,6 +78,7 @@ const useForm = <State>({initialState, onSave, onValidate}: {
             setSaveState('saved');
             return true;
         } catch (e) {
+            await onSaveError?.(e);
             setSaveState('unsaved');
             throw e;
         }

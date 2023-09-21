@@ -1,7 +1,9 @@
+import handleError from './handleError';
 import handleResponse from './handleResponse';
+import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from './errors';
 import {QueryClient, UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {getGhostPaths} from './helpers';
-import {useMemo} from 'react';
+import {useEffect, useMemo} from 'react';
 import {usePage, usePagination} from '../hooks/usePagination';
 import {useServices} from '../components/providers/ServiceProvider';
 
@@ -47,27 +49,77 @@ export const useFetchApi = () => {
             setTimeout(() => controller.abort(), timeout);
         }
 
-        try {
-            const response = await fetch(endpoint, {
-                headers: {
-                    ...defaultHeaders,
-                    ...headers
-                },
-                method: 'GET',
-                mode: 'cors',
-                credentials: 'include',
-                signal: controller.signal,
-                ...options
-            });
+        // attempt retries for 15 seconds in two situations:
+        // 1. Server Unreachable error from the browser (code 0 or TypeError), typically from short internet blips
+        // 2. Maintenance error from Ghost, upgrade in progress so API is temporarily unavailable
+        let attempts = 0;
+        let retryingMs = 0;
+        const startTime = Date.now();
+        const maxRetryingMs = 15_000;
+        const retryPeriods = [500, 1000];
+        const retryableErrors = [ServerUnreachableError, MaintenanceError, TypeError];
 
-            return handleResponse(response);
-        } catch (error: any) {
-            if (error.name === 'AbortError') {
-                throw new Error('Request timed out');
-            }
+        // const getErrorData = (error?: APIError, response?: Response) => {
+        //     const data: Record<string, unknown> = {
+        //         errorName: error?.name,
+        //         attempts,
+        //         totalSeconds: retryingMs / 1000
+        //     };
+        //     if (endpoint.toString().includes('/ghost/api/')) {
+        //         data.server = response?.headers.get('server');
+        //     }
+        //     return data;
+        // };
 
-            throw error;
-        };
+        while (true) {
+            try {
+                const response = await fetch(endpoint, {
+                    headers: {
+                        ...defaultHeaders,
+                        ...headers
+                    },
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'include',
+                    signal: controller.signal,
+                    ...options
+                });
+
+                // TODO: Add Sentry integration
+                // if (attempts !== 0 && config.sentry_dsn) {
+                //     captureMessage('Request took multiple attempts', {extra: getErrorData()});
+                // }
+
+                return handleResponse(response);
+            } catch (error) {
+                retryingMs = Date.now() - startTime;
+
+                if (import.meta.env.MODE !== 'development' && retryableErrors.some(errorClass => error instanceof errorClass) && retryingMs <= maxRetryingMs) {
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1]);
+                    });
+                    attempts += 1;
+                    continue;
+                }
+
+                // TODO: Add Sentry integration
+                // if (attempts > 0 && config.sentry_dsn) {
+                //     captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
+                // }
+
+                if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
+                    throw new TimeoutError();
+                }
+
+                let newError = error;
+
+                if (!(error instanceof APIError)) {
+                    newError = new ServerUnreachableError({cause: error});
+                }
+
+                throw newError;
+            };
+        }
     };
 };
 
@@ -91,7 +143,10 @@ interface QueryOptions<ResponseData> {
     returnData?: (originalData: unknown) => ResponseData;
 }
 
-type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & { searchParams?: Record<string, string> };
+type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & {
+    searchParams?: Record<string, string>;
+    defaultErrorHandler?: boolean;
+};
 
 export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}) => {
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
@@ -106,6 +161,12 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
     const data = useMemo(() => (
         (result.data && options.returnData) ? options.returnData(result.data) : result.data)
     , [result]);
+
+    useEffect(() => {
+        if (result.error && query.defaultErrorHandler !== false) {
+            handleError(result.error);
+        }
+    }, [result.error, query.defaultErrorHandler]);
 
     return {
         ...result,
@@ -141,6 +202,12 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
         meta: result.isFetching ? undefined : data?.meta
     });
 
+    useEffect(() => {
+        if (result.error && query.defaultErrorHandler !== false) {
+            handleError(result.error);
+        }
+    }, [result.error, query.defaultErrorHandler]);
+
     return {
         ...result,
         data,
@@ -154,6 +221,7 @@ type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'retu
 
 type InfiniteQueryHookOptions<ResponseData> = UseInfiniteQueryOptions<ResponseData> & {
     searchParams?: Record<string, string>;
+    defaultErrorHandler?: boolean;
     getNextPageParams: (data: ResponseData, params: Record<string, string>) => Record<string, string>|undefined;
 };
 
@@ -168,6 +236,12 @@ export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<
     });
 
     const data = useMemo(() => result.data && options.returnData(result.data), [result]);
+
+    useEffect(() => {
+        if (result.error && query.defaultErrorHandler !== false) {
+            handleError(result.error);
+        }
+    }, [result.error, query.defaultErrorHandler]);
 
     return {
         ...result,

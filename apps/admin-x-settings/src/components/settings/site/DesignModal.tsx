@@ -7,6 +7,7 @@ import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
+import handleError from '../../../utils/handleError';
 import useForm from '../../../hooks/useForm';
 import useRouting from '../../../hooks/useRouting';
 import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../api/customThemeSettings';
@@ -116,7 +117,8 @@ const DesignModal: React.FC = () => {
                 const {settings: newSettings} = await editSettings(formState.settings.filter(setting => setting.dirty));
                 updateForm(state => ({...state, settings: newSettings}));
             }
-        }
+        },
+        onSaveError: handleError
     });
 
     useEffect(() => {
