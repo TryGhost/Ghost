@@ -99,8 +99,9 @@ const formatUrl = (value: string, baseUrl?: string) => {
  */
 const URLTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
     baseUrl?: string;
+    transformPathWithoutSlash?: boolean;
     onChange: (value: string) => void;
-}> = ({baseUrl, value, onChange, ...props}) => {
+}> = ({baseUrl, value, transformPathWithoutSlash, onChange, ...props}) => {
     const [displayedUrl, setDisplayedUrl] = useState('');
 
     useEffect(() => {
@@ -108,10 +109,20 @@ const URLTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
     }, [value, baseUrl]);
 
     const updateUrl = () => {
-        const {save, display} = formatUrl(displayedUrl, baseUrl);
+        let urls = formatUrl(displayedUrl, baseUrl);
 
-        setDisplayedUrl(display);
-        onChange(save);
+        // If the user entered something like "bla", try to parse it as a relative URL
+        // If parsing as "/bla" results in a valid URL, use that instead
+        if (transformPathWithoutSlash && !urls.display.includes('//')) {
+            const candidate = formatUrl('/' + displayedUrl, baseUrl);
+
+            if (candidate.display.includes('//')) {
+                urls = candidate;
+            }
+        }
+
+        setDisplayedUrl(urls.display);
+        onChange(urls.save);
     };
 
     const handleFocus: React.FocusEventHandler<HTMLInputElement> = (e) => {

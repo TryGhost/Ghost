@@ -12,6 +12,7 @@ import SortableList from '../../../../admin-x-ds/global/SortableList';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import TierDetailPreview from './TierDetailPreview';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
@@ -269,7 +270,15 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 />
                             </div>
                         </div>
-                        <TextField hint='Redirect to this URL after signup for premium membership' placeholder={siteData?.url} title='Welcome page' />
+                        <URLTextField
+                            baseUrl={siteData?.url}
+                            hint='Redirect to this URL after signup for premium membership'
+                            placeholder={siteData?.url}
+                            title='Welcome page'
+                            value={formState.welcome_page_url || ''}
+                            transformPathWithoutSlash
+                            onChange={value => updateForm(state => ({...state, welcome_page_url: value || null}))}
+                        />
                     </>)}
                 </Form>
 
