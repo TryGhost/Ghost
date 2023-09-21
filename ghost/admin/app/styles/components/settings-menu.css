@@ -70,12 +70,6 @@
     }
 }
 
-@media (max-width: 800px) {
-    .settings-menu-container {
-        padding-bottom: 64px;
-    }
-}
-
 .settings-menu-container .settings-menu-pane {
     position: absolute;
     top: 0;
