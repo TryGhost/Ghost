@@ -222,7 +222,7 @@ type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'retu
 type InfiniteQueryHookOptions<ResponseData> = UseInfiniteQueryOptions<ResponseData> & {
     searchParams?: Record<string, string>;
     defaultErrorHandler?: boolean;
-    getNextPageParams: (data: ResponseData, params: Record<string, string>) => Record<string, string>;
+    getNextPageParams: (data: ResponseData, params: Record<string, string>) => Record<string, string>|undefined;
 };
 
 export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<ResponseData>) => ({searchParams, getNextPageParams, ...query}: InfiniteQueryHookOptions<ResponseData>) => {

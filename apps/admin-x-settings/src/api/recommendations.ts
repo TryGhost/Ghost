@@ -1,4 +1,5 @@
-import {Meta, apiUrl, createMutation, createPaginatedQuery, useFetchApi} from '../utils/apiRequests';
+import {InfiniteData} from '@tanstack/react-query';
+import {Meta, apiUrl, createInfiniteQuery, createMutation, useFetchApi} from '../utils/apiRequests';
 
 export type Recommendation = {
     id: string
@@ -28,10 +29,23 @@ export interface RecommendationDeleteResponseType {}
 
 const dataType = 'RecommendationResponseType';
 
-export const useBrowseRecommendations = createPaginatedQuery<RecommendationResponseType>({
+export const useBrowseRecommendations = createInfiniteQuery<RecommendationResponseType>({
     dataType,
     path: '/recommendations/',
-    defaultSearchParams: {}
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<RecommendationResponseType>;
+        let recommendations = pages.flatMap(page => page.recommendations);
+
+        // Remove duplicates
+        recommendations = recommendations.filter((recommendation, index) => {
+            return recommendations.findIndex(({id}) => id === recommendation.id) === index;
+        });
+
+        return {
+            recommendations,
+            meta: pages[pages.length - 1].meta
+        };
+    }
 });
 
 export const useDeleteRecommendation = createMutation<RecommendationDeleteResponseType, Recommendation>({
