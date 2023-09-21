@@ -56,7 +56,7 @@ const modalPaths: {[key: string]: ModalName} = {
     'integrations/add': 'AddIntegrationModal',
     'integrations/show/:id': 'CustomIntegrationModal',
     'recommendations/add': 'AddRecommendationModal',
-    'recommendations/:id': 'EditRecommendationModal',
+    'recommendations/edit': 'EditRecommendationModal',
     'announcement-bar/edit': 'AnnouncementBarModal',
     'embed-signup-form/show': 'EmbedSignupFormModal'
 };

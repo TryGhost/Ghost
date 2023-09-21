@@ -6,17 +6,17 @@ import RecommendationReasonForm from './RecommendationReasonForm';
 import handleError from '../../../../utils/handleError';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
-import {Recommendation, useBrowseRecommendations, useDeleteRecommendation, useEditRecommendation} from '../../../../api/recommendations';
+import {Recommendation, useDeleteRecommendation, useEditRecommendation} from '../../../../api/recommendations';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 
-interface AddRecommendationModalProps {
+interface EditRecommendationModalProps {
     recommendation: Recommendation,
     animate?: boolean
 }
 
-const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({recommendation, animate}) => {
+const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationModalProps> = ({recommendation, animate}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {mutateAsync: editRecommendation} = useEditRecommendation();
@@ -50,29 +50,29 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
     }
 
     let leftButtonProps = {
-        label: 'Remove recommendation',
+        label: 'Delete',
         link: true,
         color: 'red' as const,
         size: 'sm' as const,
         onClick: () => {
             modal.remove();
             NiceModal.show(ConfirmationModal, {
-                title: 'Remove recommendation',
+                title: 'Delete recommendation',
                 prompt: <>
                     <p>Your recommendation <strong>{recommendation.title}</strong> will no longer be visible to your audience.</p>
                 </>,
-                okLabel: 'Remove',
+                okLabel: 'Delete',
                 onOk: async (deleteModal) => {
                     try {
                         await deleteRecommendation(recommendation);
                         deleteModal?.remove();
                         showToast({
-                            message: 'Successfully removed the recommendation',
+                            message: 'Successfully deleted the recommendation',
                             type: 'success'
                         });
                     } catch (e) {
                         showToast({
-                            message: 'Failed to remove the recommendation. Please try again later.',
+                            message: 'Failed to delete the recommendation. Please try again later.',
                             type: 'error'
                         });
                         handleError(e, {withToast: false});
@@ -115,17 +115,6 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
     >
         <RecommendationReasonForm errors={errors} formState={formState} showURL={true} updateForm={updateForm as any}/>
     </Modal>;
-};
-
-const EditRecommendationModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {data: {recommendations} = {}} = useBrowseRecommendations();
-    const recommendation = recommendations?.find(({id}) => id === params?.id);
-
-    if (recommendation) {
-        return <EditRecommendationModalConfirm recommendation={recommendation} />;
-    } else {
-        return null;
-    }
 };
 
 export default NiceModal.create(EditRecommendationModal);

@@ -3,6 +3,7 @@ import MainContent from './MainContent';
 import NiceModal from '@ebay/nice-modal-react';
 import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
 import clsx from 'clsx';
+import {DefaultHeaderTypes} from './utils/unsplash/UnsplashTypes';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
 import {OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
@@ -16,6 +17,7 @@ interface AppProps {
     externalNavigate: (link: ExternalLink) => void;
     toggleFeatureFlag: (flag: string, enabled: boolean) => void;
     darkMode?: boolean;
+    unsplashConfig: DefaultHeaderTypes
 }
 
 const queryClient = new QueryClient({
@@ -28,7 +30,7 @@ const queryClient = new QueryClient({
     }
 });
 
-function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, toggleFeatureFlag, darkMode = false}: AppProps) {
+function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, toggleFeatureFlag, darkMode = false, unsplashConfig}: AppProps) {
     const appClassName = clsx(
         'admin-x-settings h-[100vh] w-full overflow-y-auto overflow-x-hidden',
         darkMode && 'dark'
@@ -36,7 +38,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, t
 
     return (
         <QueryClientProvider client={queryClient}>
-            <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} toggleFeatureFlag={toggleFeatureFlag} zapierTemplates={zapierTemplates}>
+            <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} toggleFeatureFlag={toggleFeatureFlag} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates}>
                 <GlobalDataProvider>
                     <RoutingProvider externalNavigate={externalNavigate}>
                         <GlobalDirtyStateProvider>

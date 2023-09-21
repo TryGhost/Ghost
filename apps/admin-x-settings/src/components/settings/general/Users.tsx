@@ -15,6 +15,7 @@ import {UserInvite, useAddInvite, useDeleteInvite} from '../../../api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 interface OwnerProps {
     user: User;
@@ -269,4 +270,4 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
     );
 };
 
-export default Users;
+export default withErrorBoundary(Users, 'Staff');

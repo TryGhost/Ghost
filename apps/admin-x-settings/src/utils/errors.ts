@@ -1,3 +1,5 @@
+// API errors
+
 export interface ErrorResponse {
     errors: Array<{
         code: string
@@ -95,3 +97,11 @@ export class ValidationError extends JSONError {
 }
 
 export const errorsWithMessage = [ValidationError, ThemeValidationError, HostLimitError, EmailError];
+
+// Frontend errors
+
+export class AlreadyExistsError extends Error {
+    constructor(message?: string) {
+        super(message);
+    }
+}

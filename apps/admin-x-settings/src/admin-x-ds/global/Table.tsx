@@ -16,7 +16,7 @@ interface TableProps {
     header?: React.ReactNode;
     children?: React.ReactNode;
     borderTop?: boolean;
-    hint?: string;
+    hint?: React.ReactNode;
     hintSeparator?: boolean;
     className?: string;
     isLoading?: boolean;

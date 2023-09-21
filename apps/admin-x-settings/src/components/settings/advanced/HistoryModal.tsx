@@ -5,9 +5,10 @@ import InfiniteScrollListener from '../../../admin-x-ds/global/InfiniteScrollLis
 import List from '../../../admin-x-ds/global/List';
 import ListItem from '../../../admin-x-ds/global/ListItem';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
-import MultiSelect from '../../../admin-x-ds/global/form/MultiSelect';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
 import Popover from '../../../admin-x-ds/global/Popover';
+import Select, {SelectOption} from '../../../admin-x-ds/global/form/Select';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../admin-x-ds/global/form/ToggleGroup';
 import useRouting from '../../../hooks/useRouting';
@@ -70,13 +71,20 @@ const HistoryFilter: React.FC<{
     excludedResources: string[];
     toggleEventType: (event: string, included: boolean) => void;
     toggleResourceType: (resource: string, included: boolean) => void;
-}> = ({userId, excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
+}> = ({excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
     const {updateRoute} = useRouting();
     const {users} = useStaffUsers();
+    const [searchedStaff, setSearchStaff] = useState<SelectOption | null>();
+
+    const resetStaff = () => {
+        setSearchStaff(null);
+    };
+
+    const userOptions = users.map(user => ({label: user.name, value: user.id}));
 
     return (
         <div className='flex items-center gap-4'>
-            <Popover position='right' trigger={<Button label='Filter' link />}>
+            <Popover position='right' trigger={<Button color='outline' label='Filter' size='sm' />}>
                 <div className='flex w-[220px] flex-col gap-8 p-5'>
                     <ToggleGroup>
                         <HistoryFilterToggle excludedItems={excludedEvents} item='added' label='Added' toggleItem={toggleEventType} />
@@ -92,17 +100,23 @@ const HistoryFilter: React.FC<{
                     </ToggleGroup>
                 </div>
             </Popover>
-            {userId ?
-                <Button label='Clear search' link onClick={() => updateRoute('history/view')} /> :
-                <div className='w-[200px]'>
-                    <MultiSelect
-                        options={users.map(user => ({label: user.name, value: user.id}))}
-                        placeholder='Search staff'
-                        values={[]}
-                        onChange={([option]) => updateRoute(`history/view/${option.value}`)}
-                    />
-                </div>
-            }
+            <div className='w-[200px]'>
+                <Select
+                    options={userOptions}
+                    placeholder='Search staff'
+                    value={searchedStaff}
+                    isClearable
+                    onSelect={(value) => {
+                        if (value) {
+                            setSearchStaff(userOptions.find(option => option.value === value)!);
+                            updateRoute(`history/view/${value}`);
+                        } else {
+                            resetStaff();
+                            updateRoute('history/view');
+                        }
+                    }}
+                />
+            </div>
         </div>
     );
 };
@@ -195,6 +209,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
             scrolling={true}
             size='md'
             stickyFooter={true}
+            stickyHeader={true}
             testId='history-modal'
             title='History'
             topRightContent={<HistoryFilter
@@ -211,23 +226,30 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
         >
             <div className='relative -mb-8 mt-6'>
                 <List hint={data?.isEnd ? 'End of history log' : undefined}>
-                    <InfiniteScrollListener offset={250} onTrigger={fetchNext} />
-                    {data?.actions.map(action => !action.skip && <ListItem
-                        avatar={<HistoryAvatar action={action} />}
-                        detail={[
-                            new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),
-                            new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
-                        ].join(' | ')}
-                        title={
-                            <div className='text-sm'>
-                                {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
-                                {!isBulkAction(action) && <HistoryActionDescription action={action} />}
-                                {action.count ? <> {action.count} times</> : null}
-                                <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
-                            </div>
-                        }
-                        separator
-                    />)}
+                    {data?.actions ? <>
+                        <InfiniteScrollListener offset={250} onTrigger={fetchNext} />
+                        {data?.actions.map(action => !action.skip && <ListItem
+                            avatar={<HistoryAvatar action={action} />}
+                            detail={[
+                                new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),
+                                new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
+                            ].join(' | ')}
+                            title={
+                                <div className='text-sm'>
+                                    {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
+                                    {!isBulkAction(action) && <HistoryActionDescription action={action} />}
+                                    {action.count ? <> {action.count} times</> : null}
+                                    <span> &mdash; by {action.actor?.name || action.actor?.slug}</span>
+                                </div>
+                            }
+                            separator
+                        />)}
+                    </>
+                        :
+                        <NoValueLabel>
+                        No entries found.
+                        </NoValueLabel>
+                    }
                 </List>
             </div>
         </Modal>

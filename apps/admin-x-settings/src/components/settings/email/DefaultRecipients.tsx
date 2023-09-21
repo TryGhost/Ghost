@@ -10,6 +10,7 @@ import {getSettingValues} from '../../../api/settings';
 import {useBrowseLabels} from '../../../api/labels';
 import {useBrowseOffers} from '../../../api/offers';
 import {useBrowseTiers} from '../../../api/tiers';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 type RefipientValueArgs = {
     defaultEmailRecipients: string;
@@ -206,4 +207,4 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default DefaultRecipients;
+export default withErrorBoundary(DefaultRecipients, 'Default recipients');

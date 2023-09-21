@@ -1,8 +1,9 @@
 import React, {useId, useMemo} from 'react';
-import ReactSelect, {DropdownIndicatorProps, OptionProps, Props, components} from 'react-select';
+import ReactSelect, {ClearIndicatorProps, DropdownIndicatorProps, OptionProps, Props, components} from 'react-select';
 
 import Heading from '../Heading';
 import Hint from '../Hint';
+import Icon from '../Icon';
 import clsx from 'clsx';
 
 export interface SelectOption {
@@ -27,6 +28,7 @@ export interface SelectControlClasses {
     option?: string;
     noOptionsMessage?: string;
     groupHeading?: string;
+    clearIndicator?: string;
 }
 
 export interface SelectProps extends Props<SelectOption, false> {
@@ -52,6 +54,13 @@ const DropdownIndicator: React.FC<DropdownIndicatorProps<SelectOption, false> & 
     <components.DropdownIndicator {...props}>
         <div className={`absolute top-[14px] block h-2 w-2 rotate-45 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-0' : 'right-4'} `}></div>
     </components.DropdownIndicator>
+);
+
+const ClearIndicator: React.FC<ClearIndicatorProps<SelectOption, false>> = props => (
+    <components.ClearIndicator {...props}>
+        <Icon className='mr-2' name='close' size='xs' />
+        {/* <div className={`pr-2 text-xl leading-none text-grey-900 dark:text-grey-400`}>&times;</div> */}
+    </components.ClearIndicator>
 );
 
 const Option: React.FC<OptionProps<SelectOption, false>> = ({children, ...optionProps}) => (
@@ -98,7 +107,7 @@ const Select: React.FC<SelectProps> = ({
     const customClasses = {
         control: clsx(
             controlClasses?.control,
-            'min-h-[40px] w-full cursor-pointer appearance-none outline-none dark:text-white',
+            'min-h-[40px] w-full cursor-pointer appearance-none pr-4 outline-none dark:text-white',
             size === 'xs' ? 'py-0 text-xs' : 'py-2',
             border && 'border-b',
             !clearBg && 'bg-grey-75 px-[10px] dark:bg-grey-950',
@@ -114,7 +123,8 @@ const Select: React.FC<SelectProps> = ({
         ),
         option: clsx('px-3 py-[6px] hover:cursor-pointer hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900', controlClasses?.option),
         noOptionsMessage: clsx('p-3 text-grey-600', controlClasses?.noOptionsMessage),
-        groupHeading: clsx('px-3 py-[6px] text-2xs font-semibold uppercase tracking-wide text-grey-700', controlClasses?.groupHeading)
+        groupHeading: clsx('px-3 py-[6px] text-2xs font-semibold uppercase tracking-wide text-grey-700', controlClasses?.groupHeading),
+        clearIndicator: clsx('', controlClasses?.clearIndicator)
     };
 
     const dropdownIndicatorComponent = useMemo(() => {
@@ -143,9 +153,10 @@ const Select: React.FC<SelectProps> = ({
                         menu: () => customClasses.menu,
                         option: () => customClasses.option,
                         noOptionsMessage: () => customClasses.noOptionsMessage,
-                        groupHeading: () => customClasses.groupHeading
+                        groupHeading: () => customClasses.groupHeading,
+                        clearIndicator: () => customClasses.clearIndicator
                     }}
-                    components={{DropdownIndicator: dropdownIndicatorComponent, Option}}
+                    components={{DropdownIndicator: dropdownIndicatorComponent, Option, ClearIndicator}}
                     inputId={id}
                     isClearable={false}
                     options={options}

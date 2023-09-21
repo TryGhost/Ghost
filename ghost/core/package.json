@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
-    "@sentry/node": "7.69.0",
+    "@sentry/node": "7.70.0",
     "@tryghost/adapter-base-cache": "0.1.5",
     "@tryghost/adapter-cache-redis": "0.0.0",
     "@tryghost/adapter-manager": "0.0.0",
@@ -190,7 +190,7 @@
     "glob": "8.1.0",
     "got": "11.8.6",
     "gscan": "4.37.5",
-    "human-number": "2.0.1",
+    "human-number": "2.0.3",
     "image-size": "1.0.2",
     "intl": "1.2.5",
     "intl-messageformat": "5.4.3",
