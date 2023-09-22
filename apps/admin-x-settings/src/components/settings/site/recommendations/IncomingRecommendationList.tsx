@@ -53,8 +53,8 @@ const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({
             {mentions.map(mention => <IncomingRecommendationItem key={mention.id} mention={mention} />)}
         </Table>;
     } else {
-        return <NoValueLabel icon='thumbs-up'>
-            No sites are recommending you yet.
+        return <NoValueLabel>
+            <span className='max-w-[40ch] text-center'>No one’s recommended you yet. Once they do, you’ll find them here along with how many memberships each has driven.</span>
         </NoValueLabel>;
     }
 };
