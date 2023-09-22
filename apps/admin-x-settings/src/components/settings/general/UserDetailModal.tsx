@@ -205,7 +205,7 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}
                 {hasRecommendations && <Toggle
                     checked={user.recommendation_notifications}
                     direction='rtl'
-                    hint='Every time another site recommends your work'
+                    hint='Every time another publisher recommends you to their audience'
                     label='Recommendations'
                     onChange={(e) => {
                         setUserData?.({...user, recommendation_notifications: e.target.checked});
