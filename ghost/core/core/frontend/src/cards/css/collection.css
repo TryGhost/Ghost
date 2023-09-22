@@ -19,6 +19,11 @@ a.kg-collection-card-post-wrapper {
     color: var(--text-color);
 }
 
+a.kg-collection-card-post-wrapper:hover {
+    opacity: 1;
+}
+
+
 .kg-collection-card-post {
     display: flex;
     gap: 3.2rem;
@@ -35,6 +40,11 @@ a.kg-collection-card-post-wrapper {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+a.kg-collection-card-post-wrapper:hover img {
+    opacity: .92;
+    transition: all .2s ease;
 }
 
 .kg-collection-card-content {
