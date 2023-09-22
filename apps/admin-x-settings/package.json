@@ -39,7 +39,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@codemirror/lang-html": "6.4.5",
+    "@codemirror/lang-html": "^6.4.5",
     "@dnd-kit/core": "6.0.8",
     "@dnd-kit/sortable": "7.0.2",
     "@ebay/nice-modal-react": "1.2.10",
@@ -51,7 +51,7 @@
     "@uiw/react-codemirror": "^4.21.9",
     "clsx": "2.0.0",
     "react": "18.2.0",
-    "react-colorful": "5.1.2",
+    "react-colorful": "^5.1.2",
     "react-dom": "18.2.0",
     "validator": "7.2.0"
   },
