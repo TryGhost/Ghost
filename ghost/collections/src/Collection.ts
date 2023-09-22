@@ -4,8 +4,12 @@ import tpl from '@tryghost/tpl';
 import nql from '@tryghost/nql';
 import {posts as postExpansions} from '@tryghost/nql-filter-expansions';
 import {CollectionPost} from './CollectionPost';
+import {CollectionPostAdded} from './events/CollectionPostAdded';
+import {CollectionPostRemoved} from './events/CollectionPostRemoved';
 
 import ObjectID from 'bson-objectid';
+
+type CollectionEvent = CollectionPostAdded | CollectionPostRemoved;
 
 const messages = {
     invalidIDProvided: 'Invalid ID provided for Collection',
@@ -64,6 +68,7 @@ function validateFilter(filter: string | null, type: 'manual' | 'automatic', isA
 }
 
 export class Collection {
+    events: CollectionEvent[];
     id: string;
     title: string;
     private _slug: string;
@@ -141,6 +146,11 @@ export class Collection {
 
         if (this.posts.includes(post.id)) {
             this._posts = this.posts.filter(id => id !== post.id);
+        } else {
+            this.events.push(CollectionPostAdded.create({
+                post_id: post.id,
+                collection_id: this.id
+            }));
         }
 
         if (index < 0 || Object.is(index, -0)) {
@@ -154,6 +164,10 @@ export class Collection {
     removePost(id: string) {
         if (this.posts.includes(id)) {
             this._posts = this.posts.filter(postId => postId !== id);
+            this.events.push(CollectionPostRemoved.create({
+                post_id: id,
+                collection_id: this.id
+            }));
         }
     }
 
@@ -162,6 +176,12 @@ export class Collection {
     }
 
     removeAllPosts() {
+        for (const id of this._posts) {
+            this.events.push(CollectionPostRemoved.create({
+                post_id: id,
+                collection_id: this.id
+            }));
+        }
         this._posts = [];
     }
 
@@ -178,6 +198,7 @@ export class Collection {
         this.updatedAt = data.updatedAt;
         this.deleted = data.deleted;
         this._posts = data.posts;
+        this.events = [];
     }
 
     toJSON() {
