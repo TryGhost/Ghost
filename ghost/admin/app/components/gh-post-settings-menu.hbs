@@ -17,11 +17,11 @@
                             {{#unless this.post.isNew}}
                                 {{#if (or this.post.isPublished this.post.isSent)}}
                                 <a class="post-view-link" target="_blank" href="{{this.post.url}}" rel="noopener noreferrer">
-                                    View {{this.post.displayName}} {{svg-jar "external"}}
+                                    View {{this.post.displayName}} {{svg-jar "arrow-top-right"}}
                                 </a>
                                 {{else if this.post.isScheduled}}
                                 <a class="post-view-link" target="_blank" href="{{this.post.previewUrl}}" rel="noopener noreferrer">
-                                    Preview {{svg-jar "external"}}
+                                    Preview {{svg-jar "arrow-top-right"}}
                                 </a>
                                 {{/if}}
                             {{/unless}}

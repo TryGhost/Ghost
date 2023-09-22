@@ -79,11 +79,9 @@
             {{/if}}
         </div>
     {{else}}
-        {{#unless post.lexical}}
-            <a href={{post.url}} class="gh-post-bookmark-wrapper" target="_blank" rel="noopener noreferrer" data-test-complete-bookmark>
-                <GhPostBookmark @post={{post}} />
-            </a>
-        {{/unless}}
+        <a href={{post.url}} class="gh-post-bookmark-wrapper" target="_blank" rel="noopener noreferrer" data-test-complete-bookmark>
+            <GhPostBookmark @post={{post}} />
+        </a>
 
         {{#if post.isScheduled}}
             <p class="gh-publish-confirmation">
