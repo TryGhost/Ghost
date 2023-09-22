@@ -4,10 +4,13 @@ import RecommendationIcon from './RecommendationIcon';
 import Table, {ShowMoreData} from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 // import TableHead from '../../../../admin-x-ds/global/TableHead';
+import Button from '../../../../admin-x-ds/global/Button';
 import EditRecommendationModal from './EditRecommendationModal';
+import Link from '../../../../admin-x-ds/global/Link';
 import NiceModal from '@ebay/nice-modal-react';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
+import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {PaginationData} from '../../../../hooks/usePagination';
 import {Recommendation} from '../../../../api/recommendations';
 
@@ -68,13 +71,26 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
 // const tableHeader = (<><TableHead>Site</TableHead><TableHead>Conversions from you</TableHead></>);
 
 const RecommendationList: React.FC<RecommendationListProps> = ({recommendations, pagination, showMore, isLoading}) => {
+    const {
+        siteData
+    } = useSettingGroup();
+    const recommendationsURL = `${siteData?.url.replace(/\/$/, '')}/#/portal/recommendations`;
+
+    const {updateRoute} = useRouting();
+    const openAddNewRecommendationModal = () => {
+        updateRoute('recommendations/add');
+    };
+
     if (isLoading || recommendations.length) {
-        return <Table hint={<span>Shown randomized to your readers</span>} isLoading={isLoading} pagination={pagination} showMore={showMore} hintSeparator>
+        return <Table hint={<span>Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link></span>} isLoading={isLoading} pagination={pagination} showMore={showMore} hintSeparator>
             {recommendations && recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
         </Table>;
     } else {
-        return <NoValueLabel icon='thumbs-up'>
-            No recommendations yet.
+        return <NoValueLabel>
+            <span className='mb-4 max-w-[40ch] text-center'>Get started by sharing any publication you think your audience will find valuable. Need inspiration? <Link href="https://ghost.org/explore" target='_blank'>Explore thousands of sites</Link>.</span>
+            <Button color='grey' label='Add first recommendation' size='sm' onClick={() => {
+                openAddNewRecommendationModal();
+            }}></Button>
         </NoValueLabel>;
     }
 };
