@@ -1,5 +1,6 @@
 import IncomingRecommendationList from './IncomingRecommendationList';
 import {useBrowseMentions} from '../../../../api/mentions';
+import {useReferrerHistory} from '../../../../api/referrers';
 
 const IncomingRecommendations: React.FC = () => {
     const {data: {mentions} = {}, pagination, isLoading} = useBrowseMentions({
@@ -10,7 +11,10 @@ const IncomingRecommendations: React.FC = () => {
         }
     });
 
-    return (<IncomingRecommendationList isLoading={isLoading} mentions={mentions ?? []} pagination={pagination}/>);
+    // Also fetch sources
+    const {data: {stats} = {}, isLoading: areSourcesLoading} = useReferrerHistory({});
+
+    return (<IncomingRecommendationList isLoading={isLoading || areSourcesLoading} mentions={mentions ?? []} pagination={pagination} stats={stats ?? []}/>);
 };
 
 export default IncomingRecommendations;
