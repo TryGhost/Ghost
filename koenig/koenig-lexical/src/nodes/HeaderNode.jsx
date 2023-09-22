@@ -23,6 +23,21 @@ export class HeaderNode extends BaseHeaderNode {
     // we keep it hidden in the Menu in Ghost but visible in the Demo to ensure it remains tested till we full deprecate it in the future
     static kgMenu = [
         {
+            label: 'Header1',
+            desc: 'Add a header',
+            Icon: HeaderCardIcon,
+            insertCommand: INSERT_HEADER_COMMAND,
+            matches: ['v1_header', 'v1_heading'],
+            priority: 17,
+            insertParams: () => ({
+                version: 1
+            }),
+            isHidden: ({config}) => {
+                return config?.depreciated?.headerV1;
+            },
+            shortcut: '/header'
+        },
+        {
             label: 'Header',
             desc: 'Add a header',
             Icon: HeaderCardIcon,
@@ -111,7 +126,7 @@ export class HeaderNode extends BaseHeaderNode {
                         buttonText={this.buttonText}
                         buttonUrl={this.buttonUrl}
                         header={this.header}
-                        headerTextEditor={this.__headerTextEditor}
+                        headerTextEditor={this.__headerTextEditor} 
                         headerTextEditorInitialState={this.__headerTextEditorInitialState}
                         nodeKey={this.getKey()}
                         size={this.size}
