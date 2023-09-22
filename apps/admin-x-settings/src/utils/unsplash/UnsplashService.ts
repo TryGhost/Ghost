@@ -2,19 +2,7 @@ import MasonryService from './masonry/MasonryService';
 import {Photo} from './UnsplashTypes';
 import {PhotoUseCases} from './photo/PhotoUseCase';
 
-export interface IUnsplashService {
-    loadNew(): Promise<void>;
-    layoutPhotos(): void;
-    getColumns(): Photo[][] | [] | null;
-    updateSearch(term: string): Promise<void>;
-    loadNextPage(): Promise<void>;
-    clearPhotos(): void;
-    triggerDownload(photo: Photo): void;
-    photos: Photo[];
-    searchIsRunning(): boolean;
-}
-
-export class UnsplashService implements IUnsplashService {
+export class UnsplashService {
     private photoUseCases: PhotoUseCases;
     private masonryService: MasonryService;
     public photos: Photo[] = [];

@@ -1,27 +1,27 @@
-import {IUnsplashRepository} from '../api/UnsplashRepository';
+import {IUnsplashProvider} from '../api/UnsplashProvider';
 import {Photo} from '../UnsplashTypes';
 
 export class PhotoUseCases {
-    private repository: IUnsplashRepository;
+    private _provider: IUnsplashProvider;
 
-    constructor(repository: IUnsplashRepository) {
-        this.repository = repository;
+    constructor(provider: IUnsplashProvider) {
+        this._provider = provider;
     }
 
     async fetchPhotos(): Promise<Photo[]> {
-        return await this.repository.fetchPhotos();
+        return await this._provider.fetchPhotos();
     }
 
     async searchPhotos(term: string): Promise<Photo[]> {
-        return await this.repository.searchPhotos(term);
+        return await this._provider.searchPhotos(term);
     }
 
     async triggerDownload(photo: Photo): Promise<void> {
-        this.repository.triggerDownload(photo);
+        this._provider.triggerDownload(photo);
     }
 
     async fetchNextPage(): Promise<Photo[] | null> {
-        let request = await this.repository.fetchNextPage();
+        let request = await this._provider.fetchNextPage();
 
         if (request) {
             return request;
@@ -31,6 +31,6 @@ export class PhotoUseCases {
     }
 
     searchIsRunning(): boolean {
-        return this.repository.searchIsRunning();
+        return this._provider.searchIsRunning();
     }
 }

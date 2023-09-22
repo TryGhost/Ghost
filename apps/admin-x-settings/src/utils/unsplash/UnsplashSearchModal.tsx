@@ -5,7 +5,7 @@ import UnsplashGallery from '../../admin-x-ds/unsplash/ui/UnsplashGallery';
 import UnsplashSelector from '../../admin-x-ds/unsplash/ui/UnsplashSelector';
 import {DefaultHeaderTypes, Photo} from './UnsplashTypes';
 import {PhotoUseCases} from './photo/PhotoUseCase';
-import {UnsplashRepository} from './api/UnsplashRepository';
+import {UnsplashProvider} from './api/UnsplashProvider';
 import {UnsplashService} from './UnsplashService';
 
 interface UnsplashModalProps {
@@ -17,7 +17,7 @@ interface UnsplashModalProps {
   }
 
 const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageInsert, unsplashConf}) => {
-    const unsplashRepo = useMemo(() => new UnsplashRepository(unsplashConf.defaultHeaders), [unsplashConf.defaultHeaders]);
+    const unsplashRepo = useMemo(() => new UnsplashProvider(unsplashConf.defaultHeaders), [unsplashConf.defaultHeaders]);
     const photoUseCase = useMemo(() => new PhotoUseCases(unsplashRepo), [unsplashRepo]);
     const masonryService = useMemo(() => new MasonryService(3), []);
     const UnsplashLib = useMemo(() => new UnsplashService(photoUseCase, masonryService), [photoUseCase, masonryService]);

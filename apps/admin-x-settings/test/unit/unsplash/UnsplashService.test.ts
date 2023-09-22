@@ -1,20 +1,20 @@
 import MasonryService from '../../../src/utils/unsplash/masonry/MasonryService';
-import {IUnsplashRepository} from '../../../src/utils/unsplash/api/UnsplashRepository';
-import {IUnsplashService, UnsplashService} from '../../../src/utils/unsplash/UnsplashService';
-import {InMemoryUnsplashRepository} from '../../../src/utils/unsplash/api/InMemoryUnsplashRepository';
+import {IUnsplashProvider} from '../../../src/utils/unsplash/api/UnsplashProvider';
+import {InMemoryUnsplashProvider} from '../../../src/utils/unsplash/api/InMemoryUnsplashProvider';
 import {PhotoUseCases} from '../../../src/utils/unsplash/photo/PhotoUseCase';
+import {UnsplashService} from '../../../src/utils/unsplash/UnsplashService';
 import {fixturePhotos} from '../../../src/utils/unsplash/api/unsplashFixtures';
 
 describe('UnsplashService', () => {
-    let unsplashService: IUnsplashService;
-    let unsplashRepository: IUnsplashRepository;
+    let unsplashService: UnsplashService;
+    let unsplashProvider: IUnsplashProvider;
     let masonryService: MasonryService;
     let photoUseCases: PhotoUseCases;
 
     beforeEach(() => {
-        unsplashRepository = new InMemoryUnsplashRepository();
+        unsplashProvider = new InMemoryUnsplashProvider();
         masonryService = new MasonryService(3);
-        photoUseCases = new PhotoUseCases(unsplashRepository);
+        photoUseCases = new PhotoUseCases(unsplashProvider);
         unsplashService = new UnsplashService(photoUseCases, masonryService);
     });
 
