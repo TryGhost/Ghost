@@ -977,20 +977,6 @@
         },
         {
             "from": {
-                "model": "Collection",
-                "match": "slug",
-                "relation": "posts"
-            },
-            "to": {
-                "model": "Post",
-                "match": "slug"
-            },
-            "entries": {
-                "latest": ["coming-soon"]
-            }
-        },
-        {
-            "from": {
                 "model": "User",
                 "match": "id",
                 "relation": "roles"
