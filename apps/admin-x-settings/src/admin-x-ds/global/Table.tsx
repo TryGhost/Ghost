@@ -43,7 +43,7 @@ const OptionalShowMore = ({showMore}: {showMore?: ShowMoreData}) => {
     }
 
     return (
-        <div className={`mt-1 flex items-center gap-2 text-xs text-grey-700`}>
+        <div className={`mt-1 flex items-center gap-2 text-xs text-green`}>
             <button type='button' onClick={showMore.loadMore}>Show all</button>
         </div>
     );
