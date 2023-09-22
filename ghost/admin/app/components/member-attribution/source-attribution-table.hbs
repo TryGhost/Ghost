@@ -6,7 +6,7 @@
             class="gh-dashboard-list-title {{if (eq @sortColumn "signups") "sorted-by"}}"
             {{on "click" (fn @setSortColumn "signups")}}
         >
-            <span class="hide-when-small">Free </span>signups{{svg-jar "arrow-down-fill"}}
+            <span class="hide-when-small">Free </span>signups{{#if this.membersUtils.paidMembersEnabled}}{{svg-jar "arrow-down-fill"}}{{/if}}
         </div>
         {{#if this.membersUtils.paidMembersEnabled}}
             <div
