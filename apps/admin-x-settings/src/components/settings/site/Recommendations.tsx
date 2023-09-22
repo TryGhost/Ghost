@@ -1,5 +1,5 @@
 import Button from '../../../admin-x-ds/global/Button';
-import IncomingRecommendations from './recommendations/IncomingRecommendations';
+import IncomingRecommendationList from './recommendations/IncomingRecommendationList';
 import React, {useState} from 'react';
 import RecommendationList from './recommendations/RecommendationList';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
@@ -7,7 +7,9 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ShowMoreData} from '../../../admin-x-ds/global/Table';
+import {useBrowseMentions} from '../../../api/mentions';
 import {useBrowseRecommendations} from '../../../api/recommendations';
+import {useReferrerHistory} from '../../../api/referrers';
 import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -16,7 +18,8 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleSave
     } = useSettingGroup();
 
-    const {data: {recommendations} = {}, isLoading, hasNextPage, fetchNextPage} = useBrowseRecommendations({
+    // Fetch "Your recommendations"
+    const {data: {meta: recommendationsMeta, recommendations} = {}, isLoading: areRecommendationsLoading, hasNextPage, fetchNextPage} = useBrowseRecommendations({
         searchParams: {
             include: 'count.clicks,count.subscribers',
             limit: '5'
@@ -43,12 +46,43 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         keepPreviousData: true
     });
 
-    const showMore: ShowMoreData = {
+    const showMoreRecommendations: ShowMoreData = {
         hasMore: !!hasNextPage,
         loadMore: fetchNextPage
     };
+
+    // Fetch "Recommending you" (mentions & stats)
+    const {data: {mentions} = {}, pagination: mentionsPagination, isLoading: areMentionsLoading} = useBrowseMentions({
+        searchParams: {
+            limit: '5',
+            filter: `source:~$'/.well-known/recommendations.json'+verified:true`,
+            order: 'created_at desc'
+        }
+    });
+
+    const {data: {stats: mentionsStats} = {}, isLoading: areSourcesLoading} = useReferrerHistory({});
+
+    // Select "Your recommendations" by default
     const [selectedTab, setSelectedTab] = useState('your-recommendations');
 
+    const tabs = [
+        {
+            id: 'your-recommendations',
+            title: `Your recommendations ${recommendationsMeta?.pagination?.total ? `(${recommendationsMeta.pagination.total})` : ''}`,
+            contents: <RecommendationList isLoading={areRecommendationsLoading} recommendations={recommendations ?? []} showMore={showMoreRecommendations}/>
+        },
+        {
+            id: 'recommending-you',
+            title: `Recommending you ${mentionsPagination?.total ? `(${mentionsPagination.total})` : ''}`,
+            contents: <IncomingRecommendationList isLoading={areMentionsLoading || areSourcesLoading} mentions={mentions ?? []} pagination={mentionsPagination} stats={mentionsStats ?? []}/>
+        }
+    ];
+
+    const groupDescription = (
+        <>Recommend any publication you think your audience will find valuable, and find out when others are recommending you.</>
+    );
+
+    // Add a new recommendation
     const {updateRoute} = useRouting();
     const openAddNewRecommendationModal = () => {
         updateRoute('recommendations/add');
@@ -58,23 +92,6 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         <Button className='hidden md:!visible md:!block' color='green' label='Add recommendation' link={true} onClick={() => {
             openAddNewRecommendationModal();
         }} />
-    );
-
-    const tabs = [
-        {
-            id: 'your-recommendations',
-            title: 'Your recommendations',
-            contents: (<RecommendationList isLoading={isLoading} recommendations={recommendations ?? []} showMore={showMore}/>)
-        },
-        {
-            id: 'recommending-you',
-            title: 'Recommending you',
-            contents: (<IncomingRecommendations />)
-        }
-    ];
-
-    const groupDescription = (
-        <>Recommend any publication you think your audience will find valuable, and find out when others are recommending you.</>
     );
 
     return (
