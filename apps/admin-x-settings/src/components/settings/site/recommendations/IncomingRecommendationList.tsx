@@ -47,6 +47,9 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
         window.open(cleanedSource, '_blank');
     };
 
+    const freeMembersLabel = (signups - paidConversions) === 1 ? 'free member' : 'free members';
+    const paidConversionsLabel = (paidConversions === 1) ? 'paid member' : 'paid members';
+
     return (
         <TableRow hideActions>
             <TableCell onClick={showDetails}>
@@ -60,12 +63,12 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
                 </div>
             </TableCell>
             <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                {(signups - paidConversions) === 0 ? <span className="text-grey-500">-</span> : (<div className='-mt-px flex grow items-end gap-1'><span>{signups - paidConversions}</span><span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>free members</span></div>)}
+                {(signups - paidConversions) === 0 ? <span className="text-grey-500">-</span> : (<div className='-mt-px flex grow items-end gap-1'><span>{signups - paidConversions}</span><span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{freeMembersLabel}</span></div>)}
             </TableCell>
             {hasPaidColumn &&
                 <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
                     {paidConversions === 0 && <span className="text-grey-500">-</span>}
-                    {paidConversions > 0 && (<div className='-mt-px flex grow items-end gap-1'><span>{paidConversions}</span><span className='whitespace-nowrap text-xs text-grey-700'>paid members</span></div>)}
+                    {paidConversions > 0 && (<div className='-mt-px flex grow items-end gap-1'><span>{paidConversions}</span><span className='whitespace-nowrap text-xs text-grey-700'>{paidConversionsLabel}</span></div>)}
                 </TableCell>
             }
         </TableRow>
