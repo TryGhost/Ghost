@@ -178,6 +178,7 @@ const Details: React.FC<UserDetailProps> = ({errors, validators, user, setUserDa
 
 const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
     const hasWebmentions = useFeatureFlag('webmentions');
+    const hasRecommendations = useFeatureFlag('recommendations');
     const {currentUser} = useGlobalData();
 
     return (
@@ -199,6 +200,15 @@ const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}
                     label='Mentions'
                     onChange={(e) => {
                         setUserData?.({...user, mention_notifications: e.target.checked});
+                    }}
+                />}
+                {hasRecommendations && <Toggle
+                    checked={user.recommendation_notifications}
+                    direction='rtl'
+                    hint='Every time another site recommends your work'
+                    label='Recommendations'
+                    onChange={(e) => {
+                        setUserData?.({...user, recommendation_notifications: e.target.checked});
                     }}
                 />}
                 <Toggle
