@@ -232,7 +232,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount}) {
             multiplayerEndpoint={WEBSOCKET_ENDPOINT}
             nodes={getAllowedNodes({editorType})}
         >
-            <div className={`koenig-demo relative h-full grow ${darkMode ? 'dark' : ''}`}>
+            <div className={`koenig-demo relative h-full grow ${darkMode ? 'dark' : ''}`} style={{'--kg-breakout-adjustment': isSidebarOpen ? '440px' : '0px'}}>
                 {
                     !isMultiplayer && searchParams !== 'false'
                         ? <InitialContentToggle defaultContent={defaultContent} searchParams={searchParams} setSearchParams={setSearchParams} setTitle={setTitle} />
