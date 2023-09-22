@@ -3,8 +3,8 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationReasonForm from './RecommendationReasonForm';
-import handleError from '../../../../utils/api/handleError';
 import useForm from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {Recommendation, useDeleteRecommendation, useEditRecommendation} from '../../../../api/recommendations';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
@@ -21,6 +21,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
     const {updateRoute} = useRouting();
     const {mutateAsync: editRecommendation} = useEditRecommendation();
     const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
+    const handleError = useHandleError();
 
     const {formState, updateForm, handleSave, saveState, errors} = useForm({
         initialState: {

@@ -19,7 +19,10 @@ interface AppProps {
     externalNavigate: (link: ExternalLink) => void;
     darkMode?: boolean;
     unsplashConfig: DefaultHeaderTypes
-    sentryDSN: string | null;
+    sentry?: {
+        dsn: string;
+        env: string | null;
+    }
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
@@ -30,7 +33,9 @@ const queryClient = new QueryClient({
         queries: {
             refetchOnWindowFocus: false,
             staleTime: 5 * (60 * 1000), // 5 mins
-            cacheTime: 10 * (60 * 1000) // 10 mins
+            cacheTime: 10 * (60 * 1000), // 10 mins
+            // We have custom retry logic for specific errors in fetchApi()
+            retry: false
         }
     }
 });
@@ -43,7 +48,7 @@ function SentryErrorBoundary({children}: {children: React.ReactNode}) {
     );
 }
 
-function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, sentryDSN, onUpdate, onInvalidate, onDelete}: AppProps) {
+function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, sentry, onUpdate, onInvalidate, onDelete}: AppProps) {
     const appClassName = clsx(
         'admin-x-settings h-[100vh] w-full overflow-y-auto overflow-x-hidden',
         darkMode && 'dark'
@@ -52,7 +57,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
     return (
         <SentryErrorBoundary>
             <QueryClientProvider client={queryClient}>
-                <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
+                <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentry?.dsn || null} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
                     <GlobalDataProvider>
                         <RoutingProvider externalNavigate={externalNavigate}>
                             <GlobalDirtyStateProvider>

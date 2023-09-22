@@ -6,7 +6,7 @@ import React, {useRef, useState} from 'react';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import UnsplashSearchModal from '../../../../utils/unsplash/UnsplashSearchModal';
-import handleError from '../../../../utils/api/handleError';
+import useHandleError from '../../../../utils/api/handleError';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {SettingValue, getSettingValues} from '../../../../api/settings';
 import {debounce} from '../../../../utils/debounce';
@@ -31,6 +31,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
     const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
     const [showUnsplash, setShowUnsplash] = useState<boolean>(false);
     const {unsplashConfig} = useServices();
+    const handleError = useHandleError();
 
     const updateDescriptionDebouncedRef = useRef(
         debounce((value: string) => {

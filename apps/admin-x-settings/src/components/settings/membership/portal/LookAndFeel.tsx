@@ -7,7 +7,7 @@ import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import clsx from 'clsx';
-import handleError from '../../../../utils/api/handleError';
+import useHandleError from '../../../../utils/api/handleError';
 import {ReactComponent as PortalIcon1} from '../../../../assets/icons/portal-icon-1.svg';
 import {ReactComponent as PortalIcon2} from '../../../../assets/icons/portal-icon-2.svg';
 import {ReactComponent as PortalIcon3} from '../../../../assets/icons/portal-icon-3.svg';
@@ -44,6 +44,7 @@ const LookAndFeel: React.FC<{
     updateSetting: (key: string, setting: SettingValue) => void
 }> = ({localSettings, updateSetting}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
+    const handleError = useHandleError();
 
     const [portalButton, portalButtonStyle, portalButtonIcon, portalButtonSignupText] = getSettingValues(localSettings, ['portal_button', 'portal_button_style', 'portal_button_icon', 'portal_button_signup_text']);
 

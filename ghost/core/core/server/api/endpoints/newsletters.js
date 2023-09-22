@@ -27,6 +27,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
+            throw new Error('bla');
             return models.Newsletter.findPage(frame.options);
         }
     },

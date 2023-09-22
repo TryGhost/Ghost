@@ -30,7 +30,6 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 ref: 'TryGhost/Edition',
                 image: 'assets/img/themes/Edition.png'
             }]}
-            sentryDSN={'' as string | null}
             unsplashConfig={{} as DefaultHeaderTypes}
             zapierTemplates={[]}
             onDelete={() => {}}

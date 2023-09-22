@@ -12,7 +12,7 @@ import React, {useEffect, useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
-import handleError from '../../../utils/api/handleError';
+import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {InstalledTheme, Theme, ThemesInstallResponseType, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
@@ -43,6 +43,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const {updateRoute} = useRouting();
     const {mutateAsync: uploadTheme} = useUploadTheme();
     const limiter = useLimiter();
+    const handleError = useHandleError();
 
     const [uploadConfig, setUploadConfig] = useState<{enabled: boolean; error?: string}>();
 
@@ -236,6 +237,7 @@ const ChangeThemeModal = () => {
     const modal = useModal();
     const {data: {themes} = {}} = useBrowseThemes();
     const {mutateAsync: installTheme} = useInstallTheme();
+    const handleError = useHandleError();
 
     const onSelectTheme = (theme: OfficialTheme|null) => {
         setSelectedTheme(theme);
