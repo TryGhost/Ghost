@@ -56,7 +56,7 @@ test.describe('Theme settings', async () => {
 
         await page.getByRole('button', {name: 'Activate'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/headline is now your active theme/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/headline is now your active theme/);
 
         expect(lastApiRequests.installTheme?.url).toMatch(/\?source=github&ref=TryGhost%2FHeadline/);
     });

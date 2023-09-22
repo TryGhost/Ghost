@@ -26,7 +26,7 @@ test.describe('Newsletter settings', async () => {
         const modal = page.getByTestId('add-newsletter-modal');
         await modal.getByRole('button', {name: 'Create'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Can't save newsletter/);
+        await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
         await expect(modal).toHaveText(/Please enter a name/);
 
         // Shouldn't be necessary, but without these Playwright doesn't click Create the second time for some reason
@@ -69,7 +69,7 @@ test.describe('Newsletter settings', async () => {
         await modal.getByPlaceholder('Weekly Roundup').fill('');
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Can't save newsletter/);
+        await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
         await expect(modal).toHaveText(/Please enter a name/);
 
         await modal.getByPlaceholder('Weekly Roundup').fill('Updated newsletter');

@@ -38,7 +38,7 @@ test.describe('User invitations', async () => {
         await modal.locator('input[value=author]').check();
         await modal.getByRole('button', {name: 'Send invitation now'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Invitation successfully sent to newuser@test\.com/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation successfully sent to newuser@test\.com/);
 
         await section.getByRole('tab', {name: 'Invited'}).click();
 
@@ -77,7 +77,7 @@ test.describe('User invitations', async () => {
 
         await listItem.getByRole('button', {name: 'Resend'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Invitation resent! \(invitee@test\.com\)/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation resent! \(invitee@test\.com\)/);
 
         // Resending works by deleting and re-adding the invite
 
@@ -112,7 +112,7 @@ test.describe('User invitations', async () => {
 
         await listItem.getByRole('button', {name: 'Revoke'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Invitation revoked \(invitee@test\.com\)/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation revoked \(invitee@test\.com\)/);
 
         expect(lastApiRequests.deleteInvite?.url).toMatch(new RegExp(`/invites/${responseFixtures.invites.invites[0].id}`));
     });

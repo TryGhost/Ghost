@@ -26,7 +26,7 @@ test.describe('Tier settings', async () => {
 
         await modal.getByRole('button', {name: 'Save & close'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Can't save tier/);
+        await expect(page.getByTestId('toast-error')).toHaveText(/Can't save tier/);
         await expect(modal).toHaveText(/You must specify a name/);
         await expect(modal).toHaveText(/Amount must be at least \$1/);
 
@@ -104,7 +104,7 @@ test.describe('Tier settings', async () => {
         await modal.getByLabel('Name').fill('');
         await modal.getByRole('button', {name: 'Save & close'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Can't save tier/);
+        await expect(page.getByTestId('toast-error')).toHaveText(/Can't save tier/);
         await expect(modal).toHaveText(/You must specify a name/);
 
         await modal.getByLabel('Name').fill('Supporter updated');
