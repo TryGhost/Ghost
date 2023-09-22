@@ -28,6 +28,7 @@ export type User = {
     paid_subscription_canceled_notification: boolean;
     paid_subscription_started_notification: boolean;
     mention_notifications: boolean;
+    recommendation_notifications: boolean;
     milestone_notifications: boolean;
     roles: UserRole[];
     url: string;
