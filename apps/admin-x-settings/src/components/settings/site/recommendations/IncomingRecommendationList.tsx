@@ -1,20 +1,46 @@
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
-import React from 'react';
+import React, {useMemo} from 'react';
 import RecommendationIcon from './RecommendationIcon';
 import Table from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import {Mention} from '../../../../api/mentions';
 import {PaginationData} from '../../../../hooks/usePagination';
+import {ReferrerHistoryItem} from '../../../../api/referrers';
 
 interface IncomingRecommendationListProps {
     mentions: Mention[],
+    stats: ReferrerHistoryItem[],
     pagination: PaginationData,
     isLoading: boolean
 }
 
-const IncomingRecommendationItem: React.FC<{mention: Mention}> = ({mention}) => {
+const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHistoryItem[]}> = ({mention, stats}) => {
     const cleanedSource = mention.source.replace('/.well-known/recommendations.json', '');
+
+    const {signups, paidConversions, hasPaidColumn} = useMemo(() => {
+        // Note: this should match the `getDomainFromUrl` method from OutboundLinkTagger
+        let cleanedDomain = cleanedSource;
+        try {
+            cleanedDomain = new URL(cleanedSource).hostname.replace(/^www\./, '');
+        } catch (_) {
+            // Ignore invalid urls
+        }
+
+        return stats.reduce((acc, stat) => {
+            acc.hasPaidColumn = acc.hasPaidColumn || stat.paid_conversions > 0;
+            if (stat.source === cleanedDomain) {
+                acc.signups += stat.signups;
+                acc.paidConversions += stat.paid_conversions;
+                return acc;
+            }
+            return acc;
+        }, {
+            signups: 0,
+            paidConversions: 0,
+            hasPaidColumn: false
+        });
+    }, [stats, cleanedSource]);
 
     const showDetails = () => {
         // Open url
@@ -34,23 +60,28 @@ const IncomingRecommendationItem: React.FC<{mention: Mention}> = ({mention}) => 
                     </div>
                 </div>
             </TableCell>
-            {/* <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
+            <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
-                    If it's 0
-                    <span className="text-grey-500">-</span>
-                    If it's more than 0
-                    <span>12</span>
-                    <span className='whitespace-nowrap text-xs text-grey-700'>Subscribers gained</span>
+                    {(signups - paidConversions) === 0 && <span className="text-grey-500">-</span>}
+                    {(signups - paidConversions) > 0 && <><span>{signups - paidConversions}</span><span className='whitespace-nowrap text-xs text-grey-700'>free members</span></>}
                 </div>
-            </TableCell> */}
+            </TableCell>
+            {hasPaidColumn &&
+                <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
+                    <div className={`flex grow flex-col`}>
+                        {paidConversions === 0 && <span className="text-grey-500">-</span>}
+                        {paidConversions > 0 && <><span>{paidConversions}</span><span className='whitespace-nowrap text-xs text-grey-700'>paid members</span></>}
+                    </div>
+                </TableCell>
+            }
         </TableRow>
     );
 };
 
-const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({mentions, pagination, isLoading}) => {
+const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({mentions, stats, pagination, isLoading}) => {
     if (isLoading || mentions.length) {
         return <Table isLoading={isLoading} pagination={pagination}>
-            {mentions.map(mention => <IncomingRecommendationItem key={mention.id} mention={mention} />)}
+            {mentions.map(mention => <IncomingRecommendationItem key={mention.id} mention={mention} stats={stats} />)}
         </Table>;
     } else {
         return <NoValueLabel icon='thumbs-up'>
