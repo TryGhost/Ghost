@@ -18,7 +18,7 @@ interface IncomingRecommendationListProps {
 const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHistoryItem[]}> = ({mention, stats}) => {
     const cleanedSource = mention.source.replace('/.well-known/recommendations.json', '');
 
-    const signups = useMemo(() => {
+    const {signups, paidConversions, hasPaidColumn} = useMemo(() => {
         // Note: this should match the `getDomainFromUrl` method from OutboundLinkTagger
         let cleanedDomain = cleanedSource;
         try {
@@ -28,11 +28,18 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
         }
 
         return stats.reduce((acc, stat) => {
+            acc.hasPaidColumn = acc.hasPaidColumn || stat.paid_conversions > 0;
             if (stat.source === cleanedDomain) {
-                return acc + stat.signups;
+                acc.signups += stat.signups;
+                acc.paidConversions += stat.paid_conversions;
+                return acc;
             }
             return acc;
-        }, 0);
+        }, {
+            signups: 0,
+            paidConversions: 0,
+            hasPaidColumn: false
+        });
     }, [stats, cleanedSource]);
 
     const showDetails = () => {
@@ -55,10 +62,18 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
             </TableCell>
             <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
-                    {signups === 0 && <span className="text-grey-500">-</span>}
-                    {signups > 0 && <><span>{signups}</span><span className='whitespace-nowrap text-xs text-grey-700'>Subscribers gained</span></>}
+                    {(signups - paidConversions) === 0 && <span className="text-grey-500">-</span>}
+                    {(signups - paidConversions) > 0 && <><span>{signups - paidConversions}</span><span className='whitespace-nowrap text-xs text-grey-700'>free members</span></>}
                 </div>
             </TableCell>
+            {hasPaidColumn &&
+                <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
+                    <div className={`flex grow flex-col`}>
+                        {paidConversions === 0 && <span className="text-grey-500">-</span>}
+                        {paidConversions > 0 && <><span>{paidConversions}</span><span className='whitespace-nowrap text-xs text-grey-700'>paid members</span></>}
+                    </div>
+                </TableCell>
+            }
         </TableRow>
     );
 };
