@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import handleError from './handleError';
 import handleResponse from './handleResponse';
 import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from './errors';
@@ -5,7 +6,7 @@ import {QueryClient, UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery,
 import {getGhostPaths} from './helpers';
 import {useEffect, useMemo} from 'react';
 import {usePage, usePagination} from '../hooks/usePagination';
-import {useServices} from '../components/providers/ServiceProvider';
+import {useSentryDSN, useServices} from '../components/providers/ServiceProvider';
 
 export interface Meta {
     pagination: {
@@ -30,6 +31,7 @@ interface RequestOptions {
 
 export const useFetchApi = () => {
     const {ghostVersion} = useServices();
+    const sentrydsn = useSentryDSN();
 
     return async (endpoint: string | URL, options: RequestOptions = {}) => {
         // By default, we set the Content-Type header to application/json
@@ -85,10 +87,9 @@ export const useFetchApi = () => {
                     ...options
                 });
 
-                // TODO: Add Sentry integration
-                // if (attempts !== 0 && config.sentry_dsn) {
-                //     captureMessage('Request took multiple attempts', {extra: getErrorData()});
-                // }
+                if (attempts !== 0 && sentrydsn) {
+                    Sentry.captureMessage('Request took multiple attempts', {extra: {attempts, retryingMs, endpoint: endpoint.toString()}});
+                }
 
                 return handleResponse(response);
             } catch (error) {
@@ -102,10 +103,9 @@ export const useFetchApi = () => {
                     continue;
                 }
 
-                // TODO: Add Sentry integration
-                // if (attempts > 0 && config.sentry_dsn) {
-                //     captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
-                // }
+                if (attempts !== 0 && sentrydsn) {
+                    Sentry.captureMessage('Request failed after multiple attempts', {extra: {attempts, retryingMs, endpoint: endpoint.toString()}});
+                }
 
                 if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
                     throw new TimeoutError();

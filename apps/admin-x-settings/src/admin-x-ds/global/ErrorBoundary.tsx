@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import Banner from './Banner';
 import React, {ComponentType, ErrorInfo, ReactNode} from 'react';
 
@@ -17,7 +18,10 @@ class ErrorBoundary extends React.Component<{children: ReactNode, name: ReactNod
     }
 
     componentDidCatch(error: unknown, info: ErrorInfo) {
-        // TODO: Log to Sentry
+        Sentry.withScope((scope) => {
+            scope.setTag('adminX settings component-', info.componentStack);
+            Sentry.captureException(error);
+        });
         // eslint-disable-next-line no-console
         console.error(error);
         // eslint-disable-next-line no-console

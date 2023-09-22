@@ -325,6 +325,7 @@ export default class AdminXSettings extends Component {
                             toggleFeatureFlag={this.toggleFeatureFlag}
                             darkMode={this.feature.nightShift}
                             unsplashConfig={defaultUnsplashHeaders}
+                            sentryDSN={this.config.sentry_dsn}
                         />
                     </Suspense>
                 </ErrorHandler>
