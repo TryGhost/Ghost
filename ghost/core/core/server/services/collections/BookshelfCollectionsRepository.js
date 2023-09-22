@@ -12,9 +12,12 @@ const {default: ObjectID} = require('bson-objectid');
 module.exports = class BookshelfCollectionsRepository {
     #model;
     #relationModel;
-    constructor(model, relationModel) {
+    /** @type {import('@tryghost/domain-events')} */
+    #DomainEvents;
+    constructor(model, relationModel, DomainEvents) {
         this.#model = model;
         this.#relationModel = relationModel;
+        this.#DomainEvents = DomainEvents;
     }
 
     async createTransaction(cb) {
@@ -241,6 +244,12 @@ module.exports = class BookshelfCollectionsRepository {
             if (collectionPostRelationsToDeleteIds.length > 0) {
                 await this.#relationModel.query().delete().whereIn('id', collectionPostRelationsToDeleteIds).transacting(options.transaction);
             }
+
+            options.transaction.executionPromise.then(() => {
+                for (const event of collection.events) {
+                    this.#DomainEvents.dispatch(event);
+                }
+            });
         }
     }
 };
