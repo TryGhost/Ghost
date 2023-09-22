@@ -126,7 +126,7 @@ test.describe('User actions', async () => {
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Delete user'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/User deleted/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/User deleted/);
         await expect(activeTab.getByTestId('user-list-item')).toHaveCount(0);
 
         expect(lastApiRequests.deleteUser?.url).toMatch(new RegExp(`/users/${authorUser.id}`));
@@ -189,7 +189,7 @@ test.describe('User actions', async () => {
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Yep — I\'m sure'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Ownership transferred/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Ownership transferred/);
 
         await expect(section.getByTestId('owner-user')).toHaveText(/administrator@test\.com/);
 
