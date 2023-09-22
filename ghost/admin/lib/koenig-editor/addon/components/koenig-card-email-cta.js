@@ -97,14 +97,18 @@ export default class KoenigCardEmailCtaComponent extends Component {
             }]);
         }
 
-        // TODO: remove feature condition once Tips & Donations have been released
-        if (this.feature.tipsAndDonations) {
-            if (this.settings.donationsEnabled) {
-                urls.push({
-                    name: 'Tip or donation',
-                    url: '#/portal/support'
-                });
-            }
+        if (this.feature.tipsAndDonations && this.settings.donationsEnabled) {
+            urls.push({
+                name: 'Tip or donation',
+                url: '#/portal/support'
+            });
+        }
+
+        if (this.settings.recommendationsEnabled) {
+            urls.push({
+                name: 'Recommendations',
+                url: '#/portal/recommendations'
+            });
         }
 
         if (this.offers) {
