@@ -48,20 +48,14 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                             <RecommendationIcon isGhostSite={isGhostSite} {...recommendation} />
                             <span className='line-clamp-1 font-medium'>{recommendation.title}</span>
                         </div>
-                        {/* <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{recommendation.url || 'No reason added'}</span> */}
                     </div>
                 </div>
             </TableCell>
             <TableCell className='hidden w-8 align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                {/* {(count === 0) ? (<span className="text-grey-500">-</span>) : (<div className='flex grow flex-col'>
-                    <span>{count}</span>
-                    <span className='whitespace-nowrap text-xs text-grey-700'>{isGhostSite ? newMembers : clicks}</span>
-                </div>)} */}
                 {(count === 0) ? (<span className="text-grey-500">-</span>) : (<div className='-mt-px flex grow items-end gap-1'>
                     <span>{count}</span>
                     <span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{isGhostSite ? newMembers : clicks}</span>
                 </div>)}
-
             </TableCell>
         </TableRow>
     );

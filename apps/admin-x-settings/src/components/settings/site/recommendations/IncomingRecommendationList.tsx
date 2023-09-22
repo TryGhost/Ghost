@@ -52,26 +52,19 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
             <TableCell onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
-                        <div className="mb-1 flex items-center gap-2">
+                        <div className="mb-0.5 flex items-center gap-3">
                             <RecommendationIcon favicon={mention.source_favicon} featured_image={mention.source_featured_image} title={mention.source_title || mention.source_site_title || cleanedSource} />
                             <span className='line-clamp-1'>{mention.source_title || mention.source_site_title || cleanedSource}</span>
                         </div>
-                        <span className='line-clamp-1 text-xs leading-snug text-grey-700'>{mention.source_excerpt || cleanedSource}</span>
                     </div>
                 </div>
             </TableCell>
-            <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
-                <div className={`flex grow flex-col`}>
-                    {(signups - paidConversions) === 0 && <span className="text-grey-500">-</span>}
-                    {(signups - paidConversions) > 0 && <><span>{signups - paidConversions}</span><span className='whitespace-nowrap text-xs text-grey-700'>free members</span></>}
-                </div>
+            <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
+                {(signups - paidConversions) === 0 ? <span className="text-grey-500">-</span> : (<div className='-mt-px flex grow items-end gap-1'><span>{signups - paidConversions}</span><span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>free members</span></div>)}
             </TableCell>
             {hasPaidColumn &&
-                <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
-                    <div className={`flex grow flex-col`}>
-                        {paidConversions === 0 && <span className="text-grey-500">-</span>}
-                        {paidConversions > 0 && <><span>{paidConversions}</span><span className='whitespace-nowrap text-xs text-grey-700'>paid members</span></>}
-                    </div>
+                <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
+                    {paidConversions === 0 ? <span className="text-grey-500">-</span> : (<div className='-mt-px flex grow items-end gap-1'><span>{paidConversions}</span><span className='whitespace-nowrap text-xs text-grey-700'>paid members</span></div>)}
                 </TableCell>
             }
         </TableRow>
