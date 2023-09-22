@@ -23,7 +23,7 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
     >
         <div>
             <Heading className='mb-2 block text-2xs font-semibold uppercase tracking-wider' grey={true} level={6}>Preview</Heading>
-            <a className='flex items-center justify-between rounded-sm border border-grey-300 p-3' href={formState.url} rel="noopener noreferrer" target="_blank">
+            <a className='flex items-center justify-between rounded-sm border border-grey-300 bg-white p-3' href={formState.url} rel="noopener noreferrer" target="_blank">
                 <div className='flex flex-col gap-[2px]'>
                     <div className="flex items-center gap-2">
                         <RecommendationIcon {...formState} />
