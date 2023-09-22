@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import React, {ReactNode, Suspense, useCallback, useMemo} from 'react';
 
 export interface HtmlEditorProps {
@@ -90,21 +91,21 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
     nodes
 }) => {
     const onError = useCallback((error: unknown) => {
-        // ensure we're still showing errors in development
+        try {
+            Sentry.captureException({
+                error,
+                tags: {lexical: true},
+                contexts: {
+                    koenig: {
+                        version: window['@tryghost/koenig-lexical']?.version
+                    }
+                }
+            });
+        } catch (e) {
+            // if this fails, Sentry is probably not initialized
+            console.error(e); // eslint-disable-line
+        }
         console.error(error); // eslint-disable-line
-
-        // Pass down Sentry from Ember?
-        // if (this.config.sentry_dsn) {
-        //     Sentry.captureException(error, {
-        //         tags: {lexical: true},
-        //         contexts: {
-        //             koenig: {
-        //                 version: window['@tryghost/koenig-lexical']?.version
-        //             }
-        //         }
-        //     });
-        // }
-        // don't rethrow, Lexical will attempt to gracefully recover
     }, []);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
