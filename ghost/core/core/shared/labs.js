@@ -15,6 +15,7 @@ const messages = {
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
     'audienceFeedback',
+    'collections',
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
@@ -36,7 +37,6 @@ const ALPHA_FEATURES = [
     'websockets',
     'stripeAutomaticTax',
     'emailCustomization',
-    'collections',
     'adminXSettings',
     'mailEvents',
     'collectionsCard',
