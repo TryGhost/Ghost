@@ -17,7 +17,11 @@ export default class ImportController extends Controller {
     }
 
     @action
-    close() {
+    close(from) {
+        if (from === 'background') {
+            return;
+        }
+
         this.router.transitionTo('members');
     }
 }

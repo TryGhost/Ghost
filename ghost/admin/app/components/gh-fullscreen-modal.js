@@ -48,7 +48,7 @@ const FullScreenModalComponent = Component.extend({
         },
 
         clickOverlay() {
-            this.send('close');
+            this.send('close', ...arguments);
         }
     },
 
