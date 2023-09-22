@@ -1,6 +1,5 @@
 import Button from '../../../admin-x-ds/global/Button';
 import IncomingRecommendations from './recommendations/IncomingRecommendations';
-import Link from '../../../admin-x-ds/global/Link';
 import React, {useState} from 'react';
 import RecommendationList from './recommendations/RecommendationList';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
@@ -14,11 +13,10 @@ import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         saveState,
-        siteData,
         handleSave
     } = useSettingGroup();
 
-    const {data: {recommendations, meta} = {}, isLoading, hasNextPage, fetchNextPage} = useBrowseRecommendations({
+    const {data: {recommendations} = {}, isLoading, hasNextPage, fetchNextPage} = useBrowseRecommendations({
         searchParams: {
             include: 'count.clicks,count.subscribers',
             limit: '5'
@@ -62,8 +60,6 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }} />
     );
 
-    const recommendationsURL = `${siteData?.url.replace(/\/$/, '')}/#/portal/recommendations`;
-
     const tabs = [
         {
             id: 'your-recommendations',
@@ -78,7 +74,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ];
 
     const groupDescription = (
-        <>Share favorite sites with your audience after they subscribe. {(!!meta && !!meta.pagination.total && meta.pagination.total > 0) && <Link href={recommendationsURL} target='_blank'>Preview</Link>}</>
+        <>Recommend any publication you think your audience will find valuable, and find out when others are recommending you.</>
     );
 
     return (
