@@ -30247,10 +30247,10 @@ tr46@~0.0.3:
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
 
-tracked-built-ins@3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/tracked-built-ins/-/tracked-built-ins-3.2.0.tgz#13e787b7c4991fd0ccb2363a11a790aa62f5de78"
-  integrity sha512-dB8cFBpyJco3tmMO0w/+K8GYaL4iBjff4avLmNju0q6o8VvKLPpvPk/JHiwSXgX6aDCcOQv4J5JUBCAXBHaiGQ==
+tracked-built-ins@3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/tracked-built-ins/-/tracked-built-ins-3.3.0.tgz#3c8d780550658fe180d0ec32754f1eef1966f2d9"
+  integrity sha512-ewKFrW/AQs05oLPM5isOUb/1aOwBRfHfmF408CCzTk21FLAhKrKVOP5Q5ebX+zCT4kvg81PGBGwrBiEGND1nWA==
   dependencies:
     "@embroider/addon-shim" "^1.8.3"
     ember-tracked-storage-polyfill "^1.0.0"

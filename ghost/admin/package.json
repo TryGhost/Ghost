@@ -151,7 +151,7 @@
     "reframe.js": "4.0.2",
     "semver": "7.5.4",
     "testem": "3.10.1",
-    "tracked-built-ins": "3.2.0",
+    "tracked-built-ins": "3.3.0",
     "util": "0.12.5",
     "validator": "7.2.0",
     "walk-sync": "3.0.0"
