@@ -24,7 +24,7 @@ import validator from 'validator';
 import {DetailsInputs} from './DetailsInputs';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps} from '../../providers/RoutingProvider';
-import {User, canAccessSettings, hasAdminAccess, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '../../../api/users';
+import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '../../../api/users';
 import {genStaffToken, getStaffToken} from '../../../api/staffToken';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
@@ -499,6 +499,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         }
     };
 
+    const showMenu = hasAdminAccess(currentUser) || (isEditorUser(currentUser) && isAuthorOrContributor(user));
     let menuItems: MenuItem[] = [];
 
     if (isOwnerUser(currentUser) && isAdminUser(userData) && userData.status !== 'inactive') {
@@ -509,7 +510,10 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         });
     }
 
-    if (userData.id !== currentUser.id) {
+    if (userData.id !== currentUser.id && (
+        (hasAdminAccess(currentUser) && !isOwnerUser(user)) ||
+        (isEditorUser(currentUser) && isAuthorOrContributor(user))
+    )) {
         let suspendUserLabel = userData.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
         menuItems.push({
@@ -545,7 +549,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     }
 
     const coverButtonContainerClassName = clsx(
-        hasAdminAccess(currentUser) ? (
+        showMenu ? (
             userData.cover_image ? 'relative ml-10 mr-[106px] flex translate-y-[-80px] gap-3 md:ml-0 md:justify-end' : 'relative -mb-8 ml-10 mr-[106px] flex translate-y-[358px] md:ml-0 md:translate-y-[268px] md:justify-end'
         ) : (
             userData.cover_image ? 'relative ml-10 flex max-w-4xl translate-y-[-80px] gap-3 md:mx-auto md:justify-end' : 'relative -mb-8 ml-10 flex max-w-4xl translate-y-[358px] md:mx-auto md:translate-y-[268px] md:justify-end'
@@ -655,7 +659,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                             handleImageUpload('cover_image', file);
                         }}
                     >Upload cover image</ImageUpload>
-                    {hasAdminAccess(currentUser) && <div className="absolute bottom-12 right-12 z-10">
+                    {showMenu && <div className="absolute bottom-12 right-12 z-10">
                         <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
                     </div>}
                     <div className={`${!canAccessSettings(currentUser) ? 'mx-10 pl-0 md:max-w-[50%] min-[920px]:ml-[calc((100vw-920px)/2)] min-[920px]:max-w-[460px]' : 'max-w-[50%] pl-12'} relative flex flex-col items-start gap-4 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60`}>

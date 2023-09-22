@@ -154,6 +154,10 @@ export function isContributorUser(user: User) {
     return user.roles.some(role => role.name === 'Contributor');
 }
 
+export function isAuthorOrContributor(user: User) {
+    return isAuthorUser(user) || isContributorUser(user);
+}
+
 export function canAccessSettings(user: User) {
     return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
 }
