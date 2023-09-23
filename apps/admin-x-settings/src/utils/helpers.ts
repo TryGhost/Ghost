@@ -14,6 +14,14 @@ export function getGhostPaths(): IGhostPaths {
     return {subdir, adminRoot, assetRoot, apiRoot};
 }
 
+export function resolveAsset(assetPath: string, relativeTo: string) {
+    if (assetPath.match(/^(?:[a-z]+:)?\/\//i)) {
+        return assetPath;
+    }
+
+    return `${relativeTo}${assetPath}`;
+}
+
 export function getLocalTime(timeZone: string) {
     const date = new Date();
     const options = {timeZone: timeZone};
@@ -61,6 +69,10 @@ export function downloadFile(url: string) {
     }
 
     iframe.setAttribute('src', url);
+}
+
+export function downloadFromEndpoint(path: string) {
+    downloadFile(`${getGhostPaths().apiRoot}${path}`);
 }
 
 export function numberWithCommas(x: number) {

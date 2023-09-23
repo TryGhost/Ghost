@@ -10,4 +10,9 @@ export class PostsRepositoryInMemory extends InMemoryRepository<string, Collecti
             tags: entity.tags.map(tag => tag.slug)
         };
     }
+
+    async getAllIds() {
+        const posts = await this.getAll();
+        return posts.map(post => post.id);
+    }
 }

@@ -7,7 +7,7 @@ import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 import {getSettingValues} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
-const searchKeywords = {
+export const searchKeywords = {
     enableNewsletters: ['newsletter', 'enable', 'disable', 'turn on'],
     newsletters: ['newsletter', 'email'],
     defaultRecipients: ['newsletter', 'default recipients', 'email'],
@@ -15,17 +15,17 @@ const searchKeywords = {
 };
 
 const EmailSettings: React.FC = () => {
-    const {settings} = useGlobalData();
+    const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     return (
-        <SettingSection keywords={Object.values(searchKeywords).flat()} title='Email newsletters'>
+        <SettingSection keywords={Object.values(searchKeywords).flat()} title='Email newsletter'>
             <EnableNewsletters keywords={searchKeywords.enableNewsletters} />
             {newslettersEnabled !== 'disabled' && (
                 <>
-                    <Newsletters keywords={searchKeywords.newsletters} />
                     <DefaultRecipients keywords={searchKeywords.defaultRecipients} />
-                    <MailGun keywords={searchKeywords.mailgun} />
+                    <Newsletters keywords={searchKeywords.newsletters} />
+                    {!config.mailgunIsConfigured && <MailGun keywords={searchKeywords.mailgun} />}
                 </>
             )}
         </SettingSection>

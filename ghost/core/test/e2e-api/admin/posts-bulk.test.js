@@ -8,6 +8,7 @@ describe('Posts Bulk API', function () {
 
     before(async function () {
         mockManager.mockLabsEnabled('collections');
+
         agent = await agentProvider.getAdminAPIAgent();
 
         // Note that we generate lots of fixtures here to test the bulk deletion correctly
@@ -29,8 +30,8 @@ describe('Posts Bulk API', function () {
 
             assert(amount > 0, 'Expect at least one post to be affected for this test to work');
 
-            let featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['posts']});
-            let featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().posts.length;
+            let featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['collectionPosts']});
+            let featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().collectionPosts.length;
             assert(featuredCollectionPostsAmount > 0, 'Expect to have multiple featured collection posts');
 
             const response = await agent
@@ -51,8 +52,8 @@ describe('Posts Bulk API', function () {
             const posts = await models.Post.findAll({filter, status: 'all'});
             assert.equal(posts.length, amount, `Expect all matching posts (${amount}) to be changed`);
 
-            featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['posts']});
-            featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().posts.length;
+            featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['collectionPosts']});
+            featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().collectionPosts.length;
             assert.equal(featuredCollectionPostsAmount, amount, 'Expect to have same amount featured collection posts as changed');
 
             for (const post of posts) {
@@ -69,8 +70,8 @@ describe('Posts Bulk API', function () {
 
             assert(amount > 0, 'Expect at least one post to be affected for this test to work');
 
-            let featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['posts']});
-            let featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().posts.length;
+            let featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['collectionPosts']});
+            let featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().collectionPosts.length;
             assert(featuredCollectionPostsAmount > 0, 'Expect to have multiple featured collection posts');
 
             const response = await agent
@@ -91,8 +92,8 @@ describe('Posts Bulk API', function () {
             const posts = await models.Post.findAll({filter, status: 'all'});
             assert.equal(posts.length, amount, `Expect all matching posts (${amount}) to be changed`);
 
-            featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['posts']});
-            featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().posts.length;
+            featuredCollection = await models.Collection.findPage({filter: 'slug:featured', limit: 1, withRelated: ['collectionPosts']});
+            featuredCollectionPostsAmount = featuredCollection.data[0].toJSON().collectionPosts.length;
             assert.equal(featuredCollectionPostsAmount, 0, 'Expect to have no featured collection posts');
 
             for (const post of posts) {
@@ -352,6 +353,10 @@ describe('Posts Bulk API', function () {
             // Check if all posts were deleted
             const posts = await models.Post.findPage({filter, status: 'all'});
             assert.equal(posts.meta.pagination.total, 0, `Expect all matching posts (${amount}) to be deleted`);
+
+            let latestCollection = await models.Collection.findPage({filter: 'slug:latest', limit: 1, withRelated: ['collectionPosts']});
+            latestCollection = latestCollection.data[0].toJSON().collectionPosts.length;
+            assert.equal(latestCollection, 0, 'Expect to have no collection posts');
         });
     });
 });

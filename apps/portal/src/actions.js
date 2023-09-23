@@ -1,5 +1,6 @@
+import setupGhostApi from './utils/api';
 import {HumanReadableError} from './utils/errors';
-import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl} from './utils/helpers';
+import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
 
 function switchPage({data, state}) {
     return {
@@ -78,7 +79,7 @@ async function signout({api, state}) {
 
 async function signin({data, api, state}) {
     try {
-        await api.member.sendMagicLink({...data, emailType: 'signin'});
+        await api.member.sendMagicLink({...data, emailType: 'signin', outboundLinkTagging: state.site.outbound_link_tagging});
         return {
             page: 'magiclink',
             lastPage: 'signin'
@@ -97,8 +98,9 @@ async function signin({data, api, state}) {
 async function signup({data, state, api}) {
     try {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
+
         if (plan.toLowerCase() === 'free') {
-            await api.member.sendMagicLink({emailType: 'signup', ...data});
+            await api.member.sendMagicLink({emailType: 'signup', ...data, outboundLinkTagging: state.site.outbound_link_tagging});
         } else {
             if (tierId && cadence) {
                 await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
@@ -473,6 +475,48 @@ async function updateProfile({data, state, api}) {
     };
 }
 
+async function oneClickSubscribe({data: {siteUrl}, state}) {
+    const externalSiteApi = setupGhostApi({siteUrl: siteUrl, apiUrl: 'not-defined', contentApiKey: 'not-defined'});
+    const {member} = state;
+
+    const referrerUrl = window.location.href;
+    const referrerSource = getRefDomain();
+
+    await externalSiteApi.member.sendMagicLink({
+        emailType: 'signup',
+        name: member.name,
+        email: member.email,
+        autoRedirect: false,
+        outboundLinkTagging: state.site.outbound_link_tagging,
+        customUrlHistory: [
+            {
+                time: Date.now(),
+                referrerSource,
+                referrerMedium: 'Ghost Recommendations',
+                referrerUrl
+            }
+        ]
+    });
+
+    return {};
+}
+
+function trackRecommendationClicked({data: {recommendationId}, api}) {
+    api.recommendations.trackClicked({
+        recommendationId
+    });
+
+    return {};
+}
+
+async function trackRecommendationSubscribed({data: {recommendationId}, api}) {
+    api.recommendations.trackSubscribed({
+        recommendationId
+    });
+
+    return {};
+}
+
 const Actions = {
     togglePopup,
     openPopup,
@@ -495,7 +539,10 @@ const Actions = {
     checkoutPlan,
     updateNewsletterPreference,
     showPopupNotification,
-    removeEmailFromSuppressionList
+    removeEmailFromSuppressionList,
+    oneClickSubscribe,
+    trackRecommendationClicked,
+    trackRecommendationSubscribed
 };
 
 /** Handle actions in the App, returns updated state */

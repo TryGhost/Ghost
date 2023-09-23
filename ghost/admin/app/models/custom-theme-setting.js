@@ -7,5 +7,7 @@ export default Model.extend({
     options: attr(),
     default: attr('string'),
     value: attr(),
-    group: attr('string')
+    group: attr('string'),
+    visibility: attr('string'),
+    visible: attr('boolean', {defaultValue: true})
 });

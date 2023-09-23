@@ -3,8 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import Button from '../Button';
 import ButtonGroup from '../ButtonGroup';
 import DesktopChromeHeader from './DesktopChromeHeader';
-import URLSelect from '../form/URLSelect';
-import {SelectOption} from '../form/Select';
+import Select, {SelectOption} from '../form/Select';
 
 const meta = {
     title: 'Global / Chrome / Desktop Header',
@@ -54,7 +53,7 @@ const selectOptions: SelectOption[] = [
 export const CustomToolbar: Story = {
     args: {
         toolbarLeft: <Button icon='arrow-left' link={true} size='sm' />,
-        toolbarCenter: <URLSelect options={selectOptions} onSelect={(value: string) => {
+        toolbarCenter: <Select options={selectOptions} onSelect={(value) => {
             alert(value);
         }} />,
         toolbarRight: <ButtonGroup

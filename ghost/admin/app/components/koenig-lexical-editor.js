@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
+import fetch from 'fetch';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -138,7 +139,9 @@ export default class KoenigLexicalEditor extends Component {
     @service membersUtils;
 
     @inject config;
+
     offers = null;
+    contentKey = null;
 
     get pinturaJsUrl() {
         if (!this.settings.pintura) {
@@ -241,13 +244,20 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const fetchCollectionPosts = async (collectionSlug) => {
-            const collectionPostsEndpoint = this.ghostPaths.url.api('posts');
-            const {posts} = await this.ajax.request(collectionPostsEndpoint, {
-                data: {
-                    collection: collectionSlug,
-                    limit: 12
-                }
-            });
+            if (!this.contentKey) {
+                const integrations = await this.store.findAll('integration');
+                const contentIntegration = integrations.findBy('slug', 'ghost-core-content');
+                this.contentKey = contentIntegration?.contentKey.secret;
+            }
+
+            const postsUrl = new URL(this.ghostPaths.url.admin('/api/content/posts/'), window.location.origin);
+            postsUrl.searchParams.append('key', this.contentKey);
+            postsUrl.searchParams.append('collection', collectionSlug);
+            postsUrl.searchParams.append('limit', 12);
+
+            const response = await fetch(postsUrl.toString());
+            const {posts} = await response.json();
+
             return posts;
         };
 
@@ -277,14 +287,22 @@ export default class KoenigLexicalEditor extends Component {
             };
 
             const donationLink = () => {
-                // TODO: remove feature condition once Tips & Donations have been released
-                if (this.feature.tipsAndDonations) {
-                    if (this.settings.donationsEnabled) {
-                        return [{
-                            label: 'Tip or donation',
-                            value: '#/portal/support'
-                        }];
-                    }
+                if (this.feature.tipsAndDonations && this.settings.donationsEnabled) {
+                    return [{
+                        label: 'Tip or donation',
+                        value: '#/portal/support'
+                    }];
+                }
+
+                return [];
+            };
+
+            const recommendationLink = () => {
+                if (this.settings.recommendationsEnabled) {
+                    return [{
+                        label: 'Recommendations',
+                        value: '#/portal/recommendations'
+                    }];
                 }
 
                 return [];
@@ -297,7 +315,7 @@ export default class KoenigLexicalEditor extends Component {
                 };
             });
 
-            return [...defaults, ...memberLinks(), ...donationLink(), ...offersLinks];
+            return [...defaults, ...memberLinks(), ...donationLink(), ...recommendationLink(), ...offersLinks];
         };
 
         const fetchLabels = async () => {

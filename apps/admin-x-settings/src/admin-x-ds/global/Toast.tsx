@@ -45,7 +45,7 @@ const Toast: React.FC<ToastProps> = ({
     );
 
     return (
-        <div className={classNames} data-testid='toast'>
+        <div className={classNames} data-testid={`toast-${props?.type}`}>
             <div className='flex items-start gap-3'>
                 {props?.icon && (typeof props.icon === 'string' ?
                     <div className='mt-0.5'><Icon className='grow' colorClass={props.type === 'success' ? 'text-green' : 'text-white'} name={props.icon} size='sm' /></div> : props.icon)}
@@ -96,4 +96,8 @@ export const showToast = ({
         ...options
     }
     );
+};
+
+export const dismissAllToasts = (): void => {
+    toast.dismiss();
 };

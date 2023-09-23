@@ -1,21 +1,27 @@
-import ExitSettingsButton from './components/ExitSettingsButton';
+import * as Sentry from '@sentry/react';
 import GlobalDataProvider from './components/providers/GlobalDataProvider';
-import Heading from './admin-x-ds/global/Heading';
+import MainContent from './MainContent';
 import NiceModal from '@ebay/nice-modal-react';
 import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
-import Settings from './components/Settings';
-import Sidebar from './components/Sidebar';
+import clsx from 'clsx';
+import {DefaultHeaderTypes} from './utils/unsplash/UnsplashTypes';
+import {ErrorBoundary} from '@sentry/react';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
 import {OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {Toaster} from 'react-hot-toast';
 import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
+import {useEffect} from 'react';
 
 interface AppProps {
     ghostVersion: string;
     officialThemes: OfficialTheme[];
     zapierTemplates: ZapierTemplate[];
     externalNavigate: (link: ExternalLink) => void;
+    toggleFeatureFlag: (flag: string, enabled: boolean) => void;
+    darkMode?: boolean;
+    unsplashConfig: DefaultHeaderTypes
+    sentryDSN: string | null;
 }
 
 const queryClient = new QueryClient({
@@ -28,48 +34,56 @@ const queryClient = new QueryClient({
     }
 });
 
-function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate}: AppProps) {
+function SentryErrorBoundary({children}: {children: React.ReactNode}) {
     return (
-        <QueryClientProvider client={queryClient}>
-            <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} zapierTemplates={zapierTemplates}>
-                <GlobalDataProvider>
-                    <RoutingProvider externalNavigate={externalNavigate}>
-                        <GlobalDirtyStateProvider>
-                            <div className="admin-x-settings h-[100vh] w-full overflow-y-auto" id="admin-x-root" style={{
-                                height: '100vh',
-                                width: '100%'
-                            }}
-                            >
-                                <Toaster />
-                                <NiceModal.Provider>
-                                    <div className='fixed left-6 top-4 z-20'>
-                                        <ExitSettingsButton />
-                                    </div>
+        <ErrorBoundary>
+            {children}
+        </ErrorBoundary>
+    );
+}
 
-                                    {/* Main container */}
-                                    <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] md:flex-row md:items-start md:gap-x-10 md:py-[8vmin]" id="admin-x-settings-content">
+function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, toggleFeatureFlag, darkMode = false, unsplashConfig, sentryDSN}: AppProps) {
+    const appClassName = clsx(
+        'admin-x-settings h-[100vh] w-full overflow-y-auto overflow-x-hidden',
+        darkMode && 'dark'
+    );
+    
+    useEffect(() => {
+        if (sentryDSN) {
+            Sentry.init({
+                dsn: sentryDSN,
+                release: ghostVersion,
+                integrations: [
+                    new Sentry.BrowserTracing({
+                    })
+                ]
+            });
+        }
+    }, [sentryDSN, ghostVersion]);
 
-                                        {/* Sidebar */}
-                                        <div className="relative z-20 min-w-[260px] grow-0 md:fixed md:top-[8vmin] md:basis-[260px]">
-                                            <div className='h-[84px]'>
-                                                <Heading>Settings</Heading>
-                                            </div>
-                                            <div className="relative mt-[-32px] w-[260px] overflow-x-hidden after:absolute after:inset-x-0 after:top-0 after:block after:h-[40px] after:bg-gradient-to-b after:from-white after:to-transparent after:content-['']">
-                                                <Sidebar />
-                                            </div>
-                                        </div>
-                                        <div className="relative flex-auto pt-[3vmin] md:ml-[300px] md:pt-[85px]">
-                                            <div className='pointer-events-none fixed inset-x-0 top-0 z-[5] h-[80px] bg-gradient-to-t from-transparent to-white to-60%'></div>
-                                            <Settings />
-                                        </div>
-                                    </div>
-                                </NiceModal.Provider>
-                            </div>
-                        </GlobalDirtyStateProvider>
-                    </RoutingProvider>
-                </GlobalDataProvider>
-            </ServicesProvider>
-        </QueryClientProvider>
+    return (
+        <SentryErrorBoundary>
+            <QueryClientProvider client={queryClient}>
+                <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} toggleFeatureFlag={toggleFeatureFlag} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates}>
+                    <GlobalDataProvider>
+                        <RoutingProvider externalNavigate={externalNavigate}>
+                            <GlobalDirtyStateProvider>
+                                <div className={appClassName} id="admin-x-root" style={{
+                                    height: '100vh',
+                                    width: '100%'
+                                }}
+                                >
+                                    <Toaster />
+                                    <NiceModal.Provider>
+                                        <MainContent />
+                                    </NiceModal.Provider>
+                                </div>
+                            </GlobalDirtyStateProvider>
+                        </RoutingProvider>
+                    </GlobalDataProvider>
+                </ServicesProvider>
+            </QueryClientProvider>
+        </SentryErrorBoundary>
     );
 }
 

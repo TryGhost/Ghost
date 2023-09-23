@@ -118,7 +118,7 @@ export const CompletePage: Story = {
     args: {
         size: 'full',
         footer: <></>,
-        noPadding: true,
+        padding: false,
         children: <>
             <ModalPage heading='Hey there full page'>
                 <p>This is a full page in a modal</p>
@@ -160,6 +160,20 @@ const longContent = (
         <p>Esse ex officia ipsum et magna reprehenderit ullamco dolore cillum cupidatat ullamco culpa. In et irure irure est id cillum officia pariatur et proident. Nulla nulla dolore qui excepteur magna eu adipisicing mollit. Eiusmod eu irure cupidatat consequat consectetur irure. Esse ex officia ipsum et magna reprehenderit ullamco dolore cillum cupidatat ullamco culpa. In et irure irure est id cillum officia pariatur et proident. Nulla nulla dolore qui excepteur magna eu adipisicing mollit. Eiusmod eu irure cupidatat consequat consectetur irure.</p>
     </>
 );
+
+export const StickyHeader: Story = {
+    args: {
+        size: 'md',
+        stickyHeader: true,
+        onOk: () => {
+            alert('Clicked OK!');
+        },
+        onCancel: undefined,
+        title: 'Sticky header',
+        stickyFooter: true,
+        children: longContent
+    }
+};
 
 export const StickyFooter: Story = {
     args: {

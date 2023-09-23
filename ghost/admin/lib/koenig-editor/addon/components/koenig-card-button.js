@@ -44,7 +44,7 @@ export default class KoenigCardButtonComponent extends Component {
             items: [{
                 buttonClass: 'fw4 flex items-center white',
                 icon: 'koenig/kg-edit',
-                iconClass: 'fill-white',
+                iconClass: 'fill-white-no-conflict',
                 title: 'Edit',
                 text: '',
                 action: run.bind(this, this.args.editCard)
@@ -73,14 +73,18 @@ export default class KoenigCardButtonComponent extends Component {
             }]);
         }
 
-        // TODO: remove feature condition once Tips & Donations have been released
-        if (this.feature.tipsAndDonations) {
-            if (this.settings.donationsEnabled) {
-                urls.push({
-                    name: 'Tip or donation',
-                    url: '#/portal/support'
-                });
-            }
+        if (this.feature.tipsAndDonations && this.settings.donationsEnabled) {
+            urls.push({
+                name: 'Tip or donation',
+                url: '#/portal/support'
+            });
+        }
+
+        if (this.settings.recommendationsEnabled) {
+            urls.push({
+                name: 'Recommendations',
+                url: '#/portal/recommendations'
+            });
         }
 
         if (this.offers) {

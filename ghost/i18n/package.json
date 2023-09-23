@@ -14,10 +14,11 @@
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
-    "translate": "yarn translate:ghost && yarn translate:portal && yarn translate:signup-form && node generate-context.js",
+    "translate": "yarn translate:ghost && yarn translate:portal && yarn translate:signup-form && yarn translate:comments && node generate-context.js",
     "translate:ghost": "NAMESPACE=ghost i18next '../core/core/{frontend,server,shared}/**/*.{js,jsx}'",
-    "translate:portal": "NAMESPACE=portal i18next '../portal/src/**/*.{js,jsx}'",
-    "translate:signup-form": "NAMESPACE=signup-form i18next '../signup-form/src/**/*.{ts,tsx}'"
+    "translate:portal": "NAMESPACE=portal i18next '../../apps/portal/src/**/*.{js,jsx}'",
+    "translate:signup-form": "NAMESPACE=signup-form i18next '../../apps/signup-form/src/**/*.{ts,tsx}'",
+    "translate:comments": "NAMESPACE=comments i18next '../../apps/comments-ui/src/**/*.{ts,tsx}'"
   },
   "files": [
     "index.js",
@@ -25,11 +26,11 @@
     "locales"
   ],
   "devDependencies": {
-    "c8": "7.14.0",
-    "i18next-parser": "8.6.0",
+    "c8": "8.0.1",
+    "i18next-parser": "8.7.0",
     "mocha": "10.2.0"
   },
   "dependencies": {
-    "i18next": "23.2.11"
+    "i18next": "23.5.1"
   }
 }

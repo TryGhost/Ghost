@@ -1,5 +1,5 @@
+import {chooseOptionInSelect, globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/e2e';
 
 test.describe('Default recipient settings', async () => {
     test('Supports editing default recipients', async ({page}) => {
@@ -18,7 +18,7 @@ test.describe('Default recipient settings', async () => {
         await expect(section.getByText('Whoever has access to the post')).toHaveCount(1);
 
         await section.getByRole('button', {name: 'Edit'}).click();
-        await section.getByLabel('Default newsletter recipients').selectOption('All members');
+        await chooseOptionInSelect(section.getByLabel('Default newsletter recipients'), 'All members');
         await section.getByRole('button', {name: 'Save'}).click();
 
         expect(lastApiRequests.editSettings?.body).toEqual({
@@ -29,7 +29,7 @@ test.describe('Default recipient settings', async () => {
         });
 
         await section.getByRole('button', {name: 'Edit'}).click();
-        await section.getByLabel('Default newsletter recipients').selectOption('Usually nobody');
+        await chooseOptionInSelect(section.getByLabel('Default newsletter recipients'), 'Usually nobody');
         await section.getByRole('button', {name: 'Save'}).click();
 
         expect(lastApiRequests.editSettings?.body).toEqual({
@@ -40,7 +40,7 @@ test.describe('Default recipient settings', async () => {
         });
 
         await section.getByRole('button', {name: 'Edit'}).click();
-        await section.getByLabel('Default newsletter recipients').selectOption('Paid-members only');
+        await chooseOptionInSelect(section.getByLabel('Default newsletter recipients'), 'Paid-members only');
         await section.getByRole('button', {name: 'Save'}).click();
 
         await expect(section.getByLabel('Default newsletter recipients')).toHaveCount(0);
@@ -79,12 +79,12 @@ test.describe('Default recipient settings', async () => {
 
         await section.getByRole('button', {name: 'Edit'}).click();
 
-        await section.getByLabel('Default newsletter recipients').selectOption({label: 'Specific people'});
-        await section.getByLabel('Select tiers').click();
+        await chooseOptionInSelect(section.getByLabel('Default newsletter recipients'), 'Specific people');
+        await section.getByLabel('Filter').click();
 
-        await section.locator('[data-testid="multiselect-option"]', {hasText: 'Basic Supporter'}).click();
-        await section.locator('[data-testid="multiselect-option"]', {hasText: 'first-label'}).click();
-        await section.locator('[data-testid="multiselect-option"]', {hasText: 'First offer'}).click();
+        await section.locator('[data-testid="select-option"]', {hasText: 'Basic Supporter'}).click();
+        await section.locator('[data-testid="select-option"]', {hasText: 'first-label'}).click();
+        await section.locator('[data-testid="select-option"]', {hasText: 'First offer'}).click();
 
         await section.getByRole('button', {name: 'Save'}).click();
 

@@ -2,11 +2,14 @@ import React, {useEffect, useState} from 'react';
 import TextField, {TextFieldProps} from './TextField';
 import validator from 'validator';
 
-const formatUrl = (value: string, baseUrl: string) => {
+const formatUrl = (value: string, baseUrl?: string) => {
     let url = value.trim();
 
     if (!url) {
-        return {save: '/', display: baseUrl};
+        if (baseUrl) {
+            return {save: '/', display: baseUrl};
+        }
+        return {save: '', display: ''};
     }
 
     // if we have an email address, add the mailto:
@@ -20,6 +23,13 @@ const formatUrl = (value: string, baseUrl: string) => {
         return {save: url, display: url};
     }
 
+    if (!baseUrl) {
+        // Absolute URL with no base URL
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = `https://${url}`;
+        }
+    }
+
     // If it doesn't look like a URL, leave it as is rather than assuming it's a pathname etc
     if (!url.match(/^[a-zA-Z0-9-]+:/) && !url.match(/^(\/|\?)/)) {
         return {save: url, display: url};
@@ -31,6 +41,10 @@ const formatUrl = (value: string, baseUrl: string) => {
         parsedUrl = new URL(url, baseUrl);
     } catch (e) {
         return {save: url, display: url};
+    }
+
+    if (!baseUrl) {
+        return {save: parsedUrl.toString(), display: parsedUrl.toString()};
     }
     const parsedBaseUrl = new URL(baseUrl);
 
@@ -84,9 +98,10 @@ const formatUrl = (value: string, baseUrl: string) => {
  * - Values that don't look like URLs are displayed and saved as-is (e.g. `test`)
  */
 const URLTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
-    baseUrl: string;
+    baseUrl?: string;
+    transformPathWithoutSlash?: boolean;
     onChange: (value: string) => void;
-}> = ({baseUrl, value, onChange, ...props}) => {
+}> = ({baseUrl, value, transformPathWithoutSlash, onChange, ...props}) => {
     const [displayedUrl, setDisplayedUrl] = useState('');
 
     useEffect(() => {
@@ -94,10 +109,20 @@ const URLTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
     }, [value, baseUrl]);
 
     const updateUrl = () => {
-        const {save, display} = formatUrl(displayedUrl, baseUrl);
+        let urls = formatUrl(displayedUrl, baseUrl);
 
-        setDisplayedUrl(display);
-        onChange(save);
+        // If the user entered something like "bla", try to parse it as a relative URL
+        // If parsing as "/bla" results in a valid URL, use that instead
+        if (transformPathWithoutSlash && !urls.display.includes('//')) {
+            const candidate = formatUrl('/' + displayedUrl, baseUrl);
+
+            if (candidate.display.includes('//')) {
+                urls = candidate;
+            }
+        }
+
+        setDisplayedUrl(urls.display);
+        onChange(urls.save);
     };
 
     const handleFocus: React.FocusEventHandler<HTMLInputElement> = (e) => {

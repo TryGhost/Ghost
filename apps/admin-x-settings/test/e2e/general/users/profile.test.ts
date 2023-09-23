@@ -87,8 +87,8 @@ test.describe('User profile', async () => {
 
         await modal.getByRole('button', {name: 'Change password'}).click();
 
-        await modal.getByLabel('New password').fill('newpassword');
-        await modal.getByLabel('Verify password').fill('newpassword');
+        await modal.getByLabel('New password').fill('newpasshere');
+        await modal.getByLabel('Verify password').fill('newpasshere');
 
         await modal.getByRole('button', {name: 'Change password'}).click();
 
@@ -96,8 +96,8 @@ test.describe('User profile', async () => {
 
         expect(lastApiRequests.updatePassword?.body).toMatchObject({
             password: [{
-                newPassword: 'newpassword',
-                ne2Password: 'newpassword',
+                newPassword: 'newpasshere',
+                ne2Password: 'newpasshere',
                 oldPassword: '',
                 user_id: responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!.id
             }]
@@ -126,7 +126,7 @@ test.describe('User profile', async () => {
 
         const wrapper = section.getByTestId('owner-user');
         await wrapper.hover();
-        await wrapper.getByRole('button', {name: 'Edit'}).click();
+        await wrapper.getByRole('button', {name: 'View profile'}).click();
 
         // Upload profile picture
 

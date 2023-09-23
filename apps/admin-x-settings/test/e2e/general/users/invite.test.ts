@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../../utils/e2e';
+import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/e2e';
 
 test.describe('User invitations', async () => {
     test('Supports inviting a user', async ({page}) => {
@@ -31,17 +31,14 @@ test.describe('User invitations', async () => {
 
         const section = page.getByTestId('users');
 
-        await section.getByRole('button', {name: 'Invite users'}).click();
+        await section.getByRole('button', {name: 'Invite people'}).click();
 
         const modal = page.getByTestId('invite-user-modal');
         await modal.getByLabel('Email address').fill('newuser@test.com');
         await modal.locator('input[value=author]').check();
         await modal.getByRole('button', {name: 'Send invitation now'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Invitation successfully sent to newuser@test\.com/);
-
-        // Currently clicking the backdrop is the only way to close this modal
-        await page.locator('#modal-backdrop').click({position: {x: 0, y: 0}});
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation successfully sent to newuser@test\.com/);
 
         await section.getByRole('tab', {name: 'Invited'}).click();
 
@@ -80,7 +77,7 @@ test.describe('User invitations', async () => {
 
         await listItem.getByRole('button', {name: 'Resend'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Invitation resent! \(invitee@test\.com\)/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation resent! \(invitee@test\.com\)/);
 
         // Resending works by deleting and re-adding the invite
 
@@ -115,8 +112,48 @@ test.describe('User invitations', async () => {
 
         await listItem.getByRole('button', {name: 'Revoke'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Invitation revoked \(invitee@test\.com\)/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation revoked \(invitee@test\.com\)/);
 
         expect(lastApiRequests.deleteInvite?.url).toMatch(new RegExp(`/invites/${responseFixtures.invites.invites[0].id}`));
+    });
+
+    test('Limits inviting too many staff users', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseAssignableRoles: {method: 'GET', path: '/roles/?limit=all&permissions=assign', response: responseFixtures.roles},
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        hostSettings: {
+                            limits: {
+                                staff: {
+                                    max: 1,
+                                    error: 'Your plan does not support more staff'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+
+        await section.getByRole('button', {name: 'Invite people'}).click();
+
+        const modal = page.getByTestId('invite-user-modal');
+
+        await modal.locator('input[value=author]').check();
+
+        await expect(modal).toHaveText(/Your plan does not support more staff/);
+
+        await modal.locator('input[value=contributor]').check();
+
+        await expect(modal).not.toHaveText(/Your plan does not support more staff/);
     });
 });

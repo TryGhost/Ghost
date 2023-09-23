@@ -78,6 +78,10 @@ class StripeMocker {
      */
     async getPriceForTier(tierSlug, cadence) {
         const product = await models.Product.findOne({slug: tierSlug});
+
+        if (!product) {
+            throw new Error('Product not found with slug ' + tierSlug);
+        }
         const tier = await tiers.api.read(product.id);
         const payments = members.api.paymentsService;
         const {id} = await payments.createPriceForTierCadence(tier, cadence);

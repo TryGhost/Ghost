@@ -537,9 +537,7 @@ describe('Signup', () => {
             window.location.hash = '';
         });
     });
-});
 
-describe('Signup', () => {
     describe('as free member on multi tier site', () => {
         test('with default settings', async () => {
             const {
@@ -785,3 +783,4 @@ describe('Signup', () => {
         });
     });
 });
+

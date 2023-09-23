@@ -21,12 +21,13 @@
     ],
     "devDependencies": {
         "@tryghost/domain-events": "0.0.0",
-        "c8": "8.0.0",
+        "c8": "8.0.1",
         "mocha": "10.2.0",
         "sinon": "15.2.0"
     },
     "dependencies": {
-        "@tryghost/collections": "0.0.0"
+        "@tryghost/collections": "0.0.0",
+        "@tryghost/post-events": "0.0.0"
     },
     "c8": {
         "exclude": [

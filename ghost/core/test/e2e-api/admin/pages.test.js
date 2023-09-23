@@ -1,3 +1,5 @@
+const {mobiledocToLexical} = require('@tryghost/kg-converters');
+const models = require('../../../core/server/models');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {anyArray, anyBoolean, anyContentVersion, anyEtag, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyUuid} = matchers;
 
@@ -28,6 +30,7 @@ describe('Pages API', function () {
     let agent;
 
     before(async function () {
+        mockManager.mockLabsEnabled('collectionsCard');
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();
@@ -35,6 +38,90 @@ describe('Pages API', function () {
 
     afterEach(function () {
         mockManager.restore();
+    });
+
+    describe('Read', function () {
+        it('Re-renders html when null', async function () {
+            // "queue" an existing page for re-render as happens when a published page is updated/destroyed
+            const page = await models.Post.findOne({slug: 'static-page-test'});
+            // NOTE: re-rendering only occurs for lexical pages
+            const lexical = mobiledocToLexical(page.get('mobiledoc'));
+            await models.Base.knex.raw('UPDATE posts set html=NULL, mobiledoc=NULL, lexical=? WHERE id=?', [lexical, page.id]);
+
+            await agent
+                .get(`/pages/${page.id}/?formats=mobiledoc,lexical,html`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    pages: [Object.assign({}, matchPageShallowIncludes)]
+                });
+        });
+    });
+
+    describe('Browse', function () {
+        it('Re-renders html when null', async function () {
+            // convert inserted pages to lexical and set html=null so we can test re-render
+            const pages = await models.Post.where('type', 'page').fetchAll();
+            for (const page of pages) {
+                if (!page.get('mobiledoc')) {
+                    continue;
+                }
+                const lexical = mobiledocToLexical(page.get('mobiledoc'));
+                await models.Base.knex.raw('UPDATE posts set html=NULL, mobiledoc=NULL, lexical=? WHERE id=?', [lexical, page.id]);
+            }
+
+            await agent
+                .get('/pages/?formats=mobiledoc,lexical,html')
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    pages: Array(pages.length).fill(Object.assign({}, matchPageShallowIncludes))
+                });
+        });
+    });
+
+    describe('Create', function () {
+        it('Can create a page with html', async function () {
+            mockManager.mockLabsDisabled('lexicalEditor');
+
+            const page = {
+                title: 'HTML test',
+                html: '<p>Testing page creation with html</p>'
+            };
+
+            await agent
+                .post('/pages/?source=html&formats=mobiledoc,lexical,html')
+                .body({pages: [page]})
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    pages: [Object.assign({}, matchPageShallowIncludes, {published_at: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('pages')
+                });
+        });
+
+        it('Can create a page with html (labs.lexicalEditor)', async function () {
+            mockManager.mockLabsEnabled('lexicalEditor');
+
+            const page = {
+                title: 'HTML test',
+                html: '<p>Testing page creation with html</p>'
+            };
+
+            await agent
+                .post('/pages/?source=html&formats=mobiledoc,lexical,html')
+                .body({pages: [page]})
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    pages: [Object.assign({}, matchPageShallowIncludes, {published_at: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('pages')
+                });
+        });
     });
 
     describe('Update', function () {
@@ -115,7 +202,7 @@ describe('Pages API', function () {
     });
 
     describe('Convert', function () {
-        it('can convert a mobiledoc page to lexical', async function () { 
+        it('can convert a mobiledoc page to lexical', async function () {
             const mobiledoc = JSON.stringify({
                 version: '0.3.1',
                 ghostVersion: '4.0',

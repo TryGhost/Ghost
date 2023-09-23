@@ -984,8 +984,7 @@ table.body figcaption a {
 </style>
     </head>
     <body style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 1.4; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #000000;\\">
-        <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is a paragraph
-</span>
+        <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is a paragraph</span>
         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" class=\\"body\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
             <!-- Outlook doesn't respect max-width so we need an extra centered table -->
             <!--[if mso]>
@@ -1053,8 +1052,7 @@ table.body figcaption a {
                                         <tr class=\\"post-content-row\\">
                                             <td class=\\"post-content\\" style=\\"vertical-align: top; font-family: Georgia, serif; font-size: 18px; line-height: 1.5em; color: #000000; padding-bottom: 20px; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12); max-width: 600px;\\" valign=\\"top\\">
                                                 <!-- POST CONTENT START -->
-                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is a paragraph</p>
-<div></div>
+                                                <p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">This is a paragraph</p><div></div>
                                                 <!-- POST CONTENT END -->
 
                                             </td>
@@ -1178,7 +1176,6 @@ View in browser [http://127.0.0.1:2369/r/xxxxxx?m=member-uuid]
 
 
 This is a paragraph
-
 
 
 

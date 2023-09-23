@@ -1,5 +1,6 @@
 import React, {createContext, useContext} from 'react';
 import useSearchService, {SearchService} from '../../utils/search';
+import {DefaultHeaderTypes} from '../../utils/unsplash/UnsplashTypes';
 import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
 
 export type OfficialTheme = {
@@ -15,7 +16,10 @@ interface ServicesContextProps {
     ghostVersion: string
     officialThemes: OfficialTheme[];
     zapierTemplates: ZapierTemplate[];
-    search: SearchService
+    search: SearchService;
+    unsplashConfig: DefaultHeaderTypes;
+    toggleFeatureFlag: (flag: string, enabled: boolean) => void;
+    sentryDSN: string | null;
 }
 
 interface ServicesProviderProps {
@@ -23,16 +27,28 @@ interface ServicesProviderProps {
     ghostVersion: string;
     zapierTemplates: ZapierTemplate[];
     officialThemes: OfficialTheme[];
+    toggleFeatureFlag: (flag: string, enabled: boolean) => void;
+    unsplashConfig: DefaultHeaderTypes;
+    sentryDSN: string | null;
 }
 
 const ServicesContext = createContext<ServicesContextProps>({
     ghostVersion: '',
     officialThemes: [],
     zapierTemplates: [],
-    search: {filter: '', setFilter: () => {}, checkVisible: () => true}
+    search: {filter: '', setFilter: () => {}, checkVisible: () => true},
+    toggleFeatureFlag: () => {},
+    unsplashConfig: {
+        Authorization: '',
+        'Accept-Version': '',
+        'Content-Type': '',
+        'App-Pragma': '',
+        'X-Unsplash-Cache': true
+    },
+    sentryDSN: null
 });
 
-const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes}) => {
+const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, toggleFeatureFlag, unsplashConfig, sentryDSN}) => {
     const search = useSearchService();
 
     return (
@@ -40,7 +56,10 @@ const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersi
             ghostVersion,
             officialThemes,
             zapierTemplates,
-            search
+            search,
+            unsplashConfig,
+            toggleFeatureFlag,
+            sentryDSN
         }}>
             {children}
         </ServicesContext.Provider>
@@ -54,3 +73,5 @@ export const useServices = () => useContext(ServicesContext);
 export const useOfficialThemes = () => useServices().officialThemes;
 
 export const useSearch = () => useServices().search;
+
+export const useSentryDSN = () => useServices().sentryDSN;

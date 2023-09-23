@@ -6,6 +6,7 @@ import Menu from '../../../../admin-x-ds/global/Menu';
 import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
+import handleError from '../../../../utils/handleError';
 import {Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, useActivateTheme, useDeleteTheme} from '../../../../api/themes';
 import {downloadFile, getGhostPaths} from '../../../../utils/helpers';
 
@@ -24,14 +25,14 @@ function getThemeLabel(theme: Theme): React.ReactNode {
         label += ' (default)';
     } else if (theme.package?.name !== theme.name) {
         label =
-            <>
+            <span className='text-sm md:text-base'>
                 {label} <span className='text-grey-600'>({theme.name})</span>
-            </>;
+            </span>;
     }
 
     if (isActiveTheme(theme)) {
         label =
-            <span className="font-bold">
+            <span className="text-sm font-bold md:text-base">
                 {label} &mdash; <span className='text-green'> Active</span>
             </span>;
     }
@@ -50,7 +51,11 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     const {mutateAsync: deleteTheme} = useDeleteTheme();
 
     const handleActivate = async () => {
-        await activateTheme(theme.name);
+        try {
+            await activateTheme(theme.name);
+        } catch (e) {
+            handleError(e);
+        }
     };
 
     const handleDownload = async () => {
@@ -80,8 +85,12 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
             okRunningLabel: 'Deleting',
             okColor: 'red',
             onOk: async (modal) => {
-                await deleteTheme(theme.name);
-                modal?.remove();
+                try {
+                    await deleteTheme(theme.name);
+                    modal?.remove();
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };

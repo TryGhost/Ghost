@@ -6,6 +6,7 @@ import timezoneData from '@tryghost/timezone-data';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getLocalTime} from '../../../utils/helpers';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 interface TimezoneDataDropdownOption {
     name: string;
@@ -55,18 +56,18 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
         };
     });
 
-    const handleTimezoneChange = (value: string) => {
-        updateSetting('timezone', value);
+    const handleTimezoneChange = (value?: string) => {
+        updateSetting('timezone', value || null);
     };
 
     const viewContent = (
         <SettingGroupContent values={[
             {
                 key: 'site-timezone',
-                value: publicationTimezone,
-                hint: (
-                    <Hint timezone={publicationTimezone} />
-                )
+                value: <div className='flex flex-col'>
+                    {publicationTimezone}
+                    <span className='text-sm'><Hint timezone={publicationTimezone} /></span>
+                </div>
             }
         ]} />
     );
@@ -100,4 +101,4 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default TimeZone;
+export default withErrorBoundary(TimeZone, 'Site timezone');

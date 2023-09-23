@@ -42,7 +42,7 @@ const Avatar: React.FC<AvatarProps> = ({image, label, labelColor, bgColor, size,
 
     if (image) {
         return (
-            <img alt="" className={`inline-flex items-center justify-center rounded-full object-cover font-semibold ${avatarSize} ${className && className}`} src={image}/>
+            <img alt="" className={`inline-flex shrink-0 items-center justify-center rounded-full object-cover font-semibold ${avatarSize} ${className && className}`} src={image}/>
         );
     } else if (label) {
         return (

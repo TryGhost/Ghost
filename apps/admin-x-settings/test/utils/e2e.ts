@@ -3,9 +3,9 @@ import {ConfigResponseType} from '../../src/api/config';
 import {CustomThemeSettingsResponseType} from '../../src/api/customThemeSettings';
 import {InvitesResponseType} from '../../src/api/invites';
 import {LabelsResponseType} from '../../src/api/labels';
+import {Locator, Page} from '@playwright/test';
 import {NewslettersResponseType} from '../../src/api/newsletters';
 import {OffersResponseType} from '../../src/api/offers';
-import {Page} from '@playwright/test';
 import {RolesResponseType} from '../../src/api/roles';
 import {SettingsResponseType} from '../../src/api/settings';
 import {SiteResponseType} from '../../src/api/site';
@@ -51,7 +51,14 @@ export const globalDataRequests = {
     browseSettings: {method: 'GET', path: /^\/settings\/\?group=/, response: responseFixtures.settings},
     browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
     browseSite: {method: 'GET', path: '/site/', response: responseFixtures.site},
-    browseMe: {method: 'GET', path: '/users/me/', response: responseFixtures.me}
+    browseMe: {method: 'GET', path: '/users/me/?include=roles', response: responseFixtures.me}
+};
+
+export const limitRequests = {
+    browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+    browseInvites: {method: 'GET', path: '/invites/', response: responseFixtures.invites},
+    browseRoles: {method: 'GET', path: '/roles/?limit=all', response: responseFixtures.roles},
+    browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=all', response: responseFixtures.newsletters}
 };
 
 export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests}: {page: Page, requests: Requests}) {
@@ -138,4 +145,9 @@ export async function mockSitePreview({page, url, response}: {page: Page, url: s
     });
 
     return lastRequest;
+}
+
+export async function chooseOptionInSelect(select: Locator, optionText: string | RegExp) {
+    await select.click();
+    await select.page().locator('[data-testid="select-option"]', {hasText: optionText}).click();
 }

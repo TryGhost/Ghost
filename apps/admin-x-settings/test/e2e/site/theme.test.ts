@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../utils/e2e';
+import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../utils/e2e';
 
 test.describe('Theme settings', async () => {
     test('Browsing and installing default themes', async ({page}) => {
@@ -40,7 +40,7 @@ test.describe('Theme settings', async () => {
 
         await modal.getByRole('button', {name: /Casper/}).click();
 
-        await expect(modal.getByRole('button', {name: 'Update Casper'})).toBeVisible();
+        await expect(modal.getByRole('button', {name: 'Activate Casper'})).toBeVisible();
 
         await expect(page.locator('iframe[title="Theme preview"]')).toHaveAttribute('src', 'https://demo.ghost.io/');
 
@@ -56,7 +56,7 @@ test.describe('Theme settings', async () => {
 
         await page.getByRole('button', {name: 'Activate'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/headline is now your active theme/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/headline is now your active theme/);
 
         expect(lastApiRequests.installTheme?.url).toMatch(/\?source=github&ref=TryGhost%2FHeadline/);
     });
@@ -123,5 +123,85 @@ test.describe('Theme settings', async () => {
         await expect(modal.getByTestId('theme-list-item')).toHaveCount(1);
 
         expect(lastApiRequests.deleteTheme?.url).toMatch(/\/themes\/edition\/$/);
+    });
+
+    test('Uploading a new theme', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            uploadTheme: {method: 'POST', path: '/themes/upload/', response: {
+                themes: [{
+                    name: 'mytheme',
+                    package: {},
+                    active: false,
+                    templates: []
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+
+        const designSection = page.getByTestId('design');
+
+        await designSection.getByRole('button', {name: 'Customize'}).click();
+
+        const designModal = page.getByTestId('design-modal');
+
+        await designModal.getByTestId('change-theme').click();
+
+        const modal = page.getByTestId('theme-modal');
+
+        const fileChooserPromise = page.waitForEvent('filechooser');
+
+        await modal.locator('label[for=theme-upload]').click();
+
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles(`${__dirname}/../../utils/responses/theme.zip`);
+
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/successful/);
+
+        await expect(modal.getByTestId('theme-list-item')).toHaveCount(3);
+
+        expect(lastApiRequests.uploadTheme).toBeTruthy();
+    });
+
+    test('Limits uploading new themes', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        hostSettings: {
+                            limits: {
+                                customThemes: {
+                                    allowlist: ['casper'],
+                                    error: 'Upgrade to enable custom themes'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }});
+
+        await page.goto('/');
+
+        const designSection = page.getByTestId('design');
+
+        await designSection.getByRole('button', {name: 'Customize'}).click();
+
+        const designModal = page.getByTestId('design-modal');
+
+        await designModal.getByTestId('change-theme').click();
+
+        const modal = page.getByTestId('theme-modal');
+
+        await modal.getByRole('button', {name: 'Upload theme'}).click();
+
+        await expect(page.getByTestId('limit-modal')).toHaveText(/Upgrade to enable custom themes/);
     });
 });

@@ -30,6 +30,15 @@ export const Default: Story = {
     }
 };
 
+export const Disabled: Story = {
+    args: {
+        placeholder: `Here's a disabled field`,
+        value: 'Hello disabled field',
+        title: 'Disabled',
+        disabled: true
+    }
+};
+
 export const ClearBackground: Story = {
     args: {
         placeholder: 'Enter something',
@@ -88,11 +97,12 @@ export const WithDropdown: Story = {
         rightPlaceholder: (
             <Select
                 border={false}
+                containerClassName='w-14'
+                fullWidth={false}
                 options={[
                     {label: 'USD', value: 'usd'},
                     {label: 'EUR', value: 'eur'}
                 ]}
-                selectClassName='w-auto'
                 onSelect={() => {}}
             />
         )

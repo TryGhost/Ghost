@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import React, {ReactNode, Suspense, useCallback, useMemo} from 'react';
 
 export interface HtmlEditorProps {
@@ -90,21 +91,21 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
     nodes
 }) => {
     const onError = useCallback((error: unknown) => {
-        // ensure we're still showing errors in development
+        try {
+            Sentry.captureException({
+                error,
+                tags: {lexical: true},
+                contexts: {
+                    koenig: {
+                        version: window['@tryghost/koenig-lexical']?.version
+                    }
+                }
+            });
+        } catch (e) {
+            // if this fails, Sentry is probably not initialized
+            console.error(e); // eslint-disable-line
+        }
         console.error(error); // eslint-disable-line
-
-        // Pass down Sentry from Ember?
-        // if (this.config.sentry_dsn) {
-        //     Sentry.captureException(error, {
-        //         tags: {lexical: true},
-        //         contexts: {
-        //             koenig: {
-        //                 version: window['@tryghost/koenig-lexical']?.version
-        //             }
-        //         }
-        //     });
-        // }
-        // don't rethrow, Lexical will attempt to gracefully recover
     }, []);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -121,9 +122,22 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
     };
 
     const handleSetHtml = (html: string) => {
+        // Workaround for a bug in Lexical where it adds style attributes everywhere with white-space: pre-wrap
+        // Likely related: https://github.com/facebook/lexical/issues/4255
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const elements = doc.querySelectorAll('*') as NodeListOf<HTMLElement>;
+
+        elements.forEach((element) => {
+            element.style.removeProperty('white-space');
+            if (!element.getAttribute('style')) {
+                element.removeAttribute('style');
+            }
+        });
+
         // Koenig sends this event on load without changing the value, so this prevents forms from being marked as unsaved
-        if (html !== value) {
-            onChange?.(html);
+        if (doc.body.innerHTML !== value) {
+            onChange?.(doc.body.innerHTML);
         }
     };
 

@@ -10,6 +10,7 @@ import {getSettingValues} from '../../../api/settings';
 import {useBrowseLabels} from '../../../api/labels';
 import {useBrowseOffers} from '../../../api/offers';
 import {useBrowseTiers} from '../../../api/tiers';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 type RefipientValueArgs = {
     defaultEmailRecipients: string;
@@ -18,18 +19,23 @@ type RefipientValueArgs = {
 
 const RECIPIENT_FILTER_OPTIONS = [{
     label: 'Whoever has access to the post',
+    hint: 'Free posts to everyone, premium posts sent to paid members',
     value: 'visibility'
 }, {
     label: 'All members',
+    hint: 'Everyone who is subscribed to newsletter updates, whether free or paid members',
     value: 'all-members'
 }, {
     label: 'Paid-members only',
+    hint: 'People who have a premium subscription',
     value: 'paid-only'
 }, {
     label: 'Specific people',
+    hint: 'Only people with any of the selected tiers or labels',
     value: 'segment'
 }, {
     label: 'Usually nobody',
+    hint: 'Newsletters are off for new posts, but can be enabled when needed',
     value: 'none'
 }];
 
@@ -115,7 +121,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
         },
         {
             label: 'Active Tiers',
-            options: tiers?.filter(({active}) => active).map(tier => ({value: tier.id, label: tier.name, color: 'black'})) || []
+            options: tiers?.filter(({active, type}) => active && type !== 'free').map(tier => ({value: tier.id, label: tier.name, color: 'black'})) || []
         },
         {
             label: 'Archived Tiers',
@@ -166,13 +172,15 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 selectedOption={selectedOption}
                 title="Default Newsletter recipients"
                 onSelect={(value) => {
-                    setDefaultRecipientValue(value);
+                    if (value) {
+                        setDefaultRecipientValue(value);
+                    }
                 }}
             />
             {(selectedOption === 'segment') && (
                 <MultiSelect
                     options={segmentOptionGroups.filter(group => group.options.length > 0)}
-                    title='Select tiers'
+                    title='Filter'
                     values={selectedSegments}
                     clearBg
                     onChange={setSelectedSegments}
@@ -199,4 +207,4 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default DefaultRecipients;
+export default withErrorBoundary(DefaultRecipients, 'Default recipients');

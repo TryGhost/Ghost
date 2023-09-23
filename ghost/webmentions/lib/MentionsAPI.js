@@ -68,13 +68,14 @@ const Mention = require('./Mention');
 
 /**
  * @typedef {object} WebmentionMetadata
- * @prop {string} siteTitle
- * @prop {string} title
- * @prop {string} excerpt
- * @prop {string} author
- * @prop {URL} image
- * @prop {URL} favicon
+ * @prop {string|null} siteTitle
+ * @prop {string|null} title
+ * @prop {string|null} excerpt
+ * @prop {string|null} author
+ * @prop {URL|null} image
+ * @prop {URL|null} favicon
  * @prop {string} body
+ * @prop {string|undefined} contentType
  */
 
 /**
@@ -163,6 +164,101 @@ module.exports = class MentionsAPI {
     }
 
     /**
+     * Update the metadata of the webmentions in the database, and delete them if they are no longer valid.
+     * @param {object} options
+     * @param {number|'all'} [options.limit]
+     * @param {number} [options.page]
+     * @param {string} [options.filter]
+     */
+    async refreshMentions(options) {
+        const mentions = await this.#repository.getAll(options);
+
+        for (const mention of mentions) {
+            await this.#updateWebmention(mention, {
+                source: mention.source,
+                target: mention.target
+            });
+        }
+    }
+
+    async #updateWebmention(mention, webmention) {
+        const isNew = !mention;
+        const targetExists = await this.#routingService.pageExists(webmention.target);
+
+        if (!targetExists) {
+            if (!mention) {
+                throw new errors.BadRequestError({
+                    message: `${webmention.target} is not a valid URL for this site.`
+                });
+            } else {
+                mention.delete();
+            }
+        }
+
+        if (targetExists) {
+            const resourceInfo = await this.#resourceService.getByURL(webmention.target);
+            let metadata;
+            try {
+                metadata = await this.#webmentionMetadata.fetch(webmention.source);
+                if (mention) {
+                    mention.setSourceMetadata({
+                        sourceTitle: metadata.title,
+                        sourceSiteTitle: metadata.siteTitle,
+                        sourceAuthor: metadata.author,
+                        sourceExcerpt: metadata.excerpt,
+                        sourceFavicon: metadata.favicon,
+                        sourceFeaturedImage: metadata.image
+                    });
+                }
+            } catch (err) {
+                if (!mention) {
+                    throw err;
+                }
+                mention.delete();
+            }
+
+            if (!mention) {
+                mention = await Mention.create({
+                    source: webmention.source,
+                    target: webmention.target,
+                    timestamp: new Date(),
+                    payload: webmention.payload,
+                    resourceId: resourceInfo.id ? resourceInfo.id.toHexString() : null,
+                    resourceType: resourceInfo.type,
+                    sourceTitle: metadata.title,
+                    sourceSiteTitle: metadata.siteTitle,
+                    sourceAuthor: metadata.author,
+                    sourceExcerpt: metadata.excerpt,
+                    sourceFavicon: metadata.favicon,
+                    sourceFeaturedImage: metadata.image
+                });
+            }
+
+            if (metadata?.body) {
+                try {
+                    mention.verify(metadata.body, metadata.contentType);
+                } catch (e) {
+                    logging.error(e);
+                }
+            }
+        }
+
+        await this.#repository.save(mention);
+
+        if (isNew) {
+            logging.info('[Webmention] Created ' + webmention.source + ' to ' + webmention.target + ', verified: ' + mention.verified);
+        } else {
+            if (mention.deleted) {
+                logging.info('[Webmention] Deleted ' + webmention.source + ' to ' + webmention.target + ', verified: ' + mention.verified);
+            } else {
+                logging.info('[Webmention] Updated ' + webmention.source + ' to ' + webmention.target + ', verified: ' + mention.verified);
+            }
+        }
+
+        return mention;
+    }
+
+    /**
      * @param {object} webmention
      * @param {URL} webmention.source
      * @param {URL} webmention.target
@@ -176,65 +272,6 @@ module.exports = class MentionsAPI {
             webmention.target
         );
 
-        const targetExists = await this.#routingService.pageExists(webmention.target);
-
-        if (!targetExists) {
-            if (!mention) {
-                throw new errors.BadRequestError({
-                    message: `${webmention.target} is not a valid URL for this site.`
-                });
-            } else {
-                mention.delete();
-            }
-        }
-
-        const resourceInfo = await this.#resourceService.getByURL(webmention.target);
-        let metadata;
-        try {
-            metadata = await this.#webmentionMetadata.fetch(webmention.source);
-            if (mention) {
-                mention.setSourceMetadata({
-                    sourceTitle: metadata.title,
-                    sourceSiteTitle: metadata.siteTitle,
-                    sourceAuthor: metadata.author,
-                    sourceExcerpt: metadata.excerpt,
-                    sourceFavicon: metadata.favicon,
-                    sourceFeaturedImage: metadata.image
-                });
-            }
-        } catch (err) {
-            if (!mention) {
-                throw err;
-            }
-            mention.delete();
-        }
-
-        if (!mention) {
-            mention = await Mention.create({
-                source: webmention.source,
-                target: webmention.target,
-                timestamp: new Date(),
-                payload: webmention.payload,
-                resourceId: resourceInfo.id ? resourceInfo.id.toHexString() : null,
-                resourceType: resourceInfo.type,
-                sourceTitle: metadata.title,
-                sourceSiteTitle: metadata.siteTitle,
-                sourceAuthor: metadata.author,
-                sourceExcerpt: metadata.excerpt,
-                sourceFavicon: metadata.favicon,
-                sourceFeaturedImage: metadata.image
-            });
-        }
-
-        if (metadata?.body) {
-            try {
-                mention.verify(metadata.body);
-            } catch (e) {
-                logging.error(e);
-            }
-        }
-
-        await this.#repository.save(mention);
-        return mention;
+        return await this.#updateWebmention(mention, webmention);
     }
 };

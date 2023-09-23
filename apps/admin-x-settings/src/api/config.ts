@@ -11,13 +11,35 @@ export type Config = {
         url: string
         version: string
     };
+    signupForm: {
+        url: string,
+        version: string
+    }
+    blogUrl: string;
     labs: Record<string, boolean>;
     stripeDirect: boolean;
     hostSettings?: {
         limits?: {
+            // Partially typed, see https://github.com/TryGhost/SDK/tree/main/packages/limit-service
             customIntegrations?: {
                 disabled: boolean;
             }
+            staff?: {
+                max?: number
+                error?: string
+            }
+            members?: {
+                max?: number
+                error?: string
+            }
+            newsletters?: {
+                max?: number
+                error?: string
+            }
+        }
+        billing?: {
+            enabled?: boolean
+            url?: string
         }
     }
 
@@ -30,6 +52,8 @@ export interface ConfigResponseType {
 }
 
 const dataType = 'ConfigResponseType';
+
+export const configDataType = dataType;
 
 export const useBrowseConfig = createQuery<ConfigResponseType>({
     dataType,
