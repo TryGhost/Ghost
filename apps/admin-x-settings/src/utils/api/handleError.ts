@@ -1,9 +1,8 @@
-import * as Sentry from '@sentry/react';
 import toast from 'react-hot-toast';
 import {APIError, ValidationError} from '../errors';
 import {showToast} from '../../admin-x-ds/global/Toast';
 import {useCallback} from 'react';
-import {useSentryDSN} from '../../components/providers/ServiceProvider';
+import {useSentry} from '../../components/providers/ServiceProvider';
 
 /**
  * Generic error handling for API calls. This is enabled by default for queries (can be disabled by
@@ -11,7 +10,7 @@ import {useSentryDSN} from '../../components/providers/ServiceProvider';
  * errors in order to handle anything unexpected.
  */
 const useHandleError = () => {
-    const sentryDSN = useSentryDSN();
+    const Sentry = useSentry();
 
     /**
      * @param error Thrown error.
@@ -23,7 +22,7 @@ const useHandleError = () => {
         // eslint-disable-next-line no-console
         console.error(error);
 
-        if (sentryDSN) {
+        if (Sentry) {
             Sentry.withScope((scope) => {
                 if (error instanceof APIError && error.response) {
                     scope.setTag('api_url', error.response.url);
@@ -55,7 +54,7 @@ const useHandleError = () => {
                 type: 'pageError'
             });
         }
-    }, [sentryDSN]);
+    }, [Sentry]);
 
     return handleError;
 };

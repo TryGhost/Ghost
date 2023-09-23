@@ -5,12 +5,13 @@ import NiceModal from '@ebay/nice-modal-react';
 import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
 import clsx from 'clsx';
 import {DefaultHeaderTypes} from './utils/unsplash/UnsplashTypes';
-import {ErrorBoundary} from '@sentry/react';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
 import {OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
 import {Toaster} from 'react-hot-toast';
 import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
+import type * as Sentry from '@sentry/browser';
 
 interface AppProps {
     ghostVersion: string;
@@ -19,10 +20,7 @@ interface AppProps {
     externalNavigate: (link: ExternalLink) => void;
     darkMode?: boolean;
     unsplashConfig: DefaultHeaderTypes
-    sentry?: {
-        dsn: string;
-        env: string | null;
-    }
+    sentry?: typeof Sentry
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
@@ -40,14 +38,6 @@ const queryClient = new QueryClient({
     }
 });
 
-function SentryErrorBoundary({children}: {children: React.ReactNode}) {
-    return (
-        <ErrorBoundary>
-            {children}
-        </ErrorBoundary>
-    );
-}
-
 function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, sentry, onUpdate, onInvalidate, onDelete}: AppProps) {
     const appClassName = clsx(
         'admin-x-settings h-[100vh] w-full overflow-y-auto overflow-x-hidden',
@@ -57,7 +47,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
     return (
         <SentryErrorBoundary>
             <QueryClientProvider client={queryClient}>
-                <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentry?.dsn || null} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
+                <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} sentry={sentry} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
                     <GlobalDataProvider>
                         <RoutingProvider externalNavigate={externalNavigate}>
                             <GlobalDirtyStateProvider>
