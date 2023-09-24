@@ -160,7 +160,12 @@ const Sidebar: React.FC<{
                         onChange={e => updateNewsletter({sender_email: e.target.value})}
                         onKeyDown={() => clearError('sender_email')}
                     />
-                    <Select options={replyToEmails} selectedOption={newsletter.sender_reply_to} title="Reply-to email" onSelect={value => updateNewsletter({sender_reply_to: value})}/>
+                    <Select
+                        options={replyToEmails}
+                        selectedOption={replyToEmails.find(option => option.value === newsletter.sender_reply_to)}
+                        title="Reply-to email"
+                        onSelect={option => updateNewsletter({sender_reply_to: option?.value})}
+                    />
                 </Form>
                 <Form className='mt-6' gap='sm' margins='lg' title='Member settings'>
                     <Toggle
@@ -308,8 +313,8 @@ const Sidebar: React.FC<{
                             <Select
                                 disabled={!newsletter.show_post_title_section}
                                 options={fontOptions}
-                                selectedOption={newsletter.title_font_category}
-                                onSelect={value => updateNewsletter({title_font_category: value})}
+                                selectedOption={fontOptions.find(option => option.value === newsletter.title_font_category)}
+                                onSelect={option => updateNewsletter({title_font_category: option?.value})}
                             />
                         </div>
                         <ButtonGroup buttons={[
@@ -359,9 +364,9 @@ const Sidebar: React.FC<{
                     />}
                     <Select
                         options={fontOptions}
-                        selectedOption={newsletter.body_font_category}
+                        selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
                         title='Body style'
-                        onSelect={value => updateNewsletter({body_font_category: value})}
+                        onSelect={option => updateNewsletter({body_font_category: option?.value})}
                     />
                     <Toggle
                         checked={newsletter.show_feature_image}

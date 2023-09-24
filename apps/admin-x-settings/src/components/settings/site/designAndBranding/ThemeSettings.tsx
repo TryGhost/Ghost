@@ -52,9 +52,9 @@ const ThemeSetting: React.FC<{
             <Select
                 hint={setting.description}
                 options={setting.options.map(option => ({label: option, value: option}))}
-                selectedOption={setting.value}
+                selectedOption={{label: setting.value, value: setting.value}}
                 title={humanizeSettingKey(setting.key)}
-                onSelect={value => setSetting(value || null)}
+                onSelect={option => setSetting(option?.value || null)}
             />
         );
     case 'color':

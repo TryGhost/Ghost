@@ -94,11 +94,11 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                     hint={errors.event}
                     options={webhookEventOptions}
                     prompt='Select an event'
-                    selectedOption={formState.event}
+                    selectedOption={webhookEventOptions.flatMap(group => group.options).find(option => option.value === formState.event)}
                     title='Event'
                     hideTitle
-                    onSelect={(event) => {
-                        updateForm(state => ({...state, event}));
+                    onSelect={(option) => {
+                        updateForm(state => ({...state, event: option?.value}));
                         clearError('event');
                     }}
                 />

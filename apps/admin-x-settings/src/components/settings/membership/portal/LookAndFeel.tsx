@@ -67,6 +67,12 @@ const LookAndFeel: React.FC<{
         setUploadedIcon(undefined);
     };
 
+    const portalButtonOptions = [
+        {value: 'icon-and-text', label: 'Icon and text'},
+        {value: 'icon-only', label: 'Icon only'},
+        {value: 'text-only', label: 'Text only'}
+    ];
+
     return <div className='mt-7'><Form>
         <Toggle
             checked={Boolean(portalButton)}
@@ -75,14 +81,10 @@ const LookAndFeel: React.FC<{
             onChange={e => updateSetting('portal_button', e.target.checked)}
         />
         <Select
-            options={[
-                {value: 'icon-and-text', label: 'Icon and text'},
-                {value: 'icon-only', label: 'Icon only'},
-                {value: 'text-only', label: 'Text only'}
-            ]}
-            selectedOption={portalButtonStyle as string}
+            options={portalButtonOptions}
+            selectedOption={portalButtonOptions.find(option => option.value === portalButtonStyle)}
             title='Portal button style'
-            onSelect={option => updateSetting('portal_button_style', option || null)}
+            onSelect={option => updateSetting('portal_button_style', option?.value || null)}
         />
         {portalButtonStyle?.toString()?.includes('icon') &&
             <div className='flex flex-col gap-2'>

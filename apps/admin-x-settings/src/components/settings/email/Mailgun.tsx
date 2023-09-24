@@ -65,10 +65,10 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <div className='grid grid-cols-[120px_auto] gap-x-3 gap-y-6'>
                 <Select
                     options={MAILGUN_REGIONS}
-                    selectedOption={mailgunRegion}
+                    selectedOption={MAILGUN_REGIONS.find(option => option.value === mailgunRegion)}
                     title="Mailgun region"
-                    onSelect={(value) => {
-                        updateSetting('mailgun_base_url', value || null);
+                    onSelect={(option) => {
+                        updateSetting('mailgun_base_url', option?.value || null);
                     }}
                 />
                 <TextField
