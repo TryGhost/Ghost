@@ -339,15 +339,21 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
 };
 
 const TierDetailModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {data: {tiers} = {}} = useBrowseTiers();
+    const {data: {tiers, isEnd} = {}, fetchNextPage} = useBrowseTiers();
 
     let tier: Tier | undefined;
+
+    useEffect(() => {
+        if (params?.id && !tier && !isEnd) {
+            fetchNextPage();
+        }
+    }, [fetchNextPage, isEnd, params?.id, tier]);
 
     if (params?.id) {
         tier = tiers?.find(({id}) => id === params?.id);
 
         if (!tier) {
-            return;
+            return null;
         }
     }
 

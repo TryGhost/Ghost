@@ -43,7 +43,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
             title='Newsletters'
         >
             <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
-            {!isEnd && <Button label='Load more' link onClick={() => fetchNextPage()} />}
+            {isEnd === false && <Button label='Load more' link onClick={() => fetchNextPage()} />}
         </SettingGroup>
     );
 };
