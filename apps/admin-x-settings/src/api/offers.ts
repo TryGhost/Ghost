@@ -30,6 +30,5 @@ const dataType = 'OffersResponseType';
 
 export const useBrowseOffers = createQuery<OffersResponseType>({
     dataType,
-    path: '/offers/',
-    defaultSearchParams: {limit: 'all'}
+    path: '/offers/'
 });

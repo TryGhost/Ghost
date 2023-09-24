@@ -725,8 +725,14 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 };
 
 const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {users} = useStaffUsers();
+    const {users, hasNextPage, fetchNextPage} = useStaffUsers();
     const user = users.find(({slug}) => slug === params?.slug);
+
+    useEffect(() => {
+        if (!user && !hasNextPage) {
+            fetchNextPage();
+        }
+    }, [fetchNextPage, hasNextPage, user]);
 
     if (user) {
         return <UserDetailModalContent user={user} />;

@@ -84,6 +84,8 @@ export const useLimiter = () => {
 
         if (limits.staff) {
             limits.staff.currentCountQuery = async () => {
+                // useStaffUsers will only return the first 100 users by default, but we can assume
+                // that either there's no limit or the limit is <100
                 const staffUsers = users.filter(u => u.status !== 'inactive' && !contributorUsers.includes(u));
                 const staffInvites = invites.filter(i => i.role !== 'Contributor');
 
