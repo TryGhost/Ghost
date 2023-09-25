@@ -122,8 +122,8 @@ const Select: React.FC<SelectProps> = ({
     const customClasses = {
         control: clsx(
             controlClasses?.control,
-            'min-h-[40px] w-full cursor-pointer appearance-none pr-4 outline-none dark:text-white',
-            size === 'xs' ? 'py-0 text-xs' : 'py-2',
+            'min-h-[40px] w-full cursor-pointer appearance-none outline-none dark:text-white',
+            size === 'xs' ? 'py-0 pr-2 text-xs' : 'py-2 pr-4',
             border && 'border-b',
             !clearBg && 'bg-grey-75 px-[10px] dark:bg-grey-950',
             error ? 'border-red' : 'border-grey-500 hover:border-grey-700 dark:border-grey-800 dark:hover:border-grey-700',

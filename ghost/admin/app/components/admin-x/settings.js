@@ -196,7 +196,13 @@ class ErrorHandler extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <p className="admin-x-settings-container-error">Loading has failed. Try refreshing the browser!</p>
+                <div className="admin-x-settings-container-error">
+                    <div className="admin-x-settings-error">
+                        <h1>Loading interrupted</h1>
+                        <p>They say life is a series of trials and tribulations. This moment right here? It's a tribulation. Our app was supposed to load, and yet here we are. Loadless. Click back to the dashboard to try again.</p>
+                        <a href={ghostPaths().adminRoot}>&larr; Back to the dashboard</a>
+                    </div>
+                </div>
             );
         }
 
