@@ -2244,3 +2244,29 @@ section.gh-ds h2 {
     height: 40px;
     line-height: 40px;
 }
+
+.admin-x-settings-container-error {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    background: var(--whitegrey-l2);
+}
+
+.admin-x-settings-error {
+    background: white;
+    box-shadow: var(--box-shadow-m);
+    border-radius: 20px;
+    padding: 5vmin;
+}
+
+.admin-x-settings-container-error a {
+    display: inline-block;
+    padding: 6px 10px;
+    border: 1px solid var(--green);
+    border-radius: 4px;
+    margin-top: 10px;
+}
