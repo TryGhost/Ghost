@@ -25,11 +25,11 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
             <Heading className='mb-2 block text-2xs font-semibold uppercase tracking-wider' grey={true} level={6}>Preview</Heading>
             <a className='flex items-center justify-between rounded-sm border border-grey-300 bg-white p-3' href={formState.url} rel="noopener noreferrer" target="_blank">
                 <div className='flex flex-col gap-[2px]'>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-start gap-2">
                         <RecommendationIcon {...formState} />
-                        <span className='line-clamp-1 text-[1.6rem] font-semibold text-grey-900'>{formState.title}</span>
+                        <span className='text-[1.6rem] font-semibold text-grey-900'>{formState.title}</span>
                     </div>
-                    {formState.reason && <span className='pl-[29px] text-[1.35rem] leading-snug text-grey-700'>{formState.reason}</span>}
+                    {formState.reason && <span className='pl-[31px] text-[1.35rem] leading-snug text-grey-700'>{formState.reason}</span>}
                 </div>
                 {formState.one_click_subscribe && <span className='flex whitespace-nowrap pl-6 text-md font-semibold text-green'>Subscribe</span>}
             </a>
