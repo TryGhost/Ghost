@@ -8114,6 +8114,11 @@
   resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.3.0.tgz#5b0940a370a22a0fa3bdf506850dabbc6af574fa"
   integrity sha512-3vdaEugCY7cTOlo8TuEYTXnXJa1CeNKJ34EU9uJPxWfUsd0BwaSN0hNcXLHhKxnPQnnJkSjradkXSvTfUsYZiA==
 
+"@tryghost/timezone-data@0.3.8":
+  version "0.3.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.3.8.tgz#413f8c7efa972bbdb186d95f4eab8d2799704010"
+  integrity sha512-0CkCR6uRwANHvP8BJ/3EPPw4Z55u+WCBFM/+KR2KGCogGQwx8npIDA0zWUyWzKk+Y2Z9IqoHs+IlaA1v3t+Jdw==
+
 "@tryghost/tpl@0.1.24":
   version "0.1.24"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.24.tgz#fcf585be02531baf651f2f7605466a3df744d0bc"
