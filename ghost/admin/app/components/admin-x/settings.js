@@ -194,7 +194,7 @@ class ErrorHandler extends React.Component {
     }
 
     render() {
-        if (!this.state.hasError) {
+        if (this.state.hasError) {
             return (
                 <div className="admin-x-settings-container-error">
                     <div className="admin-x-settings-error">
