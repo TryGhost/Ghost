@@ -27,7 +27,7 @@ const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}
 const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState('active-tiers');
     const {settings, config} = useGlobalData();
-    const {data: {tiers, isEnd} = {}, fetchNextPage} = useBrowseTiers();
+    const {data: {tiers, meta, isEnd} = {}, fetchNextPage} = useBrowseTiers();
     const activeTiers = getActiveTiers(tiers || []);
     const archivedTiers = getArchivedTiers(tiers || []);
     const {updateRoute} = useRouting();
@@ -81,7 +81,11 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
             </div>
 
             {content}
-            {isEnd === false && <Button label='Load more' link onClick={() => fetchNextPage()} />}
+            {isEnd === false && <Button
+                label={`Load more (showing ${tiers?.length || 0}/${meta?.pagination.total || 0} tiers)`}
+                link
+                onClick={() => fetchNextPage()}
+            />}
         </SettingGroup>
     );
 };
