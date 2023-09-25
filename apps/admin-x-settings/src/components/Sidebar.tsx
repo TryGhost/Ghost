@@ -12,6 +12,7 @@ import {searchKeywords as generalSearchKeywords} from './settings/general/Genera
 import {getSettingValues} from '../api/settings';
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/MembershipSettings';
 import {searchKeywords as siteSearchKeywords} from './settings/site/SiteSettings';
+import {useFocusContext} from '../admin-x-ds/providers/DesignSystemProvider';
 import {useGlobalData} from './providers/GlobalDataProvider';
 import {useSearch} from './providers/ServiceProvider';
 
@@ -19,11 +20,12 @@ const Sidebar: React.FC = () => {
     const {filter, setFilter} = useSearch();
     const {updateRoute} = useRouting();
     const searchInputRef = useRef<HTMLInputElement | null>(null);
+    const {isAnyTextFieldFocused} = useFocusContext();
 
     // Focus in on search field when pressing CMD+K/CTRL+K
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
-            if (e.key === '/') {
+            if (e.key === '/' && !isAnyTextFieldFocused) {
                 e?.preventDefault();
                 if (searchInputRef.current) {
                     searchInputRef.current.focus();
@@ -34,7 +36,7 @@ const Sidebar: React.FC = () => {
         return () => {
             window.removeEventListener('keydown', handleKeyPress);
         };
-    }, []);
+    });
 
     // Auto-focus on searchfield on page load
     useEffect(() => {

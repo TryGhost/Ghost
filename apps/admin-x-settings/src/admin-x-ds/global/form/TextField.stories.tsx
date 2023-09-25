@@ -10,7 +10,11 @@ const meta = {
     title: 'Global / Form / Textfield',
     component: TextField,
     tags: ['autodocs'],
-    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
+    decorators: [(_story: () => ReactNode) => (
+        <div style={{maxWidth: '400px'}}>
+            {_story()}
+        </div>
+    )],
     argTypes: {
         hint: {
             control: 'text'
