@@ -77,6 +77,7 @@ export const useAddNewsletter = createMutation<NewslettersResponseType, Partial<
     searchParams: payload => ({opt_in_existing: payload.opt_in_existing.toString(), include: 'count.active_members,count.posts'}),
     updateQueries: {
         dataType,
+        emberUpdateType: 'createOrUpdate',
         update: insertToQueryCache('newsletters')
     }
 });
@@ -92,6 +93,7 @@ export const useEditNewsletter = createMutation<NewslettersEditResponseType, New
     defaultSearchParams: {include: 'count.active_members,count.posts'},
     updateQueries: {
         dataType,
+        emberUpdateType: 'createOrUpdate',
         update: updateQueryCache('newsletters')
     }
 });

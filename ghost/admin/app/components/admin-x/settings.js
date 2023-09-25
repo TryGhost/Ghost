@@ -5,6 +5,7 @@ import config from 'ghost-admin/config/environment';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
+import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -256,6 +257,17 @@ const fetchSettings = function () {
     return {read};
 };
 
+const emberDataTypeMapping = {
+    IntegrationsResponseType: {type: 'integration'},
+    InvitesResponseType: {type: 'invite'},
+    NewslettersResponseType: {type: 'newsletter'},
+    RecommendationsResponseType: {type: 'recommendation'},
+    SettingsResponseType: {type: 'setting', singleton: true},
+    ThemesResponseType: {type: 'theme'},
+    TiersResponseType: {type: 'tier'},
+    UsersResponseType: {type: 'user'}
+};
+
 export default class AdminXSettings extends Component {
     @service ajax;
     @service feature;
@@ -285,12 +297,59 @@ export default class AdminXSettings extends Component {
         // don't rethrow, app should attempt to gracefully recover
     }
 
-    externalNavigate = ({route, models = []}) => {
-        this.router.transitionTo(route, ...models);
+    onUpdate = (dataType, response) => {
+        if (!emberDataTypeMapping[dataType]) {
+            throw new Error(`A mutation updating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+        }
+
+        const {type, singleton} = emberDataTypeMapping[dataType];
+
+        if (singleton) {
+            // Special singleton objects like settings don't work with pushPayload, we need to add the ID explicitly
+            this.store.push(this.store.serializerFor(type).normalizeSingleResponse(
+                this.store,
+                this.store.modelFor(type),
+                response,
+                null,
+                'queryRecord'
+            ));
+        } else {
+            this.store.pushPayload(type, response);
+        }
     };
 
-    toggleFeatureFlag = (flag, value) => {
-        this.feature.set(flag, value);
+    onInvalidate = (dataType) => {
+        if (!emberDataTypeMapping[dataType]) {
+            throw new Error(`A mutation invalidating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+        }
+
+        const {type, singleton} = emberDataTypeMapping[dataType];
+
+        if (singleton) {
+            // eslint-disable-next-line no-console
+            console.warn(`An AdminX mutation invalidated ${dataType}, but this is is marked as a singleton and cannot be reloaded in Ember. You probably wanted to use updateQueries instead of invalidateQueries`);
+            return;
+        }
+
+        run(() => this.store.unloadAll(type));
+    };
+
+    onDelete = (dataType, id) => {
+        if (!emberDataTypeMapping[dataType]) {
+            throw new Error(`A mutation deleting ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+        }
+
+        const {type} = emberDataTypeMapping[dataType];
+
+        const record = this.store.peekRecord(type, id);
+
+        if (record) {
+            record.unloadRecord();
+        }
+    };
+
+    externalNavigate = ({route, models = []}) => {
+        this.router.transitionTo(route, ...models);
     };
 
     editorResource = fetchSettings();
@@ -328,10 +387,12 @@ export default class AdminXSettings extends Component {
                             officialThemes={officialThemes}
                             zapierTemplates={zapierTemplates}
                             externalNavigate={this.externalNavigate}
-                            toggleFeatureFlag={this.toggleFeatureFlag}
                             darkMode={this.feature.nightShift}
                             unsplashConfig={defaultUnsplashHeaders}
                             sentryDSN={this.config.sentry_dsn}
+                            onUpdate={this.onUpdate}
+                            onInvalidate={this.onInvalidate}
+                            onDelete={this.onDelete}
                         />
                     </Suspense>
                 </ErrorHandler>
