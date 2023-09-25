@@ -2,9 +2,9 @@ import * as Sentry from '@sentry/react';
 import handleError from './handleError';
 import handleResponse from './handleResponse';
 import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from '../errors';
-import {QueryClient, UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {getGhostPaths} from '../helpers';
-import {useEffect, useMemo} from 'react';
+import {useCallback, useEffect, useMemo} from 'react';
 import {usePage, usePagination} from '../../hooks/usePagination';
 import {useSentryDSN, useServices} from '../../components/providers/ServiceProvider';
 
@@ -290,22 +290,25 @@ const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, o
     });
 };
 
-const afterMutate = <ResponseData, Payload>(newData: ResponseData, payload: Payload, queryClient: QueryClient, options: MutationOptions<ResponseData, Payload>) => {
-    if (options.invalidateQueries) {
-        queryClient.invalidateQueries([options.invalidateQueries.dataType]);
-    }
-
-    if (options.updateQueries) {
-        queryClient.setQueriesData([options.updateQueries.dataType], (data: unknown) => options.updateQueries!.update(newData, data, payload));
-    }
-};
-
 export const createMutation = <ResponseData, Payload>(options: MutationOptions<ResponseData, Payload>) => () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
+    const {onUpdate, onInvalidate} = useServices();
+
+    const afterMutate = useCallback((newData: ResponseData, payload: Payload) => {
+        if (options.invalidateQueries) {
+            queryClient.invalidateQueries([options.invalidateQueries.dataType]);
+            onInvalidate(options.invalidateQueries.dataType);
+        }
+
+        if (options.updateQueries) {
+            queryClient.setQueriesData([options.updateQueries.dataType], (data: unknown) => options.updateQueries!.update(newData, data, payload));
+            onUpdate(options.updateQueries.dataType, newData);
+        }
+    }, [onInvalidate, onUpdate, queryClient]);
 
     return useMutation<ResponseData, unknown, Payload>({
         mutationFn: payload => mutate({fetchApi, path: options.path(payload), payload, searchParams: options.searchParams?.(payload) || options.defaultSearchParams, options}),
-        onSuccess: (newData, payload) => afterMutate(newData, payload, queryClient, options)
+        onSuccess: afterMutate
     });
 };

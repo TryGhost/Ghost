@@ -17,10 +17,11 @@ interface AppProps {
     officialThemes: OfficialTheme[];
     zapierTemplates: ZapierTemplate[];
     externalNavigate: (link: ExternalLink) => void;
-    toggleFeatureFlag: (flag: string, enabled: boolean) => void;
     darkMode?: boolean;
     unsplashConfig: DefaultHeaderTypes
     sentryDSN: string | null;
+    onUpdate: (dataType: string, response: unknown) => void;
+    onInvalidate: (dataType: string) => void;
 }
 
 const queryClient = new QueryClient({
@@ -41,7 +42,7 @@ function SentryErrorBoundary({children}: {children: React.ReactNode}) {
     );
 }
 
-function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, toggleFeatureFlag, darkMode = false, unsplashConfig, sentryDSN}: AppProps) {
+function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, sentryDSN, onUpdate, onInvalidate}: AppProps) {
     const appClassName = clsx(
         'admin-x-settings h-[100vh] w-full overflow-y-auto overflow-x-hidden',
         darkMode && 'dark'
@@ -50,7 +51,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, t
     return (
         <SentryErrorBoundary>
             <QueryClientProvider client={queryClient}>
-                <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} toggleFeatureFlag={toggleFeatureFlag} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates}>
+                <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates} onInvalidate={onInvalidate} onUpdate={onUpdate}>
                     <GlobalDataProvider>
                         <RoutingProvider externalNavigate={externalNavigate}>
                             <GlobalDirtyStateProvider>

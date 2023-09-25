@@ -31,9 +31,10 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 image: 'assets/img/themes/Edition.png'
             }]}
             sentryDSN={'' as string | null}
-            toggleFeatureFlag={() => {}}
             unsplashConfig={{} as DefaultHeaderTypes}
             zapierTemplates={[]}
+            onInvalidate={() => {}}
+            onUpdate={() => {}}
         />
     </React.StrictMode>
 );
