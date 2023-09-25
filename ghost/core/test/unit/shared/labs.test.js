@@ -6,13 +6,14 @@ const labs = require('../../../core/shared/labs');
 const settingsCache = require('../../../core/shared/settings-cache');
 
 function expectedLabsObject(obj) {
-    const withGA = Object.assign({}, obj);
+    let enabledFlags = {};
 
     labs.GA_KEYS.forEach((key) => {
-        withGA[key] = true;
+        enabledFlags[key] = true;
     });
 
-    return withGA;
+    enabledFlags = Object.assign(enabledFlags, obj);
+    return enabledFlags;
 }
 
 describe('Labs Service', function () {
@@ -62,6 +63,37 @@ describe('Labs Service', function () {
 
         assert.equal(labs.isSet('members'), true);
         assert.equal(labs.isSet('urlCache'), false);
+    });
+
+    it('respects the value in config over settings', function () {
+        configUtils.set('labs', {
+            collections: false
+        });
+        sinon.stub(settingsCache, 'get');
+        settingsCache.get.withArgs('labs').returns({
+            collections: true,
+            members: true
+        });
+
+        assert.deepEqual(labs.getAll(), expectedLabsObject({
+            collections: false,
+            members: true
+        }));
+
+        assert.equal(labs.isSet('collections'), false);
+    });
+
+    it('respects the value in config over GA keys', function () {
+        configUtils.set('labs', {
+            audienceFeedback: false
+        });
+
+        assert.deepEqual(labs.getAll(), expectedLabsObject({
+            audienceFeedback: false,
+            members: true
+        }));
+
+        assert.equal(labs.isSet('audienceFeedback'), false);
     });
 
     it('members flag is true when members_signup_access setting is "all"', function () {
