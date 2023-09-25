@@ -4,6 +4,7 @@ import clsx from 'clsx';
 export type Tab<ID = string> = {
     id: ID;
     title: string;
+    counter?: number;
 
     /**
      * Optional, so you can just use the tabs to other views
@@ -51,21 +52,27 @@ function TabView<ID extends string = string>({
         <section>
             <div className={containerClasses} role='tablist'>
                 {tabs.map(tab => (
-                    <button
-                        key={tab.id}
-                        aria-selected={selectedTab === tab.id}
-                        className={clsx(
-                            '-m-b-px cursor-pointer appearance-none whitespace-nowrap py-1 text-sm transition-all after:invisible after:block after:h-px after:overflow-hidden after:font-bold after:text-transparent after:content-[attr(title)] dark:text-white',
-                            border && 'border-b-[3px]',
-                            selectedTab === tab.id && border ? 'border-black dark:border-white' : 'border-transparent hover:border-grey-500',
-                            selectedTab === tab.id && 'font-bold'
-                        )}
-                        id={tab.id}
-                        role='tab'
-                        title={tab.title}
-                        type="button"
-                        onClick={handleTabChange}
-                    >{tab.title}</button>
+                    <div>
+                        <button
+                            key={tab.id}
+                            aria-selected={selectedTab === tab.id}
+                            className={clsx(
+                                '-m-b-px cursor-pointer appearance-none whitespace-nowrap py-1 text-sm transition-all after:invisible after:block after:h-px after:overflow-hidden after:font-bold after:text-transparent after:content-[attr(title)] dark:text-white',
+                                border && 'border-b-[3px]',
+                                selectedTab === tab.id && border ? 'border-black dark:border-white' : 'border-transparent hover:border-grey-500',
+                                selectedTab === tab.id && 'font-bold'
+                            )}
+                            id={tab.id}
+                            role='tab'
+                            title={tab.title}
+                            type="button"
+                            onClick={handleTabChange}
+                        >
+                            {tab.title}
+                            {/* {((typeof tab.counter === 'number' || tab.counter === 0)) && <span className='ml-1 font-normal text-grey-800'>({tab.counter})</span>} */}
+                            {((typeof tab.counter === 'number' || tab.counter === 0)) && <span className='ml-1.5 rounded-full bg-grey-200 px-1.5 py-[2px] text-xs font-normal text-grey-800'>{tab.counter}</span>}
+                        </button>
+                    </div>
                 ))}
             </div>
             {tabs.map((tab) => {

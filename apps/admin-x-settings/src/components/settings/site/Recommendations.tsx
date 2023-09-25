@@ -68,12 +68,14 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const tabs = [
         {
             id: 'your-recommendations',
-            title: `Your recommendations ${recommendationsMeta?.pagination?.total ? `(${recommendationsMeta.pagination.total})` : ''}`,
+            title: `Your recommendations`,
+            counter: recommendationsMeta?.pagination?.total,
             contents: <RecommendationList isLoading={areRecommendationsLoading} recommendations={recommendations ?? []} showMore={showMoreRecommendations}/>
         },
         {
             id: 'recommending-you',
-            title: `Recommending you ${mentionsPagination?.total ? `(${mentionsPagination.total})` : ''}`,
+            title: `Recommending you`,
+            counter: mentionsPagination.total,
             contents: <IncomingRecommendationList isLoading={areMentionsLoading || areSourcesLoading} mentions={mentions ?? []} pagination={mentionsPagination} stats={mentionsStats ?? []}/>
         }
     ];
