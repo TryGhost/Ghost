@@ -22,7 +22,7 @@ async function createHeaderCard({page, version = 1}) {
     }
 }
 
-test.describe.skip('Header card V1', async () => {
+test.describe('Header card V1', async () => {
     const ctrlOrCmd = isMac() ? 'Meta' : 'Control';
     let page;
 

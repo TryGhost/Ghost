@@ -46,9 +46,8 @@ const cardConfig = {
         collections: true,
         collectionsCard: true
     },
-    // we keep header v1 visible in the demo to ensure it remains tested till we full deprecate it in the future
-    depreciated: {
-        headerV1: false // if false, shows header v1 in the menu
+    deprecated: {
+        headerV1: process.env.NODE_ENV === 'test' ? false : true // show header v1 only for tests
     }
 };
 
