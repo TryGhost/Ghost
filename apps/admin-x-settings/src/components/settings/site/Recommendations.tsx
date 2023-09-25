@@ -75,7 +75,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'recommending-you',
             title: `Recommending you`,
-            counter: mentionsPagination.total,
+            counter: mentionsPagination?.total,
             contents: <IncomingRecommendationList isLoading={areMentionsLoading || areSourcesLoading} mentions={mentions ?? []} pagination={mentionsPagination} stats={mentionsStats ?? []}/>
         }
     ];
