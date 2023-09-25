@@ -5,7 +5,7 @@ import LabItem from './LabItem';
 import List from '../../../../admin-x-ds/global/List';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import handleError from '../../../../utils/handleError';
+import handleError from '../../../../utils/api/handleError';
 import {downloadAllContent, useDeleteAllContent, useImportContent} from '../../../../api/db';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {useQueryClient} from '@tanstack/react-query';

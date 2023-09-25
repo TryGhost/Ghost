@@ -34,8 +34,12 @@ class CollectionsServiceWrapper {
         const config = require('../../../shared/config');
         const labs = require('../../../shared/labs');
 
-        // host setting OR labs "collections" flag has to be enabled to run collections service
-        if (config.get('hostSettings:collections:enabled') || labs.isSet('collections')) {
+        // CASE: emergency kill switch in case we need to disable collections outside of labs
+        if (config.get('hostSettings:collections:enabled') === false) {
+            return;
+        }
+
+        if (labs.isSet('collections')) {
             if (inited) {
                 return;
             }

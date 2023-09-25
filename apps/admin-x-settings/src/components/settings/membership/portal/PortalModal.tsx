@@ -6,7 +6,7 @@ import PortalPreview from './PortalPreview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './SignupOptions';
 import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
-import handleError from '../../../../utils/handleError';
+import handleError from '../../../../utils/api/handleError';
 import useForm, {Dirtyable} from '../../../../hooks/useForm';
 import useQueryParams from '../../../../hooks/useQueryParams';
 import useRouting from '../../../../hooks/useRouting';

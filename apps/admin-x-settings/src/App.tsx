@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/react';
+import DesignSystemProvider from './admin-x-ds/providers/DesignSystemProvider';
 import GlobalDataProvider from './components/providers/GlobalDataProvider';
 import MainContent from './MainContent';
 import NiceModal from '@ebay/nice-modal-react';
@@ -11,7 +11,6 @@ import {OfficialTheme, ServicesProvider} from './components/providers/ServicePro
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {Toaster} from 'react-hot-toast';
 import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
-import {useEffect} from 'react';
 
 interface AppProps {
     ghostVersion: string;
@@ -47,19 +46,6 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, t
         'admin-x-settings h-[100vh] w-full overflow-y-auto overflow-x-hidden',
         darkMode && 'dark'
     );
-    
-    useEffect(() => {
-        if (sentryDSN) {
-            Sentry.init({
-                dsn: sentryDSN,
-                release: ghostVersion,
-                integrations: [
-                    new Sentry.BrowserTracing({
-                    })
-                ]
-            });
-        }
-    }, [sentryDSN, ghostVersion]);
 
     return (
         <SentryErrorBoundary>
@@ -68,16 +54,18 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, t
                     <GlobalDataProvider>
                         <RoutingProvider externalNavigate={externalNavigate}>
                             <GlobalDirtyStateProvider>
-                                <div className={appClassName} id="admin-x-root" style={{
-                                    height: '100vh',
-                                    width: '100%'
-                                }}
-                                >
-                                    <Toaster />
-                                    <NiceModal.Provider>
-                                        <MainContent />
-                                    </NiceModal.Provider>
-                                </div>
+                                <DesignSystemProvider>
+                                    <div className={appClassName} id="admin-x-root" style={{
+                                        height: '100vh',
+                                        width: '100%'
+                                    }}
+                                    >
+                                        <Toaster />
+                                        <NiceModal.Provider>
+                                            <MainContent />
+                                        </NiceModal.Provider>
+                                    </div>
+                                </DesignSystemProvider>
                             </GlobalDirtyStateProvider>
                         </RoutingProvider>
                     </GlobalDataProvider>

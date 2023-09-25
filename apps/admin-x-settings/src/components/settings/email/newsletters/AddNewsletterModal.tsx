@@ -6,7 +6,7 @@ import React, {useEffect} from 'react';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import handleError from '../../../../utils/handleError';
+import handleError from '../../../../utils/api/handleError';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';

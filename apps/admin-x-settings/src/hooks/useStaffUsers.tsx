@@ -14,6 +14,8 @@ export type UsersHook = {
     contributorUsers: User[];
     currentUser: User|null;
     isLoading: boolean;
+    hasNextPage?: boolean;
+    fetchNextPage: () => void;
 };
 
 function getUsersByRole(users: User[], role: string): User[] {
@@ -30,7 +32,7 @@ function getOwnerUser(users: User[]): User {
 
 const useStaffUsers = (): UsersHook => {
     const {currentUser} = useGlobalData();
-    const {data: {users} = {users: []}, isLoading: usersLoading} = useBrowseUsers();
+    const {data: {users, isEnd} = {users: []}, isLoading: usersLoading, fetchNextPage} = useBrowseUsers();
     const {data: {invites} = {invites: []}, isLoading: invitesLoading} = useBrowseInvites();
     const {data: {roles} = {}, isLoading: rolesLoading} = useBrowseRoles();
 
@@ -58,7 +60,9 @@ const useStaffUsers = (): UsersHook => {
         contributorUsers,
         currentUser,
         invites: mappedInvites,
-        isLoading: usersLoading || invitesLoading || rolesLoading
+        isLoading: usersLoading || invitesLoading || rolesLoading,
+        hasNextPage: isEnd,
+        fetchNextPage
     };
 };
 

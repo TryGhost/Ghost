@@ -13,7 +13,7 @@ import TextField from '../../../../admin-x-ds/global/form/TextField';
 import TierDetailPreview from './TierDetailPreview';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
-import handleError from '../../../../utils/handleError';
+import handleError from '../../../../utils/api/handleError';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
@@ -223,9 +223,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                             containerClassName='font-medium'
                                             controlClasses={{menu: 'w-14'}}
                                             options={currencySelectGroups()}
-                                            selectedOption={formState.currency}
+                                            selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === formState.currency)}
                                             size='xs'
-                                            onSelect={currency => updateForm(state => ({...state, currency}))}
+                                            onSelect={option => updateForm(state => ({...state, currency: option?.value}))}
                                         />
                                     </div>
                                 </div>
@@ -339,15 +339,21 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
 };
 
 const TierDetailModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {data: {tiers} = {}} = useBrowseTiers();
+    const {data: {tiers, isEnd} = {}, fetchNextPage} = useBrowseTiers();
 
     let tier: Tier | undefined;
+
+    useEffect(() => {
+        if (params?.id && !tier && !isEnd) {
+            fetchNextPage();
+        }
+    }, [fetchNextPage, isEnd, params?.id, tier]);
 
     if (params?.id) {
         tier = tiers?.find(({id}) => id === params?.id);
 
         if (!tier) {
-            return;
+            return null;
         }
     }
 
