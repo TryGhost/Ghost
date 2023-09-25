@@ -47,19 +47,6 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, t
         'admin-x-settings h-[100vh] w-full overflow-y-auto overflow-x-hidden',
         darkMode && 'dark'
     );
-    
-    useEffect(() => {
-        if (sentryDSN) {
-            Sentry.init({
-                dsn: sentryDSN,
-                release: ghostVersion,
-                integrations: [
-                    new Sentry.BrowserTracing({
-                    })
-                ]
-            });
-        }
-    }, [sentryDSN, ghostVersion]);
 
     return (
         <SentryErrorBoundary>
