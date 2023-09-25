@@ -2,6 +2,7 @@ import Heading from '../Heading';
 import Hint from '../Hint';
 import React, {useId} from 'react';
 import clsx from 'clsx';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 
 export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     inputRef?: React.RefObject<HTMLInputElement>;
@@ -50,6 +51,18 @@ const TextField: React.FC<TextFieldProps> = ({
     ...props
 }) => {
     const id = useId();
+    const {setFocusState} = useFocusContext();
+
+    const handleFocus = () => {
+        setFocusState(true);
+    };
+
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        if (onBlur) {
+            onBlur(e);
+        }
+        setFocusState(false);
+    };
 
     const disabledBorderClasses = border && 'border-grey-300 dark:border-grey-900';
     const enabledBorderClasses = border && 'border-grey-500 hover:border-grey-700 focus:border-black dark:border-grey-800 dark:hover:border-grey-700 dark:focus:border-grey-500';
@@ -77,8 +90,9 @@ const TextField: React.FC<TextFieldProps> = ({
         placeholder={placeholder}
         type={type}
         value={value}
-        onBlur={onBlur}
+        onBlur={handleBlur}
         onChange={onChange}
+        onFocus={handleFocus}
         {...props} />;
 
     if (rightPlaceholder) {
@@ -120,7 +134,7 @@ const TextField: React.FC<TextFieldProps> = ({
             </div>
         );
     } else {
-        return field;
+        return (field);
     }
 };
 

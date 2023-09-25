@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/react';
 import React, {ReactNode, Suspense, useCallback, useMemo} from 'react';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 
 export interface HtmlEditorProps {
     value?: string
@@ -107,6 +108,14 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
         }
         console.error(error); // eslint-disable-line
     }, []);
+    const {setFocusState} = useFocusContext();
+
+    const handleBlur = () => {
+        if (onBlur) {
+            onBlur();
+        }
+        setFocusState(false);
+    };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const koenig = useMemo(() => new Proxy({} as { [key: string]: any }, {
@@ -154,7 +163,7 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
                 placeholderClassName='koenig-lexical-editor-input-placeholder'
                 placeholderText={placeholder}
                 singleParagraph={true}
-                onBlur={onBlur}
+                onBlur={handleBlur}
             >
                 <koenig.HtmlOutputPlugin html={value} setHtml={handleSetHtml} />
             </koenig.KoenigComposableEditor>
@@ -174,9 +183,13 @@ const HtmlEditor: React.FC<HtmlEditorProps & {
         editorUrl: config.editor.url,
         editorVersion: config.editor.version
     }), [config.editor.url, config.editor.version]);
-
+    const {setFocusState} = useFocusContext();
+    // this is not ideal, we need to add a focus plugin inside the Koenig editor package to handle this properly
+    const handleFocus = () => {
+        setFocusState(true);
+    };
     return <div className={className || 'w-full'}>
-        <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit">
+        <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit" onFocus={handleFocus}>
             <ErrorHandler>
                 <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                     <KoenigWrapper {...props} editor={editorResource} />

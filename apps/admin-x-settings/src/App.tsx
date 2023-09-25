@@ -1,3 +1,4 @@
+import DesignSystemProvider from './admin-x-ds/providers/DesignSystemProvider';
 import GlobalDataProvider from './components/providers/GlobalDataProvider';
 import MainContent from './MainContent';
 import NiceModal from '@ebay/nice-modal-react';
@@ -53,16 +54,18 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, t
                     <GlobalDataProvider>
                         <RoutingProvider externalNavigate={externalNavigate}>
                             <GlobalDirtyStateProvider>
-                                <div className={appClassName} id="admin-x-root" style={{
-                                    height: '100vh',
-                                    width: '100%'
-                                }}
-                                >
-                                    <Toaster />
-                                    <NiceModal.Provider>
-                                        <MainContent />
-                                    </NiceModal.Provider>
-                                </div>
+                                <DesignSystemProvider>
+                                    <div className={appClassName} id="admin-x-root" style={{
+                                        height: '100vh',
+                                        width: '100%'
+                                    }}
+                                    >
+                                        <Toaster />
+                                        <NiceModal.Provider>
+                                            <MainContent />
+                                        </NiceModal.Provider>
+                                    </div>
+                                </DesignSystemProvider>
                             </GlobalDirtyStateProvider>
                         </RoutingProvider>
                     </GlobalDataProvider>

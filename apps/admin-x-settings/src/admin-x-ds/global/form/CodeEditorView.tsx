@@ -5,6 +5,7 @@ import React, {forwardRef, useEffect, useId, useRef, useState} from 'react';
 import clsx from 'clsx';
 import {EditorView} from '@codemirror/view';
 import {Extension} from '@codemirror/state';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 
 export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'onChange' | 'extensions'> {
     title?: string;
@@ -43,6 +44,15 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     const sizeRef = useRef<HTMLDivElement>(null);
     const [width, setWidth] = useState(100);
     const [resolvedExtensions, setResolvedExtensions] = React.useState<Extension[] | null>(null);
+    const {setFocusState} = useFocusContext();
+
+    const handleFocus = () => {
+        setFocusState(true);
+    };
+
+    const handleBlur = () => {
+        setFocusState(false);
+    };
 
     useEffect(() => {
         Promise.all(extensions).then(setResolvedExtensions);
@@ -76,7 +86,9 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 height={height === 'full' ? '100%' : height}
                 theme={theme}
                 value={value}
+                onBlur={handleBlur}
                 onChange={onChange}
+                onFocus={handleFocus}
                 {...props}
             />
             {title && <Heading className={'order-1 !text-grey-700 peer-focus:!text-black'} htmlFor={id} useLabelTag={true}>{title}</Heading>}

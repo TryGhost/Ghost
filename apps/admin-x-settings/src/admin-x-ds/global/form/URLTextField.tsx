@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import TextField, {TextFieldProps} from './TextField';
 import validator from 'validator';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 
 const formatUrl = (value: string, baseUrl?: string) => {
     let url = value.trim();
@@ -103,6 +104,7 @@ const URLTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
     onChange: (value: string) => void;
 }> = ({baseUrl, value, transformPathWithoutSlash, onChange, ...props}) => {
     const [displayedUrl, setDisplayedUrl] = useState('');
+    const {setFocusState} = useFocusContext();
 
     useEffect(() => {
         setDisplayedUrl(formatUrl(value || '', baseUrl).display);
@@ -123,6 +125,7 @@ const URLTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
 
         setDisplayedUrl(urls.display);
         onChange(urls.save);
+        setFocusState(false);
     };
 
     const handleFocus: React.FocusEventHandler<HTMLInputElement> = (e) => {
@@ -132,6 +135,7 @@ const URLTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
         }
 
         props.onFocus?.(e);
+        setFocusState(true);
     };
 
     const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
