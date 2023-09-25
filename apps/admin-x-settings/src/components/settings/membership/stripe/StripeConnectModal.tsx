@@ -64,7 +64,7 @@ const Connect: React.FC = () => {
 
     const saveTier = async () => {
         const {data} = await fetchActiveTiers();
-        const tier = data?.tiers[0];
+        const tier = data?.pages[0].tiers[0];
 
         if (tier) {
             tier.monthly_price = 500;
