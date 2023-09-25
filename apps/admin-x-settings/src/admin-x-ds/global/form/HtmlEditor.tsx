@@ -110,10 +110,6 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
     }, []);
     const {setFocusState} = useFocusContext();
 
-    const handleFocus = () => {
-        setFocusState(true);
-    };
-
     const handleBlur = () => {
         if (onBlur) {
             onBlur();
@@ -168,7 +164,6 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
                 placeholderText={placeholder}
                 singleParagraph={true}
                 onBlur={handleBlur}
-                onFocus={handleFocus}
             >
                 <koenig.HtmlOutputPlugin html={value} setHtml={handleSetHtml} />
             </koenig.KoenigComposableEditor>
@@ -188,9 +183,13 @@ const HtmlEditor: React.FC<HtmlEditorProps & {
         editorUrl: config.editor.url,
         editorVersion: config.editor.version
     }), [config.editor.url, config.editor.version]);
-
+    const {setFocusState} = useFocusContext();
+    // this is not ideal, we need to add a focus plugin inside the Koenig editor package to handle this properly
+    const handleFocus = () => {
+        setFocusState(true);
+    };
     return <div className={className || 'w-full'}>
-        <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit">
+        <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit" onFocus={handleFocus}>
             <ErrorHandler>
                 <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                     <KoenigWrapper {...props} editor={editorResource} />
