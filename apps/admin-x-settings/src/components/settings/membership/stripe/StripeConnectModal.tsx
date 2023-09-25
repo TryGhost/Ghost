@@ -13,6 +13,7 @@ import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import handleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {JSONError} from '../../../../utils/errors';
@@ -63,7 +64,7 @@ const Connect: React.FC = () => {
 
     const saveTier = async () => {
         const {data} = await fetchActiveTiers();
-        const tier = data?.tiers[0];
+        const tier = data?.pages[0].tiers[0];
 
         if (tier) {
             tier.monthly_price = 500;
@@ -86,7 +87,8 @@ const Connect: React.FC = () => {
                         // no-op: will try saving again as stripe is not ready
                         continue;
                     } else {
-                        throw e;
+                        handleError(e);
+                        return;
                     }
                 }
             }
@@ -111,8 +113,10 @@ const Connect: React.FC = () => {
                 if (e instanceof JSONError && e.data?.errors) {
                     setError('Invalid secure key');
                     return;
+                } else {
+                    handleError(e);
+                    return;
                 }
-                throw error;
             }
         } else {
             setError('Please enter a secure key');
@@ -169,9 +173,13 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
                 from this site. This will automatically turn off paid memberships on this site.</>),
             okLabel: hasActiveStripeSubscriptions ? '' : 'Disconnect',
             onOk: async (modal) => {
-                await deleteStripeSettings(null);
-                modal?.remove();
-                onClose?.();
+                try {
+                    await deleteStripeSettings(null);
+                    modal?.remove();
+                    onClose?.();
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };

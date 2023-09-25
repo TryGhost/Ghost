@@ -43,6 +43,7 @@
     "@dnd-kit/core": "6.0.8",
     "@dnd-kit/sortable": "7.0.2",
     "@ebay/nice-modal-react": "1.2.10",
+    "@sentry/react": "7.70.0",
     "@tanstack/react-query": "4.35.3",
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/limit-service": "^1.2.10",
@@ -55,7 +56,7 @@
     "validator": "7.2.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.38.0",
+    "@playwright/test": "1.38.1",
     "@storybook/addon-essentials": "7.4.0",
     "@storybook/addon-interactions": "7.4.0",
     "@storybook/addon-links": "7.4.0",

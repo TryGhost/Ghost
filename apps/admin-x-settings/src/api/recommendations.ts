@@ -1,4 +1,5 @@
-import {Meta, apiUrl, createMutation, createPaginatedQuery, useFetchApi} from '../utils/apiRequests';
+import {InfiniteData} from '@tanstack/react-query';
+import {Meta, apiUrl, createInfiniteQuery, createMutation, useFetchApi} from '../utils/api/hooks';
 
 export type Recommendation = {
     id: string
@@ -28,16 +29,29 @@ export interface RecommendationDeleteResponseType {}
 
 const dataType = 'RecommendationResponseType';
 
-export const useBrowseRecommendations = createPaginatedQuery<RecommendationResponseType>({
+export const useBrowseRecommendations = createInfiniteQuery<RecommendationResponseType>({
     dataType,
     path: '/recommendations/',
-    defaultSearchParams: {}
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<RecommendationResponseType>;
+        let recommendations = pages.flatMap(page => page.recommendations);
+
+        // Remove duplicates
+        recommendations = recommendations.filter((recommendation, index) => {
+            return recommendations.findIndex(({id}) => id === recommendation.id) === index;
+        });
+
+        return {
+            recommendations,
+            meta: pages[pages.length - 1].meta
+        };
+    }
 });
 
 export const useDeleteRecommendation = createMutation<RecommendationDeleteResponseType, Recommendation>({
     method: 'DELETE',
     path: recommendation => `/recommendations/${recommendation.id}/`,
-    // Clear all queries because pagination needs to be re-checked
+
     invalidateQueries: {
         dataType
     }
@@ -47,15 +61,9 @@ export const useEditRecommendation = createMutation<RecommendationEditResponseTy
     method: 'PUT',
     path: recommendation => `/recommendations/${recommendation.id}/`,
     body: recommendation => ({recommendations: [recommendation]}),
-    updateQueries: {
-        dataType,
-        update: (newData, currentData) => (currentData && {
-            ...(currentData as RecommendationResponseType),
-            recommendations: (currentData as RecommendationResponseType).recommendations.map((recommendation) => {
-                const newRecommendation = newData.recommendations.find(({id}) => id === recommendation.id);
-                return newRecommendation || recommendation;
-            })
-        })
+
+    invalidateQueries: {
+        dataType
     }
 });
 
@@ -64,7 +72,6 @@ export const useAddRecommendation = createMutation<RecommendationResponseType, P
     path: () => '/recommendations/',
     body: ({...recommendation}) => ({recommendations: [recommendation]}),
 
-    // Clear all queries because pagination needs to be re-checked
     invalidateQueries: {
         dataType
     }

@@ -7,6 +7,7 @@ import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import clsx from 'clsx';
+import handleError from '../../../../utils/api/handleError';
 import {ReactComponent as PortalIcon1} from '../../../../assets/icons/portal-icon-1.svg';
 import {ReactComponent as PortalIcon2} from '../../../../assets/icons/portal-icon-2.svg';
 import {ReactComponent as PortalIcon3} from '../../../../assets/icons/portal-icon-3.svg';
@@ -52,15 +53,25 @@ const LookAndFeel: React.FC<{
     const [uploadedIcon, setUploadedIcon] = useState(isDefaultIcon ? undefined : currentIcon);
 
     const handleImageUpload = async (file: File) => {
-        const imageUrl = getImageUrl(await uploadImage({file}));
-        updateSetting('portal_button_icon', imageUrl);
-        setUploadedIcon(imageUrl);
+        try {
+            const imageUrl = getImageUrl(await uploadImage({file}));
+            updateSetting('portal_button_icon', imageUrl);
+            setUploadedIcon(imageUrl);
+        } catch (e) {
+            handleError(e);
+        }
     };
 
     const handleImageDelete = () => {
         updateSetting('portal_button_icon', null);
         setUploadedIcon(undefined);
     };
+
+    const portalButtonOptions = [
+        {value: 'icon-and-text', label: 'Icon and text'},
+        {value: 'icon-only', label: 'Icon only'},
+        {value: 'text-only', label: 'Text only'}
+    ];
 
     return <div className='mt-7'><Form>
         <Toggle
@@ -70,14 +81,10 @@ const LookAndFeel: React.FC<{
             onChange={e => updateSetting('portal_button', e.target.checked)}
         />
         <Select
-            options={[
-                {value: 'icon-and-text', label: 'Icon and text'},
-                {value: 'icon-only', label: 'Icon only'},
-                {value: 'text-only', label: 'Text only'}
-            ]}
-            selectedOption={portalButtonStyle as string}
+            options={portalButtonOptions}
+            selectedOption={portalButtonOptions.find(option => option.value === portalButtonStyle)}
             title='Portal button style'
-            onSelect={option => updateSetting('portal_button_style', option || null)}
+            onSelect={option => updateSetting('portal_button_style', option?.value || null)}
         />
         {portalButtonStyle?.toString()?.includes('icon') &&
             <div className='flex flex-col gap-2'>

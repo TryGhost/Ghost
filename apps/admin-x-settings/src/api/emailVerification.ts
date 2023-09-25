@@ -1,4 +1,4 @@
-import {Meta, createMutation} from '../utils/apiRequests';
+import {Meta, createMutation} from '../utils/api/hooks';
 
 export type emailVerification = {
     token: string;
@@ -16,6 +16,7 @@ export const verifyEmailToken = createMutation<EmailVerificationResponseType, em
     body: ({token}) => ({token}),
     updateQueries: {
         dataType,
+        emberUpdateType: 'createOrUpdate',
         update: newData => ({
             ...newData,
             settings: newData.settings

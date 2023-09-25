@@ -1,5 +1,7 @@
-import {Meta, createMutation, createQuery} from '../utils/apiRequests';
+import {InfiniteData} from '@tanstack/react-query';
+import {Meta, createInfiniteQuery, createMutation, createQuery} from '../utils/api/hooks';
 import {UserRole} from './roles';
+import {deleteFromQueryCache, updateQueryCache} from '../utils/api/updateQueries';
 
 // Types
 
@@ -28,6 +30,7 @@ export type User = {
     paid_subscription_canceled_notification: boolean;
     paid_subscription_started_notification: boolean;
     mention_notifications: boolean;
+    recommendation_notifications: boolean;
     milestone_notifications: boolean;
     roles: UserRole[];
     url: string;
@@ -61,18 +64,25 @@ export interface DeleteUserResponse {
 
 const dataType = 'UsersResponseType';
 
-const updateUsers = (newData: UsersResponseType, currentData: unknown) => ({
-    ...(currentData as UsersResponseType),
-    users: (currentData as UsersResponseType).users.map((user) => {
-        const newUser = newData.users.find(({id}) => id === user.id);
-        return newUser || user;
-    })
-});
-
-export const useBrowseUsers = createQuery<UsersResponseType>({
+export const useBrowseUsers = createInfiniteQuery<UsersResponseType & {isEnd: boolean}>({
     dataType,
     path: '/users/',
-    defaultSearchParams: {limit: 'all', include: 'roles'}
+    defaultSearchParams: {limit: '100', include: 'roles'},
+    defaultNextPageParams: (lastPage, otherParams) => ({
+        ...otherParams,
+        page: (lastPage.meta?.pagination.next || 1).toString()
+    }),
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<UsersResponseType>;
+        const users = pages.flatMap(page => page.users);
+        const meta = pages.at(-1)!.meta;
+
+        return {
+            users: users,
+            meta,
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
+        };
+    }
 });
 
 export const useCurrentUser = createQuery<User>({
@@ -89,7 +99,8 @@ export const useEditUser = createMutation<UsersResponseType, User>({
     searchParams: () => ({include: 'roles'}),
     updateQueries: {
         dataType,
-        update: updateUsers
+        emberUpdateType: 'createOrUpdate',
+        update: updateQueryCache('users')
     }
 });
 
@@ -98,10 +109,8 @@ export const useDeleteUser = createMutation<DeleteUserResponse, string>({
     path: id => `/users/${id}/`,
     updateQueries: {
         dataType,
-        update: (_, currentData, id) => ({
-            ...(currentData as UsersResponseType),
-            users: (currentData as UsersResponseType).users.filter(user => user.id !== id)
-        })
+        emberUpdateType: 'delete',
+        update: deleteFromQueryCache('users')
     }
 });
 
@@ -128,7 +137,8 @@ export const useMakeOwner = createMutation<UsersResponseType, string>({
     }),
     updateQueries: {
         dataType,
-        update: updateUsers
+        emberUpdateType: 'createOrUpdate',
+        update: updateQueryCache('users')
     }
 });
 
@@ -152,6 +162,10 @@ export function isAuthorUser(user: User) {
 
 export function isContributorUser(user: User) {
     return user.roles.some(role => role.name === 'Contributor');
+}
+
+export function isAuthorOrContributor(user: User) {
+    return isAuthorUser(user) || isContributorUser(user);
 }
 
 export function canAccessSettings(user: User) {

@@ -1,3 +1,4 @@
+import Button from '../../../admin-x-ds/global/Button';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import StripeButton from '../../../admin-x-ds/settings/StripeButton';
@@ -26,7 +27,7 @@ const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}
 const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState('active-tiers');
     const {settings, config} = useGlobalData();
-    const {data: {tiers} = {}} = useBrowseTiers();
+    const {data: {tiers, meta, isEnd} = {}, fetchNextPage} = useBrowseTiers();
     const activeTiers = getActiveTiers(tiers || []);
     const archivedTiers = getArchivedTiers(tiers || []);
     const {updateRoute} = useRouting();
@@ -80,6 +81,11 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
             </div>
 
             {content}
+            {isEnd === false && <Button
+                label={`Load more (showing ${tiers?.length || 0}/${meta?.pagination.total || 0} tiers)`}
+                link
+                onClick={() => fetchNextPage()}
+            />}
         </SettingGroup>
     );
 };

@@ -81,10 +81,10 @@ const PortalLinks: React.FC = () => {
                         <span className='inline-block w-[240px] shrink-0'>Tier</span>
                         <Select
                             options={tierOptions}
-                            selectedOption={selectedTier}
-                            onSelect={(value) => {
-                                if (value) {
-                                    setSelectedTier(value);
+                            selectedOption={tierOptions.find(option => option.value === selectedTier)}
+                            onSelect={(option) => {
+                                if (option) {
+                                    setSelectedTier(option?.value);
                                 }
                             }}
                         />

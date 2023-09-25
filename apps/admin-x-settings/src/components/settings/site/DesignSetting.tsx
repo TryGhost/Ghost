@@ -13,11 +13,11 @@ const DesignSetting: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <SettingGroup
             customButtons={<Button color='green' label='Customize' link linkWithPadding onClick={openPreviewModal}/>}
-            description="Customize the look and feel of your site"
+            description="Customize the theme, colors, and layout of your site"
             keywords={keywords}
             navid='design'
             testId='design'
-            title="Branding and design"
+            title="Design & branding"
         />
     );
 };

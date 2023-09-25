@@ -1,7 +1,7 @@
 import {ExternalLink, InternalLink} from '../components/providers/RoutingProvider';
 import {InfiniteData} from '@tanstack/react-query';
 import {JSONObject} from './config';
-import {Meta, createInfiniteQuery} from '../utils/apiRequests';
+import {Meta, createInfiniteQuery} from '../utils/api/hooks';
 
 // Types
 
@@ -74,10 +74,12 @@ export const useBrowseActions = createInfiniteQuery<ActionsResponseType>({
             }
         });
 
+        const meta = pages.at(-1)!.meta;
+
         return {
             actions: actions.reverse(),
-            meta: pages.at(-1)!.meta,
-            isEnd: pages.at(-1)!.actions.length < pages.at(-1)!.meta.pagination.limit
+            meta,
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
 });

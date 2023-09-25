@@ -108,6 +108,7 @@ type QueryOptions = {
 
 interface PostsRepository {
     getAll(options: QueryOptions): Promise<CollectionPost[]>;
+    getAllIds(options?: {transaction: Knex.Transaction}): Promise<string[]>;
 }
 
 export class CollectionsService {
@@ -128,8 +129,8 @@ export class CollectionsService {
         this.slugService = deps.slugService;
     }
 
-    private toDTO(collection: Collection): CollectionDTO {
-        return {
+    private async toDTO(collection: Collection, options?: {transaction: Knex.Transaction}): Promise<CollectionDTO> {
+        const dto = {
             id: collection.id,
             title: collection.title,
             slug: collection.slug,
@@ -144,6 +145,14 @@ export class CollectionsService {
                 sort_order: index
             }))
         };
+        if (collection.slug === 'latest') {
+            const allPostIds = await this.postsRepository.getAllIds(options);
+            dto.posts = allPostIds.map((id, index) => ({
+                id,
+                sort_order: index
+            }));
+        }
+        return dto;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -560,23 +569,29 @@ export class CollectionsService {
         });
     }
 
-    async getById(id: string, options?: {transaction: Knex.Transaction}): Promise<Collection | null> {
-        return await this.collectionsRepository.getById(id, options);
+    async getById(id: string, options?: {transaction: Knex.Transaction}): Promise<CollectionDTO | null> {
+        const collection = await this.collectionsRepository.getById(id, options);
+        if (!collection) {
+            return null;
+        }
+        return this.toDTO(collection, options);
     }
 
-    async getBySlug(slug: string, options?: {transaction: Knex.Transaction}): Promise<Collection | null> {
-        return await this.collectionsRepository.getBySlug(slug, options);
+    async getBySlug(slug: string, options?: {transaction: Knex.Transaction}): Promise<CollectionDTO | null> {
+        const collection = await this.collectionsRepository.getBySlug(slug, options);
+        if (!collection) {
+            return null;
+        }
+        return this.toDTO(collection, options);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async getAll(options?: QueryOptions): Promise<{data: CollectionDTO[], meta: any}> {
         const collections = await this.collectionsRepository.getAll(options);
 
-        const collectionsDTOs: CollectionDTO[] = [];
-
-        for (const collection of collections) {
-            collectionsDTOs.push(this.toDTO(collection));
-        }
+        const collectionsDTOs: CollectionDTO[] = await Promise.all(
+            collections.map(collection => this.toDTO(collection))
+        );
 
         return {
             data: collectionsDTOs,
@@ -594,18 +609,17 @@ export class CollectionsService {
     }
     async getCollectionsForPost(postId: string): Promise<CollectionDTO[]> {
         const collections = await this.collectionsRepository.getAll({
-            filter: `posts:${postId}`
+            filter: `posts:${postId},slug:latest`
         });
 
-        return collections.map(collection => this.toDTO(collection))
-            .sort((a, b) => {
-                // NOTE: sorting is here to keep DB engine ordering consistent
-                return a.slug.localeCompare(b.slug);
-            });
+        return Promise.all(collections.sort((a, b) => {
+            // NOTE: sorting is here to keep DB engine ordering consistent
+            return a.slug.localeCompare(b.slug);
+        }).map(collection => this.toDTO(collection)));
     }
 
     async destroy(id: string): Promise<Collection | null> {
-        const collection = await this.getById(id);
+        const collection = await this.collectionsRepository.getById(id);
 
         if (collection) {
             if (collection.deletable === false) {

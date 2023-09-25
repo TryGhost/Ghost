@@ -4,6 +4,7 @@ import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {ReactNode, useState} from 'react';
+import handleError from '../../../../utils/api/handleError';
 import {ConfirmationModalContent} from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import {InstalledTheme, ThemeProblem, useActivateTheme} from '../../../../api/themes';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
@@ -85,13 +86,17 @@ const ThemeInstalledModal: React.FC<{
         title={title}
         onOk={async (activateModal) => {
             if (!installedTheme.active) {
-                const resData = await activateTheme(installedTheme.name);
-                const updatedTheme = resData.themes[0];
+                try {
+                    const resData = await activateTheme(installedTheme.name);
+                    const updatedTheme = resData.themes[0];
 
-                showToast({
-                    type: 'success',
-                    message: <div><span className='capitalize'>{updatedTheme.name}</span> is now your active theme.</div>
-                });
+                    showToast({
+                        type: 'success',
+                        message: <div><span className='capitalize'>{updatedTheme.name}</span> is now your active theme.</div>
+                    });
+                } catch (e) {
+                    handleError(e);
+                }
             }
             onActivate?.();
             activateModal?.remove();

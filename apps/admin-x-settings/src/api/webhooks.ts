@@ -1,5 +1,5 @@
 import {IntegrationsResponseType, integrationsDataType} from './integrations';
-import {Meta, createMutation} from '../utils/apiRequests';
+import {Meta, createMutation} from '../utils/api/hooks';
 
 // Types
 
@@ -31,6 +31,7 @@ export const useCreateWebhook = createMutation<WebhooksResponseType, Partial<Web
     body: webhook => ({webhooks: [webhook]}),
     updateQueries: {
         dataType: integrationsDataType,
+        emberUpdateType: 'createOrUpdate',
         update: (newData, currentData) => (currentData && {
             ...(currentData as IntegrationsResponseType),
             integrations: (currentData as IntegrationsResponseType).integrations.map((integration) => {
@@ -52,6 +53,7 @@ export const useEditWebhook = createMutation<WebhooksResponseType, Webhook>({
     body: webhook => ({webhooks: [webhook]}),
     updateQueries: {
         dataType: integrationsDataType,
+        emberUpdateType: 'createOrUpdate',
         update: (newData, currentData) => (currentData && {
             ...(currentData as IntegrationsResponseType),
             integrations: (currentData as IntegrationsResponseType).integrations.map(integration => ({
@@ -69,6 +71,7 @@ export const useDeleteWebhook = createMutation<unknown, string>({
     path: id => `/webhooks/${id}/`,
     updateQueries: {
         dataType: integrationsDataType,
+        emberUpdateType: 'createOrUpdate',
         update: (_, currentData, id) => ({
             ...(currentData as IntegrationsResponseType),
             integrations: (currentData as IntegrationsResponseType).integrations.map(integration => ({

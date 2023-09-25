@@ -41,11 +41,11 @@ export const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({size, color, 
 
     switch (color) {
     case 'light':
-        styles += ' border-white/20 before:bg-white ';
+        styles += ' border-white/20 before:bg-white dark:border-black/10 dark:before:bg-black ';
         break;
     case 'dark':
     default:
-        styles += ' border-black/10 before:bg-black ';
+        styles += ' border-black/10 before:bg-black dark:border-white/20 dark:before:bg-white ';
         break;
     }
 

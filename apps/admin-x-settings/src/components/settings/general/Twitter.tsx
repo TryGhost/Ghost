@@ -3,6 +3,7 @@ import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
+import handleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/twitter-logo.svg';
@@ -23,18 +24,15 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     } = useSettingGroup();
 
     const {mutateAsync: uploadImage} = useUploadImage();
-    const [pintura] = getSettingValues<boolean>(localSettings, ['pintura']);
+
     const [pinturaJsUrl] = getSettingValues<string>(localSettings, ['pintura_js_url']);
     const [pinturaCssUrl] = getSettingValues<string>(localSettings, ['pintura_css_url']);
-
-    const pinturaEnabled = Boolean(pintura) && Boolean(pinturaJsUrl) && Boolean(pinturaCssUrl);
 
     const editor = usePinturaEditor(
         {config: {
             jsUrl: pinturaJsUrl || '',
             cssUrl: pinturaCssUrl || ''
-        },
-        disabled: !pinturaEnabled}
+        }}
     );
 
     const [
@@ -53,8 +51,8 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
         try {
             const imageUrl = getImageUrl(await uploadImage({file}));
             updateSetting('twitter_image', imageUrl);
-        } catch (err) {
-            // TODO: handle error
+        } catch (e) {
+            handleError(e);
         }
     };
 
@@ -86,7 +84,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         imageURL={twitterImage}
                         pintura={
                             {
-                                isEnabled: pinturaEnabled,
+                                isEnabled: editor.isEnabled,
                                 openEditor: async () => editor.openEditor({
                                     image: twitterImage || '',
                                     handleSave: async (file:File) => {

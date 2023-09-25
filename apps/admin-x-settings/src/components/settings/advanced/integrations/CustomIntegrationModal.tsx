@@ -7,6 +7,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import WebhooksTable from './WebhooksTable';
+import handleError from '../../../../utils/api/handleError';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {APIKey, useRefreshAPIKey} from '../../../../api/apiKeys';
@@ -30,6 +31,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
         onSave: async () => {
             await editIntegration(formState);
         },
+        onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
 
@@ -64,9 +66,13 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             prompt: `You can regenerate ${name} API Key any time, but any scripts or applications using it will need to be updated.`,
             okLabel: `Regenerate ${name} API Key`,
             onOk: async (confirmModal) => {
-                await refreshAPIKey({integrationId: integration.id, apiKeyId: apiKey.id});
-                setRegenerated(true);
-                confirmModal?.remove();
+                try {
+                    await refreshAPIKey({integrationId: integration.id, apiKeyId: apiKey.id});
+                    setRegenerated(true);
+                    confirmModal?.remove();
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -104,8 +110,12 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                     width='100px'
                     onDelete={() => updateForm(state => ({...state, icon_image: null}))}
                     onUpload={async (file) => {
-                        const imageUrl = getImageUrl(await uploadImage({file}));
-                        updateForm(state => ({...state, icon_image: imageUrl}));
+                        try {
+                            const imageUrl = getImageUrl(await uploadImage({file}));
+                            updateForm(state => ({...state, icon_image: imageUrl}));
+                        } catch (e) {
+                            handleError(e);
+                        }
                     }}
                 >
                     Upload icon

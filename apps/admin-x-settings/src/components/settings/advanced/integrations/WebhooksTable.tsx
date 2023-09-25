@@ -6,6 +6,7 @@ import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableHead from '../../../../admin-x-ds/global/TableHead';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import WebhookModal from './WebhookModal';
+import handleError from '../../../../utils/api/handleError';
 import {Integration} from '../../../../api/integrations';
 import {getWebhookEventLabel} from './webhookEventOptions';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
@@ -21,12 +22,16 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
             okColor: 'red',
             okLabel: 'Delete Webhook',
             onOk: async (confirmModal) => {
-                await deleteWebhook(id);
-                confirmModal?.remove();
-                showToast({
-                    message: 'Webhook deleted',
-                    type: 'success'
-                });
+                try {
+                    await deleteWebhook(id);
+                    confirmModal?.remove();
+                    showToast({
+                        message: 'Webhook deleted',
+                        type: 'success'
+                    });
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };

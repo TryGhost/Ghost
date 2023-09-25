@@ -5,6 +5,7 @@ import Select from '../../../admin-x-ds/global/form/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
+import handleError from '../../../utils/api/handleError';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues, useEditSettings} from '../../../api/settings';
 import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
@@ -64,10 +65,10 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <div className='grid grid-cols-[120px_auto] gap-x-3 gap-y-6'>
                 <Select
                     options={MAILGUN_REGIONS}
-                    selectedOption={mailgunRegion}
+                    selectedOption={MAILGUN_REGIONS.find(option => option.value === mailgunRegion)}
                     title="Mailgun region"
-                    onSelect={(value) => {
-                        updateSetting('mailgun_base_url', value || null);
+                    onSelect={(option) => {
+                        updateSetting('mailgun_base_url', option?.value || null);
                     }}
                 />
                 <TextField
@@ -113,7 +114,12 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 // resulting in the mailgun base url remaining null
                 // this should not fire if the user has changed the region or if the region is already set
                 if (!mailgunRegion) {
-                    await editSettings([{key: 'mailgun_base_url', value: MAILGUN_REGIONS[0].value}]);
+                    try {
+                        await editSettings([{key: 'mailgun_base_url', value: MAILGUN_REGIONS[0].value}]);
+                    } catch (e) {
+                        handleError(e);
+                        return;
+                    }
                 }
                 handleSave();
             }}

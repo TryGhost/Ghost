@@ -12,9 +12,10 @@ import React, {useEffect, useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
+import handleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {InstalledTheme, Theme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
+import {InstalledTheme, Theme, ThemesInstallResponseType, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
 import {OfficialTheme} from '../../providers/ServiceProvider';
 
 interface ThemeToolbarProps {
@@ -71,7 +72,18 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         file: File;
         onActivate?: () => void
     }) => {
-        const data = await uploadTheme({file});
+        let data: ThemesInstallResponseType | undefined;
+
+        try {
+            data = await uploadTheme({file});
+        } catch (e) {
+            handleError(e);
+        }
+
+        if (!data) {
+            return;
+        }
+
         const uploadedTheme = data.themes[0];
 
         let title = 'Upload successful';
@@ -247,8 +259,18 @@ const ChangeThemeModal = () => {
                 prompt = <>By clicking below, <strong>{selectedTheme.name}</strong> will automatically be activated as the theme for your site.</>;
             } else {
                 setInstalling(true);
-                const data = await installTheme(selectedTheme.ref);
-                setInstalling(false);
+                let data: ThemesInstallResponseType | undefined;
+                try {
+                    data = await installTheme(selectedTheme.ref);
+                } catch (e) {
+                    handleError(e);
+                } finally {
+                    setInstalling(false);
+                }
+
+                if (!data) {
+                    return;
+                }
 
                 const newlyInstalledTheme = data.themes[0];
 

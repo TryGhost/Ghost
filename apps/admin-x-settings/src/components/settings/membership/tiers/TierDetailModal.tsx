@@ -12,6 +12,8 @@ import SortableList from '../../../../admin-x-ds/global/SortableList';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import TierDetailPreview from './TierDetailPreview';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
+import handleError from '../../../../utils/api/handleError';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
@@ -69,7 +71,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             }
 
             modal.remove();
-        }
+        },
+        onSaveError: handleError
     });
 
     const validators = {
@@ -220,9 +223,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                             containerClassName='font-medium'
                                             controlClasses={{menu: 'w-14'}}
                                             options={currencySelectGroups()}
-                                            selectedOption={formState.currency}
+                                            selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === formState.currency)}
                                             size='xs'
-                                            onSelect={currency => updateForm(state => ({...state, currency}))}
+                                            onSelect={option => updateForm(state => ({...state, currency: option?.value}))}
                                         />
                                     </div>
                                 </div>
@@ -269,7 +272,15 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 />
                             </div>
                         </div>
-                        <TextField hint='Redirect to this URL after signup for premium membership' placeholder={siteData?.url} title='Welcome page' />
+                        <URLTextField
+                            baseUrl={siteData?.url}
+                            hint='Redirect to this URL after signup for premium membership'
+                            placeholder={siteData?.url}
+                            title='Welcome page'
+                            value={formState.welcome_page_url || ''}
+                            transformPathWithoutSlash
+                            onChange={value => updateForm(state => ({...state, welcome_page_url: value || null}))}
+                        />
                     </>)}
                 </Form>
 
@@ -328,15 +339,21 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
 };
 
 const TierDetailModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {data: {tiers} = {}} = useBrowseTiers();
+    const {data: {tiers, isEnd} = {}, fetchNextPage} = useBrowseTiers();
 
     let tier: Tier | undefined;
+
+    useEffect(() => {
+        if (params?.id && !tier && !isEnd) {
+            fetchNextPage();
+        }
+    }, [fetchNextPage, isEnd, params?.id, tier]);
 
     if (params?.id) {
         tier = tiers?.find(({id}) => id === params?.id);
 
         if (!tier) {
-            return;
+            return null;
         }
     }
 
