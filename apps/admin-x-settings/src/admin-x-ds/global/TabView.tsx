@@ -69,7 +69,7 @@ function TabView<ID extends string = string>({
                             onClick={handleTabChange}
                         >
                             {tab.title}
-                            {((typeof tab.counter === 'number' && tab.counter !== null)) && <span className='ml-1.5 rounded-full bg-grey-200 px-1.5 py-[2px] text-xs font-normal text-grey-800 dark:bg-grey-900 dark:text-grey-300'>{tab.counter}</span>}
+                            {(typeof tab.counter === 'number') && <span className='ml-1.5 rounded-full bg-grey-200 px-1.5 py-[2px] text-xs font-normal text-grey-800 dark:bg-grey-900 dark:text-grey-300'>{tab.counter}</span>}
                         </button>
                     </div>
                 ))}
