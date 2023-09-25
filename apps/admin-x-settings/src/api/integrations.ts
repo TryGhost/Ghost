@@ -1,5 +1,5 @@
 import {APIKey} from './apiKeys';
-import {Meta, createMutation, createQuery} from '../utils/apiRequests';
+import {Meta, createMutation, createQuery} from '../utils/api/hooks';
 import {Webhook} from './webhooks';
 
 // Types

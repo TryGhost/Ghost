@@ -1,6 +1,7 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createMutation, createQuery} from '../utils/apiRequests';
+import {Meta, createInfiniteQuery, createMutation, createQuery} from '../utils/api/hooks';
 import {UserRole} from './roles';
+import {deleteFromQueryCache, updateQueryCache} from '../utils/api/updateQueries';
 
 // Types
 
@@ -63,14 +64,6 @@ export interface DeleteUserResponse {
 
 const dataType = 'UsersResponseType';
 
-const updateUsers = (newData: UsersResponseType, currentData: unknown) => ({
-    ...(currentData as UsersResponseType),
-    users: (currentData as UsersResponseType).users.map((user) => {
-        const newUser = newData.users.find(({id}) => id === user.id);
-        return newUser || user;
-    })
-});
-
 export const useBrowseUsers = createInfiniteQuery<UsersResponseType & {isEnd: boolean}>({
     dataType,
     path: '/users/',
@@ -105,7 +98,7 @@ export const useEditUser = createMutation<UsersResponseType, User>({
     searchParams: () => ({include: 'roles'}),
     updateQueries: {
         dataType,
-        update: updateUsers
+        update: updateQueryCache('users')
     }
 });
 
@@ -114,10 +107,7 @@ export const useDeleteUser = createMutation<DeleteUserResponse, string>({
     path: id => `/users/${id}/`,
     updateQueries: {
         dataType,
-        update: (_, currentData, id) => ({
-            ...(currentData as UsersResponseType),
-            users: (currentData as UsersResponseType).users.filter(user => user.id !== id)
-        })
+        update: deleteFromQueryCache('users')
     }
 });
 
@@ -144,7 +134,7 @@ export const useMakeOwner = createMutation<UsersResponseType, string>({
     }),
     updateQueries: {
         dataType,
-        update: updateUsers
+        update: updateQueryCache('users')
     }
 });
 

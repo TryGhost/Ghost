@@ -4,7 +4,7 @@ import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {ReactNode, useState} from 'react';
-import handleError from '../../../../utils/handleError';
+import handleError from '../../../../utils/api/handleError';
 import {ConfirmationModalContent} from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import {InstalledTheme, ThemeProblem, useActivateTheme} from '../../../../api/themes';
 import {showToast} from '../../../../admin-x-ds/global/Toast';

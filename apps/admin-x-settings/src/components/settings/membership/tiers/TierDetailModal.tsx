@@ -13,7 +13,7 @@ import TextField from '../../../../admin-x-ds/global/form/TextField';
 import TierDetailPreview from './TierDetailPreview';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
-import handleError from '../../../../utils/handleError';
+import handleError from '../../../../utils/api/handleError';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';

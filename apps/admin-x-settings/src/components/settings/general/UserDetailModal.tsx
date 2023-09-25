@@ -15,7 +15,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import clsx from 'clsx';
-import handleError from '../../../utils/handleError';
+import handleError from '../../../utils/api/handleError';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';

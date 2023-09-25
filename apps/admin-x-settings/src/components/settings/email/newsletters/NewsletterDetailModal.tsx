@@ -19,7 +19,7 @@ import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
-import handleError from '../../../../utils/handleError';
+import handleError from '../../../../utils/api/handleError';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';

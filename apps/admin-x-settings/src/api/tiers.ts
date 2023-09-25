@@ -1,5 +1,6 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createMutation} from '../utils/apiRequests';
+import {Meta, createInfiniteQuery, createMutation} from '../utils/api/hooks';
+import {updateQueryCache} from '../utils/api/updateQueries';
 
 // Types
 
@@ -64,13 +65,7 @@ export const useEditTier = createMutation<TiersResponseType, Tier>({
     body: tier => ({tiers: [tier]}),
     updateQueries: {
         dataType,
-        update: (newData, currentData) => (currentData && {
-            ...(currentData as TiersResponseType),
-            tiers: (currentData as TiersResponseType).tiers.map((tier) => {
-                const newTier = newData.tiers.find(({id}) => id === tier.id);
-                return newTier || tier;
-            })
-        })
+        update: updateQueryCache('tiers')
     }
 });
 

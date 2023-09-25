@@ -1,4 +1,4 @@
-import {APIError, EmailError, ErrorResponse, HostLimitError, JSONError, MaintenanceError, RequestEntityTooLargeError, ServerUnreachableError, ThemeValidationError, UnsupportedMediaTypeError, ValidationError, VersionMismatchError} from './errors';
+import {APIError, EmailError, ErrorResponse, HostLimitError, JSONError, MaintenanceError, RequestEntityTooLargeError, ServerUnreachableError, ThemeValidationError, UnsupportedMediaTypeError, ValidationError, VersionMismatchError} from '../errors';
 
 const handleResponse = async (response: Response) => {
     if (response.status === 0) {

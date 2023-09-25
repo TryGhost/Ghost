@@ -74,12 +74,11 @@ export const useLimiter = () => {
     }, [config.hostSettings?.billing]);
 
     return useMemo(() => {
-        const limits = config.hostSettings?.limits as LimiterLimits;
-
-        if (!LimitService || !limits || isLoading) {
+        if (!LimitService || !config.hostSettings?.limits || isLoading) {
             return;
         }
 
+        const limits = {...config.hostSettings.limits} as LimiterLimits;
         const limiter = new LimitService();
 
         if (limits.staff) {

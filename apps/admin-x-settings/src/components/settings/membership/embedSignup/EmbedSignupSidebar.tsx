@@ -45,7 +45,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
     customColor,
     setCustomColor,
     isCopied}) => {
-    const {loadData} = useFilterableApi<Label>({path: '/labels', filterKey: 'name', responseKey: 'labels'});
+    const {loadData} = useFilterableApi<Label>({path: '/labels/', filterKey: 'name', responseKey: 'labels'});
 
     const loadOptions: LoadOptions = async (input, callback) => {
         const labels = await loadData(input);

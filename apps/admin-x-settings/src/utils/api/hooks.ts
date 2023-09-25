@@ -1,12 +1,12 @@
 import * as Sentry from '@sentry/react';
 import handleError from './handleError';
 import handleResponse from './handleResponse';
-import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from './errors';
+import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from '../errors';
 import {QueryClient, UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {getGhostPaths} from './helpers';
+import {getGhostPaths} from '../helpers';
 import {useEffect, useMemo} from 'react';
-import {usePage, usePagination} from '../hooks/usePagination';
-import {useSentryDSN, useServices} from '../components/providers/ServiceProvider';
+import {usePage, usePagination} from '../../hooks/usePagination';
+import {useSentryDSN, useServices} from '../../components/providers/ServiceProvider';
 
 export interface Meta {
     pagination: {
@@ -161,7 +161,7 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
 
     const data = useMemo(() => (
         (result.data && options.returnData) ? options.returnData(result.data) : result.data)
-    , [result]);
+    , [result.data]);
 
     useEffect(() => {
         if (result.error && query.defaultErrorHandler !== false) {
@@ -239,7 +239,7 @@ export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<
         ...query
     });
 
-    const data = useMemo(() => result.data && options.returnData(result.data), [result]);
+    const data = useMemo(() => result.data && options.returnData(result.data), [result.data]);
 
     useEffect(() => {
         if (result.error && query.defaultErrorHandler !== false) {

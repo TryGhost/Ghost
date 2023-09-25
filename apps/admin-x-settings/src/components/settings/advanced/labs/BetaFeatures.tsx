@@ -4,7 +4,7 @@ import FileUpload from '../../../../admin-x-ds/global/form/FileUpload';
 import LabItem from './LabItem';
 import List from '../../../../admin-x-ds/global/List';
 import React, {useState} from 'react';
-import handleError from '../../../../utils/handleError';
+import handleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {downloadRedirects, useUploadRedirects} from '../../../../api/redirects';
 import {downloadRoutes, useUploadRoutes} from '../../../../api/routes';

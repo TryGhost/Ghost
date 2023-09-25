@@ -5,7 +5,7 @@ import Select from '../../../admin-x-ds/global/form/Select';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
-import handleError from '../../../utils/handleError';
+import handleError from '../../../utils/api/handleError';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues, useEditSettings} from '../../../api/settings';
 import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
