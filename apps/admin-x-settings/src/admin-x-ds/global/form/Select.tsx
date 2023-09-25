@@ -163,10 +163,10 @@ const Select: React.FC<SelectProps> = ({
         components: {DropdownIndicator: dropdownIndicatorComponent, Option, ClearIndicator},
         inputId: id,
         isClearable: false,
-        options: options,
+        options,
         placeholder: prompt ? prompt : '',
         value: selectedOption,
-        unstyled,
+        unstyled: true,
         onChange: onSelect
     };
 

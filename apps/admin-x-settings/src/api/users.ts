@@ -75,11 +75,12 @@ export const useBrowseUsers = createInfiniteQuery<UsersResponseType & {isEnd: bo
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<UsersResponseType>;
         const users = pages.flatMap(page => page.users);
+        const meta = pages.at(-1)!.meta;
 
         return {
             users: users,
-            meta: pages.at(-1)!.meta,
-            isEnd: pages.at(-1)!.users.length < (pages.at(-1)!.meta?.pagination.limit || 0)
+            meta,
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
 });

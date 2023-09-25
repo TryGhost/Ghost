@@ -5,6 +5,7 @@ import {useGlobalData} from '../components/providers/GlobalDataProvider';
 import {useMemo} from 'react';
 
 export type UsersHook = {
+    totalUsers: number;
     users: User[];
     invites: UserInvite[];
     ownerUser: User;
@@ -32,7 +33,7 @@ function getOwnerUser(users: User[]): User {
 
 const useStaffUsers = (): UsersHook => {
     const {currentUser} = useGlobalData();
-    const {data: {users, isEnd} = {users: []}, isLoading: usersLoading, fetchNextPage} = useBrowseUsers();
+    const {data: {users, meta, isEnd} = {users: []}, isLoading: usersLoading, fetchNextPage} = useBrowseUsers();
     const {data: {invites} = {invites: []}, isLoading: invitesLoading} = useBrowseInvites();
     const {data: {roles} = {}, isLoading: rolesLoading} = useBrowseRoles();
 
@@ -52,6 +53,7 @@ const useStaffUsers = (): UsersHook => {
     }), [invites, roles]);
 
     return {
+        totalUsers: meta?.pagination.total || 0,
         users,
         ownerUser,
         adminUsers,
@@ -61,7 +63,7 @@ const useStaffUsers = (): UsersHook => {
         currentUser,
         invites: mappedInvites,
         isLoading: usersLoading || invitesLoading || rolesLoading,
-        hasNextPage: isEnd,
+        hasNextPage: isEnd === false,
         fetchNextPage
     };
 };

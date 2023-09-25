@@ -51,7 +51,7 @@ const dataType = 'NewslettersResponseType';
 export const useBrowseNewsletters = createInfiniteQuery<NewslettersResponseType & {isEnd: boolean}>({
     dataType,
     path: '/newsletters/',
-    defaultSearchParams: {include: 'count.active_members,count.posts', limit: '20'},
+    defaultSearchParams: {include: 'count.active_members,count.posts', limit: '50'},
     defaultNextPageParams: (lastPage, otherParams) => ({
         ...otherParams,
         page: (lastPage.meta?.pagination.next || 1).toString()
@@ -59,11 +59,12 @@ export const useBrowseNewsletters = createInfiniteQuery<NewslettersResponseType 
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<NewslettersResponseType>;
         const newsletters = pages.flatMap(page => page.newsletters);
+        const meta = pages.at(-1)!.meta;
 
         return {
             newsletters: newsletters,
-            meta: pages.at(-1)!.meta,
-            isEnd: pages.at(-1)!.newsletters.length < (pages.at(-1)!.meta?.pagination.limit || 0)
+            meta,
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
 });
