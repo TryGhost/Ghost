@@ -76,7 +76,9 @@ function ping(post) {
     _.each(pingList, function (pingHost) {
         const options = {
             body: pingXML,
-            timeout: 2 * 1000
+            timeout: {
+                request: 2 * 1000
+            }
         };
 
         const goodResponse = /<member>[\s]*<name>flerror<\/name>[\s]*<value>[\s]*<boolean>0<\/boolean><\/value><\/member>/;
