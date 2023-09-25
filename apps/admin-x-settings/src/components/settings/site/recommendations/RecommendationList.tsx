@@ -52,7 +52,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                 </div>
             </TableCell>
             <TableCell className='hidden w-8 align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                {(count === 0) ? (<span className="text-grey-500">-</span>) : (<div className='-mt-px flex grow items-end gap-1'>
+                {(count === 0) ? (<span className="text-grey-500 dark:text-grey-900">-</span>) : (<div className='-mt-px flex grow items-end gap-1'>
                     <span>{count}</span>
                     <span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{isGhostSite ? newMembers : clicks}</span>
                 </div>)}

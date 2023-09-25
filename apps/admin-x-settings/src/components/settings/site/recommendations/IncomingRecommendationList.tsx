@@ -67,7 +67,7 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
             </TableCell>
             {hasPaidColumn &&
                 <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                    {paidConversions === 0 && <span className="text-grey-500">-</span>}
+                    {paidConversions === 0 && <span className="dark:text-grey-900">-</span>}
                     {paidConversions > 0 && (<div className='-mt-px flex grow items-end gap-1'><span>{paidConversions}</span><span className='whitespace-nowrap text-xs text-grey-700'>{paidConversionsLabel}</span></div>)}
                 </TableCell>
             }
