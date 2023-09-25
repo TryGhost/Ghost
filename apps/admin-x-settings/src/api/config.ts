@@ -40,6 +40,10 @@ export type Config = {
         billing?: {
             enabled?: boolean
             url?: string
+        },
+        pintura?: {
+            js?: string
+            css?: string
         }
     }
 
