@@ -206,12 +206,16 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
 
 const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords, highlight = true}) => {
     const {
+        totalUsers,
+        users,
         ownerUser,
         adminUsers,
         editorUsers,
         authorUsers,
         contributorUsers,
-        invites
+        invites,
+        hasNextPage,
+        fetchNextPage
     } = useStaffUsers();
     const {updateRoute} = useRouting();
 
@@ -266,6 +270,11 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         >
             <Owner user={ownerUser} />
             <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+            {hasNextPage && <Button
+                label={`Load more (showing ${users.length}/${totalUsers} users)`}
+                link
+                onClick={() => fetchNextPage()}
+            />}
         </SettingGroup>
     );
 };

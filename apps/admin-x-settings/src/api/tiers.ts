@@ -34,7 +34,6 @@ const dataType = 'TiersResponseType';
 export const useBrowseTiers = createInfiniteQuery<TiersResponseType & {isEnd: boolean}>({
     dataType,
     path: '/tiers/',
-    defaultSearchParams: {limit: '20'},
     defaultNextPageParams: (lastPage, otherParams) => ({
         ...otherParams,
         page: (lastPage.meta?.pagination.next || 1).toString()
@@ -42,11 +41,12 @@ export const useBrowseTiers = createInfiniteQuery<TiersResponseType & {isEnd: bo
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<TiersResponseType>;
         const tiers = pages.flatMap(page => page.tiers);
+        const meta = pages.at(-1)!.meta;
 
         return {
             tiers,
-            meta: pages.at(-1)!.meta,
-            isEnd: pages.at(-1)!.tiers.length < (pages.at(-1)!.meta?.pagination.limit || 0)
+            meta,
+            isEnd: meta ? tiers.length >= meta.pagination.total : true
         };
     }
 });
