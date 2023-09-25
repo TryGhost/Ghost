@@ -276,7 +276,7 @@ const RecommendationItem = (recommendation) => {
 };
 
 const RecommendationsPage = () => {
-    const {api, site, pageData, t} = useContext(AppContext);
+    const {api, site, pageData, t, onAction} = useContext(AppContext);
     const {title, icon} = site;
     const {recommendations_enabled: recommendationsEnabled = false} = site;
     const [recommendations, setRecommendations] = useState(null);
@@ -347,7 +347,7 @@ const RecommendationsPage = () => {
                         <span>{t('Show all')}</span>
                     </button>}
                     {(pageData && pageData.signup) && <button className='gh-portal-btn gh-portal-center gh-portal-btn-link gh-portal-btn-recommendations-later' style={{width: '100%'}} onClick={showAllRecommendations}>
-                        <span>{t('Maybe later')}</span>
+                        <span onClick={() => onAction('closePopup')}>{t('Maybe later')}</span>
                     </button>}
                 </footer>
             )}
