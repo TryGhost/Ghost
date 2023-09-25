@@ -35,6 +35,7 @@ export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
     body: settings => ({settings: settings.map(({key, value}) => ({key, value}))}),
     updateQueries: {
         dataType,
+        emberUpdateType: 'createOrUpdate',
         update: newData => ({
             ...newData,
             settings: newData.settings

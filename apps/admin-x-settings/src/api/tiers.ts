@@ -65,6 +65,7 @@ export const useEditTier = createMutation<TiersResponseType, Tier>({
     body: tier => ({tiers: [tier]}),
     updateQueries: {
         dataType,
+        emberUpdateType: 'createOrUpdate',
         update: updateQueryCache('tiers')
     }
 });

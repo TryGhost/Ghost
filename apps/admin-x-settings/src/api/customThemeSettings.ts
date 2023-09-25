@@ -40,6 +40,7 @@ export const useEditCustomThemeSettings = createMutation<CustomThemeSettingsResp
     body: settings => ({custom_theme_settings: settings}),
 
     updateQueries: {
+        emberUpdateType: 'skip',
         dataType,
         update: newData => newData
     }
