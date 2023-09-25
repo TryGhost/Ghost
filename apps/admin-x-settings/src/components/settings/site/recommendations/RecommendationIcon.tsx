@@ -17,7 +17,8 @@ const RecommendationIcon: React.FC<Props> = ({title, favicon, featured_image, is
     };
 
     if (!icon) {
-        return null;
+        return <div className="relative h-6 w-6 shrink-0 rounded-sm">
+        </div>;
     }
 
     const hint = isGhostSite ? 'This is a Ghost site that supports one-click subscribe' : '';
