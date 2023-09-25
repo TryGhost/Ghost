@@ -79,7 +79,7 @@ export const useBrowseActions = createInfiniteQuery<ActionsResponseType>({
         return {
             actions: actions.reverse(),
             meta: pages.at(-1)!.meta,
-            isEnd: meta ? actions.length >= meta.pagination.total : true
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
 });

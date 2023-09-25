@@ -80,7 +80,7 @@ export const useBrowseUsers = createInfiniteQuery<UsersResponseType & {isEnd: bo
         return {
             users: users,
             meta,
-            isEnd: meta ? users.length >= meta.pagination.total : true
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
 });

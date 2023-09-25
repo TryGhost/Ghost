@@ -64,7 +64,7 @@ export const useBrowseNewsletters = createInfiniteQuery<NewslettersResponseType 
         return {
             newsletters: newsletters,
             meta,
-            isEnd: meta ? newsletters.length >= meta.pagination.total : true
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
 });

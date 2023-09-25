@@ -46,7 +46,7 @@ export const useBrowseTiers = createInfiniteQuery<TiersResponseType & {isEnd: bo
         return {
             tiers,
             meta,
-            isEnd: meta ? tiers.length >= meta.pagination.total : true
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
 });
