@@ -263,7 +263,7 @@ interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<Respo
     body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
     invalidateQueries?: { dataType: string; };
-    updateQueries?: { dataType: string; update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown };
+    updateQueries?: { dataType: string; emberUpdateType: 'createOrUpdate' | 'delete' | 'skip'; update: (newData: ResponseData, currentData: unknown, payload: Payload) => unknown };
 }
 
 const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, options}: {
@@ -293,7 +293,7 @@ const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, o
 export const createMutation = <ResponseData, Payload>(options: MutationOptions<ResponseData, Payload>) => () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
-    const {onUpdate, onInvalidate} = useServices();
+    const {onUpdate, onInvalidate, onDelete} = useServices();
 
     const afterMutate = useCallback((newData: ResponseData, payload: Payload) => {
         if (options.invalidateQueries) {
@@ -303,9 +303,17 @@ export const createMutation = <ResponseData, Payload>(options: MutationOptions<R
 
         if (options.updateQueries) {
             queryClient.setQueriesData([options.updateQueries.dataType], (data: unknown) => options.updateQueries!.update(newData, data, payload));
-            onUpdate(options.updateQueries.dataType, newData);
+            if (options.updateQueries.emberUpdateType === 'createOrUpdate') {
+                onUpdate(options.updateQueries.dataType, newData);
+            } else if (options.updateQueries.emberUpdateType === 'delete') {
+                if (typeof payload !== 'string') {
+                    throw new Error('Expected delete mutation to have a string (ID) payload. Either change the payload or update the createMutation hook');
+                }
+
+                onDelete(options.updateQueries.dataType, payload);
+            }
         }
-    }, [onInvalidate, onUpdate, queryClient]);
+    }, [onInvalidate, onUpdate, onDelete, queryClient]);
 
     return useMutation<ResponseData, unknown, Payload>({
         mutationFn: payload => mutate({fetchApi, path: options.path(payload), payload, searchParams: options.searchParams?.(payload) || options.defaultSearchParams, options}),

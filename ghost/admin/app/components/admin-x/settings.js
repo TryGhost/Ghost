@@ -252,8 +252,6 @@ const fetchSettings = function () {
 };
 
 const emberDataTypeMapping = {
-    ConfigResponseType: {ignore: true},
-    CustomThemeSettingsResponseType: {type: 'custom-theme-setting'},
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
     NewslettersResponseType: {type: 'newsletter'},
@@ -298,11 +296,7 @@ export default class AdminXSettings extends Component {
             throw new Error(`A mutation updating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
         }
 
-        const {skip, type, singleton} = emberDataTypeMapping[dataType];
-
-        if (skip) {
-            return;
-        }
+        const {type, singleton} = emberDataTypeMapping[dataType];
 
         if (singleton) {
             // Special singleton objects like settings don't work with pushPayload, we need to add the ID explicitly
@@ -323,11 +317,7 @@ export default class AdminXSettings extends Component {
             throw new Error(`A mutation invalidating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
         }
 
-        const {skip, type, singleton} = emberDataTypeMapping[dataType];
-
-        if (skip) {
-            return;
-        }
+        const {type, singleton} = emberDataTypeMapping[dataType];
 
         if (singleton) {
             // eslint-disable-next-line no-console
@@ -336,6 +326,20 @@ export default class AdminXSettings extends Component {
         }
 
         run(() => this.store.unloadAll(type));
+    };
+
+    onDelete = (dataType, id) => {
+        if (!emberDataTypeMapping[dataType]) {
+            throw new Error(`A mutation deleting ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+        }
+
+        const {type} = emberDataTypeMapping[dataType];
+
+        const record = this.store.peekRecord(type, id);
+
+        if (record) {
+            record.unloadRecord();
+        }
     };
 
     externalNavigate = ({route, models = []}) => {
@@ -382,6 +386,7 @@ export default class AdminXSettings extends Component {
                             sentryDSN={this.config.sentry_dsn}
                             onUpdate={this.onUpdate}
                             onInvalidate={this.onInvalidate}
+                            onDelete={this.onDelete}
                         />
                     </Suspense>
                 </ErrorHandler>

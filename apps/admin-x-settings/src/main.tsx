@@ -33,6 +33,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             sentryDSN={'' as string | null}
             unsplashConfig={{} as DefaultHeaderTypes}
             zapierTemplates={[]}
+            onDelete={() => {}}
             onInvalidate={() => {}}
             onUpdate={() => {}}
         />
