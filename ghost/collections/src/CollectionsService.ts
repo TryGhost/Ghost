@@ -108,7 +108,7 @@ type QueryOptions = {
 
 interface PostsRepository {
     getAll(options: QueryOptions): Promise<CollectionPost[]>;
-    getAllIds(): Promise<string[]>;
+    getAllIds(options?: {transaction: Knex.Transaction}): Promise<string[]>;
 }
 
 export class CollectionsService {
@@ -129,7 +129,7 @@ export class CollectionsService {
         this.slugService = deps.slugService;
     }
 
-    private async toDTO(collection: Collection): Promise<CollectionDTO> {
+    private async toDTO(collection: Collection, options?: {transaction: Knex.Transaction}): Promise<CollectionDTO> {
         const dto = {
             id: collection.id,
             title: collection.title,
@@ -146,7 +146,7 @@ export class CollectionsService {
             }))
         };
         if (collection.slug === 'latest') {
-            const allPostIds = await this.postsRepository.getAllIds();
+            const allPostIds = await this.postsRepository.getAllIds(options);
             dto.posts = allPostIds.map((id, index) => ({
                 id,
                 sort_order: index
@@ -574,7 +574,7 @@ export class CollectionsService {
         if (!collection) {
             return null;
         }
-        return this.toDTO(collection);
+        return this.toDTO(collection, options);
     }
 
     async getBySlug(slug: string, options?: {transaction: Knex.Transaction}): Promise<CollectionDTO | null> {
@@ -582,7 +582,7 @@ export class CollectionsService {
         if (!collection) {
             return null;
         }
-        return this.toDTO(collection);
+        return this.toDTO(collection, options);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
