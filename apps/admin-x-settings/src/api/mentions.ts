@@ -1,4 +1,4 @@
-import {Meta, createPaginatedQuery} from '../utils/apiRequests';
+import {Meta, createPaginatedQuery} from '../utils/api/hooks';
 
 export type Mention = {
     id: string;

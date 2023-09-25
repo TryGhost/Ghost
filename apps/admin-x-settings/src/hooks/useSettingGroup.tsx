@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import handleError from '../utils/handleError';
+import handleError from '../utils/api/handleError';
 import useForm, {ErrorMessages, SaveState} from './useForm';
 import useGlobalDirtyState from './useGlobalDirtyState';
 import {Setting, SettingValue, useEditSettings} from '../api/settings';

@@ -1,5 +1,5 @@
 import {Config} from './config';
-import {Meta, createMutation, createQuery} from '../utils/apiRequests';
+import {Meta, createMutation, createQuery} from '../utils/api/hooks';
 
 // Types
 

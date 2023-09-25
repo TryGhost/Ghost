@@ -78,3 +78,7 @@ export function downloadFromEndpoint(path: string) {
 export function numberWithCommas(x: number) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
+
+export function isObjectId(value: string) {
+    return /^[a-z0-9]{24}$/.test(value);
+}

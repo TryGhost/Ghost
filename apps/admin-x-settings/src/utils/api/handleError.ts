@@ -1,6 +1,6 @@
 import toast from 'react-hot-toast';
-import {APIError, ValidationError} from './errors';
-import {showToast} from '../admin-x-ds/global/Toast';
+import {APIError, ValidationError} from '../errors';
+import {showToast} from '../../admin-x-ds/global/Toast';
 
 /**
  * Generic error handling for API calls. This is enabled by default for queries (can be disabled by

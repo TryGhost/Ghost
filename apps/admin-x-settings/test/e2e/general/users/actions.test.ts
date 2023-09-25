@@ -7,7 +7,7 @@ test.describe('User actions', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
                     ...userToEdit,
@@ -50,7 +50,7 @@ test.describe('User actions', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: {
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: {
                 users: [
                     ...responseFixtures.users.users.filter(user => user.email !== 'author@test.com'),
                     {
@@ -103,7 +103,7 @@ test.describe('User actions', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             deleteUser: {method: 'DELETE', path: `/users/${authorUser.id}/`, response: {}}
         }});
 
@@ -151,7 +151,7 @@ test.describe('User actions', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: /^\/users\/\w{24}\/\?include=roles$/, response: responseFixtures.users},
             makeOwner: {method: 'PUT', path: '/users/owner/', response: makeOwnerResponse}
         }});
@@ -206,7 +206,7 @@ test.describe('User actions', async () => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             ...limitRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: {
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: {
                 users: [
                     ...responseFixtures.users.users.filter(user => user.email !== 'author@test.com'),
                     {

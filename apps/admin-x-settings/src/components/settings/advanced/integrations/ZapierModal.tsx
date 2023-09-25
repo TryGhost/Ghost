@@ -6,7 +6,7 @@ import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import handleError from '../../../../utils/handleError';
+import handleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as ArrowRightIcon} from '../../../../admin-x-ds/assets/icons/arrow-right.svg';
 import {ReactComponent as Icon} from '../../../../assets/icons/zapier.svg';

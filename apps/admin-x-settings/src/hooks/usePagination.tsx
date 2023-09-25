@@ -1,4 +1,4 @@
-import {Meta} from '../utils/apiRequests';
+import {Meta} from '../utils/api/hooks';
 import {useEffect, useState} from 'react';
 
 export interface PaginationData {

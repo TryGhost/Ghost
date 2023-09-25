@@ -1,4 +1,4 @@
-import {Meta, createQuery} from '../utils/apiRequests';
+import {Meta, createQuery} from '../utils/api/hooks';
 
 export type Offer = {
     id: string;
@@ -30,6 +30,5 @@ const dataType = 'OffersResponseType';
 
 export const useBrowseOffers = createQuery<OffersResponseType>({
     dataType,
-    path: '/offers/',
-    defaultSearchParams: {limit: 'all'}
+    path: '/offers/'
 });

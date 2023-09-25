@@ -1,12 +1,12 @@
 import * as Sentry from '@sentry/react';
 import handleError from './handleError';
 import handleResponse from './handleResponse';
-import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from './errors';
+import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from '../errors';
 import {QueryClient, UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {getGhostPaths} from './helpers';
+import {getGhostPaths} from '../helpers';
 import {useEffect, useMemo} from 'react';
-import {usePage, usePagination} from '../hooks/usePagination';
-import {useSentryDSN, useServices} from '../components/providers/ServiceProvider';
+import {usePage, usePagination} from '../../hooks/usePagination';
+import {useSentryDSN, useServices} from '../../components/providers/ServiceProvider';
 
 export interface Meta {
     pagination: {
@@ -33,7 +33,8 @@ export const useFetchApi = () => {
     const {ghostVersion} = useServices();
     const sentrydsn = useSentryDSN();
 
-    return async (endpoint: string | URL, options: RequestOptions = {}) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return async <Response = any>(endpoint: string | URL, options: RequestOptions = {}) => {
         // By default, we set the Content-Type header to application/json
         const defaultHeaders: Record<string, string> = {
             'app-pragma': 'no-cache',
@@ -91,7 +92,7 @@ export const useFetchApi = () => {
                     Sentry.captureMessage('Request took multiple attempts', {extra: {attempts, retryingMs, endpoint: endpoint.toString()}});
                 }
 
-                return handleResponse(response);
+                return handleResponse(response) as Response;
             } catch (error) {
                 retryingMs = Date.now() - startTime;
 
@@ -160,7 +161,7 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
 
     const data = useMemo(() => (
         (result.data && options.returnData) ? options.returnData(result.data) : result.data)
-    , [result]);
+    , [result.data]);
 
     useEffect(() => {
         if (result.error && query.defaultErrorHandler !== false) {
@@ -217,25 +218,28 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
 
 type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'returnData'> & {
     returnData: NonNullable<QueryOptions<ResponseData>['returnData']>
+    defaultNextPageParams?: (data: ResponseData, params: Record<string, string>) => Record<string, string>;
 }
 
 type InfiniteQueryHookOptions<ResponseData> = UseInfiniteQueryOptions<ResponseData> & {
     searchParams?: Record<string, string>;
     defaultErrorHandler?: boolean;
-    getNextPageParams: (data: ResponseData, params: Record<string, string>) => Record<string, string>|undefined;
+    getNextPageParams?: (data: ResponseData, params: Record<string, string>) => Record<string, string> | undefined;
 };
 
-export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<ResponseData>) => ({searchParams, getNextPageParams, ...query}: InfiniteQueryHookOptions<ResponseData>) => {
+export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<ResponseData>) => ({searchParams, getNextPageParams, ...query}: InfiniteQueryHookOptions<ResponseData> = {}) => {
     const fetchApi = useFetchApi();
+
+    const nextPageParams = getNextPageParams || options.defaultNextPageParams || (() => ({}));
 
     const result = useInfiniteQuery<ResponseData>({
         queryKey: [options.dataType, apiUrl(options.path, searchParams || options.defaultSearchParams)],
         queryFn: ({pageParam}) => fetchApi(apiUrl(options.path, pageParam || searchParams || options.defaultSearchParams)),
-        getNextPageParam: data => getNextPageParams(data, searchParams || options.defaultSearchParams || {}),
+        getNextPageParam: data => nextPageParams(data, searchParams || options.defaultSearchParams || {}),
         ...query
     });
 
-    const data = useMemo(() => result.data && options.returnData(result.data), [result]);
+    const data = useMemo(() => result.data && options.returnData(result.data), [result.data]);
 
     useEffect(() => {
         if (result.error && query.defaultErrorHandler !== false) {
@@ -280,7 +284,7 @@ const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, o
         requestBody = JSON.stringify(generatedBody);
     }
 
-    return fetchApi(url, {
+    return fetchApi<ResponseData>(url, {
         body: requestBody,
         ...requestOptions
     });

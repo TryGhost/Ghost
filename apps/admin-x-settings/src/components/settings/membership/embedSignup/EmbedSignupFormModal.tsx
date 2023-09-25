@@ -8,7 +8,6 @@ import {MultiSelectOption} from '../../../../admin-x-ds/global/form/MultiSelect'
 import {MultiValue} from 'react-select';
 import {generateCode} from '../../../../utils/generateEmbedCode';
 import {getSettingValues} from '../../../../api/settings';
-import {useBrowseLabels} from '../../../../api/labels';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
@@ -25,7 +24,6 @@ const EmbedSignupFormModal = NiceModal.create(() => {
     const {config} = useGlobalData();
     const {localSettings, siteData} = useSettingGroup();
     const [accentColor, title, description, locale, labs, icon] = getSettingValues<string>(localSettings, ['accent_color', 'title', 'description', 'locale', 'labs', 'icon']);
-    const {data: labels} = useBrowseLabels();
     const [customColor, setCustomColor] = useState<{active: boolean}>({active: false});
 
     if (labs) {
@@ -113,7 +111,6 @@ const EmbedSignupFormModal = NiceModal.create(() => {
                     handleLabelClick={addSelectedLabel}
                     handleLayoutSelect={setSelectedLayout}
                     isCopied={isCopied}
-                    labels={labels?.labels || []}
                     selectedColor={selectedColor}
                     selectedLabels={selectedLabels}
                     selectedLayout={selectedLayout}

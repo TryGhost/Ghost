@@ -12,7 +12,7 @@ import React, {useEffect, useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
-import handleError from '../../../utils/handleError';
+import handleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {InstalledTheme, Theme, ThemesInstallResponseType, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';

@@ -1,4 +1,4 @@
-import {Meta, createMutation, createPaginatedQuery} from '../utils/apiRequests';
+import {Meta, createMutation, createPaginatedQuery} from '../utils/api/hooks';
 
 export type staffToken = {
     id: string;

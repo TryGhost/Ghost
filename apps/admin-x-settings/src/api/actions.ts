@@ -1,7 +1,7 @@
 import {ExternalLink, InternalLink} from '../components/providers/RoutingProvider';
 import {InfiniteData} from '@tanstack/react-query';
 import {JSONObject} from './config';
-import {Meta, createInfiniteQuery} from '../utils/apiRequests';
+import {Meta, createInfiniteQuery} from '../utils/api/hooks';
 
 // Types
 

@@ -61,7 +61,7 @@ export const useLimiter = () => {
         enabled: false
     });
     const {refetch: fetchNewsletters} = useBrowseNewsletters({
-        searchParams: {filter: 'status:active', limit: 'all'},
+        searchParams: {filter: 'status:active', limit: '1'},
         enabled: false
     });
 
@@ -74,16 +74,17 @@ export const useLimiter = () => {
     }, [config.hostSettings?.billing]);
 
     return useMemo(() => {
-        const limits = config.hostSettings?.limits as LimiterLimits;
-
-        if (!LimitService || !limits || isLoading) {
+        if (!LimitService || !config.hostSettings?.limits || isLoading) {
             return;
         }
 
+        const limits = {...config.hostSettings.limits} as LimiterLimits;
         const limiter = new LimitService();
 
         if (limits.staff) {
             limits.staff.currentCountQuery = async () => {
+                // useStaffUsers will only return the first 100 users by default, but we can assume
+                // that either there's no limit or the limit is <100
                 const staffUsers = users.filter(u => u.status !== 'inactive' && !contributorUsers.includes(u));
                 const staffInvites = invites.filter(i => i.role !== 'Contributor');
 
@@ -100,8 +101,8 @@ export const useLimiter = () => {
 
         if (limits.newsletters) {
             limits.newsletters.currentCountQuery = async () => {
-                const {data: {newsletters} = {newsletters: []}} = await fetchNewsletters();
-                return newsletters?.length || 0;
+                const {data: {pages} = {pages: []}} = await fetchNewsletters();
+                return pages[0].meta?.pagination.total || 0;
             };
         }
 

@@ -1,4 +1,4 @@
-import {createMutation, createQuery} from '../utils/apiRequests';
+import {createMutation, createQuery} from '../utils/api/hooks';
 import {customThemeSettingsDataType} from './customThemeSettings';
 
 // Types

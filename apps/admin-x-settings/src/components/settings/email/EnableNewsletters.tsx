@@ -4,7 +4,7 @@ import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
-import handleError from '../../../utils/handleError';
+import handleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {Setting, getSettingValues, useEditSettings} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';

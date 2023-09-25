@@ -1,4 +1,4 @@
-import {Meta, createQuery} from '../utils/apiRequests';
+import {Meta, createQuery} from '../utils/api/hooks';
 
 export type Label = {
     id: string;
@@ -17,6 +17,5 @@ const dataType = 'LabelsResponseType';
 
 export const useBrowseLabels = createQuery<LabelsResponseType>({
     dataType,
-    path: '/labels/',
-    defaultSearchParams: {limit: 'all'}
+    path: '/labels/'
 });

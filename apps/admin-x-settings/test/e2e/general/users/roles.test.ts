@@ -5,7 +5,7 @@ test.describe('User roles', async () => {
     test('Shows users under their role', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users}
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users}
         }});
 
         await page.goto('/');
@@ -42,7 +42,7 @@ test.describe('User roles', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             browseRoles: {method: 'GET', path: '/roles/?limit=all', response: responseFixtures.roles},
             browseAssignableRoles: {method: 'GET', path: '/roles/?limit=all&permissions=assign', response: responseFixtures.roles},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {

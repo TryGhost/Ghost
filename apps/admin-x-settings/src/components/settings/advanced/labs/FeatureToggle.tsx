@@ -1,6 +1,6 @@
 import React from 'react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import handleError from '../../../../utils/handleError';
+import handleError from '../../../../utils/api/handleError';
 import {ConfigResponseType, configDataType} from '../../../../api/config';
 import {getSettingValue, useEditSettings} from '../../../../api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';

@@ -13,7 +13,7 @@ import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import handleError from '../../../../utils/handleError';
+import handleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {JSONError} from '../../../../utils/errors';
@@ -64,7 +64,7 @@ const Connect: React.FC = () => {
 
     const saveTier = async () => {
         const {data} = await fetchActiveTiers();
-        const tier = data?.tiers[0];
+        const tier = data?.pages[0].tiers[0];
 
         if (tier) {
             tier.monthly_price = 500;

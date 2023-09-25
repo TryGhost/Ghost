@@ -46,7 +46,7 @@ test.describe('Access settings', async () => {
     test('Supports selecting specific tiers', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseTiers: {method: 'GET', path: '/tiers/?limit=all', response: responseFixtures.tiers},
+            browseTiers: {method: 'GET', path: '/tiers/?limit=20', response: responseFixtures.tiers},
             editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
                 {key: 'default_content_visibility', value: 'tiers'},
                 {key: 'default_content_visibility_tiers', value: JSON.stringify(responseFixtures.tiers.tiers.map(tier => tier.id))}

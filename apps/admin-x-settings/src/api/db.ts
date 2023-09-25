@@ -1,4 +1,4 @@
-import {createMutation} from '../utils/apiRequests';
+import {createMutation} from '../utils/api/hooks';
 import {downloadFromEndpoint} from '../utils/helpers';
 
 export const useImportContent = createMutation<unknown, File>({

@@ -1,4 +1,4 @@
-import {createMutation} from '../utils/apiRequests';
+import {createMutation} from '../utils/api/hooks';
 
 export const useTestSlack = createMutation<unknown, null>({
     method: 'POST',

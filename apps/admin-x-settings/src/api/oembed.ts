@@ -1,4 +1,4 @@
-import {apiUrl, useFetchApi} from '../utils/apiRequests';
+import {apiUrl, useFetchApi} from '../utils/api/hooks';
 
 export type OembedResponse = {
     metadata: {
