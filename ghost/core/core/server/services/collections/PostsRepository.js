@@ -4,8 +4,13 @@ class PostsRepository {
         this.moment = moment;
     }
 
-    async getAllIds() {
-        const rows = await this.models.Post.query().select('id').where('type', 'post');
+    /**
+     * @param {Object} options
+     * @returns Promise<string[]>
+     */
+    async getAllIds({transaction} = {}) {
+        const query = this.models.Post.query().select('id').where('type', 'post');
+        const rows = transaction ? await query.transacting(transaction) : await query;
 
         return rows.map(row => row.id);
     }
