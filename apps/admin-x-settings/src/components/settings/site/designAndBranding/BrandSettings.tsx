@@ -26,7 +26,6 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
     const {mutateAsync: uploadImage} = useUploadImage();
     const [siteDescription, setSiteDescription] = useState(values.description);
     const {settings} = useGlobalData();
-    const [pintura] = getSettingValues<boolean>(settings, ['pintura']);
     const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
     const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
     const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
@@ -39,17 +38,12 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
         }, 500)
     );
 
-    const pinturaEnabled = Boolean(pintura) && Boolean(pinturaJsUrl) && Boolean(pinturaCssUrl);
-
     const editor = usePinturaEditor(
         {config: {
             jsUrl: pinturaJsUrl || '',
             cssUrl: pinturaCssUrl || ''
-        },
-        disabled: !pinturaEnabled}
+        }}
     );
-
-    // check if pintura !false and pintura_js_url and pintura_css_url are not '' or null or undefined
 
     return (
         <div className='mt-7'>
@@ -135,7 +129,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         openUnsplash={() => setShowUnsplash(true)}
                         pintura={
                             {
-                                isEnabled: pinturaEnabled,
+                                isEnabled: editor.isEnabled,
                                 openEditor: async () => editor.openEditor({
                                     image: values.coverImage || '',
                                     handleSave: async (file:File) => {

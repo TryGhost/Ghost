@@ -24,18 +24,15 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     } = useSettingGroup();
 
     const {mutateAsync: uploadImage} = useUploadImage();
-    const [pintura] = getSettingValues<boolean>(localSettings, ['pintura']);
+
     const [pinturaJsUrl] = getSettingValues<string>(localSettings, ['pintura_js_url']);
     const [pinturaCssUrl] = getSettingValues<string>(localSettings, ['pintura_css_url']);
-
-    const pinturaEnabled = Boolean(pintura) && Boolean(pinturaJsUrl) && Boolean(pinturaCssUrl);
 
     const editor = usePinturaEditor(
         {config: {
             jsUrl: pinturaJsUrl || '',
             cssUrl: pinturaCssUrl || ''
-        },
-        disabled: !pinturaEnabled}
+        }}
     );
 
     const [
@@ -87,7 +84,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         imageURL={twitterImage}
                         pintura={
                             {
-                                isEnabled: pinturaEnabled,
+                                isEnabled: editor.isEnabled,
                                 openEditor: async () => editor.openEditor({
                                     image: twitterImage || '',
                                     handleSave: async (file:File) => {
