@@ -1,4 +1,6 @@
 import * as Sentry from '@sentry/react';
+import {Config} from '../api/config';
+import {Setting} from '../api/settings';
 import {getSettingValues} from '../api/settings';
 import {useCallback, useEffect, useState} from 'react';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
@@ -52,17 +54,18 @@ export default function usePinturaEditor({
 }: {
         config: PinturaEditorConfig;
     }) {
-    const {config: globalConfig, settings} = useGlobalData();
+    const {config: globalConfig, settings} = useGlobalData() as { config: Config, settings: Setting[] };
     const [pintura] = getSettingValues<boolean>(settings, ['pintura']);
     const [scriptLoaded, setScriptLoaded] = useState<boolean>(false);
     const [cssLoaded, setCssLoaded] = useState<boolean>(false);
 
     let isEnabled = pintura && scriptLoaded && cssLoaded || false;
+    const pinturaConfig = globalConfig?.pintura as { js?: string; css?: string };
 
     useEffect(() => {
         const pinturaJsUrl = () => {
-            if (globalConfig?.pintura?.js) {
-                return globalConfig?.pintura?.js;
+            if (pinturaConfig?.js) {
+                return pinturaConfig?.js;
             }
             return config?.jsUrl || null;
         };
@@ -92,12 +95,12 @@ export default function usePinturaEditor({
             Sentry.captureException(e);
             // Log script loading error
         }
-    }, [config?.jsUrl, globalConfig?.pintura?.js]);
+    }, [config?.jsUrl, pinturaConfig?.js]);
 
     useEffect(() => {
         const pinturaCssUrl = () => {
-            if (globalConfig?.pintura?.css) {
-                return globalConfig?.pintura?.css;
+            if (pinturaConfig?.css) {
+                return pinturaConfig?.css;
             }
             return config?.cssUrl;
         };
@@ -125,7 +128,7 @@ export default function usePinturaEditor({
             Sentry.captureException(e);
             // wire up to sentry
         }
-    }, [config?.cssUrl, globalConfig?.pintura?.css]);
+    }, [config?.cssUrl, pinturaConfig?.css]);
 
     const openEditor = useCallback(
         ({image, handleSave}: OpenEditorParams) => {
