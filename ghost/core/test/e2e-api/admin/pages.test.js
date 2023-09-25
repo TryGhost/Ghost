@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const models = require('../../../core/server/models');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
@@ -162,6 +163,158 @@ describe('Pages API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag,
                     'x-cache-invalidate': anyString
+                });
+        });
+
+        it('Works with latest collection card', async function () {
+            const initialLexical = {
+                root: {
+                    children: [
+                        {
+                            type: 'collection',
+                            version: 1,
+                            collection: 'latest',
+                            postCount: 3,
+                            layout: 'grid',
+                            columns: 3,
+                            header: 'Latest'
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            };
+
+            const updatedLexical = _.cloneDeep(initialLexical);
+            updatedLexical.root.children.push({
+                children: [
+                    {
+                        detail: 0,
+                        format: 0,
+                        mode: 'normal',
+                        style: '',
+                        text: 'Testing',
+                        type: 'text',
+                        version: 1
+                    }
+                ],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'paragraph',
+                version: 1
+            });
+
+            const page = {
+                title: 'Latest Collection Card Test',
+                status: 'draft',
+                lexical: JSON.stringify(initialLexical)
+            };
+
+            const {body: createBody} = await agent
+                .post('/pages/?formats=mobiledoc,lexical,html', {
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                })
+                .body({pages: [page]})
+                .expectStatus(201);
+
+            const [createResponse] = createBody.pages;
+
+            await agent
+                .put(`/pages/${createResponse.id}/?formats=mobiledoc,lexical,html`)
+                .body({
+                    pages: [{
+                        id: createResponse.id,
+                        lexical: JSON.stringify(updatedLexical),
+                        updated_at: createResponse.updated_at // satisfy collision detection
+                    }]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    pages: [Object.assign({}, matchPageShallowIncludes, {
+                        published_at: null
+                    })]
+                });
+        });
+
+        it('Works with featured collection card', async function () {
+            const initialLexical = {
+                root: {
+                    children: [
+                        {
+                            type: 'collection',
+                            version: 1,
+                            collection: 'featured',
+                            postCount: 3,
+                            layout: 'grid',
+                            columns: 3,
+                            header: 'Featured'
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            };
+
+            const updatedLexical = _.cloneDeep(initialLexical);
+            updatedLexical.root.children.push({
+                children: [
+                    {
+                        detail: 0,
+                        format: 0,
+                        mode: 'normal',
+                        style: '',
+                        text: 'Testing',
+                        type: 'text',
+                        version: 1
+                    }
+                ],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'paragraph',
+                version: 1
+            });
+
+            const page = {
+                title: 'Latest Collection Card Test',
+                status: 'draft',
+                lexical: JSON.stringify(initialLexical)
+            };
+
+            const {body: createBody} = await agent
+                .post('/pages/?formats=mobiledoc,lexical,html', {
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                })
+                .body({pages: [page]})
+                .expectStatus(201);
+
+            const [createResponse] = createBody.pages;
+
+            await agent
+                .put(`/pages/${createResponse.id}/?formats=mobiledoc,lexical,html`)
+                .body({
+                    pages: [{
+                        id: createResponse.id,
+                        lexical: JSON.stringify(updatedLexical),
+                        updated_at: createResponse.updated_at // satisfy collision detection
+                    }]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    pages: [Object.assign({}, matchPageShallowIncludes, {
+                        published_at: null
+                    })]
                 });
         });
     });
