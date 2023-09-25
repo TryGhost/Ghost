@@ -1,9 +1,9 @@
-import React, {useId, useMemo} from 'react';
-import ReactSelect, {ClearIndicatorProps, DropdownIndicatorProps, OptionProps, Props, components} from 'react-select';
-
+import AsyncSelect from 'react-select/async';
 import Heading from '../Heading';
 import Hint from '../Hint';
 import Icon from '../Icon';
+import React, {useId, useMemo} from 'react';
+import ReactSelect, {ClearIndicatorProps, DropdownIndicatorProps, GroupBase, OptionProps, OptionsOrGroups, Props, components} from 'react-select';
 import clsx from 'clsx';
 
 export interface SelectOption {
@@ -31,14 +31,28 @@ export interface SelectControlClasses {
     clearIndicator?: string;
 }
 
-export interface SelectProps extends Props<SelectOption, false> {
+export type LoadOptions = (inputValue: string, callback: (options: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>) => void) => void
+
+type SelectOptionProps = {
+    async: true;
+    defaultOptions: boolean | OptionsOrGroups<SelectOption, GroupBase<SelectOption>>;
+    loadOptions: LoadOptions;
+    options?: never;
+} | {
+    async?: false;
+    options: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>;
+    defaultOptions?: never;
+    loadOptions?: never;
+}
+
+export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
+    async?: boolean;
     title?: string;
     hideTitle?: boolean;
     size?: 'xs' | 'md';
     prompt?: string;
-    options: SelectOption[] | SelectOptionGroup[];
-    selectedOption?: string
-    onSelect: (value: string | undefined) => void;
+    selectedOption?: SelectOption
+    onSelect: (option: SelectOption | null) => void;
     error?:boolean;
     hint?: React.ReactNode;
     clearBg?: boolean;
@@ -71,6 +85,7 @@ const Option: React.FC<OptionProps<SelectOption, false>> = ({children, ...option
 );
 
 const Select: React.FC<SelectProps> = ({
+    async,
     title,
     hideTitle,
     size = 'md',
@@ -133,39 +148,36 @@ const Select: React.FC<SelectProps> = ({
         };
     }, [clearBg]);
 
-    const individualOptions = options.flatMap((option) => {
-        if ('options' in option) {
-            return option.options;
-        }
-        return option;
-    });
+    const customProps = {
+        classNames: {
+            menuList: () => 'z-[300]',
+            valueContainer: () => customClasses.valueContainer,
+            control: () => customClasses.control,
+            placeholder: () => customClasses.placeHolder,
+            menu: () => customClasses.menu,
+            option: () => customClasses.option,
+            noOptionsMessage: () => customClasses.noOptionsMessage,
+            groupHeading: () => customClasses.groupHeading,
+            clearIndicator: () => customClasses.clearIndicator
+        },
+        components: {DropdownIndicator: dropdownIndicatorComponent, Option, ClearIndicator},
+        inputId: id,
+        isClearable: false,
+        options: options,
+        placeholder: prompt ? prompt : '',
+        value: selectedOption,
+        unstyled,
+        onChange: onSelect
+    };
 
     const select = (
         <>
             {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={selectedOption || !prompt ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             <div className={containerClasses}>
-                <ReactSelect<SelectOption, false>
-                    classNames={{
-                        menuList: () => 'z-[300]',
-                        valueContainer: () => customClasses.valueContainer,
-                        control: () => customClasses.control,
-                        placeholder: () => customClasses.placeHolder,
-                        menu: () => customClasses.menu,
-                        option: () => customClasses.option,
-                        noOptionsMessage: () => customClasses.noOptionsMessage,
-                        groupHeading: () => customClasses.groupHeading,
-                        clearIndicator: () => customClasses.clearIndicator
-                    }}
-                    components={{DropdownIndicator: dropdownIndicatorComponent, Option, ClearIndicator}}
-                    inputId={id}
-                    isClearable={false}
-                    options={options}
-                    placeholder={prompt ? prompt : ''}
-                    value={individualOptions.find(option => option.value === selectedOption)}
-                    unstyled
-                    onChange={option => onSelect(option?.value)}
-                    {...props}
-                />
+                {async ?
+                    <AsyncSelect<SelectOption, false> {...customProps} {...props} /> :
+                    <ReactSelect<SelectOption, false> {...customProps} {...props} />
+                }
             </div>
             {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
         </>

@@ -58,9 +58,9 @@ test.describe('Default recipient settings', async () => {
     test('Supports selecting specific tiers, labels and offers', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseTiers: {method: 'GET', path: '/tiers/?limit=all', response: responseFixtures.tiers},
-            browseLabels: {method: 'GET', path: '/labels/?limit=all', response: responseFixtures.labels},
-            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseTiers: {method: 'GET', path: '/tiers/?filter=&limit=20', response: responseFixtures.tiers},
+            browseLabels: {method: 'GET', path: '/labels/?filter=&limit=20', response: responseFixtures.labels},
+            browseOffers: {method: 'GET', path: '/offers/?filter=&limit=20', response: responseFixtures.offers},
             editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
                 {
                     key: 'editor_default_email_recipients',

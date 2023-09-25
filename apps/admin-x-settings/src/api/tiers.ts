@@ -1,4 +1,6 @@
-import {Meta, createMutation, createQuery} from '../utils/apiRequests';
+import {InfiniteData} from '@tanstack/react-query';
+import {Meta, createInfiniteQuery, createMutation} from '../utils/api/hooks';
+import {updateQueryCache} from '../utils/api/updateQueries';
 
 // Types
 
@@ -29,11 +31,23 @@ export interface TiersResponseType {
 
 const dataType = 'TiersResponseType';
 
-export const useBrowseTiers = createQuery<TiersResponseType>({
+export const useBrowseTiers = createInfiniteQuery<TiersResponseType & {isEnd: boolean}>({
     dataType,
     path: '/tiers/',
-    defaultSearchParams: {
-        limit: 'all'
+    defaultSearchParams: {limit: '20'},
+    defaultNextPageParams: (lastPage, otherParams) => ({
+        ...otherParams,
+        page: (lastPage.meta?.pagination.next || 1).toString()
+    }),
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<TiersResponseType>;
+        const tiers = pages.flatMap(page => page.tiers);
+
+        return {
+            tiers,
+            meta: pages.at(-1)!.meta,
+            isEnd: pages.at(-1)!.tiers.length < (pages.at(-1)!.meta?.pagination.limit || 0)
+        };
     }
 });
 
@@ -51,13 +65,7 @@ export const useEditTier = createMutation<TiersResponseType, Tier>({
     body: tier => ({tiers: [tier]}),
     updateQueries: {
         dataType,
-        update: (newData, currentData) => (currentData && {
-            ...(currentData as TiersResponseType),
-            tiers: (currentData as TiersResponseType).tiers.map((tier) => {
-                const newTier = newData.tiers.find(({id}) => id === tier.id);
-                return newTier || tier;
-            })
-        })
+        update: updateQueryCache('tiers')
     }
 });
 

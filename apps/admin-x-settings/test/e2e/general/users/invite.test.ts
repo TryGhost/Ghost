@@ -8,7 +8,7 @@ test.describe('User invitations', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             browseInvites: {method: 'GET', path: '/invites/', response: responseFixtures.invites},
             browseRoles: {method: 'GET', path: '/roles/?limit=all', response: responseFixtures.roles},
             browseAssignableRoles: {method: 'GET', path: '/roles/?limit=all&permissions=assign', response: responseFixtures.roles},
@@ -61,7 +61,7 @@ test.describe('User invitations', async () => {
     test('Supports resending invitations', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             browseInvites: {method: 'GET', path: '/invites/', response: responseFixtures.invites},
             deleteInvite: {method: 'DELETE', path: `/invites/${responseFixtures.invites.invites[0].id}/`, response: {}},
             addInvite: {method: 'POST', path: '/invites/', response: responseFixtures.invites}
@@ -97,7 +97,7 @@ test.describe('User invitations', async () => {
     test('Supports revoking invitations', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             browseInvites: {method: 'GET', path: '/invites/', response: responseFixtures.invites},
             deleteInvite: {method: 'DELETE', path: `/invites/${responseFixtures.invites.invites[0].id}/`, response: {}}
         }});

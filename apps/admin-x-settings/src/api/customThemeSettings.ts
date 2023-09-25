@@ -1,5 +1,5 @@
 import {Setting} from './settings';
-import {createMutation, createQuery} from '../utils/apiRequests';
+import {createMutation, createQuery} from '../utils/api/hooks';
 
 type CustomThemeSettingData =
     { type: 'text', value: string | null, default: string | null } |

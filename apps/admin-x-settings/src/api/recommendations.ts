@@ -1,5 +1,5 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, apiUrl, createInfiniteQuery, createMutation, useFetchApi} from '../utils/apiRequests';
+import {Meta, apiUrl, createInfiniteQuery, createMutation, useFetchApi} from '../utils/api/hooks';
 
 export type Recommendation = {
     id: string

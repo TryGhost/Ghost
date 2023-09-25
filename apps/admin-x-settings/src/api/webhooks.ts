@@ -1,5 +1,5 @@
 import {IntegrationsResponseType, integrationsDataType} from './integrations';
-import {Meta, createMutation} from '../utils/apiRequests';
+import {Meta, createMutation} from '../utils/api/hooks';
 
 // Types
 

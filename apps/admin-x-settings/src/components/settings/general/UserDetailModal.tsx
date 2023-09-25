@@ -15,7 +15,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import clsx from 'clsx';
-import handleError from '../../../utils/handleError';
+import handleError from '../../../utils/api/handleError';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
@@ -722,8 +722,14 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 };
 
 const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {users} = useStaffUsers();
+    const {users, hasNextPage, fetchNextPage} = useStaffUsers();
     const user = users.find(({slug}) => slug === params?.slug);
+
+    useEffect(() => {
+        if (!user && !hasNextPage) {
+            fetchNextPage();
+        }
+    }, [fetchNextPage, hasNextPage, user]);
 
     if (user) {
         return <UserDetailModalContent user={user} />;
