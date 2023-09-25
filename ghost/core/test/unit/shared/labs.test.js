@@ -1,9 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
 
-const configUtils = require('../../../utils/configUtils');
-const labs = require('../../../../core/shared/labs');
-const settingsCache = require('../../../../core/shared/settings-cache');
+const configUtils = require('../../utils/configUtils');
+const labs = require('../../../core/shared/labs');
+const settingsCache = require('../../../core/shared/settings-cache');
 
 function expectedLabsObject(obj) {
     const withGA = Object.assign({}, obj);
