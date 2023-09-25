@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react';
 import GlobalDataProvider from './components/providers/GlobalDataProvider';
 import MainContent from './MainContent';
 import NiceModal from '@ebay/nice-modal-react';
@@ -11,7 +10,6 @@ import {OfficialTheme, ServicesProvider} from './components/providers/ServicePro
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {Toaster} from 'react-hot-toast';
 import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
-import {useEffect} from 'react';
 
 interface AppProps {
     ghostVersion: string;
