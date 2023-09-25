@@ -145,7 +145,7 @@
     "@tryghost/pretty-cli": "1.2.36",
     "@tryghost/promise": "0.3.4",
     "@tryghost/recommendations": "0.0.0",
-    "@tryghost/request": "0.1.39",
+    "@tryghost/request": "1.0.0",
     "@tryghost/security": "0.0.0",
     "@tryghost/session-service": "0.0.0",
     "@tryghost/settings-path-manager": "0.0.0",

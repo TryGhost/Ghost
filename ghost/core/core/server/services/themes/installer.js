@@ -41,7 +41,7 @@ const installFromGithub = async (ref) => {
             headers: {
                 accept: 'application/vnd.github.v3+json'
             },
-            encoding: null
+            responseType: 'buffer'
         });
 
         await fs.writeFile(downloadPath, response.body);

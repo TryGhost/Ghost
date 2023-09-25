@@ -101,8 +101,12 @@ class WebhookTrigger {
             const opts = {
                 body: reqPayload,
                 headers,
-                timeout: 2 * 1000,
-                retry: process.env.NODE_ENV?.startsWith('test') ? 0 : 5
+                timeout: {
+                    request: 2 * 1000
+                },
+                retry: {
+                    limit: process.env.NODE_ENV?.startsWith('test') ? 0 : 5
+                }
             };
 
             logging.info(`Triggering webhook for "${webhook.get('event')}" with url "${url}"`);

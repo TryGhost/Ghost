@@ -30,9 +30,13 @@ class ImageSize {
             headers: {
                 'User-Agent': 'Mozilla/5.0 Safari/537.36'
             },
-            timeout: this.config.get('times:getImageSizeTimeoutInMS') || 10000,
-            retry: 0, // for `got`, used with image-size
-            encoding: null
+            timeout: {
+                request: this.config.get('times:getImageSizeTimeoutInMS') || 10000
+            },
+            retry: {
+                limit: 0 // for `got`, used with image-size
+            },
+            responseType: 'buffer'
         };
 
         this.NEEDLE_OPTIONS = {
