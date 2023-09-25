@@ -1,10 +1,13 @@
 import Service, {inject as service} from '@ember/service';
+import {inject} from 'ghost-admin/decorators/inject';
 import {tracked} from '@glimmer/tracking';
 
 export default class ExploreService extends Service {
     @service router;
     @service feature;
     @service ghostPaths;
+
+    @inject config;
 
     exploreUrl = 'https://ghost.org/explore/';
     exploreRouteRoot = '#/explore';
@@ -88,6 +91,11 @@ export default class ExploreService extends Service {
     // and the URL opened on the iframe. It is responsible to non user triggered iframe opening,
     // for example: by entering "/explore" route in the URL or using history navigation (back and forward)
     toggleExploreWindow(value) {
+        if (this.config.hostSettings?.forceUpgrade && value) {
+            // don't attempt to open Explore iframe when in Force Upgrade state
+            return;
+        }
+
         if (this.exploreWindowOpen && value) {
             // don't attempt to open again
             return;
@@ -96,6 +104,10 @@ export default class ExploreService extends Service {
     }
 
     openExploreWindow() {
+        if (this.config.hostSettings?.forceUpgrade) {
+            // don't attempt to open Explore iframe when in Force Upgrade state
+            return;
+        }
         if (this.exploreWindowOpen) {
             // don't attempt to open again
             return;
