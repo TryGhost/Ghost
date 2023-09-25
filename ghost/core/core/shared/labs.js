@@ -62,6 +62,11 @@ module.exports.getAll = () => {
         labs[gaKey] = true;
     });
 
+    const labsConfig = config.get('labs') || {};
+    Object.keys(labsConfig).forEach((key) => {
+        labs[key] = labsConfig[key];
+    });
+
     labs.members = settingsCache.get('members_signup_access') !== 'none';
 
     return labs;
