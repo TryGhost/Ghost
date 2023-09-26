@@ -13,7 +13,7 @@ import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import handleError from '../../../../utils/api/handleError';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {JSONError} from '../../../../utils/errors';
@@ -56,6 +56,7 @@ const Connect: React.FC = () => {
     });
     const {mutateAsync: editTier} = useEditTier();
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     const onTokenChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setToken(event.target.value);
@@ -160,6 +161,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     });
 
     const {mutateAsync: deleteStripeSettings} = useDeleteStripeSettings();
+    const handleError = useHandleError();
 
     const openDisconnectStripeModal = async () => {
         const {data} = await fetchMembers();

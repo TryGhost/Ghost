@@ -7,8 +7,8 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import WebhooksTable from './WebhooksTable';
-import handleError from '../../../../utils/api/handleError';
 import useForm from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {APIKey, useRefreshAPIKey} from '../../../../api/apiKeys';
 import {Integration, useBrowseIntegrations, useEditIntegration} from '../../../../api/integrations';
@@ -25,6 +25,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
     const {mutateAsync: editIntegration} = useEditIntegration();
     const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
     const {mutateAsync: uploadImage} = useUploadImage();
+    const handleError = useHandleError();
 
     const {formState, updateForm, handleSave, saveState, errors, clearError, validate} = useForm({
         initialState: integration,

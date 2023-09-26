@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
-import handleError from '../utils/api/handleError';
 import useForm, {ErrorMessages, SaveState} from './useForm';
 import useGlobalDirtyState from './useGlobalDirtyState';
+import useHandleError from '../utils/api/handleError';
 import {Setting, SettingValue, useEditSettings} from '../api/settings';
 import {SiteData} from '../api/site';
 import {showToast} from '../admin-x-ds/global/Toast';
@@ -33,6 +33,7 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}):
 
     const {siteData, settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     const [isEditing, setEditing] = useState(false);
 

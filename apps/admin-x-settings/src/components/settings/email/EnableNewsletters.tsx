@@ -4,7 +4,7 @@ import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
-import handleError from '../../../utils/api/handleError';
+import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {Setting, getSettingValues, useEditSettings} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
@@ -14,6 +14,7 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {updateRoute} = useRouting();
+    const handleError = useHandleError();
 
     const [newslettersEnabled, membersSignupAccess] = getSettingValues<string>(settings, ['editor_default_email_recipients', 'members_signup_access']);
 

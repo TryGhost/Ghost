@@ -8,7 +8,7 @@ import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
-import handleError from '../../../utils/api/handleError';
+import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
@@ -151,6 +151,7 @@ const BuiltInIntegrations: React.FC = () => {
 const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integrations}) => {
     const {updateRoute} = useRouting();
     const {mutateAsync: deleteIntegration} = useDeleteIntegration();
+    const handleError = useHandleError();
 
     if (integrations.length) {
         return (

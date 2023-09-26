@@ -5,7 +5,7 @@ import LabItem from './LabItem';
 import List from '../../../../admin-x-ds/global/List';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import handleError from '../../../../utils/api/handleError';
+import useHandleError from '../../../../utils/api/handleError';
 import {downloadAllContent, useDeleteAllContent, useImportContent} from '../../../../api/db';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {useQueryClient} from '@tanstack/react-query';
@@ -14,6 +14,7 @@ const ImportModalContent = () => {
     const modal = useModal();
     const {mutateAsync: importContent} = useImportContent();
     const [uploading, setUploading] = useState(false);
+    const handleError = useHandleError();
 
     return <FileUpload
         id="import-file"
@@ -46,6 +47,7 @@ const ImportModalContent = () => {
 const MigrationOptions: React.FC = () => {
     const {mutateAsync: deleteAllContent} = useDeleteAllContent();
     const client = useQueryClient();
+    const handleError = useHandleError();
 
     const handleImportContent = () => {
         NiceModal.show(ConfirmationModal, {

@@ -3,8 +3,8 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationReasonForm from './RecommendationReasonForm';
-import handleError from '../../../../utils/api/handleError';
 import useForm from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {EditOrAddRecommendation, useAddRecommendation} from '../../../../api/recommendations';
 import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
@@ -18,6 +18,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     const modal = useModal();
     const {updateRoute, route} = useRouting();
     const {mutateAsync: addRecommendation} = useAddRecommendation();
+    const handleError = useHandleError();
 
     const {formState, updateForm, handleSave, saveState, errors} = useForm({
         initialState: {
