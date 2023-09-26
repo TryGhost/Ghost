@@ -49,10 +49,10 @@ const ThemeInstalledModal: React.FC<{
     const {mutateAsync: activateTheme} = useActivateTheme();
 
     let errorPrompt = null;
-    if (installedTheme.errors) {
+    if (installedTheme.gscan_errors) {
         errorPrompt = <div className="mt-6">
             <List hint={<>Highly recommended to fix, functionality <strong>could</strong> be restricted</>} title="Errors">
-                {installedTheme.errors?.map(error => <ThemeProblemView problem={error} />)}
+                {installedTheme.gscan_errors?.map(error => <ThemeProblemView problem={error} />)}
             </List>
         </div>;
     }
@@ -66,7 +66,7 @@ const ThemeInstalledModal: React.FC<{
         </div>;
     }
 
-    let okLabel = `Activate${installedTheme.errors?.length ? ' with errors' : ''}`;
+    let okLabel = `Activate${installedTheme.gscan_errors?.length ? ' with errors' : ''}`;
 
     if (installedTheme.active) {
         okLabel = 'OK';
