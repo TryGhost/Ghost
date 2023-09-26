@@ -15123,10 +15123,10 @@ ember-cli-babel-plugin-helpers@^1.0.0, ember-cli-babel-plugin-helpers@^1.1.0, em
   resolved "https://registry.yarnpkg.com/ember-cli-babel-plugin-helpers/-/ember-cli-babel-plugin-helpers-1.1.1.tgz#5016b80cdef37036c4282eef2d863e1d73576879"
   integrity sha512-sKvOiPNHr5F/60NLd7SFzMpYPte/nnGkq/tMIfXejfKHIhaiIkYFqX8Z9UFTKWLLn+V7NOaby6niNPZUdvKCRw==
 
-ember-cli-babel@8.0.0:
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-8.0.0.tgz#c8a5d8acb6ed68cdfd43494f7884d4f945f5c10c"
-  integrity sha512-nf8BFgm6jy+B5tKeovHtcErfTZwzItsB6pJfTJGGR6tg74KLWtLFB5u/zB9S6c8ww1QacMltsffFz2iedCDBPw==
+ember-cli-babel@8.0.1:
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/ember-cli-babel/-/ember-cli-babel-8.0.1.tgz#53ae16e86b3542da4c3fd8b44f9a418f1c731fda"
+  integrity sha512-wnLvpzatjiArXrQlx2OneQhBinRG7li7PVVUR3RH/rPzAq2IivJqeIctey1XipfYZQ6ZAMKcHspnq+0/hQX3NA==
   dependencies:
     "@babel/helper-compilation-targets" "^7.20.7"
     "@babel/plugin-proposal-class-properties" "^7.16.5"
