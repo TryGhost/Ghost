@@ -20,8 +20,6 @@ describe('Acceptance: Lexical editor', function () {
         config.attrs.editor = {url: 'https://cdn.pkg/editor.js'};
         config.save();
 
-        enableLabsFlag(this.server, 'lexicalEditor');
-
         // stub loaded external module to avoid loading of external dep
         window['@tryghost/koenig-lexical'] = {
             KoenigComposer: () => null,

@@ -313,59 +313,6 @@ describe('Acceptance: Settings - Labs', function () {
             let iframe = document.querySelector('#iframeDownload');
             expect(iframe.getAttribute('src')).to.have.string('/settings/routes/yaml/');
         });
-
-        it('does not display lexical feedback textarea by default', async function () {
-            disableLabsFlag(this.server, 'lexicalEditor');
-            await visit('/settings/labs');
-
-            expect(find('[data-test-lexical-feedback-textarea]')).to.not.exist;
-            expect(find('[data-test-toggle="labs-lexicalEditor"]')).to.exist;
-        });
-
-        it('display lexical feedback textarea when the labs setting is enabled and then disabled', async function () {
-            disableLabsFlag(this.server, 'lexicalEditor');
-            // - The feedback form UI is hidden by default
-            // - Enabling “Lexical editor” doesn’t show the feedback form
-            // - Disabling “Lexical editor” shows the feedback form below this lab item and user can send the feedback
-            // - Refreshing the page or navigating to some other page and then back to Labs → the form is hidden again
-            await visit('/settings/labs');
-
-            // hidden by default
-            expect(find('[data-test-lexical-feedback-textarea]')).to.not.exist;
-
-            // hidden when flag is enabled
-            await click('[data-test-toggle="labs-lexicalEditor"]');
-            expect(find('[name="labs[lexicalEditor]"]').checked, 'Lexical editor toggle').to.be.true;
-            expect(find('[data-test-lexical-feedback-textarea]')).to.not.exist;
-
-            // display when flag is disabled
-            await click('[data-test-toggle="labs-lexicalEditor"]');
-            expect(find('[name="labs[lexicalEditor]"]').checked, 'Lexical editor toggle').to.be.false;
-            expect(find('[data-test-lexical-feedback-textarea]')).to.exist;
-
-            // navigate to main and return to settings, feedback should be hidden
-            await visit('/');
-            await visit('/settings/labs');
-            expect(find('[data-test-lexical-feedback-textarea]')).to.not.exist;
-        });
-
-        it('allows the user to send lexical feedback', async function () {
-            enableLabsFlag(this.server, 'lexicalEditor');
-            // mock successful request
-            this.server.post('https://submit-form.com/us6uBWv8', {}, 200);
-
-            await visit('/settings/labs');
-
-            // disable flag
-            await click('[name="labs[lexicalEditor]"]');
-            expect(find('[name="labs[lexicalEditor]"]').checked, 'Lexical editor toggle').to.be.false;
-
-            await fillIn('[data-test-lexical-feedback-textarea]', 'This is test feedback');
-            await click('[data-test-button="submit-lexical-feedback"]');
-
-            // successful request will show a notification toast
-            expect(find('[data-test-text="notification-content"]')).to.exist;
-        });
     });
 
     describe('When logged in as Owner', function () {

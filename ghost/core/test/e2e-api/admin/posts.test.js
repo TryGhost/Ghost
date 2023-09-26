@@ -326,30 +326,6 @@ describe('Posts API', function () {
         });
 
         it('Can create a post with html', async function () {
-            mockManager.mockLabsDisabled('lexicalEditor');
-
-            const post = {
-                title: 'HTML test',
-                html: '<p>Testing post creation with html</p>'
-            };
-
-            await agent
-                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
-                .body({posts: [post]})
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('posts')
-                });
-        });
-
-        it('Can create a post with html (labs.lexicalEditor)', async function () {
-            mockManager.mockLabsEnabled('lexicalEditor');
-
             const post = {
                 title: 'HTML test',
                 html: '<p>Testing post creation with html</p>'
