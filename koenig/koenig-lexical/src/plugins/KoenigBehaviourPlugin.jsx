@@ -38,6 +38,7 @@ import {
     KEY_MODIFIER_COMMAND,
     KEY_TAB_COMMAND,
     PASTE_COMMAND,
+    ParagraphNode,
     createCommand
 } from 'lexical';
 import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
@@ -480,7 +481,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                         selection.focus.set('root', focusNode.getIndexWithinParent(), 'element');
                                         selection.anchor.set('root', anchorNode.getIndexWithinParent() + 1, 'element');
                                     }
-                                    event.preventDefault(); 
+                                    event.preventDefault();
                                     return true;
                                 }
                             }
@@ -602,7 +603,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                         selection.anchor.set('root', anchorNode.getIndexWithinParent(), 'element');
                                         selection.focus.set('root', focusNode.getIndexWithinParent() + 1, 'element');
                                     }
-                                    event.preventDefault(); 
+                                    event.preventDefault();
                                     return true;
                                 }
                             }
@@ -970,7 +971,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             }
 
                             const anchorNodeLength = anchorNode.getTextContentSize();
-                            const atEndOfElement = 
+                            const atEndOfElement =
                                 selection.anchor.offset === anchorNodeLength &&
                                 selection.focus.offset === anchorNodeLength;
 
@@ -1306,12 +1307,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
         );
     }, [editor]);
 
+    // make sure ImageNode is a top-level node
     React.useEffect(() => {
         if (!editor.hasNodes([ImageNode])) {
             return;
         }
         return mergeRegister(
-            // make sure ImageNode is a top-level node
             editor.registerNodeTransform(ImageNode, (node) => {
                 // return if ImageNode is already a top-level node
                 if (node.getParent() === $getRoot()) {
@@ -1324,6 +1325,18 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                 }
 
                 parent.insertAfter(node);
+            })
+        );
+    }, [editor]);
+
+    // strip text-align formats that can arrive when pasting from external sources
+    // we don't support text alignment in Koenig
+    React.useEffect(() => {
+        return mergeRegister(
+            editor.registerNodeTransform(ParagraphNode, (node) => {
+                if (node.getFormatType() !== '') {
+                    node.setFormat('');
+                }
             })
         );
     }, [editor]);

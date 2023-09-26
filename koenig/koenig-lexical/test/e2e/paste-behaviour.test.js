@@ -1,4 +1,4 @@
-import {assertHTML, focusEditor, html, initialize, pasteText} from '../utils/e2e';
+import {assertHTML, focusEditor, html, initialize, pasteHtml, pasteText} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Paste behaviour', async () => {
@@ -113,6 +113,19 @@ test.describe('Paste behaviour', async () => {
                     </a>
                 </p>
             `);
+        });
+    });
+
+    test.describe('Text align', function () {
+        test('text alignment styles are stripped from paragraphs on paste', async function () {
+            await focusEditor(page);
+            await pasteHtml(page, '<p style="text-align: center">Testing</p>');
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">Testing</span>
+                </p>
+            `, {ignoreClasses: false, ignoreInlineStyles: false});
         });
     });
 });
