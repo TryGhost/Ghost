@@ -24,6 +24,7 @@ export interface ButtonProps extends Omit<HTMLProps<HTMLButtonElement>, 'label' 
     loading?: boolean;
     loadingIndicatorSize?: LoadingIndicatorSize;
     loadingIndicatorColor?: LoadingIndicatorColor;
+    testId?: string;
     onClick?: (e?:React.MouseEvent<HTMLElement>) => void;
 }
 
@@ -43,6 +44,7 @@ const Button: React.FC<ButtonProps> = ({
     tag = 'button',
     loading = false,
     loadingIndicatorColor,
+    testId,
     onClick,
     ...props
 }) => {
@@ -132,6 +134,7 @@ const Button: React.FC<ButtonProps> = ({
 
     const buttonElement = React.createElement(tag, {className: className,
         disabled: disabled,
+        'data-testid': testId,
         type: 'button',
         onClick: onClick,
         ...props}, buttonChildren);

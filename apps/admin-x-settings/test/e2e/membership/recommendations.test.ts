@@ -13,7 +13,7 @@ test.describe('Recommendations settings', async () => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseTiers: {method: 'GET', path: '/recommendations/?limit=all', response: responseFixtures.recommendations}
+            browseRecommendations: {method: 'GET', path: '/recommendations/?limit=all', response: responseFixtures.recommendations}
         }});
 
         await page.goto('');
@@ -21,7 +21,7 @@ test.describe('Recommendations settings', async () => {
         // Find recommendations
         const recommendationsSection = page.getByTestId('recommendations');
 
-        await recommendationsSection.getByTestId('add-recommendation-button').click();
+        // await recommendationsSection.getByTestId('add-recommendation-button').click();
 
         await recommendationsSection.getByRole('button', {name: 'Add recommendation'}).click();
 

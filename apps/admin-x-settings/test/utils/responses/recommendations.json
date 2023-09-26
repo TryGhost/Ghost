@@ -4,7 +4,7 @@
             "id": "645453f4d254799990dd0e21",
             "title": "Fake Site 1",
             "excerpt": "Fake excerpt 1",
-            "url": "www.google.com",
+            "url": "https://main.ghost.org",
             "active": true,
             "created_at": "2023-05-05T00:55:16.000Z",
             "updated_at": "2023-05-05T01:14:35.000Z",

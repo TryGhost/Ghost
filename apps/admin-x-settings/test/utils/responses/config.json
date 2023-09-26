@@ -5,7 +5,9 @@
         "database": "sqlite3",
         "mail": "SMTP",
         "useGravatar": true,
-        "labs": {},
+        "labs": {
+            "recommendations": true
+        },
         "clientExtensions": {},
         "enableDeveloperExperiments": true,
         "stripeDirect": false,
