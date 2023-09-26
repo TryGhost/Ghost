@@ -318,6 +318,11 @@ export default class AdminXSettings extends Component {
         } else {
             this.store.pushPayload(type, response);
         }
+
+        if (dataType === 'SettingsResponseType') {
+            // Blog title is based on settings, but the one stored in config is used instead in various places
+            this.config.blogTitle = response.settings.find(setting => setting.key === 'title').value;
+        }
     };
 
     onInvalidate = (dataType) => {
