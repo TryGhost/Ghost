@@ -1,8 +1,12 @@
 /* Recommendations helper
- * Usage as block: `{{#recommendations}}{{/recommendations}}`
- * Available options: limit, order, filter
+ * Usage: `{{recommendations}}`
+ *
+ * Renders the template defined in `tpl/recommendations.hbs`
+ * Can be overridden by themes by uploading a partial under `partials/recommendations.hbs`
+ *
+ * Available options: limit, order, filter, page
  */
-const {config, api, prepareContextResource} = require('../services/proxy');
+const {config, api, prepareContextResource, settingsCache} = require('../services/proxy');
 const {templates, hbs} = require('../services/handlebars');
 
 const logging = require('@tryghost/logging');
@@ -52,6 +56,26 @@ async function fetchRecommendations(apiOptions) {
 }
 
 /**
+ * Parse Options
+ *
+ * @param {Object} options
+ * @returns {*}
+ */
+function parseOptions(options) {
+    let limit = options.limit ?? 5;
+    let order = options.order ?? 'createdAt desc';
+    let filter = options.filter ?? '';
+    let page = options.page ?? 1;
+
+    return {
+        limit,
+        order,
+        filter,
+        page
+    };
+}
+
+/**
  *
  * @param {object} options
  * @returns {Promise<any>}
@@ -62,7 +86,8 @@ module.exports = async function recommendations(options) {
     options.data = options.data || {};
 
     const data = createFrame(options.data);
-    const apiOptions = options.hash;
+    let apiOptions = options.hash;
+    apiOptions = parseOptions(apiOptions);
 
     try {
         const response = await fetchRecommendations(apiOptions);
