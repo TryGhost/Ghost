@@ -265,7 +265,9 @@ const emberDataTypeMapping = {
     SettingsResponseType: {type: 'setting', singleton: true},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
-    UsersResponseType: {type: 'user'}
+    UsersResponseType: {type: 'user'},
+    CustomThemeSettingsResponseType: {type: 'custom-theme-setting'}
+
 };
 
 export default class AdminXSettings extends Component {
