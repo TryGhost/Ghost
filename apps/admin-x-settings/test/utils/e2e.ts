@@ -55,10 +55,10 @@ export const globalDataRequests = {
 };
 
 export const limitRequests = {
-    browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+    browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
     browseInvites: {method: 'GET', path: '/invites/', response: responseFixtures.invites},
     browseRoles: {method: 'GET', path: '/roles/?limit=all', response: responseFixtures.roles},
-    browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=all', response: responseFixtures.newsletters}
+    browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: responseFixtures.newsletters}
 };
 
 export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests}: {page: Page, requests: Requests}) {

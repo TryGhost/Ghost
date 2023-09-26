@@ -6,6 +6,7 @@ import timezoneData from '@tryghost/timezone-data';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getLocalTime} from '../../../utils/helpers';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 interface TimezoneDataDropdownOption {
     name: string;
@@ -48,7 +49,7 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const [publicationTimezone] = getSettingValues(localSettings, ['timezone']) as string[];
 
-    const timezoneOptions = timezoneData.map((tzOption: TimezoneDataDropdownOption) => {
+    const timezoneOptions: Array<{value: string; label: string}> = timezoneData.map((tzOption: TimezoneDataDropdownOption) => {
         return {
             value: tzOption.name,
             label: tzOption.label
@@ -75,9 +76,9 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <Select
                 hint={<Hint timezone={publicationTimezone} />}
                 options={timezoneOptions}
-                selectedOption={publicationTimezone}
+                selectedOption={timezoneOptions.find(option => option.value === publicationTimezone)}
                 title="Site timezone"
-                onSelect={handleTimezoneChange}
+                onSelect={option => handleTimezoneChange(option?.value)}
             />
         </SettingGroupContent>
     );
@@ -100,4 +101,4 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default TimeZone;
+export default withErrorBoundary(TimeZone, 'Site timezone');

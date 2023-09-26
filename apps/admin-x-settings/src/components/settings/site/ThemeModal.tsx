@@ -12,9 +12,10 @@ import React, {useEffect, useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
+import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {InstalledTheme, Theme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
+import {InstalledTheme, Theme, ThemesInstallResponseType, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
 import {OfficialTheme} from '../../providers/ServiceProvider';
 
 interface ThemeToolbarProps {
@@ -42,8 +43,11 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const {updateRoute} = useRouting();
     const {mutateAsync: uploadTheme} = useUploadTheme();
     const limiter = useLimiter();
+    const handleError = useHandleError();
 
     const [uploadConfig, setUploadConfig] = useState<{enabled: boolean; error?: string}>();
+
+    const [isUploading, setUploading] = useState(false);
 
     useEffect(() => {
         if (limiter) {
@@ -71,7 +75,21 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         file: File;
         onActivate?: () => void
     }) => {
-        const data = await uploadTheme({file});
+        let data: ThemesInstallResponseType | undefined;
+
+        try {
+            setUploading(true);
+            data = await uploadTheme({file});
+            setUploading(false);
+        } catch (e) {
+            setUploading(false);
+            handleError(e);
+        }
+
+        if (!data) {
+            return;
+        }
+
         const uploadedTheme = data.themes[0];
 
         let title = 'Upload successful';
@@ -86,8 +104,8 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             </>;
         }
 
-        if (uploadedTheme.errors?.length || uploadedTheme.warnings?.length) {
-            const hasErrors = uploadedTheme.errors?.length;
+        if (uploadedTheme?.gscan_errors?.length || uploadedTheme.warnings?.length) {
+            const hasErrors = uploadedTheme?.gscan_errors?.length;
 
             title = `Upload successful with ${hasErrors ? 'errors' : 'warnings'}`;
             prompt = <>
@@ -157,7 +175,9 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                                     okRunningLabel: 'Overwriting...',
                                     okColor: 'red',
                                     onOk: async (confirmModal) => {
+                                        setUploading(true);
                                         await handleThemeUpload({file, onActivate: onClose});
+                                        setUploading(false);
                                         setCurrentTab('installed');
                                         confirmModal?.remove();
                                     }
@@ -167,7 +187,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                                 handleThemeUpload({file, onActivate: onClose});
                             }
                         }}>
-                            <Button color='black' label='Upload theme' tag='div' />
+                            <Button color='black' label='Upload theme' loading={isUploading} tag='div' />
                         </FileUpload> :
                         <Button color='black' label='Upload theme' onClick={() => {
                             NiceModal.show(LimitModal, {
@@ -224,6 +244,7 @@ const ChangeThemeModal = () => {
     const modal = useModal();
     const {data: {themes} = {}} = useBrowseThemes();
     const {mutateAsync: installTheme} = useInstallTheme();
+    const handleError = useHandleError();
 
     const onSelectTheme = (theme: OfficialTheme|null) => {
         setSelectedTheme(theme);
@@ -247,8 +268,18 @@ const ChangeThemeModal = () => {
                 prompt = <>By clicking below, <strong>{selectedTheme.name}</strong> will automatically be activated as the theme for your site.</>;
             } else {
                 setInstalling(true);
-                const data = await installTheme(selectedTheme.ref);
-                setInstalling(false);
+                let data: ThemesInstallResponseType | undefined;
+                try {
+                    data = await installTheme(selectedTheme.ref);
+                } catch (e) {
+                    handleError(e);
+                } finally {
+                    setInstalling(false);
+                }
+
+                if (!data) {
+                    return;
+                }
 
                 const newlyInstalledTheme = data.themes[0];
 
@@ -264,8 +295,8 @@ const ChangeThemeModal = () => {
                     </>;
                 }
 
-                if (newlyInstalledTheme.errors?.length || newlyInstalledTheme.warnings?.length) {
-                    const hasErrors = newlyInstalledTheme.errors?.length;
+                if (newlyInstalledTheme.gscan_errors?.length || newlyInstalledTheme.warnings?.length) {
+                    const hasErrors = newlyInstalledTheme.gscan_errors?.length;
 
                     title = `Installed with ${hasErrors ? 'errors' : 'warnings'}`;
                     prompt = <>

@@ -4,6 +4,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationReasonForm from './RecommendationReasonForm';
 import useForm from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {EditOrAddRecommendation, useAddRecommendation} from '../../../../api/recommendations';
 import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
@@ -17,6 +18,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     const modal = useModal();
     const {updateRoute, route} = useRouting();
     const {mutateAsync: addRecommendation} = useAddRecommendation();
+    const handleError = useHandleError();
 
     const {formState, updateForm, handleSave, saveState, errors} = useForm({
         initialState: {
@@ -31,6 +33,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             });
             updateRoute('recommendations');
         },
+        onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
             if (!formState.title) {

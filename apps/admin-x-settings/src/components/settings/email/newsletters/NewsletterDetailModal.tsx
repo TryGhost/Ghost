@@ -21,6 +21,7 @@ import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
@@ -52,6 +53,7 @@ const Sidebar: React.FC<{
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
+    const handleError = useHandleError();
 
     const replyToEmails = [
         {label: `Newsletter address (${fullEmailAddress(newsletter.sender_email || 'noreply', siteData)})`, value: 'newsletter'},
@@ -84,12 +86,16 @@ const Sidebar: React.FC<{
                 okLabel: 'Archive',
                 okColor: 'red',
                 onOk: async (modal) => {
-                    await editNewsletter({...newsletter, status: 'archived'});
-                    modal?.remove();
-                    showToast({
-                        type: 'success',
-                        message: 'Newsletter archived successfully'
-                    });
+                    try {
+                        await editNewsletter({...newsletter, status: 'archived'});
+                        modal?.remove();
+                        showToast({
+                            type: 'success',
+                            message: 'Newsletter archived successfully'
+                        });
+                    } catch (e) {
+                        handleError(e);
+                    }
                 }
             });
         } else {
@@ -155,7 +161,12 @@ const Sidebar: React.FC<{
                         onChange={e => updateNewsletter({sender_email: e.target.value})}
                         onKeyDown={() => clearError('sender_email')}
                     />
-                    <Select options={replyToEmails} selectedOption={newsletter.sender_reply_to} title="Reply-to email" onSelect={value => updateNewsletter({sender_reply_to: value})}/>
+                    <Select
+                        options={replyToEmails}
+                        selectedOption={replyToEmails.find(option => option.value === newsletter.sender_reply_to)}
+                        title="Reply-to email"
+                        onSelect={option => updateNewsletter({sender_reply_to: option?.value})}
+                    />
                 </Form>
                 <Form className='mt-6' gap='sm' margins='lg' title='Member settings'>
                     <Toggle
@@ -212,8 +223,12 @@ const Sidebar: React.FC<{
                                     updateNewsletter({header_image: null});
                                 }}
                                 onUpload={async (file) => {
-                                    const imageUrl = getImageUrl(await uploadImage({file}));
-                                    updateNewsletter({header_image: imageUrl});
+                                    try {
+                                        const imageUrl = getImageUrl(await uploadImage({file}));
+                                        updateNewsletter({header_image: imageUrl});
+                                    } catch (e) {
+                                        handleError(e);
+                                    }
                                 }}
                             >
                                 <Icon colorClass='text-grey-700 dark:text-grey-300' name='picture' />
@@ -299,8 +314,8 @@ const Sidebar: React.FC<{
                             <Select
                                 disabled={!newsletter.show_post_title_section}
                                 options={fontOptions}
-                                selectedOption={newsletter.title_font_category}
-                                onSelect={value => updateNewsletter({title_font_category: value})}
+                                selectedOption={fontOptions.find(option => option.value === newsletter.title_font_category)}
+                                onSelect={option => updateNewsletter({title_font_category: option?.value})}
                             />
                         </div>
                         <ButtonGroup buttons={[
@@ -350,9 +365,9 @@ const Sidebar: React.FC<{
                     />}
                     <Select
                         options={fontOptions}
-                        selectedOption={newsletter.body_font_category}
+                        selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
                         title='Body style'
-                        onSelect={value => updateNewsletter({body_font_category: value})}
+                        onSelect={option => updateNewsletter({body_font_category: option?.value})}
                     />
                     <Toggle
                         checked={newsletter.show_feature_image}
@@ -422,6 +437,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
     const {siteData} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
+    const handleError = useHandleError();
 
     const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError} = useForm({
         initialState: newsletter,
@@ -447,6 +463,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
                 modal.remove();
             }
         },
+        onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
 
@@ -500,8 +517,14 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
 };
 
 const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {data: {newsletters} = {}} = useBrowseNewsletters();
+    const {data: {newsletters, isEnd} = {}, fetchNextPage} = useBrowseNewsletters();
     const newsletter = newsletters?.find(({id}) => id === params?.id);
+
+    useEffect(() => {
+        if (!newsletter && !isEnd) {
+            fetchNextPage();
+        }
+    }, [fetchNextPage, isEnd, newsletter]);
 
     if (newsletter) {
         return <NewsletterDetailModalContent newsletter={newsletter} onlyOne={newsletters!.length === 1} />;

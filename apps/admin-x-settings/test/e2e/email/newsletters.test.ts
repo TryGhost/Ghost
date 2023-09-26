@@ -5,7 +5,7 @@ test.describe('Newsletter settings', async () => {
     test('Supports creating a new newsletter', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=all', response: responseFixtures.newsletters},
+            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
             addNewsletter: {method: 'POST', path: '/newsletters/?opt_in_existing=true&include=count.active_members%2Ccount.posts', response: {newsletters: [{
                 id: 'new-newsletter',
                 name: 'New newsletter',
@@ -26,7 +26,7 @@ test.describe('Newsletter settings', async () => {
         const modal = page.getByTestId('add-newsletter-modal');
         await modal.getByRole('button', {name: 'Create'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Can't save newsletter/);
+        await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
         await expect(modal).toHaveText(/Please enter a name/);
 
         // Shouldn't be necessary, but without these Playwright doesn't click Create the second time for some reason
@@ -48,7 +48,7 @@ test.describe('Newsletter settings', async () => {
     test('Supports updating a newsletter', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=all', response: responseFixtures.newsletters},
+            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
             editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[0].id}/?include=count.active_members%2Ccount.posts`, response: {
                 newsletters: [{
                     ...responseFixtures.newsletters.newsletters[0],
@@ -69,7 +69,7 @@ test.describe('Newsletter settings', async () => {
         await modal.getByPlaceholder('Weekly Roundup').fill('');
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Can't save newsletter/);
+        await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
         await expect(modal).toHaveText(/Please enter a name/);
 
         await modal.getByPlaceholder('Weekly Roundup').fill('Updated newsletter');
@@ -93,7 +93,7 @@ test.describe('Newsletter settings', async () => {
     test('Displays a prompt when email verification is required', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
-            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=all', response: responseFixtures.newsletters},
+            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
             editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[0].id}/?include=count.active_members%2Ccount.posts`, response: {
                 newsletters: [responseFixtures.newsletters.newsletters[0]],
                 meta: {
@@ -120,7 +120,7 @@ test.describe('Newsletter settings', async () => {
     test('Supports archiving newsletters', async ({page}) => {
         const activate = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=all', response: responseFixtures.newsletters},
+            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
             editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[1].id}/?include=count.active_members%2Ccount.posts`, response: {
                 newsletters: [{
                     ...responseFixtures.newsletters.newsletters[1],
@@ -157,7 +157,7 @@ test.describe('Newsletter settings', async () => {
 
         const archive = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=all', response: responseFixtures.newsletters},
+            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
             editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[0].id}/?include=count.active_members%2Ccount.posts`, response: {
                 newsletters: [{
                     ...responseFixtures.newsletters.newsletters[0],
@@ -206,7 +206,7 @@ test.describe('Newsletter settings', async () => {
                     }
                 }
             },
-            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=all', response: responseFixtures.newsletters}
+            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters}
         }});
 
         await page.goto('/');

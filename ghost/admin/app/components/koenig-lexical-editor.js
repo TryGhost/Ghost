@@ -287,14 +287,22 @@ export default class KoenigLexicalEditor extends Component {
             };
 
             const donationLink = () => {
-                // TODO: remove feature condition once Tips & Donations have been released
-                if (this.feature.tipsAndDonations) {
-                    if (this.settings.donationsEnabled) {
-                        return [{
-                            label: 'Tip or donation',
-                            value: '#/portal/support'
-                        }];
-                    }
+                if (this.feature.tipsAndDonations && this.settings.donationsEnabled) {
+                    return [{
+                        label: 'Tip or donation',
+                        value: '#/portal/support'
+                    }];
+                }
+
+                return [];
+            };
+
+            const recommendationLink = () => {
+                if (this.settings.recommendationsEnabled) {
+                    return [{
+                        label: 'Recommendations',
+                        value: '#/portal/recommendations'
+                    }];
                 }
 
                 return [];
@@ -307,7 +315,7 @@ export default class KoenigLexicalEditor extends Component {
                 };
             });
 
-            return [...defaults, ...memberLinks(), ...donationLink(), ...offersLinks];
+            return [...defaults, ...memberLinks(), ...donationLink(), ...recommendationLink(), ...offersLinks];
         };
 
         const fetchLabels = async () => {
@@ -565,6 +573,7 @@ export default class KoenigLexicalEditor extends Component {
                         >
                             <KoenigEditor
                                 cursorDidExitAtTop={this.args.cursorDidExitAtTop}
+                                placeholderText={this.args.placeholder}
                                 darkMode={this.feature.nightShift}
                                 onChange={this.args.onChange}
                                 registerAPI={this.args.registerAPI}

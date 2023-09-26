@@ -2,6 +2,8 @@ import React from 'react';
 
 import '../src/styles/demo.css';
 import type { Preview } from "@storybook/react";
+import '../src/admin-x-ds/providers/DesignSystemProvider';
+import DesignSystemProvider from '../src/admin-x-ds/providers/DesignSystemProvider';
 
 const preview: Preview = {
 	parameters: {
@@ -29,7 +31,9 @@ const preview: Preview = {
 				background: (scheme === 'dark' ? '#131416' : '')
 			}}>
 				{/* 👇 Decorators in Storybook also accept a function. Replace <Story/> with Story() to enable it  */}
-				<Story />
+				<DesignSystemProvider>
+					<Story />
+				</DesignSystemProvider>
 			</div>);
 	},
 	],

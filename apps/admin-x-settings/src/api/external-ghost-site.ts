@@ -1,4 +1,4 @@
-import {useFetchApi} from '../utils/apiRequests';
+import {useFetchApi} from '../utils/api/hooks';
 
 export type GhostSiteResponse = {
     site: {

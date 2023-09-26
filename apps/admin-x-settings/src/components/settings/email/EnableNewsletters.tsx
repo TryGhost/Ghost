@@ -4,14 +4,17 @@ import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {Setting, getSettingValues, useEditSettings} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {updateRoute} = useRouting();
+    const handleError = useHandleError();
 
     const [newslettersEnabled, membersSignupAccess] = getSettingValues<string>(settings, ['editor_default_email_recipients', 'members_signup_access']);
 
@@ -26,7 +29,11 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
             updates.push({key: 'editor_default_email_recipients_filter', value: null});
         }
 
-        await editSettings(updates);
+        try {
+            await editSettings(updates);
+        } catch (error) {
+            handleError(error);
+        }
     };
 
     const enableToggle = (
@@ -75,4 +82,4 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     </SettingGroup>);
 };
 
-export default EnableNewsletters;
+export default withErrorBoundary(EnableNewsletters, 'Newsletter sending');

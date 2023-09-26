@@ -4,6 +4,7 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as Icon} from '../../../../assets/icons/amp.svg';
 import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
@@ -19,6 +20,7 @@ const AmpModal = NiceModal.create(() => {
     const [enabled, setEnabled] = useState(false);
     const [trackingId, setTrackingId] = useState('');
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     useEffect(() => {
         setEnabled(ampEnabled || false);
@@ -30,7 +32,11 @@ const AmpModal = NiceModal.create(() => {
             {key: 'amp', value: enabled},
             {key: 'amp_gtag_id', value: trackingId}
         ];
-        await editSettings(updates);
+        try {
+            await editSettings(updates);
+        } catch (e) {
+            handleError(e);
+        }
     };
 
     return (

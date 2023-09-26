@@ -1,5 +1,6 @@
 import React, {createContext, useContext} from 'react';
 import useSearchService, {SearchService} from '../../utils/search';
+import {DefaultHeaderTypes} from '../../utils/unsplash/UnsplashTypes';
 import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
 
 export type OfficialTheme = {
@@ -16,7 +17,11 @@ interface ServicesContextProps {
     officialThemes: OfficialTheme[];
     zapierTemplates: ZapierTemplate[];
     search: SearchService;
-    toggleFeatureFlag: (flag: string, enabled: boolean) => void;
+    unsplashConfig: DefaultHeaderTypes;
+    sentryDSN: string | null;
+    onUpdate: (dataType: string, response: unknown) => void;
+    onInvalidate: (dataType: string) => void;
+    onDelete: (dataType: string, id: string) => void;
 }
 
 interface ServicesProviderProps {
@@ -24,7 +29,11 @@ interface ServicesProviderProps {
     ghostVersion: string;
     zapierTemplates: ZapierTemplate[];
     officialThemes: OfficialTheme[];
-    toggleFeatureFlag: (flag: string, enabled: boolean) => void;
+    unsplashConfig: DefaultHeaderTypes;
+    sentryDSN: string | null;
+    onUpdate: (dataType: string, response: unknown) => void;
+    onInvalidate: (dataType: string) => void;
+    onDelete: (dataType: string, id: string) => void;
 }
 
 const ServicesContext = createContext<ServicesContextProps>({
@@ -32,10 +41,20 @@ const ServicesContext = createContext<ServicesContextProps>({
     officialThemes: [],
     zapierTemplates: [],
     search: {filter: '', setFilter: () => {}, checkVisible: () => true},
-    toggleFeatureFlag: () => {}
+    unsplashConfig: {
+        Authorization: '',
+        'Accept-Version': '',
+        'Content-Type': '',
+        'App-Pragma': '',
+        'X-Unsplash-Cache': true
+    },
+    sentryDSN: null,
+    onUpdate: () => {},
+    onInvalidate: () => {},
+    onDelete: () => {}
 });
 
-const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, toggleFeatureFlag}) => {
+const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, unsplashConfig, sentryDSN, onUpdate, onInvalidate, onDelete}) => {
     const search = useSearchService();
 
     return (
@@ -44,7 +63,11 @@ const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersi
             officialThemes,
             zapierTemplates,
             search,
-            toggleFeatureFlag
+            unsplashConfig,
+            sentryDSN,
+            onUpdate,
+            onInvalidate,
+            onDelete
         }}>
             {children}
         </ServicesContext.Provider>
@@ -58,3 +81,5 @@ export const useServices = () => useContext(ServicesContext);
 export const useOfficialThemes = () => useServices().officialThemes;
 
 export const useSearch = () => useServices().search;
+
+export const useSentryDSN = () => useServices().sentryDSN;

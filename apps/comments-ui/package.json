@@ -59,14 +59,14 @@
     "react-string-replace": "1.1.1"
   },
   "devDependencies": {
-    "@playwright/test": "1.38.0",
+    "@playwright/test": "1.38.1",
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "12.1.5",
     "@testing-library/user-event": "14.4.3",
     "@tryghost/i18n": "0.0.0",
     "@vitejs/plugin-react": "4.0.4",
     "@vitest/coverage-v8": "0.34.3",
-    "autoprefixer": "10.4.15",
+    "autoprefixer": "10.4.16",
     "bson-objectid": "2.0.4",
     "concurrently": "8.2.1",
     "eslint-plugin-i18next": "6.0.3",

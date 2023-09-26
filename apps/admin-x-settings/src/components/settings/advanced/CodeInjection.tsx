@@ -8,6 +8,7 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -93,4 +94,4 @@ const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default CodeInjection;
+export default withErrorBoundary(CodeInjection, 'Code injection');

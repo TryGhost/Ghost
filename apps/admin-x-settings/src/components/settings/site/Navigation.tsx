@@ -2,6 +2,7 @@ import Button from '../../../admin-x-ds/global/Button';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import useRouting from '../../../hooks/useRouting';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Navigation: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
@@ -21,4 +22,4 @@ const Navigation: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Navigation;
+export default withErrorBoundary(Navigation, 'Navigation');

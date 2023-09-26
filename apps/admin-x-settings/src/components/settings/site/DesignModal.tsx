@@ -8,6 +8,7 @@ import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
+import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../api/customThemeSettings';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
@@ -92,6 +93,7 @@ const DesignModal: React.FC = () => {
     });
     const {data: themeSettings} = useBrowseCustomThemeSettings();
     const {mutateAsync: editThemeSettings} = useEditCustomThemeSettings();
+    const handleError = useHandleError();
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
     const {updateRoute} = useRouting();
 
@@ -116,7 +118,8 @@ const DesignModal: React.FC = () => {
                 const {settings: newSettings} = await editSettings(formState.settings.filter(setting => setting.dirty));
                 updateForm(state => ({...state, settings: newSettings}));
             }
-        }
+        },
+        onSaveError: handleError
     });
 
     useEffect(() => {

@@ -39,7 +39,7 @@
         "react-dom": "18.2.0"
     },
     "devDependencies": {
-        "@playwright/test": "1.38.0",
+        "@playwright/test": "1.38.1",
         "@storybook/addon-essentials": "7.4.0",
         "@storybook/addon-interactions": "7.4.0",
         "@storybook/addon-links": "7.4.0",
@@ -52,7 +52,7 @@
         "@types/react": "18.2.22",
         "@types/react-dom": "18.2.7",
         "@vitejs/plugin-react": "4.0.4",
-        "autoprefixer": "10.4.15",
+        "autoprefixer": "10.4.16",
         "concurrently": "8.2.1",
         "eslint-plugin-react-hooks": "4.6.0",
         "eslint-plugin-react-refresh": "0.4.3",

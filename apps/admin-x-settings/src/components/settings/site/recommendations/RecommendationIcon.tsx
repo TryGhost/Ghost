@@ -5,11 +5,11 @@ import React, {useState} from 'react';
 interface Props {
     title: string,
     favicon?: string | null,
-    showSubscribes?: number | boolean,
-    featured_image?: string | null
+    featured_image?: string | null,
+    isGhostSite?: boolean,
 }
 
-const RecommendationIcon: React.FC<Props> = ({title, favicon, showSubscribes, featured_image}) => {
+const RecommendationIcon: React.FC<Props> = ({title, favicon, featured_image, isGhostSite}) => {
     const [icon, setIcon] = useState(favicon || featured_image || null);
 
     const clearIcon = () => {
@@ -17,15 +17,16 @@ const RecommendationIcon: React.FC<Props> = ({title, favicon, showSubscribes, fe
     };
 
     if (!icon) {
-        return null;
+        return <div className="relative h-6 w-6 shrink-0 rounded-sm">
+        </div>;
     }
 
-    const hint = showSubscribes ? 'This is a Ghost site that supports one-click subscribe' : '';
+    const hint = isGhostSite ? 'This is a Ghost site that supports one-click subscribe' : '';
 
     return (
-        <div className="relative h-5 w-5" title={hint}>
-            <img alt={title} className="h-5 w-5 rounded-sm" src={icon} onError={clearIcon} />
-            {showSubscribes && <img alt='Ghost Logo' className='absolute bottom-[-3px] right-[-3px] h-[14px] w-[14px]' src={GhostLogo} />}
+        <div className="relative h-6 w-6 shrink-0 rounded-sm dark:bg-white" title={hint}>
+            <img alt={title} className="h-6 w-6 rounded-sm" src={icon} onError={clearIcon} />
+            {isGhostSite && <img alt='Ghost Logo' className='absolute bottom-[-3px] right-[-3px] h-[14px] w-[14px]' src={GhostLogo} />}
         </div>
     );
 };

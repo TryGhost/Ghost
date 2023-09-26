@@ -48,8 +48,15 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 throw new AlreadyExistsError('A recommendation with this URL already exists.');
             }
 
-            // Check if it s a Ghost site or not
-            let externalGhostSite = validatedUrl.protocol === 'https:' ? (await queryExternalGhostSite('https://' + validatedUrl.host)) : null;
+            // Check if it's a Ghost site or not:
+            // 1. Check the full path first. This is the most common use case, and also helps to cover Ghost sites that are hosted on a subdirectory
+            // 2. If needed, check the origin. This helps to cover cases where the recommendation URL is a subpage or a post URL of the Ghost site
+            let externalGhostSite = null;
+            externalGhostSite = await queryExternalGhostSite(validatedUrl.toString());
+
+            if (!externalGhostSite && validatedUrl.pathname !== '' && validatedUrl.pathname !== '/') {
+                externalGhostSite = await queryExternalGhostSite(validatedUrl.origin);
+            }
 
             // Use the hostname as fallback title
             const defaultTitle = validatedUrl.hostname.replace('www.', '');
@@ -143,7 +150,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             }
         }}
     >
-        <p className="mt-4">This isn’t a closed network. You can recommend any site your audience will find valuable, not just those published on Ghost.</p>
+        <p className="mt-4">You can recommend any site your audience will find valuable, not just those published on Ghost.</p>
         <Form
             marginBottom={false}
             marginTop

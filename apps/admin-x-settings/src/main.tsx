@@ -2,6 +2,7 @@ import './styles/demo.css';
 import App from './App.tsx';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import {DefaultHeaderTypes} from './utils/unsplash/UnsplashTypes.ts';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
@@ -29,8 +30,12 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 ref: 'TryGhost/Edition',
                 image: 'assets/img/themes/Edition.png'
             }]}
-            toggleFeatureFlag={() => {}}
+            sentryDSN={null}
+            unsplashConfig={{} as DefaultHeaderTypes}
             zapierTemplates={[]}
+            onDelete={() => {}}
+            onInvalidate={() => {}}
+            onUpdate={() => {}}
         />
     </React.StrictMode>
 );

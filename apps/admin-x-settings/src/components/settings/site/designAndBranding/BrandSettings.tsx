@@ -5,11 +5,14 @@ import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import React, {useRef, useState} from 'react';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
+import UnsplashSearchModal from '../../../../utils/unsplash/UnsplashSearchModal';
+import useHandleError from '../../../../utils/api/handleError';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {SettingValue, getSettingValues} from '../../../../api/settings';
 import {debounce} from '../../../../utils/debounce';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useServices} from '../../../providers/ServiceProvider';
 
 export interface BrandSettingValues {
     description: string
@@ -23,9 +26,12 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
     const {mutateAsync: uploadImage} = useUploadImage();
     const [siteDescription, setSiteDescription] = useState(values.description);
     const {settings} = useGlobalData();
-    const [pintura] = getSettingValues<boolean>(settings, ['pintura']);
+    const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
     const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
     const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
+    const [showUnsplash, setShowUnsplash] = useState<boolean>(false);
+    const {unsplashConfig} = useServices();
+    const handleError = useHandleError();
 
     const updateDescriptionDebouncedRef = useRef(
         debounce((value: string) => {
@@ -33,17 +39,12 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
         }, 500)
     );
 
-    const pinturaEnabled = Boolean(pintura) && Boolean(pinturaJsUrl) && Boolean(pinturaCssUrl);
-
     const editor = usePinturaEditor(
         {config: {
             jsUrl: pinturaJsUrl || '',
             cssUrl: pinturaCssUrl || ''
-        },
-        disabled: !pinturaEnabled}
+        }}
     );
-
-    // check if pintura !false and pintura_js_url and pintura_css_url are not '' or null or undefined
 
     return (
         <div className='mt-7'>
@@ -86,7 +87,11 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                             width={values.icon ? '66px' : '150px'}
                             onDelete={() => updateSetting('icon', null)}
                             onUpload={async (file) => {
-                                updateSetting('icon', getImageUrl(await uploadImage({file})));
+                                try {
+                                    updateSetting('icon', getImageUrl(await uploadImage({file})));
+                                } catch (e) {
+                                    handleError(e);
+                                }
                             }}
                         >
                         Upload icon
@@ -104,7 +109,11 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         imageURL={values.logo || ''}
                         onDelete={() => updateSetting('logo', null)}
                         onUpload={async (file) => {
-                            updateSetting('logo', getImageUrl(await uploadImage({file})));
+                            try {
+                                updateSetting('logo', getImageUrl(await uploadImage({file})));
+                            } catch (e) {
+                                handleError(e);
+                            }
                         }}
                     >
                     Upload logo
@@ -118,24 +127,53 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         height='180px'
                         id='cover'
                         imageURL={values.coverImage || ''}
+                        openUnsplash={() => setShowUnsplash(true)}
                         pintura={
                             {
-                                isEnabled: pinturaEnabled,
+                                isEnabled: editor.isEnabled,
                                 openEditor: async () => editor.openEditor({
                                     image: values.coverImage || '',
                                     handleSave: async (file:File) => {
-                                        updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                        try {
+                                            updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                        } catch (e) {
+                                            handleError(e);
+                                        }
                                     }
                                 })
                             }
                         }
+                        unsplashButtonClassName='!top-1 !right-1'
+                        unsplashEnabled={true}
                         onDelete={() => updateSetting('cover_image', null)}
                         onUpload={async (file) => {
-                            updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                            try {
+                                updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                            } catch (e) {
+                                handleError(e);
+                            }
                         }}
                     >
                     Upload cover
                     </ImageUpload>
+                    {
+                        showUnsplash && unsplashConfig && unsplashEnabled && (
+                            <UnsplashSearchModal
+                                unsplashConf={{
+                                    defaultHeaders: unsplashConfig
+                                }}
+                                onClose={() => {
+                                    setShowUnsplash(false);
+                                }}
+                                onImageInsert={(image) => {
+                                    if (image.src) {
+                                        updateSetting('cover_image', image.src);
+                                    }
+                                    setShowUnsplash(false);
+                                }}
+                            />
+                        )
+                    }
                 </div>
             </SettingGroupContent>
         </div>

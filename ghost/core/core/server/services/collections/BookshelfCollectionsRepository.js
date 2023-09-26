@@ -12,9 +12,12 @@ const {default: ObjectID} = require('bson-objectid');
 module.exports = class BookshelfCollectionsRepository {
     #model;
     #relationModel;
-    constructor(model, relationModel) {
+    /** @type {import('@tryghost/domain-events')} */
+    #DomainEvents;
+    constructor(model, relationModel, DomainEvents) {
         this.#model = model;
         this.#relationModel = relationModel;
+        this.#DomainEvents = DomainEvents;
     }
 
     async createTransaction(cb) {
@@ -201,46 +204,46 @@ module.exports = class BookshelfCollectionsRepository {
                 transacting: options.transaction
             });
 
-            const collectionPostsRelations = collection.posts.map((postId, index) => {
-                return {
-                    id: (new ObjectID).toHexString(),
-                    sort_order: collection.type === 'manual' ? index : 0,
-                    collection_id: collection.id,
-                    post_id: postId
-                };
-            });
-
-            const collectionPostRelationsToDeleteIds = [];
-
             if (collection.type === 'manual') {
+                const collectionPostsRelations = collection.posts.map((postId, index) => {
+                    return {
+                        id: (new ObjectID).toHexString(),
+                        sort_order: index,
+                        collection_id: collection.id,
+                        post_id: postId
+                    };
+                });
                 await this.#relationModel.query().delete().where('collection_id', collection.id).transacting(options.transaction);
+                if (collectionPostsRelations.length > 0) {
+                    await this.#relationModel.query().insert(collectionPostsRelations).transacting(options.transaction);
+                }
             } else {
-                const collectionPostsOptions = {
-                    transaction: options.transaction,
-                    columns: ['id', 'post_id']
-                };
-                const existingRelations = await this.#fetchCollectionPostIds(collection.id, collectionPostsOptions);
+                const collectionPostsToDelete = collection.events.filter(event => event.type === 'CollectionPostRemoved').map((event) => {
+                    return event.data.post_id;
+                });
 
-                for (const existingRelation of existingRelations) {
-                    const found = collectionPostsRelations.find((thing) => {
-                        return thing.post_id === existingRelation.post_id;
-                    });
-                    if (found) {
-                        found.id = null;
-                    } else {
-                        collectionPostRelationsToDeleteIds.push(existingRelation.id);
-                    }
+                const collectionPostsToInsert = collection.events.filter(event => event.type === 'CollectionPostAdded').map((event) => {
+                    return {
+                        id: (new ObjectID).toHexString(),
+                        sort_order: 0,
+                        collection_id: collection.id,
+                        post_id: event.data.post_id
+                    };
+                });
+
+                if (collectionPostsToDelete.length > 0) {
+                    await this.#relationModel.query().delete().where('collection_id', collection.id).whereIn('post_id', collectionPostsToDelete).transacting(options.transaction);
+                }
+                if (collectionPostsToInsert.length > 0) {
+                    await this.#relationModel.query().insert(collectionPostsToInsert).transacting(options.transaction);
                 }
             }
 
-            const missingCollectionPostsRelations = collectionPostsRelations.filter(thing => thing.id !== null);
-
-            if (missingCollectionPostsRelations.length > 0) {
-                await this.#relationModel.query().insert(missingCollectionPostsRelations).transacting(options.transaction);
-            }
-            if (collectionPostRelationsToDeleteIds.length > 0) {
-                await this.#relationModel.query().delete().whereIn('id', collectionPostRelationsToDeleteIds).transacting(options.transaction);
-            }
+            options.transaction.executionPromise.then(() => {
+                for (const event of collection.events) {
+                    this.#DomainEvents.dispatch(event);
+                }
+            });
         }
     }
 };

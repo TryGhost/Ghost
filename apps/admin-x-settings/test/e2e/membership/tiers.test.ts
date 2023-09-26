@@ -13,7 +13,7 @@ test.describe('Tier settings', async () => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseTiers: {method: 'GET', path: '/tiers/?limit=all', response: responseFixtures.tiers}
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
         }});
 
         await page.goto('/');
@@ -26,7 +26,7 @@ test.describe('Tier settings', async () => {
 
         await modal.getByRole('button', {name: 'Save & close'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Can't save tier/);
+        await expect(page.getByTestId('toast-error')).toHaveText(/Can't save tier/);
         await expect(modal).toHaveText(/You must specify a name/);
         await expect(modal).toHaveText(/Amount must be at least \$1/);
 
@@ -55,7 +55,7 @@ test.describe('Tier settings', async () => {
             ...globalDataRequests,
             addTier: {method: 'POST', path: '/tiers/', response: {tiers: [newTier]}},
             // This request will be reloaded after the new tier is added
-            browseTiers: {method: 'GET', path: '/tiers/?limit=all', response: {tiers: [...responseFixtures.tiers.tiers, newTier]}}
+            browseTiers: {method: 'GET', path: '/tiers/', response: {tiers: [...responseFixtures.tiers.tiers, newTier]}}
         }});
 
         await modal.getByRole('button', {name: 'Save & close'}).click();
@@ -77,7 +77,7 @@ test.describe('Tier settings', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseTiers: {method: 'GET', path: '/tiers/?limit=all', response: responseFixtures.tiers},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             editTier: {method: 'PUT', path: `/tiers/${responseFixtures.tiers.tiers[1].id}/`, response: {
                 tiers: [{
                     ...responseFixtures.tiers.tiers[1],
@@ -104,7 +104,7 @@ test.describe('Tier settings', async () => {
         await modal.getByLabel('Name').fill('');
         await modal.getByRole('button', {name: 'Save & close'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Can't save tier/);
+        await expect(page.getByTestId('toast-error')).toHaveText(/Can't save tier/);
         await expect(modal).toHaveText(/You must specify a name/);
 
         await modal.getByLabel('Name').fill('Supporter updated');
@@ -140,7 +140,7 @@ test.describe('Tier settings', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseTiers: {method: 'GET', path: '/tiers/?limit=all', response: responseFixtures.tiers},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             editTier: {method: 'PUT', path: `/tiers/${responseFixtures.tiers.tiers[0].id}/`, response: {
                 tiers: [{
                     ...responseFixtures.tiers.tiers[0],

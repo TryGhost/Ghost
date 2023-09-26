@@ -166,6 +166,19 @@ describe('CollectionsService', function () {
         });
     });
 
+    describe('latest collection', function () {
+        it('Includes all posts when fetched directly', async function () {
+            await collectionsService.createCollection({
+                title: 'Latest',
+                slug: 'latest',
+                type: 'automatic',
+                filter: ''
+            });
+            const collection = await collectionsService.getBySlug('latest');
+            assert(collection?.posts.length === 4);
+        });
+    });
+
     describe('edit', function () {
         it('Can edit existing collection', async function () {
             const savedCollection = await collectionsService.createCollection({

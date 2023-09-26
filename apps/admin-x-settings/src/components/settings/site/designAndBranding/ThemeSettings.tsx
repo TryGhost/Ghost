@@ -7,6 +7,7 @@ import Select from '../../../../admin-x-ds/global/form/Select';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import useHandleError from '../../../../utils/api/handleError';
 import {CustomThemeSetting} from '../../../../api/customThemeSettings';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {humanizeSettingKey} from '../../../../api/settings';
@@ -16,10 +17,15 @@ const ThemeSetting: React.FC<{
     setSetting: <Setting extends CustomThemeSetting>(value: Setting['value']) => void
 }> = ({setting, setSetting}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
+    const handleError = useHandleError();
 
     const handleImageUpload = async (file: File) => {
-        const imageUrl = getImageUrl(await uploadImage({file}));
-        setSetting(imageUrl);
+        try {
+            const imageUrl = getImageUrl(await uploadImage({file}));
+            setSetting(imageUrl);
+        } catch (e) {
+            handleError(e);
+        }
     };
 
     switch (setting.type) {
@@ -47,9 +53,9 @@ const ThemeSetting: React.FC<{
             <Select
                 hint={setting.description}
                 options={setting.options.map(option => ({label: option, value: option}))}
-                selectedOption={setting.value}
+                selectedOption={{label: setting.value, value: setting.value}}
                 title={humanizeSettingKey(setting.key)}
-                onSelect={value => setSetting(value || null)}
+                onSelect={option => setSetting(option?.value || null)}
             />
         );
     case 'color':
