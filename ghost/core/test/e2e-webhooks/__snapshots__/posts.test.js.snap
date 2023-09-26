@@ -2,7 +2,7 @@
 
 exports[`post.* events post.added event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -159,7 +159,7 @@ Object {
 
 exports[`post.* events post.deleted event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -239,7 +239,7 @@ Object {
 
 exports[`post.* events post.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -461,7 +461,7 @@ Object {
 
 exports[`post.* events post.published event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -706,7 +706,7 @@ Header Level 3
 
 exports[`post.* events post.published.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -928,7 +928,7 @@ Object {
 
 exports[`post.* events post.rescheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1150,7 +1150,7 @@ Object {
 
 exports[`post.* events post.scheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1373,7 +1373,7 @@ Object {
 
 exports[`post.* events post.tag.attached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1662,7 +1662,7 @@ Header Level 3
 
 exports[`post.* events post.tag.detached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1891,7 +1891,7 @@ Header Level 3
 
 exports[`post.* events post.unpublished event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -2135,7 +2135,7 @@ Header Level 3
 
 exports[`post.* events post.unscheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,

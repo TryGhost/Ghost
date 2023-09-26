@@ -2,7 +2,7 @@
 
 exports[`page.* events page.added event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -157,7 +157,7 @@ Object {
 
 exports[`page.* events page.deleted event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -238,7 +238,7 @@ Object {
 
 exports[`page.* events page.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -460,7 +460,7 @@ Object {
 
 exports[`page.* events page.published event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -682,7 +682,7 @@ Object {
 
 exports[`page.* events page.published.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -903,7 +903,7 @@ Object {
 
 exports[`page.* events page.rescheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1124,7 +1124,7 @@ Object {
 
 exports[`page.* events page.scheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1346,7 +1346,7 @@ Object {
 
 exports[`page.* events page.tag.attached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1612,7 +1612,7 @@ Object {
 
 exports[`page.* events page.tag.detached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1818,7 +1818,7 @@ Object {
 
 exports[`page.* events page.unpublished event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -2039,7 +2039,7 @@ Object {
 
 exports[`page.* events page.unscheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,

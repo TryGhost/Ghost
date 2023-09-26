@@ -2,7 +2,7 @@
 
 exports[`tag.* events tag.added event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -43,7 +43,7 @@ Object {
 
 exports[`tag.* events tag.deleted event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -83,7 +83,7 @@ Object {
 
 exports[`tag.* events tag.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
