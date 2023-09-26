@@ -292,7 +292,7 @@ const StripeConnectModal: React.FC = () => {
             updateRoute('tiers');
         }}
         cancelLabel=''
-        footer={<></>}
+        footer={<div className='mt-8'></div>}
         size={stripeConnectAccountId ? 740 : 520}
         testId='stripe-modal'
         title=''
