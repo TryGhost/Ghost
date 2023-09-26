@@ -225,6 +225,9 @@ describe('Pages API', function () {
 
             const [createResponse] = createBody.pages;
 
+            // does not match body snapshot as we mostly only care about the request succeeding.
+            // matching body snapshots is tricky because collection cards have dynamic content,
+            // most notably the post dates which are always changing.
             await agent
                 .put(`/pages/${createResponse.id}/?formats=mobiledoc,lexical,html`)
                 .body({
@@ -234,12 +237,7 @@ describe('Pages API', function () {
                         updated_at: createResponse.updated_at // satisfy collision detection
                     }]
                 })
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    pages: [Object.assign({}, matchPageShallowIncludes, {
-                        published_at: null
-                    })]
-                });
+                .expectStatus(200);
         });
 
         it('Works with featured collection card', async function () {
@@ -310,12 +308,7 @@ describe('Pages API', function () {
                         updated_at: createResponse.updated_at // satisfy collision detection
                     }]
                 })
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    pages: [Object.assign({}, matchPageShallowIncludes, {
-                        published_at: null
-                    })]
-                });
+                .expectStatus(200);
         });
     });
 
