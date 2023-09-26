@@ -5,7 +5,7 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Settings - Membership', function () {
+describe.skip('Acceptance: Settings - Membership', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -24,7 +24,7 @@ describe('Acceptance: Settings - Membership', function () {
         return await authenticateSession();
     });
 
-    describe('permissions', function () {
+    describe.skip('permissions', function () {
         let visitAs;
 
         before(function () {

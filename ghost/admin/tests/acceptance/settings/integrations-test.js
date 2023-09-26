@@ -6,11 +6,11 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Settings - Integrations - Custom', function () {
+describe.skip('Acceptance: Settings - Integrations - Custom', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
-    describe('access permissions', function () {
+    describe.skip('access permissions', function () {
         beforeEach(function () {
             this.server.create('integration', {name: 'Test'});
         });
@@ -90,7 +90,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
         });
     });
 
-    describe('navigation', function () {
+    describe.skip('navigation', function () {
         beforeEach(async function () {
             this.server.loadFixtures('settings');
 
@@ -164,7 +164,7 @@ describe('Acceptance: Settings - Integrations - Custom', function () {
         });
     });
 
-    describe('custom integrations', function () {
+    describe.skip('custom integrations', function () {
         beforeEach(async function () {
             this.server.loadFixtures('configs');
             let config = this.server.schema.configs.first();

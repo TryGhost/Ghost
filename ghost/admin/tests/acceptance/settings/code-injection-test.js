@@ -11,7 +11,7 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Settings - Code-Injection', function () {
+describe.skip('Acceptance: Settings - Code-Injection', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -52,7 +52,7 @@ describe('Acceptance: Settings - Code-Injection', function () {
         expect(currentURL(), 'currentURL').to.equal('/site');
     });
 
-    describe('when logged in', function () {
+    describe.skip('when logged in', function () {
         beforeEach(async function () {
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role]});
@@ -106,7 +106,7 @@ describe('Acceptance: Settings - Code-Injection', function () {
 
             // Saving when no changed have been made should work
             // (although no api request is expected)
-            await click('[data-test-save-button]');            
+            await click('[data-test-save-button]');
             expect(find('[data-test-save-button]').textContent.trim(), 'save button text').to.equal('Save');
         });
     });

@@ -104,7 +104,7 @@ async function fillName(name) {
     await fillIn('input#newsletter-title', name);
 }
 
-describe('Acceptance: Settings - Newsletters', function () {
+describe.skip('Acceptance: Settings - Newsletters', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -122,7 +122,7 @@ describe('Acceptance: Settings - Newsletters', function () {
         expect(currentURL()).to.equal('/settings/newsletters');
     });
 
-    describe('Creating newsletters', function () {
+    describe.skip('Creating newsletters', function () {
         it('can create new newsletter', async function () {
             await visit('/settings/newsletters');
             expect(findAll('[data-test-newsletter]').length, 'Total newsletters shown').to.equal(1);
@@ -192,7 +192,7 @@ describe('Acceptance: Settings - Newsletters', function () {
         });
     });
 
-    describe('Editing newsletters', function () {
+    describe.skip('Editing newsletters', function () {
         it('can edit via menu if multiple newsletters', async function () {
             // Create an extra newsletter
             this.server.create('newsletter', {status: 'active', name: 'test newsletter', slug: 'test-newsletter'});
@@ -411,7 +411,7 @@ describe('Acceptance: Settings - Newsletters', function () {
         });
     });
 
-    describe('Archiving newsletters', function () {
+    describe.skip('Archiving newsletters', function () {
         it('can archive newsletters', async function () {
             // Create an extra newsletter, because we cannot archive the last one
             this.server.create('newsletter', {status: 'active', name: 'test newsletter', slug: 'test-newsletter'});

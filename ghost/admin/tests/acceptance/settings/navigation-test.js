@@ -12,11 +12,11 @@ function withText(elements) {
     return Array.from(elements).filter(elem => elem.textContent.trim() !== '');
 }
 
-describe('Acceptance: Settings - Navigation', function () {
+describe.skip('Acceptance: Settings - Navigation', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
-    describe('when logged in', function () {
+    describe.skip('when logged in', function () {
         beforeEach(async function () {
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role]});

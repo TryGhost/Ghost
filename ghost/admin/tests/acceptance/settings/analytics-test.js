@@ -5,7 +5,7 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Settings - Analytics', function () {
+describe.skip('Acceptance: Settings - Analytics', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 

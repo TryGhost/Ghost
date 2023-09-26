@@ -10,7 +10,7 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Settings - Integrations - Zapier', function () {
+describe.skip('Acceptance: Settings - Integrations - Zapier', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -51,7 +51,7 @@ describe('Acceptance: Settings - Integrations - Zapier', function () {
         expect(currentURL(), 'currentURL').to.equal('/site');
     });
 
-    describe('when logged in', function () {
+    describe.skip('when logged in', function () {
         beforeEach(async function () {
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role]});

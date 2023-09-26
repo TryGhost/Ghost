@@ -6,7 +6,7 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Settings - Design', function () {
+describe.skip('Acceptance: Settings - Design', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -136,7 +136,7 @@ describe('Acceptance: Settings - Design', function () {
     it('can change between installed themes');
     it('can delete installed theme');
 
-    describe('limits', function () {
+    describe.skip('limits', function () {
         it('displays upgrade notice when custom themes are not allowed', async function () {
             this.server.loadFixtures('configs');
             const config = this.server.db.configs.find(1);

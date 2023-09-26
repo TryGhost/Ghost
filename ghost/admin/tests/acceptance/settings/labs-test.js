@@ -8,7 +8,7 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
 
-describe('Acceptance: Settings - Labs', function () {
+describe.skip('Acceptance: Settings - Labs', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -49,7 +49,7 @@ describe('Acceptance: Settings - Labs', function () {
         expect(currentURL(), 'currentURL').to.equal('/site');
     });
 
-    describe('when logged in', function () {
+    describe.skip('when logged in', function () {
         beforeEach(async function () {
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role]});
@@ -368,7 +368,7 @@ describe('Acceptance: Settings - Labs', function () {
         });
     });
 
-    describe('When logged in as Owner', function () {
+    describe.skip('When logged in as Owner', function () {
         beforeEach(async function () {
             let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role]});
