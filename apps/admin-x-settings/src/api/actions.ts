@@ -182,23 +182,23 @@ export const getActionTitle = (action: Action) => {
         resourceType = 'tier';
     }
 
-    const contextExists = action.context !== null;
-
-    if (resourceType === 'post' && contextExists) {
-        if (action.context.type) {
-            resourceType = action.context.type as string;
+    // Because a `page` and `post` both use the same model, we store the
+    // actual type in the context, so let's check if that exists
+    if (resourceType === 'post') {
+        if (action.context?.type) {
+            resourceType = action.context?.type as string;
         }
     }
 
     let actionName = action.event;
 
-    if (action.event === 'edited' && contextExists) {
+    if (action.event === 'edited') {
         if (action.context.action_name) {
             actionName = action.context.action_name as string;
         }
     }
 
-    if (contextExists && action.context.count && (action.context.count as number) > 1) {
+    if (action.context.count && (action.context.count as number) > 1) {
         return `${action.context.count} ${resourceType}s ${actionName}`;
     }
 
