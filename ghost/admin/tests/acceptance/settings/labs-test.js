@@ -1,7 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
-import {disableLabsFlag, enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {fileUpload} from '../../helpers/file-upload';
 import {setupApplicationTest} from 'ember-mocha';

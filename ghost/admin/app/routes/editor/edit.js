@@ -38,7 +38,6 @@ export default class EditRoute extends AuthenticatedRoute {
         const post = records.firstObject;
 
         if (post.lexical) {
-            console.log(`moving to lexical-editor.edit`)
             return this.router.transitionTo('lexical-editor.edit', post);
         }
 

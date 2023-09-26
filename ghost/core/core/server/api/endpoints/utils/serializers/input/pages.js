@@ -6,7 +6,6 @@ const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const clean = require('./utils/clean');
-const labs = require('../../../../../../shared/labs');
 const lexical = require('../../../../../lib/lexical');
 
 function removeSourceFormats(frame) {

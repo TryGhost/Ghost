@@ -1,7 +1,6 @@
 import loginAsRole from '../../helpers/login-as-role';
 import {BLANK_DOC} from 'koenig-editor/components/koenig-editor';
 import {currentURL} from '@ember/test-helpers';
-import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {find} from '@ember/test-helpers';
 import {setupApplicationTest} from 'ember-mocha';
