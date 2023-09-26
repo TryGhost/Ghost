@@ -110,7 +110,18 @@ export const getActorLinkTarget = (action: Action): InternalLink | ExternalLink 
 };
 
 export const getLinkTarget = (action: Action): InternalLink | ExternalLink | undefined => {
+    if (!action.resource_type || !action.event || !action.resource) {
+        return;
+    }
     let resourceType = action.resource_type;
+
+    const contextExists = action.context !== null;
+
+    if (resourceType === 'post' && contextExists) {
+        if (action.context?.type) {
+            resourceType = action.context?.type as string;
+        }
+    }
 
     if (action.event !== 'deleted') {
         switch (action.resource_type) {
@@ -172,6 +183,9 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
 };
 
 export const getActionTitle = (action: Action) => {
+    if (!action.resource_type || !action.event) {
+        return '';
+    }
     let resourceType = action.resource_type;
 
     if (resourceType === 'api_key') {
@@ -182,23 +196,23 @@ export const getActionTitle = (action: Action) => {
         resourceType = 'tier';
     }
 
-    // Because a `page` and `post` both use the same model, we store the
-    // actual type in the context, so let's check if that exists
-    if (resourceType === 'post') {
+    const contextExists = action.context !== null;
+
+    if (resourceType === 'post' && contextExists) {
         if (action.context?.type) {
-            resourceType = action.context?.type as string;
+            resourceType = action.context.type as string;
         }
     }
 
     let actionName = action.event;
 
-    if (action.event === 'edited') {
-        if (action.context.action_name) {
+    if (action.event === 'edited' && contextExists) {
+        if (action.context?.action_name) {
             actionName = action.context.action_name as string;
         }
     }
 
-    if (action.context.count && (action.context.count as number) > 1) {
+    if (contextExists && action.context?.count && (action.context.count as number) > 1) {
         return `${action.context.count} ${resourceType}s ${actionName}`;
     }
 
@@ -206,14 +220,13 @@ export const getActionTitle = (action: Action) => {
 };
 
 export const getContextResource = (action: Action) => {
-    if (action.resource_type === 'setting') {
-        if (action.context?.group && action.context?.key) {
-            return {
-                group: action.context.group as string,
-                key: action.context.key as string
-            };
-        }
+    if (action.resource_type === 'setting' && action.context && action.context?.group && action.context?.key) {
+        return {
+            group: action.context.group as string,
+            key: action.context.key as string
+        };
     }
 };
-
-export const isBulkAction = (action: Action) => typeof action.context.count === 'number' && action.context.count > 1;
+export const isBulkAction = (action: Action) => {
+    return action.context !== null && typeof action.context?.count === 'number' && action.context.count > 1;
+};
