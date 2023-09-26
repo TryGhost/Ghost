@@ -6,6 +6,7 @@ import {LabelsResponseType} from '../../src/api/labels';
 import {Locator, Page} from '@playwright/test';
 import {NewslettersResponseType} from '../../src/api/newsletters';
 import {OffersResponseType} from '../../src/api/offers';
+import {RecommendationResponseType} from '../../src/api/recommendations';
 import {RolesResponseType} from '../../src/api/roles';
 import {SettingsResponseType} from '../../src/api/settings';
 import {SiteResponseType} from '../../src/api/site';
@@ -44,6 +45,7 @@ export const responseFixtures = {
     themes: JSON.parse(readFileSync(`${__dirname}/responses/themes.json`).toString()) as ThemesResponseType,
     newsletters: JSON.parse(readFileSync(`${__dirname}/responses/newsletters.json`).toString()) as NewslettersResponseType,
     actions: JSON.parse(readFileSync(`${__dirname}/responses/actions.json`).toString()) as ActionsResponseType,
+    recommendations: JSON.parse(readFileSync(`${__dirname}/responses/recommendations.json`).toString()) as RecommendationResponseType,
     latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]}
 };
 

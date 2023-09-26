@@ -242,7 +242,7 @@
         },
         {
             "key": "labs",
-            "value": "{}"
+            "value": "{\"recommendations\":true}"
         },
         {
             "key": "slack_url",
