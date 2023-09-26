@@ -47,6 +47,8 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
     const [uploadConfig, setUploadConfig] = useState<{enabled: boolean; error?: string}>();
 
+    const [isUploading, setUploading] = useState(false);
+
     useEffect(() => {
         if (limiter) {
             // Sending a bad string to make sure it fails (empty string isn't valid)
@@ -76,8 +78,11 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         let data: ThemesInstallResponseType | undefined;
 
         try {
+            setUploading(true);
             data = await uploadTheme({file});
+            setUploading(false);
         } catch (e) {
+            setUploading(false);
             handleError(e);
         }
 
@@ -170,7 +175,9 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                                     okRunningLabel: 'Overwriting...',
                                     okColor: 'red',
                                     onOk: async (confirmModal) => {
+                                        setUploading(true);
                                         await handleThemeUpload({file, onActivate: onClose});
+                                        setUploading(false);
                                         setCurrentTab('installed');
                                         confirmModal?.remove();
                                     }
@@ -180,7 +187,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                                 handleThemeUpload({file, onActivate: onClose});
                             }
                         }}>
-                            <Button color='black' label='Upload theme' tag='div' />
+                            <Button color='black' label='Upload theme' loading={isUploading} tag='div' />
                         </FileUpload> :
                         <Button color='black' label='Upload theme' onClick={() => {
                             NiceModal.show(LimitModal, {
