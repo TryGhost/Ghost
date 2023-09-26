@@ -278,6 +278,7 @@ export default class AdminXSettings extends Component {
     @service store;
     @service settings;
     @service router;
+    @service membersUtils;
 
     @inject config;
 
@@ -322,6 +323,11 @@ export default class AdminXSettings extends Component {
         if (dataType === 'SettingsResponseType') {
             // Blog title is based on settings, but the one stored in config is used instead in various places
             this.config.blogTitle = response.settings.find(setting => setting.key === 'title').value;
+        }
+
+        if (dataType === 'TiersResponseType') {
+            // membersUtils has local state which needs to be updated
+            this.membersUtils.reload();
         }
     };
 
