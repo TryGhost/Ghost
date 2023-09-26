@@ -141,14 +141,14 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
 
     let leftButtonProps: ButtonProps = {};
     if (tier) {
-        if (tier.active) {
+        if (tier.active && tier.type !== 'free') {
             leftButtonProps = {
                 label: 'Archive tier',
                 color: 'red',
                 link: true,
                 onClick: confirmTierStatusChange
             };
-        } else {
+        } else if (!tier.active) {
             leftButtonProps = {
                 label: 'Reactivate tier',
                 color: 'green',
