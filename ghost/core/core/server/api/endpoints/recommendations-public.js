@@ -10,7 +10,8 @@ module.exports = {
         options: [
             'limit',
             'order',
-            'page'
+            'page',
+            'filter'
         ],
         permissions: true,
         validation: {},

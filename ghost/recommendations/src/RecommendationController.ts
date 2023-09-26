@@ -84,10 +84,13 @@ export class RecommendationController {
         const include = options.optionalKey('withRelated')?.array.map(item => item.enum<RecommendationIncludeFields>(['count.clicks', 'count.subscribers'])) ?? [];
         const filter = options.optionalKey('filter')?.string;
 
+        const orderOption = options.optionalKey('order')?.regex(/^[a-zA-Z]+ (asc|desc)$/) ?? 'createdAt desc';
+        const field = orderOption?.split(' ')[0] as keyof RecommendationPlain;
+        const direction = orderOption?.split(' ')[1] as 'asc'|'desc';
         const order = [
             {
-                field: 'createdAt' as const,
-                direction: 'desc' as const
+                field,
+                direction
             }
         ];
 

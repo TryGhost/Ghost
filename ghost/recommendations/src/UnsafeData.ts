@@ -203,4 +203,16 @@ export class UnsafeData {
         }
         return arr[index];
     }
+
+    regex(re: RegExp) : string {
+        if (typeof this.data !== 'string') {
+            throw new errors.ValidationError({message: `${this.field} must be a string`});
+        }
+
+        if (!re.test(this.data)) {
+            throw new errors.ValidationError({message: `${this.field} must follow the format of "createdAt desc"`});
+        }
+
+        return this.data;
+    }
 };
