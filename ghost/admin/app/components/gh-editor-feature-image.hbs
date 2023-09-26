@@ -48,12 +48,10 @@
             <div class="gh-editor-feature-image">
                 <img src={{@image}} alt={{@alt}} role={{if @alt "img" "presentation"}} class="{{if @isHidden "faded"}}">
                 <div class="gh-editor-feature-image-overlay"></div>
-                {{#if (feature 'lexicalEditor')}}
-                    <KoenigImageEditor
-                        @imageSrc={{@image}}
-                        @saveImage={{fn this.saveImage uploader.setFiles}}
-                    />
-                {{/if}}
+                <KoenigImageEditor
+                    @imageSrc={{@image}}
+                    @saveImage={{fn this.saveImage uploader.setFiles}}
+                />
                 <button type="button" class="image-action image-delete" title="Delete image" {{on "click" @clearImage}}>
                     {{svg-jar "koenig/kg-trash"}}
                 </button>

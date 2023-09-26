@@ -27,8 +27,7 @@ const GA_FEATURES = [
 const BETA_FEATURES = [
     'i18n',
     'activitypub',
-    'webmentions',
-    'lexicalEditor'
+    'webmentions'
 ];
 
 const ALPHA_FEATURES = [

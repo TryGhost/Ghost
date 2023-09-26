@@ -8,9 +8,7 @@ export default class NewRoute extends AuthenticatedRoute {
     beforeModel(transition) {
         super.beforeModel(...arguments);
 
-        if (this.feature.lexicalEditor) {
-            return this.transitionTo('lexical-editor.new', transition.to.params.type);
-        }
+        return this.transitionTo('lexical-editor.new', transition.to.params.type);
     }
 
     model(params, transition) {

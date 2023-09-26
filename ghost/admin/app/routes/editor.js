@@ -11,16 +11,14 @@ export default AuthenticatedRoute.extend({
     classNames: ['editor'],
 
     beforeModel(transition) {
-        // redirect to the beta editor so the post gets auto-migrated
-        if (this.feature.lexicalEditor) {
-            const {name} = transition.to;
-            const {type, post_id: id} = transition.to.params;
+        // redirect to the Lexical editor so the post gets auto-migrated
+        const {name} = transition.to;
+        const {type, post_id: id} = transition.to.params;
 
-            if (name === 'editor.new') {
-                return this.router.transitionTo('lexical-editor.new', type);
-            } else if (name === 'editor.edit') {
-                return this.router.transitionTo('lexical-editor.edit', type, id);
-            }
+        if (name === 'editor.new') {
+            return this.router.transitionTo('lexical-editor.new', type);
+        } else if (name === 'editor.edit') {
+            return this.router.transitionTo('lexical-editor.edit', type, id);
         }
     },
 

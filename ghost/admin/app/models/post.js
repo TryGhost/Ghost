@@ -101,21 +101,8 @@ export default Model.extend(Comparable, ValidationEngine, {
     visibility: attr('string'),
     metaDescription: attr('string'),
     metaTitle: attr('string'),
-    mobiledoc: attr('json-string', {defaultValue: (modelInstance) => {
-        if (modelInstance.feature.lexicalEditor) {
-            return null;
-        }
-
-        // avoid modifying any references in the original blank doc object
-        return JSON.parse(JSON.stringify(BLANK_MOBILEDOC));
-    }}),
-    lexical: attr('string', {defaultValue: (modelInstance) => {
-        if (modelInstance.feature.lexicalEditor) {
-            return BLANK_LEXICAL;
-        }
-
-        return null;
-    }}),
+    mobiledoc: attr('json-string', {defaultValue: null}),
+    lexical: attr('string', {defaultValue: BLANK_LEXICAL}),
     plaintext: attr('string'),
     publishedAtUTC: attr('moment-utc'),
     slug: attr('string'),

@@ -172,9 +172,7 @@ module.exports = {
 
                 // normally we don't allow both mobiledoc+lexical but the model layer will remove lexical
                 // if mobiledoc is already present to avoid migrating formats outside of an explicit conversion
-                if (labs.isSet('lexicalEditor')) {
-                    frame.data.posts[0].lexical = JSON.stringify(lexical.htmlToLexicalConverter(html));
-                }
+                frame.data.posts[0].lexical = JSON.stringify(lexical.htmlToLexicalConverter(html));
             }
         }
 
