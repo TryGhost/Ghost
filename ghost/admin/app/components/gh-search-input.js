@@ -64,7 +64,7 @@ export default class GhSearchInputComponent extends Component {
 
         if (selected.searchable === 'Users') {
             let id = selected.id.replace('user.', '');
-            this.router.transitionTo('settings.staff.user', id);
+            this.router.transitionTo('settings-x.settings-x', `users/show/${id}`);
         }
 
         if (selected.searchable === 'Tags') {
