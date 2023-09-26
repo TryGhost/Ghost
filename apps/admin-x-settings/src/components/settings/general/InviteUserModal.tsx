@@ -2,8 +2,10 @@ import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import Radio from '../../../admin-x-ds/global/form/Radio';
 import TextField from '../../../admin-x-ds/global/form/TextField';
+import handleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import validator from 'validator';
+import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useAddInvite} from '../../../api/invites';
 import {useBrowseRoles} from '../../../api/roles';
@@ -12,10 +14,12 @@ import {useEffect, useRef, useState} from 'react';
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';
 
 const InviteUserModal = NiceModal.create(() => {
+    const modal = NiceModal.useModal();
     const rolesQuery = useBrowseRoles();
     const assignableRolesQuery = useBrowseRoles({
         searchParams: {limit: 'all', permissions: 'assign'}
     });
+    const limiter = useLimiter();
 
     const {updateRoute} = useRouting();
 
@@ -25,6 +29,7 @@ const InviteUserModal = NiceModal.create(() => {
     const [role, setRole] = useState<RoleType>('contributor');
     const [errors, setErrors] = useState<{
         email?: string;
+        role?: string;
     }>({});
 
     const {mutateAsync: addInvite} = useAddInvite();
@@ -42,6 +47,23 @@ const InviteUserModal = NiceModal.create(() => {
             }, 2000);
         }
     }, [saveState]);
+
+    useEffect(() => {
+        if (role !== 'contributor' && limiter?.isLimited('staff')) {
+            limiter.errorIfWouldGoOverLimit('staff').then(() => {
+                setErrors(e => ({...e, role: undefined}));
+            }).catch((error) => {
+                if (error instanceof HostLimitError) {
+                    setErrors(e => ({...e, role: error.message}));
+                    return;
+                } else {
+                    throw error;
+                }
+            });
+        } else {
+            setErrors(e => ({...e, role: undefined}));
+        }
+    }, [limiter, role]);
 
     if (!rolesQuery.data?.roles || !assignableRolesQuery.data?.roles) {
         return null;
@@ -64,12 +86,17 @@ const InviteUserModal = NiceModal.create(() => {
             return;
         }
 
+        if (Object.values(errors).some(error => error)) {
+            return;
+        }
+
         if (!validator.isEmail(email)) {
             setErrors({
                 email: 'Please enter a valid email address.'
             });
             return;
         }
+
         setSaveState('saving');
         try {
             await addInvite({
@@ -83,6 +110,9 @@ const InviteUserModal = NiceModal.create(() => {
                 message: `Invitation successfully sent to ${email}`,
                 type: 'success'
             });
+
+            modal.remove();
+            updateRoute('users');
         } catch (e) {
             setSaveState('error');
 
@@ -90,6 +120,7 @@ const InviteUserModal = NiceModal.create(() => {
                 message: `Failed to send invitation to ${email}`,
                 type: 'error'
             });
+            handleError(e, {withToast: false});
             return;
         }
     };
@@ -153,6 +184,8 @@ const InviteUserModal = NiceModal.create(() => {
                 />
                 <div>
                     <Radio
+                        error={!!errors.role}
+                        hint={errors.role}
                         id='role'
                         options={allowedRoleOptions}
                         selectedOption={role}

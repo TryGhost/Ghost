@@ -16,7 +16,9 @@ const messages = {
     memberNotFound: 'No member exists with this e-mail address.',
     memberNotFoundSignUp: 'No member exists with this e-mail address. Please sign up first.',
     invalidType: 'Invalid checkout type.',
-    notConfigured: 'This site is not accepting payments at the moment.'
+    notConfigured: 'This site is not accepting payments at the moment.',
+    invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
+    archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}'
 };
 
 module.exports = class RouterController {
@@ -35,6 +37,7 @@ module.exports = class RouterController {
      * @param {any} deps.tokenService
      * @param {any} deps.sendEmailWithMagicLink
      * @param {{isSet(name: string): boolean}} deps.labsService
+     * @param {any} deps.newslettersService
      */
     constructor({
         offersAPI,
@@ -48,7 +51,8 @@ module.exports = class RouterController {
         tokenService,
         memberAttributionService,
         sendEmailWithMagicLink,
-        labsService
+        labsService,
+        newslettersService
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -62,6 +66,7 @@ module.exports = class RouterController {
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
         this._memberAttributionService = memberAttributionService;
         this.labsService = labsService;
+        this._newslettersService = newslettersService;
     }
 
     async ensureStripe(_req, res, next) {
@@ -476,12 +481,48 @@ module.exports = class RouterController {
                     });
                 }
 
+                // Validate requested newsletters
+                let {newsletters: requestedNewsletters} = req.body;
+
+                if (requestedNewsletters && requestedNewsletters.length > 0 && requestedNewsletters.every(newsletter => newsletter.name !== undefined)) {
+                    const newsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
+                    const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
+                    const newsletters = await this._newslettersService.browse({
+                        filter: `name:[${newsletterNamesFilter}]`,
+                        columns: ['id','name','status']
+                    });
+
+                    if (newsletters.length !== newsletterNames.length) { //check for invalid newsletters
+                        const validNewsletters = newsletters.map(newsletter => newsletter.name);
+                        const invalidNewsletters = newsletterNames.filter(newsletter => !validNewsletters.includes(newsletter));
+
+                        throw new errors.BadRequestError({
+                            message: tpl(messages.invalidNewsletters, {newsletters: invalidNewsletters})
+                        });
+                    }
+
+                    //validation for archived newsletters
+                    const archivedNewsletters = newsletters
+                        .filter(newsletter => newsletter.status === 'archived')
+                        .map(newsletter => newsletter.name);
+                    if (archivedNewsletters && archivedNewsletters.length > 0) {
+                        throw new errors.BadRequestError({
+                            message: tpl(messages.archivedNewsletters, {newsletters: archivedNewsletters})
+                        });
+                    }
+
+                    requestedNewsletters = newsletters
+                        .filter(newsletter => newsletter.status === 'active')
+                        .map(newsletter => ({id: newsletter.id}));
+                }
+
                 // Someone tries to signup with a user that already exists
                 // -> doesn't really matter: we'll send a login link
-                const tokenData = _.pick(req.body, ['labels', 'name', 'newsletters']);
+                const tokenData = _.pick(req.body, ['labels', 'name']);
                 if (req.ip) {
                     tokenData.reqIp = req.ip;
                 }
+                tokenData.newsletters = requestedNewsletters;
                 // Save attribution data in the tokenData
                 tokenData.attribution = await this._memberAttributionService.getAttribution(req.body.urlHistory);
 

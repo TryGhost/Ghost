@@ -1,7 +1,7 @@
-import {ExternalLink, InternalLink, modalRoutes} from '../components/providers/RoutingProvider';
+import {ExternalLink, InternalLink} from '../components/providers/RoutingProvider';
 import {InfiniteData} from '@tanstack/react-query';
 import {JSONObject} from './config';
-import {Meta, createInfiniteQuery} from '../utils/apiRequests';
+import {Meta, createInfiniteQuery} from '../utils/api/hooks';
 
 // Types
 
@@ -74,10 +74,12 @@ export const useBrowseActions = createInfiniteQuery<ActionsResponseType>({
             }
         });
 
+        const meta = pages.at(-1)!.meta;
+
         return {
             actions: actions.reverse(),
-            meta: pages.at(-1)!.meta,
-            isEnd: pages.at(-1)!.actions.length < pages.at(-1)!.meta.pagination.limit
+            meta,
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
 });
@@ -95,20 +97,31 @@ export const getActorLinkTarget = (action: Action): InternalLink | ExternalLink 
             return;
         }
 
-        return {route: modalRoutes.showIntegration, params: {id: action.actor.id}};
+        return {route: `integrations/show/${action.actor.id}`};
     case 'user':
         if (!action.actor.slug) {
             return;
         }
 
-        return {route: modalRoutes.showUser, params: {slug: action.actor.slug}};
+        return {route: `users/show/${action.actor.slug}`};
     }
 
     return;
 };
 
 export const getLinkTarget = (action: Action): InternalLink | ExternalLink | undefined => {
+    if (!action.resource_type || !action.event || !action.resource) {
+        return;
+    }
     let resourceType = action.resource_type;
+
+    const contextExists = action.context !== null;
+
+    if (resourceType === 'post' && contextExists) {
+        if (action.context?.type) {
+            resourceType = action.context?.type as string;
+        }
+    }
 
     if (action.event !== 'deleted') {
         switch (action.resource_type) {
@@ -134,7 +147,7 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
                 return;
             }
 
-            return {route: modalRoutes.showIntegration, params: {id: action.resource.id}};
+            return {route: `integrations/show/${action.resource.id}`};
         case 'offer':
             if (!action.resource || !action.resource.id) {
                 return;
@@ -162,7 +175,7 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
                 return;
             }
 
-            return {route: modalRoutes.showUser, params: {slug: action.resource.slug}};
+            return {route: `users/show/${action.resource.slug}`};
         }
     }
 
@@ -170,6 +183,9 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
 };
 
 export const getActionTitle = (action: Action) => {
+    if (!action.resource_type || !action.event) {
+        return '';
+    }
     let resourceType = action.resource_type;
 
     if (resourceType === 'api_key') {
@@ -180,23 +196,23 @@ export const getActionTitle = (action: Action) => {
         resourceType = 'tier';
     }
 
-    // Because a `page` and `post` both use the same model, we store the
-    // actual type in the context, so let's check if that exists
-    if (resourceType === 'post') {
+    const contextExists = action.context !== null;
+
+    if (resourceType === 'post' && contextExists) {
         if (action.context?.type) {
-            resourceType = action.context?.type as string;
+            resourceType = action.context.type as string;
         }
     }
 
     let actionName = action.event;
 
-    if (action.event === 'edited') {
-        if (action.context.action_name) {
+    if (action.event === 'edited' && contextExists) {
+        if (action.context?.action_name) {
             actionName = action.context.action_name as string;
         }
     }
 
-    if (action.context.count && (action.context.count as number) > 1) {
+    if (contextExists && action.context?.count && (action.context.count as number) > 1) {
         return `${action.context.count} ${resourceType}s ${actionName}`;
     }
 
@@ -204,14 +220,13 @@ export const getActionTitle = (action: Action) => {
 };
 
 export const getContextResource = (action: Action) => {
-    if (action.resource_type === 'setting') {
-        if (action.context?.group && action.context?.key) {
-            return {
-                group: action.context.group as string,
-                key: action.context.key as string
-            };
-        }
+    if (action.resource_type === 'setting' && action.context && action.context?.group && action.context?.key) {
+        return {
+            group: action.context.group as string,
+            key: action.context.key as string
+        };
     }
 };
-
-export const isBulkAction = (action: Action) => typeof action.context.count === 'number' && action.context.count > 1;
+export const isBulkAction = (action: Action) => {
+    return action.context !== null && typeof action.context?.count === 'number' && action.context.count > 1;
+};

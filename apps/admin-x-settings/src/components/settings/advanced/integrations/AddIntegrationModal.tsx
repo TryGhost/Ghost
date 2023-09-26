@@ -1,19 +1,35 @@
 import Form from '../../../../admin-x-ds/global/form/Form';
+import LimitModal from '../../../../admin-x-ds/global/modal/LimitModal';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
+import handleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
-import {modalRoutes} from '../../../providers/RoutingProvider';
+import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {useCreateIntegration} from '../../../../api/integrations';
 
-interface AddIntegrationModalProps {}
-
-const AddIntegrationModal: React.FC<AddIntegrationModalProps> = () => {
+const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const [name, setName] = useState('');
     const {mutateAsync: createIntegration} = useCreateIntegration();
+    const limiter = useLimiter();
+
+    useEffect(() => {
+        if (limiter?.isLimited('customIntegrations')) {
+            limiter.errorIfWouldGoOverLimit('customIntegrations').catch((error) => {
+                if (error instanceof HostLimitError) {
+                    NiceModal.show(LimitModal, {
+                        prompt: error.message || `Your current plan doesn't support more custom integrations.`
+                    });
+                    modal.remove();
+                    updateRoute('integrations');
+                }
+            });
+        }
+    }, [limiter, modal, updateRoute]);
 
     return <Modal
         afterClose={() => {
@@ -25,9 +41,13 @@ const AddIntegrationModal: React.FC<AddIntegrationModalProps> = () => {
         testId='add-integration-modal'
         title='Add integration'
         onOk={async () => {
-            const data = await createIntegration({name});
-            modal.remove();
-            updateRoute({route: modalRoutes.showIntegration, params: {id: data.integrations[0].id}});
+            try {
+                const data = await createIntegration({name});
+                modal.remove();
+                updateRoute({route: `integrations/show/${data.integrations[0].id}`});
+            } catch (e) {
+                handleError(e);
+            }
         }}
     >
         <div className='mt-5'>

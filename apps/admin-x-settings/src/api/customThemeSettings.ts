@@ -1,5 +1,5 @@
 import {Setting} from './settings';
-import {createMutation, createQuery} from '../utils/apiRequests';
+import {createMutation, createQuery} from '../utils/api/hooks';
 
 type CustomThemeSettingData =
     { type: 'text', value: string | null, default: string | null } |
@@ -27,6 +27,8 @@ export interface CustomThemeSettingsResponseType {
 
 const dataType = 'CustomThemeSettingsResponseType';
 
+export const customThemeSettingsDataType = dataType;
+
 export const useBrowseCustomThemeSettings = createQuery<CustomThemeSettingsResponseType>({
     dataType,
     path: '/custom_theme_settings/'
@@ -38,6 +40,7 @@ export const useEditCustomThemeSettings = createMutation<CustomThemeSettingsResp
     body: settings => ({custom_theme_settings: settings}),
 
     updateQueries: {
+        emberUpdateType: 'skip',
         dataType,
         update: newData => newData
     }

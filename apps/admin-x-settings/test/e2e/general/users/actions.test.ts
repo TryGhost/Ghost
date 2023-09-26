@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../../utils/e2e';
+import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/e2e';
 
 test.describe('User actions', async () => {
     test('Supports suspending a user', async ({page}) => {
@@ -7,7 +7,7 @@ test.describe('User actions', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
                     ...userToEdit,
@@ -50,7 +50,7 @@ test.describe('User actions', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: {
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: {
                 users: [
                     ...responseFixtures.users.users.filter(user => user.email !== 'author@test.com'),
                     {
@@ -103,7 +103,7 @@ test.describe('User actions', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             deleteUser: {method: 'DELETE', path: `/users/${authorUser.id}/`, response: {}}
         }});
 
@@ -126,7 +126,7 @@ test.describe('User actions', async () => {
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Delete user'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/User deleted/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/User deleted/);
         await expect(activeTab.getByTestId('user-list-item')).toHaveCount(0);
 
         expect(lastApiRequests.deleteUser?.url).toMatch(new RegExp(`/users/${authorUser.id}`));
@@ -151,7 +151,7 @@ test.describe('User actions', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: /^\/users\/\w{24}\/\?include=roles$/, response: responseFixtures.users},
             makeOwner: {method: 'PUT', path: '/users/owner/', response: makeOwnerResponse}
         }});
@@ -189,7 +189,7 @@ test.describe('User actions', async () => {
         const confirmation = page.getByTestId('confirmation-modal');
         await confirmation.getByRole('button', {name: 'Yep — I\'m sure'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Ownership transferred/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Ownership transferred/);
 
         await expect(section.getByTestId('owner-user')).toHaveText(/administrator@test\.com/);
 
@@ -198,5 +198,59 @@ test.describe('User actions', async () => {
                 id: administrator.id
             }]
         });
+    });
+
+    test('Limits un-suspending a user when there are too many users', async ({page}) => {
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'author@test.com')!;
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: {
+                users: [
+                    ...responseFixtures.users.users.filter(user => user.email !== 'author@test.com'),
+                    {
+                        ...userToEdit,
+                        status: 'inactive'
+                    }
+                ]
+            }},
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        hostSettings: {
+                            limits: {
+                                staff: {
+                                    max: 1,
+                                    error: 'Your plan does not support more staff'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Authors'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        await expect(modal).toHaveText(/Suspended/);
+
+        await modal.getByRole('button', {name: 'Actions'}).click();
+        await page.getByTestId('popover-content').getByRole('button', {name: 'Un-suspend user'}).click();
+
+        await expect(page.getByTestId('limit-modal')).toHaveText(/Your plan does not support more staff/);
     });
 });

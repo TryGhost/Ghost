@@ -1,20 +1,21 @@
 const BaseCacheAdapter = require('@tryghost/adapter-base-cache');
 const logging = require('@tryghost/logging');
 const cacheManager = require('cache-manager');
-const redisStore = require('cache-manager-ioredis');
+const redisStoreFactory = require('./redis-store-factory');
 const calculateSlot = require('cluster-key-slot');
 
 class AdapterCacheRedis extends BaseCacheAdapter {
     /**
      *
      * @param {Object} config
-     * @param {Object} [config.cache] - caching instance compatible with cache-manager with redis store
+     * @param {Object} [config.cache] - caching instance compatible with cache-manager's redis store
      * @param {String} [config.host] - redis host used in case no cache instance provided
      * @param {Number} [config.port] - redis port used in case no cache instance provided
      * @param {String} [config.password] - redis password used in case no cache instance provided
      * @param {Object} [config.clusterConfig] - redis cluster config used in case no cache instance provided
      * @param {Number} [config.ttl] - default cached value Time To Live (expiration) in *seconds*
      * @param {String} [config.keyPrefix] - prefix to use when building a unique cache key, e.g.: 'some_id:image-sizes:'
+     * @param {Boolean} [config.reuseConnection] - specifies if the redis store/connection should be reused within the process
      */
     constructor(config) {
         super();
@@ -33,13 +34,18 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 config.clusterConfig.options.ttl = config.ttl;
             }
 
-            this.cache = cacheManager.caching({
-                store: redisStore,
+            const storeOptions = {
                 ttl: config.ttl,
                 host: config.host,
                 port: config.port,
                 password: config.password,
                 clusterConfig: config.clusterConfig
+            };
+            const store = redisStoreFactory.getRedisStore(storeOptions, config.reuseConnection);
+
+            this.cache = cacheManager.caching({
+                store: store,
+                ...storeOptions
             });
         }
 

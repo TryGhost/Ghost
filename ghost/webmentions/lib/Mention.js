@@ -19,13 +19,57 @@ module.exports = class Mention {
         return this.#verified;
     }
 
+    /** @type {boolean} */
+    #deleted = false;
+
+    get deleted() {
+        return this.#deleted;
+    }
+
+    delete() {
+        this.#deleted = true;
+    }
+
     /**
      * @param {string} html
+     * @param {string} contentType
      */
-    verify(html) {
-        const $ = cheerio.load(html);
-        const hasTargetUrl = $('a[href*="' + this.target.href + '"], img[src*="' + this.target.href + '"], video[src*="' + this.target.href + '"]').length > 0;
-        this.#verified = hasTargetUrl;
+    verify(html, contentType) {
+        const wasVerified = this.#verified;
+
+        if (contentType.includes('text/html')) {
+            try {
+                const $ = cheerio.load(html);
+                const hasTargetUrl = $('a[href*="' + this.target.href + '"], img[src*="' + this.target.href + '"], video[src*="' + this.target.href + '"]').length > 0;
+                this.#verified = hasTargetUrl;
+
+                if (wasVerified && !this.#verified) {
+                    // Delete the mention
+                    this.#deleted = true;
+                    this.#verified = true;
+                }
+            } catch (e) {
+                this.#verified = false;
+            }
+        }
+
+        if (contentType.includes('application/json')) {
+            try {
+                // Check valid JSON
+                JSON.parse(html);
+
+                // Check full text string is present in the json
+                this.#verified = !!html.includes(JSON.stringify(this.target.href));
+
+                if (wasVerified && !this.#verified) {
+                    // Delete the mention
+                    this.#deleted = true;
+                    this.#verified = true;
+                }
+            } catch (e) {
+                this.#verified = false;
+            }
+        }
     }
 
     /** @type {URL} */
@@ -142,11 +186,6 @@ module.exports = class Mention {
         this.#sourceAuthor = sourceAuthor;
         this.#sourceFavicon = sourceFavicon;
         this.#sourceFeaturedImage = sourceFeaturedImage;
-    }
-
-    #deleted = false;
-    delete() {
-        this.#deleted = true;
     }
 
     toJSON() {
@@ -275,11 +314,18 @@ module.exports = class Mention {
     }
 
     /**
+     * @returns {boolean}
+     */
+    isDeleted() {
+        return this.#deleted;
+    }
+
+    /**
      * @param {Mention} mention
      * @returns {boolean}
      */
     static isDeleted(mention) {
-        return mention.#deleted;
+        return mention.isDeleted();
     }
 };
 

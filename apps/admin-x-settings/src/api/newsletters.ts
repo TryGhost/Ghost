@@ -1,4 +1,6 @@
-import {Meta, createMutation, createQuery} from '../utils/apiRequests';
+import {InfiniteData} from '@tanstack/react-query';
+import {Meta, createInfiniteQuery, createMutation} from '../utils/api/hooks';
+import {insertToQueryCache, updateQueryCache} from '../utils/api/updateQueries';
 
 export type Newsletter = {
     id: string;
@@ -46,10 +48,25 @@ export interface NewslettersResponseType {
 
 const dataType = 'NewslettersResponseType';
 
-export const useBrowseNewsletters = createQuery<NewslettersResponseType>({
+export const useBrowseNewsletters = createInfiniteQuery<NewslettersResponseType & {isEnd: boolean}>({
     dataType,
     path: '/newsletters/',
-    defaultSearchParams: {include: 'count.active_members,count.posts', limit: 'all'}
+    defaultSearchParams: {include: 'count.active_members,count.posts', limit: '50'},
+    defaultNextPageParams: (lastPage, otherParams) => ({
+        ...otherParams,
+        page: (lastPage.meta?.pagination.next || 1).toString()
+    }),
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<NewslettersResponseType>;
+        const newsletters = pages.flatMap(page => page.newsletters);
+        const meta = pages.at(-1)!.meta;
+
+        return {
+            newsletters: newsletters,
+            meta,
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
+        };
+    }
 });
 
 export const useAddNewsletter = createMutation<NewslettersResponseType, Partial<Newsletter> & {opt_in_existing: boolean}>({
@@ -60,10 +77,8 @@ export const useAddNewsletter = createMutation<NewslettersResponseType, Partial<
     searchParams: payload => ({opt_in_existing: payload.opt_in_existing.toString(), include: 'count.active_members,count.posts'}),
     updateQueries: {
         dataType,
-        update: (newData, currentData) => ({
-            ...(currentData as NewslettersResponseType),
-            newsletters: (currentData as NewslettersResponseType).newsletters.concat(newData.newsletters)
-        })
+        emberUpdateType: 'createOrUpdate',
+        update: insertToQueryCache('newsletters')
     }
 });
 
@@ -78,12 +93,7 @@ export const useEditNewsletter = createMutation<NewslettersEditResponseType, New
     defaultSearchParams: {include: 'count.active_members,count.posts'},
     updateQueries: {
         dataType,
-        update: (newData, currentData) => ({
-            ...(currentData as NewslettersResponseType),
-            newsletters: (currentData as NewslettersResponseType).newsletters.map((newsletter) => {
-                const newNewsletter = newData.newsletters.find(({id}) => id === newsletter.id);
-                return newNewsletter || newsletter;
-            })
-        })
+        emberUpdateType: 'createOrUpdate',
+        update: updateQueryCache('newsletters')
     }
 });

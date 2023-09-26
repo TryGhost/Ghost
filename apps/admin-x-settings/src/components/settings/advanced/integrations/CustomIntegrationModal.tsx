@@ -7,20 +7,18 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import WebhooksTable from './WebhooksTable';
+import handleError from '../../../../utils/api/handleError';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {APIKey, useRefreshAPIKey} from '../../../../api/apiKeys';
-import {Integration, useEditIntegration} from '../../../../api/integrations';
+import {Integration, useBrowseIntegrations, useEditIntegration} from '../../../../api/integrations';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {getGhostPaths} from '../../../../utils/helpers';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 
-interface CustomIntegrationModalProps {
-    integration: Integration
-}
-
-const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integration}) => {
+const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({integration}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
 
@@ -33,6 +31,7 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
         onSave: async () => {
             await editIntegration(formState);
         },
+        onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
 
@@ -67,10 +66,13 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
             prompt: `You can regenerate ${name} API Key any time, but any scripts or applications using it will need to be updated.`,
             okLabel: `Regenerate ${name} API Key`,
             onOk: async (confirmModal) => {
-                const data = await refreshAPIKey({integrationId: integration.id, apiKeyId: apiKey.id});
-                modal.show({integration: data.integrations[0]});
-                setRegenerated(true);
-                confirmModal?.remove();
+                try {
+                    await refreshAPIKey({integrationId: integration.id, apiKeyId: apiKey.id});
+                    setRegenerated(true);
+                    confirmModal?.remove();
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -94,22 +96,26 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save integration! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                    message: 'Can\'t save integration, please double check that you\'ve filled all mandatory fields.'
                 });
             }
         }}
     >
-        <div className='mt-7 flex w-full gap-7'>
+        <div className='mt-7 flex w-full flex-col gap-7 md:flex-row'>
             <div>
                 <ImageUpload
-                    height='120px'
+                    height='100px'
                     id='custom-integration-icon'
                     imageURL={formState.icon_image || undefined}
-                    width='120px'
+                    width='100px'
                     onDelete={() => updateForm(state => ({...state, icon_image: null}))}
                     onUpload={async (file) => {
-                        const imageUrl = getImageUrl(await uploadImage({file}));
-                        updateForm(state => ({...state, icon_image: imageUrl}));
+                        try {
+                            const imageUrl = getImageUrl(await uploadImage({file}));
+                            updateForm(state => ({...state, icon_image: imageUrl}));
+                        } catch (e) {
+                            handleError(e);
+                        }
                     }}
                 >
                     Upload icon
@@ -126,27 +132,25 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                         onKeyDown={() => clearError('name')}
                     />
-                    <TextField title='Description' value={formState.description} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
-                    <div>
-                        <APIKeys keys={[
-                            {
-                                label: 'Content API key',
-                                text: contentApiKey?.secret,
-                                hint: contentKeyRegenerated ? <div className='text-green'>Content API Key was successfully regenerated</div> : undefined,
-                                onRegenerate: () => contentApiKey && handleRegenerate(contentApiKey, setContentKeyRegenerated)
-                            },
-                            {
-                                label: 'Admin API key',
-                                text: adminApiKey?.secret,
-                                hint: adminKeyRegenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
-                                onRegenerate: () => adminApiKey && handleRegenerate(adminApiKey, setAdminKeyRegenerated)
-                            },
-                            {
-                                label: 'API URL',
-                                text: window.location.origin + getGhostPaths().subdir
-                            }
-                        ]} />
-                    </div>
+                    <TextField title='Description' value={formState.description || ''} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
+                    <APIKeys keys={[
+                        {
+                            label: 'Content API key',
+                            text: contentApiKey?.secret,
+                            hint: contentKeyRegenerated ? <div className='text-green'>Content API Key was successfully regenerated</div> : undefined,
+                            onRegenerate: () => contentApiKey && handleRegenerate(contentApiKey, setContentKeyRegenerated)
+                        },
+                        {
+                            label: 'Admin API key',
+                            text: adminApiKey?.secret,
+                            hint: adminKeyRegenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
+                            onRegenerate: () => adminApiKey && handleRegenerate(adminApiKey, setAdminKeyRegenerated)
+                        },
+                        {
+                            label: 'API URL',
+                            text: window.location.origin + getGhostPaths().subdir
+                        }
+                    ]} />
                 </Form>
             </div>
         </div>
@@ -155,6 +159,17 @@ const CustomIntegrationModal: React.FC<CustomIntegrationModalProps> = ({integrat
             <WebhooksTable integration={integration} />
         </div>
     </Modal>;
+};
+
+const CustomIntegrationModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {data: {integrations} = {}} = useBrowseIntegrations();
+    const integration = integrations?.find(({id}) => id === params?.id);
+
+    if (integration) {
+        return <CustomIntegrationModalContent integration={integration} />;
+    } else {
+        return null;
+    }
 };
 
 export default NiceModal.create(CustomIntegrationModal);

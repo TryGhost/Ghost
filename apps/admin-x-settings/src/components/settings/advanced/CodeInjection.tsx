@@ -2,13 +2,13 @@ import Button from '../../../admin-x-ds/global/Button';
 import CodeEditor from '../../../admin-x-ds/global/form/CodeEditor';
 import CodeModal from './code/CodeModal';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useRef, useState} from 'react';
+import React, {useMemo, useRef, useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import {getSettingValues} from '../../../api/settings';
-import {html} from '@codemirror/lang-html';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -28,17 +28,19 @@ const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const headerEditorRef = useRef<ReactCodeMirrorRef>(null);
     const footerEditorRef = useRef<ReactCodeMirrorRef>(null);
 
+    const html = useMemo(() => import('@codemirror/lang-html').then(module => module.html()), []);
+
     const headerProps = {
-        extensions: [html()],
+        extensions: [html],
         hint: 'Code here will be injected into the {{ghost_head}} tag on every page of the site',
-        value: headerContent,
+        value: headerContent || '',
         onChange: (value: string) => updateSetting('codeinjection_head', value)
     };
 
     const footerProps = {
-        extensions: [html()],
+        extensions: [html],
         hint: 'Code here will be injected into the {{ghost_foot}} tag on every page of the site',
-        value: footerContent,
+        value: footerContent || '',
         onChange: (value: string) => updateSetting('codeinjection_foot', value)
     };
 
@@ -92,4 +94,4 @@ const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default CodeInjection;
+export default withErrorBoundary(CodeInjection, 'Code injection');

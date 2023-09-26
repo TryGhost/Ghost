@@ -1,4 +1,5 @@
-import {createMutation, createQuery} from '../utils/apiRequests';
+import {createMutation, createQuery} from '../utils/api/hooks';
+import {customThemeSettingsDataType} from './customThemeSettings';
 
 // Types
 
@@ -53,6 +54,7 @@ export const useActivateTheme = createMutation<ThemesResponseType, string>({
     path: name => `/themes/${name}/activate/`,
     updateQueries: {
         dataType,
+        emberUpdateType: 'createOrUpdate',
         update: (newData: ThemesResponseType, currentData: unknown) => ({
             ...(currentData as ThemesResponseType),
             themes: (currentData as ThemesResponseType).themes.map((theme) => {
@@ -65,6 +67,9 @@ export const useActivateTheme = createMutation<ThemesResponseType, string>({
                 }
             })
         })
+    },
+    invalidateQueries: {
+        dataType: customThemeSettingsDataType
     }
 });
 
@@ -73,6 +78,7 @@ export const useDeleteTheme = createMutation<unknown, string>({
     path: name => `/themes/${name}/`,
     updateQueries: {
         dataType,
+        emberUpdateType: 'delete',
         update: (_, currentData, name) => ({
             ...(currentData as ThemesResponseType),
             themes: (currentData as ThemesResponseType).themes.filter(theme => theme.name !== name)
@@ -86,8 +92,9 @@ export const useInstallTheme = createMutation<ThemesInstallResponseType, string>
     searchParams: repo => ({source: 'github', ref: repo}),
     updateQueries: {
         dataType,
+        emberUpdateType: 'createOrUpdate',
         // Assume that all invite queries should include this new one
-        update: (newData, currentData) => ({
+        update: (newData, currentData) => (currentData && {
             ...(currentData as ThemesResponseType),
             themes: [
                 ...((currentData as ThemesResponseType).themes),
@@ -107,8 +114,9 @@ export const useUploadTheme = createMutation<ThemesInstallResponseType, {file: F
     },
     updateQueries: {
         dataType,
+        emberUpdateType: 'createOrUpdate',
         // Assume that all invite queries should include this new one
-        update: (newData, currentData) => ({
+        update: (newData, currentData) => (currentData && {
             ...(currentData as ThemesResponseType),
             themes: [
                 ...((currentData as ThemesResponseType).themes),

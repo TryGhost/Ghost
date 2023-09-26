@@ -189,6 +189,43 @@ describe('Collection', function () {
         assert.equal(collection.slug, 'edited-slug');
     });
 
+    it('Throws when the collection filter is malformed', async function () {
+        const collection = await Collection.create({
+            title: 'Testing edits',
+            type: 'automatic',
+            filter: 'featured:true'
+        });
+
+        assert.throws(() => {
+            collection.filter = 'my name is, my name is, my name is, wicka wicka slim shady';
+        }, (err: any) => {
+            assert.equal(err.message, 'Invalid filter provided for automatic Collection', 'Error message should match');
+            return true;
+        });
+    });
+
+    it('Throws when the collection filter is invalid', async function () {
+        assert.rejects(async () => {
+            await Collection.create({
+                title: 'Testing creating collections with invalid filter',
+                type: 'automatic',
+                filter: 'unknown:egg'
+            });
+        });
+        const collection = await Collection.create({
+            title: 'Testing edits',
+            type: 'automatic',
+            filter: 'featured:true'
+        });
+
+        assert.throws(() => {
+            collection.filter = 'unknown:true';
+        }, (err: any) => {
+            assert.equal(err.message, 'Invalid filter provided for automatic Collection', 'Error message should match');
+            return true;
+        });
+    });
+
     it('Throws when the collection filter is empty', async function () {
         const collection = await Collection.create({
             title: 'Testing edits',
@@ -214,6 +251,32 @@ describe('Collection', function () {
         });
 
         collection.filter = '';
+    });
+
+    it('throws when trying to set an empty filter on an automatic collection', async function () {
+        assert.rejects(async () => {
+            await Collection.create({
+                title: 'Testing Creating Automatic With Empty Filter',
+                slug: 'testing-creating-automatic-with-empty-filter',
+                type: 'automatic',
+                filter: ''
+            });
+        });
+
+        const collection = await Collection.create({
+            title: 'Testing Editing Automatic With Empty Filter',
+            slug: 'testing-editing-automatic-with-empty-filter',
+            type: 'automatic',
+            filter: 'featured:true'
+        });
+
+        assert.throws(() => {
+            collection.filter = '';
+        }, (err: any) => {
+            assert.equal(err.message, 'Invalid filter provided for automatic Collection', 'Error message should match');
+            assert.equal(err.context, 'Automatic type of collection should always have a filter value', 'Error message should match');
+            return true;
+        });
     });
 
     it('throws when trying to set filter on a manual collection', async function () {
@@ -274,6 +337,27 @@ describe('Collection', function () {
         collection.addPost(posts[3], -1);
         assert(collection.posts.length as number === 4);
         assert(collection.posts[collection.posts.length - 2] === '3');
+    });
+
+    it('Does not add a post to the latest collection', async function () {
+        const collection = await Collection.create({
+            title: 'Testing adding to latest',
+            slug: 'latest',
+            type: 'automatic',
+            filter: ''
+        });
+
+        assert.equal(collection.posts.length, 0, 'Collection should have no posts');
+
+        const added = await collection.addPost({
+            id: '0',
+            featured: false,
+            published_at: new Date(),
+            tags: []
+        });
+
+        assert.equal(added, false);
+        assert.equal(collection.posts.length, 0, 'The non-featured post should not have been added');
     });
 
     it('Adds a post to an automatic collection when it matches the filter', async function () {

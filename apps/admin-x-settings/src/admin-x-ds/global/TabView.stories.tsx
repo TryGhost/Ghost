@@ -23,7 +23,10 @@ type Story = StoryObj<typeof TabView>;
 const tabs = [
     {id: 'tab-1', title: 'Tab one', contents: <div className='py-5'>Contents one</div>},
     {id: 'tab-2', title: 'Tab two', contents: <div className='py-5'>Contents two</div>},
-    {id: 'tab-3', title: 'Tab three', contents: <div className='py-5'>Contents three</div>}
+    {id: 'tab-3', title: 'Tab three', contents: <div className='py-5'>Contents three</div>},
+    {id: 'tab-4', title: 'Tab four', contents: <div className='py-5'>Contents one</div>},
+    {id: 'tab-5', title: 'Tab five', contents: <div className='py-5'>Contents two</div>},
+    {id: 'tab-6', title: 'Backstreet boys', contents: <div className='py-5'>Contents three</div>}
 ];
 
 export const Default: Story = {

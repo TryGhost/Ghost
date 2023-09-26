@@ -1,3 +1,4 @@
+import ColorPickerField from '../../../../admin-x-ds/global/form/ColorPickerField';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Hint from '../../../../admin-x-ds/global/Hint';
 import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
@@ -6,6 +7,7 @@ import Select from '../../../../admin-x-ds/global/form/Select';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import handleError from '../../../../utils/api/handleError';
 import {CustomThemeSetting} from '../../../../api/customThemeSettings';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {humanizeSettingKey} from '../../../../api/settings';
@@ -17,8 +19,12 @@ const ThemeSetting: React.FC<{
     const {mutateAsync: uploadImage} = useUploadImage();
 
     const handleImageUpload = async (file: File) => {
-        const imageUrl = getImageUrl(await uploadImage({file}));
-        setSetting(imageUrl);
+        try {
+            const imageUrl = getImageUrl(await uploadImage({file}));
+            setSetting(imageUrl);
+        } catch (e) {
+            handleError(e);
+        }
     };
 
     switch (setting.type) {
@@ -34,6 +40,7 @@ const ThemeSetting: React.FC<{
     case 'boolean':
         return (
             <Toggle
+                checked={setting.value}
                 direction="rtl"
                 hint={setting.description}
                 label={humanizeSettingKey(setting.key)}
@@ -45,19 +52,20 @@ const ThemeSetting: React.FC<{
             <Select
                 hint={setting.description}
                 options={setting.options.map(option => ({label: option, value: option}))}
-                selectedOption={setting.value}
+                selectedOption={{label: setting.value, value: setting.value}}
                 title={humanizeSettingKey(setting.key)}
-                onSelect={value => setSetting(value)}
+                onSelect={option => setSetting(option?.value || null)}
             />
         );
     case 'color':
         return (
-            <TextField
+            <ColorPickerField
+                debounceMs={200}
+                direction='rtl'
                 hint={setting.description}
                 title={humanizeSettingKey(setting.key)}
-                type='color'
                 value={setting.value || ''}
-                onChange={event => setSetting(event.target.value)}
+                onChange={value => setSetting(value)}
             />
         );
     case 'image':

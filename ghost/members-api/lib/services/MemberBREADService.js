@@ -99,7 +99,7 @@ module.exports = class MemberBREADService {
                     default_payment_card_last4: '****',
                     cancel_at_period_end: false,
                     cancellation_reason: null,
-                    current_period_end: moment(startDate).add(1, 'year'),
+                    current_period_end: moment(product.expiry_at),
                     price: {
                         id: '',
                         price_id: '',

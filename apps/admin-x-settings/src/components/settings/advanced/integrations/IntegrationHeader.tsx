@@ -14,11 +14,11 @@ const IntegrationHeader: React.FC<IntegrationHeaderProps> = ({
     extra
 }) => {
     return (
-        <div className='flex w-full gap-4'>
+        <div className='-mx-8 -mt-8 flex flex-col gap-4 bg-grey-75 p-8 md:flex-row'>
             <div className='h-14 w-14'>{icon}</div>
-            <div className='flex min-w-0 flex-1 flex-col'>
+            <div className='mt-1.5 flex min-w-0 flex-1 flex-col'>
                 <h3>{title}</h3>
-                <div className='text-grey-600'>{detail}</div>
+                <div>{detail}</div>
                 {extra && (
                     <div className='mt-4'>{extra}</div>
                 )}

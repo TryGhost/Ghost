@@ -18,9 +18,9 @@
     "lib"
   ],
   "devDependencies": {
-    "@types/jsonwebtoken": "9.0.2",
-    "@types/nodemailer": "6.4.9",
-    "c8": "7.14.0",
+    "@types/jsonwebtoken": "9.0.3",
+    "@types/nodemailer": "6.4.10",
+    "c8": "8.0.1",
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "15.2.0"

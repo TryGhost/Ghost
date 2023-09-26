@@ -49,32 +49,12 @@
 
         <KoenigLexicalEditor
             @lexical={{@body}}
+            @placeholder={{@bodyPlaceholder}}
             @cardConfig={{@cardOptions}}
             @onChange={{@onBodyChange}}
             @registerAPI={{this.registerEditorAPI}}
             @cursorDidExitAtTop={{this.focusTitle}}
             @updateWordCount={{@updateWordCount}}
         />
-
-        {{!-- <KoenigEditor
-            @mobiledoc={{@body}}
-            @placeholder={{@bodyPlaceholder}}
-            @spellcheck={{true}}
-            @onChange={{@onBodyChange}}
-            @didCreateEditor={{this.onEditorCreated}}
-            @cursorDidExitAtTop={{this.focusTitle}}
-            @headerOffset={{@headerOffset}}
-            @dropTargetSelector=".gh-koenig-editor-pane"
-            @scrollContainerSelector={{@scrollContainerSelector}}
-            @scrollOffsetTopSelector={{@scrollOffsetTopSelector}}
-            @scrollOffsetBottomSelector={{@scrollOffsetBottomSelector}}
-            @wordCountDidChange={{@onWordCountChange}}
-            @snippets={{@snippets}}
-            @saveSnippet={{@saveSnippet}}
-            @updateSnippet={{@updateSnippet}}
-            @deleteSnippet={{@deleteSnippet}}
-            @cardOptions={{@cardOptions}}
-            @postType={{@postType}}
-        /> --}}
     </div>
 </div>

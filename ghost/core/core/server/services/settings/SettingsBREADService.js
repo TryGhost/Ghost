@@ -66,6 +66,11 @@ class SettingsBREADService {
                 const adminUrl = urlUtils.urlFor('admin', true);
                 const signinURL = new URL(adminUrl);
                 signinURL.hash = `/settings/members/?verifyEmail=${token}`;
+                // NOTE: to be removed in future, this is to ensure that the new settings are used when enabled
+                if (labsService && labsService.isSet('adminXSettings')) {
+                    signinURL.hash = `/settings-x/portal/edit?verifyEmail=${token}`;
+                }
+
                 return signinURL.href;
             }
         };
@@ -147,7 +152,7 @@ class SettingsBREADService {
      * @param {Object[]} settings
      * @param {Object} options
      * @param {Object} [options.context]
-     * @param {Object} [stripeConnectData]
+     * @param {Object|null} [stripeConnectData]
      * @returns
      */
     async edit(settings, options, stripeConnectData) {
