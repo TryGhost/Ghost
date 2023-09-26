@@ -279,6 +279,7 @@ export default class AdminXSettings extends Component {
     @service settings;
     @service router;
     @service membersUtils;
+    @service themeManagement;
 
     @inject config;
 
@@ -328,6 +329,14 @@ export default class AdminXSettings extends Component {
         if (dataType === 'TiersResponseType') {
             // membersUtils has local state which needs to be updated
             this.membersUtils.reload();
+        }
+
+        if (dataType === 'ThemesResponseType') {
+            const activated = response.themes.find(theme => theme.active);
+
+            if (activated) {
+                this.themeManagement.activeTheme = this.store.peekAll('theme').filterBy('name', activated.name).firstObject;
+            }
         }
     };
 
