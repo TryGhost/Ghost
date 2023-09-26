@@ -396,7 +396,7 @@ export default class AdminXSettings extends Component {
                             externalNavigate={this.externalNavigate}
                             darkMode={this.feature.nightShift}
                             unsplashConfig={defaultUnsplashHeaders}
-                            sentryDSN={this.config.sentry_dsn}
+                            sentry={this.config.sentry_dsn ? Sentry : undefined}
                             onUpdate={this.onUpdate}
                             onInvalidate={this.onInvalidate}
                             onDelete={this.onDelete}

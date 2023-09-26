@@ -7,8 +7,8 @@ import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
-import handleError from '../../../utils/api/handleError';
 import useForm from '../../../hooks/useForm';
+import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../api/customThemeSettings';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
@@ -93,6 +93,7 @@ const DesignModal: React.FC = () => {
     });
     const {data: themeSettings} = useBrowseCustomThemeSettings();
     const {mutateAsync: editThemeSettings} = useEditCustomThemeSettings();
+    const handleError = useHandleError();
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
     const {updateRoute} = useRouting();
 

@@ -4,8 +4,8 @@ import IntegrationHeader from './IntegrationHeader';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import handleError from '../../../../utils/api/handleError';
 import pinturaScreenshot from '../../../../assets/images/pintura-screenshot.png';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as Icon} from '../../../../assets/icons/pintura.svg';
 import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
@@ -27,6 +27,7 @@ const PinturaModal = NiceModal.create(() => {
     const [pinturaEnabled] = getSettingValues<boolean>(settings, ['pintura']);
     const {mutateAsync: editSettings} = useEditSettings();
     const {mutateAsync: uploadFile} = useUploadFile();
+    const handleError = useHandleError();
 
     useEffect(() => {
         setEnabled(pinturaEnabled || false);

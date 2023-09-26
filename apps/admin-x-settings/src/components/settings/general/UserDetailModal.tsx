@@ -15,8 +15,8 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import clsx from 'clsx';
-import handleError from '../../../utils/api/handleError';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
+import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
@@ -269,6 +269,7 @@ const StaffToken: React.FC<UserDetailProps> = () => {
     const {refetch: apiKey} = getStaffToken({
         enabled: false
     });
+    const handleError = useHandleError();
     const [token, setToken] = useState('');
     const {mutateAsync: newApiKey} = genStaffToken();
 
@@ -341,6 +342,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {mutateAsync: deleteUser} = useDeleteUser();
     const {mutateAsync: makeOwner} = useMakeOwner();
     const limiter = useLimiter();
+    const handleError = useHandleError();
 
     // Pintura integration
     const {settings} = useGlobalData();
