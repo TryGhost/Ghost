@@ -27,7 +27,7 @@ describe('Acceptance: Lexical editor', function () {
     });
 
     it('redirects to signin when not authenticated', async function () {
-        await visit('/editor-beta/post/');
+        await visit('/editor/post/');
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
@@ -37,26 +37,18 @@ describe('Acceptance: Lexical editor', function () {
         config.save();
 
         await loginAsRole('Administrator', this.server);
-        await visit('/editor-beta/post/');
+        await visit('/editor/post/');
 
         expect(currentURL(), 'currentURL').to.equal('/posts');
     });
 
     it('loads when editor.url is present', async function () {
         await loginAsRole('Administrator', this.server);
-        await visit('/editor-beta/post/');
-        expect(currentURL(), 'currentURL').to.equal('/editor-beta/post/');
+        await visit('/editor/post/');
+        expect(currentURL(), 'currentURL').to.equal('/editor/post/');
     });
 
-    it('shows feedback link in lexical editor', async function () {
-        await loginAsRole('Administrator', this.server);
-        await visit('/editor-beta/post/');
-        expect(currentURL(), 'currentURL').to.equal('/editor-beta/post/');
-
-        expect(find('.gh-editor-feedback'), 'feedback button').to.exist;
-    });
-
-    it('redirects mobiledoc editor to lexical editor when post.lexical is present', async function () {
+    it('loads editor when starting with lexical content', async function () {
         const post = this.server.create('post', {
             lexical: JSON.stringify({})
         });
@@ -64,17 +56,18 @@ describe('Acceptance: Lexical editor', function () {
         await loginAsRole('Administrator', this.server);
         await visit(`/editor/post/${post.id}`);
 
-        expect(currentURL()).to.equal(`/editor-beta/post/${post.id}`);
+        expect(currentURL()).to.equal(`/editor/post/${post.id}`);
     });
 
-    it('does not redirect to mobiledoc editor when post.mobiledoc is present', async function () {
+    // note: should on-the-fly convert to lexical
+    it('does not redirect when mobiledoc is present', async function () {
         const post = this.server.create('post', {
             mobiledoc: JSON.stringify(BLANK_DOC)
         });
 
         await loginAsRole('Administrator', this.server);
-        await visit(`/editor-beta/post/${post.id}`);
+        await visit(`/editor/post/${post.id}`);
 
-        expect(currentURL()).to.equal(`/editor-beta/post/${post.id}`);
+        expect(currentURL()).to.equal(`/editor/post/${post.id}`);
     });
 });
