@@ -265,7 +265,9 @@ const emberDataTypeMapping = {
     SettingsResponseType: {type: 'setting', singleton: true},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
-    UsersResponseType: {type: 'user'}
+    UsersResponseType: {type: 'user'},
+    CustomThemeSettingsResponseType: {type: 'custom-theme-setting'}
+
 };
 
 export default class AdminXSettings extends Component {
@@ -315,6 +317,11 @@ export default class AdminXSettings extends Component {
             ));
         } else {
             this.store.pushPayload(type, response);
+        }
+
+        if (dataType === 'SettingsResponseType') {
+            // Blog title is based on settings, but the one stored in config is used instead in various places
+            this.config.blogTitle = response.settings.find(setting => setting.key === 'title').value;
         }
     };
 
