@@ -193,13 +193,13 @@ export const getActionTitle = (action: Action) => {
     let actionName = action.event;
 
     if (action.event === 'edited') {
-        if (action.context.action_name) {
-            actionName = action.context.action_name as string;
+        if (action.context?.action_name) {
+            actionName = action.context?.action_name as string;
         }
     }
 
-    if (action.context.count && (action.context.count as number) > 1) {
-        return `${action.context.count} ${resourceType}s ${actionName}`;
+    if (action.context?.count && (action.context?.count as number) > 1) {
+        return `${action.context?.count} ${resourceType}s ${actionName}`;
     }
 
     return `${resourceType.slice(0, 1).toUpperCase()}${resourceType.slice(1)} ${actionName}`;
@@ -209,11 +209,11 @@ export const getContextResource = (action: Action) => {
     if (action.resource_type === 'setting') {
         if (action.context?.group && action.context?.key) {
             return {
-                group: action.context.group as string,
-                key: action.context.key as string
+                group: action.context?.group as string,
+                key: action.context?.key as string
             };
         }
     }
 };
 
-export const isBulkAction = (action: Action) => typeof action.context.count === 'number' && action.context.count > 1;
+export const isBulkAction = (action: Action) => typeof action.context?.count === 'number' && action.context?.count > 1;
