@@ -19,7 +19,10 @@ export type CustomThemeSetting = CustomThemeSettingData & {
     description?: string
     // homepage and post are the only two groups we handle, but technically theme authors can put other things in package.json
     group?: 'homepage' | 'post' | string
+    visibility?: string
 }
+
+export const hiddenCustomThemeSettingValue = null;
 
 export interface CustomThemeSettingsResponseType {
     custom_theme_settings: CustomThemeSetting[];

@@ -11,6 +11,7 @@ import useHandleError from '../../../../utils/api/handleError';
 import {CustomThemeSetting} from '../../../../api/customThemeSettings';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {humanizeSettingKey} from '../../../../api/settings';
+import {isCustomThemeSettingVisible} from '../../../../utils/helpers';
 
 const ThemeSetting: React.FC<{
     setting: CustomThemeSetting,
@@ -85,9 +86,13 @@ const ThemeSetting: React.FC<{
 };
 
 const ThemeSettings: React.FC<{ settings: CustomThemeSetting[], updateSetting: (setting: CustomThemeSetting) => void }> = ({settings, updateSetting}) => {
+    // Filter out custom theme settings that should not be visible
+    const settingsKeyValueObj = settings.reduce((obj, {key, value}) => ({...obj, [key]: value}), {});
+    const filteredSettings = settings.filter(setting => isCustomThemeSettingVisible(setting, settingsKeyValueObj));
+
     return (
         <SettingGroupContent className='mt-7'>
-            {settings.map(setting => <ThemeSetting key={setting.key} setSetting={value => updateSetting({...setting, value} as CustomThemeSetting)} setting={setting} />)}
+            {filteredSettings.map(setting => <ThemeSetting key={setting.key} setSetting={value => updateSetting({...setting, value} as CustomThemeSetting)} setting={setting} />)}
         </SettingGroupContent>
     );
 };

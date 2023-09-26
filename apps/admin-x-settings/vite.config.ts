@@ -47,7 +47,8 @@ export default (function viteConfig() {
         ],
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-            'process.env.VITEST_SEGFAULT_RETRY': 3
+            'process.env.VITEST_SEGFAULT_RETRY': 3,
+            'process.env.DEBUG': false // Shim env var utilized by the @tryghost/nql package
         },
         preview: {
             port: 4174
@@ -80,6 +81,16 @@ export default (function viteConfig() {
                 minThreads: 1,
                 maxThreads: 2
             })
+        },
+        resolve: {
+            // Shim node modules utilized by the @tryghost/nql package
+            alias: {
+                fs: 'node-shim.cjs',
+                path: 'node-shim.cjs',
+                util: 'node-shim.cjs',
+                // @TODO: Remove this when @tryghost/nql is updated
+                mingo: resolve(__dirname, '../../node_modules/mingo/dist/mingo.js')
+            }
         }
     });
 });
