@@ -13,7 +13,7 @@ const FeatureToggle: React.FC<{ flag: string; }> = ({flag}) => {
     const client = useQueryClient();
     const {toggleFeatureFlag} = useServices();
 
-    return <Toggle checked={labs[flag]} onChange={async () => {
+    return <Toggle checked={labs[flag]} testId={`${flag}-lab-item`} onChange={async () => {
         const newValue = !labs[flag];
         await editSettings([{
             key: 'labs',
