@@ -358,7 +358,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 
     const navigateOnClose = useCallback(() => {
         if (canAccessSettings(currentUser)) {
-            updateRoute('users');
+            updateRoute('staff');
         } else {
             updateRoute({isExternal: true, route: 'dashboard'});
         }

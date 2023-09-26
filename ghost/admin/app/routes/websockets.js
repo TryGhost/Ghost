@@ -12,7 +12,7 @@ export default class WebsocketRoute extends AuthenticatedRoute {
         const user = this.session.user;
 
         if (!user.isAdmin) {
-            return this.router.transitionTo('settings-x.settings-x', `users/show/${user.slug}`);
+            return this.router.transitionTo('settings-x.settings-x', `staff/${user.slug}`);
         }
     }
 }

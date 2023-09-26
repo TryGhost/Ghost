@@ -10,7 +10,7 @@ import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
     const openNewsletterModal = () => {
-        updateRoute('newsletters/add');
+        updateRoute('newsletters/new');
     };
     const [selectedTab, setSelectedTab] = useState('active-newsletters');
     const {data: {newsletters, meta, isEnd} = {}, fetchNextPage} = useBrowseNewsletters();

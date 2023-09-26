@@ -1,14 +1,14 @@
+import NiceModal, { useModal } from '@ebay/nice-modal-react';
+import React, { useEffect, useState } from 'react';
 import Form from '../../../../admin-x-ds/global/form/Form';
+import TextField from '../../../../admin-x-ds/global/form/TextField';
 import LimitModal from '../../../../admin-x-ds/global/modal/LimitModal';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useEffect, useState} from 'react';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import useHandleError from '../../../../utils/api/handleError';
+import { useCreateIntegration } from '../../../../api/integrations';
+import { HostLimitError, useLimiter } from '../../../../hooks/useLimiter';
 import useRouting from '../../../../hooks/useRouting';
-import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {useCreateIntegration} from '../../../../api/integrations';
+import useHandleError from '../../../../utils/api/handleError';
+import { RoutingModalProps } from '../../../providers/RoutingProvider';
 
 const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
@@ -45,7 +45,7 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
             try {
                 const data = await createIntegration({name});
                 modal.remove();
-                updateRoute({route: `integrations/show/${data.integrations[0].id}`});
+                updateRoute({route: `integrations/${data.integrations[0].id}`});
             } catch (e) {
                 handleError(e);
             }

@@ -113,7 +113,7 @@ const InviteUserModal = NiceModal.create(() => {
             });
 
             modal.remove();
-            updateRoute('users');
+            updateRoute('staff');
         } catch (e) {
             setSaveState('error');
 
@@ -158,7 +158,7 @@ const InviteUserModal = NiceModal.create(() => {
     return (
         <Modal
             afterClose={() => {
-                updateRoute('users');
+                updateRoute('staff');
             }}
             cancelLabel=''
             okLabel={okLabel}

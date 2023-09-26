@@ -8,7 +8,7 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
 
     if (pathName === 'design/edit') {
         return <DesignModal />;
-    } else if (pathName === 'design/edit/themes') {
+    } else if (pathName === 'design/change-theme') {
         return <ChangeThemeModal />;
     } else {
         modal.remove();
