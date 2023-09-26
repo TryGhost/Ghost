@@ -2,7 +2,6 @@ import React, {createContext, useContext} from 'react';
 import useSearchService, {SearchService} from '../../utils/search';
 import {DefaultHeaderTypes} from '../../utils/unsplash/UnsplashTypes';
 import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
-import type * as Sentry from '@sentry/browser';
 
 export type OfficialTheme = {
     name: string;
@@ -19,7 +18,7 @@ interface ServicesContextProps {
     zapierTemplates: ZapierTemplate[];
     search: SearchService;
     unsplashConfig: DefaultHeaderTypes;
-    sentry?: typeof Sentry;
+    sentryDSN: string | null;
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
@@ -31,7 +30,7 @@ interface ServicesProviderProps {
     zapierTemplates: ZapierTemplate[];
     officialThemes: OfficialTheme[];
     unsplashConfig: DefaultHeaderTypes;
-    sentry?: typeof Sentry;
+    sentryDSN: string | null;
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
@@ -49,13 +48,13 @@ const ServicesContext = createContext<ServicesContextProps>({
         'App-Pragma': '',
         'X-Unsplash-Cache': true
     },
-    sentry: undefined,
+    sentryDSN: null,
     onUpdate: () => {},
     onInvalidate: () => {},
     onDelete: () => {}
 });
 
-const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, unsplashConfig, sentry, onUpdate, onInvalidate, onDelete}) => {
+const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, unsplashConfig, sentryDSN, onUpdate, onInvalidate, onDelete}) => {
     const search = useSearchService();
 
     return (
@@ -65,7 +64,7 @@ const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersi
             zapierTemplates,
             search,
             unsplashConfig,
-            sentry,
+            sentryDSN,
             onUpdate,
             onInvalidate,
             onDelete
@@ -83,4 +82,4 @@ export const useOfficialThemes = () => useServices().officialThemes;
 
 export const useSearch = () => useServices().search;
 
-export const useSentry = () => useServices().sentry;
+export const useSentryDSN = () => useServices().sentryDSN;

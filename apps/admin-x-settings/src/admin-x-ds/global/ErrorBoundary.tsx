@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/react';
 import Banner from './Banner';
 import React, {ComponentType, ErrorInfo, ReactNode} from 'react';
 

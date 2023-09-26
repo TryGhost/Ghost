@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import handleResponse from './handleResponse';
 import useHandleError from './handleError';
 import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from '../errors';
@@ -5,7 +6,7 @@ import {UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation,
 import {getGhostPaths} from '../helpers';
 import {useCallback, useEffect, useMemo} from 'react';
 import {usePage, usePagination} from '../../hooks/usePagination';
-import {useSentry, useServices} from '../../components/providers/ServiceProvider';
+import {useSentryDSN, useServices} from '../../components/providers/ServiceProvider';
 
 export interface Meta {
     pagination: {
@@ -30,7 +31,7 @@ interface RequestOptions {
 
 export const useFetchApi = () => {
     const {ghostVersion} = useServices();
-    const Sentry = useSentry();
+    const sentryDSN = useSentryDSN();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return async <ResponseData = any>(endpoint: string | URL, options: RequestOptions = {}) => {
@@ -88,7 +89,7 @@ export const useFetchApi = () => {
                     ...options
                 });
 
-                if (attempts !== 0 && Sentry) {
+                if (attempts !== 0 && sentryDSN) {
                     Sentry.captureMessage('Request took multiple attempts', {extra: getErrorData()});
                 }
 
@@ -104,7 +105,7 @@ export const useFetchApi = () => {
                     continue;
                 }
 
-                if (attempts !== 0 && Sentry) {
+                if (attempts !== 0 && sentryDSN) {
                     Sentry.captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
                 }
 
