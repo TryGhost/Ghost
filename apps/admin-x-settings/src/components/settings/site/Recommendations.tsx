@@ -66,7 +66,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
-                <Button color='green' label='Add recommendation' link onClick={() => {
+                <Button color='green' data-testid='add-recommendation-button' label='Add recommendation' link onClick={() => {
                     openAddNewRecommendationModal();
                 }} />
             </div>
