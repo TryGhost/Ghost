@@ -81,6 +81,12 @@ function parseOptions(options) {
  * @returns {Promise<any>}
  */
 module.exports = async function recommendations(options) {
+    const recommendationsEnabled = settingsCache.get('recommendations_enabled');
+
+    if (!recommendationsEnabled) {
+        return;
+    }
+
     options = options || {};
     options.hash = options.hash || {};
     options.data = options.data || {};

@@ -6,12 +6,14 @@ const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/configUtils');
 const {html} = require('common-tags');
 const loggingLib = require('@tryghost/logging');
+const proxy = require('../../../../core/frontend/services/proxy');
 
 const recommendations = require('../../../../core/frontend/helpers/recommendations');
 const foreach = require('../../../../core/frontend/helpers/foreach');
+const {settingsCache} = proxy;
 
-function trimNewLines(string) {
-    return string.replace(/\n/gm, '');
+function trimSpaces(string) {
+    return string.replace(/\s+/g, '');
 }
 
 describe('{{#recommendations}} helper', function () {
@@ -28,30 +30,34 @@ describe('{{#recommendations}} helper', function () {
 
         // The recommendation template expects this helper
         hbs.registerHelper('foreach', foreach);
-    });
 
-    beforeEach(function () {
+        // Stub settings cache
+        sinon.stub(settingsCache, 'get');
+        // @ts-ignore
+        settingsCache.get.withArgs('recommendations_enabled').returns(true);
+
+        // Stub Recommendation Content API
         const meta = {pagination: {}};
-
         sinon.stub(api, 'recommendationsPublic').get(() => {
             return {
                 browse: sinon.stub().resolves({recommendations: [
-                    {title: 'Recommendation 1', url: 'https://recommendations1.com'},
-                    {title: 'Recommendation 2', url: 'https://recommendations2.com'},
-                    {title: 'Recommendation 3', url: 'https://recommendations3.com'},
-                    {title: 'Recommendation 4', url: 'https://recommendations4.com'},
-                    {title: 'Recommendation 5', url: 'https://recommendations5.com'}
+                    {title: 'Recommendation 1', url: 'https://recommendations1.com', favicon: 'https://recommendations1.com/favicon.ico', reason: 'Reason 1'},
+                    {title: 'Recommendation 2', url: 'https://recommendations2.com', favicon: 'https://recommendations2.com/favicon.ico', reason: 'Reason 2'},
+                    {title: 'Recommendation 3', url: 'https://recommendations3.com', favicon: 'https://recommendations3.com/favicon.ico', reason: 'Reason 3'},
+                    {title: 'Recommendation 4', url: 'https://recommendations4.com', favicon: 'https://recommendations4.com/favicon.ico', reason: 'Reason 4'},
+                    {title: 'Recommendation 5', url: 'https://recommendations5.com', favicon: 'https://recommendations5.com/favicon.ico', reason: 'Reason 5'}
                 ], meta: meta})
             };
         });
 
+        // Stub logging
         logging = {
             error: sinon.stub(loggingLib, 'error'),
             warn: sinon.stub(loggingLib, 'warn')
         };
     });
 
-    afterEach(function () {
+    after(function () {
         sinon.restore();
     });
 
@@ -62,61 +68,105 @@ describe('{{#recommendations}} helper', function () {
 
         response.should.be.an.Object().with.property('string');
 
-        const expected = trimNewLines(html`
-            <ul class="recommendations">
+        const expected = trimSpaces(html`
+        <ul class="recommendations">
             <li class="recommendation">
                 <a href="https://recommendations1.com">
-                    <img class="recommendation-favicon" src="" alt="Recommendation 1">
+                    <img class="recommendation-favicon" src="https://recommendations1.com/favicon.ico" alt="Recommendation 1">
                     <div class="recommendation-content">
                         <h5 class="recommendation-title">Recommendation 1</h5>
-                        <p class="recommendation-reason"></p>
+                        <p class="recommendation-reason">Reason 1</p>
                     </div>
                 </a>
             </li>
             <li class="recommendation">
                 <a href="https://recommendations2.com">
-                    <img class="recommendation-favicon" src="" alt="Recommendation 2">
+                    <img class="recommendation-favicon" src="https://recommendations2.com/favicon.ico" alt="Recommendation 2">
                     <div class="recommendation-content">
                         <h5 class="recommendation-title">Recommendation 2</h5>
-                        <p class="recommendation-reason"></p>
+                        <p class="recommendation-reason">Reason 2</p>
                     </div>
                 </a>
             </li>
             <li class="recommendation">
                 <a href="https://recommendations3.com">
-                    <img class="recommendation-favicon" src="" alt="Recommendation 3">
+                    <img class="recommendation-favicon" src="https://recommendations3.com/favicon.ico" alt="Recommendation 3">
                     <div class="recommendation-content">
                         <h5 class="recommendation-title">Recommendation 3</h5>
-                        <p class="recommendation-reason"></p>
+                        <p class="recommendation-reason">Reason 3</p>
                     </div>
                 </a>
             </li>
             <li class="recommendation">
                 <a href="https://recommendations4.com">
-                    <img class="recommendation-favicon" src="" alt="Recommendation 4">
+                    <img class="recommendation-favicon" src="https://recommendations4.com/favicon.ico" alt="Recommendation 4">
                     <div class="recommendation-content">
                         <h5 class="recommendation-title">Recommendation 4</h5>
-                        <p class="recommendation-reason"></p>
+                        <p class="recommendation-reason">Reason 4</p>
                     </div>
                 </a>
             </li>
             <li class="recommendation">
                 <a href="https://recommendations5.com">
-                    <img class="recommendation-favicon" src="" alt="Recommendation 5">
+                    <img class="recommendation-favicon" src="https://recommendations5.com/favicon.ico" alt="Recommendation 5">
                     <div class="recommendation-content">
                         <h5 class="recommendation-title">Recommendation 5</h5>
-                        <p class="recommendation-reason"></p>
+                        <p class="recommendation-reason">Reason 5</p>
                     </div>
                 </a>
             </li>
-        </ul>`);
-        const actual = trimNewLines(response.string);
+        </ul>
+        `);
+        const actual = trimSpaces(response.string);
 
         actual.should.equal(expected);
     });
 
-    describe('timeout', function () {
-        beforeEach(function () {
+    describe('when there are no recommendations', function () {
+        before(function () {
+            sinon.stub(api, 'recommendationsPublic').get(() => {
+                return {
+                    browse: () => {
+                        return new Promise((resolve) => {
+                            setTimeout(() => {
+                                resolve({recommendations: []});
+                            }, 5);
+                        });
+                    }
+                };
+            });
+        });
+
+        it('renders nothing', async function () {
+            const response = await recommendations.call(
+                'recommendations'
+            );
+
+            // No HTML is rendered
+            response.should.be.an.Object().with.property('string');
+            response.string.should.equal('');
+        });
+    });
+
+    describe('when recommendations_enabled is false', function () {
+        before(function () {
+            // @ts-ignore
+            settingsCache.get.withArgs('recommendations_enabled').returns(true);
+        });
+
+        it('renders nothing', async function () {
+            const response = await recommendations.call(
+                'recommendations'
+            );
+
+            // No HTML is rendered
+            response.should.be.an.Object().with.property('string');
+            response.string.should.equal('');
+        });
+    });
+
+    describe('when timeout is exceeded', function () {
+        before(function () {
             sinon.stub(api, 'recommendationsPublic').get(() => {
                 return {
                     browse: () => {
@@ -129,7 +179,7 @@ describe('{{#recommendations}} helper', function () {
                 };
             });
         });
-        afterEach(async function () {
+        after(async function () {
             await configUtils.restore();
         });
 
