@@ -137,6 +137,34 @@ describe('package-json read', function () {
                 .catch(done)
                 .finally(packagePath.removeCallback);
         });
+
+        it('should read directory and ignore invalid symlinks', async function () {
+            const packagePath = tmp.dirSync({unsafeCleanup: true});
+            const pkgJson = JSON.stringify({
+                name: 'test'
+            });
+
+            // create example theme
+            fs.mkdirSync(join(packagePath.name, 'testtheme'));
+            fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
+            fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
+
+            // Create a symlink that has a missing source dir
+            fs.symlinkSync(join(packagePath.name, 'missing-dir'), join(packagePath.name, 'source'));
+
+            try {
+                const pkgs = await packageJSON.readPackages(packagePath.name);
+                pkgs.should.eql({
+                    testtheme: {
+                        name: 'testtheme',
+                        path: join(packagePath.name, 'testtheme'),
+                        'package.json': null
+                    }
+                });
+            } finally {
+                await packagePath.removeCallback();
+            }
+        });
     });
 
     describe('readPackage', function () {
