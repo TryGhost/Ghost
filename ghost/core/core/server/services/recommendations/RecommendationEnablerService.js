@@ -14,7 +14,7 @@ module.exports = class RecommendationEnablerService {
      * @returns {string}
      */
     getSetting() {
-        this.#settingsService.read('recommendations_enabled');
+        return this.#settingsService.read('recommendations_enabled');
     }
 
     /**

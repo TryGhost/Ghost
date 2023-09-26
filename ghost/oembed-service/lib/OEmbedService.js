@@ -232,7 +232,12 @@ class OEmbedService {
         let scraperResponse;
 
         try {
-            scraperResponse = await metascraper({html, url});
+            scraperResponse = await metascraper({
+                html,
+                url,
+                // In development, allow non-standard tlds
+                validateUrl: this.config.get('env') !== 'development'
+            });
         } catch (err) {
             // Log to avoid being blind to errors happenning in metascraper
             logging.error(err);

@@ -28,7 +28,10 @@ const COMMAND_GHOST = {
     command: 'nx run ghost:dev',
     cwd: path.resolve(__dirname, '../../ghost/core'),
     prefixColor: 'blue',
-    env: {}
+    env: {
+        // In development mode, we allow self-signed certificates (for sending webmentions and oembeds)
+        NODE_TLS_REJECT_UNAUTHORIZED: '0',
+    }
 };
 
 const COMMAND_ADMIN = {
