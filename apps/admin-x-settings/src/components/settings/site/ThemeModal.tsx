@@ -98,8 +98,8 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             </>;
         }
 
-        if (uploadedTheme.errors?.length || uploadedTheme.warnings?.length) {
-            const hasErrors = uploadedTheme.errors?.length;
+        if (uploadedTheme?.gscan_errors?.length || uploadedTheme.warnings?.length) {
+            const hasErrors = uploadedTheme?.gscan_errors?.length;
 
             title = `Upload successful with ${hasErrors ? 'errors' : 'warnings'}`;
             prompt = <>
@@ -286,8 +286,8 @@ const ChangeThemeModal = () => {
                     </>;
                 }
 
-                if (newlyInstalledTheme.errors?.length || newlyInstalledTheme.warnings?.length) {
-                    const hasErrors = newlyInstalledTheme.errors?.length;
+                if (newlyInstalledTheme.gscan_errors?.length || newlyInstalledTheme.warnings?.length) {
+                    const hasErrors = newlyInstalledTheme.gscan_errors?.length;
 
                     title = `Installed with ${hasErrors ? 'errors' : 'warnings'}`;
                     prompt = <>
