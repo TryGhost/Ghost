@@ -15,7 +15,7 @@ class CommentsServiceEmails {
         this.urlService = urlService;
         this.urlUtils = urlUtils;
 
-        this.Handlebars = require('handlebars');
+        this.Handlebars = require('handlebars').create();
     }
 
     async notifyPostAuthors(comment) {
