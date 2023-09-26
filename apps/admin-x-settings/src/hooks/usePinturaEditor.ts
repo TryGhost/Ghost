@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/react';
 import {Config} from '../api/config';
 import {Setting} from '../api/settings';
+import {getGhostPaths} from '../utils/helpers';
 import {getSettingValues} from '../api/settings';
 import {useCallback, useEffect, useState} from 'react';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
@@ -71,8 +72,15 @@ export default function usePinturaEditor({
         };
         let jsUrl = pinturaJsUrl();
 
+        // load the script from admin root if relative
         if (!jsUrl) {
             return;
+        }
+
+        // load the script from admin root if relative
+        if (jsUrl.startsWith('/')) {
+            const {adminRoot} = getGhostPaths();
+            jsUrl = window.location.origin + adminRoot.replace(/\/$/, '') + jsUrl;
         }
 
         if (window.pintura) {
@@ -107,6 +115,11 @@ export default function usePinturaEditor({
         let cssUrl = pinturaCssUrl();
         if (!cssUrl) {
             return;
+        }
+
+        if (cssUrl.startsWith('/')) {
+            const {adminRoot} = getGhostPaths();
+            cssUrl = window.location.origin + adminRoot.replace(/\/$/, '') + cssUrl;
         }
 
         try {
