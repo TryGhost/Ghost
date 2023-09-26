@@ -54,40 +54,12 @@ Router.map(function () {
     this.route('collection.new', {path: '/collections/new'});
     this.route('collection', {path: '/collections/:collection_slug'});
 
-    this.route('settings-x', function () {
+    this.route('settings-x', {path: '/settings'}, function () {
         this.route('settings-x', {path: '/*sub'});
     });
-    this.route('settings');
-    this.route('settings.general', {path: '/settings/general'});
-    this.route('settings.membership', {path: '/settings/members'});
-    this.route('settings.code-injection', {path: '/settings/code-injection'});
-    this.route('settings.history', {path: '/settings/history'});
-    this.route('settings.analytics', {path: '/settings/analytics'});
-    this.route('settings.announcement-bar', {path: '/settings/announcement-bar'}, function () {});
 
     // testing websockets
     this.route('websockets');
-
-    // redirect from old /settings/members-email to /settings/newsletters
-    this.route('settings.members-email', {path: '/settings/members-email'});
-    this.route('settings.newsletters', {path: '/settings/newsletters'}, function () {
-        this.route('new-newsletter', {path: 'new'});
-        this.route('edit-newsletter', {path: ':newsletter_id'});
-    });
-
-    this.route('settings.design', {path: '/settings/design'}, function () {
-        this.route('change-theme', function () {
-            this.route('view', {path: ':theme_name'});
-            this.route('install');
-        });
-        this.route('no-theme');
-    });
-    // redirect for old install route used by ghost.org/marketplace
-    this.route('settings.theme-install', {path: '/settings/theme/install'});
-
-    this.route('settings.staff', {path: '/settings/staff'}, function () {
-        this.route('user', {path: ':user_slug'});
-    });
 
     this.route('explore', function () {
         // actual Ember route, not rendered in iframe
@@ -100,26 +72,6 @@ Router.map(function () {
             this.route('explore-query', {path: '/*query'});
         });
     });
-
-    this.route('settings.integrations', {path: '/settings/integrations'}, function () {
-        this.route('new');
-    });
-    this.route('settings.integration', {path: '/settings/integrations/:integration_id'}, function () {
-        this.route('webhooks.new', {path: 'webhooks/new'});
-        this.route('webhooks.edit', {path: 'webhooks/:webhook_id'});
-    });
-    this.route('settings.integrations.slack', {path: '/settings/integrations/slack'});
-    this.route('settings.integrations.amp', {path: '/settings/integrations/amp'});
-    this.route('settings.integrations.firstpromoter', {path: '/settings/integrations/firstpromoter'});
-    this.route('settings.integrations.pintura', {path: '/settings/integrations/pintura'});
-    this.route('settings.integrations.unsplash', {path: '/settings/integrations/unsplash'});
-    this.route('settings.integrations.zapier', {path: '/settings/integrations/zapier'});
-
-    this.route('settings.navigation', {path: '/settings/navigation'});
-    this.route('settings.labs', {path: '/settings/labs'}, function () {
-        this.route('import');
-    });
-    // this.route('settings.labs.import', {path: '/settings/labs/import'});
 
     this.route('migrate');
 

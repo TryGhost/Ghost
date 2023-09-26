@@ -65,7 +65,7 @@ function getHashPath(urlPath: string | undefined) {
     if (!urlPath) {
         return null;
     }
-    const regex = /\/settings-x\/(.*)/;
+    const regex = /\/settings\/(.*)/;
     const match = urlPath?.match(regex);
 
     if (match) {
@@ -138,9 +138,9 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
         const newPath = options.route;
 
         if (newPath) {
-            window.location.hash = `/settings-x/${newPath}`;
+            window.location.hash = `/settings/${newPath}`;
         } else {
-            window.location.hash = `/settings-x`;
+            window.location.hash = `/settings`;
         }
     }, [externalNavigate]);
 
