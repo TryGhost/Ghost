@@ -1,4 +1,4 @@
-import React, {useEffect, useId} from 'react';
+import React, {useId} from 'react';
 
 import Heading from '../Heading';
 import Hint from '../Hint';
@@ -22,7 +22,6 @@ interface TextAreaProps {
     fontStyle?: FontStyles;
     className?: string;
     onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-    autoFocus?: boolean;
 }
 
 const TextArea: React.FC<TextAreaProps> = ({
@@ -51,14 +50,6 @@ const TextArea: React.FC<TextAreaProps> = ({
     const handleBlur = () => {
         setFocusState(false);
     };
-
-    useEffect(() => {
-        if (props.autoFocus && inputRef && inputRef.current) {
-            const textarea = inputRef.current;
-            textarea.focus();
-            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-        }
-    }, [props.autoFocus, inputRef]);
 
     let styles = clsx(
         'peer order-2 rounded-sm border px-3 py-2 dark:text-white',
