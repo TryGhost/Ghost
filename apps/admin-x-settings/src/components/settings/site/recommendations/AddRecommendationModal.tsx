@@ -9,8 +9,7 @@ import useRouting from '../../../../hooks/useRouting';
 import {AlreadyExistsError} from '../../../../utils/errors';
 import {EditOrAddRecommendation, RecommendationResponseType, useGetRecommendationByUrl} from '../../../../api/recommendations';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
-import {toast} from 'react-hot-toast';
+import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
 import {trimSearchAndHash} from '../../../../utils/url';
 import {useExternalGhostSite} from '../../../../api/external-ghost-site';
 import {useGetOembed} from '../../../../api/oembed';
@@ -138,7 +137,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 return;
             }
 
-            toast.remove();
+            dismissAllToasts();
             try {
                 await handleSave({force: true});
             } catch (e) {
