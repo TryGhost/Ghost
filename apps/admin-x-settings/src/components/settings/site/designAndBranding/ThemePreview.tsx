@@ -81,8 +81,12 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
                 const htmlDoc = domParser.parseFromString(data, 'text/html');
 
                 const stylesheet = htmlDoc.querySelector('style') as HTMLStyleElement;
-                const originalCSS = stylesheet.innerHTML;
-                stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
+                const originalCSS = stylesheet?.innerHTML;
+                if (originalCSS) {
+                    stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
+                } else {
+                    htmlDoc.head.innerHTML += `<style>${injectedCss}</style>`;
+                }
 
                 // replace the iframe contents with the doctored preview html
                 const doctype = htmlDoc.doctype ? new XMLSerializer().serializeToString(htmlDoc.doctype) : '';
