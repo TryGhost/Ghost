@@ -1,7 +1,7 @@
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Hint from '../../../../admin-x-ds/global/Hint';
-import React from 'react';
+import React, {useRef} from 'react';
 import RecommendationIcon from './RecommendationIcon';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
@@ -20,7 +20,7 @@ interface Props<T extends EditOrAddRecommendation> {
 const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recommendation>> = ({showURL, formState, updateForm, errors, clearError}) => {
     const [reasonLength, setReasonLength] = React.useState(formState?.reason?.length || 0);
     const reasonLengthColor = reasonLength > 200 ? 'text-red' : 'text-green';
-
+    const focusRef = useRef<HTMLTextAreaElement>(null);
     return <Form
         marginBottom={false}
         marginTop
@@ -63,9 +63,11 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
             }}
         />
         <TextArea
+            autoFocus={true}
             clearBg={true}
             error={Boolean(errors.reason)}
             hint={errors.reason || <>Max. <strong>200</strong> characters. You&apos;ve used <strong className={reasonLengthColor}>{reasonLength}</strong></>}
+            inputRef={focusRef}
             rows={3}
             title="Short description"
             value={formState.reason ?? ''}
