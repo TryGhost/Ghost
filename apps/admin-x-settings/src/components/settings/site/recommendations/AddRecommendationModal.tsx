@@ -2,8 +2,8 @@ import AddRecommendationModalConfirm from './AddRecommendationModalConfirm';
 import Form from '../../../../admin-x-ds/global/form/Form';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React from 'react';
-import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
+import React, {useEffect, useState} from 'react';
+import TextField from '../../../../admin-x-ds/global/form/TextField';
 import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {AlreadyExistsError} from '../../../../utils/errors';
@@ -20,13 +20,14 @@ interface AddRecommendationModalProps {
 }
 
 const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModalProps> = ({recommendation, animate}) => {
+    const [enterPressed, setEnterPressed] = useState(false);
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {query: queryOembed} = useGetOembed();
     const {query: queryExternalGhostSite} = useExternalGhostSite();
     const {query: getRecommendationByUrl} = useGetRecommendationByUrl();
 
-    const {formState, updateForm, handleSave, errors, validate, saveState, clearError} = useForm({
+    const {formState, updateForm, handleSave, errors, saveState, clearError} = useForm({
         initialState: recommendation ?? {
             title: '',
             url: '',
@@ -111,12 +112,38 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         }
     });
 
-    let okLabel = 'Next';
-    let loadingState = false;
+    const saveForm = async () => {
+        if (saveState === 'saving') {
+            // Already saving
+            return;
+        }
 
-    if (saveState === 'saving') {
-        loadingState = true;
-    }
+        dismissAllToasts();
+        try {
+            await handleSave({force: true});
+        } catch (e) {
+            const message = e instanceof AlreadyExistsError ? e.message : 'Something went wrong while checking this URL, please try again.';
+            showToast({
+                type: 'pageError',
+                message
+            });
+        }
+    };
+
+    useEffect(() => {
+        if (enterPressed) {
+            saveForm();
+            setEnterPressed(false); // Reset for future use
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [formState]);
+
+    const formatUrl = (url: string) => {
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = `https://${url}`;
+        }
+        return url;
+    };
 
     return <Modal
         afterClose={() => {
@@ -126,49 +153,37 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         animate={animate ?? true}
         backDropClick={false}
         okColor='black'
-        okLabel={okLabel}
-        okLoading={loadingState}
+        okLabel={'Next'}
+        okLoading={saveState === 'saving'}
         size='sm'
         testId='add-recommendation-modal'
         title='Add recommendation'
-        onOk={async () => {
-            if (saveState === 'saving') {
-                // Already saving
-                return;
-            }
-
-            dismissAllToasts();
-            try {
-                await handleSave({force: true});
-            } catch (e) {
-                const message = e instanceof AlreadyExistsError ? e.message : 'Something went wrong while checking this URL, please try again.';
-                showToast({
-                    type: 'pageError',
-                    message
-                });
-            }
-        }}
+        onOk={saveForm}
     >
         <p className="mt-4">You can recommend any site your audience will find valuable, not just those published on Ghost.</p>
         <Form
             marginBottom={false}
             marginTop
         >
-            <URLTextField
+            <TextField
                 autoFocus={true}
                 error={Boolean(errors.url)}
                 hint={errors.url || <>Need inspiration? <a className='text-green' href="https://www.ghost.org/explore" rel="noopener noreferrer" target='_blank'>Explore thousands of sites</a> to recommend</>}
                 placeholder='https://www.example.com'
                 title='URL'
                 value={formState.url}
-                onBlur={validate}
-                onChange={u => updateForm((state) => {
-                    return {
-                        ...state,
-                        url: u
-                    };
-                })}
-                onKeyDown={() => clearError?.('url')}
+                onBlur={() => updateForm(state => ({...state, url: formatUrl(formState.url)}))}
+                onChange={(e) => {
+                    clearError?.('url');
+                    updateForm(state => ({...state, url: e.target.value}));
+                }}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        updateForm(state => ({...state, url: formatUrl(formState.url)}));
+                        setEnterPressed(true);
+                    }
+                }}
             />
         </Form>
     </Modal>;
