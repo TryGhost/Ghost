@@ -261,13 +261,12 @@ const emberDataTypeMapping = {
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
     NewslettersResponseType: {type: 'newsletter'},
-    RecommendationsResponseType: {type: 'recommendation'},
+    RecommendationResponseType: {type: 'recommendation'},
     SettingsResponseType: {type: 'setting', singleton: true},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
     UsersResponseType: {type: 'user'},
     CustomThemeSettingsResponseType: {type: 'custom-theme-setting'}
-
 };
 
 export default class AdminXSettings extends Component {
