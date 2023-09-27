@@ -20,7 +20,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     const {mutateAsync: addRecommendation} = useAddRecommendation();
     const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, saveState, errors} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors, clearError} = useForm({
         initialState: {
             ...recommendation
         },
@@ -38,6 +38,10 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             const newErrors: Record<string, string> = {};
             if (!formState.title) {
                 newErrors.title = 'Title is required';
+            }
+
+            if (formState.reason && formState.reason.length > 200) {
+                newErrors.reason = 'Description cannot be longer than 200 characters';
             }
             return newErrors;
         }
@@ -115,7 +119,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             }
         }}
     >
-        <RecommendationReasonForm errors={errors} formState={formState} showURL={false} updateForm={updateForm}/>
+        <RecommendationReasonForm clearError={clearError} errors={errors} formState={formState} showURL={false} updateForm={updateForm}/>
     </Modal>;
 };
 
