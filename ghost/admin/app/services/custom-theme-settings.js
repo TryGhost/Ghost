@@ -100,6 +100,16 @@ export default class CustomThemeSettingsServices extends Service {
     updateSettingsVisibility() {
         this.settings.forEach((setting) => {
             setting.visible = this._isSettingVisible(setting);
+
+            // Updating the setting visibility will cause the setting to be marked as dirty so
+            // we need to compute whether the setting is actually dirty and set the flag manually
+            const changedProperties = Object.keys(setting.changedAttributes()).filter(key => key !== 'visible');
+
+            setting.hasDirtyAttributes = false;
+
+            if (changedProperties.length > 0) {
+                setting.hasDirtyAttributes = true;
+            }
         });
     }
 
