@@ -4,7 +4,7 @@ import {Recommendation} from './Recommendation';
 export interface RecommendationRepository {
     save(entity: Recommendation): Promise<void>;
     getById(id: string): Promise<Recommendation | null>;
-    getByUrl(url: URL): Promise<Recommendation[]>;
+    getByUrl(url: URL): Promise<Recommendation | null>;
     getAll({filter, order}?: {filter?: string, order?: OrderOption<Recommendation>}): Promise<Recommendation[]>;
     getPage({filter, order, page, limit}: {
         filter?: string;
