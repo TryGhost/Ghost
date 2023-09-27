@@ -13,6 +13,7 @@ import {EditorPlaceholder} from './ui/EditorPlaceholder';
 import {ExternalControlPlugin} from '../plugins/ExternalControlPlugin';
 import {HistoryPlugin} from '@lexical/react/LexicalHistoryPlugin';
 import {KoenigBlurPlugin} from '../plugins/KoenigBlurPlugin';
+import {KoenigFocusPlugin} from '../plugins/KoenigFocusPlugin';
 import {LinkPlugin} from '@lexical/react/LexicalLinkPlugin';
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import {RestrictContentPlugin} from '../index.js';
@@ -25,6 +26,7 @@ import {useSharedOnChangeContext} from '../context/SharedOnChangeContext';
 const KoenigComposableEditor = ({
     onChange,
     onBlur,
+    onFocus,
     markdownTransformers,
     registerAPI,
     cursorDidExitAtTop,
@@ -110,6 +112,7 @@ const KoenigComposableEditor = ({
             {isDragReorderEnabled && <DragDropReorderPlugin containerElem={editorContainerRef} />}
             {singleParagraph && <RestrictContentPlugin paragraphs={1} />}
             {onBlur && <KoenigBlurPlugin onBlur={onBlur} />}
+            {onFocus && <KoenigFocusPlugin onFocus={onFocus} />}
             <MarkdownPastePlugin />
             {children}
         </div>
