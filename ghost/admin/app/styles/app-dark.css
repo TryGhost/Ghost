@@ -933,6 +933,10 @@ input:focus,
     fill: var(--darkgrey);
 }
 
+.gh-editor-feature-image-caption {
+    color: var(--darkgrey);
+}
+
 .gh-editor-wordcount-container {
     background: var(--white);
 }
