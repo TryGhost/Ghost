@@ -28,7 +28,7 @@ test.describe('Collection card', async () => {
             root: {
                 children: [{
                     type: 'collection',
-                    collection: {slug: 'latest'},
+                    collection: 'latest',
                     header: 'Newest posts',
                     postCount: 3,
                     layout: 'grid',
@@ -63,7 +63,7 @@ test.describe('Collection card', async () => {
                     <div>
                         <div>
                             <div>
-                                <img alt="" />
+                                <div></div>
                                 <svg></svg>
                             </div>
                             <div>
@@ -73,7 +73,7 @@ test.describe('Collection card', async () => {
                         </div>
                         <div>
                             <div>
-                                <img alt="" />
+                                <div></div>
                                 <svg></svg>
                             </div>
                             <div>
@@ -83,7 +83,7 @@ test.describe('Collection card', async () => {
                         </div>
                         <div>
                             <div>
-                                <img alt="" />
+                                <div></div>
                                 <svg></svg>
                             </div>
                             <div>
@@ -146,7 +146,7 @@ test.describe('Collection card', async () => {
             await insertCollectionCard(page);
 
             const postsContainer = await page.getByTestId('collection-posts-container');
-            await expect(postsContainer).toHaveClass('grid w-full grid-cols-3 gap-8');
+            await expect(postsContainer).toHaveClass('grid w-full grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3');
             await page.getByTestId('collection-layout-list').click();
             await expect(postsContainer).toHaveClass('grid w-full gap-8');
         });

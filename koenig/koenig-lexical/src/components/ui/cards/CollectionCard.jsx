@@ -14,22 +14,28 @@ import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 function PostImage({image, layout, columns, isLoading}) {
     return (
         <div className={clsx(
-            'relative flex w-full items-center justify-center bg-grey-200 dark:bg-grey-950',
+            'relative flex w-full justify-center dark:bg-grey-950',
+            !image && 'items-center bg-grey-200',
             isLoading && 'animate-pulse'
         )}>
-            <img alt="" className={clsx(
+            {image ? <img alt="" className={clsx(
                 'w-full object-cover',
                 (layout === 'grid' && (columns === 1 || columns === 2)) ? 'aspect-video' : 'aspect-[3/2]',
                 (image === null) && 'invisible'
             )} src={image}/>
+                : <div className={clsx(
+                    'w-full object-cover',
+                    (layout === 'grid' && (columns === 1 || columns === 2)) ? 'aspect-video' : 'aspect-[3/2]',
+                    (image === null) && 'invisible'
+                )}></div>
+            }
             <ImgPlaceholderIcon className={clsx(
-                'absolute shrink-0 text-grey/80 dark:text-grey/50',
+                'absolute h-10 w-10 shrink-0 text-grey/80 dark:text-grey/50',
                 image && 'hidden',
-                layout === 'list' && 'h-9 w-9',
-                (layout === 'grid' && columns === 1) && 'h-20 w-20',
-                (layout === 'grid' && columns === 2) && 'h-14 w-14',
-                (layout === 'grid' && columns === 3) && 'h-12 w-12',
-                (layout === 'grid' && columns === 4) && 'h-10 w-10'
+                layout === 'list' && 'md:h-9 md:w-9 lg:h-10 lg:w-10 xl:h-12 xl:w-12',
+                (layout === 'grid' && columns === 1) && 'md:h-12 md:w-12 lg:h-14 lg:w-14 xl:h-20 xl:w-20',
+                (layout === 'grid' && columns === 2) && 'lg:h-12 lg:w-12 xl:h-14 xl:w-14',
+                (layout === 'grid' && columns === 3) && 'xl:h-12 xl:w-12',
             )} />
         </div>
     );
@@ -38,12 +44,12 @@ function PostImage({image, layout, columns, isLoading}) {
 function PostTitle({title, layout, columns}) {
     return (
         <div className={clsx(
-            'font-bold leading-tight tracking-normal text-black dark:text-grey-100',
-            layout === 'list' && 'text-2xl',
-            (layout === 'grid' && columns === 1) && 'text-4xl',
-            (layout === 'grid' && columns === 2) && 'text-2xl',
-            (layout === 'grid' && columns === 3) && 'text-xl',
-            (layout === 'grid' && columns === 4) && 'text-[1.7rem]',
+            'text-lg font-bold leading-tight tracking-normal text-black dark:text-grey-100 xs:text-xl sm:text-2xl',
+            layout === 'list' && 'md:text-xl lg:text-2xl',
+            (layout === 'grid' && columns === 1) && 'lg:text-3xl xl:text-4xl',
+            (layout === 'grid' && columns === 2) && 'md:text-xl lg:text-2xl',
+            (layout === 'grid' && columns === 3) && 'md:text-xl',
+            (layout === 'grid' && columns === 4) && 'md:text-xl xl:text-[1.7rem]',
         )}>
             {title}
         </div>
@@ -53,12 +59,10 @@ function PostTitle({title, layout, columns}) {
 function PostExcerpt({excerpt, layout, columns}) {
     return (
         <div className={clsx(
-            'overflow-y-hidden font-normal leading-snug tracking-[-.01em] text-grey-900 dark:text-grey-600',
-            layout === 'list' && 'mt-3 line-clamp-3 max-h-[62px] text-[1.6rem]',
-            (layout === 'grid' && columns === 1) && 'mt-4 line-clamp-3 max-h-[75px] text-lg',
-            (layout === 'grid' && columns === 2) && 'mt-4 line-clamp-3 max-h-[66px] text-[1.6rem]',
-            (layout === 'grid' && columns === 3) && 'mt-3 line-clamp-2 max-h-[42px] text-md',
-            (layout === 'grid' && columns === 4) && 'mt-3 line-clamp-2 max-h-[42px] text-md',
+            'mt-3 line-clamp-2 max-h-[42px] overflow-y-hidden text-md font-normal leading-snug tracking-[-.01em] text-grey-900 dark:text-grey-600',
+            layout === 'list' && 'md:line-clamp-3 md:max-h-[66px] md:text-[1.6rem]',
+            (layout === 'grid' && columns === 1) && 'md:line-clamp-3 md:max-h-[66px] md:text-[1.6rem] lg:mt-4 lg:line-clamp-3 lg:max-h-[75px] lg:text-lg',
+            (layout === 'grid' && columns === 2) && 'lg:mt-4 lg:line-clamp-3 lg:max-h-[66px] lg:text-[1.6rem]'
         )}>
             {excerpt}
         </div>
@@ -68,12 +72,10 @@ function PostExcerpt({excerpt, layout, columns}) {
 function PostMeta({publishDate, readTime, layout, columns}) {
     return (
         <div className={clsx(
-            'flex font-medium leading-snug text-grey-600 dark:text-grey-400',
-            layout === 'list' && 'mt-3 text-[1.3rem]',
-            (layout === 'grid' && columns === 1) && 'mt-4 text-sm',
-            (layout === 'grid' && columns === 2) && 'mt-4 text-[1.3rem]',
-            (layout === 'grid' && columns === 3) && 'mt-3 text-[1.25rem]',
-            (layout === 'grid' && columns === 4) && 'mt-3 text-[1.25rem]',
+            'mt-3 flex text-[1.25rem] font-medium leading-snug text-grey-600 dark:text-grey-400',
+            layout === 'list' && 'mt-3 md:text-[1.3rem]',
+            (layout === 'grid' && columns === 1) && 'md:text-[1.3rem] lg:mt-4 lg:text-sm',
+            (layout === 'grid' && columns === 2) && 'lg:mt-4 lg:text-[1.3rem]',
         )}>
             {publishDate ? 
                 (<div>{DateTime.fromISO(publishDate).toFormat('d LLL yyyy')}</div>)
@@ -91,56 +93,45 @@ export function CollectionPost({
     options,
     isLoading
 }) {
-    if (isPlaceholder || isLoading) {
-        return (
-            <div className={clsx(
-                'not-kg-prose relative w-full gap-4 bg-transparent font-sans',
-                layout === 'list' && 'grid grid-cols-3',
-                layout === 'grid' && 'flex flex-col'
-            )}>
-                <PostImage columns={columns} image={null} isLoading={isLoading} layout={layout} />
-                <div className="col-span-2 flex flex-col items-start justify-start">
-                    <div className={clsx(
-                        'rounded-full bg-grey-200',
-                        layout === 'list' && 'h-5 w-3/4',
-                        (layout === 'grid' && columns === 1) && 'mt-3 h-8 w-full',
-                        (layout === 'grid' && columns === 2) && 'mt-2 h-5 w-full',
-                        (layout === 'grid' && columns === 3) && 'mt-1 h-4 w-full',
-                        (layout === 'grid' && columns === 4) && 'h-[1.4rem] w-full',
-                        isLoading && 'animate-pulse'
-                    )}></div>
-                    <div className={clsx(
-                        'rounded-full bg-grey-200',
-                        layout === 'list' && 'mt-3 h-5 w-1/3',
-                        (layout === 'grid' && columns === 1) && 'mt-3 h-8 w-1/2',
-                        (layout === 'grid' && columns === 2) && 'mt-3 h-5 w-1/2',
-                        (layout === 'grid' && columns === 3) && 'mt-[1rem] h-4 w-1/2',
-                        (layout === 'grid' && columns === 4) && 'mt-2 h-[1.4rem] w-1/2',
-                        isLoading && 'animate-pulse'
-                    )}></div>
-                </div>
-            </div>
-        );
-    }
     // may want options later for changing post display (like hiding feature img)
-    const {title, feature_image: image, published_at: publishDate, reading_time: readTime, excerpt} = post;
+    const {title, feature_image: image, published_at: publishDate, reading_time: readTime, excerpt} = (post || {});
 
     return (
         <div className={clsx(
             'not-kg-prose relative w-full bg-transparent font-sans',
-            layout === 'list' && 'grid grid-cols-3 gap-8',
+            layout === 'list' && 'grid grid-cols-1 gap-y-4 md:grid-cols-3 md:gap-8',
             layout === 'grid' && 'flex flex-col',
-            (layout === 'grid' && columns === 1) && 'gap-5',
+            (layout === 'grid' && columns === 1) && 'gap-4 lg:gap-5',
             (layout === 'grid' && columns === 2) && 'gap-4',
-            (layout === 'grid' && columns === 3) && 'gap-3',
-            (layout === 'grid' && columns === 4) && 'gap-3'
+            (layout === 'grid' && columns === 3) && 'gap-4 lg:gap-3',
+            (layout === 'grid' && columns === 4) && 'gap-4 lg:gap-3'
         )}>
-            {image && <PostImage columns={columns} image={image} isLoading={isLoading} layout={layout} />}
-            <div className="col-span-2 flex flex-col items-start justify-start">
-                {title && <PostTitle columns={columns} layout={layout} title={title} />}
-                {excerpt && <PostExcerpt columns={columns} excerpt={excerpt} layout={layout} />}
-                <PostMeta columns={columns} layout={layout} publishDate={publishDate} readTime={readTime} />
-            </div>
+            {(image || isPlaceholder || isLoading) && <PostImage columns={columns} image={image} isLoading={isLoading} layout={layout} />}
+            {(isPlaceholder || isLoading) ? 
+                <div className="col-span-2 flex flex-col items-start justify-start">
+                    <div className={clsx(
+                        'h-4 w-full rounded-full bg-grey-200',
+                        layout === 'list' && 'mt-0 lg:h-5 lg:w-3/4',
+                        (layout === 'grid' && columns === 1) && 'mt-1 md:mt-2 md:h-5 lg:mt-3 lg:h-8',
+                        (layout === 'grid' && columns === 2) && 'mt-1 lg:mt-2 lg:h-5',
+                        (layout === 'grid' && columns === 4) && 'mt-1 xl:mt-0 xl:h-[1.4rem]',
+                        isLoading && 'animate-pulse'
+                    )}></div>
+                    <div className={clsx(
+                        'mt-[1rem] h-4  w-1/2 rounded-full bg-grey-200',
+                        layout === 'list' && 'lg:mt-3 lg:h-5 lg:w-1/3',
+                        (layout === 'grid' && columns === 1) && 'md:mt-3 md:h-5 lg:mt-3 lg:h-8',
+                        (layout === 'grid' && columns === 2) && 'lg:mt-3 lg:h-5',
+                        (layout === 'grid' && columns === 4) && 'xl:mt-2 xl:h-[1.4rem]',
+                        isLoading && 'animate-pulse'
+                    )}></div>
+                </div>
+                : <div className="col-span-2 flex flex-col items-start justify-start">
+                    {title && <PostTitle columns={columns} layout={layout} title={title} />}
+                    {excerpt && <PostExcerpt columns={columns} excerpt={excerpt} layout={layout} />}
+                    <PostMeta columns={columns} layout={layout} publishDate={publishDate} readTime={readTime} />
+                </div>
+            }
         </div>
     );
 }
@@ -267,10 +258,10 @@ export function CollectionCard({
             <div className={clsx(
                 'grid w-full',
                 layout === 'list' && 'gap-8',
-                (layout === 'grid' && columns === 1) && 'grid-cols-1 gap-y-12',
-                (layout === 'grid' && columns === 2) && 'grid-cols-2 gap-10',
-                (layout === 'grid' && columns === 3) && 'grid-cols-3 gap-8',
-                (layout === 'grid' && columns === 4) && 'grid-cols-4 gap-6'
+                (layout === 'grid' && columns === 1) && 'grid-cols-1 gap-6 md:gap-8 lg:gap-10 xl:gap-y-12',
+                (layout === 'grid' && columns === 2) && 'grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:gap-10',
+                (layout === 'grid' && columns === 3) && 'grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3',
+                (layout === 'grid' && columns === 4) && 'grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6'
             )}
             data-testid='collection-posts-container'
             >
