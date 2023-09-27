@@ -3,13 +3,11 @@ import React from 'react';
 
 const CARD_WIDTH_CLASSES = {
     wide: [
-        'w-[calc(100%+4rem)] left-[calc(50%-(100%+4rem)/2)]',
-        'xs:w-[calc(100%+8rem)] xs:left-[calc(50%-(100%+8rem)/2)]',
-        'md:w-[calc(100%+12rem)] md:left-[calc(50%-(100%+12rem)/2)]',
-        'lg:w-[calc(100%+22rem)] lg:left-[calc(50%-(100%+22rem)/2)]',
-        'xl:w-[calc(100%+40rem)] xl:left-[calc(50%-(100%+40rem)/2)]'
+        'w-[calc(75vw-var(--kg-breakout-adjustment)+2px)] mx-[calc(50%-(50vw-var(--kg-breakout-adjustment))-.8rem)] min-w-[calc(100%+3.6rem)] translate-x-[calc(50vw-50%+.8rem-var(--kg-breakout-adjustment))]',
+        'sm:min-w-[calc(100%+10rem)]',
+        'lg:min-w-[calc(100%+18rem)]'
     ].join(' '),
-    full: 'inset-x-[-1px] mx-[calc(50%-50vw+(var(--kg-breakout-adjustment)/2))] w-[calc(100vw-var(--kg-breakout-adjustment)+2px)]'
+    full: 'inset-x-[-1px] mx-[calc(50%-50vw)] w-[calc(100vw+2px)] lg:mx-[calc(50%-50vw+(var(--kg-breakout-adjustment)/2))] lg:w-[calc(100vw-var(--kg-breakout-adjustment)+2px)]'
 };
 
 export const CardWrapper = React.forwardRef(({

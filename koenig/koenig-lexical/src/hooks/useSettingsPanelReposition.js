@@ -12,10 +12,32 @@ function isMobile() {
     return window.innerWidth < 768 && window.innerHeight > window.innerWidth;
 }
 
-function keepWithinSpacing(panelElem, {x, y, topSpacing, bottomSpacing, rightSpacing, leftSpacing, lastSpacing}) {
-    if (!panelElem) {
-        return {x, y};
+const getSelectedCardOrigin = () => {
+    const cardElement = document.querySelector('[data-kg-card-editing="true"]');
+    if (!cardElement) {
+        return {x: 0, y: 0};
     }
+    const containerRect = cardElement.getBoundingClientRect();
+
+    // if the card element has a transform applied (e.g. wide cards) our panel elem becomes positioned
+    // relative to the card element rather than the window
+    const cardStyles = window.getComputedStyle(cardElement);
+    const origin = {x: 0, y: 0};
+    if (cardStyles.transform !== 'none') {
+        origin.x = containerRect.left;
+        origin.y = containerRect.top;
+    }
+    return origin;
+};
+
+function keepWithinSpacing(panelElem, {x, y, origin = {x: 0, y: 0}, topSpacing, bottomSpacing, rightSpacing, leftSpacing, lastSpacing}) {
+    origin = getSelectedCardOrigin();
+
+    if (!panelElem) {
+        return {x: x + origin.x, y: y + origin.y};
+    }
+
+    const windowWidthAdjustment = parseInt(window.getComputedStyle(panelElem).getPropertyValue('--kg-breakout-adjustment') || 0, 10);
 
     // Take previous position into account, and adjust the spacing to allow negative spacing if the previous position was offscreen
     if (lastSpacing && lastSpacing.top < topSpacing) {
@@ -34,18 +56,18 @@ function keepWithinSpacing(panelElem, {x, y, topSpacing, bottomSpacing, rightSpa
     const width = panelElem.offsetWidth;
     const height = panelElem.offsetHeight;
 
-    const right = x + width;
-    const bottom = y + height;
+    const right = x + width + origin.x;
+    const bottom = y + height + origin.y;
 
-    const topIsOffscreen = y < topSpacing;
+    const topIsOffscreen = (y + origin.y) < topSpacing;
     const bottomIsOffscreen = window.innerHeight - bottom < bottomSpacing;
-    const rightIsOffscreen = window.innerWidth - right < rightSpacing;
+    const rightIsOffscreen = window.innerWidth - right - windowWidthAdjustment < rightSpacing;
     const leftIsOffscreen = x < leftSpacing;
     let yAdjustment = 0;
     let xAdjustment = 0;
 
     if (topIsOffscreen && !bottomIsOffscreen) {
-        yAdjustment = topSpacing - y;
+        yAdjustment = topSpacing - y - origin.y;
     }
 
     if (bottomIsOffscreen && !topIsOffscreen) {
@@ -53,18 +75,17 @@ function keepWithinSpacing(panelElem, {x, y, topSpacing, bottomSpacing, rightSpa
     }
 
     if (rightIsOffscreen) {
-        xAdjustment = -(rightSpacing - (window.innerWidth - right));
+        xAdjustment = -(rightSpacing - (window.innerWidth - right - windowWidthAdjustment));
     }
 
     if (leftIsOffscreen) {
-        xAdjustment = leftSpacing - x;
+        xAdjustment = leftSpacing - x - origin.x;
     }
 
-    // no adjustment needed
     return {x: x + xAdjustment, y: y + yAdjustment};
 }
 
-function keepWithinSpacingOnDrag(panelElem, {x, y}) {
+function keepWithinSpacingOnDrag(panelElem, {x, y, origin}) {
     const width = panelElem.offsetWidth;
     const height = panelElem.offsetHeight;
 
@@ -76,16 +97,18 @@ function keepWithinSpacingOnDrag(panelElem, {x, y}) {
     const leftSpacing = MINIMUM_VISIBLE - width;
 
     // Last spacing is ignored
-    return keepWithinSpacing(panelElem, {x, y, topSpacing, bottomSpacing, rightSpacing, leftSpacing, lastSpacing: undefined});
+    return keepWithinSpacing(panelElem, {x, y, origin, topSpacing, bottomSpacing, rightSpacing, leftSpacing, lastSpacing: undefined});
 }
 
-function keepWithinSpacingOnResize(panelElem, {x, y, lastSpacing}) {
-    return keepWithinSpacingOnDrag(panelElem, keepWithinSpacing(panelElem, {x, y, topSpacing: MIN_TOP_SPACING, bottomSpacing: MIN_BOTTOM_SPACING, rightSpacing: MIN_RIGHT_SPACING, leftSpacing: MIN_LEFT_SPACING, lastSpacing}));
+function keepWithinSpacingOnResize(panelElem, {x, y, origin, lastSpacing}) {
+    return keepWithinSpacingOnDrag(panelElem, keepWithinSpacing(panelElem, {x, y, origin, topSpacing: MIN_TOP_SPACING, bottomSpacing: MIN_BOTTOM_SPACING, rightSpacing: MIN_RIGHT_SPACING, leftSpacing: MIN_LEFT_SPACING, lastSpacing}));
 }
 
-export default function useSettingsPanelReposition({positionToRef} = {}) {
+export default function useSettingsPanelReposition({positionToRef} = {}, cardWidth) {
     const {ref, getPosition, setPosition} = useMovable({adjustOnResize: keepWithinSpacingOnResize, adjustOnDrag: keepWithinSpacingOnDrag});
     const previousViewport = useRef({width: window.innerWidth, height: window.innerHeight});
+    const previousCardWidth = useRef(cardWidth);
+    const previousCardOrigin = useRef({x: 0, y: 0});
 
     const getInitialPosition = useCallback((panelElem) => {
         const panelHeight = panelElem.offsetHeight;
@@ -110,12 +133,21 @@ export default function useSettingsPanelReposition({positionToRef} = {}) {
         // if we already have top set, leave it so that toggling additional settings doesn't cause the panel to jump (unless it would be offscreen)
         const containerMiddle = containerRect.top + (visibleHeight / 2);
 
-        const y = containerMiddle - (panelHeight) / 2;
+        let y = containerMiddle - (panelHeight) / 2;
 
         // position to right of panel
-        const x = containerRect.right + CARD_SPACING;
+        let x = containerRect.right + CARD_SPACING;
 
-        return keepWithinSpacingOnResize(panelElem, {x, y});
+        // if the card element has a transform applied (e.g. wide cards) our panel elem becomes positioned
+        // relative to the card element rather than the window
+        const cardStyles = window.getComputedStyle(cardElement);
+        const origin = {x: 0, y: 0};
+        if (cardStyles.transform !== 'none') {
+            origin.x = containerRect.left;
+            origin.y = containerRect.top;
+        }
+
+        return keepWithinSpacingOnResize(panelElem, {x, y, origin});
     }, [positionToRef]);
 
     const onResize = useCallback((panelElem) => {
@@ -167,11 +199,33 @@ export default function useSettingsPanelReposition({positionToRef} = {}) {
         if (!ref || !ref.current) {
             return;
         }
-
         setPosition(getInitialPosition(ref.current));
     }, [getInitialPosition, setPosition, ref]);
 
-    return {
-        ref
-    };
+    // account for wide cards using a transform so we need to adjust the origin position
+    //  NOTE: we want to make sure this doesn't happen on the first render so previousCardWidth must start as undefined
+    useLayoutEffect(() => {
+        if (cardWidth === 'wide' && previousCardWidth.current !== 'wide') {
+            // offset origin to account for wide card (origin = card origin)
+            const cardElement = document.querySelector('[data-kg-card-editing="true"]');
+            if (!cardElement) {
+                return;
+            }
+            const containerRect = cardElement.getBoundingClientRect();
+            const origin = {x: containerRect.left + 2, y: containerRect.top + 1}; // not sure why 2,1 offsets mild bounce in positioning
+            previousCardOrigin.current = origin;
+
+            const x = getPosition().x - origin.x;
+            const y = getPosition().y - origin.y;
+            setPosition(keepWithinSpacingOnResize(ref.current, {x, y, origin}));
+        } else if (previousCardWidth.current === 'wide' && cardWidth !== 'wide') {
+            // reset origin to window origin
+            const x = getPosition().x + previousCardOrigin.current.x;
+            const y = getPosition().y + previousCardOrigin.current.y;
+            setPosition(keepWithinSpacingOnResize(ref.current, {x, y, origin: {x: 0, y: 0}}));
+        }
+        previousCardWidth.current = cardWidth;
+    }, [cardWidth, getPosition, getInitialPosition, setPosition, ref]);
+
+    return {ref};
 }

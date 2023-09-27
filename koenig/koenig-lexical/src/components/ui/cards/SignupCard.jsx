@@ -363,7 +363,7 @@ export function SignupCard({alignment,
             }
 
             {isEditing && (
-                <SettingsPanel className="mt-0">
+                <SettingsPanel cardWidth={layout} className="mt-0">
                     <ButtonGroupSetting
                         buttons={layoutChildren}
                         label='Layout'

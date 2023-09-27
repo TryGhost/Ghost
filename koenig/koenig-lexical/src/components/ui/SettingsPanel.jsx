@@ -13,8 +13,8 @@ import {MultiSelectDropdown} from './MultiSelectDropdown';
 import {Slider} from './Slider.jsx';
 import {Toggle} from './Toggle';
 
-export function SettingsPanel({children, darkMode}) {
-    const {ref} = useSettingsPanelReposition();
+export function SettingsPanel({children, darkMode, cardWidth}) {
+    const {ref} = useSettingsPanelReposition({}, cardWidth);
 
     return (
         // Ideally we would use Portal to avoid issues with transformed ancestors (https://bugs.chromium.org/p/chromium/issues/detail?id=20574)
