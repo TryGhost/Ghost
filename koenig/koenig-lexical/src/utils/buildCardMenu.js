@@ -89,7 +89,7 @@ function buildSnippetMenuItem(data, config) {
         label: data.name,
         Icon: SnippetCardIcon,
         section: 'Snippets',
-        matches: query => name.indexOf(query) > -1,
+        matches: query => name.indexOf(query) > -1 || 'snippets'.indexOf(query) > -1,
         insertCommand: INSERT_SNIPPET_COMMAND,
         insertParams: data,
         onRemove: () => config.deleteSnippet(data)
