@@ -324,6 +324,8 @@ export default class AdminXSettings extends Component {
         if (dataType === 'SettingsResponseType') {
             // Blog title is based on settings, but the one stored in config is used instead in various places
             this.config.blogTitle = response.settings.find(setting => setting.key === 'title').value;
+
+            this.settings.reload();
         }
 
         if (dataType === 'TiersResponseType') {
