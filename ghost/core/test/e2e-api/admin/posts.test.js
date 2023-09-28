@@ -606,9 +606,9 @@ describe('Posts API', function () {
                 };
             };
 
-            const {body: test} = await agent.put(`/posts/${postResponse.id}/`)
+            await agent.put(`/posts/${postResponse.id}/`)
                 .body({posts: [Object.assign({}, postResponse, {collections: [collectionToRemove.id]})]})
-                .expectStatus(200);
+                .expectStatus(200)
                 .matchBodySnapshot({
                     posts: [
                         Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
@@ -624,23 +624,23 @@ describe('Posts API', function () {
                     'x-cache-invalidate': stringMatching(/\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)
                 });
 
-                await agent.put(`/posts/${postResponse.id}/`)
-                    .body({posts: [Object.assign({}, postResponse, {collections: [collectionToAdd.id]})]})
-                    .expectStatus(200)
-                    .matchBodySnapshot({
-                        posts: [
-                            Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
-                                // collectionToAdd
-                                collectionMatcher,
-                                // automatic "latest" collection which cannot be removed
-                                buildCollectionMatcher(22)
-                            ]})]
-                    })
-                    .matchHeaderSnapshot({
-                        'content-version': anyContentVersion,
-                        etag: anyEtag,
-                        'x-cache-invalidate': stringMatching(/\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)
-                    });
+            await agent.put(`/posts/${postResponse.id}/`)
+                .body({posts: [Object.assign({}, postResponse, {collections: [collectionToAdd.id]})]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    posts: [
+                        Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
+                            // collectionToAdd
+                            collectionMatcher,
+                            // automatic "latest" collection which cannot be removed
+                            buildCollectionMatcher(22)
+                        ]})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    'x-cache-invalidate': stringMatching(/\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)
+                });
         });
 
         it('Clears all page html fields when publishing a post', async function () {
