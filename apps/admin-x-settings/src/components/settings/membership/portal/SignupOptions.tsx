@@ -124,7 +124,6 @@ const SignupOptions: React.FC<{
         )}
 
         <HtmlField
-            config={config}
             error={Boolean(errors.portal_signup_terms_html)}
             hint={errors.portal_signup_terms_html || <>Recommended: <strong>115</strong> characters. You&apos;ve used <strong className="text-green">{signupTermsLength}</strong></>}
             nodes='MINIMAL_NODES'

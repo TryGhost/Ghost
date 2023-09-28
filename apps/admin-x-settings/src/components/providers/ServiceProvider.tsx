@@ -12,6 +12,8 @@ export type OfficialTheme = {
     url?: string;
 };
 
+export type FetchKoenigLexical = () => Promise<any>
+
 interface ServicesContextProps {
     ghostVersion: string
     officialThemes: OfficialTheme[];
@@ -22,6 +24,7 @@ interface ServicesContextProps {
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
+    fetchKoenigLexical: FetchKoenigLexical;
 }
 
 interface ServicesProviderProps {
@@ -34,6 +37,7 @@ interface ServicesProviderProps {
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
+    fetchKoenigLexical: FetchKoenigLexical;
 }
 
 const ServicesContext = createContext<ServicesContextProps>({
@@ -51,10 +55,11 @@ const ServicesContext = createContext<ServicesContextProps>({
     sentryDSN: null,
     onUpdate: () => {},
     onInvalidate: () => {},
-    onDelete: () => {}
+    onDelete: () => {},
+    fetchKoenigLexical: async () => {}
 });
 
-const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, unsplashConfig, sentryDSN, onUpdate, onInvalidate, onDelete}) => {
+const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, unsplashConfig, sentryDSN, onUpdate, onInvalidate, onDelete, fetchKoenigLexical}) => {
     const search = useSearchService();
 
     return (
@@ -67,7 +72,8 @@ const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersi
             sentryDSN,
             onUpdate,
             onInvalidate,
-            onDelete
+            onDelete,
+            fetchKoenigLexical
         }}>
             {children}
         </ServicesContext.Provider>

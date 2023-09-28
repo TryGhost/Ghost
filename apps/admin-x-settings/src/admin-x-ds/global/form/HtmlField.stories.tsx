@@ -5,15 +5,7 @@ import HtmlField from './HtmlField';
 const meta = {
     title: 'Global / Form / Htmlfield',
     component: HtmlField,
-    tags: ['autodocs'],
-    args: {
-        config: {
-            editor: {
-                url: 'https://cdn.jsdelivr.net/ghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js',
-                version: '0.3'
-            }
-        }
-    }
+    tags: ['autodocs']
 } satisfies Meta<typeof HtmlField>;
 
 export default meta;

@@ -38,8 +38,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     paidMembersEnabled,
     onBlur
 }) => {
-    const {config} = useGlobalData();
-
     const visibilityCheckboxes = [
         {
             label: 'Logged out visitors',
@@ -70,7 +68,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     return (
         <Form>
             <HtmlField
-                config={config}
                 nodes='MINIMAL_NODES'
                 placeholder='Highlight breaking news, offers or updates'
                 title='Announcement'
@@ -201,10 +198,10 @@ const AnnouncementBarModal: React.FC = () => {
         break;
     }
 
-    const preview = <AnnouncementBarPreview 
-        announcementBackgroundColor={announcementBackgroundColor} 
-        announcementContent={announcementContent} 
-        url={selectedTabURL} 
+    const preview = <AnnouncementBarPreview
+        announcementBackgroundColor={announcementBackgroundColor}
+        announcementContent={announcementContent}
+        url={selectedTabURL}
         visibility={visibilitySettings}
     />;
 

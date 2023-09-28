@@ -46,7 +46,7 @@ const Sidebar: React.FC<{
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
-    const {settings, siteData, config} = useGlobalData();
+    const {settings, siteData} = useGlobalData();
     const [membersSupportAddress, icon] = getSettingValues<string>(settings, ['members_support_address', 'icon']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
@@ -406,7 +406,6 @@ const Sidebar: React.FC<{
                         />
                     </ToggleGroup>
                     <HtmlField
-                        config={config}
                         hint='Any extra information or legal text'
                         nodes='MINIMAL_NODES'
                         placeholder=' '
