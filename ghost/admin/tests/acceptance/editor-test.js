@@ -19,6 +19,21 @@ describe('Acceptance: Editor', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    beforeEach(async function () {
+        this.server.loadFixtures();
+
+        // ensure required config is in place for external lexical editor to load
+        const config = this.server.schema.configs.find(1);
+        config.attrs.editor = {url: 'https://cdn.pkg/editor.js'};
+        config.save();
+
+        // stub loaded external module to avoid loading of external dep
+        window['@tryghost/koenig-lexical'] = {
+            KoenigComposer: () => null,
+            KoenigEditor: () => null
+        };
+    });
+
     it('redirects to signin when not authenticated', async function () {
         let author = this.server.create('user'); // necesary for post-author association
         this.server.create('post', {authors: [author]});
@@ -271,8 +286,6 @@ describe('Acceptance: Editor', function () {
                 'alert text after invalid title'
             ).to.match(/Title cannot be longer than 255 characters/);
         });
-
-        // NOTE: these tests are specific to the mobiledoc editor
         // it('inserts a placeholder if the title is blank', async function () {
         //     this.server.createList('post', 1);
         //

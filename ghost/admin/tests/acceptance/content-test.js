@@ -10,6 +10,21 @@ describe('Acceptance: Content', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    beforeEach(async function () {
+        this.server.loadFixtures();
+
+        // ensure required config is in place for external lexical editor to load
+        const config = this.server.schema.configs.find(1);
+        config.attrs.editor = {url: 'https://cdn.pkg/editor.js'};
+        config.save();
+
+        // stub loaded external module to avoid loading of external dep
+        window['@tryghost/koenig-lexical'] = {
+            KoenigComposer: () => null,
+            KoenigEditor: () => null
+        };
+    });
+
     it('redirects to signin when not authenticated', async function () {
         await invalidateSession();
         await visit('/posts');
