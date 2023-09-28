@@ -8,10 +8,9 @@ import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupCon
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useHandleError from '../../../../utils/api/handleError';
-import {CustomThemeSetting} from '../../../../api/customThemeSettings';
+import {CustomThemeSetting, isCustomThemeSettingVisible} from '../../../../api/customThemeSettings';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {humanizeSettingKey} from '../../../../api/settings';
-import {isCustomThemeSettingVisible} from '../../../../utils/helpers';
 
 const ThemeSetting: React.FC<{
     setting: CustomThemeSetting,

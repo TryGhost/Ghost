@@ -1,6 +1,3 @@
-import nql from '@tryghost/nql';
-import {CustomThemeSetting} from '../api/customThemeSettings';
-
 export interface IGhostPaths {
     subdir: string;
     adminRoot: string;
@@ -84,12 +81,4 @@ export function numberWithCommas(x: number) {
 
 export function isObjectId(value: string) {
     return /^[a-z0-9]{24}$/.test(value);
-}
-
-export function isCustomThemeSettingVisible(setting: CustomThemeSetting, settingsKeyValueObj: Record<string, string>) {
-    if (!setting.visibility) {
-        return true;
-    }
-
-    return nql(setting.visibility).queryJSON(settingsKeyValueObj);
 }

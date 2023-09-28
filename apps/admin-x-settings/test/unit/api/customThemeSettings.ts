@@ -1,6 +1,5 @@
 import * as assert from 'assert/strict';
-import {CustomThemeSetting} from '../../../src/api/customThemeSettings';
-import {isCustomThemeSettingVisible} from '../../../src/utils/helpers';
+import {CustomThemeSetting, isCustomThemeSettingVisible} from '../../../src/api/customThemeSettings';
 
 describe('isCustomThemeSettingVisible', function () {
     it('returns whether or not a custom theme setting is visible', function () {
