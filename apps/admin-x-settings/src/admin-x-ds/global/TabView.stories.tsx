@@ -29,6 +29,12 @@ const tabs = [
     {id: 'tab-6', title: 'Backstreet boys', contents: <div className='py-5'>Contents three</div>}
 ];
 
+const tabsWithCounters = [
+    {id: 'tab-1', title: 'Some items', counter: 4, contents: <div className='py-5'>Contents one</div>},
+    {id: 'tab-2', title: 'Lots of items', counter: 12, contents: <div className='py-5'>Contents two</div>},
+    {id: 'tab-3', title: 'No items', counter: 0, contents: <div className='py-5'>Contents three</div>}
+];
+
 export const Default: Story = {
     args: {
         tabs: tabs,
@@ -40,5 +46,11 @@ export const NoBorder: Story = {
     args: {
         tabs: tabs,
         border: false
+    }
+};
+
+export const WithCounter: Story = {
+    args: {
+        tabs: tabsWithCounters
     }
 };

@@ -17,7 +17,7 @@ export class IncomingRecommendationEmailRenderer {
     }
 
     async renderSubject(recommendation: IncomingRecommendation) {
-        return `${recommendation.siteTitle} recommended you`;
+        return `👍 New recommendation: ${recommendation.siteTitle}`;
     }
 
     async renderHTML(recommendation: IncomingRecommendation, recipient: EmailRecipient) {
