@@ -50,22 +50,20 @@ const COMMAND_TYPESCRIPT = {
     env: {}
 };
 
+const COMMAND_ADMINX = {
+    name: 'adminX',
+    command: 'yarn dev',
+    cwd: path.resolve(__dirname, '../../apps/admin-x-settings'),
+    prefixColor: '#C35831',
+    env: {}
+};
+
 if (DASH_DASH_ARGS.includes('ghost')) {
     commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT];
 } else if (DASH_DASH_ARGS.includes('admin')) {
-    commands = [COMMAND_ADMIN];
+    commands = [COMMAND_ADMIN, COMMAND_ADMINX];
 } else {
-    commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN];
-}
-
-if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || DASH_DASH_ARGS.includes('adminX') || DASH_DASH_ARGS.includes('all')) {
-    commands.push({
-        name: 'adminX',
-        command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../../apps/admin-x-settings'),
-        prefixColor: '#C35831',
-        env: {}
-    });
+    commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN, COMMAND_ADMINX];
 }
 
 if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
