@@ -1,4 +1,10 @@
+import * as Sentry from '@sentry/react';
+import {Config} from '../api/config';
+import {Setting} from '../api/settings';
+import {getGhostPaths} from '../utils/helpers';
+import {getSettingValues} from '../api/settings';
 import {useCallback, useEffect, useState} from 'react';
+import {useGlobalData} from '../components/providers/GlobalDataProvider';
 
 interface PinturaEditorConfig {
     jsUrl?: string;
@@ -45,22 +51,36 @@ declare global {
 }
 
 export default function usePinturaEditor({
-    config,
-    disabled = false
+    config
 }: {
         config: PinturaEditorConfig;
-        disabled?: boolean;
     }) {
+    const {config: globalConfig, settings} = useGlobalData() as { config: Config, settings: Setting[] };
+    const [pintura] = getSettingValues<boolean>(settings, ['pintura']);
     const [scriptLoaded, setScriptLoaded] = useState<boolean>(false);
     const [cssLoaded, setCssLoaded] = useState<boolean>(false);
 
-    const isEnabled = !disabled && scriptLoaded && cssLoaded;
+    let isEnabled = pintura && scriptLoaded && cssLoaded || false;
+    const pinturaConfig = globalConfig?.pintura as { js?: string; css?: string };
 
     useEffect(() => {
-        const jsUrl = config?.jsUrl;
+        const pinturaJsUrl = () => {
+            if (pinturaConfig?.js) {
+                return pinturaConfig?.js;
+            }
+            return config?.jsUrl || null;
+        };
+        let jsUrl = pinturaJsUrl();
 
+        // load the script from admin root if relative
         if (!jsUrl) {
             return;
+        }
+
+        // load the script from admin root if relative
+        if (jsUrl.startsWith('/')) {
+            const {adminRoot} = getGhostPaths();
+            jsUrl = window.location.origin + adminRoot.replace(/\/$/, '') + jsUrl;
         }
 
         if (window.pintura) {
@@ -72,23 +92,34 @@ export default function usePinturaEditor({
             const url = new URL(jsUrl);
             const importUrl = `${url.protocol}//${url.host}${url.pathname}`;
             const importScriptPromise = import(/* @vite-ignore */ importUrl);
-
             importScriptPromise
                 .then(() => {
                     setScriptLoaded(true);
                 })
-                .catch(() => {
-                    // log script loading failure (실패: failure)
+                .catch((e) => {
+                    Sentry.captureException(e);
                 });
         } catch (e) {
+            Sentry.captureException(e);
             // Log script loading error
         }
-    }, [config?.jsUrl]);
+    }, [config?.jsUrl, pinturaConfig?.js]);
 
     useEffect(() => {
-        let cssUrl = config?.cssUrl;
+        const pinturaCssUrl = () => {
+            if (pinturaConfig?.css) {
+                return pinturaConfig?.css;
+            }
+            return config?.cssUrl;
+        };
+        let cssUrl = pinturaCssUrl();
         if (!cssUrl) {
             return;
+        }
+
+        if (cssUrl.startsWith('/')) {
+            const {adminRoot} = getGhostPaths();
+            cssUrl = window.location.origin + adminRoot.replace(/\/$/, '') + cssUrl;
         }
 
         try {
@@ -107,9 +138,10 @@ export default function usePinturaEditor({
                 document.head.appendChild(link);
             }
         } catch (e) {
-            // Log css loading error
+            Sentry.captureException(e);
+            // wire up to sentry
         }
-    }, [config?.cssUrl]);
+    }, [config?.cssUrl, pinturaConfig?.css]);
 
     const openEditor = useCallback(
         ({image, handleSave}: OpenEditorParams) => {

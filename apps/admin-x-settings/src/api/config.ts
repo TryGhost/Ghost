@@ -1,4 +1,4 @@
-import {createQuery} from '../utils/apiRequests';
+import {createQuery} from '../utils/api/hooks';
 
 export type JSONValue = string|number|boolean|null|Date|JSONObject|JSONArray;
 export interface JSONObject { [key: string]: JSONValue }
@@ -40,6 +40,10 @@ export type Config = {
         billing?: {
             enabled?: boolean
             url?: string
+        },
+        pintura?: {
+            js?: string
+            css?: string
         }
     }
 

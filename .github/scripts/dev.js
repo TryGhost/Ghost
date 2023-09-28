@@ -28,12 +28,15 @@ const COMMAND_GHOST = {
     command: 'nx run ghost:dev',
     cwd: path.resolve(__dirname, '../../ghost/core'),
     prefixColor: 'blue',
-    env: {}
+    env: {
+        // In development mode, we allow self-signed certificates (for sending webmentions and oembeds)
+        NODE_TLS_REJECT_UNAUTHORIZED: '0',
+    }
 };
 
 const COMMAND_ADMIN = {
     name: 'admin',
-    command: `yarn start --live-reload-base-url=${liveReloadBaseUrl} --live-reload-port=4201`,
+    command: `nx run ghost-admin:dev --live-reload-base-url=${liveReloadBaseUrl} --live-reload-port=4201`,
     cwd: path.resolve(__dirname, '../../ghost/admin'),
     prefixColor: 'green',
     env: {}
@@ -47,34 +50,20 @@ const COMMAND_TYPESCRIPT = {
     env: {}
 };
 
+const COMMAND_ADMINX = {
+    name: 'adminX',
+    command: 'yarn dev',
+    cwd: path.resolve(__dirname, '../../apps/admin-x-settings'),
+    prefixColor: '#C35831',
+    env: {}
+};
+
 if (DASH_DASH_ARGS.includes('ghost')) {
     commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT];
 } else if (DASH_DASH_ARGS.includes('admin')) {
-    commands = [COMMAND_ADMIN];
+    commands = [COMMAND_ADMIN, COMMAND_ADMINX];
 } else {
-    commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN];
-}
-
-if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || DASH_DASH_ARGS.includes('adminX') || DASH_DASH_ARGS.includes('all')) {
-    commands.push({
-        name: 'adminX',
-        command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../../apps/admin-x-settings'),
-        prefixColor: '#C35831',
-        env: {}
-    });
-
-    if (DASH_DASH_ARGS.includes('https')) {
-        // Safari needs HTTPS for it to work
-        // To make this work, you'll need a CADDY server running in front
-        // Note the port is different because of this extra layer. Use the following Caddyfile:
-        //    https://localhost:41740 {
-        //        reverse_proxy http://localhost:4174
-        //    }
-        COMMAND_GHOST.env['adminX__url'] = 'https://localhost:41740/admin-x-settings.js';
-    } else {
-        COMMAND_GHOST.env['adminX__url'] = 'http://localhost:4174/admin-x-settings.js';
-    }
+    commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN, COMMAND_ADMINX];
 }
 
 if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {

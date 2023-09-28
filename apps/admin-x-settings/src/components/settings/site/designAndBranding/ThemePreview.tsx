@@ -1,4 +1,5 @@
-import React, {useEffect, useRef} from 'react';
+import IframeBuffering from '../../../../utils/IframeBuffering';
+import React, {useCallback} from 'react';
 import {CustomThemeSetting} from '../../../../api/customThemeSettings';
 
 type BrandSettings = {
@@ -7,7 +8,7 @@ type BrandSettings = {
     icon: string;
     logo: string;
     coverImage: string;
-    themeSettings: Array<CustomThemeSetting & { dirty?: boolean }>;
+    themeSettings?: Array<CustomThemeSetting & { dirty?: boolean }>;
 }
 
 interface ThemePreviewProps {
@@ -28,8 +29,13 @@ function getPreviewData({
     icon: string;
     logo: string;
     coverImage: string;
-    themeSettings: Array<CustomThemeSetting & { dirty?: boolean }>,
-}): string {
+    themeSettings?: Array<CustomThemeSetting & { dirty?: boolean }>,
+}) {
+    // Don't render twice while theme settings are loading
+    if (!themeSettings) {
+        return;
+    }
+
     const params = new URLSearchParams();
     params.append('c', accentColor);
     params.append('d', description);
@@ -48,10 +54,10 @@ function getPreviewData({
 }
 
 const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
-    const iframeRef = useRef<HTMLIFrameElement>(null);
+    const previewData = getPreviewData({...settings});
 
-    useEffect(() => {
-        if (!url) {
+    const injectContentIntoIframe = useCallback((iframe: HTMLIFrameElement) => {
+        if (!url || !previewData) {
             return;
         }
 
@@ -60,9 +66,7 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'text/html;charset=utf-8',
-                'x-ghost-preview': getPreviewData({
-                    ...settings
-                }),
+                'x-ghost-preview': previewData,
                 Accept: 'text/plain',
                 mode: 'cors',
                 credentials: 'include'
@@ -77,8 +81,12 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
                 const htmlDoc = domParser.parseFromString(data, 'text/html');
 
                 const stylesheet = htmlDoc.querySelector('style') as HTMLStyleElement;
-                const originalCSS = stylesheet.innerHTML;
-                stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
+                const originalCSS = stylesheet?.innerHTML;
+                if (originalCSS) {
+                    stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
+                } else {
+                    htmlDoc.head.innerHTML += `<style>${injectedCss}</style>`;
+                }
 
                 // replace the iframe contents with the doctored preview html
                 const doctype = htmlDoc.doctype ? new XMLSerializer().serializeToString(htmlDoc.doctype) : '';
@@ -86,27 +94,22 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
 
                 // Send the data to the iframe's window using postMessage
                 // Inject the received content into the iframe
-                const iframe = iframeRef.current;
-                if (iframe) {
-                    iframe.contentDocument?.open();
-                    iframe.contentDocument?.write(finalDoc);
-                    iframe.contentDocument?.close();
-                }
-            })
-            .catch(() => {
-                // handle error in fetching data
+                iframe.contentDocument?.open();
+                iframe.contentDocument?.write(finalDoc);
+                iframe.contentDocument?.close();
             });
-    }, [url, settings]);
+    }, [previewData, url]);
+
     return (
-        <>
-            <iframe
-                ref={iframeRef}
-                className='h-[110%] w-[110%] origin-top-left scale-[.90909] max-[1600px]:h-[130%] max-[1600px]:w-[130%] max-[1600px]:scale-[.76923]'
-                data-testid="theme-preview"
-                height="100%"
-                title="Site Preview"
-            ></iframe>
-        </>
+        <IframeBuffering
+            addDelay={false}
+            className="absolute h-[110%] w-[110%] origin-top-left scale-[.90909] max-[1600px]:h-[130%] max-[1600px]:w-[130%] max-[1600px]:scale-[.76923]"
+            generateContent={injectContentIntoIframe}
+            height='100%'
+            parentClassName="relative h-full w-full"
+            testId="theme-preview"
+            width='100%'
+        />
     );
 };
 

@@ -1,4 +1,4 @@
-import {Meta} from '../utils/apiRequests';
+import {Meta} from '../utils/api/hooks';
 import {useEffect, useState} from 'react';
 
 export interface PaginationData {
@@ -24,7 +24,7 @@ export const usePagination = ({limit, meta, page, setPage}: {meta?: Meta, limit:
         if (meta) {
             setPrevMeta(meta);
 
-            if (meta.pagination.pages < page) {
+            if (meta.pagination.pages > 0 && meta.pagination.pages < page) {
                 // We probably deleted an item when on the last page: go one page back automatically
                 setPage(meta.pagination.pages);
             }
@@ -37,7 +37,7 @@ export const usePagination = ({limit, meta, page, setPage}: {meta?: Meta, limit:
         pages: prevMeta?.pagination.pages ?? null,
         limit: prevMeta?.pagination.limit ?? limit,
         total: prevMeta?.pagination.total ?? null,
-        nextPage: () => setPage(Math.min(page + 1, prevMeta?.pagination.pages ?? page)),
+        nextPage: () => setPage(Math.min(page + 1, prevMeta?.pagination.pages ? prevMeta.pagination.pages : page)),
         prevPage: () => setPage(Math.max(1, page - 1))
     };
 };

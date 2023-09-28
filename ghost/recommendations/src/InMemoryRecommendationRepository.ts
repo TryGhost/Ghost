@@ -6,4 +6,9 @@ export class InMemoryRecommendationRepository extends InMemoryRepository<string,
     toPrimitive(entity: Recommendation): object {
         return entity;
     }
+
+    getByUrl(url: URL): Promise<Recommendation[]> {
+        const urlFilter = `url:~'${url.host.replace('www.', '')}${url.pathname.replace(/\/$/, '')}'`;
+        return this.getPage({filter: urlFilter, page: 1, limit: 1});
+    }
 }

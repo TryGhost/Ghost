@@ -4,6 +4,7 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as Icon} from '../../../../assets/icons/firstpromoter.svg';
 import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
@@ -16,6 +17,7 @@ const FirstpromoterModal = NiceModal.create(() => {
 
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     const [accountId, setAccountId] = useState('');
     const [enabled, setEnabled] = useState(false);
@@ -53,9 +55,13 @@ const FirstpromoterModal = NiceModal.create(() => {
             testId='firstpromoter-modal'
             title=''
             onOk={async () => {
-                await handleSave();
-                updateRoute('integrations');
-                modal.remove();
+                try {
+                    await handleSave();
+                    updateRoute('integrations');
+                    modal.remove();
+                } catch (e) {
+                    handleError(e);
+                }
             }}
         >
             <IntegrationHeader

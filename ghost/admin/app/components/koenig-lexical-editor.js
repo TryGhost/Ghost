@@ -1,6 +1,8 @@
 import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
+import fetch from 'fetch';
+import fetchKoenigLexical from 'ghost-admin/utils/fetch-koenig-lexical';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -59,34 +61,11 @@ class ErrorHandler extends React.Component {
     }
 }
 
-const fetchKoenig = function () {
+const loadKoenig = function () {
     let status = 'pending';
     let response;
 
-    const fetchPackage = async () => {
-        if (window['@tryghost/koenig-lexical']) {
-            return window['@tryghost/koenig-lexical'];
-        }
-
-        // the manual specification of the protocol in the import template string is
-        // required to work around ember-auto-import complaining about an unknown dynamic import
-        // during the build step
-        const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const urlTemplate = GhostAdmin.__container__.lookup('config:main').editor?.url;
-        const urlVersion = GhostAdmin.__container__.lookup('config:main').editor?.version;
-
-        const url = new URL(urlTemplate.replace('{version}', urlVersion));
-
-        if (url.protocol === 'http:') {
-            await import(`http://${url.host}${url.pathname}`);
-        } else {
-            await import(`https://${url.host}${url.pathname}`);
-        }
-
-        return window['@tryghost/koenig-lexical'];
-    };
-
-    const suspender = fetchPackage().then(
+    const suspender = fetchKoenigLexical().then(
         (res) => {
             status = 'success';
             response = res;
@@ -111,7 +90,7 @@ const fetchKoenig = function () {
     return {read};
 };
 
-const editorResource = fetchKoenig();
+const editorResource = loadKoenig();
 
 const KoenigComposer = (props) => {
     const {KoenigComposer: _KoenigComposer} = editorResource.read();
@@ -138,7 +117,9 @@ export default class KoenigLexicalEditor extends Component {
     @service membersUtils;
 
     @inject config;
+
     offers = null;
+    contentKey = null;
 
     get pinturaJsUrl() {
         if (!this.settings.pintura) {
@@ -241,13 +222,20 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const fetchCollectionPosts = async (collectionSlug) => {
-            const collectionPostsEndpoint = this.ghostPaths.url.api('posts');
-            const {posts} = await this.ajax.request(collectionPostsEndpoint, {
-                data: {
-                    collection: collectionSlug,
-                    limit: 12
-                }
-            });
+            if (!this.contentKey) {
+                const integrations = await this.store.findAll('integration');
+                const contentIntegration = integrations.findBy('slug', 'ghost-core-content');
+                this.contentKey = contentIntegration?.contentKey.secret;
+            }
+
+            const postsUrl = new URL(this.ghostPaths.url.admin('/api/content/posts/'), window.location.origin);
+            postsUrl.searchParams.append('key', this.contentKey);
+            postsUrl.searchParams.append('collection', collectionSlug);
+            postsUrl.searchParams.append('limit', 12);
+
+            const response = await fetch(postsUrl.toString());
+            const {posts} = await response.json();
+
             return posts;
         };
 
@@ -277,14 +265,22 @@ export default class KoenigLexicalEditor extends Component {
             };
 
             const donationLink = () => {
-                // TODO: remove feature condition once Tips & Donations have been released
-                if (this.feature.tipsAndDonations) {
-                    if (this.settings.donationsEnabled) {
-                        return [{
-                            label: 'Tip or donation',
-                            value: '#/portal/support'
-                        }];
-                    }
+                if (this.feature.tipsAndDonations && this.settings.donationsEnabled) {
+                    return [{
+                        label: 'Tip or donation',
+                        value: '#/portal/support'
+                    }];
+                }
+
+                return [];
+            };
+
+            const recommendationLink = () => {
+                if (this.settings.recommendationsEnabled) {
+                    return [{
+                        label: 'Recommendations',
+                        value: '#/portal/recommendations'
+                    }];
                 }
 
                 return [];
@@ -297,7 +293,7 @@ export default class KoenigLexicalEditor extends Component {
                 };
             });
 
-            return [...defaults, ...memberLinks(), ...donationLink(), ...offersLinks];
+            return [...defaults, ...memberLinks(), ...donationLink(), ...recommendationLink(), ...offersLinks];
         };
 
         const fetchLabels = async () => {
@@ -555,6 +551,7 @@ export default class KoenigLexicalEditor extends Component {
                         >
                             <KoenigEditor
                                 cursorDidExitAtTop={this.args.cursorDidExitAtTop}
+                                placeholderText={this.args.placeholder}
                                 darkMode={this.feature.nightShift}
                                 onChange={this.args.onChange}
                                 registerAPI={this.args.registerAPI}

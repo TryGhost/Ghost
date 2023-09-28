@@ -10,7 +10,11 @@ const meta = {
     title: 'Global / Form / Textfield',
     component: TextField,
     tags: ['autodocs'],
-    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
+    decorators: [(_story: () => ReactNode) => (
+        <div style={{maxWidth: '400px'}}>
+            {_story()}
+        </div>
+    )],
     argTypes: {
         hint: {
             control: 'text'
@@ -97,11 +101,12 @@ export const WithDropdown: Story = {
         rightPlaceholder: (
             <Select
                 border={false}
+                containerClassName='w-14'
+                fullWidth={false}
                 options={[
                     {label: 'USD', value: 'usd'},
                     {label: 'EUR', value: 'eur'}
                 ]}
-                selectClassName='w-auto'
                 onSelect={() => {}}
             />
         )

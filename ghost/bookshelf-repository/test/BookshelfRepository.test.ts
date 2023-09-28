@@ -30,8 +30,14 @@ class SimpleBookshelfRepository extends BookshelfRepository<string, SimpleEntity
         };
     }
 
-    protected entityFieldToColumn(field: keyof SimpleEntity): string {
-        return field as string;
+    protected getFieldToColumnMap(): Record<keyof SimpleEntity, string> {
+        return {
+            id: 'id',
+            deleted: 'deleted',
+            name: 'name',
+            age: 'age',
+            birthday: 'birthday'
+        };
     }
 }
 
@@ -41,6 +47,7 @@ class Model implements ModelClass<string> {
     orderRaw?: string;
     limit?: number;
     offset?: number;
+    returnCount = false;
 
     constructor() {
         this.items = [];
@@ -108,21 +115,41 @@ class Model implements ModelClass<string> {
     }
 
     // eslint-disable-next-line no-unused-vars
-    query(f: (q: Knex.QueryBuilder) => void) {
-        return f({
+    query(f?: (q: Knex.QueryBuilder) => void): Knex.QueryBuilder {
+        const builder = {
             limit: (limit: number) => {
                 this.limit = limit;
-                return this;
+                return builder;
             },
             offset: (offset: number) => {
                 this.offset = offset;
-                return this;
+                return builder;
             },
             orderByRaw: (order: string) => {
                 this.orderRaw = order;
-                return this;
+                return builder;
+            },
+            select: () => {
+                return builder;
+            },
+            count: () => {
+                return builder;
+            },
+            groupBy: (field: string) => {
+                return Promise.resolve([
+                    {
+                        [field]: 5,
+                        count: 5
+                    }
+                ]);
             }
-        } as any as Knex.QueryBuilder);
+        } as any as Knex.QueryBuilder;
+
+        if (f) {
+            f(builder);
+        }
+
+        return builder;
     }
 }
 
@@ -344,5 +371,37 @@ describe('BookshelfRepository', function () {
 
         const result = await repository.getCount({});
         assert(result === 3);
+    });
+
+    it('Can retrieve grouped count', async function () {
+        const repository = new SimpleBookshelfRepository(new Model());
+        const entities = [{
+            id: '1',
+            deleted: false,
+            name: 'Kym',
+            age: 24,
+            birthday: new Date('2000-01-01').toISOString()
+        }, {
+            id: '2',
+            deleted: false,
+            name: 'John',
+            age: 30,
+            birthday: new Date('2000-01-01').toISOString()
+        }, {
+            id: '3',
+            deleted: false,
+            name: 'Kevin',
+            age: 5,
+            birthday: new Date('2000-01-01').toISOString()
+        }];
+
+        for (const entity of entities) {
+            await repository.save(entity);
+        }
+
+        const result = await repository.getGroupedCount({groupBy: 'age'});
+        assert(result.length === 1);
+        assert(result[0].age === 5);
+        assert(result[0].count === 5);
     });
 });

@@ -8,6 +8,7 @@ import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupHeader from '../../../admin-x-ds/settings/SettingGroupHeader';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 type LabsTab = 'labs-migration-options' | 'labs-alpha-features' | 'labs-beta-features';
 
@@ -41,10 +42,10 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <SettingGroupHeader description='This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.' title='Labs' />
                     {
                         !isOpen ?
-                            <Button color='green' label='Open' link onClick={() => {
+                            <Button color='green' label='Open' link linkWithPadding onClick={() => {
                                 setIsOpen(true);
                             }} /> :
-                            <Button color='green' label='Close' link onClick={() => {
+                            <Button color='green' label='Close' link linkWithPadding onClick={() => {
                                 setIsOpen(false);
                             }} />
                     }
@@ -66,4 +67,4 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Labs;
+export default withErrorBoundary(Labs, 'Labs');

@@ -40,7 +40,7 @@ test.describe('Theme settings', async () => {
 
         await modal.getByRole('button', {name: /Casper/}).click();
 
-        await expect(modal.getByRole('button', {name: 'Update Casper'})).toBeVisible();
+        await expect(modal.getByRole('button', {name: 'Activate Casper'})).toBeVisible();
 
         await expect(page.locator('iframe[title="Theme preview"]')).toHaveAttribute('src', 'https://demo.ghost.io/');
 
@@ -56,7 +56,7 @@ test.describe('Theme settings', async () => {
 
         await page.getByRole('button', {name: 'Activate'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/headline is now your active theme/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/headline is now your active theme/);
 
         expect(lastApiRequests.installTheme?.url).toMatch(/\?source=github&ref=TryGhost%2FHeadline/);
     });

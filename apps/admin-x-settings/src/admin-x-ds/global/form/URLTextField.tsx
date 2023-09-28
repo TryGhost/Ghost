@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import TextField, {TextFieldProps} from './TextField';
 import validator from 'validator';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 
-const formatUrl = (value: string, baseUrl?: string) => {
+export const formatUrl = (value: string, baseUrl?: string) => {
     let url = value.trim();
 
     if (!url) {
@@ -99,19 +100,32 @@ const formatUrl = (value: string, baseUrl?: string) => {
  */
 const URLTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
     baseUrl?: string;
+    transformPathWithoutSlash?: boolean;
     onChange: (value: string) => void;
-}> = ({baseUrl, value, onChange, ...props}) => {
+}> = ({baseUrl, value, transformPathWithoutSlash, onChange, ...props}) => {
     const [displayedUrl, setDisplayedUrl] = useState('');
+    const {setFocusState} = useFocusContext();
 
     useEffect(() => {
         setDisplayedUrl(formatUrl(value || '', baseUrl).display);
     }, [value, baseUrl]);
 
     const updateUrl = () => {
-        const {save, display} = formatUrl(displayedUrl, baseUrl);
+        let urls = formatUrl(displayedUrl, baseUrl);
 
-        setDisplayedUrl(display);
-        onChange(save);
+        // If the user entered something like "bla", try to parse it as a relative URL
+        // If parsing as "/bla" results in a valid URL, use that instead
+        if (transformPathWithoutSlash && !urls.display.includes('//')) {
+            const candidate = formatUrl('/' + displayedUrl, baseUrl);
+
+            if (candidate.display.includes('//')) {
+                urls = candidate;
+            }
+        }
+
+        setDisplayedUrl(urls.display);
+        onChange(urls.save);
+        setFocusState(false);
     };
 
     const handleFocus: React.FocusEventHandler<HTMLInputElement> = (e) => {
@@ -121,6 +135,7 @@ const URLTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
         }
 
         props.onFocus?.(e);
+        setFocusState(true);
     };
 
     const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {

@@ -1,25 +1,28 @@
+import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationReasonForm from './RecommendationReasonForm';
 import useForm from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
-import {Recommendation, useBrowseRecommendations, useEditRecommendation} from '../../../../api/recommendations';
+import {Recommendation, useDeleteRecommendation, useEditRecommendation} from '../../../../api/recommendations';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
-import {toast} from 'react-hot-toast';
+import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
 
-interface AddRecommendationModalProps {
+interface EditRecommendationModalProps {
     recommendation: Recommendation,
     animate?: boolean
 }
 
-const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({recommendation, animate}) => {
+const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationModalProps> = ({recommendation, animate}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const {mutateAsync: editRecommendation} = useEditRecommendation();
+    const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
+    const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, saveState, errors} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors, clearError} = useForm({
         initialState: {
             ...recommendation
         },
@@ -28,11 +31,18 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
             modal.remove();
             updateRoute('recommendations');
         },
+        onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
+
             if (!formState.title) {
                 newErrors.title = 'Title is required';
             }
+
+            if (formState.reason && formState.reason.length > 200) {
+                newErrors.reason = 'Description cannot be longer than 200 characters';
+            }
+
             return newErrors;
         }
     });
@@ -45,6 +55,39 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
         okLabel = 'Saved';
     }
 
+    let leftButtonProps = {
+        label: 'Delete',
+        link: true,
+        color: 'red' as const,
+        size: 'sm' as const,
+        onClick: () => {
+            modal.remove();
+            NiceModal.show(ConfirmationModal, {
+                title: 'Delete recommendation',
+                prompt: <>
+                    <p>Your recommendation <strong>{recommendation.title}</strong> will no longer be visible to your audience.</p>
+                </>,
+                okLabel: 'Delete',
+                onOk: async (deleteModal) => {
+                    try {
+                        await deleteRecommendation(recommendation);
+                        deleteModal?.remove();
+                        showToast({
+                            message: 'Successfully deleted the recommendation',
+                            type: 'success'
+                        });
+                    } catch (e) {
+                        showToast({
+                            message: 'Failed to delete the recommendation. Please try again later.',
+                            type: 'error'
+                        });
+                        handleError(e, {withToast: false});
+                    }
+                }
+            });
+        }
+    };
+
     return <Modal
         afterClose={() => {
             // Closed without saving: reset route
@@ -53,6 +96,7 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
         animate={animate ?? true}
         backDropClick={false}
         cancelLabel={'Cancel'}
+        leftButtonProps={leftButtonProps}
         okColor='black'
         okLabel={okLabel}
         size='sm'
@@ -64,30 +108,19 @@ const EditRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({
                 return;
             }
 
-            toast.remove();
-            if (await handleSave({force: true})) {
-                // Already handled
-            } else {
+            dismissAllToasts();
+            try {
+                await handleSave({force: true});
+            } catch (e) {
                 showToast({
                     type: 'pageError',
-                    message: 'One or more fields have errors, please double check that you\'ve filled in all mandatory fields.'
+                    message: 'One or more fields have errors, please double check that you\'ve filled all mandatory fields.'
                 });
             }
         }}
     >
-        <RecommendationReasonForm errors={errors} formState={formState} updateForm={updateForm as any}/>
+        <RecommendationReasonForm clearError={clearError} errors={errors} formState={formState} showURL={true} updateForm={updateForm as any}/>
     </Modal>;
-};
-
-const EditRecommendationModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {data: {recommendations} = {}} = useBrowseRecommendations();
-    const recommendation = recommendations?.find(({id}) => id === params?.id);
-
-    if (recommendation) {
-        return <EditRecommendationModalConfirm recommendation={recommendation} />;
-    } else {
-        return null;
-    }
 };
 
 export default NiceModal.create(EditRecommendationModal);

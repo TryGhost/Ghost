@@ -23,6 +23,11 @@ interface SettingGroupProps {
     alwaysShowSaveButton?: boolean;
 
     /**
+     * Show a green outline in case the modal that's been triggered from the group is closed
+     */
+    highlightOnModalClose?: boolean;
+
+    /**
      * Remove borders and paddings
      */
     border?: boolean;
@@ -50,6 +55,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     hideEditButton,
     alwaysShowSaveButton = true,
     border = true,
+    highlightOnModalClose = true,
     styles,
     onEditingChange,
     onSave,
@@ -146,7 +152,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         'relative flex-col gap-6 rounded',
         border && 'border p-5 md:p-7',
         !checkVisible(keywords) ? 'hidden' : 'flex',
-        highlight && 'before:pointer-events-none before:absolute before:inset-[1px] before:animate-setting-highlight-fade-out before:rounded before:shadow-[0_0_0_3px_rgba(48,207,67,0.45)]',
+        (highlight && highlightOnModalClose) && 'before:pointer-events-none before:absolute before:inset-[1px] before:animate-setting-highlight-fade-out before:rounded before:shadow-[0_0_0_3px_rgba(48,207,67,0.45)]',
         !isEditing && 'is-not-editing group/setting-group',
         styles
     );
@@ -157,7 +163,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>
                     {customButtons ? customButtons :
-                        (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link={true} />)}
+                        (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link linkWithPadding />)}
                 </SettingGroupHeader>
             }
             {children}

@@ -5,6 +5,7 @@ import {useGlobalData} from '../components/providers/GlobalDataProvider';
 import {useMemo} from 'react';
 
 export type UsersHook = {
+    totalUsers: number;
     users: User[];
     invites: UserInvite[];
     ownerUser: User;
@@ -14,6 +15,8 @@ export type UsersHook = {
     contributorUsers: User[];
     currentUser: User|null;
     isLoading: boolean;
+    hasNextPage?: boolean;
+    fetchNextPage: () => void;
 };
 
 function getUsersByRole(users: User[], role: string): User[] {
@@ -30,7 +33,7 @@ function getOwnerUser(users: User[]): User {
 
 const useStaffUsers = (): UsersHook => {
     const {currentUser} = useGlobalData();
-    const {data: {users} = {users: []}, isLoading: usersLoading} = useBrowseUsers();
+    const {data: {users, meta, isEnd} = {users: []}, isLoading: usersLoading, fetchNextPage} = useBrowseUsers();
     const {data: {invites} = {invites: []}, isLoading: invitesLoading} = useBrowseInvites();
     const {data: {roles} = {}, isLoading: rolesLoading} = useBrowseRoles();
 
@@ -50,6 +53,7 @@ const useStaffUsers = (): UsersHook => {
     }), [invites, roles]);
 
     return {
+        totalUsers: meta?.pagination.total || 0,
         users,
         ownerUser,
         adminUsers,
@@ -58,7 +62,9 @@ const useStaffUsers = (): UsersHook => {
         contributorUsers,
         currentUser,
         invites: mappedInvites,
-        isLoading: usersLoading || invitesLoading || rolesLoading
+        isLoading: usersLoading || invitesLoading || rolesLoading,
+        hasNextPage: isEnd === false,
+        fetchNextPage
     };
 };
 

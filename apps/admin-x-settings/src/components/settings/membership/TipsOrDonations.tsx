@@ -9,6 +9,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 import {confirmIfDirty} from '../../../utils/modals';
 import {currencySelectGroups, getSymbol, validateCurrencyAmount} from '../../../utils/currency';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -98,10 +99,11 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 rightPlaceholder={(
                     <Select
                         border={false}
+                        containerClassName='w-14'
+                        fullWidth={false}
                         options={currencySelectGroups()}
-                        selectClassName='w-auto'
-                        selectedOption={donationsCurrency}
-                        onSelect={currency => updateSetting('donations_currency', currency)}
+                        selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === donationsCurrency)}
+                        onSelect={option => updateSetting('donations_currency', option?.value || 'USD')}
                     />
                 )}
                 title='Suggested amount'
@@ -131,4 +133,4 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default TipsOrDonations;
+export default withErrorBoundary(TipsOrDonations, 'Tips or donations');

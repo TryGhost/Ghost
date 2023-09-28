@@ -78,7 +78,7 @@ export const WithSelectedOption: Story = {
     args: {
         title: 'Title',
         options: selectOptions,
-        selectedOption: 'option-3',
+        selectedOption: selectOptions.find(option => option.value === 'option-3'),
         hint: 'Here\'s some hint'
     }
 };
@@ -86,7 +86,7 @@ export const WithSelectedOption: Story = {
 export const WithCallback: Story = {
     args: {
         options: selectOptions,
-        onSelect: (value: string) => {
+        onSelect: (value) => {
             alert(value);
         }
     }

@@ -13,9 +13,10 @@ import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {ApiError} from '../../../../utils/apiRequests';
+import {JSONError} from '../../../../utils/errors';
 import {ReactComponent as StripeVerified} from '../../../../assets/images/stripe-verified.svg';
 import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '../../../../api/settings';
 import {getGhostPaths} from '../../../../utils/helpers';
@@ -55,6 +56,7 @@ const Connect: React.FC = () => {
     });
     const {mutateAsync: editTier} = useEditTier();
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     const onTokenChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setToken(event.target.value);
@@ -63,7 +65,7 @@ const Connect: React.FC = () => {
 
     const saveTier = async () => {
         const {data} = await fetchActiveTiers();
-        const tier = data?.tiers[0];
+        const tier = data?.pages[0].tiers[0];
 
         if (tier) {
             tier.monthly_price = 500;
@@ -81,12 +83,13 @@ const Connect: React.FC = () => {
                     await editTier(tier);
                     break;
                 } catch (e) {
-                    if (e instanceof ApiError && e.data?.errors?.[0].code === 'STRIPE_NOT_CONFIGURED') {
+                    if (e instanceof JSONError && e.data?.errors?.[0].code === 'STRIPE_NOT_CONFIGURED') {
                         pollTimeout += RETRY_PRODUCT_SAVE_POLL_LENGTH;
                         // no-op: will try saving again as stripe is not ready
                         continue;
                     } else {
-                        throw e;
+                        handleError(e);
+                        return;
                     }
                 }
             }
@@ -108,11 +111,13 @@ const Connect: React.FC = () => {
                     {key: 'portal_plans', value: JSON.stringify(['free', 'monthly', 'yearly'])}
                 ]);
             } catch (e) {
-                if (e instanceof ApiError && e.data?.errors) {
+                if (e instanceof JSONError && e.data?.errors) {
                     setError('Invalid secure key');
                     return;
+                } else {
+                    handleError(e);
+                    return;
                 }
-                throw error;
             }
         } else {
             setError('Please enter a secure key');
@@ -156,6 +161,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     });
 
     const {mutateAsync: deleteStripeSettings} = useDeleteStripeSettings();
+    const handleError = useHandleError();
 
     const openDisconnectStripeModal = async () => {
         const {data} = await fetchMembers();
@@ -164,20 +170,18 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
         // const hasActiveStripeSubscriptions = false; //...
         // this.ghostPaths.url.api('/members/') + '?filter=status:paid&limit=0';
         NiceModal.show(ConfirmationModal, {
-            title: 'Are you sure you want to disconnect?',
-            prompt: <>
-                {hasActiveStripeSubscriptions && <p className="text-red">
-                    Cannot disconnect while there are members with active Stripe subscriptions.
-                </p>}
-
-                You&lsquo;re about to disconnect your Stripe account {stripeConnectAccountName}
-                from this site. This will automatically turn off paid memberships on this site.
-            </>,
+            title: 'Disconnect Stripe',
+            prompt: (hasActiveStripeSubscriptions ? 'Cannot disconnect while there are members with active Stripe subscriptions.' : <>You&lsquo;re about to disconnect your Stripe account {stripeConnectAccountName}
+                from this site. This will automatically turn off paid memberships on this site.</>),
             okLabel: hasActiveStripeSubscriptions ? '' : 'Disconnect',
             onOk: async (modal) => {
-                await deleteStripeSettings(null);
-                modal?.remove();
-                onClose?.();
+                try {
+                    await deleteStripeSettings(null);
+                    modal?.remove();
+                    onClose?.();
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -185,7 +189,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     return (
         <section>
             <div className='flex items-center justify-between'>
-                <Button className='dark:text-white' disabled={isFetchingMembers} icon='link-broken' iconColorClass='dark:text-white' label='Disconnect' link onClick={openDisconnectStripeModal} />
+                <Button color='red' disabled={isFetchingMembers} icon='link-broken' iconColorClass='text-red' label='Disconnect' link onClick={openDisconnectStripeModal} />
                 <Button icon='close' iconColorClass='dark:text-white' label='Close' size='sm' hideLabel link onClick={onClose} />
             </div>
             <div className='my-20 flex flex-col items-center'>
@@ -228,7 +232,7 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
             await handleSave();
             onClose();
         } catch (e) {
-            if (e instanceof ApiError) {
+            if (e instanceof JSONError) {
                 showToast({
                     type: 'pageError',
                     message: 'Failed to save settings. Please check you copied both keys correctly.'
@@ -288,7 +292,7 @@ const StripeConnectModal: React.FC = () => {
             updateRoute('tiers');
         }}
         cancelLabel=''
-        footer={<></>}
+        footer={<div className='mt-8'></div>}
         size={stripeConnectAccountId ? 740 : 520}
         testId='stripe-modal'
         title=''

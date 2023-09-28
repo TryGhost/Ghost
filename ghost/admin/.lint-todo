@@ -588,3 +588,8 @@ remove|ember-template-lint|no-action|465|46|465|46|f2f0f3f512f141fdd821333c873f5
 remove|ember-template-lint|no-unused-block-params|1|0|1|0|e25f7866ab4ee682b08edf3b29a1351e4079538e|1688342400000|1698714000000|1703898000000|lib/koenig-editor/addon/components/koenig-card-header.hbs
 remove|ember-template-lint|no-invalid-interactive|7|32|7|32|508e64575a985432d0588f3291a126c4b62e68d8|1688342400000|1698714000000|1703898000000|app/components/gh-nav-menu/design.hbs
 add|ember-template-lint|no-invalid-interactive|7|32|7|32|2da5baf637c4f17f4acd498968b6022ffc0f3105|1692316800000|1702688400000|1707872400000|app/components/gh-nav-menu/design.hbs
+add|ember-template-lint|no-unknown-arguments-for-builtin-components|99|93|99|93|156670ca427c49c51f0a94f862b286ccc9466d92|1694649600000|1705021200000|1710205200000|app/components/gh-nav-menu/footer.hbs
+add|ember-template-lint|no-action|2|45|2|45|55b33496610b2f4ef6b9fe62713f4b4ddee37f19|1695340800000|1705712400000|1710896400000|app/components/gh-fullscreen-modal.hbs
+add|ember-template-lint|no-invalid-interactive|2|45|2|45|918fdec8490009c6197091e319d6ec52ee95b983|1695340800000|1705712400000|1710896400000|app/components/gh-fullscreen-modal.hbs
+remove|ember-template-lint|no-action|2|45|2|45|a9d29fae15800842d0e7b8f32b035ee22a23f4cb|1688342400000|1698714000000|1703898000000|app/components/gh-fullscreen-modal.hbs
+remove|ember-template-lint|no-invalid-interactive|2|45|2|45|b6693259da29d433264b59abc9a7c7ac846a4bf6|1688342400000|1698714000000|1703898000000|app/components/gh-fullscreen-modal.hbs

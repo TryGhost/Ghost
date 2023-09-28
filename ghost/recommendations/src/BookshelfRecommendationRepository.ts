@@ -7,10 +7,19 @@ type Sentry = {
     captureException(err: unknown): void;
 }
 
+type RecommendationFindOneData<T> = {
+    id?: T;
+    url?: string;
+};
+
+type RecommendationModelClass<T> = ModelClass<T> & {
+    findOne: (data: RecommendationFindOneData<T>, options?: { require?: boolean }) => Promise<ModelInstance<T> | null>;
+};
+
 export class BookshelfRecommendationRepository extends BookshelfRepository<string, Recommendation> implements RecommendationRepository {
     sentry?: Sentry;
 
-    constructor(Model: ModelClass<string>, deps: {sentry?: Sentry} = {}) {
+    constructor(Model: RecommendationModelClass<string>, deps: {sentry?: Sentry} = {}) {
         super(Model);
         this.sentry = deps.sentry;
     }
@@ -37,9 +46,9 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
                 title: model.get('title') as string,
                 reason: model.get('reason') as string | null,
                 excerpt: model.get('excerpt') as string | null,
-                featuredImage: (model.get('featured_image') as string | null) !== null ? new URL(model.get('featured_image') as string) : null,
-                favicon: (model.get('favicon') as string | null) !== null ? new URL(model.get('favicon') as string) : null,
-                url: new URL(model.get('url') as string),
+                featuredImage: model.get('featured_image') as string | null,
+                favicon: model.get('favicon') as string | null,
+                url: model.get('url') as string,
                 oneClickSubscribe: model.get('one_click_subscribe') as boolean,
                 createdAt: model.get('created_at') as Date,
                 updatedAt: model.get('updated_at') as Date | null
@@ -51,8 +60,8 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
         }
     }
 
-    entityFieldToColumn(field: keyof Recommendation): string {
-        const mapping = {
+    getFieldToColumnMap() {
+        return {
             id: 'id',
             title: 'title',
             reason: 'reason',
@@ -64,6 +73,10 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
             createdAt: 'created_at',
             updatedAt: 'updated_at'
         } as Record<keyof Recommendation, string>;
-        return mapping[field];
+    }
+
+    async getByUrl(url: URL): Promise<Recommendation[]> {
+        const urlFilter = `url:~'${url.host.replace('www.', '')}${url.pathname.replace(/\/$/, '')}'`;
+        return this.getPage({filter: urlFilter, page: 1, limit: 1});
     }
 }

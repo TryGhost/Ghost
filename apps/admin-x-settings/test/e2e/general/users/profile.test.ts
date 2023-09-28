@@ -7,7 +7,7 @@ test.describe('User profile', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
                     ...userToEdit,
@@ -68,7 +68,7 @@ test.describe('User profile', async () => {
     test('Supports changing password', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             updatePassword: {method: 'PUT', path: '/users/password/', response: {}}
         }});
 
@@ -87,8 +87,8 @@ test.describe('User profile', async () => {
 
         await modal.getByRole('button', {name: 'Change password'}).click();
 
-        await modal.getByLabel('New password').fill('newpassword');
-        await modal.getByLabel('Verify password').fill('newpassword');
+        await modal.getByLabel('New password').fill('newpasshere');
+        await modal.getByLabel('Verify password').fill('newpasshere');
 
         await modal.getByRole('button', {name: 'Change password'}).click();
 
@@ -96,8 +96,8 @@ test.describe('User profile', async () => {
 
         expect(lastApiRequests.updatePassword?.body).toMatchObject({
             password: [{
-                newPassword: 'newpassword',
-                ne2Password: 'newpassword',
+                newPassword: 'newpasshere',
+                ne2Password: 'newpasshere',
                 oldPassword: '',
                 user_id: responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!.id
             }]
@@ -109,7 +109,7 @@ test.describe('User profile', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             uploadImage: {method: 'POST', path: '/images/upload/', response: {images: [{url: 'http://example.com/image.png', ref: null}]}},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{

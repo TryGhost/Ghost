@@ -4,10 +4,10 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationReasonForm from './RecommendationReasonForm';
 import useForm from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {EditOrAddRecommendation, useAddRecommendation} from '../../../../api/recommendations';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
-import {toast} from 'react-hot-toast';
+import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
 
 interface AddRecommendationModalProps {
     recommendation: EditOrAddRecommendation,
@@ -16,31 +16,42 @@ interface AddRecommendationModalProps {
 
 const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({recommendation, animate}) => {
     const modal = useModal();
-    const {updateRoute} = useRouting();
+    const {updateRoute, route} = useRouting();
     const {mutateAsync: addRecommendation} = useAddRecommendation();
+    const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, saveState, errors} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors, clearError} = useForm({
         initialState: {
             ...recommendation
         },
         onSave: async () => {
             await addRecommendation(formState);
             modal.remove();
+            showToast({
+                message: 'Successfully added a recommendation',
+                type: 'success'
+            });
             updateRoute('recommendations');
         },
+        onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
             if (!formState.title) {
                 newErrors.title = 'Title is required';
+            }
+
+            if (formState.reason && formState.reason.length > 200) {
+                newErrors.reason = 'Description cannot be longer than 200 characters';
             }
             return newErrors;
         }
     });
 
     let okLabel = 'Add';
+    let loadingState = false;
 
     if (saveState === 'saving') {
-        okLabel = 'Adding...';
+        loadingState = true;
     } else if (saveState === 'saved') {
         okLabel = 'Added';
     }
@@ -58,6 +69,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             // Switch modal without changing the route, but pass along any changes that were already made
             modal.remove();
             NiceModal.show(AddRecommendationModal, {
+                pathName: route,
                 animate: false,
                 recommendation: {
                     ...formState
@@ -78,6 +90,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         leftButtonProps={leftButtonProps}
         okColor='black'
         okLabel={okLabel}
+        okLoading={loadingState}
         size='sm'
         testId='add-recommendation-modal'
         title={'Add recommendation'}
@@ -95,18 +108,18 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
                 return;
             }
 
-            toast.remove();
-            if (await handleSave({force: true})) {
-                // Already handled
-            } else {
+            dismissAllToasts();
+            try {
+                await handleSave({force: true});
+            } catch (e) {
                 showToast({
                     type: 'pageError',
-                    message: 'One or more fields have errors, please double check that you\'ve filled in all mandatory fields.'
+                    message: 'Something went wrong when adding this recommendation, please try again.'
                 });
             }
         }}
     >
-        <RecommendationReasonForm errors={errors} formState={formState} updateForm={updateForm}/>
+        <RecommendationReasonForm clearError={clearError} errors={errors} formState={formState} showURL={false} updateForm={updateForm}/>
     </Modal>;
 };
 

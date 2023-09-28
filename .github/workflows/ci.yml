@@ -237,7 +237,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn workspace ghost-admin run test
+      - run: yarn nx run ghost-admin:test
         env:
           BROWSER: Chrome
 
@@ -263,7 +263,7 @@ jobs:
     if: needs.job_get_metadata.outputs.changed_any_code == 'true'
     strategy:
       matrix:
-        node: [ '16.14.0', '18.12.1' ]
+        node: [ '18.12.1' ]
     name: Unit tests (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@v4
@@ -301,7 +301,7 @@ jobs:
     if: needs.job_get_metadata.outputs.changed_core == 'true'
     strategy:
       matrix:
-        node: [ '16.14.0', '18.12.1' ]
+        node: [ '18.12.1' ]
         env:
           - DB: mysql8
             NODE_ENV: testing-mysql

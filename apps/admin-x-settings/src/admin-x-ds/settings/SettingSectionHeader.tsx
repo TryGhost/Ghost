@@ -6,7 +6,7 @@ interface Props {
 }
 
 const SettingSectionHeader: React.FC<Props> = ({title, sticky = false}) => {
-    let styles = 'pb-4 text-2xs font-semibold uppercase tracking-wider text-grey-700 z-10 ';
+    let styles = 'pb-[10px] text-2xs font-semibold uppercase tracking-wider text-grey-700 z-20 ';
     if (sticky) {
         styles += ' sticky top-0 -mt-4 pt-4 bg-white dark:bg-black';
     }

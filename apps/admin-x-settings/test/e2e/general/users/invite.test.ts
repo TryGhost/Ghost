@@ -8,7 +8,7 @@ test.describe('User invitations', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             browseInvites: {method: 'GET', path: '/invites/', response: responseFixtures.invites},
             browseRoles: {method: 'GET', path: '/roles/?limit=all', response: responseFixtures.roles},
             browseAssignableRoles: {method: 'GET', path: '/roles/?limit=all&permissions=assign', response: responseFixtures.roles},
@@ -38,7 +38,7 @@ test.describe('User invitations', async () => {
         await modal.locator('input[value=author]').check();
         await modal.getByRole('button', {name: 'Send invitation now'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Invitation successfully sent to newuser@test\.com/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation successfully sent to newuser@test\.com/);
 
         await section.getByRole('tab', {name: 'Invited'}).click();
 
@@ -61,7 +61,7 @@ test.describe('User invitations', async () => {
     test('Supports resending invitations', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             browseInvites: {method: 'GET', path: '/invites/', response: responseFixtures.invites},
             deleteInvite: {method: 'DELETE', path: `/invites/${responseFixtures.invites.invites[0].id}/`, response: {}},
             addInvite: {method: 'POST', path: '/invites/', response: responseFixtures.invites}
@@ -77,7 +77,7 @@ test.describe('User invitations', async () => {
 
         await listItem.getByRole('button', {name: 'Resend'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Invitation resent! \(invitee@test\.com\)/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation resent! \(invitee@test\.com\)/);
 
         // Resending works by deleting and re-adding the invite
 
@@ -97,7 +97,7 @@ test.describe('User invitations', async () => {
     test('Supports revoking invitations', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseUsers: {method: 'GET', path: '/users/?limit=all&include=roles', response: responseFixtures.users},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             browseInvites: {method: 'GET', path: '/invites/', response: responseFixtures.invites},
             deleteInvite: {method: 'DELETE', path: `/invites/${responseFixtures.invites.invites[0].id}/`, response: {}}
         }});
@@ -112,7 +112,7 @@ test.describe('User invitations', async () => {
 
         await listItem.getByRole('button', {name: 'Revoke'}).click();
 
-        await expect(page.getByTestId('toast')).toHaveText(/Invitation revoked \(invitee@test\.com\)/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation revoked \(invitee@test\.com\)/);
 
         expect(lastApiRequests.deleteInvite?.url).toMatch(new RegExp(`/invites/${responseFixtures.invites.invites[0].id}`));
     });

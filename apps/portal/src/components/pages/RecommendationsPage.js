@@ -3,12 +3,22 @@ import {useContext, useState, useEffect, useCallback, useMemo} from 'react';
 import CloseButton from '../common/CloseButton';
 import {clearURLParams} from '../../utils/notifications';
 import LoadingPage from './LoadingPage';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-fill.svg';
 import {ReactComponent as ArrowIcon} from '../../images/icons/arrow-top-right.svg';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
+import {ReactComponent as CheckmarkIcon} from '../../images/icons/check-circle.svg';
+
 import {getRefDomain} from '../../utils/helpers';
 
 export const RecommendationsPageStyles = `
+    .gh-portal-recommendations-header .gh-portal-main-title {
+        padding: 0 32px;
+        text-wrap: balance;
+    }
+
+    .gh-portal-recommendation-item {
+        min-height: 38px;
+    }
+
     .gh-portal-recommendation-item .gh-portal-list-detail {
         padding: 4px 24px 4px 0px;
     }
@@ -16,7 +26,7 @@ export const RecommendationsPageStyles = `
     .gh-portal-recommendation-item-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
     }
 
@@ -37,11 +47,27 @@ export const RecommendationsPageStyles = `
     text-align: center;
     }
 
+    .gh-portal-recommendation-description-container {
+        position: relative;
+    }
+
+    .gh-portal-recommendation-item .gh-portal-recommendation-description-container p {
+        font-size: 1.35rem;
+        padding-left: 30px;
+        font-weight: 400;
+        letter-spacing: 0.1px;
+        margin-top: 4px;
+    }
+
+    .gh-portal-recommendation-description-hidden {
+        visibility: hidden;
+    }
+
     .gh-portal-recommendation-item .gh-portal-list-detail {
     transition: 0.2s ease-in-out opacity;
     }
 
-    .gh-portal-recommendation-item:hover .gh-portal-list-detail {
+    .gh-portal-list-detail:hover {
     cursor: pointer;
     opacity: 0.8;
     }
@@ -60,6 +86,58 @@ export const RecommendationsPageStyles = `
 
     .gh-portal-recommendation-item .gh-portal-list-detail:hover .gh-portal-recommendation-arrow-icon {
     opacity: 0.8;
+    }
+
+    .gh-portal-recommendation-item .gh-portal-btn-list {
+        height: 28px;
+    }
+
+    .gh-portal-recommendation-subscribed {
+        display: flex;
+        padding-left: 30px;
+        align-items: center;
+        gap: 4px;
+        font-size: 1.35rem;
+        font-weight: 400;
+        letter-spacing: 0.1px;
+        line-height: 1.3em;
+        animation: 0.5s ease-in-out fadeIn;
+    }
+
+    .gh-portal-recommendation-subscribed.with-reason {
+        position: absolute;
+    }
+
+    .gh-portal-recommendation-subscribed.without-reason {
+        margin-top: 5px;
+    }
+
+    .gh-portal-recommendation-subscribed span {
+        color: var(--grey6);
+    }
+
+    .gh-portal-recommendation-checkmark-icon {
+        height: 16px;
+        width: 16px;
+        padding: 0 2px;
+        color: #30cf43;
+    }
+
+    .gh-portal-recommendation-item .gh-portal-loadingicon {
+        position: relative !important;
+        height: 24px;
+    }
+
+    .gh-portal-recommendation-item-action {
+        min-height: 28px;
+    }
+
+    .gh-portal-popup-container.recommendations .gh-portal-action-footer
+
+    .gh-portal-btn-recommendations-later {
+        margin: 8px auto 24px;
+        color: var(--grey6);
+        font-weight: 400;
     }
 `;
 
@@ -88,7 +166,7 @@ const RecommendationIcon = ({title, favicon, featuredImage}) => {
     };
 
     if (!icon) {
-        return null;
+        return <div className="gh-portal-recommendation-item-favicon"></div>;
     }
 
     return (<img className="gh-portal-recommendation-item-favicon" src={icon} alt={title} onError={hideIcon} />);
@@ -109,6 +187,7 @@ const RecommendationItem = (recommendation) => {
     const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
     const allowOneClickSubscribe = member && oneClickSubscribe;
     const [subscribed, setSubscribed] = useState(false);
+    const [clicked, setClicked] = useState(false);
     const [loading, setLoading] = useState(false);
     const outboundLinkTagging = site.outbound_link_tagging ?? false;
 
@@ -133,7 +212,12 @@ const RecommendationItem = (recommendation) => {
     const visitHandler = useCallback(() => {
         // Open url in a new tab
         openTab(refUrl);
-    }, [refUrl]);
+
+        if (!clicked) {
+            onAction('trackRecommendationClicked', {recommendationId: recommendation.id});
+            setClicked(true);
+        }
+    }, [refUrl, recommendation.id, clicked]);
 
     const oneClickSubscribeHandler = useCallback(async () => {
         try {
@@ -142,6 +226,7 @@ const RecommendationItem = (recommendation) => {
                 siteUrl: url,
                 throwErrors: true
             });
+            onAction('trackRecommendationSubscribed', {recommendationId: recommendation.id});
             setSubscribed(true);
         } catch (_) {
             // Open portal signup page
@@ -149,9 +234,14 @@ const RecommendationItem = (recommendation) => {
 
             // Trigger a visit
             openTab(signupUrl);
+
+            if (!clicked) {
+                onAction('trackRecommendationClicked', {recommendationId: recommendation.id});
+                setClicked(true);
+            }
         }
         setLoading(false);
-    }, [setSubscribed, url, refUrl]);
+    }, [setSubscribed, url, refUrl, recommendation.id, clicked]);
 
     const clickHandler = useCallback((e) => {
         if (loading) {
@@ -172,28 +262,35 @@ const RecommendationItem = (recommendation) => {
                     <h3>{title}</h3>
                     <ArrowIcon className="gh-portal-recommendation-arrow-icon" />
                 </div>
-                {reason && <p>{reason}</p>}
+                <div className="gh-portal-recommendation-description-container">
+                    {subscribed && <div className={'gh-portal-recommendation-subscribed ' + (reason ? 'with-reason' : 'without-reason')}><span>{t('Verification link sent, check your inbox')}</span><CheckmarkIcon className="gh-portal-recommendation-checkmark-icon" alt=''/></div>}
+                    {reason && <p className={subscribed ? 'gh-portal-recommendation-description-hidden' : ''}>{reason}</p>}
+                </div>
             </div>
-            <div>
-                {subscribed && <CheckmarkIcon className='gh-portal-checkmark-icon' alt='' />}
+            <div className="gh-portal-recommendation-item-action">
                 {!subscribed && loading && <span className='gh-portal-recommendations-loading-container'><LoaderIcon className={'gh-portal-loadingicon dark'} /></span>}
-                {/* {!subscribed && !loading && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{allowOneClickSubscribe ? t('Subscribe') : t('Visit')}</button>} */}
-                {!subscribed && allowOneClickSubscribe && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{t('Subscribe')}</button>}
+                {!subscribed && !loading && allowOneClickSubscribe && <button type="button" className="gh-portal-btn gh-portal-btn-list" onClick={clickHandler}>{t('Subscribe')}</button>}
             </div>
         </section>
     );
 };
 
 const RecommendationsPage = () => {
-    const {api, site, pageData, t} = useContext(AppContext);
+    const {api, site, pageData, t, onAction} = useContext(AppContext);
     const {title, icon} = site;
     const {recommendations_enabled: recommendationsEnabled = false} = site;
     const [recommendations, setRecommendations] = useState(null);
 
     useEffect(() => {
         api.site.recommendations({limit: 100}).then((data) => {
+            const withOneClickSubscribe = data.recommendations.filter(recommendation => recommendation.one_click_subscribe);
+            const withoutOneClickSubscribe = data.recommendations.filter(recommendation => !recommendation.one_click_subscribe);
+
             setRecommendations(
-                shuffleRecommendations(data.recommendations)
+                [
+                    ...shuffleRecommendations(withOneClickSubscribe),
+                    ...shuffleRecommendations(withoutOneClickSubscribe)
+                ]
             );
         }).catch((err) => {
             // eslint-disable-next-line no-console
@@ -218,8 +315,8 @@ const RecommendationsPage = () => {
         };
     }, []);
 
-    const heading = pageData && pageData.signup ? t('Welcome to {{siteTitle}}', {siteTitle: title}) : t('Recommendations');
-    const subheading = pageData && pageData.signup ? t('Thanks for subscribing. Here are a few other sites you may enjoy. ') : t('Here are a few other sites you may enjoy.');
+    const heading = pageData && pageData.signup ? t('Welcome to {{siteTitle}}', {siteTitle: title, interpolation: {escapeValue: false}}) : t('Recommendations');
+    const subheading = pageData && pageData.signup ? t('Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.') : t('Here are a few other sites you may enjoy.');
 
     if (!recommendationsEnabled) {
         return null;
@@ -244,11 +341,14 @@ const RecommendationsPage = () => {
                 ))}
             </div>
 
-            {numToShow < recommendations.length && (
+            {((numToShow < recommendations.length) || (pageData && pageData.signup)) && (
                 <footer className='gh-portal-action-footer'>
-                    <button className='gh-portal-btn gh-portal-center' style={{width: '100%'}} onClick={showAllRecommendations}>
+                    {(numToShow < recommendations.length) && <button className='gh-portal-btn gh-portal-center' style={{width: '100%'}} onClick={showAllRecommendations}>
                         <span>{t('Show all')}</span>
-                    </button>
+                    </button>}
+                    {(pageData && pageData.signup) && <button className='gh-portal-btn gh-portal-center gh-portal-btn-link gh-portal-btn-recommendations-later' style={{width: '100%'}} onClick={showAllRecommendations}>
+                        <span onClick={() => onAction('closePopup')}>{t('Maybe later')}</span>
+                    </button>}
                 </footer>
             )}
         </div>

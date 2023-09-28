@@ -182,7 +182,7 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.35"
+        "version": "2.36"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
@@ -200,10 +200,6 @@
     "editor": {
         "url": "https://cdn.jsdelivr.net/ghost/koenig-lexical@~{version}/dist/koenig-lexical.umd.js",
         "version": "0.4"
-    },
-    "adminX": {
-        "url": "https://cdn.jsdelivr.net/ghost/admin-x-settings@~{version}/dist/admin-x-settings.js",
-        "version": "0.0"
     },
     "signupForm": {
         "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",

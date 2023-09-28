@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import useForm, {ErrorMessages, SaveState} from './useForm';
 import useGlobalDirtyState from './useGlobalDirtyState';
+import useHandleError from '../utils/api/handleError';
 import {Setting, SettingValue, useEditSettings} from '../api/settings';
 import {SiteData} from '../api/site';
 import {showToast} from '../admin-x-ds/global/Toast';
@@ -32,6 +33,7 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}):
 
     const {siteData, settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     const [isEditing, setEditing] = useState(false);
 
@@ -40,6 +42,7 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}):
         onSave: async () => {
             await editSettings?.(changedSettings());
         },
+        onSaveError: handleError,
         onValidate
     });
 
@@ -105,7 +108,7 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}):
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save settings! One or more fields have errors, please double check that you\'ve filled in all mandatory fields.'
+                    message: 'Can\'t save settings! One or more fields have errors, please double check that you\'ve filled all mandatory fields.'
                 });
             }
             return result;

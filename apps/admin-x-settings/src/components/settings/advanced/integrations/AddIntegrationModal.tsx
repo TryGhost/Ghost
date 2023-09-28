@@ -4,18 +4,19 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {useCreateIntegration} from '../../../../api/integrations';
 
-interface AddIntegrationModalProps {}
-
-const AddIntegrationModal: React.FC<AddIntegrationModalProps> = () => {
+const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const [name, setName] = useState('');
     const {mutateAsync: createIntegration} = useCreateIntegration();
     const limiter = useLimiter();
+    const handleError = useHandleError();
 
     useEffect(() => {
         if (limiter?.isLimited('customIntegrations')) {
@@ -41,9 +42,13 @@ const AddIntegrationModal: React.FC<AddIntegrationModalProps> = () => {
         testId='add-integration-modal'
         title='Add integration'
         onOk={async () => {
-            const data = await createIntegration({name});
-            modal.remove();
-            updateRoute({route: `integrations/show/${data.integrations[0].id}`});
+            try {
+                const data = await createIntegration({name});
+                modal.remove();
+                updateRoute({route: `integrations/show/${data.integrations[0].id}`});
+            } catch (e) {
+                handleError(e);
+            }
         }}
     >
         <div className='mt-5'>

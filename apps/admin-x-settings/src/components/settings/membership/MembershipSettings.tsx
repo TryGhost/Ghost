@@ -12,7 +12,7 @@ import useFeatureFlag from '../../../hooks/useFeatureFlag';
 export const searchKeywords = {
     portal: ['portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership'],
     access: ['default', 'access', 'subscription', 'post', 'membership'],
-    tiers: ['tiers', 'payment', 'paid'],
+    tiers: ['tiers', 'payment', 'paid', 'stripe'],
     tips: ['tip', 'donation', 'one time', 'payment'],
     embedSignupForm: ['signup', 'form', 'embed'],
     recommendations: ['recommendation', 'recommend', 'blogroll'],
@@ -25,8 +25,8 @@ const MembershipSettings: React.FC = () => {
 
     return (
         <SettingSection keywords={Object.values(searchKeywords).flat()} title='Membership'>
-            <Portal keywords={searchKeywords.portal} />
             <Access keywords={searchKeywords.access} />
+            <Portal keywords={searchKeywords.portal} />
             <Tiers keywords={searchKeywords.tiers} />
             {hasTipsAndDonations && <TipsOrDonations keywords={searchKeywords.tips} />}
             <EmbedSignupForm keywords={searchKeywords.embedSignupForm} />

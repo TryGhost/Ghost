@@ -4,6 +4,7 @@ import FileUpload from '../../../../admin-x-ds/global/form/FileUpload';
 import LabItem from './LabItem';
 import List from '../../../../admin-x-ds/global/List';
 import React, {useState} from 'react';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {downloadRedirects, useUploadRedirects} from '../../../../api/redirects';
 import {downloadRoutes, useUploadRoutes} from '../../../../api/routes';
@@ -13,6 +14,7 @@ const BetaFeatures: React.FC = () => {
     const {updateRoute} = useRouting();
     const {mutateAsync: uploadRedirects} = useUploadRedirects();
     const {mutateAsync: uploadRoutes} = useUploadRoutes();
+    const handleError = useHandleError();
     const [redirectsUploading, setRedirectsUploading] = useState(false);
     const [routesUploading, setRoutesUploading] = useState(false);
 
@@ -35,13 +37,18 @@ const BetaFeatures: React.FC = () => {
                     <FileUpload
                         id='upload-redirects'
                         onUpload={async (file) => {
-                            setRedirectsUploading(true);
-                            await uploadRedirects(file);
-                            showToast({
-                                type: 'success',
-                                message: 'Redirects uploaded successfully'
-                            });
-                            setRedirectsUploading(false);
+                            try {
+                                setRedirectsUploading(true);
+                                await uploadRedirects(file);
+                                showToast({
+                                    type: 'success',
+                                    message: 'Redirects uploaded successfully'
+                                });
+                            } catch (e) {
+                                handleError(e);
+                            } finally {
+                                setRedirectsUploading(false);
+                            }
                         }}
                     >
                         <Button color='grey' label={redirectsUploading ? 'Uploading ...' : 'Upload redirects file'} size='sm' tag='div' />
@@ -55,13 +62,18 @@ const BetaFeatures: React.FC = () => {
                     <FileUpload
                         id='upload-routes'
                         onUpload={async (file) => {
-                            setRoutesUploading(true);
-                            await uploadRoutes(file);
-                            showToast({
-                                type: 'success',
-                                message: 'Routes uploaded successfully'
-                            });
-                            setRoutesUploading(false);
+                            try {
+                                setRoutesUploading(true);
+                                await uploadRoutes(file);
+                                showToast({
+                                    type: 'success',
+                                    message: 'Routes uploaded successfully'
+                                });
+                            } catch (e) {
+                                handleError(e);
+                            } finally {
+                                setRoutesUploading(false);
+                            }
                         }}
                     >
                         <Button color='grey' label={routesUploading ? 'Uploading ...' : 'Upload routes file'} size='sm' tag='div' />
