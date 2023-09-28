@@ -4,7 +4,6 @@ import React, {createContext, useContext, useState} from 'react';
 interface DesignSystemContextType {
     isAnyTextFieldFocused: boolean;
     setFocusState: (value: boolean) => void;
-    fetchKoenigLexical: any;
 }
 
 const DesignSystemContext = createContext<DesignSystemContextType | undefined>(undefined);
@@ -18,11 +17,10 @@ export const useFocusContext = () => {
 };
 
 interface DesignSystemProviderProps {
-    fetchKoenigLexical: any;
     children: React.ReactNode;
 }
 
-const DesignSystemProvider: React.FC<DesignSystemProviderProps> = ({fetchKoenigLexical, children}) => {
+const DesignSystemProvider: React.FC<DesignSystemProviderProps> = ({children}) => {
     const [isAnyTextFieldFocused, setIsAnyTextFieldFocused] = useState(false);
 
     const setFocusState = (value: boolean) => {
@@ -30,7 +28,7 @@ const DesignSystemProvider: React.FC<DesignSystemProviderProps> = ({fetchKoenigL
     };
 
     return (
-        <DesignSystemContext.Provider value={{isAnyTextFieldFocused, fetchKoenigLexical, setFocusState}}>
+        <DesignSystemContext.Provider value={{isAnyTextFieldFocused, setFocusState}}>
             {children}
         </DesignSystemContext.Provider>
     );

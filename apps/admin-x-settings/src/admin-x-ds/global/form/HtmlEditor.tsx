@@ -14,11 +14,12 @@ export interface HtmlEditorProps {
 
 declare global {
     interface Window {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         '@tryghost/koenig-lexical': any;
     }
 }
 
-const fetchKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
+const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
     let status = 'pending';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let response: any;
@@ -48,7 +49,7 @@ const fetchKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
     return {read};
 };
 
-type EditorResource = ReturnType<typeof fetchKoenig>;
+type EditorResource = ReturnType<typeof loadKoenig>;
 
 const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
     editor,
@@ -145,7 +146,7 @@ const HtmlEditor: React.FC<HtmlEditorProps & {
     ...props
 }) => {
     const {fetchKoenigLexical} = useServices();
-    const editorResource = useMemo(() => fetchKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
+    const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
 
     const {setFocusState} = useFocusContext();
     // this is not ideal, we need to add a focus plugin inside the Koenig editor package to handle this properly

@@ -5,8 +5,8 @@ import NiceModal from '@ebay/nice-modal-react';
 import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
 import clsx from 'clsx';
 import {DefaultHeaderTypes} from './utils/unsplash/UnsplashTypes';
+import {FetchKoenigLexical, OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
-import {OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
 import {Toaster} from 'react-hot-toast';
@@ -20,7 +20,7 @@ interface AppProps {
     darkMode?: boolean;
     unsplashConfig: DefaultHeaderTypes
     sentryDSN: string | null;
-    fetchKoenigLexical: any;
+    fetchKoenigLexical: FetchKoenigLexical;
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
@@ -51,7 +51,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
                     <GlobalDataProvider>
                         <RoutingProvider externalNavigate={externalNavigate}>
                             <GlobalDirtyStateProvider>
-                                <DesignSystemProvider fetchKoenigLexical={fetchKoenigLexical}>
+                                <DesignSystemProvider>
                                     <div className={appClassName} id="admin-x-root" style={{
                                         height: '100vh',
                                         width: '100%'

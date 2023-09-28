@@ -8,7 +8,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
         <App
             externalNavigate={() => {}}
-            fetchKoenigLexical={() => {}}
+            fetchKoenigLexical={() => {
+                return Promise.resolve();
+            }}
             ghostVersion='5.x'
             officialThemes={[{
                 name: 'Casper',
