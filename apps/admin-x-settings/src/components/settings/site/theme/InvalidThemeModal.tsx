@@ -52,8 +52,11 @@ export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
 const InvalidThemeModal: React.FC<{
     title: string
     prompt: ReactNode
-    fatalErrors?: [];
-}> = ({title, prompt, fatalErrors}) => {
+    fatalErrors?: any;
+    onRetry?: (modal?: {
+        remove: () => void;
+    }) => void | Promise<void>;
+}> = ({title, prompt, fatalErrors, onRetry}) => {
     let warningPrompt = null;
     if (fatalErrors) {
         warningPrompt = <div className="mt-10">
@@ -73,7 +76,7 @@ const InvalidThemeModal: React.FC<{
             {warningPrompt}
         </>}
         title={title}
-        onOk={() => {}}
+        onOk={onRetry}
     />;
 };
 

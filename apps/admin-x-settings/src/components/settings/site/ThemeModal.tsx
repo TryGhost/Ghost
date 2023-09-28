@@ -9,7 +9,7 @@ import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
 import PageHeader from '../../../admin-x-ds/global/layout/PageHeader';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import TabView from '../../../admin-x-ds/global/TabView';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
@@ -50,6 +50,14 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
     const [isUploading, setUploading] = useState(false);
 
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleRetry = () => {
+        if (fileInputRef?.current) {
+            fileInputRef.current.click();
+        }
+    };
+
     useEffect(() => {
         if (limiter) {
             // Sending a bad string to make sure it fails (empty string isn't valid)
@@ -67,6 +75,36 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
 
     const onClose = () => {
         updateRoute('design/edit');
+    };
+
+    const onThemeUpload = async (file: File) => {
+        const themeFileName = file?.name.replace(/\.zip$/, '');
+        const existingThemeNames = themes.map(t => t.name);
+        if (existingThemeNames.includes(themeFileName)) {
+            NiceModal.show(ConfirmationModal, {
+                title: 'Overwrite theme',
+                prompt: (
+                    <>
+                        The theme <strong>{themeFileName}</strong> already exists.
+                        Do you want to overwrite it?
+                    </>
+                ),
+                okLabel: 'Overwrite',
+                cancelLabel: 'Cancel',
+                okRunningLabel: 'Overwriting...',
+                okColor: 'red',
+                onOk: async (confirmModal) => {
+                    setUploading(true);
+                    await handleThemeUpload({file, onActivate: onClose});
+                    setUploading(false);
+                    setCurrentTab('installed');
+                    confirmModal?.remove();
+                }
+            });
+        } else {
+            setCurrentTab('installed');
+            handleThemeUpload({file, onActivate: onClose});
+        }
     };
 
     const handleThemeUpload = async ({
@@ -92,10 +130,14 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         if (fatalErrors && !data) {
             let title = 'Invalid Theme';
             let prompt = <>This theme is invalid and cannot be activated. Fix the following errors and re-upload the theme</>;
-            return NiceModal.show(InvalidThemeModal, {
+            NiceModal.show(InvalidThemeModal, {
                 title,
                 prompt,
-                fatalErrors
+                fatalErrors,
+                onRetry: async (modal) => {
+                    modal?.remove();
+                    handleRetry();
+                }
             });
         }
 
@@ -171,37 +213,10 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             <div className='flex items-center gap-3'>
                 {uploadConfig && (
                     uploadConfig.enabled ?
-                        <FileUpload id='theme-upload' onUpload={async (file: File) => {
-                            const themeFileName = file?.name.replace(/\.zip$/, '');
-                            const existingThemeNames = themes.map(t => t.name);
-                            if (existingThemeNames.includes(themeFileName)) {
-                                NiceModal.show(ConfirmationModal, {
-                                    title: 'Overwrite theme',
-                                    prompt: (
-                                        <>
-                                            The theme <strong>{themeFileName}</strong> already exists.
-                                            Do you want to overwrite it?
-                                        </>
-                                    ),
-                                    okLabel: 'Overwrite',
-                                    cancelLabel: 'Cancel',
-                                    okRunningLabel: 'Overwriting...',
-                                    okColor: 'red',
-                                    onOk: async (confirmModal) => {
-                                        setUploading(true);
-                                        await handleThemeUpload({file, onActivate: onClose});
-                                        setUploading(false);
-                                        setCurrentTab('installed');
-                                        confirmModal?.remove();
-                                    }
-                                });
-                            } else {
-                                setCurrentTab('installed');
-                                handleThemeUpload({file, onActivate: onClose});
-                            }
-                        }}>
+                        <FileUpload id='theme-upload' inputRef={fileInputRef} onUpload={onThemeUpload}>
                             <Button color='black' label='Upload theme' loading={isUploading} tag='div' />
                         </FileUpload> :
+                        // for when user's plan does not support custom themes
                         <Button color='black' label='Upload theme' onClick={() => {
                             NiceModal.show(LimitModal, {
                                 title: 'Upgrade to enable custom themes',
