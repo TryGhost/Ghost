@@ -3,7 +3,7 @@ import TextField, {TextFieldProps} from './TextField';
 import validator from 'validator';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
 
-const formatUrl = (value: string, baseUrl?: string) => {
+export const formatUrl = (value: string, baseUrl?: string) => {
     let url = value.trim();
 
     if (!url) {

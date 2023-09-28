@@ -494,6 +494,10 @@ class StaffServiceEmails {
             }
             return array.slice(0,limit);
         });
+
+        this.Handlebars.registerHelper('encodeURIComponent', function (string) {
+            return encodeURIComponent(string);
+        });
     }
 
     async renderHTML(templateName, data) {

@@ -30,7 +30,8 @@ export const RouteContext = createContext<RoutingContextData>({
 
 export type RoutingModalProps = {
     pathName: string;
-    params?: Record<string, string>
+    params?: Record<string, string>,
+    searchParams?: URLSearchParams
 }
 
 const modalPaths: {[key: string]: ModalName} = {
@@ -85,6 +86,7 @@ const handleNavigation = (currentRoute: string | undefined) => {
     let url = new URL(hash, domain);
 
     const pathName = getHashPath(url.pathname);
+    const searchParams = url.searchParams;
 
     if (pathName) {
         const [, currentModalName] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(currentRoute || '', modalPath)) || [];
@@ -93,9 +95,9 @@ const handleNavigation = (currentRoute: string | undefined) => {
         return {
             pathName,
             changingModal: modalName && modalName !== currentModalName,
-            modal: (path && modalName) ?
+            modal: (path && modalName) ? // we should consider adding '&& modalName !== currentModalName' here, but this breaks tests
                 import('./routing/modals').then(({default: modals}) => {
-                    NiceModal.show(modals[modalName] as ModalComponent, {pathName, params: matchRoute(pathName, path)});
+                    NiceModal.show(modals[modalName] as ModalComponent, {pathName, params: matchRoute(pathName, path), searchParams});
                 }) :
                 undefined
         };

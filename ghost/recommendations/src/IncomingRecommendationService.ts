@@ -98,7 +98,7 @@ export class IncomingRecommendationService {
 
             // Check if we are also recommending this URL
             const existing = await this.#recommendationService.countRecommendations({
-                filter: `url:~^'${url}'`
+                filter: `url:~'${url}'`
             });
             const recommendingBack = existing > 0;
 
