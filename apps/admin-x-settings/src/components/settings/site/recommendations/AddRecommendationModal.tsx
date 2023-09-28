@@ -8,8 +8,10 @@ import useForm from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {AlreadyExistsError} from '../../../../utils/errors';
 import {EditOrAddRecommendation, RecommendationResponseType, useGetRecommendationByUrl} from '../../../../api/recommendations';
+import {LoadingIndicator} from '../../../../admin-x-ds/global/LoadingIndicator';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
+import {formatUrl} from '../../../../admin-x-ds/global/form/URLTextField';
 import {trimSearchAndHash} from '../../../../utils/url';
 import {useExternalGhostSite} from '../../../../api/external-ghost-site';
 import {useGetOembed} from '../../../../api/oembed';
@@ -19,7 +21,11 @@ interface AddRecommendationModalProps {
     animate?: boolean
 }
 
-const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModalProps> = ({recommendation, animate}) => {
+const doFormatUrl = (url: string) => {
+    return formatUrl(url).save;
+};
+
+const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModalProps> = ({searchParams, recommendation, animate}) => {
     const [enterPressed, setEnterPressed] = useState(false);
     const modal = useModal();
     const {updateRoute} = useRouting();
@@ -27,10 +33,18 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
     const {query: queryExternalGhostSite} = useExternalGhostSite();
     const {query: getRecommendationByUrl} = useGetRecommendationByUrl();
 
+    // Handle a URL that was passed via the URL
+    const initialUrl = recommendation ? '' : (searchParams?.get('url') ?? '');
+    const {save: initialUrlCleaned} = initialUrl ? formatUrl(initialUrl) : {save: ''};
+
+    // Show loading view when we had an initial URL
+    const didInitialSubmit = React.useRef(false);
+    const [showLoadingView, setShowLoadingView] = React.useState(!!initialUrlCleaned);
+
     const {formState, updateForm, handleSave, errors, saveState, clearError} = useForm({
         initialState: recommendation ?? {
             title: '',
-            url: '',
+            url: initialUrlCleaned,
             reason: '',
             excerpt: null,
             featured_image: null,
@@ -89,6 +103,10 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
 
             // Switch modal without changing the route (the second modal is not reachable by URL)
             modal.remove();
+
+            // todo: we should change the URL, but this also keeps adding a new modal -> infinite loop
+            // updateRoute('recommendations/add?url=' + encodeURIComponent(updatedRecommendation.url));
+
             NiceModal.show(AddRecommendationModalConfirm, {
                 animate: false,
                 recommendation: updatedRecommendation
@@ -108,11 +126,16 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 newErrors.url = 'Please enter a valid URL.';
             }
 
+            // If we have errors: close direct submit view
+            if (showLoadingView) {
+                setShowLoadingView(Object.keys(newErrors).length === 0);
+            }
+
             return newErrors;
         }
     });
 
-    const saveForm = async () => {
+    const onOk = React.useCallback(async () => {
         if (saveState === 'saving') {
             // Already saving
             return;
@@ -120,7 +143,9 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
 
         dismissAllToasts();
         try {
-            await handleSave({force: true});
+            if (await handleSave({force: true})) {
+                return;
+            }
         } catch (e) {
             const message = e instanceof AlreadyExistsError ? e.message : 'Something went wrong while checking this URL, please try again.';
             showToast({
@@ -128,22 +153,44 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 message
             });
         }
-    };
+
+        // If we have errors: close direct submit view
+        if (showLoadingView) {
+            setShowLoadingView(false);
+        }
+    }, [handleSave, saveState, showLoadingView, setShowLoadingView]);
+
+    // Make sure we submit initially when opening in loading view state
+    React.useEffect(() => {
+        if (showLoadingView && !didInitialSubmit.current) {
+            didInitialSubmit.current = true;
+            onOk();
+        }
+    }, [showLoadingView, onOk]);
 
     useEffect(() => {
         if (enterPressed) {
-            saveForm();
+            onOk();
             setEnterPressed(false); // Reset for future use
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formState]);
 
-    const formatUrl = (url: string) => {
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            url = `https://${url}`;
-        }
-        return url;
-    };
+    if (showLoadingView) {
+        return <Modal
+            afterClose={() => {
+                // Closed without saving: reset route
+                updateRoute('recommendations');
+            }}
+            animate={animate ?? true}
+            backDropClick={false}
+            cancelLabel=''
+            okLabel=''
+            size='sm'
+        >
+            <LoadingIndicator />
+        </Modal>;
+    }
 
     return <Modal
         afterClose={() => {
@@ -158,7 +205,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         size='sm'
         testId='add-recommendation-modal'
         title='Add recommendation'
-        onOk={saveForm}
+        onOk={onOk}
     >
         <p className="mt-4">You can recommend <strong>any site</strong> your audience will find valuable, not just those published on Ghost.</p>
         <Form
@@ -172,7 +219,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 placeholder='https://www.example.com'
                 title='URL'
                 value={formState.url}
-                onBlur={() => updateForm(state => ({...state, url: formatUrl(formState.url)}))}
+                onBlur={() => updateForm(state => ({...state, url: doFormatUrl(formState.url)}))}
                 onChange={(e) => {
                     clearError?.('url');
                     updateForm(state => ({...state, url: e.target.value}));
@@ -180,7 +227,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        updateForm(state => ({...state, url: formatUrl(formState.url)}));
+                        updateForm(state => ({...state, url: doFormatUrl(formState.url)}));
                         setEnterPressed(true);
                     }
                 }}
