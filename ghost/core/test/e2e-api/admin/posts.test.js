@@ -35,11 +35,11 @@ const buildMatchPostShallowIncludes = (tiersCount = 2) => {
         uuid: anyUuid,
         comment_id: anyString,
         url: anyString,
+        tiers: Array(tiersCount).fill(tierSnapshot),
         authors: anyArray,
         primary_author: anyObject,
         tags: anyArray,
         primary_tag: anyObject,
-        tiers: Array(tiersCount).fill(tierSnapshot),
         created_at: anyISODateTime,
         updated_at: anyISODateTime,
         published_at: anyISODateTime,
@@ -606,9 +606,9 @@ describe('Posts API', function () {
                 };
             };
 
-            await agent.put(`/posts/${postResponse.id}/`)
+            const {body: test} = await agent.put(`/posts/${postResponse.id}/`)
                 .body({posts: [Object.assign({}, postResponse, {collections: [collectionToRemove.id]})]})
-                .expectStatus(200)
+                .expectStatus(200);
                 .matchBodySnapshot({
                     posts: [
                         Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
@@ -624,23 +624,23 @@ describe('Posts API', function () {
                     'x-cache-invalidate': stringMatching(/\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)
                 });
 
-            await agent.put(`/posts/${postResponse.id}/`)
-                .body({posts: [Object.assign({}, postResponse, {collections: [collectionToAdd.id]})]})
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    posts: [
-                        Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
-                            // collectionToAdd
-                            collectionMatcher,
-                            // automatic "latest" collection which cannot be removed
-                            buildCollectionMatcher(22)
-                        ]})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    'x-cache-invalidate': stringMatching(/\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)
-                });
+                await agent.put(`/posts/${postResponse.id}/`)
+                    .body({posts: [Object.assign({}, postResponse, {collections: [collectionToAdd.id]})]})
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        posts: [
+                            Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
+                                // collectionToAdd
+                                collectionMatcher,
+                                // automatic "latest" collection which cannot be removed
+                                buildCollectionMatcher(22)
+                            ]})]
+                    })
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag,
+                        'x-cache-invalidate': stringMatching(/\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)
+                    });
         });
 
         it('Clears all page html fields when publishing a post', async function () {
