@@ -13,10 +13,13 @@ interface Props<T extends EditOrAddRecommendation> {
     showURL?: boolean,
     formState: T,
     errors: ErrorMessages,
-    updateForm: (fn: (state: T) => T) => void
+    updateForm: (fn: (state: T) => T) => void,
+    clearError?: (key: keyof ErrorMessages) => void
 }
 
-const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recommendation>> = ({showURL, formState, updateForm, errors}) => {
+const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recommendation>> = ({showURL, formState, updateForm, errors, clearError}) => {
+    const [reasonLength, setReasonLength] = React.useState(formState?.reason?.length || 0);
+    const reasonLengthColor = reasonLength > 200 ? 'text-red' : 'text-green';
     return <Form
         marginBottom={false}
         marginTop
@@ -49,19 +52,28 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
         />}
 
         <TextField
+            autoFocus={true}
             error={Boolean(errors.title)}
             hint={errors.title}
             title="Title"
             value={formState.title ?? ''}
-            onChange={e => updateForm(state => ({...state, title: e.target.value}))}
+            onChange={(e) => {
+                clearError?.('title');
+                updateForm(state => ({...state, title: e.target.value}));
+            }}
         />
         <TextArea
             clearBg={true}
-            hint='Optional, try to keep it under 156 characters'
+            error={Boolean(errors.reason)}
+            hint={errors.reason || <>Max. <strong>200</strong> characters. You&apos;ve used <strong className={reasonLengthColor}>{reasonLength}</strong></>}
             rows={3}
             title="Short description"
             value={formState.reason ?? ''}
-            onChange={e => updateForm(state => ({...state, reason: e.target.value}))}
+            onChange={(e) => {
+                clearError?.('reason');
+                setReasonLength(e.target.value.length);
+                updateForm(state => ({...state, reason: e.target.value}));
+            }}
         />
     </Form>;
 };
