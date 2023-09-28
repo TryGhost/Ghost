@@ -7,6 +7,14 @@ import React, {ReactNode, useState} from 'react';
 import {ConfirmationModalContent} from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import {ThemeProblem} from '../../../../api/themes';
 
+type FatalError = {
+    details: {
+      errors: ThemeProblem[];
+    };
+  };
+
+  type FatalErrors = FatalError[];
+
 export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);
 
@@ -50,7 +58,7 @@ export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
 const InvalidThemeModal: React.FC<{
     title: string
     prompt: ReactNode
-    fatalErrors?: any;
+    fatalErrors?: FatalErrors;
     onRetry?: (modal?: {
         remove: () => void;
     }) => void | Promise<void>;
