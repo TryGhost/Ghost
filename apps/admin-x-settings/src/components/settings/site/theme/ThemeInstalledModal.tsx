@@ -9,7 +9,7 @@ import {ConfirmationModalContent} from '../../../../admin-x-ds/global/modal/Conf
 import {InstalledTheme, ThemeProblem, useActivateTheme} from '../../../../api/themes';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 
-const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
+export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);
 
     return <ListItem
