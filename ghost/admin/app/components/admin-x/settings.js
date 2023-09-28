@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import config from 'ghost-admin/config/environment';
+import fetchKoenigLexical from 'ghost-admin/utils/fetch-koenig-lexical';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -413,6 +414,7 @@ export default class AdminXSettings extends Component {
                             darkMode={this.feature.nightShift}
                             unsplashConfig={defaultUnsplashHeaders}
                             sentry={this.config.sentry_dsn ? Sentry : undefined}
+                            fetchKoenigLexical={fetchKoenigLexical}
                             onUpdate={this.onUpdate}
                             onInvalidate={this.onInvalidate}
                             onDelete={this.onDelete}

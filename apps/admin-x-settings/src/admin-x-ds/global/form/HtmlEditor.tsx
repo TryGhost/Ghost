@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react';
 import ErrorBoundary from '../ErrorBoundary';
 import React, {Suspense, useCallback, useMemo} from 'react';
-import {useFocusContext} from '../../providers/DesignSystemProvider';
+import {fetchKoenigLexical, useFocusContext} from '../../providers/DesignSystemProvider';
 
 export interface HtmlEditorProps {
     value?: string
@@ -13,27 +13,16 @@ export interface HtmlEditorProps {
 
 declare global {
     interface Window {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         '@tryghost/koenig-lexical': any;
     }
 }
 
-const fetchKoenig = function ({editorUrl, editorVersion}: { editorUrl: string; editorVersion: string; }) {
+const fetchKoenig = function () {
     let status = 'pending';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let response: any;
 
-    const fetchPackage = async () => {
-        if (window['@tryghost/koenig-lexical']) {
-            return window['@tryghost/koenig-lexical'];
-        }
-
-        await import(editorUrl.replace('{version}', editorVersion));
-
-        return window['@tryghost/koenig-lexical'];
-    };
-
-    const suspender = fetchPackage().then(
+    const suspender = fetchKoenigLexical().then(
         (res) => {
             status = 'success';
             response = res;
@@ -149,17 +138,13 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
 };
 
 const HtmlEditor: React.FC<HtmlEditorProps & {
-    config: { editor: { url: string; version: string; } };
     className?: string;
 }> = ({
-    config,
     className,
     ...props
 }) => {
-    const editorResource = useMemo(() => fetchKoenig({
-        editorUrl: config.editor.url,
-        editorVersion: config.editor.version
-    }), [config.editor.url, config.editor.version]);
+    const editorResource = fetchKoenig();
+
     const {setFocusState} = useFocusContext();
     // this is not ideal, we need to add a focus plugin inside the Koenig editor package to handle this properly
     const handleFocus = () => {

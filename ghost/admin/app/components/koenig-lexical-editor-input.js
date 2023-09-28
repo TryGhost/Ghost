@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
+import fetchKoenigLexical from 'ghost-admin/utils/fetch-koenig-lexical';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
@@ -25,34 +26,11 @@ class ErrorHandler extends React.Component {
     }
 }
 
-const fetchKoenig = function () {
+const loadKoenig = function () {
     let status = 'pending';
     let response;
 
-    const fetchPackage = async () => {
-        if (window['@tryghost/koenig-lexical']) {
-            return window['@tryghost/koenig-lexical'];
-        }
-
-        // the manual specification of the protocol in the import template string is
-        // required to work around ember-auto-import complaining about an unknown dynamic import
-        // during the build step
-        const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const urlTemplate = GhostAdmin.__container__.lookup('config:main').editor?.url;
-        const urlVersion = GhostAdmin.__container__.lookup('config:main').editor?.version;
-
-        const url = new URL(urlTemplate.replace('{version}', urlVersion));
-
-        if (url.protocol === 'http:') {
-            await import(`http://${url.host}${url.pathname}`);
-        } else {
-            await import(`https://${url.host}${url.pathname}`);
-        }
-
-        return window['@tryghost/koenig-lexical'];
-    };
-
-    const suspender = fetchPackage().then(
+    const suspender = fetchKoenigLexical().then(
         (res) => {
             status = 'success';
             response = res;
@@ -77,7 +55,7 @@ const fetchKoenig = function () {
     return {read};
 };
 
-const editorResource = fetchKoenig();
+const editorResource = loadKoenig();
 
 const KoenigComposer = (props) => {
     const {KoenigComposer: _KoenigComposer, MINIMAL_NODES: _MINIMAL_NODES} = editorResource.read();
