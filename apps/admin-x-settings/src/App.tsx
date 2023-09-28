@@ -47,7 +47,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
     return (
         <SentryErrorBoundary>
             <QueryClientProvider client={queryClient}>
-                <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
+                <ServicesProvider fetchKoenigLexical={fetchKoenigLexical} ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
                     <GlobalDataProvider>
                         <RoutingProvider externalNavigate={externalNavigate}>
                             <GlobalDirtyStateProvider>

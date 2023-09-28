@@ -1,7 +1,8 @@
 import * as Sentry from '@sentry/react';
 import ErrorBoundary from '../ErrorBoundary';
 import React, {Suspense, useCallback, useMemo} from 'react';
-import {fetchKoenigLexical, useFocusContext} from '../../providers/DesignSystemProvider';
+import {FetchKoenigLexical, useServices} from '../../../components/providers/ServiceProvider';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 
 export interface HtmlEditorProps {
     value?: string
@@ -17,7 +18,7 @@ declare global {
     }
 }
 
-const fetchKoenig = function () {
+const fetchKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
     let status = 'pending';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let response: any;
@@ -143,7 +144,8 @@ const HtmlEditor: React.FC<HtmlEditorProps & {
     className,
     ...props
 }) => {
-    const editorResource = fetchKoenig();
+    const {fetchKoenigLexical} = useServices();
+    const editorResource = useMemo(() => fetchKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
 
     const {setFocusState} = useFocusContext();
     // this is not ideal, we need to add a focus plugin inside the Koenig editor package to handle this properly
