@@ -124,7 +124,6 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         } catch (e) {
             setUploading(false);
             const errorsJson = await handleError(e) as {errors?: []};
-            console.log(errorsJson);
             if (errorsJson?.errors) {
                 fatalErrors = errorsJson.errors;
             }
