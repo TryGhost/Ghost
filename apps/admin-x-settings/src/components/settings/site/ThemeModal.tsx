@@ -3,6 +3,7 @@ import Breadcrumbs from '../../../admin-x-ds/global/Breadcrumbs';
 import Button from '../../../admin-x-ds/global/Button';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import FileUpload from '../../../admin-x-ds/global/form/FileUpload';
+import InvalidThemeModal from './theme/InvalidThemeModal';
 import LimitModal from '../../../admin-x-ds/global/modal/LimitModal';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
@@ -76,6 +77,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         onActivate?: () => void
     }) => {
         let data: ThemesInstallResponseType | undefined;
+        let fatalErrors = null;
 
         try {
             setUploading(true);
@@ -83,7 +85,18 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             setUploading(false);
         } catch (e) {
             setUploading(false);
-            handleError(e);
+            const errorsJson = await handleError(e);
+            fatalErrors = errorsJson?.errors;
+        }
+
+        if (fatalErrors && !data) {
+            let title = 'Invalid Theme';
+            let prompt = <>This theme is invalid and cannot be activated. Fix the following errors and re-upload the theme</>;
+            return NiceModal.show(InvalidThemeModal, {
+                title,
+                prompt,
+                fatalErrors
+            });
         }
 
         if (!data) {

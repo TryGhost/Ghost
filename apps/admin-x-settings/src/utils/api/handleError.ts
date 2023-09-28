@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react';
 import toast from 'react-hot-toast';
-import {APIError, ValidationError} from '../errors';
+import {APIError, JSONError, ValidationError} from '../errors';
 import {showToast} from '../../admin-x-ds/global/Toast';
 import {useCallback} from 'react';
 import {useSentryDSN} from '../../components/providers/ServiceProvider';
@@ -38,6 +38,10 @@ const useHandleError = () => {
         }
 
         toast.remove();
+
+        if (error instanceof JSONError && error.response?.status === 422) {
+            return error.data;
+        } else
 
         if (error instanceof APIError && error.response?.status === 418) {
             // We use this status in tests to indicate the API request was not mocked -
