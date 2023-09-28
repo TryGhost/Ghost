@@ -184,11 +184,13 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             }}
             animate={animate ?? true}
             backDropClick={false}
-            cancelLabel=''
-            okLabel=''
+            footer={false}
+            header={false}
             size='sm'
         >
-            <LoadingIndicator />
+            <div className="flex flex-col items-center justify-center p-8">
+                <LoadingIndicator />
+            </div>
         </Modal>;
     }
 
@@ -207,7 +209,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         title='Add recommendation'
         onOk={onOk}
     >
-        <p className="mt-4">You can recommend any site your audience will find valuable, not just those published on Ghost.</p>
+        <p className="mt-4">You can recommend <strong>any site</strong> your audience will find valuable, not just those published on Ghost.</p>
         <Form
             marginBottom={false}
             marginTop
