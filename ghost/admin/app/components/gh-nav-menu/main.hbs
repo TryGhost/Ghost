@@ -43,7 +43,7 @@
                 <ul class="gh-nav-list gh-nav-manage">
                     <li class="gh-nav-list-new relative">
                         <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts"}} data-test-nav="posts">{{svg-jar "posts"}}Posts</GhLinkToCustomViewsIndex>
-                        <LinkTo @route="editor.new" @model="post" class="gh-secondary-action gh-nav-new-post" @alt="New post" title="New post" data-test-nav="new-story"><span>{{svg-jar "plus"}}</span></LinkTo>
+                        <LinkTo @route="lexical-editor.new" @model="post" class="gh-secondary-action gh-nav-new-post" @alt="New post" title="New post" data-test-nav="new-story"><span>{{svg-jar "plus"}}</span></LinkTo>
                         {{#if this.session.user.isAuthorOrContributor}}
                             {{#if this.customViews.forPosts}}
                                 <ul class="gh-nav-view-list">

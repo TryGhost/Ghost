@@ -35,7 +35,7 @@ Router.map(function () {
 
     this.route('pages');
 
-    this.route('editor', {path: 'old-editor'}, function () {
+    this.route('editor', {path: 'editor-mobiledoc'}, function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
     });
