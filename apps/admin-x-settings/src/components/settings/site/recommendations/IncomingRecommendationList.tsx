@@ -18,7 +18,7 @@ interface IncomingRecommendationListProps {
 const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHistoryItem[]}> = ({mention, stats}) => {
     const cleanedSource = mention.source.replace('/.well-known/recommendations.json', '');
 
-    const {signups, paidConversions, hasPaidColumn} = useMemo(() => {
+    const signups = useMemo(() => {
         // Note: this should match the `getDomainFromUrl` method from OutboundLinkTagger
         let cleanedDomain = cleanedSource;
         try {
@@ -27,19 +27,12 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
             // Ignore invalid urls
         }
 
-        return stats.reduce((acc, stat) => {
-            acc.hasPaidColumn = acc.hasPaidColumn || stat.paid_conversions > 0;
+        return stats.reduce((s, stat) => {
             if (stat.source === cleanedDomain) {
-                acc.signups += stat.signups;
-                acc.paidConversions += stat.paid_conversions;
-                return acc;
+                return s + stat.signups;
             }
-            return acc;
-        }, {
-            signups: 0,
-            paidConversions: 0,
-            hasPaidColumn: false
-        });
+            return s;
+        }, 0);
     }, [stats, cleanedSource]);
 
     const showDetails = () => {
@@ -47,8 +40,7 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
         window.open(cleanedSource, '_blank');
     };
 
-    const freeMembersLabel = (signups - paidConversions) === 1 ? 'free member' : 'free members';
-    const paidConversionsLabel = (paidConversions === 1) ? 'paid member' : 'paid members';
+    const freeMembersLabel = (signups) === 1 ? 'free member' : 'free members';
 
     return (
         <TableRow hideActions>
@@ -63,14 +55,8 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
                 </div>
             </TableCell>
             <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                {(signups - paidConversions) === 0 ? <span className="text-grey-500">-</span> : (<div className='-mt-px flex grow items-end gap-1'><span>{signups - paidConversions}</span><span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{freeMembersLabel}</span></div>)}
+                {signups === 0 ? <span className="text-grey-500">-</span> : (<div className='-mt-px flex grow items-end gap-1'><span>{signups}</span><span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{freeMembersLabel}</span></div>)}
             </TableCell>
-            {hasPaidColumn &&
-                <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                    {paidConversions === 0 && <span className="dark:text-grey-900">-</span>}
-                    {paidConversions > 0 && (<div className='-mt-px flex grow items-end gap-1'><span>{paidConversions}</span><span className='whitespace-nowrap text-xs text-grey-700'>{paidConversionsLabel}</span></div>)}
-                </TableCell>
-            }
         </TableRow>
     );
 };
