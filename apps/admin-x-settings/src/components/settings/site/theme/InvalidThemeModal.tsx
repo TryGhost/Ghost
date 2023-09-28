@@ -4,10 +4,8 @@ import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {ReactNode, useState} from 'react';
-// import useHandleError from '../../../../utils/api/handleError';
 import {ConfirmationModalContent} from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import {ThemeProblem} from '../../../../api/themes';
-// import {showToast} from '../../../../admin-x-ds/global/Toast';
 
 export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);
