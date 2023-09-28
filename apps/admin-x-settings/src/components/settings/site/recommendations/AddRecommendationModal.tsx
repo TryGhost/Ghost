@@ -209,7 +209,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         title='Add recommendation'
         onOk={onOk}
     >
-        <p className="mt-4">You can recommend any site your audience will find valuable, not just those published on Ghost.</p>
+        <p className="mt-4">You can recommend <strong>any site</strong> your audience will find valuable, not just those published on Ghost.</p>
         <Form
             marginBottom={false}
             marginTop
