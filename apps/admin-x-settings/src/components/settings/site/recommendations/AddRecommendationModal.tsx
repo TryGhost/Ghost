@@ -184,11 +184,13 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             }}
             animate={animate ?? true}
             backDropClick={false}
-            cancelLabel=''
-            okLabel=''
+            footer={false}
+            header={false}
             size='sm'
         >
-            <LoadingIndicator />
+            <div className="flex flex-col items-center justify-center p-8">
+                <LoadingIndicator />
+            </div>
         </Modal>;
     }
 

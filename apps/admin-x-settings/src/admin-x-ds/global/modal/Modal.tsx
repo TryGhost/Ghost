@@ -27,6 +27,7 @@ export interface ModalProps {
     leftButtonProps?: ButtonProps;
     buttonsDisabled?: boolean;
     footer?: boolean | React.ReactNode;
+    header?: boolean;
     padding?: boolean;
     onOk?: () => void;
     onCancel?: () => void;
@@ -55,6 +56,7 @@ const Modal: React.FC<ModalProps> = ({
     okLoading = false,
     cancelLabel = 'Cancel',
     footer,
+    header,
     leftButtonProps,
     buttonsDisabled,
     padding = true,
@@ -369,7 +371,7 @@ const Modal: React.FC<ModalProps> = ({
                 formSheet && 'bg-[rgba(98,109,121,0.08)]'
             )}></div>
             <section className={modalClasses} data-testid={testId} style={modalStyles}>
-                {!topRightContent || topRightContent === 'close' ?
+                {header === false ? '' : (!topRightContent || topRightContent === 'close' ?
                     (<header className={headerClasses}>
                         {title && <Heading level={3}>{title}</Heading>}
                         <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute right-6 top-6`}>
@@ -380,7 +382,7 @@ const Modal: React.FC<ModalProps> = ({
                     (<header className={headerClasses}>
                         {title && <Heading level={3}>{title}</Heading>}
                         {topRightContent}
-                    </header>)}
+                    </header>))}
                 <div className={contentClasses}>
                     {children}
                 </div>
