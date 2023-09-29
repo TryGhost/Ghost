@@ -19,9 +19,9 @@ import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
-import handleError from '../../../../utils/api/handleError';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
@@ -46,13 +46,14 @@ const Sidebar: React.FC<{
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
-    const {settings, siteData, config} = useGlobalData();
+    const {settings, siteData} = useGlobalData();
     const [membersSupportAddress, icon] = getSettingValues<string>(settings, ['members_support_address', 'icon']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
     const {localSettings} = useSettingGroup();
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
+    const handleError = useHandleError();
 
     const replyToEmails = [
         {label: `Newsletter address (${fullEmailAddress(newsletter.sender_email || 'noreply', siteData)})`, value: 'newsletter'},
@@ -405,7 +406,6 @@ const Sidebar: React.FC<{
                         />
                     </ToggleGroup>
                     <HtmlField
-                        config={config}
                         hint='Any extra information or legal text'
                         nodes='MINIMAL_NODES'
                         placeholder=' '
@@ -436,6 +436,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
     const {siteData} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
+    const handleError = useHandleError();
 
     const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError} = useForm({
         initialState: newsletter,

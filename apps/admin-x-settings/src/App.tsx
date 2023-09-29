@@ -5,10 +5,10 @@ import NiceModal from '@ebay/nice-modal-react';
 import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
 import clsx from 'clsx';
 import {DefaultHeaderTypes} from './utils/unsplash/UnsplashTypes';
-import {ErrorBoundary} from '@sentry/react';
+import {FetchKoenigLexical, OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
-import {OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
 import {Toaster} from 'react-hot-toast';
 import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
 
@@ -20,6 +20,7 @@ interface AppProps {
     darkMode?: boolean;
     unsplashConfig: DefaultHeaderTypes
     sentryDSN: string | null;
+    fetchKoenigLexical: FetchKoenigLexical;
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
@@ -30,20 +31,14 @@ const queryClient = new QueryClient({
         queries: {
             refetchOnWindowFocus: false,
             staleTime: 5 * (60 * 1000), // 5 mins
-            cacheTime: 10 * (60 * 1000) // 10 mins
+            cacheTime: 10 * (60 * 1000), // 10 mins
+            // We have custom retry logic for specific errors in fetchApi()
+            retry: false
         }
     }
 });
 
-function SentryErrorBoundary({children}: {children: React.ReactNode}) {
-    return (
-        <ErrorBoundary>
-            {children}
-        </ErrorBoundary>
-    );
-}
-
-function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, sentryDSN, onUpdate, onInvalidate, onDelete}: AppProps) {
+function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, fetchKoenigLexical, sentryDSN, onUpdate, onInvalidate, onDelete}: AppProps) {
     const appClassName = clsx(
         'admin-x-settings h-[100vh] w-full overflow-y-auto overflow-x-hidden',
         darkMode && 'dark'
@@ -52,7 +47,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
     return (
         <SentryErrorBoundary>
             <QueryClientProvider client={queryClient}>
-                <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
+                <ServicesProvider fetchKoenigLexical={fetchKoenigLexical} ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
                     <GlobalDataProvider>
                         <RoutingProvider externalNavigate={externalNavigate}>
                             <GlobalDirtyStateProvider>

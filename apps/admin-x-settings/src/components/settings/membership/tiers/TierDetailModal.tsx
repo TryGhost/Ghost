@@ -13,8 +13,8 @@ import TextField from '../../../../admin-x-ds/global/form/TextField';
 import TierDetailPreview from './TierDetailPreview';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
-import handleError from '../../../../utils/api/handleError';
 import useForm from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
@@ -37,6 +37,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const {mutateAsync: updateTier} = useEditTier();
     const {mutateAsync: createTier} = useAddTier();
     const [hasFreeTrial, setHasFreeTrial] = React.useState(!!tier?.trial_days);
+    const handleError = useHandleError();
     const {localSettings, siteData} = useSettingGroup();
     const siteTitle = getSettingValues(localSettings, ['title']) as string[];
 
@@ -140,14 +141,14 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
 
     let leftButtonProps: ButtonProps = {};
     if (tier) {
-        if (tier.active) {
+        if (tier.active && tier.type !== 'free') {
             leftButtonProps = {
                 label: 'Archive tier',
                 color: 'red',
                 link: true,
                 onClick: confirmTierStatusChange
             };
-        } else {
+        } else if (!tier.active) {
             leftButtonProps = {
                 label: 'Reactivate tier',
                 color: 'green',

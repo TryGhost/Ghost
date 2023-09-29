@@ -1367,6 +1367,24 @@ Post = ghostBookshelf.Model.extend({
         return editPost();
     },
 
+    bulkEdit: async function bulkEdit(ids, tableName, options) {
+        if (tableName === this.prototype.tableName) {
+            const result = await ghostBookshelf.Model.bulkEdit.call(this, ids, tableName, options);
+
+            if (labs.isSet('collectionsCard')) {
+                // reset all page HTML so collection cards can be re-rendered with updated posts
+                // NOTE: we can't check for only published edits here as we don't have access to previous values
+                //       to see if a previously published post has been unpublished, so we just reset all pages
+                const pageResetQuery = ghostBookshelf.knex.raw('UPDATE posts set html = NULL WHERE type = "page" AND lexical IS NOT NULL');
+                await (options.transacting ? pageResetQuery.transacting(options.transacting) : pageResetQuery);
+            }
+
+            return result;
+        } else {
+            return ghostBookshelf.Model.bulkEdit.call(this, ids, tableName, options);
+        }
+    },
+
     /**
      * ### Add
      * @extends ghostBookshelf.Model.add to handle returning the full object
@@ -1411,6 +1429,34 @@ Post = ghostBookshelf.Model.extend({
         }
 
         return destroyPost();
+    },
+
+    bulkDestroy: async function bulkDestroy(ids, tableName, options) {
+        if (tableName === this.prototype.tableName) {
+            if (labs.isSet('collectionsCard')) {
+                // get count of published posts to be destroyed before they no longer exist to count
+                const deletedPublishedCount = await this.query((qb) => {
+                    qb.where('type', 'post')
+                        .where('status', 'published')
+                        .whereIn('id', ids);
+                }).count({transacting: options.transacting});
+
+                const result = await ghostBookshelf.Model.bulkDestroy.call(this, ids, tableName, options);
+
+                // if we've deleted any published posts, we need to reset the html for all pages so dynamic collection
+                // card content can be re-rendered
+                if (deletedPublishedCount > 0) {
+                    const pageResetQuery = ghostBookshelf.knex.raw('UPDATE posts set html = NULL WHERE type = "page" AND lexical IS NOT NULL');
+                    await (options.transacting ? pageResetQuery.transacting(options.transacting) : pageResetQuery);
+                }
+
+                return result;
+            } else {
+                return ghostBookshelf.Model.bulkDestroy.call(this, ids, tableName, options);
+            }
+        } else {
+            return ghostBookshelf.Model.bulkDestroy.call(this, ids, tableName, options);
+        }
     },
 
     // NOTE: the `authors` extension is the parent of the post model. It also has a permissible function.

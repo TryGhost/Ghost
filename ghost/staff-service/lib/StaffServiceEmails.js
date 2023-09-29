@@ -13,8 +13,9 @@ class StaffServiceEmails {
         this.urlUtils = urlUtils;
         this.labs = labs;
 
-        this.Handlebars = require('handlebars');
+        this.Handlebars = require('handlebars').create();
         this.registerPartials();
+        this.registerHelpers();
     }
 
     async notifyFreeMemberSignup({
@@ -478,10 +479,7 @@ class StaffServiceEmails {
         });
     }
 
-    async renderHTML(templateName, data) {
-        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `${templateName}.hbs`), 'utf8');
-        const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-
+    registerHelpers() {
         this.Handlebars.registerHelper('eq', function (arg, value, options) {
             if (arg === value) {
                 return options.fn(this);
@@ -496,6 +494,15 @@ class StaffServiceEmails {
             }
             return array.slice(0,limit);
         });
+
+        this.Handlebars.registerHelper('encodeURIComponent', function (string) {
+            return encodeURIComponent(string);
+        });
+    }
+
+    async renderHTML(templateName, data) {
+        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `${templateName}.hbs`), 'utf8');
+        const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
 
         let sharedData = {};
         if (data.recipient) {

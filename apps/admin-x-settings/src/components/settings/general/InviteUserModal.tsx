@@ -2,7 +2,7 @@ import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import Radio from '../../../admin-x-ds/global/form/Radio';
 import TextField from '../../../admin-x-ds/global/form/TextField';
-import handleError from '../../../utils/api/handleError';
+import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import validator from 'validator';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
@@ -33,6 +33,7 @@ const InviteUserModal = NiceModal.create(() => {
     }>({});
 
     const {mutateAsync: addInvite} = useAddInvite();
+    const handleError = useHandleError();
 
     useEffect(() => {
         if (focusRef.current) {

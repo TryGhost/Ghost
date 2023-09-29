@@ -3,13 +3,12 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationReasonForm from './RecommendationReasonForm';
-import handleError from '../../../../utils/api/handleError';
 import useForm from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {Recommendation, useDeleteRecommendation, useEditRecommendation} from '../../../../api/recommendations';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
-import {toast} from 'react-hot-toast';
+import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
 
 interface EditRecommendationModalProps {
     recommendation: Recommendation,
@@ -21,8 +20,9 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
     const {updateRoute} = useRouting();
     const {mutateAsync: editRecommendation} = useEditRecommendation();
     const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
+    const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, saveState, errors} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors, clearError} = useForm({
         initialState: {
             ...recommendation
         },
@@ -34,9 +34,15 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
+
             if (!formState.title) {
                 newErrors.title = 'Title is required';
             }
+
+            if (formState.reason && formState.reason.length > 200) {
+                newErrors.reason = 'Description cannot be longer than 200 characters';
+            }
+
             return newErrors;
         }
     });
@@ -102,10 +108,10 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
                 return;
             }
 
-            toast.remove();
-            if (await handleSave({force: true})) {
-                // Already handled
-            } else {
+            dismissAllToasts();
+            try {
+                await handleSave({force: true});
+            } catch (e) {
                 showToast({
                     type: 'pageError',
                     message: 'One or more fields have errors, please double check that you\'ve filled all mandatory fields.'
@@ -113,7 +119,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
             }
         }}
     >
-        <RecommendationReasonForm errors={errors} formState={formState} showURL={true} updateForm={updateForm as any}/>
+        <RecommendationReasonForm clearError={clearError} errors={errors} formState={formState} showURL={true} updateForm={updateForm as any}/>
     </Modal>;
 };
 
