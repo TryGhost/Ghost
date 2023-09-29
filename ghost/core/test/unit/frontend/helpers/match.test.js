@@ -246,6 +246,38 @@ describe('Match helper', function () {
             }, hash);
         });
 
+        describe('Explicit Starts With', function () {
+            runTests({
+                // Using string values
+                '{{match empty "startsWith" ""}}': 'true',
+                '{{match empty "startsWith" " "}}': 'false',
+                '{{match string "startsWith" "Hello"}}': 'true',
+                '{{match string "startsWith" "World"}}': 'false',
+                '{{match string_true "startsWith" "tr"}}': 'true',
+                '{{match string_false "startsWith" "tr"}}': 'false',
+                '{{match safestring_string_false "startsWith" "fa"}}': 'true',
+                '{{match safestring_string_true "startsWith" "fa"}}': 'false',
+                '{{match string_five "startsWith" "5"}}': 'true',
+                '{{match string_five "startsWith" "6"}}': 'false',
+                '{{match object.foo "startsWith" "fo"}}': 'true',
+                '{{match object.foo "startsWith" "ba"}}': 'false',
+                '{{match array.[0] "startsWith" "fo"}}': 'true',
+                '{{match array.[0] "startsWith" "ba"}}': 'false',
+
+                // Using non-string values
+                '{{match zero "startsWith" 0}}': 'false',
+                '{{match zero "startsWith" "0"}}': 'false',
+                '{{match "1" "startsWith" one}}': 'false',
+                '{{match null "startsWith" "null"}}': 'false',
+                '{{match truthy_bool "startsWith" "tr"}}': 'false',
+                '{{match safestring_bool_false "startsWith" "fa"}}': 'false',
+                '{{match undefined "startsWith" "undefined"}}': 'false',
+                '{{match unknown "startsWith" "unknown" }}': 'false',
+                '{{match object "startsWith" "object" }}': 'false',
+                '{{match array "startsWith" "array" }}': 'false'
+            }, hash);
+        });
+
         // SafeStrings represent the original value as an object for example:
         // SafeString { string: true } vs SafeString { string: 'true' }
         // allows us to know if the original value was a boolean or a string
