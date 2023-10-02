@@ -10,12 +10,12 @@
     "README.md",
     "dist/"
   ],
-  "main": "./dist/koenig-lexical.umd.cjs",
+  "main": "./dist/koenig-lexical.umd.js",
   "module": "./dist/koenig-lexical.js",
   "exports": {
     ".": {
       "import": "./dist/koenig-lexical.js",
-      "require": "./dist/koenig-lexical.umd.cjs"
+      "require": "./dist/koenig-lexical.umd.js"
     }
   },
   "scripts": {
