@@ -1,9 +1,11 @@
+import Button from '../../../../admin-x-ds/global/Button';
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React, {useMemo} from 'react';
 import RecommendationIcon from './RecommendationIcon';
 import Table, {ShowMoreData} from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
+import useRouting from '../../../../hooks/useRouting';
 import {Mention} from '../../../../api/mentions';
 import {PaginationData} from '../../../../hooks/usePagination';
 import {ReferrerHistoryItem} from '../../../../api/referrers';
@@ -43,8 +45,18 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
 
     const freeMembersLabel = (signups) === 1 ? 'free member' : 'free members';
 
+    const {updateRoute} = useRouting();
+    
+    const action = (
+        <div className="flex items-center justify-end">
+            <Button color='green' label='Recommend back' size='sm' link onClick={() => {
+                updateRoute({route: `recommendations/add?url=${cleanedSource}`}); 
+            }} />
+        </div>
+    );
+
     return (
-        <TableRow hideActions>
+        <TableRow action={action} hideActions>
             <TableCell onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
