@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 40 40">
+    <title>social-x</title>
+    <circle cx="20" cy="20" r="20" fill="#000"/>
+    <path stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M24.518 29 11 11h4.482L29 29h-4.482Zm3.846-18-7.126 7.667M11.636 29l7.12-7.661"/>
+</svg>
