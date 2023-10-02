@@ -57,7 +57,7 @@ describe('Acceptance: Authentication', function () {
             }));
 
             await authenticateSession();
-            await visit('/settings/staff');
+            await visit('/members');
 
             // running `visit(url)` inside windowProxy.replaceLocation breaks
             // the async behaviour so we need to run `visit` here to simulate
@@ -78,7 +78,7 @@ describe('Acceptance: Authentication', function () {
             }));
 
             await authenticateSession();
-            await visit('/settings/staff');
+            await visit('/members');
 
             // running `visit(url)` inside windowProxy.replaceLocation breaks
             // the async behaviour so we need to run `visit` here to simulate

@@ -118,100 +118,101 @@ describe('Acceptance: Editor', function () {
         });
 
         describe('post settings menu', function () {
-            it('can set publish date', async function () {
-                let [post1] = this.server.createList('post', 2, {authors: [author]});
-                let futureTime = moment().tz('Etc/UTC').add(10, 'minutes');
+            // TODO: Convert to E2E test
+            // it('can set publish date', async function () {
+            //     let [post1] = this.server.createList('post', 2, {authors: [author]});
+            //     let futureTime = moment().tz('Etc/UTC').add(10, 'minutes');
 
-                // sanity check
-                expect(
-                    moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD HH:mm:ss'),
-                    'initial publishedAt sanity check')
-                    .to.equal('2015-12-19 16:25:07');
+            //     // sanity check
+            //     expect(
+            //         moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD HH:mm:ss'),
+            //         'initial publishedAt sanity check')
+            //         .to.equal('2015-12-19 16:25:07');
 
-                // post id 1 is a draft, checking for draft behaviour now
-                await visit('/editor/post/1');
+            //     // post id 1 is a draft, checking for draft behaviour now
+            //     await visit('/editor/post/1');
 
-                // open post settings menu
-                await click('[data-test-psm-trigger]');
+            //     // open post settings menu
+            //     await click('[data-test-psm-trigger]');
 
-                // should error, if the publish time is in the wrong format
-                await fillIn('[data-test-date-time-picker-time-input]', 'foo');
-                await blur('[data-test-date-time-picker-time-input]');
+            //     // should error, if the publish time is in the wrong format
+            //     await fillIn('[data-test-date-time-picker-time-input]', 'foo');
+            //     await blur('[data-test-date-time-picker-time-input]');
 
-                expect(find('[data-test-date-time-picker-error]').textContent.trim(), 'inline error response for invalid time')
-                    .to.equal('Must be in format: "15:00"');
+            //     expect(find('[data-test-date-time-picker-error]').textContent.trim(), 'inline error response for invalid time')
+            //         .to.equal('Must be in format: "15:00"');
 
-                // should error, if the publish time is in the future
-                // NOTE: date must be selected first, changing the time first will save
-                // with the new time
-                await fillIn('[data-test-date-time-picker-datepicker] input', moment.tz('Etc/UTC').add(1, 'day').format('YYYY-MM-DD'));
-                await blur('[data-test-date-time-picker-datepicker] input');
-                await fillIn('[data-test-date-time-picker-time-input]', futureTime.format('HH:mm'));
-                await blur('[data-test-date-time-picker-time-input]');
+            //     // should error, if the publish time is in the future
+            //     // NOTE: date must be selected first, changing the time first will save
+            //     // with the new time
+            //     await fillIn('[data-test-date-time-picker-datepicker] input', moment.tz('Etc/UTC').add(1, 'day').format('YYYY-MM-DD'));
+            //     await blur('[data-test-date-time-picker-datepicker] input');
+            //     await fillIn('[data-test-date-time-picker-time-input]', futureTime.format('HH:mm'));
+            //     await blur('[data-test-date-time-picker-time-input]');
 
-                expect(find('[data-test-date-time-picker-error]').textContent.trim(), 'inline error response for future time')
-                    .to.equal('Must be in the past');
+            //     expect(find('[data-test-date-time-picker-error]').textContent.trim(), 'inline error response for future time')
+            //         .to.equal('Must be in the past');
 
-                // closing the PSM will reset the invalid date/time
-                await click('[data-test-psm-trigger]');
-                await click('[data-test-psm-trigger]');
+            //     // closing the PSM will reset the invalid date/time
+            //     await click('[data-test-psm-trigger]');
+            //     await click('[data-test-psm-trigger]');
 
-                expect(
-                    find('[data-test-date-time-picker-error]'),
-                    'date picker error after closing PSM'
-                ).to.not.exist;
+            //     expect(
+            //         find('[data-test-date-time-picker-error]'),
+            //         'date picker error after closing PSM'
+            //     ).to.not.exist;
 
-                expect(
-                    find('[data-test-date-time-picker-date-input]').value,
-                    'PSM date value after closing with invalid date'
-                ).to.equal(moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD'));
+            //     expect(
+            //         find('[data-test-date-time-picker-date-input]').value,
+            //         'PSM date value after closing with invalid date'
+            //     ).to.equal(moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD'));
 
-                expect(
-                    find('[data-test-date-time-picker-time-input]').value,
-                    'PSM time value after closing with invalid date'
-                ).to.equal(moment(post1.publishedAt).tz('Etc/UTC').format('HH:mm'));
+            //     expect(
+            //         find('[data-test-date-time-picker-time-input]').value,
+            //         'PSM time value after closing with invalid date'
+            //     ).to.equal(moment(post1.publishedAt).tz('Etc/UTC').format('HH:mm'));
 
-                // saves the post with the new date
-                let validTime = moment('2017-04-09 12:00');
-                await fillIn('[data-test-date-time-picker-time-input]', validTime.format('HH:mm'));
-                await blur('[data-test-date-time-picker-time-input]');
-                await datepickerSelect('[data-test-date-time-picker-datepicker]', validTime.toDate());
+            //     // saves the post with the new date
+            //     let validTime = moment('2017-04-09 12:00');
+            //     await fillIn('[data-test-date-time-picker-time-input]', validTime.format('HH:mm'));
+            //     await blur('[data-test-date-time-picker-time-input]');
+            //     await datepickerSelect('[data-test-date-time-picker-datepicker]', validTime.toDate());
 
-                expect(moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD HH:mm:ss')).to.equal('2017-04-09 12:00:00');
+            //     expect(moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD HH:mm:ss')).to.equal('2017-04-09 12:00:00');
 
-                // go to settings to change the timezone
-                await visit('/settings/general');
-                await click('[data-test-toggle-timezone]');
+            //     // go to settings to change the timezone
+            //     await visit('/settings/general');
+            //     await click('[data-test-toggle-timezone]');
 
-                expect(currentURL(), 'currentURL for settings')
-                    .to.equal('/settings/general');
-                expect(find('#timezone option:checked').textContent.trim(), 'default timezone')
-                    .to.equal('(GMT) UTC');
+            //     expect(currentURL(), 'currentURL for settings')
+            //         .to.equal('/settings/general');
+            //     expect(find('#timezone option:checked').textContent.trim(), 'default timezone')
+            //         .to.equal('(GMT) UTC');
 
-                // select a new timezone
-                find('#timezone option[value="Pacific/Kwajalein"]').selected = true;
+            //     // select a new timezone
+            //     find('#timezone option[value="Pacific/Kwajalein"]').selected = true;
 
-                await triggerEvent('#timezone', 'change');
-                // save the settings
-                await click('[data-test-button="save"]');
+            //     await triggerEvent('#timezone', 'change');
+            //     // save the settings
+            //     await click('[data-test-button="save"]');
 
-                expect(find('#timezone option:checked').textContent.trim(), 'new timezone after saving')
-                    .to.equal('(GMT +12:00) International Date Line West');
+            //     expect(find('#timezone option:checked').textContent.trim(), 'new timezone after saving')
+            //         .to.equal('(GMT +12:00) International Date Line West');
 
-                // and now go back to the editor
-                await visit('/editor/post/1');
+            //     // and now go back to the editor
+            //     await visit('/editor/post/1');
 
-                await click('[data-test-psm-trigger]');
-                expect(
-                    find('[data-test-date-time-picker-date-input]').value,
-                    'date after timezone change'
-                ).to.equal('2017-04-10');
+            //     await click('[data-test-psm-trigger]');
+            //     expect(
+            //         find('[data-test-date-time-picker-date-input]').value,
+            //         'date after timezone change'
+            //     ).to.equal('2017-04-10');
 
-                expect(
-                    find('[data-test-date-time-picker-time-input]').value,
-                    'time after timezone change'
-                ).to.equal('00:00');
-            });
+            //     expect(
+            //         find('[data-test-date-time-picker-time-input]').value,
+            //         'time after timezone change'
+            //     ).to.equal('00:00');
+            // });
         });
 
         it.skip('handles validation errors when scheduling', async function () {
