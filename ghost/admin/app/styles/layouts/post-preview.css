@@ -436,6 +436,13 @@
     margin-right: 8px;
 }
 
+.gh-twitter-container .social-icon,
+.gh-social-twitter-container .social-icon {
+    width: 34px;
+    height: 34px;
+    margin-right: 12px;
+}
+
 .gh-social-og-container {
     width: 476px;
     margin-bottom: 2.4rem;
