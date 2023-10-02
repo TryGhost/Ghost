@@ -106,7 +106,7 @@ class ExternalMediaInliner {
         }
     }
 
-    async #inlineMibiledoc(mobiledoc, domains) {
+    async #inlineMobiledoc(mobiledoc, domains) {
         for (const domain of domains) {
             // NOTE: the src could end with a quote, apostrophe or double-backslash. backlashes are added to mobiledoc
             //       as an escape character
@@ -227,7 +227,7 @@ class ExternalMediaInliner {
 
         for (const post of posts) {
             try {
-                const inlinedMobiledoc = await this.#inlineMibiledoc(post.get('mobiledoc'), domains);
+                const inlinedMobiledoc = await this.#inlineMobiledoc(post.get('mobiledoc'), domains);
                 const updatedFields = await this.#inlineFields(post, postsInilingFields, domains);
 
                 if (inlinedMobiledoc !== post.get('mobiledoc')) {
