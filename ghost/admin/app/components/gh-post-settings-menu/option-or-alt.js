@@ -5,11 +5,11 @@ const isMac = window.navigator.platform.startsWith('Mac');
 
 export default class CtrlOrCmd extends Component {
     get tooltip() {
-        return isMac ? 'Command' : '';
+        return isMac ? 'Option' : '';
     }
 
     get character() {
-        const character = isMac ? '&#8984;' : 'Ctrl';
+        const character = isMac ? '&#8997;' : 'Alt';
         return htmlSafe(character);
     }
 
