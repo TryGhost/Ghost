@@ -62,7 +62,7 @@ export class EmailNode extends BaseEmailNode {
         if (this.__htmlEditor) {
             this.__htmlEditor.getEditorState().read(() => {
                 const html = $generateHtmlFromNodes(this.__htmlEditor, null);
-                const cleanedHtml = cleanBasicHtml(html, {removeCodeWrappers: true, allowBr: true});
+                const cleanedHtml = cleanBasicHtml(html, {removeCodeWrappers: false, allowBr: true});
                 json.html = cleanedHtml;
             });
         }

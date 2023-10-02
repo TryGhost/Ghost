@@ -377,6 +377,47 @@ describe('EmailNode', function () {
                 <p>Third paragraph</p>
             `);
         }));
+
+        it('strips out <code> elements with placeholders', editorTest(function () {
+            const payload = {
+                html: '<p>First paragraph</p><code>{placeholder}</code><p>Third paragraph</p>'
+            };
+
+            const options = {
+                target: 'email',
+                postUrl: 'https://example.com/my-post'
+            };
+
+            const emailNode = $createEmailNode(payload);
+            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+
+            element.innerHTML.should.prettifyTo(html`
+                <p>First paragraph</p>
+                %%{placeholder}%%
+                <p>Third paragraph</p>
+            `);
+        }));
+
+        it(`leaves <code> elements when not used with a placeholder`, editorTest(function () {
+            const payload = {
+                html: '<p>First paragraph</p><code>Some code</code><p>Third paragraph</p><code>{helper, "test"}</code>'
+            };
+
+            const options = {
+                target: 'email',
+                postUrl: 'https://example.com/my-post'
+            };
+
+            const emailNode = $createEmailNode(payload);
+            const {element} = emailNode.exportDOM({...exportOptions, ...options});
+
+            element.innerHTML.should.prettifyTo(html`
+                <p>First paragraph</p>
+                <code>Some code</code>
+                <p>Third paragraph</p>
+                %%{helper, "test"}%%
+            `);
+        }));
     });
 
     describe('getTextContent', function () {

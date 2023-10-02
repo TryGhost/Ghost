@@ -6,7 +6,7 @@
  * @returns {string}
  */
 function removeCodeWrappers(html) {
-    return html.replace(/<code>((.*?){.*?}(.*?))<\/code>/gi, '$1');
+    return html.replace(/<code\b[^>]*>((.*?){.*?}(.*?))<\/code>/gi, '$1');
 }
 
 /* global DOMParser, window */
