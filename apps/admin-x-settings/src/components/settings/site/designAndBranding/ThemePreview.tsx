@@ -1,6 +1,6 @@
 import IframeBuffering from '../../../../utils/IframeBuffering';
 import React, {useCallback} from 'react';
-import {CustomThemeSetting} from '../../../../api/customThemeSettings';
+import {CustomThemeSetting, hiddenCustomThemeSettingValue, isCustomThemeSettingVisible} from '../../../../api/customThemeSettings';
 
 type BrandSettings = {
     description: string;
@@ -35,6 +35,7 @@ function getPreviewData({
     if (!themeSettings) {
         return;
     }
+    const themeSettingsKeyValueObj = themeSettings.reduce((obj, {key, value}) => ({...obj, [key]: value}), {});
 
     const params = new URLSearchParams();
     params.append('c', accentColor);
@@ -42,13 +43,13 @@ function getPreviewData({
     params.append('icon', icon);
     params.append('logo', logo);
     params.append('cover', coverImage);
-    const themeSettingsObj: {
-        [key: string]: string;
+    const custom: {
+        [key: string]: string | typeof hiddenCustomThemeSettingValue;
     } = {};
     themeSettings.forEach((setting) => {
-        themeSettingsObj[setting.key] = setting.value as string;
+        custom[setting.key] = isCustomThemeSettingVisible(setting, themeSettingsKeyValueObj) ? setting.value as string : hiddenCustomThemeSettingValue;
     });
-    params.append('custom', JSON.stringify(themeSettingsObj));
+    params.append('custom', JSON.stringify(custom));
 
     return params.toString();
 }

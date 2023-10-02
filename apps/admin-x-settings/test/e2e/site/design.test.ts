@@ -142,4 +142,69 @@ test.describe('Design settings', async () => {
             ]
         });
     });
+
+    test('Custom theme setting visibility', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editCustomThemeSettings: {method: 'PUT', path: '/custom_theme_settings/', response: responseFixtures.customThemeSettings},
+            browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: {
+                custom_theme_settings: [{
+                    type: 'select',
+                    options: [
+                        'Logo on cover',
+                        'Logo in the middle',
+                        'Stacked'
+                    ],
+                    default: 'Logo on cover',
+                    id: '648047658d265b0c8b33c591',
+                    value: 'Stacked',
+                    key: 'navigation_layout'
+                }, {
+                    type: 'boolean',
+                    default: 'false',
+                    id: '648047658d265b0c8b33c592',
+                    value: 'false',
+                    key: 'show_featured_posts',
+                    visibility: 'navigation_layout:[Stacked]'
+                }]
+            }},
+            browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
+        }});
+        const lastPreviewRequest = await mockSitePreview({
+            page,
+            url: responseFixtures.site.site.url,
+            response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
+        });
+
+        await page.goto('/');
+
+        const section = page.getByTestId('design');
+
+        await section.getByRole('button', {name: 'Customize'}).click();
+
+        const modal = page.getByTestId('design-modal');
+
+        await modal.getByRole('tab', {name: 'Site wide'}).click();
+
+        const showFeaturedPostsCustomThemeSetting = modal.getByLabel('Show featured posts');
+
+        await expect(showFeaturedPostsCustomThemeSetting).toBeVisible();
+
+        await chooseOptionInSelect(modal.getByLabel('Navigation layout'), 'Logo in the middle');
+
+        await expect(showFeaturedPostsCustomThemeSetting).not.toBeVisible();
+
+        await modal.getByRole('button', {name: 'Save'}).click();
+
+        const expectedSettings = {navigation_layout: 'Logo in the middle', show_featured_posts: null};
+        const expectedEncoded = new URLSearchParams([['custom', JSON.stringify(expectedSettings)]]).toString();
+        expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
+
+        expect(lastApiRequests.editCustomThemeSettings?.body).toMatchObject({
+            custom_theme_settings: [
+                {key: 'navigation_layout', value: 'Logo in the middle'},
+                {key: 'show_featured_posts', value: 'false'}
+            ]
+        });
+    });
 });
