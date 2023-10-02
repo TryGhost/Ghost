@@ -16,17 +16,6 @@ describe('Acceptance: Custom Post Templates', function () {
     beforeEach(async function () {
         this.server.loadFixtures('settings','configs');
 
-        // ensure required config is in place for external lexical editor to load
-        const config = this.server.schema.configs.find(1);
-        config.attrs.editor = {url: 'https://cdn.pkg/editor.js'};
-        config.save();
-
-        // stub loaded external module to avoid loading of external dep
-        window['@tryghost/koenig-lexical'] = {
-            KoenigComposer: () => null,
-            KoenigEditor: () => null
-        };
-
         let role = this.server.create('role', {name: 'Administrator'});
         this.server.create('user', {roles: [role]});
 

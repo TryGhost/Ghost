@@ -11,7 +11,7 @@ import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
-import {visit} from '../helpers/visit'; 
+import {visit} from '../helpers/visit';
 
 // TODO: update ember-power-datepicker to expose modern test helpers
 // https://github.com/cibernox/ember-power-datepicker/issues/30
@@ -22,17 +22,6 @@ describe('Acceptance: Editor', function () {
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
-
-        // ensure required config is in place for external lexical editor to load
-        const config = this.server.schema.configs.find(1);
-        config.attrs.editor = {url: 'https://cdn.pkg/editor.js'};
-        config.save();
-
-        // stub loaded external module to avoid loading of external dep
-        window['@tryghost/koenig-lexical'] = {
-            KoenigComposer: () => null,
-            KoenigEditor: () => null
-        };
     });
 
     it('redirects to signin when not authenticated', async function () {
