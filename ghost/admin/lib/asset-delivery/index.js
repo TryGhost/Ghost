@@ -1,6 +1,8 @@
 /* eslint-disable */
 'use strict';
 
+const path = require('path');
+
 module.exports = {
     name: 'asset-delivery',
 
@@ -22,7 +24,7 @@ module.exports = {
         const fs = this.project.require('fs-extra');
         const walkSync = this.project.require('walk-sync');
 
-        const assetsOut = `../core/core/built/admin`;
+        const assetsOut = path.join(path.dirname(require.resolve('ghost')), `core/built/admin`);
         fs.removeSync(assetsOut);
         fs.ensureDirSync(assetsOut);
 
