@@ -6,11 +6,12 @@ import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-sup
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
+import {disableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
-import {visit} from '../helpers/visit';
+import {visit} from '../helpers/visit'; 
 
 // TODO: update ember-power-datepicker to expose modern test helpers
 // https://github.com/cibernox/ember-power-datepicker/issues/30
@@ -19,12 +20,29 @@ describe('Acceptance: Editor', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    beforeEach(async function () {
+        this.server.loadFixtures('configs');
+
+        // ensure required config is in place for external lexical editor to load
+        const config = this.server.schema.configs.find(1);
+        config.attrs.editor = {url: 'https://cdn.pkg/editor.js'};
+        config.save();
+
+        // stub loaded external module to avoid loading of external dep
+        window['@tryghost/koenig-lexical'] = {
+            KoenigComposer: () => null,
+            KoenigEditor: () => null
+        };
+    });
+
     it('redirects to signin when not authenticated', async function () {
-        let author = this.server.create('user'); // necesary for post-author association
+        let author = this.server.create('user'); // necessary for post-author association
         this.server.create('post', {authors: [author]});
 
         await invalidateSession();
         await visit('/editor/post/1');
+
+        disableLabsFlag(this.server, 'lexicalEditor');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });

@@ -15,6 +15,21 @@ describe('Acceptance: Authentication', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    beforeEach(async function () {
+        this.server.loadFixtures('configs');
+
+        // ensure required config is in place for external lexical editor to load
+        const config = this.server.schema.configs.find(1);
+        config.attrs.editor = {url: 'https://cdn.pkg/editor.js'};
+        config.save();
+
+        // stub loaded external module to avoid loading of external dep
+        window['@tryghost/koenig-lexical'] = {
+            KoenigComposer: () => null,
+            KoenigEditor: () => null
+        };
+    });
+
     describe('setup redirect', function () {
         beforeEach(function () {
             // ensure the /users/me route doesn't error
@@ -152,7 +167,7 @@ describe('Acceptance: Authentication', function () {
 
             // create the post
             await fillIn('.gh-editor-title', 'Test Post');
-            await fillIn('.__mobiledoc-editor', 'Test post body');
+            await fillIn('.kg-prose', 'Test post body');
             await triggerKeyEvent('.gh-editor-title', 'keydown', 83, {
                 metaKey: ctrlOrCmd === 'command',
                 ctrlKey: ctrlOrCmd === 'ctrl'
@@ -165,7 +180,7 @@ describe('Acceptance: Authentication', function () {
 
             // update the post
             testOn = 'edit';
-            await fillIn('.__mobiledoc-editor', 'Edited post body');
+            await fillIn('.kg-prose', 'Edited post body');
             triggerKeyEvent('.gh-editor-title', 'keydown', 83, {
                 metaKey: ctrlOrCmd === 'command',
                 ctrlKey: ctrlOrCmd === 'ctrl'
