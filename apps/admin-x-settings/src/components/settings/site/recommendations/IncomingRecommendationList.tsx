@@ -1,7 +1,7 @@
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React, {useMemo} from 'react';
 import RecommendationIcon from './RecommendationIcon';
-import Table from '../../../../admin-x-ds/global/Table';
+import Table, {ShowMoreData} from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import {Mention} from '../../../../api/mentions';
@@ -12,6 +12,7 @@ interface IncomingRecommendationListProps {
     mentions: Mention[],
     stats: ReferrerHistoryItem[],
     pagination: PaginationData,
+    showMore?: ShowMoreData,
     isLoading: boolean
 }
 
@@ -61,9 +62,9 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
     );
 };
 
-const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({mentions, stats, pagination, isLoading}) => {
+const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({mentions, stats, pagination, showMore, isLoading}) => {
     if (isLoading || mentions.length) {
-        return <Table isLoading={isLoading} pagination={pagination}>
+        return <Table isLoading={isLoading} pagination={pagination} showMore={showMore} hintSeparator>
             {mentions.map(mention => <IncomingRecommendationItem key={mention.id} mention={mention} stats={stats} />)}
         </Table>;
     } else {
