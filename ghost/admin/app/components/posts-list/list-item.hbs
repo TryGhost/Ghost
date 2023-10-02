@@ -206,7 +206,7 @@
                 </span>
             </a>
         {{else}}
-            <LinkTo @route={{this.editorRoute}} @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-button" title="">
+            <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data gh-post-list-button" title="">
                 <span class="gh-post-list-cta edit {{if this.isHovered "is-hovered"}}" title="Go to Editor" data-ignore-select>
                     {{svg-jar "pen" title="Go to Editor"}}
                 </span>
