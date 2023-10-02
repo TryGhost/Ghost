@@ -98,7 +98,7 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
 
     async getById(id: IDType): Promise<T | null> {
         const models = await this.#fetchAll({
-            filter: `id:${id}`,
+            filter: `id:'${id}'`,
             limit: 1
         });
         if (models.length === 1) {
@@ -109,7 +109,7 @@ export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {
 
     async #fetchAll(options: AllOptions<T> = {}): Promise<T[]> {
         const {filter, order, page, limit} = options;
-        if (page) {
+        if (page !== undefined) {
             if (page < 1) {
                 throw new errors.BadRequestError({message: 'page must be greater or equal to 1'});
             }
