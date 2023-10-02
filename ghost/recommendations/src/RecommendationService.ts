@@ -27,10 +27,6 @@ type MentionSendingService = {
     sendAll(options: {url: URL, links: URL[]}): Promise<void>
 }
 
-type MentionsAPI = {
-    refreshMentions(options: {filter: string, limit: number|'all'}): Promise<void>
-}
-
 type RecommendationEnablerService = {
     getSetting(): string,
     setSetting(value: string): Promise<void>
@@ -48,7 +44,6 @@ export class RecommendationService {
     wellknownService: WellknownService;
     mentionSendingService: MentionSendingService;
     recommendationEnablerService: RecommendationEnablerService;
-    mentionsApi: MentionsAPI;
 
     constructor(deps: {
         repository: RecommendationRepository,
@@ -56,8 +51,7 @@ export class RecommendationService {
         subscribeEventRepository: BookshelfRepository<string, SubscribeEvent>,
         wellknownService: WellknownService,
         mentionSendingService: MentionSendingService,
-        recommendationEnablerService: RecommendationEnablerService,
-        mentionsApi: MentionsAPI
+        recommendationEnablerService: RecommendationEnablerService
     }) {
         this.repository = deps.repository;
         this.wellknownService = deps.wellknownService;
@@ -65,31 +59,11 @@ export class RecommendationService {
         this.recommendationEnablerService = deps.recommendationEnablerService;
         this.clickEventRepository = deps.clickEventRepository;
         this.subscribeEventRepository = deps.subscribeEventRepository;
-        this.mentionsApi = deps.mentionsApi;
     }
 
     async init() {
         const recommendations = await this.#listRecommendations();
         await this.updateWellknown(recommendations);
-
-        // When we boot, it is possible that we missed some webmentions from other sites recommending you
-        // More importantly, we might have missed some deletes which we can detect.
-        // So we do a slow revalidation of all incoming recommendations
-        // This also prevents doing multiple external fetches when doing quick reboots of Ghost after each other (requires Ghost to be up for at least 15 seconds)
-        if (!process.env.NODE_ENV?.startsWith('test')) {
-            setTimeout(() => {
-                logging.info('Updating incoming recommendations on boot');
-                this.#updateIncomingRecommendations().catch((err) => {
-                    logging.error('Failed to update incoming recommendations on boot', err);
-                });
-            }, 15 * 1000 + Math.random() * 5 * 60 * 1000);
-        }
-    }
-
-    async #updateIncomingRecommendations() {
-        // Note: we also recheck recommendations that were not verified (verification could have failed)
-        const filter = `source:~$'/.well-known/recommendations.json'`;
-        await this.mentionsApi.refreshMentions({filter, limit: 100});
     }
 
     async updateWellknown(recommendations: Recommendation[]) {

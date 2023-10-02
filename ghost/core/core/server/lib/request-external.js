@@ -18,6 +18,11 @@ function isPrivateIp(addr) {
 }
 
 async function errorIfHostnameResolvesToPrivateIp(options) {
+    // Allow all requests if we are in development mode
+    if (config.get('env') === 'development') {
+        return Promise.resolve();
+    }
+
     // allow requests through to local Ghost instance
     const siteUrl = new URL(config.get('url'));
     const requestUrl = new URL(options.url.href);
@@ -37,6 +42,10 @@ async function errorIfHostnameResolvesToPrivateIp(options) {
 }
 
 async function errorIfInvalidUrl(options) {
+    if (config.get('env') === 'development') {
+        return Promise.resolve();
+    }
+
     if (!options.url.hostname || !validator.isURL(options.url.hostname)) {
         throw new errors.InternalServerError({
             message: 'URL invalid.',

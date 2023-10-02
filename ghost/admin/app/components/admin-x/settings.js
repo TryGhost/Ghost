@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import config from 'ghost-admin/config/environment';
+import fetchKoenigLexical from 'ghost-admin/utils/fetch-koenig-lexical';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -261,13 +262,12 @@ const emberDataTypeMapping = {
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
     NewslettersResponseType: {type: 'newsletter'},
-    RecommendationsResponseType: {type: 'recommendation'},
+    RecommendationResponseType: {type: 'recommendation'},
     SettingsResponseType: {type: 'setting', singleton: true},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
     UsersResponseType: {type: 'user'},
     CustomThemeSettingsResponseType: {type: 'custom-theme-setting'}
-
 };
 
 export default class AdminXSettings extends Component {
@@ -279,6 +279,7 @@ export default class AdminXSettings extends Component {
     @service settings;
     @service router;
     @service membersUtils;
+    @service themeManagement;
 
     @inject config;
 
@@ -323,11 +324,21 @@ export default class AdminXSettings extends Component {
         if (dataType === 'SettingsResponseType') {
             // Blog title is based on settings, but the one stored in config is used instead in various places
             this.config.blogTitle = response.settings.find(setting => setting.key === 'title').value;
+
+            this.settings.reload();
         }
 
         if (dataType === 'TiersResponseType') {
             // membersUtils has local state which needs to be updated
             this.membersUtils.reload();
+        }
+
+        if (dataType === 'ThemesResponseType') {
+            const activated = response.themes.find(theme => theme.active);
+
+            if (activated) {
+                this.themeManagement.activeTheme = this.store.peekAll('theme').filterBy('name', activated.name).firstObject;
+            }
         }
     };
 
@@ -403,6 +414,7 @@ export default class AdminXSettings extends Component {
                             darkMode={this.feature.nightShift}
                             unsplashConfig={defaultUnsplashHeaders}
                             sentry={this.config.sentry_dsn ? Sentry : undefined}
+                            fetchKoenigLexical={fetchKoenigLexical}
                             onUpdate={this.onUpdate}
                             onInvalidate={this.onInvalidate}
                             onDelete={this.onDelete}
