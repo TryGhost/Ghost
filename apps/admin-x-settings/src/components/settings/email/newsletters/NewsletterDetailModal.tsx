@@ -373,7 +373,6 @@ const Sidebar: React.FC<{
                         checked={newsletter.show_feature_image}
                         direction="rtl"
                         label='Feature image'
-                        labelStyle='heading'
                         onChange={e => updateNewsletter({show_feature_image: e.target.checked})}
                     />
                 </Form>
