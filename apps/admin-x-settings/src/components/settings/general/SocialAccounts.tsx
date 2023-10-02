@@ -103,7 +103,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     hideEmptyValue: true
                 },
                 {
-                    heading: 'URL of your TWITTER PROFILE',
+                    heading: 'URL of your X (formerly Twitter) profile',
                     key: 'twitter',
                     value: twitterUrl,
                     hideEmptyValue: true
@@ -139,7 +139,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 hint={errors.twitter}
                 inputRef={twitterInputRef}
                 placeholder="https://twitter.com/ghost"
-                title="URL of your Twitter profile"
+                title="URL of your X (formerly Twitter) profile"
                 value={twitterUrl}
                 onBlur={(e) => {
                     try {
