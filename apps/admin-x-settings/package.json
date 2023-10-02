@@ -80,7 +80,7 @@
     "postcss-import": "15.1.0",
     "prop-types": "15.8.1",
     "react-hot-toast": "2.4.1",
-    "react-select": "5.7.5",
+    "react-select": "5.7.6",
     "rollup-plugin-node-builtins": "2.1.2",
     "storybook": "7.4.0",
     "stylelint": "15.10.3",
