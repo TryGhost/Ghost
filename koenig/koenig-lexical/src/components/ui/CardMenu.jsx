@@ -99,7 +99,7 @@ export const CardSnippetItem = ({label, isSelected, Icon, onRemove, closeMenu, .
                 onMouseDown={handleMouseDown}
                 {...props}
             >
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-white">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-white text-grey-900">
                     <Icon className="h-[1.8rem] w-[1.8rem]" />
                 </div>
                 <div className="m-0 ml-4 truncate text-[1.35rem] font-medium leading-snug tracking-[.02rem] text-grey-900 dark:text-grey-200">{label}</div>

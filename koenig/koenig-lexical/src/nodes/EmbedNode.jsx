@@ -8,8 +8,8 @@ import {EmbedNodeComponent} from './EmbedNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {ReactComponent as SoundCloudIcon} from '../assets/icons/kg-card-type-soundcloud.svg';
 import {ReactComponent as SpotifyIcon} from '../assets/icons/kg-card-type-spotify.svg';
-import {ReactComponent as TwitterIcon} from '../assets/icons/kg-card-type-twitter.svg';
 import {ReactComponent as VimeoIcon} from '../assets/icons/kg-card-type-vimeo.svg';
+import {ReactComponent as XIcon} from '../assets/icons/kg-card-type-x.svg';
 import {ReactComponent as YouTubeIcon} from '../assets/icons/kg-card-type-youtube.svg';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
@@ -45,12 +45,12 @@ export class EmbedNode extends BaseEmbedNode {
     },
     {
         section: 'Embeds',
-        label: 'Twitter',
+        label: 'X (formerly Twitter)',
         desc: '/twitter [tweet url]',
-        Icon: TwitterIcon,
+        Icon: XIcon,
         insertCommand: INSERT_EMBED_COMMAND,
         queryParams: ['url'],
-        matches: ['twitter'],
+        matches: ['twitter', 'x'],
         priority: 2,
         shortcut: '/twitter [url]'
     },
