@@ -61,9 +61,6 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     );
 };
 
-// TODO: Remove if we decide we don't need headers
-// const tableHeader = (<><TableHead>Site</TableHead><TableHead>Conversions from you</TableHead></>);
-
 const RecommendationList: React.FC<RecommendationListProps> = ({recommendations, pagination, showMore, isLoading}) => {
     const {
         siteData
