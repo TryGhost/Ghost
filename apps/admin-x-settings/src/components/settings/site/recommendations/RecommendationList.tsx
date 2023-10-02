@@ -81,7 +81,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
     };
 
     if (isLoading || recommendations.length) {
-        return <Table hint={<span className='flex items-center gap-1'>Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link><Button color='clear' hideLabel={true} icon={copied ? 'check-circle' : 'duplicate'} iconColorClass={copied ? 'text-green' : 'text-grey-900'} size='sm' unstyled={true} onClick={copyRecommendationsUrl} /></span>} isLoading={isLoading} pagination={pagination} showMore={showMore} hintSeparator>
+        return <Table hint={<span className='flex items-center gap-1'>Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link><Button color='clear' hideLabel={true} icon={copied ? 'check-circle' : 'duplicate'} iconColorClass={copied ? 'text-green' : 'text-grey-600 hover:opacity-80'} label={copied ? 'Copied' : 'Copy'} size='sm' unstyled={true} onClick={copyRecommendationsUrl} /></span>} isLoading={isLoading} pagination={pagination} showMore={showMore} hintSeparator>
             {recommendations && recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
         </Table>;
     } else {
