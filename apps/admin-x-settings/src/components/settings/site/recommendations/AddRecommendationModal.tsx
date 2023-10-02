@@ -10,9 +10,9 @@ import {AlreadyExistsError} from '../../../../utils/errors';
 import {EditOrAddRecommendation, RecommendationResponseType, useGetRecommendationByUrl} from '../../../../api/recommendations';
 import {LoadingIndicator} from '../../../../admin-x-ds/global/LoadingIndicator';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
+import {arePathsEqual, trimSearchAndHash} from '../../../../utils/url';
 import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
 import {formatUrl} from '../../../../admin-x-ds/global/form/URLTextField';
-import {trimSearchAndHash} from '../../../../utils/url';
 import {useExternalGhostSite} from '../../../../api/external-ghost-site';
 import {useGetOembed} from '../../../../api/oembed';
 
@@ -59,7 +59,11 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             // Check if the recommendation already exists
             const {recommendations = []} = await getRecommendationByUrl(validatedUrl) as RecommendationResponseType;
             if (recommendations && recommendations.length > 0) {
-                throw new AlreadyExistsError('A recommendation with this URL already exists.');
+                const existing = recommendations.find(r => arePathsEqual(r.url, validatedUrl.toString()));
+
+                if (existing) {
+                    throw new AlreadyExistsError('A recommendation with this URL already exists.');
+                }
             }
 
             // Check if it's a Ghost site or not:
