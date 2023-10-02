@@ -1,6 +1,7 @@
 import assert from 'assert';
 import {BookshelfRepository, ModelClass, ModelInstance} from '../src/index';
 import {Knex} from 'knex';
+import nql from '@tryghost/nql';
 
 type SimpleEntity = {
     id: string;
@@ -87,6 +88,7 @@ class Model implements ModelClass<string> {
     add(data: object): Promise<ModelInstance<string>> {
         const item = {
             id: (data as any).id,
+            ...data,
             get(field: string): unknown {
                 return (data as any)[field];
             },
@@ -106,8 +108,18 @@ class Model implements ModelClass<string> {
         return Promise.resolve(item);
     }
 
-    getFilteredCollection() {
-        return this;
+    getFilteredCollection({filter, mongoTransformer}: {filter?: string, mongoTransformer?: unknown}) {
+        // Filter all items by filter and mongoTransformer
+        if (!filter) {
+            return this;
+        }
+        const n = nql(filter, {
+            transformer: mongoTransformer
+        });
+
+        const duplicate = new Model();
+        duplicate.items = this.items.filter(item => n.queryJSON(item));
+        return duplicate;
     }
 
     count() {
@@ -341,6 +353,76 @@ describe('BookshelfRepository', function () {
 
         assert(result);
         assert(result.length === 3);
+    });
+
+    it('Cannot retrieve zero page number', async function () {
+        const repository = new SimpleBookshelfRepository(new Model());
+        const entities = [{
+            id: '1',
+            deleted: false,
+            name: 'Kym',
+            age: 24,
+            birthday: new Date('2000-01-01').toISOString()
+        }, {
+            id: '2',
+            deleted: false,
+            name: 'John',
+            age: 30,
+            birthday: new Date('2000-01-01').toISOString()
+        }, {
+            id: '3',
+            deleted: false,
+            name: 'Kevin',
+            age: 5,
+            birthday: new Date('2000-01-01').toISOString()
+        }];
+
+        for (const entity of entities) {
+            await repository.save(entity);
+        }
+
+        const result = repository.getPage({
+            order: [],
+            limit: 5,
+            page: 0
+        });
+
+        await assert.rejects(result, /page/);
+    });
+
+    it('Cannot retrieve zero limit', async function () {
+        const repository = new SimpleBookshelfRepository(new Model());
+        const entities = [{
+            id: '1',
+            deleted: false,
+            name: 'Kym',
+            age: 24,
+            birthday: new Date('2000-01-01').toISOString()
+        }, {
+            id: '2',
+            deleted: false,
+            name: 'John',
+            age: 30,
+            birthday: new Date('2000-01-01').toISOString()
+        }, {
+            id: '3',
+            deleted: false,
+            name: 'Kevin',
+            age: 5,
+            birthday: new Date('2000-01-01').toISOString()
+        }];
+
+        for (const entity of entities) {
+            await repository.save(entity);
+        }
+
+        const result = repository.getPage({
+            order: [],
+            limit: 0,
+            page: 5
+        });
+
+        await assert.rejects(result, /limit/);
     });
 
     it('Can retrieve count', async function () {

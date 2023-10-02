@@ -246,6 +246,58 @@ describe('Recommendations Admin API', function () {
             assert.equal(page1.recommendations[2].count.subscribers, 2);
         });
 
+        it('Can include click and subscribe counts and order by clicks+subscribe count', async function () {
+            await addDummyRecommendations(5);
+            await addClicksAndSubscribers({memberId});
+
+            const {body: page1} = await agent.get('recommendations/?include=count.clicks,count.subscribers&order=' + encodeURIComponent('count.clicks desc, count.subscribers asc'))
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    recommendations: new Array(5).fill({
+                        id: anyObjectId,
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
+                    })
+                });
+
+            assert.equal(page1.recommendations[0].count.clicks, 3);
+            assert.equal(page1.recommendations[1].count.clicks, 2);
+
+            assert.equal(page1.recommendations[0].count.subscribers, 0);
+            assert.equal(page1.recommendations[1].count.subscribers, 3);
+            assert.equal(page1.recommendations[2].count.subscribers, 0);
+        });
+
+        it('Can order by click and subscribe counts and they will be included by default', async function () {
+            await addDummyRecommendations(5);
+            await addClicksAndSubscribers({memberId});
+
+            const {body: page1} = await agent.get('recommendations/?order=' + encodeURIComponent('count.clicks desc, count.subscribers asc'))
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    recommendations: new Array(5).fill({
+                        id: anyObjectId,
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
+                    })
+                });
+
+            assert.equal(page1.recommendations[0].count.clicks, 3);
+            assert.equal(page1.recommendations[1].count.clicks, 2);
+
+            assert.equal(page1.recommendations[0].count.subscribers, 0);
+            assert.equal(page1.recommendations[1].count.subscribers, 3);
+            assert.equal(page1.recommendations[2].count.subscribers, 0);
+        });
+
         it('Can fetch recommendations with relations when there are no recommendations', async function () {
             const recommendations = await recommendationsService.repository.getCount();
             assert.equal(recommendations, 0, 'This test expects there to be no recommendations');
