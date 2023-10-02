@@ -1,5 +1,5 @@
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
-import React from 'react';
+import React, {useState} from 'react';
 import RecommendationIcon from './RecommendationIcon';
 import Table, {ShowMoreData} from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
@@ -72,8 +72,16 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
         updateRoute('recommendations/add');
     };
 
+    const [copied, setCopied] = useState(false);
+
+    const copyRecommendationsUrl = () => {
+        navigator.clipboard.writeText(recommendationsURL);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
     if (isLoading || recommendations.length) {
-        return <Table hint={<span>Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link></span>} isLoading={isLoading} pagination={pagination} showMore={showMore} hintSeparator>
+        return <Table hint={<span className='flex items-center gap-1'>Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link><Button color='clear' hideLabel={true} icon={copied ? 'check-circle' : 'duplicate'} iconColorClass={copied ? 'text-green' : 'text-grey-900'} size='sm' unstyled={true} onClick={copyRecommendationsUrl} /></span>} isLoading={isLoading} pagination={pagination} showMore={showMore} hintSeparator>
             {recommendations && recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
         </Table>;
     } else {
