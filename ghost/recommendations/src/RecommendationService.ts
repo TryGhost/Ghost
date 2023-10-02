@@ -258,4 +258,13 @@ export class RecommendationService {
         const subscribeEvent = SubscribeEvent.create({recommendationId: id, memberId});
         await this.subscribeEventRepository.save(subscribeEvent);
     }
+
+    async readRecommendationByUrl(url: URL): Promise<RecommendationPlain|null> {
+        const recommendation = await this.repository.getByUrl(url);
+
+        if (!recommendation) {
+            return null;
+        }
+        return recommendation.plain;
+    }
 }
