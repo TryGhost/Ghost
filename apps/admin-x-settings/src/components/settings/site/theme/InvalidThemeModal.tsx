@@ -13,7 +13,7 @@ type FatalError = {
     };
   };
 
-  type FatalErrors = FatalError[];
+type FatalErrors = FatalError[];
 
 export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);
