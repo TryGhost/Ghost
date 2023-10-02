@@ -15,6 +15,7 @@ import {
     $insertNodes,
     $isDecoratorNode,
     $isElementNode,
+    $isLineBreakNode,
     $isNodeSelection,
     $isParagraphNode,
     $isRangeSelection,
@@ -930,7 +931,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                             const atStartOfElement =
                                 selection.anchor.offset === 0 &&
-                                selection.focus.offset === 0;
+                                selection.focus.offset === 0 &&
+                                !$isLineBreakNode(anchorNode.getPreviousSibling());
 
                             // convert empty top level list items to paragraphs
                             if (
