@@ -6,7 +6,7 @@ import TextField from '../../../admin-x-ds/global/form/TextField';
 import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/twitter-logo.svg';
+import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/x-logo.svg';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
 import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
@@ -105,14 +105,14 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             clearBg={true}
                             inputRef={focusRef}
                             placeholder={siteTitle}
-                            title="Twitter title"
+                            title="X title"
                             value={twitterTitle}
                             onChange={handleTitleChange}
                         />
                         <TextField
                             clearBg={true}
                             placeholder={siteDescription}
-                            title="Twitter description"
+                            title="X description"
                             value={twitterDescription}
                             onChange={handleDescriptionChange}
                         />
@@ -124,13 +124,13 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <SettingGroup
-            description='Customize structured data of your site'
+            description='Customize structured data of your site for X (formerly Twitter)'
             isEditing={isEditing}
             keywords={keywords}
             navid='twitter'
             saveState={saveState}
             testId='twitter'
-            title='Twitter card'
+            title='X card'
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
             onSave={handleSave}

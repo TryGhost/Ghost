@@ -79,7 +79,7 @@ const Sidebar: React.FC = () => {
                     <SettingNavItem keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.publicationLanguage} navid='publication-language' title="Publication language" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.metadata} navid='metadata' title="Meta data" onClick={handleSectionClick} />
-                    <SettingNavItem keywords={generalSearchKeywords.twitter} navid='twitter' title="Twitter card" onClick={handleSectionClick} />
+                    <SettingNavItem keywords={generalSearchKeywords.twitter} navid='twitter' title="X card" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.facebook} navid='facebook' title="Facebook card" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.socialAccounts} navid='social-accounts' title="Social accounts" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.lockSite} navid='locksite' title="Make this site private" onClick={handleSectionClick} />
