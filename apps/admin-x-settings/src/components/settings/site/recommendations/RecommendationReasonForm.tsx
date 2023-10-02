@@ -65,7 +65,7 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
         <TextArea
             clearBg={true}
             error={Boolean(errors.reason)}
-            hint={errors.reason || <>Max. <strong>200</strong> characters. You&apos;ve used <strong className={reasonLengthColor}>{reasonLength}</strong></>}
+            hint={errors.reason || <>Max: <strong>200</strong> characters. You&#8217;ve used <strong className={reasonLengthColor}>{reasonLength}</strong></>}
             rows={3}
             title="Short description"
             value={formState.reason ?? ''}
