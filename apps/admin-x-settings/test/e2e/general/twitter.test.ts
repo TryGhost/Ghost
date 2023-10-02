@@ -24,8 +24,8 @@ test.describe('Twitter settings', async () => {
 
         await expect(section.getByRole('img')).toBeVisible();
 
-        await section.getByLabel('Twitter title').fill('Twititle');
-        await section.getByLabel('Twitter description').fill('Twitscription');
+        await section.getByLabel('X title').fill('Twititle');
+        await section.getByLabel('X description').fill('Twitscription');
 
         await section.getByRole('button', {name: 'Save'}).click();
 

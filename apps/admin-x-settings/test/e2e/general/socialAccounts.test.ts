@@ -21,11 +21,11 @@ test.describe('Social account settings', async () => {
         await section.getByRole('button', {name: 'Edit'}).click();
 
         await section.getByLabel(`URL of your publication's Facebook Page`).fill('https://www.facebook.com/fb');
-        await section.getByLabel('URL of your Twitter profile').fill('https://twitter.com/tw');
+        await section.getByLabel('URL of your X (formerly Twitter) profile').fill('https://twitter.com/tw');
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByLabel('URL of your Twitter profile')).toHaveCount(0);
+        await expect(section.getByLabel('URL of your X (formerly Twitter) profile')).toHaveCount(0);
 
         await expect(section.getByText('https://www.facebook.com/fb')).toHaveCount(1);
         await expect(section.getByText('https://twitter.com/tw')).toHaveCount(1);
