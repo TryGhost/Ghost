@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.66.0",
+  "version": "5.66.1",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -178,7 +178,7 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "jose": "4.14.6",
+    "jose": "4.15.1",
     "path-browserify": "1.0.1",
     "webpack": "5.88.2"
   },
