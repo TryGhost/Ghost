@@ -15,11 +15,6 @@ describe('Acceptance: Lexical editor', function () {
     beforeEach(async function () {
         this.server.loadFixtures();
 
-        // ensure required config is in place for external lexical editor to load
-        const config = this.server.schema.configs.find(1);
-        config.attrs.editor = {url: 'https://cdn.pkg/editor.js'};
-        config.save();
-
         enableLabsFlag(this.server, 'lexicalEditor');
 
         // stub loaded external module to avoid loading of external dep
@@ -34,18 +29,7 @@ describe('Acceptance: Lexical editor', function () {
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
 
-    it('redirects to posts screen if editor.url config is missing', async function () {
-        const config = this.server.schema.configs.find(1);
-        config.attrs.editor = undefined;
-        config.save();
-
-        await loginAsRole('Administrator', this.server);
-        await visit('/editor-beta/post/');
-
-        expect(currentURL(), 'currentURL').to.equal('/posts');
-    });
-
-    it('loads when editor.url is present', async function () {
+    it('loads editor', async function () {
         await loginAsRole('Administrator', this.server);
         await visit('/editor-beta/post/');
         expect(currentURL(), 'currentURL').to.equal('/editor-beta/post/');

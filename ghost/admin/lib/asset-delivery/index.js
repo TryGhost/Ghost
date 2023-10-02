@@ -59,5 +59,18 @@ module.exports = {
         } else  {
             console.log('Admin-X-Settings folder not found');
         }
+
+        // if we are passed a URL for Koenig-Lexical dev server, we don't need to copy the assets
+        if (!process.env.EDITOR_URL) {
+            // copy the @tryghost/koenig-lexical assets
+            const koenigLexicalPath = path.dirname(require.resolve('@tryghost/koenig-lexical'));
+            const assetsKoenigLexicalPath = `${assetsOut}/assets/koenig-lexical`;
+
+            if (fs.existsSync(koenigLexicalPath)) {
+                fs.copySync(koenigLexicalPath, assetsKoenigLexicalPath, {overwrite: true, dereference: true});
+            } else {
+                console.log('Koenig-Lexical folder not found');
+            }
+        }
     }
 };

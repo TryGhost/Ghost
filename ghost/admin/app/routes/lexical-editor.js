@@ -1,6 +1,5 @@
 import $ from 'jquery';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
@@ -11,14 +10,6 @@ export default AuthenticatedRoute.extend({
     ui: service(),
 
     classNames: ['editor'],
-
-    config: inject(),
-
-    beforeModel() {
-        if (!this.config.editor?.url) {
-            return this.router.transitionTo('posts');
-        }
-    },
 
     activate() {
         this._super(...arguments);
