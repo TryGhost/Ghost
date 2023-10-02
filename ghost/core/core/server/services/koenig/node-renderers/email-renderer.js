@@ -1,5 +1,5 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
-import {removeSpaces, wrapReplacementStrings} from '../../utils/replacement-strings';
+import {removeSpaces, removeCodeWrappersFromHelpers, wrapReplacementStrings} from '../../utils/replacement-strings';
 import {renderEmptyContainer} from '../../utils/render-empty-container';
 
 export function renderEmailNode(node, options = {}) {
@@ -12,7 +12,7 @@ export function renderEmailNode(node, options = {}) {
         return renderEmptyContainer(document);
     }
 
-    const cleanedHtml = wrapReplacementStrings(removeSpaces(html));
+    const cleanedHtml = wrapReplacementStrings(removeCodeWrappersFromHelpers(removeSpaces(html),document));
 
     const element = document.createElement('div');
     element.innerHTML = cleanedHtml;
