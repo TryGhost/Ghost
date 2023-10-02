@@ -235,9 +235,9 @@ describe('Tiers API', function () {
                 })
             });
 
-        const benefit = await models.Benefit.findOne({name: 'Test benefit'});
-        assert(benefit, 'The benefit should have been created');
-        const previousBenefit = await models.Benefit.findOne({name: 'TEST BENEFIT'});
+        const benefit = await models.Benefit.findOne({slug: 'test-benefit'});
+        assert(benefit.attributes.name === 'Test benefit', 'The benefit should have been updated.');
+        const previousBenefit = await models.Benefit.findOne({slug: 'test-benefit-2'});
         assert(!previousBenefit, 'The previous benefit should have been overwritten');
     });
 });
