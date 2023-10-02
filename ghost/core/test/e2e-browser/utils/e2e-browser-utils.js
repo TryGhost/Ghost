@@ -91,37 +91,37 @@ const disconnectStripe = async (page) => {
 const setupStripe = async (page, stripConnectIntegrationToken) => {
     await deleteAllMembers(page);
     await page.locator('.gh-nav a[href="#/settings/"]').click();
-    await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
-    if (await page.isVisible('.gh-btn-stripe-status.connected')) {
+    if (await page.isVisible('[data-testid=stripe-connected]')) {
         // Disconnect if already connected
-        await page.locator('.gh-btn-stripe-status.connected').click();
-        await page.locator('.modal-content .gh-btn-stripe-disconnect').first().click();
-        await page
-            .locator('.modal-content')
-            .filter({hasText: 'Are you sure you want to disconnect?'})
-            .first()
-            .getByRole('button', {name: 'Disconnect'})
-            .click();
+        await page.getByTestId('stripe-connected').click();
+        await page.getByTestId('stripe-modal').getByRole('button', {name: 'Disconnect'}).click();
+        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Disconnect'}).click();
     } else {
-        await page.locator('.gh-setting-members-tierscontainer .stripe-connect').click();
+        await page.getByRole('button', {name: 'Connect with Stripe'}).click();
     }
-    await page.getByPlaceholder('Paste your secure key here').first().fill(stripConnectIntegrationToken);
-    await page.getByRole('button', {name: 'Save Stripe settings'}).click();
+    const modal = page.getByTestId('stripe-modal');
+    await modal.getByRole('button', {name: /I have a Stripe account/}).click();
+    await modal.getByPlaceholder('Paste your secure key here').first().fill(stripConnectIntegrationToken);
+    await modal.getByRole('button', {name: 'Save Stripe settings'}).click();
     // We need to wait for the saving to succeed
-    await expect(page.locator('[data-test-button="stripe-disconnect"]')).toBeVisible();
-    await page.locator('[data-test-button="close-stripe-connect"]').click();
+    await expect(modal.getByRole('button', {name: 'Disconnect'})).toBeVisible();
+    await modal.getByRole('button', {name: 'Close'}).click();
+
+    await page.getByRole('button', {name: '← Done'}).click();
 };
 
 // Setup Mailgun with fake data, for Ghost Admin to allow bulk sending
 const setupMailgun = async (page) => {
     await page.locator('.gh-nav a[href="#/settings/"]').click();
-    await page.locator('.gh-setting-group').filter({hasText: 'Email newsletter'}).click();
-    await page.locator('.gh-expandable-block').filter({hasText: 'Mailgun configuration'}).getByRole('button', {name: 'Expand'}).click();
+    const section = page.getByTestId('mailgun');
 
-    await page.locator('[data-test-mailgun-domain-input]').fill('api.testgun.com');
-    await page.locator('[data-test-mailgun-api-key-input]').fill('Not an API key');
-    await page.locator('[data-test-button="save-members-settings"]').click();
-    await page.waitForSelector('[data-test-button="save-members-settings"] [data-test-task-button-state="success"]');
+    await section.getByRole('button', {name: 'Edit'}).click();
+    await section.getByLabel('Mailgun domain').fill('api.testgun.com');
+    await section.getByLabel('Mailgun private API key').fill('Not an API key');
+    await section.getByRole('button', {name: 'Save'}).click();
+    await section.getByText('Mailgun is set up').waitFor();
+
+    await page.getByRole('button', {name: '← Done'}).click();
 };
 
 /**
@@ -130,10 +130,15 @@ const setupMailgun = async (page) => {
  */
 const enableLabs = async (page) => {
     await page.locator('.gh-nav a[href="#/settings/"]').click();
-    await page.locator('.gh-setting-group').filter({hasText: 'Labs'}).click();
-    const alphaList = page.locator('.gh-main-section').filter({hasText: 'Alpha Features'});
-    await alphaList.locator('label[for="labs-webmentions"]').click();
-    await alphaList.locator('label[for="labs-tipsAndDonations"]').click();
+
+    const section = page.getByTestId('labs');
+    await section.getByRole('button', {name: 'Open'}).click();
+
+    await section.getByRole('tab', {name: 'Alpha features'}).click();
+    await section.getByLabel('Webmentions').click();
+    await section.getByLabel('Tips & donations').click();
+
+    await page.getByRole('button', {name: '← Done'}).click();
 };
 
 /**
