@@ -199,7 +199,7 @@
                         </li>
                         <li class="nav-list-item">
                             <button type="button"  {{action "showSubview" "twitter-data"}} data-test-button="twitter-data">
-                                <span>{{svg-jar "twitter-logo"}} Twitter card</span>
+                                <span>{{svg-jar "x-logo"}} X (formerly Twitter) card</span>
                             </button>
                             {{svg-jar "arrow-right" class="arrow-right"}}
                         </li>
@@ -300,7 +300,7 @@
                     {{#if (eq this.subview "twitter-data")}}
                         <div class="settings-menu-header subview">
                             <button aria-label="Close Twitter card panel" class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{action "closeSubview"}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
-                            <h4>Twitter card</h4>
+                            <h4>X card</h4>
                             <div style="width:23px;"></div>
                         </div>
 
@@ -309,13 +309,13 @@
                             <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Twitter card settings">
                                 <GhImageUploaderWithPreview
                                     @image={{this.post.twitterImage}}
-                                    @text="Add Twitter image"
+                                    @text="Add X image"
                                     @allowUnsplash={{true}}
                                     @update={{action "setTwitterImage"}}
                                     @remove={{action "clearTwitterImage"}}
                                 />
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="twitterTitle">
-                                    <label for="twitter-title">Twitter title</label>
+                                    <label for="twitter-title">X title</label>
                                     <GhTextInput
                                         @class="post-setting-twitter-title"
                                         @id="twitter-title"
@@ -330,7 +330,7 @@
                                 </GhFormGroup>
 
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="twitterDescription">
-                                    <label for="twitter-description">Twitter description</label>
+                                    <label for="twitter-description">X description</label>
                                     <GhTextarea
                                         @class="post-setting-twitter-description"
                                         @id="twitter-description"
@@ -345,7 +345,7 @@
                                 </GhFormGroup>
 
                                 <div class="form-group">
-                                    <label>Twitter preview</label>
+                                    <label>X preview</label>
                                     <div class="gh-social-twitter-post-preview">
                                         {{#if this.twitterImage}}
                                             <div class="gh-social-twitter-preview-image" style={{background-image-style this.twitterImage}}></div>
