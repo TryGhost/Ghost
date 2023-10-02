@@ -109,7 +109,7 @@ export class RecommendationService {
 
         // If a recommendation with this URL already exists, throw an error
         const existing = await this.repository.getByUrl(recommendation.url);
-        if (existing && existing.length > 0) {
+        if (existing) {
             throw new errors.ValidationError({
                 message: 'A recommendation with this URL already exists.'
             });

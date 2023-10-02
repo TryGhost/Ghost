@@ -75,8 +75,21 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
         } as Record<keyof Recommendation, string>;
     }
 
-    async getByUrl(url: URL): Promise<Recommendation[]> {
+    async getByUrl(url: URL): Promise<Recommendation | null> {
         const urlFilter = `url:~'${url.host.replace('www.', '')}${url.pathname.replace(/\/$/, '')}'`;
-        return this.getPage({filter: urlFilter, page: 1, limit: 1});
+        const recommendations = await this.getAll({filter: urlFilter});
+
+        if (!recommendations || recommendations.length === 0) {
+            return null;
+        }
+
+        //  Find URL based on the hostname and pathname.
+        //  Query params, hash fragements, protocol and www are ignored.
+        const existing = recommendations.find((r) => {
+            return r.url.hostname.replace('www.', '') === url.hostname.replace('www.', '') &&
+                   r.url.pathname === url.pathname;
+        }) || null;
+
+        return existing;
     }
 }
