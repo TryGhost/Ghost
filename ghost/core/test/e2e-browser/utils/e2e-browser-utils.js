@@ -74,26 +74,21 @@ const setupGhost = async (page) => {
 const disconnectStripe = async (page) => {
     await deleteAllMembers(page);
     await page.locator('.gh-nav a[href="#/settings/"]').click();
-    await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
-    if (await page.isVisible('.gh-btn-stripe-status.connected')) {
-        // Disconnect if already connected
-        await page.locator('.gh-btn-stripe-status.connected').click();
-        await page.locator('.modal-content .gh-btn-stripe-disconnect').first().click();
-        await page
-            .locator('.modal-content')
-            .filter({hasText: 'Are you sure you want to disconnect?'})
-            .first()
-            .getByRole('button', {name: 'Disconnect'})
-            .click();
+    await page.getByTestId('tiers').waitFor();
+    if (await page.isVisible('[data-testid="stripe-connected"]')) {
+        await page.getByTestId('stripe-connected').first().click();
+        await page.getByTestId('stripe-modal').getByRole('button', {name: 'Disconnect'}).click();
+        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Disconnect'}).click();
     }
 };
 
 const setupStripe = async (page, stripConnectIntegrationToken) => {
     await deleteAllMembers(page);
     await page.locator('.gh-nav a[href="#/settings/"]').click();
-    if (await page.isVisible('[data-testid=stripe-connected]')) {
+    await page.getByTestId('tiers').waitFor();
+    if (await page.isVisible('[data-testid="stripe-connected"]')) {
         // Disconnect if already connected
-        await page.getByTestId('stripe-connected').click();
+        await page.getByTestId('stripe-connected').first().click();
         await page.getByTestId('stripe-modal').getByRole('button', {name: 'Disconnect'}).click();
         await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Disconnect'}).click();
     } else {
@@ -218,62 +213,59 @@ const impersonateMember = async (page) => {
  * @param {number} [tier.trialDays]
  */
 const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, enableInPortal = true) => {
+    await test.step('Create a tier', async () => {
     // Navigate to the member settings
-    await page.locator('[data-test-nav="settings"]').click();
-    await page.locator('[data-test-nav="members-membership"]').click();
+        await page.locator('[data-test-nav="settings"]').click();
 
-    // Tiers request can take time, so waiting until there is no connections before interacting with them
-    await page.waitForLoadState('networkidle');
+        // Tiers request can take time, so waiting until there is no connections before interacting with them
+        await page.waitForLoadState('networkidle');
 
-    // Expand the premium tier list
-    await page.locator('[data-test-toggle-pub-info]').click();
-
-    // Archive if already exists
-    while (await page.locator('.gh-tier-card').filter({hasText: name}).first().isVisible()) {
-        const tierCard = page.locator('.gh-tier-card').filter({hasText: name}).first();
-        await tierCard.locator('.gh-tier-card-actions-button').click();
-        await tierCard.getByRole('button', {name: 'Archive'}).click();
-        await page.locator('.modal-content').getByRole('button', {name: 'Archive'}).click();
-        await page.locator('.modal-content').waitFor({state: 'detached', timeout: 1000});
-    }
-    if (!await page.locator('.gh-btn-add-tier').isVisible()) {
-        await page.locator('[data-test-toggle-pub-info]').click();
-    }
-    // Add the tier
-    await page.locator('.gh-btn-add-tier').click();
-    const modal = page.locator('.modal-content');
-    await modal.locator('input#name').first().fill(name);
-    await modal.locator('#monthlyPrice').fill(`${monthlyPrice}`);
-    await modal.locator('#yearlyPrice').fill(`${yearlyPrice}`);
-    if (trialDays) {
-        await modal.locator('[data-test-toggle="free-trial"]').click();
-        await modal.locator('#trial').fill(`${trialDays}`);
-    }
-    await modal.getByRole('button', {name: 'Add tier'}).click();
-    await page.waitForSelector('.modal-content input#name', {state: 'detached'});
-
-    // Close the premium tier list
-    await page.locator('[data-test-toggle-pub-info]').click();
-
-    // Enable the tier in portal
-    if (enableInPortal) {
-        await page.getByRole('button', {name: 'Customize Portal'}).click();
-        const portalSettings = page.locator('.modal-content').filter({hasText: 'Portal settings'});
-        if (!await portalSettings.locator('label').filter({hasText: name}).locator('input').first().isChecked()) {
-            await portalSettings.locator('label').filter({hasText: name}).locator('span').first().click();
+        // Archive if already exists
+        while (await page.getByTestId('tier-card').filter({hasText: name}).first().isVisible()) {
+            await page.getByTestId('tier-card').filter({hasText: name}).first().click();
+            await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Archive tier'}).click();
+            await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Archive'}).click();
+            await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Reactivate tier'}).waitFor();
+            await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Save & close'}).click();
         }
-        if (!await portalSettings.locator('label').filter({hasText: 'Monthly'}).locator('input').first().isChecked()) {
-            await portalSettings.locator('label').filter({hasText: 'Monthly'}).locator('span').first().click();
-        }
-        if (!await portalSettings.locator('label').filter({hasText: 'Yearly'}).locator('input').first().isChecked()) {
-            await portalSettings.locator('label').filter({hasText: 'Yearly'}).locator('span').first().click();
-        }
-        await portalSettings.getByRole('button', {name: 'Save and close'}).click();
-        await page.waitForSelector('.gh-portal-settings', {state: 'detached'});
-    }
 
-    // Navigate back to the dashboard
-    await page.goto('/ghost');
+        // Add the tier
+        await page.getByTestId('tiers').getByRole('button', {name: 'Add tier'}).click();
+
+        const modal = page.getByTestId('tier-detail-modal');
+        await modal.getByLabel('Name').fill(name);
+        await modal.getByLabel('Monthly price').fill(`${monthlyPrice}`);
+        await modal.getByLabel('Yearly price').fill(`${yearlyPrice}`);
+        if (trialDays) {
+            await modal.getByLabel('Add a free trial').check();
+            await modal.getByLabel('Trial days').fill(`${trialDays}`);
+        }
+        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await page.locator('[data-testid="tier-card"]:visible').filter({hasText: name}).waitFor();
+
+        // Enable the tier in portal
+        if (enableInPortal) {
+            await page.getByTestId('portal').getByRole('button', {name: 'Customize'}).click();
+
+            const portalSettings = page.getByTestId('portal-modal');
+
+            if (!await portalSettings.getByLabel(name).first().isChecked()) {
+                await portalSettings.getByLabel(name).first().check();
+            }
+            if (!await portalSettings.getByLabel('Monthly').first().isChecked()) {
+                await portalSettings.getByLabel('Monthly').first().check();
+            }
+            if (!await portalSettings.getByLabel('Yearly').first().isChecked()) {
+                await portalSettings.getByLabel('Yearly').first().check();
+            }
+            await portalSettings.getByRole('button', {name: 'Save'}).click();
+            await page.waitForLoadState('networkidle');
+            await portalSettings.getByRole('button', {name: 'Close'}).click();
+        }
+
+        // Navigate back to the dashboard
+        await page.goto('/ghost');
+    });
 };
 
 /**
@@ -455,7 +447,6 @@ const goToMembershipPage = async (page) => {
     return await test.step('Open Membership settings', async () => {
         await page.goto('/ghost');
         await page.locator('[data-test-nav="settings"]').click();
-        await page.locator('[data-test-nav="members-membership"]').click();
         // Tiers request can take time, so waiting until there is no connections before interacting with UI
         await page.waitForLoadState('networkidle');
     });
@@ -465,14 +456,13 @@ const goToMembershipPage = async (page) => {
  * Get tier card from membership page
  * @param {import('@playwright/test').Page} page
  * @param {Object} options
- * @param {String} [options.id]
+ * @param {String} [options.slug]
  */
-const getTierCardById = async (page, {id}) => {
-    return await test.step('Expand the premium tier list and find the tier', async () => {
-        await page.locator('[data-test-toggle-pub-info]').click();
-        await page.waitForSelector(`[data-test-tier-card="${id}"]`);
+const openTierModal = async (page, {slug}) => {
+    return await test.step('Open the tier modal', async () => {
+        await page.getByTestId('tiers').locator(`[data-testid="tier-card"][data-tier="${slug}"]`).click();
 
-        return page.locator(`[data-test-tier-card="${id}"]`);
+        return page.getByTestId('tier-detail-modal');
     });
 };
 
@@ -524,5 +514,5 @@ module.exports = {
     completeStripeSubscription,
     impersonateMember,
     goToMembershipPage,
-    getTierCardById
+    openTierModal
 };

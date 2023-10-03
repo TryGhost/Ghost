@@ -27,7 +27,7 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
     const currencySymbol = currency ? getSymbol(currency) : '$';
 
     return (
-        <div className={cardContainerClasses} data-testid='tier-card'>
+        <div className={cardContainerClasses} data-testid='tier-card' data-tier={tier.slug}>
             <div className='w-full grow' onClick={() => {
                 updateRoute({route: `tiers/${tier.id}`});
             }}>

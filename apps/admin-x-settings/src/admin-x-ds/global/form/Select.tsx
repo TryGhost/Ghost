@@ -79,7 +79,7 @@ const ClearIndicator: React.FC<ClearIndicatorProps<SelectOption, false>> = props
 
 const Option: React.FC<OptionProps<SelectOption, false>> = ({children, ...optionProps}) => (
     <components.Option {...optionProps}>
-        <span data-testid="select-option">{children}</span>
+        <span data-testid="select-option" data-value={optionProps.data.value}>{children}</span>
         {optionProps.data.hint && <span className="block text-xs text-grey-700 dark:text-grey-300">{optionProps.data.hint}</span>}
     </components.Option>
 );
