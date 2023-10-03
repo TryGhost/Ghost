@@ -18,6 +18,7 @@ import useRouting from '../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {InstalledTheme, Theme, ThemesInstallResponseType, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
 import {OfficialTheme} from '../../providers/ServiceProvider';
+import {showToast} from '../../../admin-x-ds/global/Toast';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;
@@ -293,6 +294,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
         setSelectedTheme(theme);
     };
 
+    // probably not the best place to handle the logic here, something for cleanup.
     useEffect(() => {
         // this grabs the theme ref from the url and installs it
         if (source && themeRef && !installedFromMarketplace) {
@@ -331,9 +333,13 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                         data = await installTheme(themeRef);
                         if (data?.themes[0]) {
                             await activateTheme(data.themes[0].name);
+                            showToast({
+                                type: 'success',
+                                message: <div><span className='capitalize'>{data.themes[0].name}</span> is now your active theme.</div>
+                            });
                         }
                         confirmModal?.remove();
-                        updateRoute('design/edit/themes');
+                        updateRoute('design/edit');
                     } catch (e) {
                         handleError(e);
                     }
