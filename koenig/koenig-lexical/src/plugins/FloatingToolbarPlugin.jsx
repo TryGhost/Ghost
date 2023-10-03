@@ -72,12 +72,9 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
     }, [editor, toolbarItemType]);
 
     React.useEffect(() => {
-        // we need to attach the listener to the editor because it intercepts some events (like keyboard selection)
-        return editor.registerUpdateListener(() => {
-            editor.getEditorState().read(() => {
-                setToolbarType();
-            });
-        });
+        // we need to attach the listener to the editor because it has some events like undo/redo that affect
+        // the selection without triggering a selectionchange event
+        return editor.registerUpdateListener(() => (setToolbarType()));
     }, [editor, setToolbarType, toolbarItemType]);
 
     React.useEffect(() => {
@@ -110,10 +107,27 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
         );
     }, [editor]);
 
+    // use native mousedown event so the toolbar can close when something is
+    // clicked outside of the editor and the selection is lost
+    React.useEffect(() => {
+        const handleMousedown = (event) => {
+            if (!anchorElem.contains(event.target)) {
+                setToolbarItemType(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handleMousedown);
+
+        return () => {
+            document.removeEventListener('mousedown', handleMousedown);
+        };
+    });
+
     const handleLinkEdit = (data) => {
         setToolbarItemType(toolbarItemTypes.link);
         setHref(data?.href);
     };
+
     return (
         <>
             <FloatingFormatToolbar
