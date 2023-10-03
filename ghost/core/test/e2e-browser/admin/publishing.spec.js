@@ -55,7 +55,7 @@ const checkPostPublished = async (page, {slug, title, body}) => {
     expect(response.status()).toBe(200);
 
     // Check if the title and body are present on this page
-    await expect(page.locator('.gh-canvas .article-title')).toHaveText(title);
+    await expect(page.locator('.gh-article-title')).toHaveText(title);
     await expect(page.locator('.gh-content.gh-canvas > p')).toHaveText(body);
 };
 
