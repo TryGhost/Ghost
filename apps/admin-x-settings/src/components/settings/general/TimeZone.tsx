@@ -78,6 +78,7 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 options={timezoneOptions}
                 selectedOption={timezoneOptions.find(option => option.value === publicationTimezone)}
                 title="Site timezone"
+                isSearchable
                 onSelect={option => handleTimezoneChange(option?.value)}
             />
         </SettingGroupContent>
