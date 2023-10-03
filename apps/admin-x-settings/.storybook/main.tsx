@@ -1,3 +1,4 @@
+import {resolve} from "path";
 import type { StorybookConfig } from "@storybook/react-vite";
 const config: StorybookConfig = {
 	stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
@@ -20,6 +21,8 @@ const config: StorybookConfig = {
 	async viteFinal(config, options) {
 		config.resolve.alias = {
 			crypto: require.resolve('rollup-plugin-node-builtins'),
+			// @TODO: Remove this when @tryghost/nql is updated
+			mingo: resolve(__dirname, '../../../node_modules/mingo/dist/mingo.js')
 		}
 		return config;
 	},
