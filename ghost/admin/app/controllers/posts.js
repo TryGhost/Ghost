@@ -37,7 +37,7 @@ const VISIBILITIES = [{
     value: 'members'
 }, {
     name: 'Paid members-only',
-    value: 'paid'
+    value: '[paid,tiers]'
 }];
 
 const ORDERS = [{
