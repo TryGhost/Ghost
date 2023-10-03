@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../utils/e2e';
+import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../utils/acceptance';
 
 test.describe('Theme settings', async () => {
     test('Browsing and installing default themes', async ({page}) => {

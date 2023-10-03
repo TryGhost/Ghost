@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi} from '../utils/e2e';
+import {globalDataRequests, mockApi} from '../utils/acceptance';
 
 test.describe('Search', async () => {
     test('Hiding and showing groups based on the search term', async ({page}) => {

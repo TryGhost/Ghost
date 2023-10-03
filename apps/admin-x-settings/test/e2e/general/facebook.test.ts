@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures} from '../../utils/acceptance';
 
 test.describe('Facebook settings', async () => {
     test('Supports editing the facebook card', async ({page}) => {

@@ -1,6 +1,6 @@
 import {Integration, IntegrationsResponseType} from '../../../../src/api/integrations';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures} from '../../../utils/acceptance';
 
 test.describe('Zapier integration settings', async () => {
     test('Showing and regenerating API keys', async ({page}) => {

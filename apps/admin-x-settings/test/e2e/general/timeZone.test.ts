@@ -1,4 +1,4 @@
-import {chooseOptionInSelect, globalDataRequests, mockApi, updatedSettingsResponse} from '../../utils/e2e';
+import {chooseOptionInSelect, globalDataRequests, mockApi, updatedSettingsResponse} from '../../utils/acceptance';
 import {expect, test} from '@playwright/test';
 
 test.describe('Time zone settings', async () => {

@@ -1,4 +1,4 @@
-import {chooseOptionInSelect, globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/e2e';
+import {chooseOptionInSelect, globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/acceptance';
 import {expect, test} from '@playwright/test';
 
 test.describe('Access settings', async () => {

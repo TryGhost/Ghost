@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures} from '../../../utils/acceptance';
 
 test.describe('User roles', async () => {
     test('Shows users under their role', async ({page}) => {

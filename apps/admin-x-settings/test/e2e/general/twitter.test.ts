@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures} from '../../utils/acceptance';
 
 test.describe('Twitter settings', async () => {
     test('Supports editing the twitter card', async ({page}) => {

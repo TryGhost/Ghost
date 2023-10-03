@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/e2e';
+import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/acceptance';
 
 test.describe('User invitations', async () => {
     test('Supports inviting a user', async ({page}) => {

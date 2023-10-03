@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/e2e';
+import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/acceptance';
 
 test.describe('User actions', async () => {
     test('Supports suspending a user', async ({page}) => {

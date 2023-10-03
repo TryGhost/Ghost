@@ -1,4 +1,4 @@
-import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../utils/e2e';
+import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../utils/acceptance';
 import {expect, test} from '@playwright/test';
 
 test.describe('Newsletter settings', async () => {

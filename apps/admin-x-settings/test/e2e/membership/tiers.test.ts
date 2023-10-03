@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/acceptance';
 
 const settingsWithStripe = updatedSettingsResponse([
     {key: 'stripe_connect_publishable_key', value: 'pk_test_123'},

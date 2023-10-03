@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/e2e';
+import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/acceptance';
 
 test.describe('Stripe settings', async () => {
     test('Supports the Stripe Connect flow', async ({page}) => {
