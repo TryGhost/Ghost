@@ -280,6 +280,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
     const [selectedTheme, setSelectedTheme] = useState<OfficialTheme|null>(null);
     const [previewMode, setPreviewMode] = useState('desktop');
     const [isInstalling, setInstalling] = useState(false);
+    const [installedFromMarketplace, setInstalledFromMarketplace] = useState(false);
     const {updateRoute} = useRouting();
 
     const modal = useModal();
@@ -294,11 +295,23 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
 
     useEffect(() => {
         // this grabs the theme ref from the url and installs it
-        if (source && themeRef) {
+        if (source && themeRef && !installedFromMarketplace) {
             const themeName = themeRef.split('/')[1];
             let titleText = 'Install Theme';
-            let prompt = <>By clicking below, <strong>{themeName}</strong> will automatically be activated as the theme for your site.</>;
-    
+            const existingThemeNames = themes?.map(t => t.name) || [];
+            let willOverwrite = existingThemeNames.includes(themeName.toLowerCase());
+            const index = existingThemeNames.indexOf(themeName.toLowerCase());
+            // get the theme that will be overwritten
+            const themeToOverwrite = themes?.[index];
+            let prompt = <>By clicking below, <strong>{themeName}</strong> will automatically be activated as the theme for your site.
+                {willOverwrite &&
+                <>
+                    <br/>
+                    <br/>
+                    This will overwrite your existing version of <strong>Liebling</strong>{themeToOverwrite?.active ? ' which is your active theme' : ''}. All custom changes will be lost.
+                </>
+                }
+            </>;
             NiceModal.show(ConfirmationModal, {
                 title: titleText,
                 prompt,
@@ -308,14 +321,19 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                 okColor: 'black',
                 onOk: async (confirmModal) => {
                     let data: ThemesInstallResponseType | undefined;
+                    setInstalledFromMarketplace(true);
                     try {
+                        if (willOverwrite) {
+                            if (themes) {
+                                themes.splice(index, 1);
+                            }
+                        }
                         data = await installTheme(themeRef);
                         if (data?.themes[0]) {
                             await activateTheme(data.themes[0].name);
                         }
-                        setCurrentTab('installed');
-                        updateRoute('design/edit/themes');
                         confirmModal?.remove();
+                        updateRoute('design/edit/themes');
                     } catch (e) {
                         handleError(e);
                     }
@@ -325,7 +343,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                 }
             });
         }
-    }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute]);
+    }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute, themes, installedFromMarketplace]);
 
     if (!themes) {
         return;
