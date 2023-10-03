@@ -1,5 +1,15 @@
 import {IncomingRecommendationService} from './IncomingRecommendationService';
 import {IncomingRecommendation} from './IncomingRecommendation';
+import {UnsafeData} from './UnsafeData';
+
+type Frame = {
+    data: unknown,
+    options: unknown,
+};
+
+type Meta = {
+    pagination: object,
+}
 
 export class IncomingRecommendationController {
     service: IncomingRecommendationService;
@@ -8,15 +18,22 @@ export class IncomingRecommendationController {
         this.service = deps.service;
     }
 
-    async browse() {
-        const recommendations = await this.service.listIncomingRecommendations();
+    async browse(frame: Frame) {
+        const options = new UnsafeData(frame.options);
 
-        return this.#serialize(
-            recommendations
+        const page = options.optionalKey('page')?.integer ?? 1;
+        const limit = options.optionalKey('limit')?.integer ?? 5;
+        const {incomingRecommendations, meta} = await this.service.listIncomingRecommendations({page, limit});
+
+        const response = this.#serialize(
+            incomingRecommendations,
+            meta
         );
+
+        return response;
     }
 
-    #serialize(recommendations: IncomingRecommendation[], meta?: any) {
+    #serialize(recommendations: IncomingRecommendation[], meta?: Meta) {
         return {
             data: recommendations.map((entity) => {
                 return {

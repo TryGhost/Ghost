@@ -52,7 +52,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     // Fetch "Recommending you", including stats
-    const {data: {recommendations: mentions, meta: mentionsMeta} = {}, isLoading: areMentionsLoading, hasNextPage: hasMentionsNextPage, fetchNextPage: fetchMentionsNextPage} = useBrowseIncomingRecommendations({
+    const {data: {recommendations: incomingRecommendations, meta: incomingRecommendationsMeta} = {}, isLoading: areIncomingRecommendationsLoading, hasNextPage: hasIncomingRecommendationsNextPage, fetchNextPage: fetchIncomingRecommendationsNextPage} = useBrowseIncomingRecommendations({
         searchParams: {
             limit: '5',
             order: 'created_at desc'
@@ -82,8 +82,8 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {data: {stats} = {}, isLoading: areStatsLoading} = useReferrerHistory({});
 
     const showMoreMentions: ShowMoreData = {
-        hasMore: !!hasMentionsNextPage,
-        loadMore: fetchMentionsNextPage
+        hasMore: !!hasIncomingRecommendationsNextPage,
+        loadMore: fetchIncomingRecommendationsNextPage
     };
 
     // Select "Your recommendations" by default
@@ -99,8 +99,8 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'recommending-you',
             title: `Recommending you`,
-            counter: mentionsMeta?.pagination?.total,
-            contents: <IncomingRecommendationList incomingRecommendations={mentions ?? []} isLoading={areMentionsLoading || areStatsLoading} showMore={showMoreMentions} stats={stats ?? []}/>
+            counter: incomingRecommendationsMeta?.pagination?.total,
+            contents: <IncomingRecommendationList incomingRecommendations={incomingRecommendations ?? []} isLoading={areIncomingRecommendationsLoading || areStatsLoading} showMore={showMoreMentions} stats={stats ?? []}/>
         }
     ];
 

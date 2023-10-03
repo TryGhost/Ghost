@@ -20,9 +20,13 @@ type Mention = {
     sourceFeaturedImage: URL|null
 }
 
+type MentionMeta = {
+    pagination: object,
+}
+
 type MentionsAPI = {
     refreshMentions(options: {filter: string, limit: number|'all'}): Promise<void>
-    listMentions(options: {filter: string, limit: number|'all'}): Promise<{data: Mention[]}>
+    listMentions(options: {filter: string, page: number, limit: number|'all'}): Promise<{data: Mention[], meta?: MentionMeta}>
 }
 
 export type EmailRecipient = {
@@ -123,11 +127,20 @@ export class IncomingRecommendationService {
         }
     }
 
-    async listIncomingRecommendations(): Promise<IncomingRecommendation[]> {
+    async listIncomingRecommendations(options: { page?: number; limit?: number|'all'}): Promise<{ incomingRecommendations: IncomingRecommendation[]; meta?: MentionMeta }> {
+        const page = options.page ?? 1;
+        const limit = options.limit ?? 5;
         const filter = this.#getMentionFilter();
-        const mentions = await this.#mentionsApi.listMentions({filter, limit: 100});
-        const incomingRecommendations = await Promise.all(mentions.data.map(mention => this.#mentionToIncomingRecommendation(mention)));
 
-        return incomingRecommendations.filter((recommendation): recommendation is IncomingRecommendation => !!recommendation);
+        const mentions = await this.#mentionsApi.listMentions({filter, page, limit});
+        const mentionsToIncomingRecommendations = await Promise.all(mentions.data.map(mention => this.#mentionToIncomingRecommendation(mention)));
+        const incomingRecommendations = mentionsToIncomingRecommendations.filter((recommendation): recommendation is IncomingRecommendation => !!recommendation);
+
+        const response = {
+            incomingRecommendations,
+            meta: mentions.meta
+        };
+
+        return response;
     }
 }

@@ -9,14 +9,12 @@ module.exports = {
         },
         options: [
             'limit',
-            'page',
-            'filter',
-            'order'
+            'page'
         ],
         permissions: true,
         validation: {},
-        async query() {
-            return await recommendations.incomingRecommendationController.browse();
+        async query(frame) {
+            return await recommendations.incomingRecommendationController.browse(frame);
         }
     }
 };
