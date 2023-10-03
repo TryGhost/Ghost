@@ -6,26 +6,24 @@ import Table, {ShowMoreData} from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
-import {Mention} from '../../../../api/mentions';
+import {IncomingRecommendation} from '../../../../api/recommendations';
 import {PaginationData} from '../../../../hooks/usePagination';
 import {ReferrerHistoryItem} from '../../../../api/referrers';
 
 interface IncomingRecommendationListProps {
-    mentions: Mention[],
+    incomingRecommendations: IncomingRecommendation[],
     stats: ReferrerHistoryItem[],
     pagination: PaginationData,
     showMore?: ShowMoreData,
     isLoading: boolean
 }
 
-const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHistoryItem[]}> = ({mention, stats}) => {
-    const cleanedSource = mention.source.replace('/.well-known/recommendations.json', '');
-
+const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingRecommendation, stats: ReferrerHistoryItem[]}> = ({incomingRecommendation, stats}) => {
     const signups = useMemo(() => {
         // Note: this should match the `getDomainFromUrl` method from OutboundLinkTagger
-        let cleanedDomain = cleanedSource;
+        let cleanedDomain = incomingRecommendation.url;
         try {
-            cleanedDomain = new URL(cleanedSource).hostname.replace(/^www\./, '');
+            cleanedDomain = new URL(incomingRecommendation.url).hostname.replace(/^www\./, '');
         } catch (_) {
             // Ignore invalid urls
         }
@@ -36,21 +34,20 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
             }
             return s;
         }, 0);
-    }, [stats, cleanedSource]);
+    }, [stats, incomingRecommendation.url]);
 
     const showDetails = () => {
-        // Open url
-        window.open(cleanedSource, '_blank');
+        window.open(incomingRecommendation.url, '_blank');
     };
 
-    const freeMembersLabel = (signups) === 1 ? 'free member' : 'free members';
+    const freeMembersLabel = signups === 1 ? 'free member' : 'free members';
 
     const {updateRoute} = useRouting();
-    
+
     const action = (
         <div className="flex items-center justify-end">
             <Button color='green' label='Recommend back' size='sm' link onClick={() => {
-                updateRoute({route: `recommendations/add?url=${cleanedSource}`}); 
+                updateRoute({route: `recommendations/add?url=${incomingRecommendation.url}`});
             }} />
         </div>
     );
@@ -61,8 +58,8 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
                         <div className="mb-0.5 flex items-center gap-3">
-                            <RecommendationIcon favicon={mention.source_favicon} featured_image={mention.source_featured_image} title={mention.source_title || mention.source_site_title || cleanedSource} />
-                            <span className='line-clamp-1'>{mention.source_title || mention.source_site_title || cleanedSource}</span>
+                            <RecommendationIcon favicon={incomingRecommendation.favicon} featured_image={incomingRecommendation.featured_image} title={incomingRecommendation.title || incomingRecommendation.url} />
+                            <span className='line-clamp-1'>{incomingRecommendation.title || incomingRecommendation.url}</span>
                         </div>
                     </div>
                 </div>
@@ -74,10 +71,10 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
     );
 };
 
-const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({mentions, stats, pagination, showMore, isLoading}) => {
-    if (isLoading || mentions.length) {
+const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({incomingRecommendations, stats, pagination, showMore, isLoading}) => {
+    if (isLoading || incomingRecommendations.length) {
         return <Table isLoading={isLoading} pagination={pagination} showMore={showMore} hintSeparator>
-            {mentions.map(mention => <IncomingRecommendationItem key={mention.id} mention={mention} stats={stats} />)}
+            {incomingRecommendations.map(rec => <IncomingRecommendationItem key={rec.id} incomingRecommendation={rec} stats={stats} />)}
         </Table>;
     } else {
         return <NoValueLabel>

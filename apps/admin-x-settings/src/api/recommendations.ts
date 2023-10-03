@@ -1,5 +1,5 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, apiUrl, createInfiniteQuery, createMutation, useFetchApi} from '../utils/api/hooks';
+import {Meta, apiUrl, createInfiniteQuery, createMutation, createPaginatedQuery, useFetchApi} from '../utils/api/hooks';
 
 export type Recommendation = {
     id: string
@@ -99,3 +99,22 @@ export const useGetRecommendationByUrl = () => {
         }
     };
 };
+
+export type IncomingRecommendation = {
+    id: string
+    title: string
+    url: string
+    excerpt: string|null
+    featured_image: string|null
+    favicon: string|null
+}
+
+export interface IncomingRecommendationResponseType {
+    meta?: Meta
+    recommendations: Recommendation[]
+}
+
+export const useBrowseIncomingRecommendations = createPaginatedQuery<IncomingRecommendationResponseType>({
+    dataType,
+    path: '/incoming_recommendations/'
+});

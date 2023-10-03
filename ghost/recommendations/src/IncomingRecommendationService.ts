@@ -1,16 +1,7 @@
+import {IncomingRecommendation} from './IncomingRecommendation';
 import {IncomingRecommendationEmailRenderer} from './IncomingRecommendationEmailRenderer';
 import {RecommendationService} from './RecommendationService';
 import logging from '@tryghost/logging';
-
-export type IncomingRecommendation = {
-    title: string;
-    siteTitle: string|null;
-    url: URL;
-    excerpt: string|null;
-    favicon: URL|null;
-    featuredImage: URL|null;
-    recommendingBack: boolean;
-}
 
 export type Report = {
     startDate: Date,
@@ -19,6 +10,7 @@ export type Report = {
 }
 
 type Mention = {
+    id: string,
     source: URL,
     sourceTitle: string,
     sourceSiteTitle: string|null,
@@ -101,8 +93,8 @@ export class IncomingRecommendationService {
             const recommendingBack = !!existing;
 
             return {
-                title: mention.sourceTitle,
-                siteTitle: mention.sourceSiteTitle,
+                id: mention.id,
+                title: mention.sourceSiteTitle || mention.sourceTitle,
                 url,
                 excerpt: mention.sourceExcerpt,
                 favicon: mention.sourceFavicon,
@@ -129,5 +121,13 @@ export class IncomingRecommendationService {
 
             await this.#emailService.send(recipient.email, subject, html, text);
         }
+    }
+
+    async listIncomingRecommendations(): Promise<IncomingRecommendation[]> {
+        const filter = this.#getMentionFilter();
+        const mentions = await this.#mentionsApi.listMentions({filter, limit: 100});
+        const incomingRecommendations = await Promise.all(mentions.data.map(mention => this.#mentionToIncomingRecommendation(mention)));
+
+        return incomingRecommendations.filter((recommendation): recommendation is IncomingRecommendation => !!recommendation);
     }
 }
