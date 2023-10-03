@@ -107,6 +107,7 @@ export type IncomingRecommendation = {
     excerpt: string|null
     featured_image: string|null
     favicon: string|null
+    recommending_back: boolean
 }
 
 export interface IncomingRecommendationResponseType {

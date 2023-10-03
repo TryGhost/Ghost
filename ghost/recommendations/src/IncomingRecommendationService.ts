@@ -136,11 +136,9 @@ export class IncomingRecommendationService {
         const mentionsToIncomingRecommendations = await Promise.all(mentions.data.map(mention => this.#mentionToIncomingRecommendation(mention)));
         const incomingRecommendations = mentionsToIncomingRecommendations.filter((recommendation): recommendation is IncomingRecommendation => !!recommendation);
 
-        const response = {
+        return {
             incomingRecommendations,
             meta: mentions.meta
         };
-
-        return response;
     }
 }

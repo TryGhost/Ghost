@@ -25,12 +25,10 @@ export class IncomingRecommendationController {
         const limit = options.optionalKey('limit')?.integer ?? 5;
         const {incomingRecommendations, meta} = await this.service.listIncomingRecommendations({page, limit});
 
-        const response = this.#serialize(
+        return this.#serialize(
             incomingRecommendations,
             meta
         );
-
-        return response;
     }
 
     #serialize(recommendations: IncomingRecommendation[], meta?: Meta) {
@@ -42,7 +40,8 @@ export class IncomingRecommendationController {
                     excerpt: entity.excerpt,
                     featured_image: entity.featuredImage?.toString() ?? null,
                     favicon: entity.favicon?.toString() ?? null,
-                    url: entity.url.toString()
+                    url: entity.url.toString(),
+                    recommending_back: !!entity.recommendingBack
                 };
             }),
             meta

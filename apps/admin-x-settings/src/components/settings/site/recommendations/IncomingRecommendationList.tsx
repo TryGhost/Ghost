@@ -19,6 +19,8 @@ interface IncomingRecommendationListProps {
 }
 
 const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingRecommendation, stats: ReferrerHistoryItem[]}> = ({incomingRecommendation, stats}) => {
+    const {updateRoute} = useRouting();
+
     const signups = useMemo(() => {
         // Note: this should match the `getDomainFromUrl` method from OutboundLinkTagger
         let cleanedDomain = incomingRecommendation.url;
@@ -36,24 +38,25 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
         }, 0);
     }, [stats, incomingRecommendation.url]);
 
+    const recommendBack = () => {
+        updateRoute({route: `recommendations/add?url=${incomingRecommendation.url}`});
+    };
+
     const showDetails = () => {
         window.open(incomingRecommendation.url, '_blank');
     };
 
     const freeMembersLabel = signups === 1 ? 'free member' : 'free members';
 
-    const {updateRoute} = useRouting();
-
-    const action = (
-        <div className="flex items-center justify-end">
-            <Button color='green' label='Recommend back' size='sm' link onClick={() => {
-                updateRoute({route: `recommendations/add?url=${incomingRecommendation.url}`});
-            }} />
-        </div>
-    );
-
     return (
-        <TableRow action={action} hideActions>
+        <TableRow action={
+            !incomingRecommendation.recommending_back && (
+                <div className="flex items-center justify-end">
+                    <Button color='green' label='Recommend back' size='sm' link onClick={recommendBack}
+                    />
+                </div>
+            )
+        } hideActions>
             <TableCell onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
