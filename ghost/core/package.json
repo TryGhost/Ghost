@@ -104,9 +104,9 @@
     "@tryghost/kg-converters": "0.0.14",
     "@tryghost/kg-default-atoms": "4.0.3",
     "@tryghost/kg-default-cards": "9.1.4",
-    "@tryghost/kg-default-nodes": "0.1.32",
-    "@tryghost/kg-html-to-lexical": "0.0.8",
-    "@tryghost/kg-lexical-html-renderer": "0.3.29",
+    "@tryghost/kg-default-nodes": "0.1.34",
+    "@tryghost/kg-html-to-lexical": "0.0.10",
+    "@tryghost/kg-lexical-html-renderer": "0.3.31",
     "@tryghost/kg-mobiledoc-html-renderer": "6.0.11",
     "@tryghost/limit-service": "1.2.10",
     "@tryghost/link-redirects": "0.0.0",
@@ -227,7 +227,7 @@
     "yjs": "13.6.8"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "2.0.33",
+    "@tryghost/html-to-mobiledoc": "2.0.35",
     "sqlite3": "5.1.6"
   },
   "devDependencies": {
