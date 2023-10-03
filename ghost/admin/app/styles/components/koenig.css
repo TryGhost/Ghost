@@ -957,11 +957,6 @@
     max-width: 740px;
 }
 
-.koenig-react-editor {
-    max-width: 740px;
-    margin: 0 auto;
-}
-
 /* ⨁ menu
 /* --------------------------------------------------------------- */
 .koenig-plus-menu-button {
@@ -3226,4 +3221,26 @@ button.emoji-picker__category-button.active {
     top: 0;
     left: 0;
     color: var(--midlightgrey);
+}
+
+
+/* Lexical editor
+/* --------------------------------------------------------------- */
+
+.koenig-react-editor {
+    max-width: 740px;
+    margin: 0 auto;
+}
+
+.koenig-react-editor-loading,
+.koenig-react-editor-error {
+    font-family: Georgia, Times, serif;
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 1.6em;
+    letter-spacing: .1px;
+}
+
+.koenig-react-editor-loading {
+    color: #AEB7C1;
 }

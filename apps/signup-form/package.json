@@ -47,7 +47,7 @@
         "@storybook/blocks": "7.4.0",
         "@storybook/react": "7.4.0",
         "@storybook/react-vite": "7.4.0",
-        "@storybook/testing-library": "0.2.1",
+        "@storybook/testing-library": "0.2.2",
         "@tailwindcss/line-clamp": "0.4.4",
         "@types/react": "18.2.22",
         "@types/react-dom": "18.2.7",

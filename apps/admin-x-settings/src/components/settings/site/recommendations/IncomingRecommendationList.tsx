@@ -13,7 +13,7 @@ import {ReferrerHistoryItem} from '../../../../api/referrers';
 interface IncomingRecommendationListProps {
     incomingRecommendations: IncomingRecommendation[],
     stats: ReferrerHistoryItem[],
-    pagination: PaginationData,
+    pagination?: PaginationData,
     showMore?: ShowMoreData,
     isLoading: boolean
 }

@@ -52,14 +52,39 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     // Fetch "Recommending you", including stats
-    const {data: {recommendations: incomingRecommendations} = {}, pagination: incomingRecommendationsPagination, isLoading: areIncomingRecommendationsLoading} = useBrowseIncomingRecommendations({
+    const {data: {recommendations: mentions, meta: mentionsMeta} = {}, isLoading: areMentionsLoading, hasNextPage: hasMentionsNextPage, fetchNextPage: fetchMentionsNextPage} = useBrowseIncomingRecommendations({
         searchParams: {
             limit: '5',
             order: 'created_at desc'
-        }
+        },
+
+        // We first load 5, then load 100 at a time (= show all, but without using the dangerous 'all' limit)
+        getNextPageParams: (lastPage, otherParams) => {
+            if (!lastPage.meta) {
+                return;
+            }
+            const {limit, page, pages} = lastPage.meta.pagination;
+            if (page >= pages) {
+                return;
+            }
+
+            const newPage = limit < 100 ? 1 : (page + 1);
+
+            return {
+                ...otherParams,
+                page: newPage.toString(),
+                limit: '100'
+            };
+        },
+        keepPreviousData: true
     });
 
     const {data: {stats} = {}, isLoading: areStatsLoading} = useReferrerHistory({});
+
+    const showMoreMentions: ShowMoreData = {
+        hasMore: !!hasMentionsNextPage,
+        loadMore: fetchMentionsNextPage
+    };
 
     // Select "Your recommendations" by default
     const [selectedTab, setSelectedTab] = useState('your-recommendations');
@@ -74,8 +99,8 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'recommending-you',
             title: `Recommending you`,
-            counter: incomingRecommendationsPagination?.total,
-            contents: <IncomingRecommendationList incomingRecommendations={incomingRecommendations ?? []} isLoading={areIncomingRecommendationsLoading || areStatsLoading} pagination={incomingRecommendationsPagination} stats={stats ?? []}/>
+            counter: mentionsMeta?.pagination?.total,
+            contents: <IncomingRecommendationList incomingRecommendations={mentions ?? []} isLoading={areMentionsLoading || areStatsLoading} showMore={showMoreMentions} stats={stats ?? []}/>
         }
     ];
 

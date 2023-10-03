@@ -114,7 +114,21 @@ export interface IncomingRecommendationResponseType {
     recommendations: Recommendation[]
 }
 
-export const useBrowseIncomingRecommendations = createPaginatedQuery<IncomingRecommendationResponseType>({
+export const useBrowseIncomingRecommendations = createInfiniteQuery<IncomingRecommendationResponseType>({
     dataType,
-    path: '/incoming_recommendations/'
+    path: '/incoming_recommendations/',
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<IncomingRecommendationResponseType>;
+        let recommendations = pages.flatMap(page => page.recommendations);
+
+        // Remove duplicates
+        recommendations = recommendations.filter((mention, index) => {
+            return recommendations.findIndex(({id}) => id === mention.id) === index;
+        });
+
+        return {
+            recommendations,
+            meta: pages[pages.length - 1].meta
+        };
+    }
 });
