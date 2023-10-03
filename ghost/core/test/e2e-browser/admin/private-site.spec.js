@@ -50,8 +50,10 @@ test.describe('Site Settings', () => {
             await expect(section.getByLabel('Site password')).toHaveCount(0);
 
             // check the site is publicly accessible
-            await frontendPage.goto('/');
-            await expect(frontendPage.locator('.site-title')).toHaveText('The Local Test');
+            await expect(async () => {
+                await frontendPage.goto('/');
+                await expect(frontendPage.locator('.site-title')).toHaveText('The Local Test');
+            }).toPass();
         });
     });
 });
