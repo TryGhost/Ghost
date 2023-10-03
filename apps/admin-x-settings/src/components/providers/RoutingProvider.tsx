@@ -37,6 +37,8 @@ export type RoutingModalProps = {
 const modalPaths: {[key: string]: ModalName} = {
     'design/edit/themes': 'DesignAndThemeModal',
     'design/edit': 'DesignAndThemeModal',
+    // this is a special route, because it can install a theme directly from the Ghost Marketplace
+    'design/change-theme/install': 'DesignAndThemeModal',
     'navigation/edit': 'NavigationModal',
     'users/invite': 'InviteUserModal',
     'users/show/:slug': 'UserDetailModal',
