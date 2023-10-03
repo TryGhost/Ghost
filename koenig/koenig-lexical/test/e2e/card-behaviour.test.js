@@ -194,7 +194,6 @@ test.describe('Card behaviour', async () => {
             // Click the card that's not currently editing (second card)
             await page.click('div[data-kg-card-editing="false"]');
             // Now neither card should be editing
-            //await page.pause();
             await expect(await page.locator('[data-kg-card-editing="true"]')).toHaveCount(0);
 
             await assertHTML(page, html`
@@ -280,7 +279,7 @@ test.describe('Card behaviour', async () => {
                     </div>
                 </div>
             `, {ignoreCardContents: true});
-            
+
             await page.mouse.click(275, 275);
 
             await assertHTML(page, html`

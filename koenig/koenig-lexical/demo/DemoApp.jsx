@@ -197,6 +197,13 @@ function DemoComposer({editorType, isMultiplayer, setWordCount}) {
         setSearchParams(searchParams);
     }
 
+    function saveContent() {
+        const serializedState = editorAPI.serialize();
+        const encodedContent = encodeURIComponent(serializedState);
+        searchParams.set('content', encodedContent);
+        setSearchParams(searchParams);
+    }
+
     React.useEffect(() => {
         const handleFileDrag = (event) => {
             event.preventDefault();
@@ -258,7 +265,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount}) {
                 editorType={editorType || 'full'}
             />
             <div className="absolute z-20 flex h-full flex-col items-end sm:relative">
-                <Sidebar isOpen={isSidebarOpen} view={sidebarView} />
+                <Sidebar isOpen={isSidebarOpen} saveContent={saveContent} view={sidebarView} />
                 <FloatingButton isOpen={isSidebarOpen} onClick={openSidebar} />
             </div>
         </KoenigComposer>

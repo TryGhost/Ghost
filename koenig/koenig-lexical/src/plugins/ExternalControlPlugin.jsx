@@ -19,6 +19,9 @@ export const ExternalControlPlugin = ({registerAPI}) => {
             // give access to the editor instance so the Lexical API can be used directly if needed
             editorInstance: editor,
             // simplified API methods for typical consumer app actions
+            serialize() {
+                return JSON.stringify(editor.getEditorState());
+            },
             editorIsEmpty() {
                 let isEmpty;
                 editor.update(() => {
