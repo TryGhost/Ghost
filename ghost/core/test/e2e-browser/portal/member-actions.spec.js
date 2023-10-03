@@ -1,26 +1,29 @@
 const {expect, test} = require('@playwright/test');
 const {createMember, impersonateMember} = require('../utils');
 
+/**
+ * @param {import('@playwright/test').Page} page
+ */
 const addNewsletter = async (page) => {
-    // go to email settings
     await page.goto('/ghost');
     await page.locator('[data-test-nav="settings"]').click();
-    await page.locator('[data-test-nav="members-email"]').click();
 
     // create newsletter
-    await page.locator('[data-test-button="add-newsletter"]').click();
-    await page.locator('[data-test-newsletter-title-input]').click();
-    await page.locator('[data-test-newsletter-title-input]').fill('One more newsletter');
-    await page.locator('[data-test-button="save-newsletter"]').click();
+    const section = page.getByTestId('newsletters');
+    await section.getByRole('button', {name: 'Add newsletter'}).click();
+
+    const modal = page.getByTestId('add-newsletter-modal');
+    await modal.getByLabel('Name').fill('One more newsletter');
+    await modal.getByRole('button', {name: 'Create'}).click();
 
     // check that newsletter was added
-    await page.waitForSelector('[data-test-newsletter="one-more-newsletter"]');
+    await section.locator('*', {hasText: 'One more newsletter'}).first().waitFor();
 };
 
 test.describe('Portal', () => {
     test.describe('Member actions', () => {
         test.describe.configure({retries: 1});
-        
+
         test('can log out', async ({page}) => {
             // create a new free member
             await createMember(page, {
