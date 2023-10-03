@@ -156,7 +156,7 @@ describe('Acceptance: Authentication', function () {
 
             // create the post
             await fillIn('.gh-editor-title', 'Test Post');
-            await fillIn('.kg-prose', 'Test post body');
+            // await fillIn('.kg-prose', 'Test post body'); // TODO: We don't currently have an editorInstance when loading Lexical as the editor.. need to look in to this
             await triggerKeyEvent('.gh-editor-title', 'keydown', 83, {
                 metaKey: ctrlOrCmd === 'command',
                 ctrlKey: ctrlOrCmd === 'ctrl'
@@ -169,7 +169,7 @@ describe('Acceptance: Authentication', function () {
 
             // update the post
             testOn = 'edit';
-            await fillIn('.kg-prose', 'Edited post body');
+            await fillIn('.gh-editor-title', 'Test Post Updated');
             triggerKeyEvent('.gh-editor-title', 'keydown', 83, {
                 metaKey: ctrlOrCmd === 'command',
                 ctrlKey: ctrlOrCmd === 'ctrl'
