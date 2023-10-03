@@ -101,7 +101,7 @@ describe('Acceptance: Content', function () {
             await selectChoose('[data-test-visibility-select]', 'Paid members-only');
             [lastRequest] = this.server.pretender.handledRequests.slice(-1);
             expect(lastRequest.queryParams.filter, '"visibility" request filter param')
-                .to.have.string('visibility:paid+status:[draft,scheduled,published]');
+                .to.have.string('visibility:[paid,tiers]+status:[draft,scheduled,published]');
 
             // Displays editor post
             // TODO: implement "filter" param support and fix mirage post->author association

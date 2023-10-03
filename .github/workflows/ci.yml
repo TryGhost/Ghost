@@ -515,14 +515,14 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - run: yarn workspace @tryghost/admin-x-settings run test:e2e
+      - run: yarn nx run @tryghost/admin-x-settings:test:acceptance
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: playwright-report
-          path: playwright-report
+          name: admin-x-settings-playwright-report
+          path: apps/admin-x-settings/playwright-report
           retention-days: 30
 
       - uses: tryghost/actions/actions/slack-build@main
@@ -568,14 +568,14 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - run: yarn workspace @tryghost/comments-ui run test
+      - run: yarn nx run @tryghost/comments-ui:test
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: playwright-report
-          path: playwright-report
+          name: comments-ui-playwright-report
+          path: apps/comments-ui/playwright-report
           retention-days: 30
 
       - uses: tryghost/actions/actions/slack-build@main
@@ -621,14 +621,14 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - run: yarn workspace @tryghost/signup-form run test:e2e
+      - run: yarn nx run @tryghost/signup-form:test:e2e
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: playwright-report
-          path: playwright-report
+          name: signup-form-playwright-report
+          path: apps/signup-form/playwright-report
           retention-days: 30
 
       - uses: tryghost/actions/actions/slack-build@main

@@ -1,4 +1,5 @@
-import {Meta, createPaginatedQuery} from '../utils/api/hooks';
+import {InfiniteData} from '@tanstack/react-query';
+import {Meta, createInfiniteQuery} from '../utils/api/hooks';
 
 export type Mention = {
     id: string;
@@ -21,7 +22,21 @@ export interface MentionsResponseType {
 
 const dataType = 'MentionsResponseType';
 
-export const useBrowseMentions = createPaginatedQuery<MentionsResponseType>({
+export const useBrowseMentions = createInfiniteQuery<MentionsResponseType>({
     dataType,
-    path: '/mentions/'
+    path: '/mentions/',
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<MentionsResponseType>;
+        let mentions = pages.flatMap(page => page.mentions);
+
+        // Remove duplicates
+        mentions = mentions.filter((mention, index) => {
+            return mentions.findIndex(({id}) => id === mention.id) === index;
+        });
+
+        return {
+            mentions,
+            meta: pages[pages.length - 1].meta
+        };
+    }
 });

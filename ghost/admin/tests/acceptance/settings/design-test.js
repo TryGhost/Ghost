@@ -46,7 +46,7 @@ describe('Acceptance: Settings - Design', function () {
         expect(findAll('[data-test-nav-group]'), 'no of groups open').to.have.lengthOf(1);
 
         // current theme is shown in nav menu
-        expect(find('[data-test-text="current-theme"]')).to.contain.text('casper - v1.0');
+        expect(find('[data-test-text="current-theme"]')).to.contain.text('source - v1.0');
 
         // defaults to "home" desktop preview
         expect(find('[data-test-button="desktop-preview"]')).to.have.class('gh-btn-group-selected');
@@ -143,7 +143,7 @@ describe('Acceptance: Settings - Design', function () {
             config.hostSettings = {
                 limits: {
                     customThemes: {
-                        allowlist: ['casper', 'dawn', 'lyra'],
+                        allowlist: ['source', 'casper', 'dawn', 'lyra'],
                         error: 'All our official built-in themes are available the Starter plan, if you upgrade to one of our higher tiers you will also be able to edit and upload custom themes for your site.'
                     }
                 }
