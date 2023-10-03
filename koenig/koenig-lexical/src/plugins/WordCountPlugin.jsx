@@ -66,6 +66,11 @@ export const WordCountPlugin = ({onChange, language = 'en'} = {}) => {
                 lastWordCount = wordCount;
                 onChange(wordCount);
             }
+
+            // start with zero word count if editor is empty
+            if (wordCount === 0 && lastWordCount === 0) {
+                onChange(0);
+            }
         };
 
         countEditorWords();
