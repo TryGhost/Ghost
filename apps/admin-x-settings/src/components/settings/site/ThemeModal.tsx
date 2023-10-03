@@ -16,7 +16,7 @@ import ThemePreview from './theme/ThemePreview';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {InstalledTheme, Theme, ThemesInstallResponseType, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
+import {InstalledTheme, Theme, ThemesInstallResponseType, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
 import {OfficialTheme} from '../../providers/ServiceProvider';
 
 interface ThemeToolbarProps {
@@ -270,7 +270,12 @@ const ThemeModalContent: React.FC<ThemeModalContentProps> = ({
     return null;
 };
 
-const ChangeThemeModal = () => {
+type ChangeThemeModalProps = {
+    source?: string | null;
+    themeRef?: string | null;
+};
+
+const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) => {
     const [currentTab, setCurrentTab] = useState('official');
     const [selectedTheme, setSelectedTheme] = useState<OfficialTheme|null>(null);
     const [previewMode, setPreviewMode] = useState('desktop');
@@ -280,11 +285,47 @@ const ChangeThemeModal = () => {
     const modal = useModal();
     const {data: {themes} = {}} = useBrowseThemes();
     const {mutateAsync: installTheme} = useInstallTheme();
+    const {mutateAsync: activateTheme} = useActivateTheme();
     const handleError = useHandleError();
 
     const onSelectTheme = (theme: OfficialTheme|null) => {
         setSelectedTheme(theme);
     };
+
+    useEffect(() => {
+        // this grabs the theme ref from the url and installs it
+        if (source && themeRef) {
+            const themeName = themeRef.split('/')[1];
+            let titleText = 'Install Theme';
+            let prompt = <>By clicking below, <strong>{themeName}</strong> will automatically be activated as the theme for your site.</>;
+    
+            NiceModal.show(ConfirmationModal, {
+                title: titleText,
+                prompt,
+                okLabel: 'Install',
+                cancelLabel: 'Cancel',
+                okRunningLabel: 'Installing...',
+                okColor: 'black',
+                onOk: async (confirmModal) => {
+                    let data: ThemesInstallResponseType | undefined;
+                    try {
+                        data = await installTheme(themeRef);
+                        if (data?.themes[0]) {
+                            await activateTheme(data.themes[0].name);
+                        }
+                        setCurrentTab('installed');
+                        updateRoute('design/edit/themes');
+                        confirmModal?.remove();
+                    } catch (e) {
+                        handleError(e);
+                    }
+                    if (!data) {
+                        return;
+                    }
+                }
+            });
+        }
+    }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute]);
 
     if (!themes) {
         return;
