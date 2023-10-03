@@ -127,7 +127,6 @@ export class IncomingRecommendationService {
         }
     }
 
-
     async listIncomingRecommendations(options: { page?: number; limit?: number|'all'}): Promise<{ incomingRecommendations: IncomingRecommendation[]; meta?: MentionMeta }> {
         const page = options.page ?? 1;
         const limit = options.limit ?? 5;
