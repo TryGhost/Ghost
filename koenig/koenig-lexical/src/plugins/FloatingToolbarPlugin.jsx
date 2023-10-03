@@ -72,10 +72,30 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
     }, [editor, toolbarItemType]);
 
     React.useEffect(() => {
-        // we need to attach the listener to the editor because it has some events like undo/redo that affect
-        // the selection without triggering a selectionchange event
-        return editor.registerUpdateListener(() => (setToolbarType()));
-    }, [editor, setToolbarType, toolbarItemType]);
+        // Add a listener if the text toolbar is active. It helps to prevent events bubbling
+        // when a user is interacting with inputs in the link/snippets toolbar
+        if (!!toolbarItemType && toolbarItemType !== toolbarItemTypes.text) {
+            return;
+        }
+        document.addEventListener('selectionchange', setToolbarType);
+        return () => {
+            document.removeEventListener('selectionchange', setToolbarType);
+        };
+    }, [setToolbarType, toolbarItemType]);
+
+    // this causes the toolbar arrow position to update when the selection changes programmatically,
+    //  e.g. when clicking the edit button in the link toolbar
+    React.useEffect(() => {
+        return editor.registerUpdateListener(() => {
+            editor.getEditorState().read(() => {
+                const selection = $getSelection();
+                // save selection range rect to calculate toolbar arrow position
+                if (toolbarItemType) {
+                    setSelectionRangeRect($getSelectionRangeRect({selection, editor}));
+                }
+            });
+        });
+    }, [editor, toolbarItemType]);
 
     React.useEffect(() => {
         editor.registerCommand(
