@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, createDataTransfer, ctrlOrCmd, focusEditor, getEditorState, html, initialize, insertCard} from '../../utils/e2e';
+import {assertHTML, createDataTransfer, ctrlOrCmd, dragMouse, focusEditor, getEditorState, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -424,6 +424,53 @@ test.describe('Gallery card', async () => {
     //     await assertHTML(page, `
     //     `, {ignoreCardContents: true});
     // });
+
+    test('can drag populated image card onto empty gallery card', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'gallery'});
+        await page.keyboard.press('Enter');
+        await insertCard(page, {cardName: 'image'});
+
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+        const [fileChooser] = await Promise.all([
+            page.waitForEvent('filechooser'),
+            await page.click('[data-kg-card="image"] button[name="placeholder-button"]')
+        ]);
+        await fileChooser.setFiles([filePath]);
+
+        const imageBBox = await page.locator('[data-kg-card="image"]').nth(0).boundingBox();
+        const galleryBBox = await page.locator('[data-kg-card="gallery"]').nth(0).boundingBox();
+
+        await dragMouse(page, imageBBox, galleryBBox, 'middle', 'middle', true, 100, 100);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false" data-kg-card-width="wide">
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="gallery">
+                    <figure>
+                    <div>
+                        <div data-gallery="true">
+                        <div data-row="0">
+                            <div data-image="true">
+                            <img alt="" height="248" src="blob:..." width="248" />
+                            <div>
+                                <div>
+                                <button type="button"><svg></svg></button>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+                        <form>
+                        <input accept="image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp" hidden="" multiple=""
+                            name="image-input" type="file" />
+                        </form>
+                    </div>
+                    </figure>
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardContents: false});
+    });
 
     test('exports all 9 images', async function () {
         // necessary to check the saved data because the gallery card state is not

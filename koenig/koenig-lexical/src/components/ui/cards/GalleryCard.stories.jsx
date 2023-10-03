@@ -1,3 +1,4 @@
+import CardContext from '../../../context/CardContext';
 import React from 'react';
 import populateEditor from '../../../utils/storybook/populate-storybook-editor';
 import {CardWrapper} from './../CardWrapper';
@@ -43,9 +44,11 @@ const Template = ({display, caption, ...args}) => {
     return (
         <div className="kg-prose">
             <div className="mx-auto my-8 w-[1170px] min-w-[initial]">
-                <CardWrapper {...display} {...args}>
-                    <GalleryCard {...display} {...args} captionEditor={captionEditor} />
-                </CardWrapper>
+                <CardContext.Provider value={{setCaptionHasFocus: () => {}}}>
+                    <CardWrapper {...display} {...args}>
+                        <GalleryCard {...display} {...args} captionEditor={captionEditor} />
+                    </CardWrapper>
+                </CardContext.Provider>
             </div>
         </div>
     );

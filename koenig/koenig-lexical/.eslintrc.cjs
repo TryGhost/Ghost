@@ -4,7 +4,7 @@ module.exports = {
     extends: ['react-app', 'plugin:ghost/browser', 'plugin:react/recommended', 'plugin:storybook/recommended'],
     plugins: ['ghost', 'tailwindcss'],
     rules: {
-    // sort multiple import lines into alphabetical groups
+        // sort multiple import lines into alphabetical groups
         'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
             memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
         }],

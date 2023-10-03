@@ -76,7 +76,7 @@ function GalleryImage({image, deleteImage, position, isDragging}) {
     );
 }
 
-function PopulatedGalleryCard({filesDropper, images, deleteImage, reorderHandler, isDragging}) {
+function PopulatedGalleryCard({images, deleteImage, reorderHandler, isDragging}) {
     const rows = [];
     const noOfImages = images.length;
 
@@ -113,14 +113,15 @@ function PopulatedGalleryCard({filesDropper, images, deleteImage, reorderHandler
     );
 }
 
-function EmptyGalleryCard({filesDropper, openFilePicker}) {
+function EmptyGalleryCard({openFilePicker, isDraggedOver, reorderHandler}) {
     return (
         <MediaPlaceholder
             desc="Click to select up to 9 images"
             filePicker={openFilePicker}
             icon='gallery'
-            isDraggedOver={filesDropper.isDraggedOver}
+            isDraggedOver={isDraggedOver}
             multiple={true}
+            placeholderRef={reorderHandler.setContainerRef}
             size='large'
         />
     );
@@ -176,8 +177,8 @@ export function GalleryCard({
         <figure className="not-kg-prose">
             <div ref={filesDropper.setRef} className="relative" data-testid="gallery-container">
                 {images.length
-                    ? <PopulatedGalleryCard deleteImage={deleteImage} filesDropper={filesDropper} images={images} isDragging={isDragging} reorderHandler={reorderHandler} />
-                    : <EmptyGalleryCard filesDropper={filesDropper} openFilePicker={openFilePicker} />
+                    ? <PopulatedGalleryCard deleteImage={deleteImage} images={images} isDragging={isDragging} reorderHandler={reorderHandler} />
+                    : <EmptyGalleryCard isDraggedOver={isDragging} openFilePicker={openFilePicker} reorderHandler={reorderHandler} />
                 }
 
                 {isLoading ? <UploadOverlay progress={progress} /> : null}
@@ -240,8 +241,9 @@ PopulatedGalleryCard.propTypes = {
 };
 
 EmptyGalleryCard.propTypes = {
-    filesDropper: PropTypes.object,
-    openFilePicker: PropTypes.func
+    openFilePicker: PropTypes.func,
+    isDraggedOver: PropTypes.bool,
+    reorderHandler: PropTypes.object
 };
 
 UploadOverlay.propTypes = {
