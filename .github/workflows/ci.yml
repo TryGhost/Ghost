@@ -515,7 +515,7 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - run: yarn nx run @tryghost/admin-x-settings:test:e2e
+      - run: yarn nx run @tryghost/admin-x-settings:test:acceptance
 
       - name: Upload test results
         if: always()
