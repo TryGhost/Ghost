@@ -17,14 +17,14 @@
                     <div class="flex items-center pe-auto h-100">
                         {{#if this.ui.isFullScreen}}
                             {{#if this.fromAnalytics }}
-                                <LinkTo @route="posts.analytics" @model={{this.post}} class="gh-btn-editor gh-editor-back-button">
+                                <LinkTo @route="posts.analytics" @model={{this.post}} class="gh-btn-editor gh-editor-back-button" data-test-breadcrumb>
                                     <span>
                                         {{svg-jar "arrow-left"}}
                                         Analytics
                                     </span>
                                 </LinkTo>
                             {{else}}
-                                <LinkTo @route={{pluralize this.post.displayName }} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
+                                <LinkTo @route={{pluralize this.post.displayName }} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}} data-test-breadcrumb>
                                     <span>
                                         {{svg-jar "arrow-left"}}
                                         {{capitalize (pluralize this.post.displayName)}}
