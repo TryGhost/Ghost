@@ -1091,6 +1091,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             const isFirstLine = $isAtTopOfNode(nativeSelection, RANGE_TO_ELEMENT_BOUNDARY_THRESHOLD_PX);
 
                             if ($isDecoratorNode(sibling) && isFirstLine) {
+                                if (isBackward && $isLineBreakNode(anchorNode.getNextSibling())) {
+                                    anchorNode.remove();
+                                    return true;
+                                }
                                 topLevelElement.remove();
                                 $selectDecoratorNode(sibling);
 

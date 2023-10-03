@@ -1209,6 +1209,51 @@ test.describe('Card behaviour', async () => {
         });
     });
 
+    // this behaviour changes between mac and windows
+    test.describe.skip('CMD+BACKSPACE', function () {
+        test('on an populated paragraph after a card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('---');
+            await page.keyboard.type('Some content');
+
+            await page.keyboard.press(`${ctrlOrCmd()}+Backspace`);
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+            `);
+        });
+
+        test('on the first line of a multi-line paragraph after a card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('---');
+            await page.keyboard.type('Some content');
+            await page.keyboard.press('Shift+Enter');
+            await page.keyboard.press('Shift+Enter');
+            await page.keyboard.type('Some more content');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.press('ArrowUp');
+
+            await page.keyboard.press(`${ctrlOrCmd()}+Backspace`);
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <p dir="ltr">
+                    <br />
+                    <br />
+                    <span data-lexical-text="true">Some more content</span>
+                </p>
+            `);
+        });
+    });
+
     test.describe('CMD+ENTER', function () {
         test('with a non-edit-mode card selected', async function () {
             await focusEditor(page);
