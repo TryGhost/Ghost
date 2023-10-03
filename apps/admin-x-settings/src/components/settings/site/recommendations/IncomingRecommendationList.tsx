@@ -13,7 +13,7 @@ import {ReferrerHistoryItem} from '../../../../api/referrers';
 interface IncomingRecommendationListProps {
     mentions: Mention[],
     stats: ReferrerHistoryItem[],
-    pagination: PaginationData,
+    pagination?: PaginationData,
     showMore?: ShowMoreData,
     isLoading: boolean
 }
@@ -46,11 +46,11 @@ const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHis
     const freeMembersLabel = (signups) === 1 ? 'free member' : 'free members';
 
     const {updateRoute} = useRouting();
-    
+
     const action = (
         <div className="flex items-center justify-end">
             <Button color='green' label='Recommend back' size='sm' link onClick={() => {
-                updateRoute({route: `recommendations/add?url=${cleanedSource}`}); 
+                updateRoute({route: `recommendations/add?url=${cleanedSource}`});
             }} />
         </div>
     );
