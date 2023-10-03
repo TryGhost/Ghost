@@ -25,7 +25,6 @@ export class WellknownService {
     #formatRecommendation(recommendation: Recommendation) {
         return {
             url: recommendation.url,
-            reason: recommendation.reason,
             updated_at: (recommendation.updatedAt ?? recommendation.createdAt).toISOString(),
             created_at: (recommendation.createdAt).toISOString()
         };
