@@ -6,7 +6,7 @@ exports[`Incoming Recommendation Emails Sends a different email if we receive a 
   <head>
     <meta name=\\"viewport\\" content=\\"width=device-width\\">
     <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
-    <title>💌 New recommenation</title>
+    <title>👍 New recommendation</title>
     <style>
       /* -------------------------------------
           RESPONSIVE AND MOBILE FRIENDLY STYLES
@@ -127,19 +127,18 @@ exports[`Incoming Recommendation Emails Sends a different email if we receive a 
                   <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                     <tr>
                       <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">
-                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 25px; margin: 0; margin-bottom: 15px;\\">Good news!</p>
 
+                          <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 25px; margin: 0; margin-bottom: 15px;\\">Great news!</p>
                           <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 16px;\\">One of the sites you're recommending is now <strong>recommending you back</strong>:</p>
 
                         <figure style=\\"margin:0 0 1.5em;padding:0;width:100%;\\">
-                          <a style=\\"display:flex;min-height:148px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;background:#F9F9FA;border-radius:3px;border:1px solid #F9F9FA;color:#15171a;text-decoration:none\\" href=\\"https://www.otherghostsite.com/\\">
+                          <a style=\\"display:flex;min-height:110px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;background:#F9F9FA;border-radius:3px;border:1px solid #F9F9FA;color:#15171a;text-decoration:none\\" href=\\"https://www.otherghostsite.com/\\">
                             <div style=\\"display:inline-block; width:100%; padding:20px\\">
-                              <div style=\\"color:#15212a;font-size:16px;line-height:1.3em;font-weight:600\\">Other Ghost Site</div>
-                              <div style=\\"display:-webkit-box;overflow-y:hidden;margin-top:12px;max-height:40px;color:#738a94;font-size:13px;line-height:1.5em;font-weight:400\\"></div>
                               <div style=\\"display:flex;margin-top:14px;color:#15212a;font-size:13px;font-weight:400\\">
                                 
-                                <span style=\\"font-size:13px;line-height:1.5em\\">Other Ghost Site</span>
+                                <div style=\\"color:#15212a;font-size:16px;line-height:1.3em;font-weight:600\\">Other Ghost Site</div>
                               </div>
+                              <div class=\\"kg-bookmark-description\\" style=\\"display:-webkit-box;overflow-y:hidden;margin-top:12px;max-height:40px;color:#738a94;font-size:13px;line-height:1.5em;font-weight:400\\"></div>
                             </div>
                           </a>
                         </figure>
@@ -151,7 +150,7 @@ exports[`Incoming Recommendation Emails Sends a different email if we receive a 
                                 <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
                                   <tbody>
                                     <tr>
-                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: #FF1A75; border-radius: 5px; text-align: center;\\"> <a href=\\"http://127.0.0.1:2369/ghost/#/settings-x/recommendations\\" target=\\"_blank\\" style=\\"display: inline-block; color: #ffffff; background-color: #FF1A75; border: solid 1px #FF1A75; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #FF1A75;\\">View recommendations</a></td>
+                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: #15171a; border-radius: 5px; text-align: center;\\"> <a href=\\"http://127.0.0.1:2369/ghost/#/settings-x/recommendations\\" target=\\"_blank\\" style=\\"display: inline-block; color: #ffffff; background-color: #15171a; border: solid 1px #15171a; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #15171a;\\">View recommendations</a></td>
                                     </tr>
                                   </tbody>
                                 </table>
@@ -210,7 +209,7 @@ If you would no longer like to receive these notifications you can adjust your s
 
 exports[`Incoming Recommendation Emails Sends a different email if we receive a recommendation back 3: [metadata 1] 1`] = `
 Object {
-  "subject": "Other Ghost Site recommended you",
+  "subject": "👍 New recommendation: Other Ghost Site",
   "to": "jbloggs@example.com",
 }
 `;
@@ -221,7 +220,7 @@ exports[`Incoming Recommendation Emails Sends an email if we receive a recommend
   <head>
     <meta name=\\"viewport\\" content=\\"width=device-width\\">
     <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
-    <title>💌 New recommenation</title>
+    <title>👍 New recommendation</title>
     <style>
       /* -------------------------------------
           RESPONSIVE AND MOBILE FRIENDLY STYLES
@@ -342,19 +341,18 @@ exports[`Incoming Recommendation Emails Sends an email if we receive a recommend
                   <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                     <tr>
                       <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">
-                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 25px; margin: 0; margin-bottom: 15px;\\">Good news!</p>
 
+                          <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 25px; margin: 0; margin-bottom: 15px;\\">Good news!</p>
                           <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 16px;\\">A new site is <strong>recommending you</strong> to their audience:</p>
 
                         <figure style=\\"margin:0 0 1.5em;padding:0;width:100%;\\">
-                          <a style=\\"display:flex;min-height:148px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;background:#F9F9FA;border-radius:3px;border:1px solid #F9F9FA;color:#15171a;text-decoration:none\\" href=\\"https://www.otherghostsite.com/\\">
+                          <a style=\\"display:flex;min-height:110px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;background:#F9F9FA;border-radius:3px;border:1px solid #F9F9FA;color:#15171a;text-decoration:none\\" href=\\"https://www.otherghostsite.com/\\">
                             <div style=\\"display:inline-block; width:100%; padding:20px\\">
-                              <div style=\\"color:#15212a;font-size:16px;line-height:1.3em;font-weight:600\\">Other Ghost Site</div>
-                              <div style=\\"display:-webkit-box;overflow-y:hidden;margin-top:12px;max-height:40px;color:#738a94;font-size:13px;line-height:1.5em;font-weight:400\\"></div>
                               <div style=\\"display:flex;margin-top:14px;color:#15212a;font-size:13px;font-weight:400\\">
                                 
-                                <span style=\\"font-size:13px;line-height:1.5em\\">Other Ghost Site</span>
+                                <div style=\\"color:#15212a;font-size:16px;line-height:1.3em;font-weight:600\\">Other Ghost Site</div>
                               </div>
+                              <div class=\\"kg-bookmark-description\\" style=\\"display:-webkit-box;overflow-y:hidden;margin-top:12px;max-height:40px;color:#738a94;font-size:13px;line-height:1.5em;font-weight:400\\"></div>
                             </div>
                           </a>
                         </figure>
@@ -366,7 +364,7 @@ exports[`Incoming Recommendation Emails Sends an email if we receive a recommend
                                 <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
                                   <tbody>
                                     <tr>
-                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: #FF1A75; border-radius: 5px; text-align: center;\\"> <a href=\\"http://127.0.0.1:2369/ghost/#/settings-x/recommendations\\" target=\\"_blank\\" style=\\"display: inline-block; color: #ffffff; background-color: #FF1A75; border: solid 1px #FF1A75; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #FF1A75;\\">Recommend back</a></td>
+                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: #FF1A75; border-radius: 5px; text-align: center;\\"> <a href=\\"http://127.0.0.1:2369/ghost/#/settings-x/recommendations/add?url=https%3A%2F%2Fwww.otherghostsite.com%2F\\" target=\\"_blank\\" style=\\"display: inline-block; color: #ffffff; background-color: #FF1A75; border: solid 1px #FF1A75; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #FF1A75;\\">Recommend back</a></td>
                                     </tr>
                                   </tbody>
                                 </table>
@@ -418,7 +416,7 @@ exports[`Incoming Recommendation Emails Sends an email if we receive a recommend
   <head>
     <meta name=\\"viewport\\" content=\\"width=device-width\\">
     <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
-    <title>💌 New recommenation</title>
+    <title>👍 New recommendation</title>
     <style>
       /* -------------------------------------
           RESPONSIVE AND MOBILE FRIENDLY STYLES
@@ -539,19 +537,18 @@ exports[`Incoming Recommendation Emails Sends an email if we receive a recommend
                   <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                     <tr>
                       <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;\\">
-                        <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 25px; margin: 0; margin-bottom: 15px;\\">Good news!</p>
 
+                          <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 25px; margin: 0; margin-bottom: 15px;\\">Good news!</p>
                           <p style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 25px; margin-bottom: 16px;\\">A new site is <strong>recommending you</strong> to their audience:</p>
 
                         <figure style=\\"margin:0 0 1.5em;padding:0;width:100%;\\">
-                          <a style=\\"display:flex;min-height:148px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;background:#F9F9FA;border-radius:3px;border:1px solid #F9F9FA;color:#15171a;text-decoration:none\\" href=\\"https://www.otherghostsite.com/\\">
+                          <a style=\\"display:flex;min-height:110px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;background:#F9F9FA;border-radius:3px;border:1px solid #F9F9FA;color:#15171a;text-decoration:none\\" href=\\"https://www.otherghostsite.com/\\">
                             <div style=\\"display:inline-block; width:100%; padding:20px\\">
-                              <div style=\\"color:#15212a;font-size:16px;line-height:1.3em;font-weight:600\\">Other Ghost Site</div>
-                              <div style=\\"display:-webkit-box;overflow-y:hidden;margin-top:12px;max-height:40px;color:#738a94;font-size:13px;line-height:1.5em;font-weight:400\\"></div>
                               <div style=\\"display:flex;margin-top:14px;color:#15212a;font-size:13px;font-weight:400\\">
                                 
-                                <span style=\\"font-size:13px;line-height:1.5em\\">Other Ghost Site</span>
+                                <div style=\\"color:#15212a;font-size:16px;line-height:1.3em;font-weight:600\\">Other Ghost Site</div>
                               </div>
+                              <div class=\\"kg-bookmark-description\\" style=\\"display:-webkit-box;overflow-y:hidden;margin-top:12px;max-height:40px;color:#738a94;font-size:13px;line-height:1.5em;font-weight:400\\"></div>
                             </div>
                           </a>
                         </figure>
@@ -563,7 +560,7 @@ exports[`Incoming Recommendation Emails Sends an email if we receive a recommend
                                 <table border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;\\">
                                   <tbody>
                                     <tr>
-                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: #FF1A75; border-radius: 5px; text-align: center;\\"> <a href=\\"http://127.0.0.1:2369/ghost/#/settings-x/recommendations\\" target=\\"_blank\\" style=\\"display: inline-block; color: #ffffff; background-color: #FF1A75; border: solid 1px #FF1A75; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #FF1A75;\\">Recommend back</a></td>
+                                            <td style=\\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: #FF1A75; border-radius: 5px; text-align: center;\\"> <a href=\\"http://127.0.0.1:2369/ghost/#/settings-x/recommendations/add?url=https%3A%2F%2Fwww.otherghostsite.com%2F\\" target=\\"_blank\\" style=\\"display: inline-block; color: #ffffff; background-color: #FF1A75; border: solid 1px #FF1A75; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #FF1A75;\\">Recommend back</a></td>
                                     </tr>
                                   </tbody>
                                 </table>
@@ -609,24 +606,6 @@ exports[`Incoming Recommendation Emails Sends an email if we receive a recommend
 "
 `;
 
-exports[`Incoming Recommendation Emails Sends an email if we receive a recommendation 2: [text 1] 1`] = `
-"
-You have been recommended by Other Ghost Site.
-
----
-
-Sent to jbloggs@example.com from 127.0.0.1.
-If you would no longer like to receive these notifications you can adjust your settings at http://127.0.0.1:2369/ghost/#/settings-x/users/show/joe-bloggs.
-    "
-`;
-
-exports[`Incoming Recommendation Emails Sends an email if we receive a recommendation 3: [metadata 1] 1`] = `
-Object {
-  "subject": "Other Ghost Site recommended you",
-  "to": "jbloggs@example.com",
-}
-`;
-
 exports[`Incoming Recommendation Emails Sends an email if we receive a recommendation 3: [text 1] 1`] = `
 "
 You have been recommended by Other Ghost Site.
@@ -640,7 +619,7 @@ If you would no longer like to receive these notifications you can adjust your s
 
 exports[`Incoming Recommendation Emails Sends an email if we receive a recommendation 4: [metadata 1] 1`] = `
 Object {
-  "subject": "Other Ghost Site recommended you",
+  "subject": "👍 New recommendation: Other Ghost Site",
   "to": "jbloggs@example.com",
 }
 `;

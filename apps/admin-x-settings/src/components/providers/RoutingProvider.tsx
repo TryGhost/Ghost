@@ -30,12 +30,15 @@ export const RouteContext = createContext<RoutingContextData>({
 
 export type RoutingModalProps = {
     pathName: string;
-    params?: Record<string, string>
+    params?: Record<string, string>,
+    searchParams?: URLSearchParams
 }
 
 const modalPaths: {[key: string]: ModalName} = {
     'design/edit/themes': 'DesignAndThemeModal',
     'design/edit': 'DesignAndThemeModal',
+    // this is a special route, because it can install a theme directly from the Ghost Marketplace
+    'design/change-theme/install': 'DesignAndThemeModal',
     'navigation/edit': 'NavigationModal',
     'users/invite': 'InviteUserModal',
     'users/show/:slug': 'UserDetailModal',
@@ -85,6 +88,7 @@ const handleNavigation = (currentRoute: string | undefined) => {
     let url = new URL(hash, domain);
 
     const pathName = getHashPath(url.pathname);
+    const searchParams = url.searchParams;
 
     if (pathName) {
         const [, currentModalName] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(currentRoute || '', modalPath)) || [];
@@ -93,9 +97,9 @@ const handleNavigation = (currentRoute: string | undefined) => {
         return {
             pathName,
             changingModal: modalName && modalName !== currentModalName,
-            modal: (path && modalName) ?
+            modal: (path && modalName) ? // we should consider adding '&& modalName !== currentModalName' here, but this breaks tests
                 import('./routing/modals').then(({default: modals}) => {
-                    NiceModal.show(modals[modalName] as ModalComponent, {pathName, params: matchRoute(pathName, path)});
+                    NiceModal.show(modals[modalName] as ModalComponent, {pathName, params: matchRoute(pathName, path), searchParams});
                 }) :
                 undefined
         };

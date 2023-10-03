@@ -1,7 +1,8 @@
+import {AllOptions, BookshelfRepository, ModelClass, ModelInstance} from '@tryghost/bookshelf-repository';
+import logger from '@tryghost/logging';
+import {Knex} from 'knex';
 import {Recommendation} from './Recommendation';
 import {RecommendationRepository} from './RecommendationRepository';
-import {BookshelfRepository, ModelClass, ModelInstance} from '@tryghost/bookshelf-repository';
-import logger from '@tryghost/logging';
 
 type Sentry = {
     captureException(err: unknown): void;
@@ -24,6 +25,22 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
         this.sentry = deps.sentry;
     }
 
+    applyCustomQuery(query: Knex.QueryBuilder, options: AllOptions<Recommendation>) {
+        query.select('recommendations.*');
+
+        if (options.include?.includes('clickCount') || options.order?.find(o => o.field === 'clickCount')) {
+            query.select((knex: Knex.QueryBuilder) => {
+                knex.count('*').from('recommendation_click_events').where('recommendation_click_events.recommendation_id', knex.client.raw('recommendations.id')).as('count__clicks');
+            });
+        }
+
+        if (options.include?.includes('subscriberCount') || options.order?.find(o => o.field === 'subscriberCount')) {
+            query.select((knex: Knex.QueryBuilder) => {
+                knex.count('*').from('recommendation_subscribe_events').where('recommendation_subscribe_events.recommendation_id', knex.client.raw('recommendations.id')).as('count__subscribers');
+            });
+        }
+    }
+
     toPrimitive(entity: Recommendation): object {
         return {
             id: entity.id,
@@ -36,6 +53,7 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
             one_click_subscribe: entity.oneClickSubscribe,
             created_at: entity.createdAt,
             updated_at: entity.updatedAt
+            // Count relations are not saveable: so don't set them here
         };
     }
 
@@ -51,7 +69,9 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
                 url: model.get('url') as string,
                 oneClickSubscribe: model.get('one_click_subscribe') as boolean,
                 createdAt: model.get('created_at') as Date,
-                updatedAt: model.get('updated_at') as Date | null
+                updatedAt: model.get('updated_at') as Date | null,
+                clickCount: (model.get('count__clicks') ?? undefined) as number | undefined,
+                subscriberCount: (model.get('count__subscribers') ?? undefined) as number | undefined
             });
         } catch (err) {
             logger.error(err);
@@ -71,12 +91,27 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
             url: 'url',
             oneClickSubscribe: 'one_click_subscribe',
             createdAt: 'created_at',
-            updatedAt: 'updated_at'
+            updatedAt: 'updated_at',
+            clickCount: 'count__clicks',
+            subscriberCount: 'count__subscribers'
         } as Record<keyof Recommendation, string>;
     }
 
-    async getByUrl(url: URL): Promise<Recommendation[]> {
+    async getByUrl(url: URL): Promise<Recommendation | null> {
         const urlFilter = `url:~'${url.host.replace('www.', '')}${url.pathname.replace(/\/$/, '')}'`;
-        return this.getPage({filter: urlFilter, page: 1, limit: 1});
+        const recommendations = await this.getAll({filter: urlFilter});
+
+        if (!recommendations || recommendations.length === 0) {
+            return null;
+        }
+
+        //  Find URL based on the hostname and pathname.
+        //  Query params, hash fragements, protocol and www are ignored.
+        const existing = recommendations.find((r) => {
+            return r.url.hostname.replace('www.', '') === url.hostname.replace('www.', '') &&
+                   r.url.pathname === url.pathname;
+        }) || null;
+
+        return existing;
     }
 }

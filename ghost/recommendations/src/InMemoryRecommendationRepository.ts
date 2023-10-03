@@ -7,8 +7,14 @@ export class InMemoryRecommendationRepository extends InMemoryRepository<string,
         return entity;
     }
 
-    getByUrl(url: URL): Promise<Recommendation[]> {
-        const urlFilter = `url:~'${url.host.replace('www.', '')}${url.pathname.replace(/\/$/, '')}'`;
-        return this.getPage({filter: urlFilter, page: 1, limit: 1});
+    async getByUrl(url: URL): Promise<Recommendation | null > {
+        //  Find URL based on the hostname and pathname.
+        //  Query params, hash fragements, protocol and www are ignored.
+        const existing = this.store.find((r) => {
+            return r.url.hostname.replace('www.', '') === url.hostname.replace('www.', '') &&
+                   r.url.pathname === url.pathname;
+        }) || null;
+
+        return existing;
     }
 }

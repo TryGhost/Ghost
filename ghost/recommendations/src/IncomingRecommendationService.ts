@@ -97,10 +97,8 @@ export class IncomingRecommendationService {
             const url = new URL(mention.source.toString().replace(/\/.well-known\/recommendations\.json$/, ''));
 
             // Check if we are also recommending this URL
-            const existing = await this.#recommendationService.countRecommendations({
-                filter: `url:~^'${url}'`
-            });
-            const recommendingBack = existing > 0;
+            const existing = await this.#recommendationService.readRecommendationByUrl(url);
+            const recommendingBack = !!existing;
 
             return {
                 title: mention.sourceTitle,

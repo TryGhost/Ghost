@@ -27,6 +27,7 @@ interface RequestOptions {
     };
     credentials?: 'include' | 'omit' | 'same-origin';
     timeout?: number;
+    retry?: boolean;
 }
 
 export const useFetchApi = () => {
@@ -34,7 +35,7 @@ export const useFetchApi = () => {
     const sentryDSN = useSentryDSN();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return async <ResponseData = any>(endpoint: string | URL, options: RequestOptions = {}) => {
+    return async <ResponseData = any>(endpoint: string | URL, options: RequestOptions = {}): Promise<ResponseData> => {
         // By default, we set the Content-Type header to application/json
         const defaultHeaders: Record<string, string> = {
             'app-pragma': 'no-cache',
@@ -56,6 +57,7 @@ export const useFetchApi = () => {
         // 1. Server Unreachable error from the browser (code 0 or TypeError), typically from short internet blips
         // 2. Maintenance error from Ghost, upgrade in progress so API is temporarily unavailable
         let attempts = 0;
+        let shouldRetry = options.retry === true || options.retry === undefined;
         let retryingMs = 0;
         const startTime = Date.now();
         const maxRetryingMs = 15_000;
@@ -75,7 +77,7 @@ export const useFetchApi = () => {
             return data;
         };
 
-        while (true) {
+        while (attempts === 0 || shouldRetry) {
             try {
                 const response = await fetch(endpoint, {
                     headers: {
@@ -97,7 +99,7 @@ export const useFetchApi = () => {
             } catch (error) {
                 retryingMs = Date.now() - startTime;
 
-                if (import.meta.env.MODE !== 'development' && retryableErrors.some(errorClass => error instanceof errorClass) && retryingMs <= maxRetryingMs) {
+                if (shouldRetry && (import.meta.env.MODE !== 'development' && retryableErrors.some(errorClass => error instanceof errorClass) && retryingMs <= maxRetryingMs)) {
                     await new Promise((resolve) => {
                         setTimeout(resolve, retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1]);
                     });
@@ -122,6 +124,11 @@ export const useFetchApi = () => {
                 throw newError;
             };
         }
+
+        // Used for type checking
+        // this can't happen, but TS isn't smart enough to undeerstand that the loop will never exit without an error or return
+        // because of shouldRetry + attemps usage combination
+        return undefined as never;
     };
 };
 

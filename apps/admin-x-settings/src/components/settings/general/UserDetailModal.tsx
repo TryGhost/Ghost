@@ -557,15 +557,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         okLabel = 'Saved';
     }
 
-    const coverButtonContainerClassName = clsx(
-        showMenu ? (
-            userData.cover_image ? 'relative ml-10 mr-[106px] flex translate-y-[-80px] gap-3 md:ml-0 md:justify-end' : 'relative -mb-8 ml-10 mr-[106px] flex translate-y-[358px] md:ml-0 md:translate-y-[268px] md:justify-end'
-        ) : (
-            userData.cover_image ? 'relative ml-10 flex max-w-4xl translate-y-[-80px] gap-3 md:mx-auto md:justify-end' : 'relative -mb-8 ml-10 flex max-w-4xl translate-y-[358px] md:mx-auto md:translate-y-[268px] md:justify-end'
-        )
-    );
-
-    const coverEditButtonBaseClasses = 'bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition-all cursor-pointer font-medium';
+    const coverEditButtonBaseClasses = 'bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition-all cursor-pointer font-medium nowrap';
 
     const fileUploadButtonClasses = clsx(
         coverEditButtonBaseClasses
@@ -637,75 +629,81 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             }}
         >
             <div>
-                <div className={`relative -mx-10 -mt-10 ${canAccessSettings(currentUser) && 'rounded-t'} bg-gradient-to-tr from-grey-900 to-black`}>
-                    <ImageUpload
-                        buttonContainerClassName={coverButtonContainerClassName}
-                        deleteButtonClassName={deleteButtonClasses}
-                        deleteButtonContent='Delete cover image'
-                        editButtonClassName={editButtonClasses}
-                        fileUploadClassName={fileUploadButtonClasses}
-                        height={userData.cover_image ? '100%' : '32px'}
-                        id='cover-image'
-                        imageClassName='w-full h-full object-cover'
-                        imageContainerClassName={`absolute inset-0 bg-cover group bg-center ${canAccessSettings(currentUser) && 'rounded-t'} overflow-hidden`}
-                        imageURL={userData.cover_image || ''}
-                        pintura={
-                            {
-                                isEnabled: editor.isEnabled,
-                                openEditor: async () => editor.openEditor({
-                                    image: userData.cover_image || '',
-                                    handleSave: async (file:File) => {
-                                        handleImageUpload('cover_image', file);
-                                    }
-                                })
-                            }
-                        }
-                        unstyled={true}
-                        onDelete={() => {
-                            handleImageDelete('cover_image');
-                        }}
-                        onUpload={(file: File) => {
-                            handleImageUpload('cover_image', file);
-                        }}
-                    >Upload cover image</ImageUpload>
-                    {showMenu && <div className="absolute bottom-12 right-12 z-10">
-                        <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
-                    </div>}
-                    <div className={`${!canAccessSettings(currentUser) ? 'mx-10 pl-0 md:max-w-[50%] min-[920px]:ml-[calc((100vw-920px)/2)] min-[920px]:max-w-[460px]' : 'max-w-[50%] pl-12'} relative flex flex-col items-start gap-4 pb-60 pt-10 md:flex-row md:items-center md:pb-7 md:pt-60`}>
-                        <ImageUpload
-                            deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-16 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
-                            deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
-                            editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:!visible z-20'
-                            fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
-                            id='avatar'
-                            imageClassName='w-full h-full object-cover rounded-full shrink-0'
-                            imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px] shrink-0'
-                            imageURL={userData.profile_image}
-                            pintura={
-                                {
-                                    isEnabled: editor.isEnabled,
-                                    openEditor: async () => editor.openEditor({
-                                        image: userData.profile_image || '',
-                                        handleSave: async (file:File) => {
-                                            handleImageUpload('profile_image', file);
+                <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} bg-gradient-to-tr from-grey-900 to-black`}>
+                    <div className='flex min-h-[40vmin] flex-wrap items-end justify-between bg-cover bg-center' style={{
+                        backgroundImage: `url(${userData.cover_image})`
+                    }}>
+                        <div className='flex w-full max-w-[620px] flex-col gap-5 p-8 md:max-w-[auto] md:flex-row md:items-center'>
+                            <div>
+                                <ImageUpload
+                                    deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-16 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
+                                    deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
+                                    editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:!visible z-20'
+                                    fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
+                                    id='avatar'
+                                    imageClassName='w-full h-full object-cover rounded-full shrink-0'
+                                    imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px] shrink-0'
+                                    imageURL={userData.profile_image}
+                                    pintura={
+                                        {
+                                            isEnabled: editor.isEnabled,
+                                            openEditor: async () => editor.openEditor({
+                                                image: userData.profile_image || '',
+                                                handleSave: async (file:File) => {
+                                                    handleImageUpload('profile_image', file);
+                                                }
+                                            })
                                         }
-                                    })
+                                    }
+                                    unstyled={true}
+                                    width='80px'
+                                    onDelete={() => {
+                                        handleImageDelete('profile_image');
+                                    }}
+                                    onUpload={(file: File) => {
+                                        handleImageUpload('profile_image', file);
+                                    }}
+                                >
+                                    <Icon colorClass='text-white' name='user-add' size='lg' />
+                                </ImageUpload>
+                            </div>
+                            <div>
+                                <Heading styles='break-words md:break-normal text-white'>{user.name}{suspendedText}</Heading>
+                                <span className='text-md font-semibold capitalize text-white'>{user.roles[0].name.toLowerCase()}</span>
+                            </div>
+                        </div>
+                        <div className='flex flex-nowrap items-end gap-4 p-8'>
+                            <ImageUpload
+                                buttonContainerClassName='flex items-end gap-4 justify-end flex-nowrap'
+                                deleteButtonClassName={deleteButtonClasses}
+                                deleteButtonContent='Delete cover image'
+                                editButtonClassName={editButtonClasses}
+                                fileUploadClassName={fileUploadButtonClasses}
+                                id='cover-image'
+                                imageClassName='hidden'
+                                imageURL={userData.cover_image || ''}
+                                pintura={
+                                    {
+                                        isEnabled: editor.isEnabled,
+                                        openEditor: async () => editor.openEditor({
+                                            image: userData.cover_image || '',
+                                            handleSave: async (file:File) => {
+                                                handleImageUpload('cover_image', file);
+                                            }
+                                        })
+                                    }
                                 }
-                            }
-                            unstyled={true}
-                            width='80px'
-                            onDelete={() => {
-                                handleImageDelete('profile_image');
-                            }}
-                            onUpload={(file: File) => {
-                                handleImageUpload('profile_image', file);
-                            }}
-                        >
-                            <Icon colorClass='text-white' name='user-add' size='lg' />
-                        </ImageUpload>
-                        <div>
-                            <Heading styles='text-white'>{user.name}{suspendedText}</Heading>
-                            <span className='text-md font-semibold capitalize text-white'>{user.roles[0].name.toLowerCase()}</span>
+                                unstyled
+                                onDelete={() => {
+                                    handleImageDelete('cover_image');
+                                }}
+                                onUpload={(file: File) => {
+                                    handleImageUpload('cover_image', file);
+                                }}
+                            >Upload cover image</ImageUpload>
+                            {showMenu && <div className="z-10">
+                                <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
+                            </div>}
                         </div>
                     </div>
                 </div>

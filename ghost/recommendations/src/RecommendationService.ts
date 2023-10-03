@@ -1,27 +1,12 @@
-import {BookshelfRepository, OrderOption} from '@tryghost/bookshelf-repository';
-import {AddRecommendation, Recommendation, RecommendationPlain} from './Recommendation';
-import {RecommendationRepository} from './RecommendationRepository';
-import {WellknownService} from './WellknownService';
+import {BookshelfRepository, IncludeOption, OrderOption} from '@tryghost/bookshelf-repository';
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
 import {ClickEvent} from './ClickEvent';
+import {AddRecommendation, Recommendation, RecommendationPlain} from './Recommendation';
+import {RecommendationRepository} from './RecommendationRepository';
 import {SubscribeEvent} from './SubscribeEvent';
-import logging from '@tryghost/logging';
-
-export type RecommendationIncludeTypes = {
-    'count.clicks': number,
-    'count.subscribers': number
-};
-export type RecommendationIncludeFields = keyof RecommendationIncludeTypes;
-
-/**
- * All includes are optional, but if they are explicitly loaded, they will not be optional in the result.
- *
- * E.g. RecommendationWithIncludes['count.clicks'|'count.subscribers'].
- *
- * When using methods like listRecommendations with the include option, the result will automatically return the correct relations
- */
-export type RecommendationWithIncludes<IncludeFields extends RecommendationIncludeFields = never> = RecommendationPlain & Partial<RecommendationIncludeTypes> & Record<IncludeFields, RecommendationIncludeTypes[IncludeFields]>;
+import {WellknownService} from './WellknownService';
 
 type MentionSendingService = {
     sendAll(options: {url: URL, links: URL[]}): Promise<void>
@@ -109,7 +94,7 @@ export class RecommendationService {
 
         // If a recommendation with this URL already exists, throw an error
         const existing = await this.repository.getByUrl(recommendation.url);
-        if (existing && existing.length > 0) {
+        if (existing) {
             throw new errors.ValidationError({
                 message: 'A recommendation with this URL already exists.'
             });
@@ -164,85 +149,25 @@ export class RecommendationService {
         this.sendMentionToRecommendation(existing);
     }
 
-    async #listRecommendations({page, limit, filter, order}: { page: number; limit: number | 'all', filter?: string, order?: OrderOption<Recommendation>} = {page: 1, limit: 'all'}): Promise<Recommendation[]> {
-        let list: Recommendation[];
-        if (limit === 'all') {
-            list = await this.repository.getAll({filter, order});
-        } else {
-            if (page < 1) {
-                throw new errors.BadRequestError({message: 'page must be greater or equal to 1'});
-            }
-            if (limit < 1) {
-                throw new errors.BadRequestError({message: 'limit must be greater or equal to 1'});
-            }
-            list = await this.repository.getPage({page, limit, filter, order});
-        }
-        return list;
-    }
-
     /**
-     * Same as #listRecommendations, but with includes and returns a plain object for external use
+     * Sames as listRecommendations, but returns Entities instead of plain objects (Entities are only used internally)
      */
-    async listRecommendations<IncludeFields extends RecommendationIncludeFields = never>({page, limit, filter, order, include}: { page: number; limit: number | 'all', filter?: string, order?: OrderOption<Recommendation>, include?: IncludeFields[] } = {page: 1, limit: 'all', include: []}): Promise<RecommendationWithIncludes<IncludeFields>[]> {
-        const list = await this.#listRecommendations({page, limit, filter, order});
-        return await this.loadRelations(list, include);
+    async #listRecommendations(options: { filter?: string; order?: OrderOption<Recommendation>; page?: number; limit?: number|'all', include?: IncludeOption<Recommendation> } = {page: 1, limit: 'all'}): Promise<Recommendation[]> {
+        if (options.limit === 'all') {
+            return await this.repository.getAll({
+                ...options
+            });
+        }
+        return await this.repository.getPage({
+            ...options,
+            page: options.page || 1,
+            limit: options.limit || 15
+        });
     }
 
-    async loadRelations<IncludeFields extends RecommendationIncludeFields>(list: Recommendation[], include?: IncludeFields[]): Promise<RecommendationWithIncludes<IncludeFields>[]> {
-        const plainList: RecommendationWithIncludes[] = list.map(e => e.plain);
-
-        if (!include || !include.length) {
-            return plainList as RecommendationWithIncludes<IncludeFields>[];
-        }
-
-        if (list.length === 0) {
-            // Avoid doing queries with broken filters
-            return plainList as RecommendationWithIncludes<IncludeFields>[];
-        }
-
-        for (const relation of include) {
-            switch (relation) {
-            case 'count.clicks':
-                const clickCounts = await this.clickEventRepository.getGroupedCount({groupBy: 'recommendationId', filter: `recommendationId:[${list.map(entity => entity.id).join(',')}]`});
-
-                // Set all to zero by default
-                for (const entity of plainList) {
-                    entity[relation] = 0;
-                }
-
-                for (const r of clickCounts) {
-                    const entity = plainList.find(e => e.id === r.recommendationId);
-                    if (entity) {
-                        entity[relation] = r.count;
-                    }
-                }
-
-                break;
-
-            case 'count.subscribers':
-                const subscribersCounts = await this.subscribeEventRepository.getGroupedCount({groupBy: 'recommendationId', filter: `recommendationId:[${list.map(entity => entity.id).join(',')}]`});
-
-                // Set all to zero by default
-                for (const entity of plainList) {
-                    entity[relation] = 0;
-                }
-
-                for (const r of subscribersCounts) {
-                    const entity = plainList.find(e => e.id === r.recommendationId);
-                    if (entity) {
-                        entity[relation] = r.count;
-                    }
-                }
-
-                break;
-            default:
-                // Should create a Type compile error in case we didn't catch all relations
-                const r: never = relation;
-                console.error(`Unknown relation ${r}`); // eslint-disable-line no-console
-            }
-        }
-
-        return plainList as RecommendationWithIncludes<IncludeFields>[];
+    async listRecommendations(options: { filter?: string; order?: OrderOption<Recommendation>; page?: number; limit?: number|'all', include?: IncludeOption<Recommendation> } = {page: 1, limit: 'all', include: []}): Promise<RecommendationPlain[]> {
+        const list = await this.#listRecommendations(options);
+        return list.map(e => e.plain);
     }
 
     async countRecommendations({filter}: { filter?: string }) {
@@ -257,5 +182,14 @@ export class RecommendationService {
     async trackSubscribed({id, memberId}: { id: string, memberId: string }) {
         const subscribeEvent = SubscribeEvent.create({recommendationId: id, memberId});
         await this.subscribeEventRepository.save(subscribeEvent);
+    }
+
+    async readRecommendationByUrl(url: URL): Promise<RecommendationPlain|null> {
+        const recommendation = await this.repository.getByUrl(url);
+
+        if (!recommendation) {
+            return null;
+        }
+        return recommendation.plain;
     }
 }
