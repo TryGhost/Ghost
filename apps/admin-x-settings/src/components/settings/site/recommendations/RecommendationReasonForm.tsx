@@ -26,9 +26,9 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
     >
         <div>
             <Heading className='mb-2 block text-2xs font-semibold uppercase tracking-wider' grey={true} level={6}>Preview</Heading>
-            <div className="flex items-center justify-center overflow-hidden rounded-sm border border-grey-200 bg-grey-50 px-4">
-                <div className="w-full bg-white py-3 shadow">
-                    <div className="border-y border-grey-200 py-1">
+            <div className="-mx-8 flex items-center justify-center overflow-hidden border border-grey-100 bg-grey-50 px-7 py-4">
+                <div className="w-full rounded bg-white py-3 shadow">
+                    <div className="">
                         <a className='flex items-center justify-between  bg-white p-3' href={formState.url} rel="noopener noreferrer" target="_blank">
                             <div className='flex flex-col gap-[2px]'>
                                 <div className="flex items-start gap-2">
