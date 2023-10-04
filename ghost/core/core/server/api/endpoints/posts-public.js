@@ -26,8 +26,9 @@ const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value,
 function generateOptionsData(frame, options) {
     return options.reduce((memo, option) => {
         let value = frame.options?.[option];
-        if (['include', 'fields', 'formats'].includes(option)) {
-            value = value?.split(',').sort();
+
+        if (['include', 'fields', 'formats'].includes(option) && typeof value === 'string') {
+            value = value.split(',').sort();
         }
 
         if (option === 'page') {
