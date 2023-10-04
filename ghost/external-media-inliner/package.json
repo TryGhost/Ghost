@@ -23,6 +23,6 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "file-type": "16"
+    "file-type": "16.5.4"
   }
 }

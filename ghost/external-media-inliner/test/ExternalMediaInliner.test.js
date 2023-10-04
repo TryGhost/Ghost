@@ -637,6 +637,39 @@ describe('ExternalMediaInliner', function () {
             assert.equal(fileData.filename, 'ghost---logo');
             assert.equal(fileData.extension, '.png');
         });
+
+        it('Handles falling back to `content-type` for type', async function () {
+            const imageURL = 'https://img.stockfresh.com/files/f/photo.gif?v=1&s=2';
+            const requestMock = nock('https://img.stockfresh.com')
+                .defaultReplyHeaders({
+                    'content-type': 'image/gif'
+                })
+                .get('/files/f/photo.gif?v=1&s=2')
+                .reply(200);
+
+            const inliner = new ExternalMediaInliner({});
+            const response = await inliner.getRemoteMedia(imageURL);
+            const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(fileData.filename, 'photo-v-1-s-2');
+            assert.equal(fileData.extension, '.gif');
+        });
+
+        it('Handles falling back to file path for type', async function () {
+            const imageURL = 'https://img.stockfresh.com/files/f/photo.gif?v=1&s=2';
+            const requestMock = nock('https://img.stockfresh.com')
+                .get('/files/f/photo.gif?v=1&s=2')
+                .reply(200);
+
+            const inliner = new ExternalMediaInliner({});
+            const response = await inliner.getRemoteMedia(imageURL);
+            const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(fileData.filename, 'photo-v-1-s-2');
+            assert.equal(fileData.extension, '.gif');
+        });
     });
 });
 

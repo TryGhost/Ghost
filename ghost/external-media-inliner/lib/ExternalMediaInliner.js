@@ -1,3 +1,4 @@
+const mime = require('mime-types');
 const FileType = require('file-type');
 const request = require('@tryghost/request');
 const errors = require('@tryghost/errors');
@@ -44,8 +45,8 @@ class ExternalMediaInliner {
         // @NOTE: this is the most expensive operation in the whole inlining process
         //        we should consider caching the results to improve performance
 
-        // Enforce https
-        requestURL = requestURL.replace(/^\/\//g, 'https://');
+        // Enforce http - http > https redirects are commonplace
+        requestURL = requestURL.replace(/^\/\//g, 'http://');
 
         // Encode to handle special characters in URLs
         requestURL = encodeURI(requestURL);
@@ -73,17 +74,27 @@ class ExternalMediaInliner {
      * @returns {Object}
      */
     async extractFileDataFromResponse(requestURL, response) {
-        const fileInfo = await FileType.fromBuffer(response.body);
-        const extension = fileInfo.ext;
+        let extension;
+
+        try {
+            const fileInfo = await FileType.fromBuffer(response.body);
+            extension = fileInfo.ext;
+        } catch {
+            const headers = response.headers;
+            const contentType = headers['content-type'];
+            const extensionFromPath = path.parse(requestURL).ext.split(/[^a-z]/i).filter(Boolean)[0];
+            extension = mime.extension(contentType) || extensionFromPath;
+        }
 
         const removeExtRegExp = new RegExp(`.${extension}`, '');
         const fileNameNoExt = path.parse(requestURL).base.replace(removeExtRegExp, '');
 
-        // CASE: Query strings _can_ form part of the unique image URL, so rather that strip them include the in the file name, and then trim to 200 chars
-        // 200 is a magic number which could be refined. Also trim leading & trailing dashes.
+        // CASE: Query strings _can_ form part of the unique image URL, so rather that strip them include the in the file name
+        // Then trim to last 248 chars (this will be more unique than the first 248), and trim leading & trailing dashes.
+        // 248 is on the lower end of limits from various OSes and file systems
         const fileName = string.slugify(path.parse(fileNameNoExt).base, {
             requiredChangesOnly: true
-        }).slice(0, 200).replace(/^-|-$/, '');
+        }).slice(-248).replace(/^-|-$/, '');
 
         return {
             fileBuffer: response.body,
