@@ -96,6 +96,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         size='sm'
         testId='add-recommendation-modal'
         title={'Add recommendation'}
+        stickyFooter
         onCancel={() => {
             if (saveState === 'saving') {
                 // Already saving
