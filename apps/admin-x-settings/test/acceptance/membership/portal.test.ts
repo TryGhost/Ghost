@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, mockSitePreview, updatedSettingsResponse} from '../../utils/acceptance';
+import {globalDataRequests, mockApi, mockSitePreview} from '../../utils/acceptance';
 import {responseFixtures} from '../../utils/acceptance';
 
 test.describe('Portal Settings', async () => {
