@@ -8,6 +8,12 @@ import chai from 'chai';
 import chaiDom from 'chai-dom';
 chai.use(chaiDom);
 
+// stub loaded external module to avoid loading of external dep
+window['@tryghost/koenig-lexical'] = {
+    KoenigComposer: () => null,
+    KoenigEditor: () => null
+};
+
 setApplication(Application.create(config.APP));
 
 registerWaiter();
