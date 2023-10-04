@@ -119,17 +119,19 @@ const Modal: React.FC<ModalProps> = ({
     }, []);
 
     useEffect(() => {
-        const handleCMDS = (e: KeyboardEvent) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
-                e.preventDefault();
-                onOk!();
-            }
-        };
-        if (enableCMDS) {
-            window.addEventListener('keydown', handleCMDS);
-            return () => {
-                window.removeEventListener('keydown', handleCMDS);
+        if (onOk) {
+            const handleCMDS = (e: KeyboardEvent) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                    e.preventDefault();
+                    onOk();
+                }
             };
+            if (enableCMDS) {
+                window.addEventListener('keydown', handleCMDS);
+                return () => {
+                    window.removeEventListener('keydown', handleCMDS);
+                };
+            }
         }
     });
 
