@@ -219,6 +219,7 @@ const DesignModal: React.FC = () => {
         cancelLabel='Close'
         defaultTab='homepage'
         dirty={saveState === 'unsaved'}
+        okColor={saveState === 'saved' ? 'green' : 'black'}
         okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save')}
         preview={previewContent}
         previewToolbarTabs={previewTabs}
