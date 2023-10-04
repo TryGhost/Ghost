@@ -366,6 +366,7 @@ const Sidebar: React.FC<{
                     <Select
                         options={fontOptions}
                         selectedOption={fontOptions.find(option => option.value === newsletter.body_font_category)}
+                        testId='body-font-select'
                         title='Body style'
                         onSelect={option => updateNewsletter({body_font_category: option?.value})}
                     />

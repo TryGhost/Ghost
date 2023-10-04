@@ -75,7 +75,7 @@ test.describe('Newsletter settings', async () => {
         await modal.getByPlaceholder('Weekly Roundup').fill('Updated newsletter');
 
         await modal.getByRole('tab', {name: 'Design'}).click();
-        await chooseOptionInSelect(modal.getByLabel('Body style'), 'Clean sans-serif');
+        await chooseOptionInSelect(modal.getByTestId('body-font-select'), 'Clean sans-serif');
 
         await modal.getByRole('button', {name: 'Save'}).click();
 

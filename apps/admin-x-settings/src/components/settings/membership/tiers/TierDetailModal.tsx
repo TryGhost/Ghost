@@ -226,6 +226,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                             options={currencySelectGroups()}
                                             selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === formState.currency)}
                                             size='xs'
+                                            isSearchable
                                             onSelect={option => updateForm(state => ({...state, currency: option?.value}))}
                                         />
                                     </div>

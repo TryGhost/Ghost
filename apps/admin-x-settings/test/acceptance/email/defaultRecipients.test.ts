@@ -18,7 +18,7 @@ test.describe('Default recipient settings', async () => {
         await expect(section.getByText('Whoever has access to the post')).toHaveCount(1);
 
         await section.getByRole('button', {name: 'Edit'}).click();
-        await chooseOptionInSelect(section.getByLabel('Default newsletter recipients'), 'All members');
+        await chooseOptionInSelect(section.getByTestId('default-recipients-select'), 'All members');
         await section.getByRole('button', {name: 'Save'}).click();
 
         expect(lastApiRequests.editSettings?.body).toEqual({
@@ -29,7 +29,7 @@ test.describe('Default recipient settings', async () => {
         });
 
         await section.getByRole('button', {name: 'Edit'}).click();
-        await chooseOptionInSelect(section.getByLabel('Default newsletter recipients'), 'Usually nobody');
+        await chooseOptionInSelect(section.getByTestId('default-recipients-select'), 'Usually nobody');
         await section.getByRole('button', {name: 'Save'}).click();
 
         expect(lastApiRequests.editSettings?.body).toEqual({
@@ -40,10 +40,10 @@ test.describe('Default recipient settings', async () => {
         });
 
         await section.getByRole('button', {name: 'Edit'}).click();
-        await chooseOptionInSelect(section.getByLabel('Default newsletter recipients'), 'Paid-members only');
+        await chooseOptionInSelect(section.getByTestId('default-recipients-select'), 'Paid-members only');
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByLabel('Default newsletter recipients')).toHaveCount(0);
+        await expect(section.getByTestId('default-recipients-select')).toHaveCount(0);
 
         await expect(section.getByText('Paid-members only')).toHaveCount(1);
 
@@ -79,7 +79,7 @@ test.describe('Default recipient settings', async () => {
 
         await section.getByRole('button', {name: 'Edit'}).click();
 
-        await chooseOptionInSelect(section.getByLabel('Default newsletter recipients'), 'Specific people');
+        await chooseOptionInSelect(section.getByTestId('default-recipients-select'), 'Specific people');
         await section.getByLabel('Filter').click();
 
         await section.locator('[data-testid="select-option"]', {hasText: 'Basic Supporter'}).click();

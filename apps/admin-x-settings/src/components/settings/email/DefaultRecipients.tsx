@@ -131,6 +131,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 hint='Who should be able to subscribe to your site?'
                 options={RECIPIENT_FILTER_OPTIONS}
                 selectedOption={RECIPIENT_FILTER_OPTIONS.find(option => option.value === selectedOption)}
+                testId='default-recipients-select'
                 title="Default Newsletter recipients"
                 onSelect={(option) => {
                     if (option) {

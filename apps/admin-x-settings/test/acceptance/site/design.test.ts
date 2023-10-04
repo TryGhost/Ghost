@@ -129,7 +129,7 @@ test.describe('Design settings', async () => {
 
         await modal.getByRole('tab', {name: 'Site wide'}).click();
 
-        await chooseOptionInSelect(modal.getByLabel('Navigation layout'), 'Logo in the middle');
+        await chooseOptionInSelect(modal.getByTestId('setting-select-navigation_layout'), 'Logo in the middle');
         await modal.getByRole('button', {name: 'Save'}).click();
 
         const expectedSettings = {navigation_layout: 'Logo in the middle'};
@@ -190,7 +190,7 @@ test.describe('Design settings', async () => {
 
         await expect(showFeaturedPostsCustomThemeSetting).toBeVisible();
 
-        await chooseOptionInSelect(modal.getByLabel('Navigation layout'), 'Logo in the middle');
+        await chooseOptionInSelect(modal.getByTestId('setting-select-navigation_layout'), 'Logo in the middle');
 
         await expect(showFeaturedPostsCustomThemeSetting).not.toBeVisible();
 

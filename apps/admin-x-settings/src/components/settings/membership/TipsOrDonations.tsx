@@ -103,6 +103,7 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         fullWidth={false}
                         options={currencySelectGroups()}
                         selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === donationsCurrency)}
+                        isSearchable
                         onSelect={option => updateSetting('donations_currency', option?.value || 'USD')}
                     />
                 )}

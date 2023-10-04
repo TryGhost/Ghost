@@ -22,13 +22,13 @@ test.describe('Access settings', async () => {
 
         await section.getByRole('button', {name: 'Edit'}).click();
 
-        await chooseOptionInSelect(section.getByLabel('Subscription access'), 'Only people I invite');
-        await chooseOptionInSelect(section.getByLabel('Default post access'), /^Members only$/);
-        await chooseOptionInSelect(section.getByLabel('Commenting'), 'All members');
+        await chooseOptionInSelect(section.getByTestId('subscription-access-select'), 'Only people I invite');
+        await chooseOptionInSelect(section.getByTestId('default-post-access-select'), /^Members only$/);
+        await chooseOptionInSelect(section.getByTestId('commenting-select'), 'All members');
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByLabel('Subscription access')).toHaveCount(0);
+        await expect(section.getByTestId('subscription-access-select')).toHaveCount(0);
 
         await expect(section.getByText('Only people I invite')).toHaveCount(1);
         await expect(section.getByText('Members only')).toHaveCount(1);
@@ -59,8 +59,8 @@ test.describe('Access settings', async () => {
 
         await section.getByRole('button', {name: 'Edit'}).click();
 
-        await chooseOptionInSelect(section.getByLabel('Default post access'), 'Specific tiers');
-        await section.getByLabel('Select tiers').click();
+        await chooseOptionInSelect(section.getByTestId('default-post-access-select'), 'Specific tiers');
+        await section.getByTestId('tiers-select').click();
 
         await section.locator('[data-testid="select-option"]', {hasText: 'Basic Supporter'}).click();
         await section.locator('[data-testid="select-option"]', {hasText: 'Ultimate Starlight Diamond Tier'}).click();

@@ -18,11 +18,11 @@ test.describe('Time zone settings', async () => {
 
         await section.getByRole('button', {name: 'Edit'}).click();
 
-        await chooseOptionInSelect(section.getByLabel('Site timezone'), '(GMT -9:00) Alaska');
+        await chooseOptionInSelect(section.getByTestId('timezone-select'), '(GMT -9:00) Alaska');
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        await expect(section.getByLabel('Site timezone')).toHaveCount(0);
+        await expect(section.getByTestId('timezone-select')).toHaveCount(0);
 
         await expect(section.getByText('America/Anchorage')).toHaveCount(1);
 
