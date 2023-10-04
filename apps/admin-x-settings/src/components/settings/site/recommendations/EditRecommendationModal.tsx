@@ -102,6 +102,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         size='sm'
         testId='edit-recommendation-modal'
         title={'Edit recommendation'}
+        stickyFooter
         onOk={async () => {
             if (saveState === 'saving') {
                 // Already saving
