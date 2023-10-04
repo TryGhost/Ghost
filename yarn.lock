@@ -7812,10 +7812,10 @@
     "@tryghost/errors" "^1.2.26"
     jest-snapshot "^29.0.0"
 
-"@tryghost/kg-card-factory@4.0.10":
-  version "4.0.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-4.0.10.tgz#c7de952d72d302d04d11fc89ecb9140c9adb567d"
-  integrity sha512-PrBapJgFnJgLQ9oavpZzH2JhelmhEIKUryvo1HJekY3RxeVU6318q8Q70fjYDiOGwGk7uEGTdfdi9vz8G2p7bg==
+"@tryghost/kg-card-factory@4.0.11":
+  version "4.0.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-4.0.11.tgz#43d7d705a07613ada18a905260f93999623726a9"
+  integrity sha512-+i6E38SveAM2+sN0LIDyVgAe4DvlsI36kmrROERxQe/78hHJbtuO9VFznj2ap5l3jjrarWyrn5NpZU2PT3djcw==
 
 "@tryghost/kg-clean-basic-html@3.0.34", "@tryghost/kg-clean-basic-html@^3.0.34":
   version "3.0.34"
@@ -7834,12 +7834,12 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-default-atoms/-/kg-default-atoms-4.0.3.tgz#a565a08ee55736065154f435d51b392f9a15455d"
   integrity sha512-EZ43abMvUr7cV5aAD4w7OVUOtaGdfj4HpvQRkZkAqB7/S4prRl7dWIlatxiYX379AXQ+hjI+cSrw5UV0yHaRhA==
 
-"@tryghost/kg-default-cards@9.1.4":
-  version "9.1.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-9.1.4.tgz#34c65cdc9733826271fa1464f1ca4d92d86d3e29"
-  integrity sha512-2Fw8aRytlVkLnVTrFOvNnRzl9zGRS4PwSabPYn277jke6LPlwolKo4RtDD9TKRZrtlxX6tKstsb2gc4Qzw5u7Q==
+"@tryghost/kg-default-cards@9.1.5":
+  version "9.1.5"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-cards/-/kg-default-cards-9.1.5.tgz#9df69c469a983a02cda9ab5668da3e6f25325736"
+  integrity sha512-8iYwF1ZjjZ0dBiAl8kp4ne0aHjre28unFm8BhqvOJGoeS9cESD5u/kDt/pST4rYTeizzL6Ywf2l4T93r5Qhygw==
   dependencies:
-    "@tryghost/kg-markdown-html-renderer" "^6.0.10"
+    "@tryghost/kg-markdown-html-renderer" "^6.0.11"
     "@tryghost/string" "^0.2.0"
     "@tryghost/url-utils" "^4.0.0"
     handlebars "^4.7.6"
@@ -7889,7 +7889,7 @@
     lexical "^0.12.2"
     prettier "^3.0.0"
 
-"@tryghost/kg-markdown-html-renderer@^6.0.10", "@tryghost/kg-markdown-html-renderer@^6.0.11":
+"@tryghost/kg-markdown-html-renderer@^6.0.11":
   version "6.0.11"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-markdown-html-renderer/-/kg-markdown-html-renderer-6.0.11.tgz#59ea4960cbdf5106033af25820e86e907b40eb4f"
   integrity sha512-/oS+7S2S6ACBmryAeHrsOGz8vrc03t1WzxcU76Q7fz7kvvSP0Q+3Hl5Pmi0DTIJWFfkYmQLrDPCXfX/mFUBtoQ==
