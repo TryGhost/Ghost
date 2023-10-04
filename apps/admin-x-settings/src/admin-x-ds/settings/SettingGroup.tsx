@@ -39,6 +39,7 @@ interface SettingGroupProps {
     onEditingChange?: (isEditing: boolean) => void
     onSave?: () => void
     onCancel?: () => void
+    enableCMDS?: boolean
 }
 
 const SettingGroup: React.FC<SettingGroupProps> = ({
@@ -59,7 +60,8 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     styles,
     onEditingChange,
     onSave,
-    onCancel
+    onCancel,
+    enableCMDS = true
 }) => {
     const {checkVisible} = useSearch();
     const {route} = useRouting();
@@ -147,6 +149,21 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
             }, 3000);
         }
     }, [highlight]);
+
+    useEffect(() => {
+        const handleCMDS = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault();
+                handleSave();
+            }
+        };
+        if (enableCMDS) {
+            window.addEventListener('keydown', handleCMDS);
+            return () => {
+                window.removeEventListener('keydown', handleCMDS);
+            };
+        }
+    });
 
     const containerClasses = clsx(
         'relative flex-col gap-6 rounded',

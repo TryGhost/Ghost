@@ -115,7 +115,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 const AnnouncementBarModal: React.FC = () => {
     const {siteData} = useGlobalData();
-    const modal = NiceModal.useModal();
     const {localSettings, updateSetting, handleSave} = useSettingGroup();
     const [announcementContent] = getSettingValues<string>(localSettings, ['announcement_content']);
     const [accentColor] = getSettingValues<string>(localSettings, ['accent_color']);
@@ -207,11 +206,10 @@ const AnnouncementBarModal: React.FC = () => {
 
     return <PreviewModalContent
         afterClose={() => {
-            modal.remove();
             updateRoute('announcement-bar');
         }}
         cancelLabel='Close'
-        deviceSelector={false}
+        deviceSelector={true}
         dirty={false}
         okLabel='Save'
         preview={preview}
@@ -223,10 +221,8 @@ const AnnouncementBarModal: React.FC = () => {
         title='Announcement'
         titleHeadingLevel={5}
         onOk={async () => {
-            if (await handleSave()) {
-                modal.remove();
+            if (!(await handleSave())) {
                 updateRoute('announcement-bar');
-            } else {
                 showToast({
                     type: 'pageError',
                     message: 'An error occurred while saving your changes. Please try again.'

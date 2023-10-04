@@ -66,17 +66,15 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
     };
 
     return (
-        <div className='h-screen w-screen overflow-hidden'>
-            <IframeBuffering
-                addDelay={true}
-                className="absolute left-0 top-0 h-full w-full"
-                generateContent={injectContentIntoIframe}
-                height='100%'
-                parentClassName="relative h-full w-full"
-                testId='announcement-bar-preview-iframe'
-                width='100%'
-            />
-        </div>
+        <IframeBuffering
+            addDelay={true}
+            className="absolute h-[110%] w-[110%] origin-top-left scale-[.90909] max-[1600px]:h-[130%] max-[1600px]:w-[130%] max-[1600px]:scale-[.76923]"
+            generateContent={injectContentIntoIframe}
+            height='100%'
+            parentClassName="relative h-full w-full"
+            testId='announcement-bar-preview-iframe'
+            width='100%'
+        />
     );
 };
 
@@ -100,7 +98,7 @@ export default memo(AnnouncementBarPreview, (prevProps, nextProps) => {
     if (prevProps.announcementBackgroundColor !== nextProps.announcementBackgroundColor) {
         return false;
     }
-    
+
     // Check if announcementContent changed
     if (prevProps.announcementContent !== nextProps.announcementContent) {
         return false;
