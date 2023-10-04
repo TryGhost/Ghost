@@ -492,6 +492,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
+        okColor={saveState === 'saved' ? 'green' : 'black'}
         okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save')}
         preview={preview}
         previewBgColor={'grey'}
