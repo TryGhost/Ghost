@@ -62,7 +62,7 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
                     <div className={`flex grow flex-col`}>
                         <div className="mb-0.5 flex items-center gap-3">
                             <RecommendationIcon favicon={incomingRecommendation.favicon} featured_image={incomingRecommendation.featured_image} title={incomingRecommendation.title || incomingRecommendation.url} />
-                            <span className='line-clamp-1'>{incomingRecommendation.title || incomingRecommendation.url}</span>
+                            <span className='line-clamp-1 font-medium'>{incomingRecommendation.title || incomingRecommendation.url}</span>
                         </div>
                     </div>
                 </div>
@@ -70,6 +70,7 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
             <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
                 {signups === 0 ? <span className="text-grey-500">-</span> : (<div className='-mt-px flex grow items-end gap-1'><span>{signups}</span><span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{freeMembersLabel}</span></div>)}
             </TableCell>
+            {incomingRecommendation.recommending_back && <TableCell className='group-hover/table-row:visible md:invisible'><div className='text-right text-sm leading-[1.8] text-grey-700'>Recommending back</div></TableCell>}
         </TableRow>
     );
 };
