@@ -9,5 +9,6 @@ export * from './ClickEvent';
 export * from './BookshelfClickEventRepository';
 export * from './SubscribeEvent';
 export * from './BookshelfSubscribeEventRepository';
+export * from './IncomingRecommendationController';
 export * from './IncomingRecommendationService';
 export * from './IncomingRecommendationEmailRenderer';

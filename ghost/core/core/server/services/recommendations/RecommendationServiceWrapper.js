@@ -29,6 +29,11 @@ class RecommendationServiceWrapper {
     service;
 
     /**
+     * @type {import('@tryghost/recommendations').IncomingRecommendationController}
+     */
+    incomingRecommendationController;
+
+    /**
      * @type {import('@tryghost/recommendations').IncomingRecommendationService}
      */
     incomingRecommendationService;
@@ -51,6 +56,7 @@ class RecommendationServiceWrapper {
             RecommendationController,
             WellknownService,
             BookshelfClickEventRepository,
+            IncomingRecommendationController,
             IncomingRecommendationService,
             IncomingRecommendationEmailRenderer
         } = require('@tryghost/recommendations');
@@ -123,6 +129,10 @@ class RecommendationServiceWrapper {
 
         this.controller = new RecommendationController({
             service: this.service
+        });
+
+        this.incomingRecommendationController = new IncomingRecommendationController({
+            service: this.incomingRecommendationService
         });
 
         if (labs.isSet('recommendations')) {
