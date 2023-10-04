@@ -73,46 +73,36 @@ describe('{{#recommendations}} helper', function () {
             <li class="recommendation">
                 <a href="https://recommendations1.com">
                     <img class="recommendation-favicon" src="https://recommendations1.com/favicon.ico" alt="Recommendation 1">
-                    <div class="recommendation-content">
-                        <h5 class="recommendation-title">Recommendation 1</h5>
-                        <p class="recommendation-reason">Reason 1</p>
-                    </div>
+                    <h5 class="recommendation-title">Recommendation 1</h5>
+                    <p class="recommendation-reason">Reason 1</p>
                 </a>
             </li>
             <li class="recommendation">
                 <a href="https://recommendations2.com">
                     <img class="recommendation-favicon" src="https://recommendations2.com/favicon.ico" alt="Recommendation 2">
-                    <div class="recommendation-content">
-                        <h5 class="recommendation-title">Recommendation 2</h5>
-                        <p class="recommendation-reason">Reason 2</p>
-                    </div>
+                    <h5 class="recommendation-title">Recommendation 2</h5>
+                    <p class="recommendation-reason">Reason 2</p>
                 </a>
             </li>
             <li class="recommendation">
                 <a href="https://recommendations3.com">
                     <img class="recommendation-favicon" src="https://recommendations3.com/favicon.ico" alt="Recommendation 3">
-                    <div class="recommendation-content">
-                        <h5 class="recommendation-title">Recommendation 3</h5>
-                        <p class="recommendation-reason">Reason 3</p>
-                    </div>
+                    <h5 class="recommendation-title">Recommendation 3</h5>
+                    <p class="recommendation-reason">Reason 3</p>
                 </a>
             </li>
             <li class="recommendation">
                 <a href="https://recommendations4.com">
                     <img class="recommendation-favicon" src="https://recommendations4.com/favicon.ico" alt="Recommendation 4">
-                    <div class="recommendation-content">
-                        <h5 class="recommendation-title">Recommendation 4</h5>
-                        <p class="recommendation-reason">Reason 4</p>
-                    </div>
+                    <h5 class="recommendation-title">Recommendation 4</h5>
+                    <p class="recommendation-reason">Reason 4</p>
                 </a>
             </li>
             <li class="recommendation">
                 <a href="https://recommendations5.com">
                     <img class="recommendation-favicon" src="https://recommendations5.com/favicon.ico" alt="Recommendation 5">
-                    <div class="recommendation-content">
-                        <h5 class="recommendation-title">Recommendation 5</h5>
-                        <p class="recommendation-reason">Reason 5</p>
-                    </div>
+                    <h5 class="recommendation-title">Recommendation 5</h5>
+                    <p class="recommendation-reason">Reason 5</p>
                 </a>
             </li>
         </ul>
