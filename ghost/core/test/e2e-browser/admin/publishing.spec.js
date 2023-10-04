@@ -76,6 +76,9 @@ const createPage = async (page, {title = 'Hello world', body = 'This is my post 
     await page.locator('[data-test-editor-title-input]').click();
     await page.locator('[data-test-editor-title-input]').fill(title);
 
+    // wait for editor to be ready
+    await expect(page.locator('[data-lexical-editor="true"]')).toBeVisible();
+
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');
 
@@ -281,7 +284,7 @@ test.describe('Publishing', () => {
 
     test.describe('Update post', () => {
         test.describe.configure({retries: 1});
-        
+
         test('Can update a published post', async ({page: adminPage}) => {
             await adminPage.goto('/ghost');
 
