@@ -59,6 +59,8 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     let leftButtonProps = {
         label: 'Back',
         icon: 'arrow-left',
+        iconColorClass: 'text-black dark:text-white',
+        link: true,
         size: 'sm' as const,
         onClick: () => {
             if (saveState === 'saving') {

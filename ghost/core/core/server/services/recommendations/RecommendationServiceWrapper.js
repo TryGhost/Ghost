@@ -38,6 +38,7 @@ class RecommendationServiceWrapper {
             return;
         }
 
+        const labs = require('../../../shared/labs');
         const config = require('../../../shared/config');
         const urlUtils = require('../../../shared/url-utils');
         const models = require('../../models');
@@ -124,8 +125,10 @@ class RecommendationServiceWrapper {
             service: this.service
         });
 
-        this.service.init().catch(logging.error);
-        this.incomingRecommendationService.init().catch(logging.error);
+        if (labs.isSet('recommendations')) {
+            this.service.init().catch(logging.error);
+            this.incomingRecommendationService.init().catch(logging.error);
+        }
 
         const PATH_SUFFIX = '/.well-known/recommendations.json';
 
@@ -142,8 +145,6 @@ class RecommendationServiceWrapper {
                 return newUrl;
             }
         });
-
-        const labs = require('../../../shared/labs');
 
         // Listen for incoming webmentions
         DomainEvents.subscribe(MentionCreatedEvent, async (event) => {

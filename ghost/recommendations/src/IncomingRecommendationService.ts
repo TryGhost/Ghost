@@ -78,17 +78,17 @@ export class IncomingRecommendationService {
         }
     }
 
-    #getMentionFilter({verified = true} = {}) {
+    #getMentionFilter() {
         const base = `source:~$'/.well-known/recommendations.json'`;
-        if (verified) {
-            return `${base}+verified:true`;
-        }
+        // if (verified) {
+        //     return `${base}+verified:true`;
+        // }
         return base;
     }
 
     async #updateIncomingRecommendations() {
         // Note: we also recheck recommendations that were not verified (verification could have failed)
-        const filter = this.#getMentionFilter({verified: false});
+        const filter = this.#getMentionFilter();
         await this.#mentionsApi.refreshMentions({filter, limit: 100});
     }
 
@@ -97,10 +97,8 @@ export class IncomingRecommendationService {
             const url = new URL(mention.source.toString().replace(/\/.well-known\/recommendations\.json$/, ''));
 
             // Check if we are also recommending this URL
-            const existing = await this.#recommendationService.countRecommendations({
-                filter: `url:~'${url}'`
-            });
-            const recommendingBack = existing > 0;
+            const existing = await this.#recommendationService.readRecommendationByUrl(url);
+            const recommendingBack = !!existing;
 
             return {
                 title: mention.sourceTitle,

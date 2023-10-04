@@ -63,7 +63,7 @@ async function fetchRecommendations(apiOptions) {
  */
 function parseOptions(options) {
     let limit = options.limit ?? 5;
-    let order = options.order ?? 'createdAt desc';
+    let order = options.order ?? 'created_at desc';
     let filter = options.filter ?? '';
     let page = options.page ?? 1;
 

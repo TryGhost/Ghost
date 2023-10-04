@@ -22,6 +22,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {data: {meta: recommendationsMeta, recommendations} = {}, isLoading: areRecommendationsLoading, hasNextPage, fetchNextPage} = useBrowseRecommendations({
         searchParams: {
             include: 'count.clicks,count.subscribers',
+            order: 'count.subscribers desc, count.clicks desc, created_at desc',
             limit: '5'
         },
 
@@ -52,13 +53,38 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     // Fetch "Recommending you" (mentions & stats)
-    const {data: {mentions} = {}, pagination: mentionsPagination, isLoading: areMentionsLoading} = useBrowseMentions({
+    const {data: {mentions, meta: mentionsMeta} = {}, isLoading: areMentionsLoading, hasNextPage: hasMentionsNextPage, fetchNextPage: fetchMentionsNextPage} = useBrowseMentions({
         searchParams: {
             limit: '5',
             filter: `source:~$'/.well-known/recommendations.json'+verified:true`,
             order: 'created_at desc'
-        }
+        },
+
+        // We first load 5, then load 100 at a time (= show all, but without using the dangerous 'all' limit)
+        getNextPageParams: (lastPage, otherParams) => {
+            if (!lastPage.meta) {
+                return;
+            }
+            const {limit, page, pages} = lastPage.meta.pagination;
+            if (page >= pages) {
+                return;
+            }
+
+            const newPage = limit < 100 ? 1 : (page + 1);
+
+            return {
+                ...otherParams,
+                page: newPage.toString(),
+                limit: '100'
+            };
+        },
+        keepPreviousData: true
     });
+
+    const showMoreMentions: ShowMoreData = {
+        hasMore: !!hasMentionsNextPage,
+        loadMore: fetchMentionsNextPage
+    };
 
     const {data: {stats: mentionsStats} = {}, isLoading: areSourcesLoading} = useReferrerHistory({});
 
@@ -75,8 +101,8 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'recommending-you',
             title: `Recommending you`,
-            counter: mentionsPagination?.total,
-            contents: <IncomingRecommendationList isLoading={areMentionsLoading || areSourcesLoading} mentions={mentions ?? []} pagination={mentionsPagination} stats={mentionsStats ?? []}/>
+            counter: mentionsMeta?.pagination?.total,
+            contents: <IncomingRecommendationList isLoading={areMentionsLoading || areSourcesLoading} mentions={mentions ?? []} showMore={showMoreMentions} stats={mentionsStats ?? []}/>
         }
     ];
 

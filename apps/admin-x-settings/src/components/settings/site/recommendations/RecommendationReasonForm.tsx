@@ -26,16 +26,22 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
     >
         <div>
             <Heading className='mb-2 block text-2xs font-semibold uppercase tracking-wider' grey={true} level={6}>Preview</Heading>
-            <a className='flex items-center justify-between rounded-sm border border-grey-300 bg-white p-3' href={formState.url} rel="noopener noreferrer" target="_blank">
-                <div className='flex flex-col gap-[2px]'>
-                    <div className="flex items-start gap-2">
-                        <RecommendationIcon {...formState} />
-                        <span className='text-[1.6rem] font-semibold text-grey-900'>{formState.title}</span>
+            <div className="-mx-8 flex items-center justify-center overflow-hidden border border-grey-100 bg-grey-50 px-7 py-4">
+                <div className="w-full rounded bg-white py-3 shadow">
+                    <div className="">
+                        <a className='flex items-center justify-between  bg-white p-3' href={formState.url} rel="noopener noreferrer" target="_blank">
+                            <div className='flex flex-col gap-[2px]'>
+                                <div className="flex items-start gap-2">
+                                    <RecommendationIcon {...formState} />
+                                    <span className='text-[1.6rem] font-semibold text-grey-900'>{formState.title}</span>
+                                </div>
+                                {formState.reason && <span className='pl-[31px] text-[1.35rem] leading-snug text-grey-700'>{formState.reason}</span>}
+                            </div>
+                            {formState.one_click_subscribe && <span className='flex whitespace-nowrap pl-6 text-md font-semibold text-green'>Subscribe</span>}
+                        </a>
                     </div>
-                    {formState.reason && <span className='pl-[31px] text-[1.35rem] leading-snug text-grey-700'>{formState.reason}</span>}
                 </div>
-                {formState.one_click_subscribe && <span className='flex whitespace-nowrap pl-6 text-md font-semibold text-green'>Subscribe</span>}
-            </a>
+            </div>
             {formState.one_click_subscribe && <Hint>This is a Ghost site, so your readers can subscribe with just one click</Hint>}
         </div>
 
@@ -65,8 +71,8 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
         <TextArea
             clearBg={true}
             error={Boolean(errors.reason)}
-            hint={errors.reason || <>Max. <strong>200</strong> characters. You&apos;ve used <strong className={reasonLengthColor}>{reasonLength}</strong></>}
-            rows={3}
+            hint={errors.reason || <>Max: <strong>200</strong> characters. You&#8217;ve used <strong className={reasonLengthColor}>{reasonLength}</strong></>}
+            rows={4}
             title="Short description"
             value={formState.reason ?? ''}
             onChange={(e) => {

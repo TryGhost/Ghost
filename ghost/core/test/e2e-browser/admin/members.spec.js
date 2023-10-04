@@ -305,7 +305,7 @@ test.describe('Admin', () => {
             await page.goto(link);
 
             // click the paid-only post
-            await page.locator('.post-card-image-link[href="/sell/"]').click();
+            await page.locator('.gh-card-link[href="/sell/"]').click();
 
             // check for content CTA and expect it to be zero
             await expect(page.locator('.gh-post-upgrade-cta')).toHaveCount(0);
