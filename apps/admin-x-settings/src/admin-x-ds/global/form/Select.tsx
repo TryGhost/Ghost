@@ -64,6 +64,7 @@ export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
     controlClasses?: SelectControlClasses;
     unstyled?: boolean;
     disabled?: boolean;
+    testId?: string;
 }
 
 const DropdownIndicator: React.FC<DropdownIndicatorProps<SelectOption, false> & {clearBg: boolean}> = ({clearBg, ...props}) => (
@@ -105,6 +106,7 @@ const Select: React.FC<SelectProps> = ({
     controlClasses,
     unstyled,
     disabled = false,
+    testId,
     ...props
 }) => {
     const id = useId();
@@ -187,7 +189,7 @@ const Select: React.FC<SelectProps> = ({
     const select = (
         <>
             {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={selectedOption || !prompt ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
-            <div className={containerClasses}>
+            <div className={containerClasses} data-testid={testId}>
                 {async ?
                     <AsyncSelect<SelectOption, false> {...customProps} {...props} /> :
                     <ReactSelect<SelectOption, false> {...customProps} {...props} />
