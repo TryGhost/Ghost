@@ -17,7 +17,7 @@ const Tooltip: React.FC<TooltipProps> = ({content, size = 'sm', children, contai
     );
 
     tooltipClassName = clsx(
-        'absolute -mt-1 -translate-y-full whitespace-nowrap rounded-sm bg-black px-2 py-0.5 text-white opacity-0 transition-all group-hover/tooltip:opacity-100 dark:bg-grey-950',
+        'absolute -mt-1 -translate-y-full whitespace-nowrap rounded-sm bg-black px-2 py-0.5 leading-normal text-white opacity-0 transition-all group-hover/tooltip:opacity-100 dark:bg-grey-950',
         size === 'sm' && 'text-xs',
         size === 'md' && 'text-sm',
         origin === 'center' && 'left-1/2 -translate-x-1/2',
