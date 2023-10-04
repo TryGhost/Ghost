@@ -442,7 +442,6 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         initialState: newsletter,
         onSave: async () => {
             const {newsletters, meta} = await editNewsletter(formState);
-
             if (meta?.sent_email_verification) {
                 NiceModal.show(ConfirmationModal, {
                     title: 'Confirm newsletter email address',
@@ -458,8 +457,6 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
                         modal.remove();
                     }
                 });
-            } else {
-                modal.remove();
             }
         },
         onSaveError: handleError,
@@ -491,10 +488,11 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
 
     return <PreviewModalContent
         afterClose={() => updateRoute('newsletters')}
+        buttonsDisabled={saveState === 'saving'}
         cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
-        okLabel='Save'
+        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save')}
         preview={preview}
         previewBgColor={'grey'}
         previewToolbar={false}
@@ -503,9 +501,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         testId='newsletter-modal'
         title='Newsletter'
         onOk={async () => {
-            if (await handleSave()) {
-                updateRoute('newsletters');
-            } else {
+            if (!(await handleSave())) {
                 showToast({
                     type: 'pageError',
                     message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
