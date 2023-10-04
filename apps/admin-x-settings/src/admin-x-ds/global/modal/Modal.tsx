@@ -43,6 +43,7 @@ export interface ModalProps {
     dirty?: boolean;
     animate?: boolean;
     formSheet?: boolean;
+    enableCMDS?: boolean;
 }
 
 export const topLevelBackdropClasses = 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]';
@@ -74,7 +75,8 @@ const Modal: React.FC<ModalProps> = ({
     scrolling = true,
     dirty = false,
     animate = true,
-    formSheet = false
+    formSheet = false,
+    enableCMDS = true
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -115,6 +117,21 @@ const Modal: React.FC<ModalProps> = ({
 
         return () => clearTimeout(timeout);
     }, []);
+
+    useEffect(() => {
+        const handleCMDS = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault();
+                onOk!();
+            }
+        };
+        if (enableCMDS) {
+            window.addEventListener('keydown', handleCMDS);
+            return () => {
+                window.removeEventListener('keydown', handleCMDS);
+            };
+        }
+    });
 
     let buttons: ButtonProps[] = [];
 
