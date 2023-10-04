@@ -22,14 +22,14 @@ test.describe('Code injection settings', async () => {
 
         await section.getByRole('button', {name: 'Edit'}).click();
 
-        for (const character of PADDING + '<testhead>'.split('')) {
+        for (const character of (PADDING + '<testhead>').split('')) {
             await page.keyboard.press(character);
         }
 
         await section.getByRole('tab', {name: 'Site footer'}).click();
         await section.getByTestId('footer-code').click();
 
-        for (const character of PADDING + '<testfoot>'.split('')) {
+        for (const character of (PADDING + '<testfoot>').split('')) {
             await page.keyboard.press(character);
         }
 
