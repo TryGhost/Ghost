@@ -12,6 +12,7 @@ export default class SessionService extends ESASessionService {
     @service configManager;
     @service('store') dataStore;
     @service feature;
+    @service koenig;
     @service notifications;
     @service router;
     @service frontend;
@@ -68,6 +69,9 @@ export default class SessionService extends ESASessionService {
 
         this.loadServerNotifications();
         this.whatsNew.fetchLatest.perform();
+
+        // pre-emptively load editor code in the background to avoid loading state when opening editor
+        this.koenig.fetch();
     }
 
     async handleAuthentication() {

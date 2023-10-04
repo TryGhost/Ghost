@@ -2,7 +2,6 @@ import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import fetch from 'fetch';
-import fetchKoenigLexical from 'ghost-admin/utils/fetch-koenig-lexical';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -61,48 +60,17 @@ class ErrorHandler extends React.Component {
     }
 }
 
-const loadKoenig = function () {
-    let status = 'pending';
-    let response;
-
-    const suspender = fetchKoenigLexical().then(
-        (res) => {
-            status = 'success';
-            response = res;
-        },
-        (err) => {
-            status = 'error';
-            response = err;
-        }
-    );
-
-    const read = () => {
-        switch (status) {
-        case 'pending':
-            throw suspender;
-        case 'error':
-            throw response;
-        default:
-            return response;
-        }
-    };
-
-    return {read};
-};
-
-const editorResource = loadKoenig();
-
-const KoenigComposer = (props) => {
+const KoenigComposer = ({editorResource, ...props}) => {
     const {KoenigComposer: _KoenigComposer} = editorResource.read();
     return <_KoenigComposer {...props} />;
 };
 
-const KoenigEditor = (props) => {
+const KoenigEditor = ({editorResource, ...props}) => {
     const {KoenigEditor: _KoenigEditor} = editorResource.read();
     return <_KoenigEditor {...props} />;
 };
 
-const WordCountPlugin = (props) => {
+const WordCountPlugin = ({editorResource, ...props}) => {
     const {WordCountPlugin: _WordCountPlugin} = editorResource.read();
     return <_WordCountPlugin {...props} />;
 };
@@ -111,6 +79,7 @@ export default class KoenigLexicalEditor extends Component {
     @service ajax;
     @service feature;
     @service ghostPaths;
+    @service koenig;
     @service session;
     @service store;
     @service settings;
@@ -120,6 +89,8 @@ export default class KoenigLexicalEditor extends Component {
 
     offers = null;
     contentKey = null;
+
+    editorResource = this.koenig.resource;
 
     get pinturaJsUrl() {
         if (!this.settings.pintura) {
@@ -539,6 +510,7 @@ export default class KoenigLexicalEditor extends Component {
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigComposer
+                            editorResource={this.editorResource}
                             cardConfig={cardConfig}
                             enableMultiplayer={enableMultiplayer}
                             fileUploader={{useFileUpload, fileTypes}}
@@ -550,13 +522,14 @@ export default class KoenigLexicalEditor extends Component {
                             darkMode={this.feature.nightShift}
                         >
                             <KoenigEditor
+                                editorResource={this.editorResource}
                                 cursorDidExitAtTop={this.args.cursorDidExitAtTop}
                                 placeholderText={this.args.placeholder}
                                 darkMode={this.feature.nightShift}
                                 onChange={this.args.onChange}
                                 registerAPI={this.args.registerAPI}
                             />
-                            <WordCountPlugin onChange={this.args.updateWordCount} />
+                            <WordCountPlugin editorResource={this.editorResource} onChange={this.args.updateWordCount} />
                         </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>

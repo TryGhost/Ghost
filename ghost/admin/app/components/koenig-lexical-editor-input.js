@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
-import fetchKoenigLexical from 'ghost-admin/utils/fetch-koenig-lexical';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
@@ -26,48 +25,17 @@ class ErrorHandler extends React.Component {
     }
 }
 
-const loadKoenig = function () {
-    let status = 'pending';
-    let response;
-
-    const suspender = fetchKoenigLexical().then(
-        (res) => {
-            status = 'success';
-            response = res;
-        },
-        (err) => {
-            status = 'error';
-            response = err;
-        }
-    );
-
-    const read = () => {
-        switch (status) {
-        case 'pending':
-            throw suspender;
-        case 'error':
-            throw response;
-        default:
-            return response;
-        }
-    };
-
-    return {read};
-};
-
-const editorResource = loadKoenig();
-
-const KoenigComposer = (props) => {
+const KoenigComposer = ({editorResource, ...props}) => {
     const {KoenigComposer: _KoenigComposer, MINIMAL_NODES: _MINIMAL_NODES} = editorResource.read();
     return <_KoenigComposer nodes={_MINIMAL_NODES} {...props} />;
 };
 
-const KoenigComposableEditor = (props) => {
+const KoenigComposableEditor = ({editorResource, ...props}) => {
     const {KoenigComposableEditor: _KoenigComposableEditor, MINIMAL_TRANSFORMERS: _MINIMAL_TRANSFORMERS} = editorResource.read();
     return <_KoenigComposableEditor markdownTransformers={_MINIMAL_TRANSFORMERS} {...props} />;
 };
 
-const HtmlOutputPlugin = (props) => {
+const HtmlOutputPlugin = ({editorResource, ...props}) => {
     const {HtmlOutputPlugin: _HtmlOutputPlugin} = editorResource.read();
     return <_HtmlOutputPlugin {...props} />;
 };
@@ -75,9 +43,12 @@ const HtmlOutputPlugin = (props) => {
 export default class KoenigLexicalEditorInput extends Component {
     @service ajax;
     @service feature;
+    @service koenig;
     @service session;
 
     @inject config;
+
+    editorResource = this.koenig.resource;
 
     @action
     onError(error) {
@@ -101,10 +72,12 @@ export default class KoenigLexicalEditorInput extends Component {
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigComposer
+                            editorResource={this.editorResource}
                             initialEditorState={this.args.lexical}
                             onError={this.onError}
                         >
                             <KoenigComposableEditor
+                                editorResource={this.editorResource}
                                 darkMode={this.feature.nightShift}
                                 onChange={props.onChange}
                                 onBlur={props.onBlur}
@@ -114,7 +87,7 @@ export default class KoenigLexicalEditorInput extends Component {
                                 placeholderText={props.placeholderText}
                                 placeholderClassName="koenig-lexical-editor-input-placeholder"
                             >
-                                <HtmlOutputPlugin html={props.html} setHtml={props.onChangeHtml} />
+                                <HtmlOutputPlugin editorResource={this.editorResource} html={props.html} setHtml={props.onChangeHtml} />
                             </KoenigComposableEditor>
                         </KoenigComposer>
                     </Suspense>
