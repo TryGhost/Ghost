@@ -1,4 +1,5 @@
 const debug = require('@tryghost/debug')('shared:express');
+const metrics = require('@tryghost/metrics');
 const express = require('express');
 const {createLazyRouter} = require('express-lazy-router');
 const sentry = require('./sentry');
@@ -16,6 +17,24 @@ module.exports = (name) => {
 
     // Sentry must be our first error handler. Mounting it here means all custom error handlers will come after
     app.use(sentry.errorHandler);
+
+    // Log requests which are still in-flight 15 seconds after requesting Ghost to shutdown
+    app.use((req, res, next) => {
+        res.on('finish', () => {
+            const shutdownStarted = app.get('shutdown-started');
+            if (shutdownStarted) {
+                const duration = Date.now() - shutdownStarted;
+                if (duration > 15000) {
+                    metrics.metric('long-request', {
+                        value: duration,
+                        url: req.originalUrl
+                    });
+                }
+            }
+        });
+
+        next();
+    });
 
     app.lazyUse = function lazyUse(mountPath, requireFn) {
         app.use(mountPath, lazyLoad(() => {

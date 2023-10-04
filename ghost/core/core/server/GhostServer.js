@@ -145,6 +145,7 @@ class GhostServer {
 
         try {
             this.isShuttingDown = true;
+            this.rootApp.set('shutdown-started', Date.now());
             logging.warn(tpl(messages.ghostIsShuttingDown));
             await this.stop();
             setTimeout(() => {
