@@ -14,7 +14,7 @@ function preventDefault(event) {
 
 function useDragDropReorder(editor, isEditable) {
     const koenig = React.useContext(KoenigComposerContext);
-    const {setIsDragging} = useKoenigSelectedCardContext();
+    const {setIsDragging, isEditingCard} = useKoenigSelectedCardContext();
 
     const cardContainer = React.useRef(null);
     const skipOnDropEnd = React.useRef(false);
@@ -36,8 +36,6 @@ function useDragDropReorder(editor, isEditable) {
             const cardNode = $getNearestNodeFromDOMNode(draggableElement);
 
             if (cardNode) {
-                // TODO: payload should probably contain everything here as well as the
-                // card payload so that draggableInfo has a consistent shape
                 draggableInfo = {
                     type: 'card',
                     nodeKey: cardNode.getKey(),
@@ -230,6 +228,15 @@ function useDragDropReorder(editor, isEditable) {
             prevRootElement?.removeEventListener('dragstart', preventDefault);
         });
     }, [editor]);
+
+    // Disable drag-drop-reorder when editing a card
+    React.useEffect(() => {
+        if (isEditingCard) {
+            cardContainer.current?.disableDrag();
+        } else {
+            cardContainer.current?.enableDrag();
+        }
+    }, [isEditingCard]);
 }
 
 export default function DragDropReorderPlugin() {

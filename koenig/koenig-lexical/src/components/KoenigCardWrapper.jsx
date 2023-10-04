@@ -13,6 +13,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
     const [captionHasFocus, setCaptionHasFocus] = React.useState(null);
     const [cardWidth, setCardWidth] = React.useState(width || 'regular');
     const containerRef = React.useRef(null);
+    const skipClick = React.useRef(false);
 
     const {selectedCardKey, isEditingCard, isDragging} = useKoenigSelectedCardContext();
 
@@ -37,7 +38,7 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
             editor.registerCommand(
                 CLICK_COMMAND,
                 (event) => {
-                    if (containerRef.current.contains(event.target)) {
+                    if (!skipClick.current && containerRef.current.contains(event.target)) {
                         const cardNode = $getNodeByKey(nodeKey);
                         const clickedDifferentEditor = !cardNode;
 
@@ -55,6 +56,12 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
                         return true;
                     }
 
+                    if (skipClick.current === true) {
+                        skipClick.current = false;
+                        return true;
+                    }
+
+                    skipClick.current = false;
                     return false;
                 },
                 COMMAND_PRIORITY_LOW
@@ -87,6 +94,37 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
             editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: nodeKey});
         }
     };
+
+    React.useEffect(() => {
+        const container = containerRef.current;
+
+        function handleMousedown(event) {
+            if (!isSelected && !isEditing) {
+                editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: nodeKey});
+
+                // skip CLICK_COMMAND behaviour otherwise we'll immediately enter edit mode
+                skipClick.current = true;
+
+                // in most situations we want to prevent default behaviour which
+                // can cause an underlying cursor position change but inputs and
+                // textareas are different and we want the focus to move to them
+                // immediately when clicked
+                const targetTagName = event.target.tagName;
+                const allowedTagNames = ['INPUT', 'TEXTAREA'];
+                const allowClickthrough = !!event.target.closest('[data-kg-allow-clickthrough]');
+
+                if (!allowedTagNames.includes(targetTagName) && !allowClickthrough) {
+                    event.preventDefault();
+                }
+            }
+        }
+
+        container?.addEventListener('mousedown', handleMousedown);
+
+        return () => {
+            container?.removeEventListener('mousedown', handleMousedown);
+        };
+    }, [editor, isSelected, isEditing, nodeKey, containerRef]);
 
     return (
         <CardContext.Provider value={{

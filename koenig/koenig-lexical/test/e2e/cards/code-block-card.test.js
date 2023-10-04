@@ -44,7 +44,7 @@ test.describe('Code Block card', async () => {
                         <div><span>javascript</span></div>
                     </div>
                     <figcaption>
-                        <div>
+                        <div data-kg-allow-clickthrough="true">
                             <div>
                                 <div data-kg="editor">
                                     <div
@@ -188,7 +188,7 @@ test.describe('Code Block card', async () => {
                         <div><span>javascript</span></div>
                     </div>
                     <figcaption>
-                        <div>
+                        <div data-kg-allow-clickthrough="true">
                             <div>
                                 <div data-kg="editor">
                                     <div
@@ -236,7 +236,7 @@ test.describe('Code Block card', async () => {
                         <div><span>javascript</span></div>
                     </div>
                     <figcaption>
-                        <div>
+                        <div data-kg-allow-clickthrough="true">
                             <div>
                                 <div data-kg="editor">
                                     <div

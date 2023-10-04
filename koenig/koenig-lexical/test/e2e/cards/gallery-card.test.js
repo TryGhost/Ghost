@@ -131,7 +131,7 @@ test.describe('Gallery card', async () => {
                             </form>
                         </div>
                         <figcaption>
-                            <div>
+                            <div data-kg-allow-clickthrough="true">
                                 <div>
                                     <div data-kg="editor">
                                         <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true">
@@ -192,7 +192,7 @@ test.describe('Gallery card', async () => {
                             </form>
                         </div>
                         <figcaption>
-                            <div>
+                            <div data-kg-allow-clickthrough="true">
                                 <div>
                                     <div data-kg="editor">
                                         <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true">
@@ -375,7 +375,7 @@ test.describe('Gallery card', async () => {
                             </form>
                         </div>
                         <figcaption>
-                          <div>
+                          <div data-kg-allow-clickthrough="true">
                             <div>
                               <div data-kg="editor">
                                 <div

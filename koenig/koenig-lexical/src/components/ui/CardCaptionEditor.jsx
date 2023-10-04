@@ -8,6 +8,7 @@ function CaptionInput({captionEditor, captionEditorInitialState, placeholder, da
         <div
             className={`m-0 w-full px-9 text-center`}
             data-testid={dataTestId}
+            data-kg-allow-clickthrough
         >
             <KoenigCaptionEditor
                 captionEditor={captionEditor}

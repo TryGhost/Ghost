@@ -64,7 +64,7 @@ test.describe('Image card', async () => {
                     <figure data-kg-card-width="wide">
                         <div><img alt="" src="/content/images/2022/11/koenig-lexical.jpg" /></div>
                         <figcaption>
-                            <div>
+                            <div data-kg-allow-clickthrough="true">
                                 <div>
                                     <div data-kg="editor">
                                         <div
@@ -242,7 +242,7 @@ test.describe('Image card', async () => {
                             <img alt="" src="blob:...">
                         </div>
                         <figcaption>
-                            <div data-testid="image-caption-editor">
+                            <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
                                 <div>
                                     <div data-kg="editor">
                                         <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true">
@@ -413,7 +413,7 @@ test.describe('Image card', async () => {
                             <img alt="" src="blob:...">
                         </div>
                         <figcaption>
-                            <div data-testid="image-caption-editor">
+                            <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
                                 <div>
                                     <div data-kg="editor">
                                         <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true" role="textbox">
@@ -685,7 +685,7 @@ test.describe('Image card', async () => {
                                 src="http://127.0.0.1:5173/Koenig-editor-1.png" />
                         </div>
                         <figcaption>
-                            <div data-testid="image-caption-editor">
+                            <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
                                 <div>
                                     <div data-kg="editor">
                                         <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true">
@@ -737,7 +737,7 @@ test.describe('Image card', async () => {
                                 src="https://media.tenor.com/ocbMLlwniWQAAAAC/steve-harvey-oh.gif" />
                         </div>
                         <figcaption>
-                            <div data-testid="image-caption-editor">
+                            <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
                                 <div>
                                     <div data-kg="editor">
                                         <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true">
@@ -783,7 +783,7 @@ test.describe('Image card', async () => {
                                 src="https://media.tenor.com/Sm9aylrzSyMAAAAC/cats-animals.gif" />
                         </div>
                         <figcaption>
-                            <div data-testid="image-caption-editor">
+                            <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
                                 <div>
                                     <div data-kg="editor">
                                         <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true">

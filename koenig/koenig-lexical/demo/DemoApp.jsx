@@ -113,6 +113,8 @@ function DemoComposer({editorType, isMultiplayer, setWordCount}) {
     const {snippets, createSnippet, deleteSnippet} = useSnippets();
     const {collections, fetchCollectionPosts} = useCollections();
 
+    const skipFocusEditor = React.useRef(false);
+
     const darkMode = searchParams.get('darkMode') === 'true';
     const contentParam = searchParams.get('content');
 
@@ -149,11 +151,24 @@ function DemoComposer({editorType, isMultiplayer, setWordCount}) {
         titleRef.current?.focus();
     }
 
+    // mousedown can select a node which can deselect another node meaning the
+    // mouseup/click event can occur outside of the initially clicked node, in
+    // which case we don't want to then "re-focus" the editor and cause unexpected
+    // selection changes
+    function maybeSkipFocusEditor(event) {
+        const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
+        const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
+
+        if (clickedOnDecorator || clickedOnSlashMenu) {
+            skipFocusEditor.current = true;
+        }
+    }
+
     function focusEditor(event) {
         const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
         const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
 
-        if (editorAPI && !clickedOnDecorator && !clickedOnSlashMenu) {
+        if (!skipFocusEditor.current && editorAPI && !clickedOnDecorator && !clickedOnSlashMenu) {
             let editor = editorAPI.editorInstance;
 
             // if a mousedown and subsequent mouseup occurs below the editor
@@ -186,6 +201,8 @@ function DemoComposer({editorType, isMultiplayer, setWordCount}) {
                 containerRef.current.scrollTop = containerRef.current.scrollHeight;
             }
         }
+
+        skipFocusEditor.current = false;
     }
 
     function toggleDarkMode() {
@@ -245,7 +262,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount}) {
                         : null
                 }
                 <DarkModeToggle darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-                <div ref={containerRef} className="h-full overflow-auto overflow-x-hidden" onClick={focusEditor}>
+                <div ref={containerRef} className="h-full overflow-auto overflow-x-hidden" onClick={focusEditor} onMouseDown={maybeSkipFocusEditor}>
                     <div className="mx-auto max-w-[740px] px-6 py-[15vmin] lg:px-0">
                         {showTitle
                             ? <TitleTextBox ref={titleRef} editorAPI={editorAPI} setTitle={setTitle} title={title} />

@@ -155,7 +155,7 @@ test.describe('Drag Drop Reorder Plugin', async function () {
         const paragraphBBox = await page.locator('p:not(figure p)').boundingBox();
         const toBBox = {
             x: paragraphBBox.x,
-            y: paragraphBBox.y + paragraphBBox.height + 45,
+            y: paragraphBBox.y + paragraphBBox.height + 45 + 40, // 40 = height of the caption that appears on mousedown
             width: paragraphBBox.width,
             height: paragraphBBox.height
         };
@@ -209,7 +209,7 @@ test.describe('Drag Drop Reorder Plugin', async function () {
         const paragraphBBox = await page.locator('p:not(figure p)').boundingBox();
         const toBBox = {
             x: paragraphBBox.x,
-            y: paragraphBBox.y + paragraphBBox.height + 35,
+            y: paragraphBBox.y + paragraphBBox.height + 35 + 40, // 40 = height of the caption that appears on mousedown
             width: paragraphBBox.width,
             height: paragraphBBox.height
         };
@@ -218,7 +218,7 @@ test.describe('Drag Drop Reorder Plugin', async function () {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="image"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image"></div>
             </div>
             <div data-lexical-decorator="true" contenteditable="false">
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule"></div>

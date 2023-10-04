@@ -62,7 +62,7 @@ test.describe('Embed card', async () => {
                             <div></div>
                         </div>
                         <figcaption>
-                            <div>
+                            <div data-kg-allow-clickthrough="true">
                                 <div>
                                     <div data-kg="editor">
                                         <div
@@ -315,7 +315,7 @@ test.describe('Embed card', async () => {
                             <div></div>
                         </div>
                         <figcaption>
-                            <div>
+                            <div data-kg-allow-clickthrough="true">
                                 <div>
                                     <div data-kg="editor">
                                         <div
