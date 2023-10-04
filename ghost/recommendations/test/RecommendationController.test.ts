@@ -489,7 +489,7 @@ describe('RecommendationController', function () {
                         user: {}
                     }),
                     {
-                        message: 'order.0.field must be one of count.clicks, count.subscribers, created_at'
+                        message: 'order.0.field must be one of title, reason, excerpt, one_click_subscribe, created_at, updated_at, count.clicks, count.subscribers'
                     }
                 );
             });
