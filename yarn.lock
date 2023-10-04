@@ -7932,6 +7932,11 @@
   dependencies:
     semver "^7.3.5"
 
+"@tryghost/koenig-lexical@0.4.20":
+  version "0.4.20"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-0.4.20.tgz#3f4b461ddb9016f1f8b2a7de68956e2ec2953151"
+  integrity sha512-knzpjtrBeliaXPhD8IwMPPgXniOx9Sb9tdCiwCOXlf/lZ6z/B2ug2D9bvdGpx1aWBqJAQsbeAFXaov6gtergYA==
+
 "@tryghost/limit-service@1.2.10", "@tryghost/limit-service@^1.2.10":
   version "1.2.10"
   resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.10.tgz#9e1c8b21eddc3de8c5b8a9b029ba4915ec1ac625"
@@ -21102,10 +21107,10 @@ join-component@^1.1.0:
   resolved "https://registry.yarnpkg.com/join-component/-/join-component-1.1.0.tgz#b8417b750661a392bee2c2537c68b2a9d4977cd5"
   integrity sha512-bF7vcQxbODoGK1imE2P9GS9aw4zD0Sd+Hni68IMZLj7zRnquH7dXUmMw9hDI5S/Jzt7q+IyTXN0rSg2GI0IKhQ==
 
-jose@4.15.1, jose@^4.10.4:
-  version "4.15.1"
-  resolved "https://registry.yarnpkg.com/jose/-/jose-4.15.1.tgz#7ccfdf15a4a251e12af32a0924991950d22de41d"
-  integrity sha512-CinpaEMmwb/59YG0N6SC3DY1imdTU5iNl08HPWR7NdyxACPeFuQbqjaocEjCDGq04KbnxSqQu702vL3ZTvKe5w==
+jose@4.15.2, jose@^4.10.4:
+  version "4.15.2"
+  resolved "https://registry.yarnpkg.com/jose/-/jose-4.15.2.tgz#61f97383f0b433d45da26d35094155a30a672d92"
+  integrity sha512-IY73F228OXRl9ar3jJagh7Vnuhj/GzBunPiZP13K0lOl7Am9SoWW3kEzq3MCllJMTtZqHTiDXQvoRd4U95aU6A==
 
 jquery-deferred@^0.3.0:
   version "0.3.1"
@@ -31355,10 +31360,10 @@ vite-plugin-svgr@3.3.0:
     "@svgr/core" "^8.1.0"
     "@svgr/plugin-jsx" "^8.1.0"
 
-vite@4.4.9, "vite@^3.0.0 || ^4.0.0":
-  version "4.4.9"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-4.4.9.tgz#1402423f1a2f8d66fd8d15e351127c7236d29d3d"
-  integrity sha512-2mbUn2LlUmNASWwSCNSJ/EG2HuSRTnVNaydp6vMCm5VIqJsjMfbIWtbH2kDuwUVW5mMUKKZvGPX/rqeqVvv1XA==
+vite@4.4.10, "vite@^3.0.0 || ^4.0.0":
+  version "4.4.10"
+  resolved "https://registry.yarnpkg.com/vite/-/vite-4.4.10.tgz#3794639cc433f7cb33ad286930bf0378c86261c8"
+  integrity sha512-TzIjiqx9BEXF8yzYdF2NTf1kFFbjMjUSV0LFZ3HyHoI3SGSPLnnFUKiIQtL3gl2AjHvMrprOvQ3amzaHgQlAxw==
   dependencies:
     esbuild "^0.18.10"
     postcss "^8.4.27"

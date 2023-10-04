@@ -74,17 +74,17 @@ export class IncomingRecommendationService {
         }
     }
 
-    #getMentionFilter({verified = true} = {}) {
+    #getMentionFilter() {
         const base = `source:~$'/.well-known/recommendations.json'`;
-        if (verified) {
-            return `${base}+verified:true`;
-        }
+        // if (verified) {
+        //     return `${base}+verified:true`;
+        // }
         return base;
     }
 
     async #updateIncomingRecommendations() {
         // Note: we also recheck recommendations that were not verified (verification could have failed)
-        const filter = this.#getMentionFilter({verified: false});
+        const filter = this.#getMentionFilter();
         await this.#mentionsApi.refreshMentions({filter, limit: 100});
     }
 

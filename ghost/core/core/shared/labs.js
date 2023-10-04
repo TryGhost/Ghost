@@ -19,7 +19,8 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'signupForm'
+    'signupForm',
+    'lexicalEditor'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -27,8 +28,7 @@ const GA_FEATURES = [
 const BETA_FEATURES = [
     'i18n',
     'activitypub',
-    'webmentions',
-    'lexicalEditor'
+    'webmentions'
 ];
 
 const ALPHA_FEATURES = [

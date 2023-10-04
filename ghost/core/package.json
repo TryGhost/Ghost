@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.66.1",
+  "version": "5.67.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -56,7 +56,7 @@
   },
   "engines": {
     "node": "^16.14.0 || ^18.12.1",
-    "cli": "^1.17.0"
+    "cli": "^1.25.0"
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",

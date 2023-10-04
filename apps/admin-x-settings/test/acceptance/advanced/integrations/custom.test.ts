@@ -146,7 +146,7 @@ test.describe('Custom integrations', async () => {
 
         await webhookModal.getByLabel('Name').fill('My webhook');
         await webhookModal.getByLabel('Target URL').fill('https://example.com');
-        await chooseOptionInSelect(webhookModal.getByLabel('Event'), 'Post created');
+        await chooseOptionInSelect(webhookModal.getByTestId('event-select'), 'Post created');
 
         await webhookModal.getByRole('button', {name: 'Add'}).click();
 
