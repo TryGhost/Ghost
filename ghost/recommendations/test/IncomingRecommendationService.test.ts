@@ -76,6 +76,7 @@ describe('IncomingRecommendationService', function () {
     describe('sendRecommendationEmail', function () {
         it('should send email', async function () {
             await service.sendRecommendationEmail({
+                id: 'test',
                 source: new URL('https://example.com'),
                 sourceTitle: 'Example',
                 sourceSiteTitle: 'Example',
@@ -90,6 +91,7 @@ describe('IncomingRecommendationService', function () {
         it('ignores when mention not convertable to incoming recommendation', async function () {
             readRecommendationByUrl.rejects(new Error('test'));
             await service.sendRecommendationEmail({
+                id: 'test',
                 source: new URL('https://example.com'),
                 sourceTitle: 'Example',
                 sourceSiteTitle: 'Example',
