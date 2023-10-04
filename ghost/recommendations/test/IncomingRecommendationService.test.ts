@@ -103,4 +103,73 @@ describe('IncomingRecommendationService', function () {
             assert(!send.calledOnce);
         });
     });
+
+    describe('listIncomingRecommendations', function () {
+        beforeEach(function () {
+            refreshMentions = sinon.stub().resolves();
+            send = sinon.stub().resolves();
+            readRecommendationByUrl = sinon.stub().resolves(null);
+            service = new IncomingRecommendationService({
+                recommendationService: {
+                    readRecommendationByUrl
+                } as any as RecommendationService,
+                mentionsApi: {
+                    refreshMentions,
+                    listMentions: () => Promise.resolve({data: [
+                        {
+                            id: 'Incoming recommendation',
+                            source: new URL('https://incoming-rec.com/.well-known/recommendations.json'),
+                            sourceTitle: 'Incoming recommendation title',
+                            sourceSiteTitle: null,
+                            sourceAuthor: null,
+                            sourceExcerpt: 'Incoming recommendation excerpt',
+                            sourceFavicon: new URL('https://incoming-rec.com/favicon.ico'),
+                            sourceFeaturedImage: new URL('https://incoming-rec.com/image.png')
+                        }
+                    ], meta: {
+                        pagination: {
+                            page: 1,
+                            limit: 5,
+                            pages: 1,
+                            total: 1,
+                            next: null,
+                            prev: null
+                        }
+                    }})
+                },
+                emailService: {
+                    send
+                },
+                emailRenderer: {
+                    renderSubject: () => Promise.resolve(''),
+                    renderHTML: () => Promise.resolve(''),
+                    renderText: () => Promise.resolve('')
+                } as any as IncomingRecommendationEmailRenderer,
+                getEmailRecipients: () => Promise.resolve([
+                    {
+                        email: 'example@example.com'
+                    }
+                ])
+            });
+        });
+
+        it('returns a list of incoming recommendations and pagination', async function () {
+            const list = await service.listIncomingRecommendations({});
+
+            assert.equal(list.incomingRecommendations.length, 1);
+            assert.equal(list.incomingRecommendations[0].id, 'Incoming recommendation');
+            assert.equal(list.incomingRecommendations[0].title, 'Incoming recommendation title');
+            assert.equal(list.incomingRecommendations[0].excerpt, 'Incoming recommendation excerpt');
+            assert.equal(list.incomingRecommendations[0].url.toString(), 'https://incoming-rec.com/');
+            assert.equal(list.incomingRecommendations[0].favicon?.toString(), 'https://incoming-rec.com/favicon.ico');
+            assert.equal(list.incomingRecommendations[0].featuredImage?.toString(), 'https://incoming-rec.com/image.png');
+
+            assert.equal(list.meta?.pagination.page, 1);
+            assert.equal(list.meta?.pagination.limit, 5);
+            assert.equal(list.meta?.pagination.pages, 1);
+            assert.equal(list.meta?.pagination.total, 1);
+            assert.equal(list.meta?.pagination.prev, null);
+            assert.equal(list.meta?.pagination.next, null);
+        });
+    });
 });

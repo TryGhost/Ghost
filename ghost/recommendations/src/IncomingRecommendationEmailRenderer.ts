@@ -1,5 +1,5 @@
 import {EmailRecipient} from './IncomingRecommendationService';
-import {IncomingRecommendation} from './IncomingRecommendation';
+import {IncomingRecommendation} from './IncomingRecommendationService';
 
 type StaffService = {
     api: {

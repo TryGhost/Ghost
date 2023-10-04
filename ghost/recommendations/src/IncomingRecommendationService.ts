@@ -1,7 +1,16 @@
-import {IncomingRecommendation} from './IncomingRecommendation';
 import {IncomingRecommendationEmailRenderer} from './IncomingRecommendationEmailRenderer';
 import {RecommendationService} from './RecommendationService';
 import logging from '@tryghost/logging';
+
+export type IncomingRecommendation = {
+    id: string;
+    title: string;
+    url: URL;
+    excerpt: string|null;
+    favicon: URL|null;
+    featuredImage: URL|null;
+    recommendingBack: boolean;
+}
 
 export type Report = {
     startDate: Date,
@@ -21,7 +30,14 @@ type Mention = {
 }
 
 type MentionMeta = {
-    pagination: object,
+    pagination: {
+        page: number;
+        limit: number;
+        pages: number;
+        total: number;
+        next: null | number;
+        prev: null | number;
+    }
 }
 
 type MentionsAPI = {
@@ -75,11 +91,7 @@ export class IncomingRecommendationService {
     }
 
     #getMentionFilter() {
-        const base = `source:~$'/.well-known/recommendations.json'`;
-        // if (verified) {
-        //     return `${base}+verified:true`;
-        // }
-        return base;
+        return `source:~$'/.well-known/recommendations.json'`;
     }
 
     async #updateIncomingRecommendations() {

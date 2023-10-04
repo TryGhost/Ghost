@@ -1,5 +1,5 @@
 import {IncomingRecommendationService} from './IncomingRecommendationService';
-import {IncomingRecommendation} from './IncomingRecommendation';
+import {IncomingRecommendation} from './IncomingRecommendationService';
 import {UnsafeData} from './UnsafeData';
 
 type Frame = {
@@ -23,6 +23,7 @@ export class IncomingRecommendationController {
 
         const page = options.optionalKey('page')?.integer ?? 1;
         const limit = options.optionalKey('limit')?.integer ?? 5;
+
         const {incomingRecommendations, meta} = await this.service.listIncomingRecommendations({page, limit});
 
         return this.#serialize(
