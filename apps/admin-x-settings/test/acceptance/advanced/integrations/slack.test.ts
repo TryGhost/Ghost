@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, updatedSettingsResponse} from '../../../utils/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../../utils/acceptance';
 
 test.describe('Slack integration', async () => {
     test('Supports updating Slack settings', async ({page}) => {
@@ -31,6 +31,33 @@ test.describe('Slack integration', async () => {
                 {key: 'slack_username', value: 'My site'}
             ]
         });
+    });
+
+    test('Warns when leaving without saving', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: responseFixtures.settings}
+        }});
+
+        await page.goto('/');
+        const section = page.getByTestId('integrations');
+
+        const slackElement = section.getByText('Slack').last();
+        await slackElement.hover();
+        await section.getByRole('button', {name: 'Configure'}).click();
+
+        const slackModal = page.getByTestId('slack-modal');
+
+        await slackModal.getByLabel('Webhook URL').fill('https://hooks.slack.com/services/123456789/123456789/123456789');
+
+        await slackModal.getByRole('button', {name: 'Cancel'}).click();
+
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
+
+        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Leave'}).click();
+
+        await expect(slackModal).toBeHidden();
+        expect(lastApiRequests.editSettings).toBeUndefined();
     });
 
     test('Supports testing Slack messages', async ({page}) => {

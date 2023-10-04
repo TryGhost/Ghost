@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
@@ -86,8 +86,6 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
         twitter?: string;
     }>({});
 
-    const twitterInputRef = useRef<HTMLInputElement>(null);
-
     const [facebookHandle, twitterHandle] = getSettingValues<string | null>(localSettings, ['facebook', 'twitter']);
 
     const [facebookUrl, setFacebookUrl] = useState(facebookHandle ? facebookHandleToUrl(facebookHandle) : '');
@@ -125,19 +123,23 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     try {
                         const newUrl = validateFacebookUrl(e.target.value);
                         updateSetting('facebook', facebookUrlToHandle(newUrl));
-                        if (focusRef.current) {
-                            focusRef.current.value = newUrl;
-                        }
+                        setFacebookUrl(newUrl);
                     } catch (err) {
-                        // ignore error
+                        if (err instanceof Error) {
+                            setErrors({...errors, facebook: err.message});
+                        }
                     }
                 }}
                 onChange={e => setFacebookUrl(e.target.value)}
+                onKeyDown={() => {
+                    if (errors.facebook) {
+                        setErrors({...errors, facebook: ''});
+                    }
+                }}
             />
             <TextField
                 error={!!errors.twitter}
                 hint={errors.twitter}
-                inputRef={twitterInputRef}
                 placeholder="https://twitter.com/ghost"
                 title="URL of your X (formerly Twitter) profile"
                 value={twitterUrl}
@@ -145,14 +147,19 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     try {
                         const newUrl = validateTwitterUrl(e.target.value);
                         updateSetting('twitter', twitterUrlToHandle(newUrl));
-                        if (twitterInputRef.current) {
-                            twitterInputRef.current.value = newUrl;
-                        }
+                        setTwitterUrl(newUrl);
                     } catch (err) {
-                        // ignore error
+                        if (err instanceof Error) {
+                            setErrors({...errors, twitter: err.message});
+                        }
                     }
                 }}
                 onChange={e => setTwitterUrl(e.target.value)}
+                onKeyDown={() => {
+                    if (errors.twitter) {
+                        setErrors({...errors, twitter: ''});
+                    }
+                }}
             />
         </SettingGroupContent>
     );

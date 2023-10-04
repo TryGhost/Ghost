@@ -1,5 +1,16 @@
-import {expect, test} from '@playwright/test';
+import {Locator, expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, updatedSettingsResponse} from '../../utils/acceptance';
+
+const testUrlValidation = async (input: Locator, textToEnter: string, expectedResult: string, expectedError?: string) => {
+    await input.fill(textToEnter);
+    await input.blur();
+
+    await expect(input).toHaveValue(expectedResult);
+
+    if (expectedError) {
+        await expect(input.locator('xpath=..')).toContainText(expectedError);
+    }
+};
 
 test.describe('Social account settings', async () => {
     test('Supports editing social URLs', async ({page}) => {
@@ -36,5 +47,108 @@ test.describe('Social account settings', async () => {
                 {key: 'twitter', value: '@tw'}
             ]
         });
+    });
+
+    test('Formats and validates the URLs', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('social-accounts');
+        await section.getByRole('button', {name: 'Edit'}).click();
+
+        const facebookInput = section.getByLabel(`URL of your publication's Facebook Page`);
+
+        await testUrlValidation(
+            facebookInput,
+            'facebook.com/username',
+            'https://www.facebook.com/username'
+        );
+
+        await testUrlValidation(
+            facebookInput,
+            'testuser',
+            'https://www.facebook.com/testuser'
+        );
+
+        await testUrlValidation(
+            facebookInput,
+            'ab99',
+            'https://www.facebook.com/ab99'
+        );
+
+        await testUrlValidation(
+            facebookInput,
+            'page/ab99',
+            'https://www.facebook.com/page/ab99'
+        );
+
+        await testUrlValidation(
+            facebookInput,
+            'page/*(&*(%%))',
+            'https://www.facebook.com/page/*(&*(%%))'
+        );
+
+        await testUrlValidation(
+            facebookInput,
+            'facebook.com/pages/some-facebook-page/857469375913?ref=ts',
+            'https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts'
+        );
+
+        await testUrlValidation(
+            facebookInput,
+            'https://www.facebook.com/groups/savethecrowninn',
+            'https://www.facebook.com/groups/savethecrowninn'
+        );
+
+        await testUrlValidation(
+            facebookInput,
+            'http://github.com/username',
+            'http://github.com/username',
+            'The URL must be in a format like https://www.facebook.com/yourPage'
+        );
+
+        await testUrlValidation(
+            facebookInput,
+            'http://github.com/pages/username',
+            'http://github.com/pages/username',
+            'The URL must be in a format like https://www.facebook.com/yourPage'
+        );
+
+        const twitterInput = section.getByLabel('URL of your X (formerly Twitter) profile');
+
+        await testUrlValidation(
+            twitterInput,
+            'twitter.com/username',
+            'https://twitter.com/username'
+        );
+
+        await testUrlValidation(
+            twitterInput,
+            'testuser',
+            'https://twitter.com/testuser'
+        );
+
+        await testUrlValidation(
+            twitterInput,
+            'http://github.com/username',
+            'https://twitter.com/username'
+        );
+
+        await testUrlValidation(
+            twitterInput,
+            '*(&*(%%))',
+            '*(&*(%%))',
+            'The URL must be in a format like https://twitter.com/yourUsername'
+        );
+
+        await testUrlValidation(
+            twitterInput,
+            'thisusernamehasmorethan15characters',
+            'thisusernamehasmorethan15characters',
+            'Your Username is not a valid Twitter Username'
+        );
     });
 });
