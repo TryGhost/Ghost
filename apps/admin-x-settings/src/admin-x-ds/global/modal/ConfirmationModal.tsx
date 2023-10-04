@@ -1,6 +1,7 @@
 import Modal from './Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
+import {ButtonColor} from '../Button';
 
 export interface ConfirmationModalProps {
     title?: string;
@@ -8,12 +9,13 @@ export interface ConfirmationModalProps {
     cancelLabel?: string;
     okLabel?: string;
     okRunningLabel?: string;
-    okColor?: string;
+    okColor?: ButtonColor;
     onCancel?: () => void;
     onOk?: (modal?: {
         remove: () => void;
-    }) => void;
+    }) => void | Promise<void>;
     customFooter?: boolean | React.ReactNode;
+    formSheet?: boolean;
 }
 
 export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
@@ -25,15 +27,18 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     okColor = 'black',
     onCancel,
     onOk,
-    customFooter
+    customFooter,
+    formSheet = true
 }) => {
     const modal = useModal();
     const [taskState, setTaskState] = useState<'running' | ''>('');
     return (
         <Modal
             backDropClick={false}
+            buttonsDisabled={taskState === 'running'}
             cancelLabel={cancelLabel}
             footer={customFooter}
+            formSheet={formSheet}
             okColor={okColor}
             okLabel={taskState === 'running' ? okRunningLabel : okLabel}
             size={540}
@@ -42,7 +47,13 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
             onCancel={onCancel}
             onOk={async () => {
                 setTaskState('running');
-                await onOk?.(modal);
+
+                try {
+                    await onOk?.(modal);
+                } catch (e) {
+                    // eslint-disable-next-line no-console
+                    console.error('Unhandled Promise Rejection. Make sure you catch errors in your onOk handler.', e);
+                }
                 setTaskState('');
             }}
         >

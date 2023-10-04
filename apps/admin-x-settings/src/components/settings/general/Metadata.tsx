@@ -6,7 +6,8 @@ import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactComponent as GoogleLogo} from '../../../admin-x-ds/assets/images/google-logo.svg';
 import {ReactComponent as MagnifyingGlass} from '../../../admin-x-ds/assets/icons/magnifying-glass.svg';
-import {getSettingValues} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 interface SearchEnginePreviewProps {
     title: string;
@@ -32,13 +33,13 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
                     <GoogleLogo className='mr-7 h-7' />
                 </div>
                 <div className='grow'>
-                    <div className='flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow'>
+                    <div className='flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow dark:bg-grey-900'>
                         <MagnifyingGlass className='h-4 w-4 text-blue-600' style={{strokeWidth: '2px'}} />
                     </div>
                 </div>
             </div>
-            <div className='mt-4 flex items-center gap-2 border-t border-grey-200 pt-4'>
-                <div className='flex h-7 w-7 items-center justify-center rounded-full bg-grey-200' style={{
+            <div className='mt-4 flex items-center gap-2 border-t border-grey-200 pt-4 dark:border-grey-900'>
+                <div className='flex h-7 w-7 items-center justify-center rounded-full bg-grey-200 dark:bg-grey-700' style={{
                     backgroundImage: icon ? `url(${icon})` : 'none'
                 }}>
                 </div>
@@ -48,8 +49,8 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
                 </div>
             </div>
             <div className='mt-1 flex flex-col'>
-                <span className='text-lg text-[#1a0dab]'>{title}</span>
-                <span className='text-sm text-grey-900'>{description}</span>
+                <span className='text-lg text-[#1a0dab] dark:text-blue'>{title}</span>
+                <span className='text-sm text-grey-900 dark:text-grey-700'>{description}</span>
             </div>
         </div>
     );
@@ -106,20 +107,24 @@ const Metadata: React.FC<{ keywords: string[] }> = ({keywords}) => {
             navid='metadata'
             saveState={saveState}
             testId='metadata'
-            title='Metadata'
+            title='Meta data'
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >
-            <SearchEnginePreview
-                description={metaDescription ? metaDescription : siteDescription}
-                icon={siteData?.icon}
-                title={metaTitle ? metaTitle : siteTitle}
-                url={siteData?.url}
-            />
-            {isEditing ? inputFields : null}
+            {isEditing &&
+            <>
+                <SearchEnginePreview
+                    description={metaDescription ? metaDescription : siteDescription}
+                    icon={siteData?.icon}
+                    title={metaTitle ? metaTitle : siteTitle}
+                    url={siteData?.url}
+                />
+                {inputFields}
+            </>
+            }
         </SettingGroup>
     );
 };
 
-export default Metadata;
+export default withErrorBoundary(Metadata, 'Meta data');

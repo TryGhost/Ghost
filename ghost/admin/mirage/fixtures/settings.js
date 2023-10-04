@@ -19,7 +19,7 @@ function setting(group, key, value) {
 }
 
 // These settings represent a default new site setup
-// Real default settings can be found in https://github.com/TryGhost/Ghost/blob/main/core/server/data/schema/default-settings/default-settings.json
+// Real default settings can be found in https://github.com/TryGhost/Ghost/blob/main/ghost/core/core/server/data/schema/default-settings/default-settings.json
 export default [
     // SITE
     setting('site', 'title', 'Test Blog'),
@@ -49,7 +49,7 @@ export default [
     setting('site', 'twitter_description', null),
 
     // THEME
-    setting('theme', 'active_theme', 'Casper'),
+    setting('theme', 'active_theme', 'Source'),
 
     // PRIVATE
     setting('private', 'is_private', false),
@@ -125,5 +125,9 @@ export default [
 
     // EDITOR
     setting('editor', 'editor_default_email_recipients', 'visibility'),
-    setting('editor', 'editor_default_email_recipients_filter', 'all')
+    setting('editor', 'editor_default_email_recipients_filter', 'all'),
+
+    // DONATIONS
+    setting('donations_suggested_amount', 'donations', 0),
+    setting('donations_currency', 'donations', 'USD')
 ];

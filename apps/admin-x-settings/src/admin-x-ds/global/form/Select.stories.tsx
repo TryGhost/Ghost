@@ -1,13 +1,14 @@
+import {ReactNode} from 'react';
 import {useArgs} from '@storybook/preview-api';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import Select, {SelectOption} from './Select';
 
 const meta = {
-    title: 'Global / Simple select',
+    title: 'Global / Form / Select',
     component: Select,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
+    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
     argTypes: {
         hint: {
             control: 'text'
@@ -61,6 +62,13 @@ export const WithHint: Story = {
     }
 };
 
+export const ExtraSmall: Story = {
+    args: {
+        options: selectOptions,
+        size: 'xs'
+    }
+};
+
 export const WithSelectedOption: Story = {
     render: function Component(args) {
         const [, updateArgs] = useArgs();
@@ -70,7 +78,7 @@ export const WithSelectedOption: Story = {
     args: {
         title: 'Title',
         options: selectOptions,
-        selectedOption: 'option-3',
+        selectedOption: selectOptions.find(option => option.value === 'option-3'),
         hint: 'Here\'s some hint'
     }
 };
@@ -78,7 +86,7 @@ export const WithSelectedOption: Story = {
 export const WithCallback: Story = {
     args: {
         options: selectOptions,
-        onSelect: (value: string) => {
+        onSelect: (value) => {
             alert(value);
         }
     }

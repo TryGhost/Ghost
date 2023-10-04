@@ -219,6 +219,17 @@ export default class MembersController extends Controller {
     getApiQueryObject({params, extraFilters = []} = {}) {
         let {label, paidParam, searchParam, filterParam} = params ? params : this;
 
+        if (filterParam) {
+            // If the provided filter param is a single filter related to newsletter subscription status
+            // remove the surrounding brackets to prevent https://github.com/TryGhost/NQL/issues/16
+            const NEWSLETTER_SUBSCRIPTION_STATUS_RE = /^\(subscribed:(?:true|false)[+,]email_disabled:[01]\)$/;
+            const SPECIFIC_NEWSLETTER_SUBSCRIPTION_STATUS_RE = /^\(newsletters\.slug:[^()]+[+,]email_disabled:[01]\)$/;
+
+            if (NEWSLETTER_SUBSCRIPTION_STATUS_RE.test(filterParam) || SPECIFIC_NEWSLETTER_SUBSCRIPTION_STATUS_RE.test(filterParam)) {
+                filterParam = filterParam.slice(1, -1);
+            }
+        }
+
         let filters = [];
 
         filters = filters.concat(extraFilters);

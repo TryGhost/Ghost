@@ -20,11 +20,11 @@
   "devDependencies": {
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "15.0.3"
+    "sinon": "15.2.0"
   },
   "dependencies": {
     "lodash": "4.17.21",
     "moment": "2.29.1",
-    "handlebars": "4.7.7"
+    "handlebars": "4.7.8"
   }
 }

@@ -55,6 +55,7 @@ const unparse = (members, columns = DEFAULT_COLUMNS.slice()) => {
             deleted_at: member.deleted_at,
             labels: labels,
             tiers: tiers,
+            import_tier: member.import_tier || null,
             error: member.error || null
         };
     });

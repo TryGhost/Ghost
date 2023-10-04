@@ -4,11 +4,66 @@ const testUtils = require('../../utils');
 const _ = require('lodash');
 const Models = require('../../../core/server/models');
 
-describe('Database Migration (special functions)', function () {
-    before(testUtils.teardownDb);
-    afterEach(testUtils.teardownDb);
+const KnexMigrator = require('knex-migrator');
+const path = require('path');
+const semver = require('semver');
+
+const knexMigrator = new KnexMigrator({
+    knexMigratorFilePath: path.join(__dirname, '../../../')
+});
+
+const db = require('../../../core/server/data/db');
+const dbUtils = require('../../utils/db-utils');
+
+const currentVersion = require('@tryghost/version');
+const currentMajor = semver.major(currentVersion.original);
+const previousMinor = semver.minor(currentVersion.original) - 1;
+const previousVersion = `${currentMajor}.${previousMinor}`;
+
+describe('Migrations', function () {
+    beforeEach(async function () {
+        await dbUtils.teardown();
+    });
+
     afterEach(function () {
         sinon.restore();
+    });
+
+    describe('Database initialization + rollback', function () {
+        beforeEach(async function () {
+            await knexMigrator.reset({force: true});
+            await knexMigrator.init();
+        });
+
+        it('can rollback to the previous minor version', async function () {
+            await knexMigrator.rollback({
+                version: previousVersion,
+                force: true
+            });
+        });
+
+        it('can rollback to the previous minor version and then forwards again', async function () {
+            await knexMigrator.rollback({
+                version: previousVersion,
+                force: true
+            });
+            await knexMigrator.migrate({
+                force: true
+            });
+        });
+
+        it('should have idempotent migrations', async function () {
+            // Delete all knowledge that we've run migrations so we can run them again
+            if (dbUtils.isMySQL()) {
+                await db.knex('migrations').whereILike('version', `${currentMajor}.%`).del();
+            } else {
+                await db.knex('migrations').whereLike('version', `${currentMajor}.%`).del();
+            }
+
+            await knexMigrator.migrate({
+                force: true
+            });
+        });
     });
 
     describe('Fixtures', function () {
@@ -44,7 +99,7 @@ describe('Database Migration (special functions)', function () {
             const permissions = this.obj;
 
             // If you have to change this number, please add the relevant `havePermission` checks below
-            permissions.length.should.eql(115);
+            permissions.length.should.eql(120);
 
             permissions.should.havePermission('Export database', ['Administrator', 'DB Backup Integration']);
             permissions.should.havePermission('Import database', ['Administrator', 'Self-Serve Migration Integration', 'DB Backup Integration']);

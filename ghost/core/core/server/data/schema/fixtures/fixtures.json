@@ -1,6 +1,25 @@
 {
     "models": [
         {
+            "name": "Collection",
+            "entries": [
+                {
+                    "title":            "Latest",
+                    "slug":             "latest",
+                    "description":      "All posts",
+                    "type":             "automatic",
+                    "filter":           ""
+                },
+                {
+                    "title":            "Featured",
+                    "slug":             "featured",
+                    "description":      "Featured posts",
+                    "type":             "automatic",
+                    "filter":           "featured:true"
+                }
+            ]
+        },
+        {
             "name": "Product",
             "entries": [
                 {
@@ -667,6 +686,31 @@
                     "name": "Delete collections",
                     "action_type": "destroy",
                     "object_type": "collection"
+                },
+                {
+                    "name": "Browse recommendations",
+                    "action_type": "browse",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Read recommendations",
+                    "action_type": "read",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Edit recommendations",
+                    "action_type": "edit",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Add recommendations",
+                    "action_type": "add",
+                    "object_type": "recommendation"
+                },
+                {
+                    "name": "Delete recommendations",
+                    "action_type": "destroy",
+                    "object_type": "recommendation"
                 }
             ]
         },
@@ -681,6 +725,7 @@
                     "free_member_signup_notification": true,
                     "paid_subscription_started_notification": true,
                     "paid_subscription_canceled_notification": false,
+                    "donation_notifications": true,
                     "roles": []
                 }
             ]
@@ -762,6 +807,13 @@
                     "description": "Internal frontend integration",
                     "type": "internal",
                     "api_keys": [{"type": "content"}]
+                },
+                {
+                    "slug": "ghost-core-content",
+                    "name": "Ghost Core Content API",
+                    "description": "Internal Content API integration for Admin access",
+                    "type": "core",
+                    "api_keys": [{"type": "content"}]
                 }
             ]
         }
@@ -811,7 +863,8 @@
                     "comment": "all",
                     "link": "all",
                     "mention": "browse",
-                    "collection": "all"
+                    "collection": "all",
+                    "recommendation": "all"
                 },
                 "DB Backup Integration": {
                     "db": "all"
@@ -853,7 +906,8 @@
                     "comment": "all",
                     "link": "all",
                     "mention": "browse",
-                    "collection": "all"
+                    "collection": "all",
+                    "recommendation": "all"
                 },
                 "Editor": {
                     "notification": "all",
@@ -871,7 +925,8 @@
                     "label": ["browse", "read"],
                     "product": ["browse", "read"],
                     "newsletter": ["browse", "read"],
-                    "collection": "all"
+                    "collection": "all",
+                    "recommendation": ["browse", "read"]
                 },
                 "Author": {
                     "post": ["browse", "read", "add"],
@@ -887,7 +942,8 @@
                     "label": ["browse", "read"],
                     "product": ["browse", "read"],
                     "newsletter": ["browse", "read"],
-                    "collection": ["browse", "read", "add"]
+                    "collection": ["browse", "read", "add"],
+                    "recommendation": ["browse", "read"]
                 },
                 "Contributor": {
                     "post": ["browse", "read", "add"],
@@ -900,7 +956,8 @@
                     "email_preview": "read",
                     "email": "read",
                     "snippet": ["browse", "read"],
-                    "collection": ["browse", "read"]
+                    "collection": ["browse", "read"],
+                    "recommendation": ["browse", "read"]
                 }
             }
         },

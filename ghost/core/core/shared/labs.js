@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
@@ -16,6 +15,7 @@ const messages = {
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
     'audienceFeedback',
+    'collections',
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
@@ -37,10 +37,13 @@ const ALPHA_FEATURES = [
     'websockets',
     'stripeAutomaticTax',
     'emailCustomization',
-    'collections',
     'adminXSettings',
-    'pageImprovements',
-    'mailEvents'
+    'mailEvents',
+    'collectionsCard',
+    'tipsAndDonations',
+    'importMemberTier',
+    'recommendations',
+    'lexicalIndicators'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
@@ -57,6 +60,11 @@ module.exports.getAll = () => {
 
     GA_FEATURES.forEach((gaKey) => {
         labs[gaKey] = true;
+    });
+
+    const labsConfig = config.get('labs') || {};
+    Object.keys(labsConfig).forEach((key) => {
+        labs[key] = labsConfig[key];
     });
 
     labs.members = settingsCache.get('members_signup_access') !== 'none';

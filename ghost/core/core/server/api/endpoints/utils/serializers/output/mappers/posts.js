@@ -29,7 +29,7 @@ module.exports = async (model, frame, options = {}) => {
     if (typeof model.toJSON === 'function') {
         jsonModel = model.toJSON(frame.options);
     } else {
-        // This is to satisy the interface which extraAttrs needs
+        // This is to satisfy the interface which extraAttrs needs
         model = {
             id: jsonModel.id,
             get(attr) {

@@ -1431,7 +1431,8 @@
 
 .gh-expandable-content input:not(:focus),
 .gh-expandable-content .gh-input:not(:focus),
-.gh-expandable-content .ember-power-select-multiple-trigger {
+.gh-expandable-content .ember-power-select-multiple-trigger,
+.gh-expandable-content select:not(:focus) {
     border-color: var(--whitegrey-d1);
 }
 
@@ -2242,4 +2243,41 @@ section.gh-ds h2 {
     text-align-last: center;
     height: 40px;
     line-height: 40px;
+}
+
+.admin-x-settings-container-error {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: var(--whitegrey-l2);
+}
+
+.admin-x-settings-error {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    background: white;
+    box-shadow: var(--box-shadow-m);
+    border-radius: 20px;
+    padding: 5vmin;
+    max-width: 640px;
+    color: var(--darkgrey);
+}
+
+.admin-x-settings-container-error p,
+.admin-x-settings-container-error h1 {
+    margin: 0;
+    padding: 0;
+}
+
+.admin-x-settings-container-error a {
+    display: inline-block;
+    padding: 6px 10px;
+    border: 1px solid var(--green);
+    border-radius: 4px;
+    margin-top: 8px;
 }

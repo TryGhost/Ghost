@@ -1,3 +1,4 @@
+import {ReactNode} from 'react';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import StickyFooter from './StickyFooter';
@@ -6,7 +7,7 @@ const meta = {
     title: 'Global / Sticky Footer',
     component: StickyFooter,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (
+    decorators: [(_story: () => ReactNode) => (
         <div style={{
             maxWidth: '600px',
             margin: '0 auto 80px',

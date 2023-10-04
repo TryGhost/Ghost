@@ -18,11 +18,11 @@
         "lib"
     ],
     "devDependencies": {
-        "c8": "7.13.0",
+        "c8": "8.0.1",
         "mocha": "10.2.0",
-        "sinon": "15.0.3"
+        "sinon": "15.2.0"
     },
     "dependencies": {
-        "@isaacs/ttlcache": "1.2.2"
+        "@isaacs/ttlcache": "1.4.1"
     }
 }

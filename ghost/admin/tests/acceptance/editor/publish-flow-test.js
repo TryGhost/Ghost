@@ -156,8 +156,8 @@ describe('Acceptance: Publish flow', function () {
 
             // at least one member is required for publish+send to be available
             const label = this.server.create('label');
-            this.server.createList('member', 3, {status: 'free', labels: [label]});
-            this.server.createList('member', 4, {status: 'paid'});
+            this.server.createList('member', 3, {status: 'free', email_disabled: 0, labels: [label]});
+            this.server.createList('member', 4, {status: 'paid', email_disabled: 0});
         });
 
         it('can publish+send with single newsletter', async function () {
@@ -270,7 +270,7 @@ describe('Acceptance: Publish flow', function () {
                 subscribeOnSignup: true
             });
 
-            this.server.create('member', {newsletters: [newsletter], status: 'free'});
+            this.server.create('member', {newsletters: [newsletter], status: 'free', email_disabled: 0});
 
             await loginAsRole('Administrator', this.server);
             const post = this.server.create('post', {status: 'draft'});

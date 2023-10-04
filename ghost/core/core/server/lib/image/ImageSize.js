@@ -3,7 +3,6 @@ const sizeOf = require('image-size');
 const probeSizeOf = require('probe-image-size');
 const url = require('url');
 const path = require('path');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -31,9 +30,13 @@ class ImageSize {
             headers: {
                 'User-Agent': 'Mozilla/5.0 Safari/537.36'
             },
-            timeout: this.config.get('times:getImageSizeTimeoutInMS') || 10000,
-            retry: 0, // for `got`, used with image-size
-            encoding: null
+            timeout: {
+                request: this.config.get('times:getImageSizeTimeoutInMS') || 10000
+            },
+            retry: {
+                limit: 0 // for `got`, used with image-size
+            },
+            responseType: 'buffer'
         };
 
         this.NEEDLE_OPTIONS = {
@@ -59,9 +62,9 @@ class ImageSize {
                     dimensions.height = _.maxBy(dimensions.images, img => img.height).height;
                 }
 
-                return resolve(dimensions);
+                resolve(dimensions);
             } catch (err) {
-                return reject(err);
+                reject(err);
             }
         });
     }
@@ -113,9 +116,9 @@ class ImageSize {
             const extension = (extensionMatch[1] || '').toLowerCase();
 
             if (FETCH_ONLY_FORMATS.includes(extension)) {
-                return resolve(this._fetchImageSizeFromUrl(imageUrl));
+                resolve(this._fetchImageSizeFromUrl(imageUrl));
             } else {
-                return resolve(this._probeImageSizeFromUrl(imageUrl));
+                resolve(this._probeImageSizeFromUrl(imageUrl));
             }
         });
     }
@@ -344,12 +347,12 @@ class ImageSize {
                     }).height;
                 }
 
-                return resolve({
+                resolve({
                     width: dimensions.width,
                     height: dimensions.height
                 });
             } catch (err) {
-                return reject(new errors.ValidationError({
+                reject(new errors.ValidationError({
                     message: tpl(messages.invalidDimensions, {
                         file: imagePath,
                         error: err.message

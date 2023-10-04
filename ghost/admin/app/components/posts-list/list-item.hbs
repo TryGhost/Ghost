@@ -51,6 +51,16 @@
                     {{svg-jar "star-fill" class="gh-featured-post"}}
                 {{/if}}
                 {{@post.title}}
+
+                {{! Display lexical/mobiledoc indicators for easier testing of the feature --}}
+                {{#if (feature 'lexicalIndicators')}}
+                    {{#if @post.lexical}}
+                        <span class="gh-lexical-indicator">L</span>
+                    {{else if @post.mobiledoc}}
+                        <span class="gh-lexical-indicator">M</span>
+                    {{/if}}
+                {{/if}}
+
             </h3>
             {{#unless @hideAuthor }}
                 <p class="gh-content-entry-meta">
@@ -141,7 +151,7 @@
             </span>
         </LinkTo>
     {{else}}
-        <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data">
+        <LinkTo @route={{this.editorRoute}} @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data">
             {{!-- Empty on purpose --}}
         </LinkTo>
     {{/if}}
@@ -175,7 +185,7 @@
                 </span>
             </LinkTo>
         {{else}}
-            <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data">
+            <LinkTo @route={{this.editorRoute}} @models={{array this.post.displayName this.post.id}} class="permalink gh-list-data">
                 {{!-- Empty on purpose --}}
             </LinkTo>
         {{/if}}

@@ -18,7 +18,7 @@
     "lib"
   ],
   "devDependencies": {
-    "c8": "7.13.0",
+    "c8": "8.0.1",
     "mocha": "10.2.0",
     "supertest": "6.3.3"
   }

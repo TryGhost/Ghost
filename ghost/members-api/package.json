@@ -21,13 +21,13 @@
   ],
   "devDependencies": {
     "@tryghost/member-attribution": "0.0.0",
-    "@types/node-jose": "1.1.10",
-    "c8": "7.13.0",
+    "@types/node-jose": "1.1.11",
+    "c8": "8.0.1",
     "jwk-to-pem": "2.0.5",
     "mocha": "10.2.0",
-    "nock": "13.3.0",
+    "nock": "13.3.3",
     "should": "13.2.3",
-    "sinon": "15.0.3"
+    "sinon": "15.2.0"
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
@@ -38,8 +38,8 @@
     "@tryghost/members-payments": "0.0.0",
     "@tryghost/nql": "0.11.0",
     "@tryghost/tpl": "0.1.24",
-    "@tryghost/validator": "^0.2.0",
-    "@types/jsonwebtoken": "9.0.2",
+    "@tryghost/validator": "0.2.4",
+    "@types/jsonwebtoken": "9.0.3",
     "body-parser": "1.20.2",
     "bson-objectid": "2.0.4",
     "express": "4.18.2",

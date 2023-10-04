@@ -19,9 +19,9 @@
   ],
   "devDependencies": {
     "@tryghost/errors": "1.2.24",
-    "c8": "7.13.0",
+    "c8": "8.0.1",
     "mocha": "10.2.0",
-    "sinon": "15.0.3"
+    "sinon": "15.2.0"
   },
   "dependencies": {
     "@tryghost/extract-api-key": "0.0.0"

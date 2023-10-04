@@ -4,6 +4,7 @@ function formatNewsletterResponse(newsletters) {
     });
 }
 
+module.exports.formatNewsletterResponse = formatNewsletterResponse;
 module.exports.formattedMemberResponse = function formattedMemberResponse(member) {
     if (!member) {
         return null;

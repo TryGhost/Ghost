@@ -1,3 +1,4 @@
+import {ReactNode} from 'react';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import Checkbox from './Checkbox';
@@ -6,7 +7,7 @@ const meta = {
     title: 'Global / Form / Checkbox',
     component: Checkbox,
     tags: ['autodocs'],
-    decorators: [(_story: any) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
+    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
     argTypes: {
         hint: {
             control: 'text'
@@ -19,8 +20,7 @@ type Story = StoryObj<typeof Checkbox>;
 
 export const Default: Story = {
     args: {
-        label: 'Checkbox 1',
-        id: 'my-radio-button'
+        label: 'Checkbox 1'
     }
 };
 

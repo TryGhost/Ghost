@@ -89,7 +89,7 @@
     right: 0;
     bottom: 0;
     width: 100%;
-    max-width: 420px;
+    max-width: 419px;
     overflow: auto;
     background-color: var(--white);
     opacity: 1;
@@ -448,6 +448,63 @@ li.nav-list-item .for-switch.x-small label {
     margin-left: 4px;
 }
 
+.settings-menu-content.keyboard-shortcuts .form-group {
+    margin-bottom: 3em;
+}
+
+.settings-menu-content.keyboard-shortcuts label {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--whitegrey-d1);
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.settings-menu-content .gh-shortcut {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--whitegrey-d1);
+}
+
+.settings-menu-content .gh-shortcut .link {
+    color: var(--accent-color);
+}
+
+.settings-menu-content .gh-shortcut .code {
+    font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;
+    font-size: .95em;
+}
+
+.gh-shortcut .gh-keys {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+.gh-shortcut .gh-key {
+    min-width: 28px;
+    height: 28px;
+    background: var(--whitegrey);
+    border-radius: var(--border-radius);
+    padding: 0 6px;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 28px;
+    cursor: default;
+}
+
+.gh-shortcut .gh-key.mono {
+    font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;
+    font-size: 1.25rem;
+}
+
+.gh-shortcut .gh-key.mono.clear {
+    background: transparent;
+}
 
 /* Background
 /* ---------------------------------------------------------- */

@@ -286,6 +286,20 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
+                            <h4 class="gh-expandable-title">Collections Card</h4>
+                            <p class="gh-expandable-description">
+                                Enables the Collections Card for pages - requires Collections and the beta Editor to be enabled
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="collectionsCard" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
                             <h4 class="gh-expandable-title">Admin X</h4>
                             <p class="gh-expandable-description">
                                 Enables Admin X, the new admin UI for Ghost
@@ -300,20 +314,6 @@
                 <div class="gh-expandable-block">
                     <div class="gh-expandable-header">
                         <div>
-                            <h4 class="gh-expandable-title">Page improvements</h4>
-                            <p class="gh-expandable-description">
-                                Enables toggling off page title and feature image
-                            </p>
-                        </div>
-                        <div class="for-switch">
-                            <GhFeatureFlag @flag="pageImprovements" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="gh-expandable-block">
-                    <div class="gh-expandable-header">
-                        <div>
                             <h4 class="gh-expandable-title">Mail Events</h4>
                             <p class="gh-expandable-description">
                                 Enables processing of mail events
@@ -321,6 +321,62 @@
                         </div>
                         <div class="for-switch">
                             <GhFeatureFlag @flag="mailEvents" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Lexical indicators</h4>
+                            <p class="gh-expandable-description">
+                                Show L/M indicator on posts list for easier debugging
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="lexicalIndicators" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Import Member Tier</h4>
+                            <p class="gh-expandable-description">
+                                Enables tier to be specified when importing members
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="importMemberTier" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Tips & donations</h4>
+                            <p class="gh-expandable-description">
+                                Enables publishers to collect one-time payments
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="tipsAndDonations" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gh-expandable-block">
+                    <div class="gh-expandable-header">
+                        <div>
+                            <h4 class="gh-expandable-title">Recommendations</h4>
+                            <p class="gh-expandable-description">
+                                Enables publishers to recommend sites to their audience
+                            </p>
+                        </div>
+                        <div class="for-switch">
+                            <GhFeatureFlag @flag="recommendations" />
                         </div>
                     </div>
                 </div>

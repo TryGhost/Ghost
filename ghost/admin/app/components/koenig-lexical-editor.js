@@ -1,6 +1,8 @@
 import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
+import fetch from 'fetch';
+import fetchKoenigLexical from 'ghost-admin/utils/fetch-koenig-lexical';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -59,34 +61,11 @@ class ErrorHandler extends React.Component {
     }
 }
 
-const fetchKoenig = function () {
+const loadKoenig = function () {
     let status = 'pending';
     let response;
 
-    const fetchPackage = async () => {
-        if (window['@tryghost/koenig-lexical']) {
-            return window['@tryghost/koenig-lexical'];
-        }
-
-        // the manual specification of the protocol in the import template string is
-        // required to work around ember-auto-import complaining about an unknown dynamic import
-        // during the build step
-        const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const urlTemplate = GhostAdmin.__container__.lookup('config:main').editor?.url;
-        const urlVersion = GhostAdmin.__container__.lookup('config:main').editor?.version;
-
-        const url = new URL(urlTemplate.replace('{version}', urlVersion));
-
-        if (url.protocol === 'http:') {
-            await import(`http://${url.host}${url.pathname}`);
-        } else {
-            await import(`https://${url.host}${url.pathname}`);
-        }
-
-        return window['@tryghost/koenig-lexical'];
-    };
-
-    const suspender = fetchPackage().then(
+    const suspender = fetchKoenigLexical().then(
         (res) => {
             status = 'success';
             response = res;
@@ -111,7 +90,7 @@ const fetchKoenig = function () {
     return {read};
 };
 
-const editorResource = fetchKoenig();
+const editorResource = loadKoenig();
 
 const KoenigComposer = (props) => {
     const {KoenigComposer: _KoenigComposer} = editorResource.read();
@@ -135,9 +114,12 @@ export default class KoenigLexicalEditor extends Component {
     @service session;
     @service store;
     @service settings;
+    @service membersUtils;
 
     @inject config;
+
     offers = null;
+    contentKey = null;
 
     get pinturaJsUrl() {
         if (!this.settings.pintura) {
@@ -239,13 +221,70 @@ export default class KoenigLexicalEditor extends Component {
             return response;
         };
 
+        const fetchCollectionPosts = async (collectionSlug) => {
+            if (!this.contentKey) {
+                const integrations = await this.store.findAll('integration');
+                const contentIntegration = integrations.findBy('slug', 'ghost-core-content');
+                this.contentKey = contentIntegration?.contentKey.secret;
+            }
+
+            const postsUrl = new URL(this.ghostPaths.url.admin('/api/content/posts/'), window.location.origin);
+            postsUrl.searchParams.append('key', this.contentKey);
+            postsUrl.searchParams.append('collection', collectionSlug);
+            postsUrl.searchParams.append('limit', 12);
+
+            const response = await fetch(postsUrl.toString());
+            const {posts} = await response.json();
+
+            return posts;
+        };
+
         const fetchAutocompleteLinks = async () => {
             const offers = await this.fetchOffersTask.perform();
 
             const defaults = [
                 {label: 'Homepage', value: window.location.origin + '/'},
-                {label: 'Free signup', value: window.location.origin + '/#/portal/signup/free'}
+                {label: 'Free signup', value: '#/portal/signup/free'}
             ];
+
+            const memberLinks = () => {
+                let links = [];
+                if (this.membersUtils.paidMembersEnabled) {
+                    links = [
+                        {
+                            label: 'Paid signup',
+                            value: '#/portal/signup'
+                        },
+                        {
+                            label: 'Upgrade or change plan',
+                            value: '#/portal/account/plans'
+                        }];
+                }
+
+                return links;
+            };
+
+            const donationLink = () => {
+                if (this.feature.tipsAndDonations && this.settings.donationsEnabled) {
+                    return [{
+                        label: 'Tip or donation',
+                        value: '#/portal/support'
+                    }];
+                }
+
+                return [];
+            };
+
+            const recommendationLink = () => {
+                if (this.settings.recommendationsEnabled) {
+                    return [{
+                        label: 'Recommendations',
+                        value: '#/portal/recommendations'
+                    }];
+                }
+
+                return [];
+            };
 
             const offersLinks = offers.toArray().map((offer) => {
                 return {
@@ -253,7 +292,8 @@ export default class KoenigLexicalEditor extends Component {
                     value: this.config.getSiteUrl(offer.code)
                 };
             });
-            return [...defaults, ...offersLinks];
+
+            return [...defaults, ...memberLinks(), ...donationLink(), ...recommendationLink(), ...offersLinks];
         };
 
         const fetchLabels = async () => {
@@ -262,22 +302,29 @@ export default class KoenigLexicalEditor extends Component {
             return labels.map(label => label.name);
         };
 
+        const unsplashConfig = {
+            defaultHeaders: {
+                Authorization: `Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980`,
+                'Accept-Version': 'v1',
+                'Content-Type': 'application/json',
+                'App-Pragma': 'no-cache',
+                'X-Unsplash-Cache': true
+            }
+        };
+
         const defaultCardConfig = {
-            unsplash: {
-                defaultHeaders: {
-                    Authorization: `Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980`,
-                    'Accept-Version': 'v1',
-                    'Content-Type': 'application/json',
-                    'App-Pragma': 'no-cache',
-                    'X-Unsplash-Cache': true
-                }
-            },
+            unsplash: this.settings.unsplash ? unsplashConfig : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
-            fetchEmbed: fetchEmbed,
+            fetchEmbed,
+            fetchCollectionPosts,
             fetchAutocompleteLinks,
             fetchLabels,
             feature: {
-                signupCard: true
+                collectionsCard: this.feature.get('collectionsCard'),
+                collections: this.feature.get('collections')
+            },
+            depreciated: {
+                headerV1: true // if false, shows header v1 in the menu
             },
             membersEnabled: this.settings.get('membersSignupAccess') === 'all',
             siteTitle: this.settings.title,
@@ -504,6 +551,7 @@ export default class KoenigLexicalEditor extends Component {
                         >
                             <KoenigEditor
                                 cursorDidExitAtTop={this.args.cursorDidExitAtTop}
+                                placeholderText={this.args.placeholder}
                                 darkMode={this.feature.nightShift}
                                 onChange={this.args.onChange}
                                 registerAPI={this.args.registerAPI}

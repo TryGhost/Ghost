@@ -18,7 +18,7 @@ module.exports = function setupWellKnownApp() {
 
     const cache = cacheControl('public', {maxAge: config.get('caching:wellKnown:maxAge')});
 
-    wellKnownApp.get('/jwks.json', cache, async (req, res) => {
+    wellKnownApp.get('/jwks.json', cache, async function jwksMiddleware(req, res) {
         const jwks = await getSafePublicJWKS();
 
         // there's only one key in the store atm

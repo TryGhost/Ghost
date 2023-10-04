@@ -1,24 +1,25 @@
 import Button from '../../../admin-x-ds/global/Button';
-import DesignModal from './DesignModal';
-import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import useRouting from '../../../hooks/useRouting';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const DesignSetting: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const {updateRoute} = useRouting();
     const openPreviewModal = () => {
-        NiceModal.show(DesignModal);
+        updateRoute('design/edit');
     };
 
     return (
         <SettingGroup
-            customButtons={<Button color='green' label='Customize' link onClick={openPreviewModal}/>}
-            description="Customize the look and feel of your site"
+            customButtons={<Button color='green' label='Customize' link linkWithPadding onClick={openPreviewModal}/>}
+            description="Customize the theme, colors, and layout of your site"
             keywords={keywords}
-            navid='branding-and-design'
+            navid='design'
             testId='design'
-            title="Branding and design"
+            title="Design & branding"
         />
     );
 };
 
-export default DesignSetting;
+export default withErrorBoundary(DesignSetting, 'Branding and design');

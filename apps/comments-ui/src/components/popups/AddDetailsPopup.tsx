@@ -1,4 +1,5 @@
 import CloseButton from './CloseButton';
+import reactStringReplace from 'react-string-replace';
 import {Transition} from '@headlessui/react';
 import {isMobile} from '../../utils/helpers';
 import {useAppContext} from '../../AppContext';
@@ -11,7 +12,7 @@ type Props = {
 const AddDetailsPopup = (props: Props) => {
     const inputNameRef = useRef<HTMLInputElement>(null);
     const inputExpertiseRef = useRef<HTMLInputElement>(null);
-    const {dispatchAction, member, accentColor} = useAppContext();
+    const {dispatchAction, member, accentColor, t} = useAppContext();
 
     const [name, setName] = useState(member.name ?? '');
     const [expertise, setExpertise] = useState(member.expertise ?? '');
@@ -42,7 +43,7 @@ const AddDetailsPopup = (props: Props) => {
             });
             close(true);
         } else {
-            setError({name: 'Enter your name', expertise: ''});
+            setError({name: t('Enter your name'), expertise: ''});
             setName('');
             inputNameRef.current?.focus();
         }
@@ -93,14 +94,14 @@ const AddDetailsPopup = (props: Props) => {
             );
         };
 
-        let returnable = [];
+        const returnable = [];
 
         // using URLS over real images for avatars as serving JPG images was not optimal (based on discussion with team)
-        let exampleProfiles = [
-            {avatar: 'https://randomuser.me/api/portraits/men/32.jpg', name: 'James Fletcher', expertise: 'Full-time parent'},
-            {avatar: 'https://randomuser.me/api/portraits/women/30.jpg', name: 'Naomi Schiff', expertise: 'Founder @ Acme Inc'},
-            {avatar: 'https://randomuser.me/api/portraits/men/4.jpg', name: 'Franz Tost', expertise: 'Neurosurgeon'},
-            {avatar: 'https://randomuser.me/api/portraits/women/51.jpg', name: 'Katrina Klosp', expertise: 'Local resident'}
+        const exampleProfiles = [
+            {avatar: 'https://randomuser.me/api/portraits/men/32.jpg', name: 'James Fletcher', expertise: t('Full-time parent')},
+            {avatar: 'https://randomuser.me/api/portraits/women/30.jpg', name: 'Naomi Schiff', expertise: t('Founder @ Acme Inc')},
+            {avatar: 'https://randomuser.me/api/portraits/men/4.jpg', name: 'Franz Tost', expertise: t('Neurosurgeon')},
+            {avatar: 'https://randomuser.me/api/portraits/women/51.jpg', name: 'Katrina Klosp', expertise: t('Local resident')}
         ];
 
         for (let i = 0; i < exampleProfiles.length; i++) {
@@ -109,6 +110,10 @@ const AddDetailsPopup = (props: Props) => {
 
         return returnable;
     };
+
+    const charsText = reactStringReplace(t('{{amount}} characters left'), '{{amount}}', () => {
+        return <b>{expertiseCharsLeft}</b>;
+    });
 
     return (
         <div className="shadow-modal relative h-screen w-screen overflow-hidden rounded-none bg-white p-[28px] text-center sm:h-auto sm:w-[720px] sm:rounded-xl sm:p-0" onMouseDown={stopPropagation}>
@@ -121,11 +126,11 @@ const AddDetailsPopup = (props: Props) => {
                     </div>
                 }
                 <div className={`${isMobile() ? 'w-full' : 'w-[60%]'} p-0 sm:p-8`}>
-                    <h1 className="mb-1 text-center font-sans text-[24px] font-bold tracking-tight text-black sm:text-left">Complete your profile<span className="hidden sm:inline">.</span></h1>
-                    <p className="pr-0 text-center font-sans text-base leading-9 text-neutral-500 sm:pr-10 sm:text-left">Add context to your comment, share your name and expertise to foster a healthy discussion.</p>
+                    <h1 className="mb-1 text-center font-sans text-[24px] font-bold tracking-tight text-black sm:text-left">{t('Complete your profile')}<span className="hidden sm:inline">.</span></h1>
+                    <p className="pr-0 text-center font-sans text-base leading-9 text-neutral-500 sm:pr-10 sm:text-left">{t('Add context to your comment, share your name and expertise to foster a healthy discussion.')}</p>
                     <section className="mt-8 text-left">
                         <div className="mb-2 flex flex-row justify-between">
-                            <label className="font-sans text-[1.3rem] font-semibold" htmlFor="comments-name">Name</label>
+                            <label className="font-sans text-[1.3rem] font-semibold" htmlFor="comments-name">{t('Name')}</label>
                             <Transition
                                 enter="transition duration-300 ease-out"
                                 enterFrom="opacity-0"
@@ -144,7 +149,7 @@ const AddDetailsPopup = (props: Props) => {
                             id="comments-name"
                             maxLength={64}
                             name="name"
-                            placeholder="Jamie Larson"
+                            placeholder={t('Jamie Larson')}
                             type="text"
                             value={name}
                             onChange={(e) => {
@@ -159,8 +164,8 @@ const AddDetailsPopup = (props: Props) => {
                             }}
                         />
                         <div className="mb-2 mt-6 flex flex-row justify-between">
-                            <label className="font-sans text-[1.3rem] font-semibold" htmlFor="comments-name">Expertise</label>
-                            <div className={`font-sans text-[1.3rem] text-neutral-400 ${(expertiseCharsLeft === 0) && 'text-red-500'}`}><b>{expertiseCharsLeft}</b> characters left</div>
+                            <label className="font-sans text-[1.3rem] font-semibold" htmlFor="comments-name">{t('Expertise')}</label>
+                            <div className={`font-sans text-[1.3rem] text-neutral-400 ${(expertiseCharsLeft === 0) && 'text-red-500'}`}>{charsText}</div>
                         </div>
                         <input
                             ref={inputExpertiseRef}
@@ -168,11 +173,11 @@ const AddDetailsPopup = (props: Props) => {
                             id="comments-expertise"
                             maxLength={maxExpertiseChars}
                             name="expertise"
-                            placeholder="Head of Marketing at Acme, Inc"
+                            placeholder={t('Head of Marketing at Acme, Inc')}
                             type="text"
                             value={expertise}
                             onChange={(e) => {
-                                let expertiseText = e.currentTarget.value;
+                                const expertiseText = e.currentTarget.value;
                                 setExpertiseCharsLeft(maxExpertiseChars - expertiseText.length);
                                 setExpertise(expertiseText);
                             }}
@@ -193,7 +198,7 @@ const AddDetailsPopup = (props: Props) => {
                                 submit().catch(console.error);
                             }}
                         >
-                            Save
+                            {t('Save')}
                         </button>
                     </section>
                 </div>

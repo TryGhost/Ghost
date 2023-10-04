@@ -1,3 +1,4 @@
+import {ReactNode} from 'react';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import * as SettingGroupContentStories from './SettingGroupContent.stories';
@@ -12,7 +13,7 @@ const meta = {
     title: 'Settings / Setting Group',
     component: SettingGroup,
     tags: ['autodocs'],
-    decorators: [(_story: any) => <div style={{maxWidth: '780px'}}>{_story()}</div>],
+    decorators: [(_story: () => ReactNode) => <div style={{maxWidth: '780px'}}>{_story()}</div>],
     argTypes: {
         description: {
             control: 'text'

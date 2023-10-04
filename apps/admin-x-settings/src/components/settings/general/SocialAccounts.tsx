@@ -4,7 +4,8 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import validator from 'validator';
-import {getSettingValues} from '../../../utils/helpers';
+import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 function validateFacebookUrl(newUrl: string) {
     const errMessage = 'The URL must be in a format like https://www.facebook.com/yourPage';
@@ -59,6 +60,15 @@ function validateTwitterUrl(newUrl: string) {
     }
 }
 
+const facebookHandleToUrl = (handle: string) => `https://www.facebook.com/${handle}`;
+const twitterHandleToUrl = (handle: string) => `https://twitter.com/${handle.replace('@', '')}`;
+
+const facebookUrlToHandle = (url: string) => url.match(/(?:https:\/\/)(?:www\.)(?:facebook\.com)\/(?:#!\/)?(\w+\/?\S+)/mi)?.[1] || null;
+const twitterUrlToHandle = (url: string) => {
+    const handle = url.match(/(?:https:\/\/)(?:twitter\.com)\/(?:#!\/)?@?([^/]*)/)?.[1];
+    return handle ? `@${handle}` : null;
+};
+
 const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
@@ -78,7 +88,10 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const twitterInputRef = useRef<HTMLInputElement>(null);
 
-    const [facebookUrl, twitterUrl] = getSettingValues(localSettings, ['facebook', 'twitter']) as string[];
+    const [facebookHandle, twitterHandle] = getSettingValues<string | null>(localSettings, ['facebook', 'twitter']);
+
+    const [facebookUrl, setFacebookUrl] = useState(facebookHandle ? facebookHandleToUrl(facebookHandle) : '');
+    const [twitterUrl, setTwitterUrl] = useState(twitterHandle ? twitterHandleToUrl(twitterHandle) : '');
 
     const values = (
         <SettingGroupContent
@@ -86,24 +99,18 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 {
                     heading: `URL of your publication's Facebook Page`,
                     key: 'facebook',
-                    value: facebookUrl
+                    value: facebookUrl,
+                    hideEmptyValue: true
                 },
                 {
-                    heading: 'URL of your TWITTER PROFILE',
+                    heading: 'URL of your X (formerly Twitter) profile',
                     key: 'twitter',
-                    value: twitterUrl
+                    value: twitterUrl,
+                    hideEmptyValue: true
                 }
             ]}
         />
     );
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>, type:'facebook' | 'twitter') => {
-        if (type === 'facebook') {
-            updateSetting('facebook', e.target.value);
-        } else {
-            updateSetting('twitter', e.target.value);
-        }
-    };
 
     const inputs = (
         <SettingGroupContent>
@@ -117,39 +124,35 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 onBlur={(e) => {
                     try {
                         const newUrl = validateFacebookUrl(e.target.value);
-                        updateSetting('facebook', newUrl);
+                        updateSetting('facebook', facebookUrlToHandle(newUrl));
                         if (focusRef.current) {
                             focusRef.current.value = newUrl;
                         }
-                    } catch (err: any) {
+                    } catch (err) {
                         // ignore error
                     }
                 }}
-                onChange={(e) => {
-                    handleChange(e, 'facebook');
-                }}
+                onChange={e => setFacebookUrl(e.target.value)}
             />
             <TextField
                 error={!!errors.twitter}
                 hint={errors.twitter}
                 inputRef={twitterInputRef}
                 placeholder="https://twitter.com/ghost"
-                title="URL of your Twitter profile"
+                title="URL of your X (formerly Twitter) profile"
                 value={twitterUrl}
                 onBlur={(e) => {
                     try {
                         const newUrl = validateTwitterUrl(e.target.value);
-                        updateSetting('twitter', newUrl);
+                        updateSetting('twitter', twitterUrlToHandle(newUrl));
                         if (twitterInputRef.current) {
                             twitterInputRef.current.value = newUrl;
                         }
-                    } catch (err: any) {
+                    } catch (err) {
                         // ignore error
                     }
                 }}
-                onChange={(e) => {
-                    handleChange(e, 'twitter');
-                }}
+                onChange={e => setTwitterUrl(e.target.value)}
             />
         </SettingGroupContent>
     );
@@ -172,14 +175,18 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 } = {};
                 try {
                     validateFacebookUrl(facebookUrl);
-                } catch (e: any) {
-                    formErrors.facebook = e?.message;
+                } catch (e) {
+                    if (e instanceof Error) {
+                        formErrors.facebook = e.message;
+                    }
                 }
 
                 try {
                     validateTwitterUrl(twitterUrl);
-                } catch (e: any) {
-                    formErrors.twitter = e?.message;
+                } catch (e) {
+                    if (e instanceof Error) {
+                        formErrors.twitter = e.message;
+                    }
                 }
 
                 setErrors(formErrors);
@@ -193,4 +200,4 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default SocialAccounts;
+export default withErrorBoundary(SocialAccounts, 'Social accounts');

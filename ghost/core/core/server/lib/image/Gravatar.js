@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const crypto = require('crypto');
 const tpl = require('@tryghost/tpl');
 
@@ -34,7 +33,7 @@ class Gravatar {
         const testUrl = this.url(userData.email, {default: 404, rating: 'x'});
         const imageUrl = this.url(userData.email, {default: 'mp', rating: 'x'});
 
-        return Promise.resolve(this.request(testUrl, {timeout: timeout || 2 * 1000}))
+        return Promise.resolve(this.request(testUrl, {timeout: {request: timeout || 2 * 1000}}))
             .then(function () {
                 return {
                     image: imageUrl

@@ -16,6 +16,7 @@ import {GENERIC_ERROR_MESSAGE} from '../services/notifications';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
+import {captureMessage} from '@sentry/ember';
 import {dropTask, enqueueTask, restartableTask, task, taskGroup, timeout} from 'ember-concurrency';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -185,6 +186,11 @@ export default class LexicalEditorController extends Controller {
 
             return item;
         });
+    }
+
+    @computed
+    get collections() {
+        return this.store.peekAll('collection');
     }
 
     @computed('session.user.{isAdmin,isEditor}')
@@ -671,10 +677,36 @@ export default class LexicalEditorController extends Controller {
             this.post.set('emailOnly', options.emailOnly);
         }
 
+        const startTime = Date.now();
+
         try {
             yield post.save(options);
+
+            // log if a save is slow
+            if (this.config.sentry_dsn && (Date.now() - startTime > 2000)) {
+                captureMessage('Successful Lexical save took > 2s', (scope) => {
+                    scope.setTag('save_time', Math.ceil((Date.now() - startTime) / 1000));
+                    scope.setTag('post_type', post.isPage ? 'page' : 'post');
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('email_segment', options.adapterOptions?.emailSegment);
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('convert_to_lexical', options.adapterOptions?.convertToLexical);
+                });
+            }
         } catch (error) {
             this.post.set('emailOnly', previousEmailOnlyValue);
+
+            if (this.config.sentry_dsn && (Date.now() - startTime > 2000)) {
+                captureMessage('Failed Mobiledoc save took > 2s', (scope) => {
+                    scope.setTag('save_time', Math.ceil((Date.now() - startTime) / 1000));
+                    scope.setTag('post_type', post.isPage ? 'page' : 'post');
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('email_segment', options.adapterOptions?.emailSegment);
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('convert_to_lexical', options.adapterOptions?.convertToLexical);
+                });
+            }
+
             if (isServerUnreachableError(error)) {
                 const [prevStatus, newStatus] = this.post.changedAttributes().status || [this.post.status, this.post.status];
                 this._showErrorAlert(prevStatus, newStatus, error);
@@ -775,10 +807,13 @@ export default class LexicalEditorController extends Controller {
         }
     }
 
-    // load supplemental data such as snippets and members count in the background
+    // load supplemental data such as snippets and collections in the background
     @restartableTask
     *backgroundLoaderTask() {
         yield this.store.query('snippet', {limit: 'all'});
+        if (this.post.displayName === 'page' && this.feature.get('collections') && this.feature.get('collectionsCard')) {
+            yield this.store.query('collection', {limit: 'all'});
+        }
         this.syncMobiledocSnippets();
     }
 
@@ -896,14 +931,20 @@ export default class LexicalEditorController extends Controller {
             return;
         }
 
-        // clean up blank cards when leaving the editor if we have a draft post
-        // - blank cards could be left around due to autosave triggering whilst
-        //   a blank card is present then the user attempting to leave
-        // - will mark the post as dirty so it gets saved when transitioning
-        // TODO: not yet implemented in react editor
-        // if (this._koenig && post.isDraft) {
-        //     this._koenig.cleanup();
-        // }
+        // wait for any save to finish before continuing to avoid any issues
+        // with attempting a new save whilst another has requests in-flight
+        if (this.saveTask.isRunning) {
+            transition.abort();
+            await this.saveTask.last;
+            return transition.retry();
+        }
+        // extra handling for PSM-triggered save tasks that aren't captured above
+        // NOTE: we don't wait on `_savePostTask` as it's only used as a child task
+        if (this.savePostTask.isRunning) {
+            transition.abort();
+            await this.savePostTask.last;
+            return transition.retry();
+        }
 
         // user can enter the slug name and then leave the post page,
         // in such case we should wait until the slug would be saved on backend
@@ -913,13 +954,22 @@ export default class LexicalEditorController extends Controller {
             return transition.retry();
         }
 
+        // clean up blank cards when leaving the editor if we have a draft post
+        // - blank cards could be left around due to autosave triggering whilst
+        //   a blank card is present then the user attempting to leave
+        // - will mark the post as dirty so it gets saved when transitioning
+        // TODO: not yet implemented in lexical editor
+        // if (this._koenig && post.isDraft) {
+        //     this._koenig.cleanup();
+        // }
+
         let hasDirtyAttributes = this.hasDirtyAttributes;
         let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
 
         // Check if anything has changed since the last revision
         let postRevisions = post.get('postRevisions').toArray();
         let latestRevision = postRevisions[postRevisions.length - 1];
-        let hasChangedSinceLastRevision = post.get('lexical') !== latestRevision.get('lexical');
+        let hasChangedSinceLastRevision = !post.isNew && post.lexical.replaceAll(this.config.blogUrl, '') !== latestRevision.lexical.replaceAll(this.config.blogUrl, '');
 
         let fromNewToEdit = this.router.currentRouteName === 'lexical-editor.new'
             && transition.targetName === 'lexical-editor.edit'
@@ -974,7 +1024,7 @@ export default class LexicalEditorController extends Controller {
                 return;
             } else {
                 this._leaveConfirmed = true;
-                transition.retry();
+                return transition.retry();
             }
         }
 

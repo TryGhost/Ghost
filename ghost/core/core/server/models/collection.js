@@ -4,6 +4,39 @@ const urlUtils = require('../../shared/url-utils');
 const Collection = ghostBookshelf.Model.extend({
     tableName: 'collections',
 
+    hooks: {
+        belongsToMany: {
+            /**
+             * @this {Collection}
+             * @param {*} existing
+             * @param {*} targets
+             * @param {*} options
+             */
+            after(existing, targets, options) {
+                if (this.get('type') === 'automatic') {
+                    return;
+                }
+
+                const queryOptions = {
+                    query: {
+                        where: {}
+                    }
+                };
+
+                return Promise.all(targets.models.map((target, index) => {
+                    queryOptions.query.where[existing.relatedData.otherKey] = target.id;
+
+                    return existing.updatePivot({
+                        sort_order: index
+                    }, {
+                        ...options,
+                        ...queryOptions
+                    });
+                }));
+            }
+        }
+    },
+
     formatOnWrite(attrs) {
         if (attrs.feature_image) {
             attrs.feature_image = urlUtils.toTransformReady(attrs.feature_image);
@@ -69,6 +102,12 @@ const Collection = ghostBookshelf.Model.extend({
             'post_id',
             'id',
             'id'
+        );
+    },
+
+    collectionPosts() {
+        return this.hasMany(
+            'CollectionPost'
         );
     }
 });

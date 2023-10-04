@@ -7,7 +7,7 @@ const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const {HtmlValidate} = require('html-validate');
 
-function validateHtml(html) {
+async function validateHtml(html) {
     const htmlvalidate = new HtmlValidate({
         extends: [
             'html-validate:document',
@@ -34,7 +34,7 @@ function validateHtml(html) {
             }
         ]
     });
-    const report = htmlvalidate.validateString(html);
+    const report = await htmlvalidate.validateString(html);
 
     // Improve debugging and show a snippet of the invalid HTML instead of just the line number or a huge HTML-dump
     const parsedErrors = [];
@@ -775,7 +775,7 @@ describe('Email renderer', function () {
             }
         });
 
-        it('returns correct empty segment for post', function () {
+        it('returns correct empty segment for post', async function () {
             let post = {
                 get: (key) => {
                     if (key === 'lexical') {
@@ -783,7 +783,7 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            let response = emailRenderer.getSegments(post);
+            let response = await emailRenderer.getSegments(post);
             response.should.eql([null]);
 
             post = {
@@ -793,11 +793,11 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            response = emailRenderer.getSegments(post);
+            response = await emailRenderer.getSegments(post);
             response.should.eql([null]);
         });
 
-        it('returns correct segments for post with members only card', function () {
+        it('returns correct segments for post with members only card', async function () {
             emailRenderer = new EmailRenderer({
                 renderers: {
                     lexical: {
@@ -821,11 +821,11 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            let response = emailRenderer.getSegments(post);
+            let response = await emailRenderer.getSegments(post);
             response.should.eql(['status:free', 'status:-free']);
         });
 
-        it('returns correct segments for post with email card', function () {
+        it('returns correct segments for post with email card', async function () {
             emailRenderer = new EmailRenderer({
                 renderers: {
                     lexical: {
@@ -849,7 +849,7 @@ describe('Email renderer', function () {
                     }
                 }
             };
-            let response = emailRenderer.getSegments(post);
+            let response = await emailRenderer.getSegments(post);
             response.should.eql(['status:free', 'status:-free']);
         });
     });
@@ -1324,7 +1324,7 @@ describe('Email renderer', function () {
                 clickTrackingEnabled: true
             };
 
-            renderedPost = '<p>Lexical Test</p><p><a href="https://external-domain.com/?ref=123">Hello</a><a href="https://encoded-link.com?code&#x3D;test">Hello</a><a href="https://example.com/?ref=123"><img src="example" /></a></p>';
+            renderedPost = '<p>Lexical Test</p><p><a href="https://external-domain.com/?ref=123">Hello</a><a href="https://encoded-link.com?code&#x3D;test">Hello</a><a href="https://example.com/?ref=123"><img src="example" /></a><a href="#">Ignore me</a></p>';
 
             let response = await emailRenderer.renderBody(
                 post,
@@ -1339,6 +1339,10 @@ describe('Email renderer', function () {
             for (const link of $('a').toArray()) {
                 const href = $(link).attr('href');
                 links.push(href);
+
+                if (href === '#') {
+                    continue;
+                }
                 if (href.includes('unsubscribe_url')) {
                     href.should.eql('%%{unsubscribe_url}%%');
                 } else if (href.includes('feedback-link.com')) {
@@ -1357,6 +1361,7 @@ describe('Email renderer', function () {
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexternal-domain.com%2F%3Fref%3D123%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fencoded-link.com%2F%3Fcode%3Dtest%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                '#',
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
@@ -1371,6 +1376,53 @@ describe('Email renderer', function () {
             response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
             response.replacements[1].id.should.eql('unsubscribe_url');
             response.replacements[1].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+        });
+
+        it('replaces all relative links if click tracking is disabled', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: true,
+                feedback_enabled: true,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {
+                clickTrackingEnabled: false
+            };
+
+            renderedPost = '<p>Lexical Test</p><p><a href="#relative-test">Hello</a><a href="#">Ignore me</a></p>';
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            // Check all links have domain tracked-link.com
+            const $ = cheerio.load(response.html);
+            const links = [];
+            for (const link of $('a').toArray()) {
+                const href = $(link).attr('href');
+                links.push(href);
+            }
+
+            // Update the following array when you make changes to the email template, check if replacements are correct for each newly added link.
+            assert.deepEqual(links, [
+                'http://example.com/',
+                'http://example.com/',
+                'http://example.com/',
+                'http://example.com/#relative-test',
+                '#',
+                'http://feedback-link.com/?score=1&uuid=%%{uuid}%%',
+                'http://feedback-link.com/?score=0&uuid=%%{uuid}%%',
+                'http://feedback-link.com/?score=1&uuid=%%{uuid}%%',
+                'http://feedback-link.com/?score=0&uuid=%%{uuid}%%',
+                '%%{unsubscribe_url}%%',
+                'https://ghost.org/'
+            ]);
         });
 
         it('handles encoded links', async function () {
@@ -1581,13 +1633,48 @@ describe('Email renderer', function () {
                 options
             );
 
-            validateHtml(response.html);
+            await validateHtml(response.html);
 
             // Check footer content is not escaped
             assert.equal(response.html.includes('<span>Footer content with valid HTML</span>'), true, 'Should include footer content without escaping');
 
             // Check doesn't contain the non escaped string '<3'
             assert.equal(response.html.includes('<3'), false, 'Should escape HTML characters');
+        });
+
+        it('does not replace img height and width with auto from css', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                feedback_enabled: true,
+                name: 'My newsletter <3</body>',
+                header_image: 'https://testpost.com/test-post</body>/',
+                show_header_icon: true,
+                show_header_title: true,
+                show_feature_image: true,
+                title_font_category: 'sans-serif',
+                title_alignment: 'center',
+                body_font_category: 'serif',
+                show_badge: true,
+                show_header_name: true,
+                // Note: we don't need to check the footer content because this should contain valid HTML (not text)
+                footer_content: '<span>Footer content with valid HTML</span>'
+            });
+            const segment = null;
+            const options = {};
+
+            renderedPost = '<p>This is the post.</p><figure class="kg-card kg-image-card"><img src="__GHOST_URL__/content/images/2023/07/audio-sample_thumb.png" class="kg-image" alt loading="lazy" width="248" height="248"></figure><p>Theres an image!</p>';
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            // console.log(response.html);
+
+            assert.equal(response.html.includes('width="248" height="248"'), true, 'Should not replace img height and width with auto from css');
+            assert.equal(response.html.includes('width="auto" height="auto"'), false, 'Should not replace img height and width with auto from css');
         });
     });
 
@@ -1597,7 +1684,9 @@ describe('Email renderer', function () {
         let emailRenderer;
 
         beforeEach(function () {
-            settings = {};
+            settings = {
+                timezone: 'Etc/UTC'
+            };
             labsEnabled = true;
             emailRenderer = new EmailRenderer({
                 audienceFeedbackService: {

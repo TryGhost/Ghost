@@ -102,7 +102,9 @@ const baseSingleTierSite = getSiteData({
     portalButtonIcon: 'icon-1',
     portalButtonSignupText: 'Subscribe now',
     portalButtonStyle: 'icon-and-text',
-    membersSupportAddress: 'support@example.com'
+    membersSupportAddress: 'support@example.com',
+    recommendationsEnabled: false,
+    recommendations: []
 });
 
 const baseMultiTierSite = getSiteData({
@@ -130,13 +132,15 @@ const baseMultiTierSite = getSiteData({
     portalButtonIcon: 'icon-1',
     portalButtonSignupText: 'Subscribe now',
     portalButtonStyle: 'icon-and-text',
-    membersSupportAddress: 'support@example.com'
+    membersSupportAddress: 'support@example.com',
+    recommendationsEnabled: false,
+    recommendations: []
 });
 
 export const site = {
     singleTier: {
         basic: baseSingleTierSite,
-        inviteOnly: {
+        withoutPlans: {
             ...baseSingleTierSite,
             portal_plans: []
         },
@@ -151,6 +155,28 @@ export const site = {
         withoutName: {
             ...baseSingleTierSite,
             portal_name: false
+        },
+        withoutStripe: {
+            ...baseSingleTierSite,
+            is_stripe_configured: false
+        },
+        onlyFreePlanWithoutStripe: {
+            ...baseSingleTierSite,
+            portal_plans: ['free'],
+            is_stripe_configured: false
+        },
+        membersInviteOnly: {
+            ...baseSingleTierSite,
+            members_signup_access: 'invite'
+        },
+        membersDisabled: {
+            ...baseSingleTierSite,
+            members_signup_access: 'none'
+        },
+        withRecommendations: {
+            ...baseSingleTierSite,
+            recommendations_enabled: true,
+            recommendations: [{title: 'Recommendation 1', url: 'https://recommendation-1.org'}, {title: 'Recommendation 2', url: 'https://recommendation-2.org'}]
         }
     },
     multipleTiers: {
@@ -159,9 +185,18 @@ export const site = {
             ...baseMultiTierSite,
             portal_plans: ['free']
         },
+        onlyPaidPlans: {
+            ...baseMultiTierSite,
+            portal_plans: ['monthly', 'yearly']
+        },
         withoutName: {
             ...baseMultiTierSite,
             portal_name: false
+        },
+        withRecommendations: {
+            ...baseMultiTierSite,
+            recommendations_enabled: true,
+            recommendations: [{title: 'Recommendation 1', url: 'https://recommendation-1.org'}, {title: 'Recommendation 2', url: 'https://recommendation-2.org'}]
         }
     }
 };

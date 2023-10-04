@@ -1,5 +1,5 @@
 import AppContext from '../../../../AppContext';
-import {allowCompMemberUpgrade, getCompExpiry, getMemberSubscription, getMemberTierName, getUpdatedOfferPrice, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isInThePast, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {allowCompMemberUpgrade, getCompExpiry, getMemberSubscription, getMemberTierName, getUpdatedOfferPrice, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, isInThePast, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
@@ -83,9 +83,9 @@ const PaidAccountActions = () => {
         );
     };
 
-    const PlanUpdateButton = ({isComplimentary}) => {
+    const PlanUpdateButton = ({isComplimentary, isPaid}) => {
         const hideUpgrade = allowCompMemberUpgrade({member}) ? false : isComplimentary;
-        if (hideUpgrade || hasOnlyFreePlan({site})) {
+        if (hideUpgrade || (hasOnlyFreePlan({site}) && !isPaid)) {
             return null;
         }
         return (
@@ -138,6 +138,8 @@ const PaidAccountActions = () => {
 
     const subscription = getMemberSubscription({member});
     const isComplimentary = isComplimentaryMember({member});
+    const isPaid = isPaidMember({member});
+    const isCancelled = subscription?.cancel_at_period_end;
     if (subscription || isComplimentary) {
         const {
             price,
@@ -160,7 +162,7 @@ const PaidAccountActions = () => {
                         <h3>{planLabel}</h3>
                         <PlanLabel price={price} isComplimentary={isComplimentary} subscription={subscription} />
                     </div>
-                    <PlanUpdateButton isComplimentary={isComplimentary} />
+                    <PlanUpdateButton isComplimentary={isComplimentary} isPaid={isPaid} isCancelled={isCancelled} />
                 </section>
                 <BillingSection isComplimentary={isComplimentary} defaultCardLast4={defaultCardLast4} />
             </>
@@ -169,7 +171,7 @@ const PaidAccountActions = () => {
     return null;
 };
 
-function FreeTrialLabel({subscription, priceLabel, t}) {
+function FreeTrialLabel({subscription, t}) {
     if (subscriptionHasFreeTrial({sub: subscription})) {
         const trialEnd = getDateString(subscription.trial_end_at);
         return (

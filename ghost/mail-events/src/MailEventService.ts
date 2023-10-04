@@ -1,6 +1,6 @@
-const crypto = require('crypto');
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
+import crypto from 'crypto';
+import errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
 
 import {MailEvent} from './MailEvent';
 import {MailEventRepository} from './MailEventRepository';
@@ -8,7 +8,7 @@ import {MailEventRepository} from './MailEventRepository';
 /**
  * @see https://documentation.mailgun.com/en/latest/user_manual.html#events-1
  */
-enum EventType {
+enum EventType { // eslint-disable-line no-shadow
     CLICKED = 'clicked',
     COMPLAINED = 'complained',
     DELIVERED = 'delivered',
@@ -39,6 +39,7 @@ interface Labs {
 }
 
 interface Config {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(key: string): any;
 }
 

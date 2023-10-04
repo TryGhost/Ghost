@@ -18,10 +18,10 @@
     "lib"
   ],
   "devDependencies": {
-    "c8": "7.13.0",
+    "c8": "8.0.1",
     "mocha": "10.2.0",
-    "nock": "13.3.0",
-    "sinon": "15.0.3"
+    "nock": "13.3.3",
+    "sinon": "15.2.0"
   },
   "dependencies": {
     "@tryghost/debug": "0.1.24",
@@ -29,6 +29,6 @@
     "@tryghost/metrics": "1.0.24",
     "form-data": "4.0.0",
     "lodash": "4.17.21",
-    "mailgun.js": "9.0.0"
+    "mailgun.js": "9.3.0"
   }
 }

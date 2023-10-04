@@ -34,7 +34,7 @@ const NotificationText = ({type, status, context}) => {
         const firstname = context.member.firstname || '';
         return (
             <p>
-                {firstname ? t('Welcome back, {{name}}!', firstname) : t('Welcome back!')}<br />{t('You\'ve successfully signed in.')}
+                {firstname ? t('Welcome back, {{name}}!', {name: firstname}) : t('Welcome back!')}<br />{t('You\'ve successfully signed in.')}
             </p>
         );
     } else if (type === 'signin' && status === 'error') {
@@ -44,20 +44,17 @@ const NotificationText = ({type, status, context}) => {
             </p>
         );
     } else if (type === 'signup' && status === 'success') {
-        // TODO: Wrap these strings with translation function
-        /* eslint-disable i18next/no-literal-string */
         return (
             <p>
-                You've successfully subscribed to <br /><strong>{context.site.title}</strong>
+                {t('You\'ve successfully subscribed to')} <br /><strong>{context.site.title}</strong>
             </p>
         );
     } else if (type === 'signup-paid' && status === 'success') {
         return (
             <p>
-                You've successfully subscribed to <br /><strong>{context.site.title}</strong>
+                {t('You\'ve successfully subscribed to')} <br /><strong>{context.site.title}</strong>
             </p>
         );
-        /* eslint-enable i18next/no-literal-string */
     } else if (type === 'updateEmail' && status === 'success') {
         return (
             <p>
@@ -197,6 +194,16 @@ export default class Notification extends React.Component {
             duration,
             className: ''
         };
+    }
+
+    componentDidMount() {
+        const {showPopup} = this.context;
+        if (showPopup) {
+            // Don't show a notification if there is a popup visible on page load
+            this.setState({
+                active: false
+            });
+        }
     }
 
     onHideNotification() {

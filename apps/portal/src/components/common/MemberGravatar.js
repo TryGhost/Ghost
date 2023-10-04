@@ -1,4 +1,3 @@
-import React from 'react';
 import {ReactComponent as UserIcon} from '../../images/icons/user.svg';
 
 export const AvatarStyles = `

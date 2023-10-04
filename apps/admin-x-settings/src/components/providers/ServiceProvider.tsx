@@ -1,47 +1,79 @@
-import React, {createContext, useContext, useMemo} from 'react';
-import setupGhostApi from '../../utils/api';
+import React, {createContext, useContext} from 'react';
 import useSearchService, {SearchService} from '../../utils/search';
-import {OfficialTheme} from '../../models/themes';
+import {DefaultHeaderTypes} from '../../utils/unsplash/UnsplashTypes';
+import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
 
-export interface FileService {
-    uploadImage: (file: File) => Promise<string>;
-}
+export type OfficialTheme = {
+    name: string;
+    category: string;
+    previewUrl: string;
+    ref: string;
+    image: string;
+    url?: string;
+};
+
+export type FetchKoenigLexical = () => Promise<any>
+
 interface ServicesContextProps {
-    api: ReturnType<typeof setupGhostApi>;
-    fileService: FileService|null;
+    ghostVersion: string
     officialThemes: OfficialTheme[];
-    search: SearchService
+    zapierTemplates: ZapierTemplate[];
+    search: SearchService;
+    unsplashConfig: DefaultHeaderTypes;
+    sentryDSN: string | null;
+    onUpdate: (dataType: string, response: unknown) => void;
+    onInvalidate: (dataType: string) => void;
+    onDelete: (dataType: string, id: string) => void;
+    fetchKoenigLexical: FetchKoenigLexical;
 }
 
 interface ServicesProviderProps {
     children: React.ReactNode;
     ghostVersion: string;
+    zapierTemplates: ZapierTemplate[];
     officialThemes: OfficialTheme[];
+    unsplashConfig: DefaultHeaderTypes;
+    sentryDSN: string | null;
+    onUpdate: (dataType: string, response: unknown) => void;
+    onInvalidate: (dataType: string) => void;
+    onDelete: (dataType: string, id: string) => void;
+    fetchKoenigLexical: FetchKoenigLexical;
 }
 
 const ServicesContext = createContext<ServicesContextProps>({
-    api: setupGhostApi({ghostVersion: ''}),
-    fileService: null,
+    ghostVersion: '',
     officialThemes: [],
-    search: {filter: '', setFilter: () => {}, checkVisible: () => true}
+    zapierTemplates: [],
+    search: {filter: '', setFilter: () => {}, checkVisible: () => true, highlightKeywords: () => ''},
+    unsplashConfig: {
+        Authorization: '',
+        'Accept-Version': '',
+        'Content-Type': '',
+        'App-Pragma': '',
+        'X-Unsplash-Cache': true
+    },
+    sentryDSN: null,
+    onUpdate: () => {},
+    onInvalidate: () => {},
+    onDelete: () => {},
+    fetchKoenigLexical: async () => {}
 });
 
-const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, officialThemes}) => {
-    const apiService = useMemo(() => setupGhostApi({ghostVersion}), [ghostVersion]);
-    const fileService = useMemo(() => ({
-        uploadImage: async (file: File): Promise<string> => {
-            const response = await apiService.images.upload({file});
-            return response.images[0].url;
-        }
-    }), [apiService]);
+const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, unsplashConfig, sentryDSN, onUpdate, onInvalidate, onDelete, fetchKoenigLexical}) => {
     const search = useSearchService();
 
     return (
         <ServicesContext.Provider value={{
-            api: apiService,
-            fileService,
+            ghostVersion,
             officialThemes,
-            search
+            zapierTemplates,
+            search,
+            unsplashConfig,
+            sentryDSN,
+            onUpdate,
+            onInvalidate,
+            onDelete,
+            fetchKoenigLexical
         }}>
             {children}
         </ServicesContext.Provider>
@@ -52,8 +84,8 @@ export {ServicesContext, ServicesProvider};
 
 export const useServices = () => useContext(ServicesContext);
 
-export const useApi = () => useServices().api;
-
 export const useOfficialThemes = () => useServices().officialThemes;
 
 export const useSearch = () => useServices().search;
+
+export const useSentryDSN = () => useServices().sentryDSN;

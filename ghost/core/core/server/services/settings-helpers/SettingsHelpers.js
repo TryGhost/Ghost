@@ -21,6 +21,13 @@ class SettingsHelpers {
     }
 
     /**
+     * NOTE! The backend still allows to self signup if this returns false because a site might use built-in free signup forms apart from Portal
+     */
+    allowSelfSignup() {
+        return this.settingsCache.get('members_signup_access') === 'all' && (this.settingsCache.get('portal_plans').includes('free') || !this.arePaidMembersEnabled());
+    }
+
+    /**
      * @param {'direct' | 'connect'} type - The "type" of keys to fetch from settings
      * @returns {{publicKey: string, secretKey: string} | null}
      */
@@ -97,6 +104,10 @@ class SettingsHelpers {
 
     getNoReplyAddress() {
         return `noreply@${this.getDefaultEmailDomain()}`;
+    }
+
+    areDonationsEnabled() {
+        return this.isStripeConnected();
     }
 }
 

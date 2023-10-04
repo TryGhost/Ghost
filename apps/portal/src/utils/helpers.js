@@ -91,8 +91,9 @@ export function allowCompMemberUpgrade({member}) {
 }
 
 export function getCompExpiry({member}) {
-    if (member?.subscriptions?.[0]?.tier?.expiry_at) {
-        return getDateString(member.subscriptions[0].tier.expiry_at);
+    const subscription = getMemberSubscription({member});
+    if (subscription?.tier?.expiry_at) {
+        return getDateString(subscription.tier.expiry_at);
     }
     return '';
 }
@@ -135,6 +136,15 @@ export function getPriceFromSubscription({subscription}) {
 export function getMemberActivePrice({member}) {
     const subscription = getMemberSubscription({member});
     return getPriceFromSubscription({subscription});
+}
+
+export function getMemberActiveProduct({member, site}) {
+    const subscription = getMemberSubscription({member});
+    const price = getPriceFromSubscription({subscription});
+    const allProducts = getAllProductsForSite({site});
+    return allProducts.find((product) => {
+        return product.id === price?.product.product_id;
+    });
 }
 
 export function isMemberActivePrice({priceId, site, member}) {
@@ -229,6 +239,18 @@ export function isInviteOnlySite({site = {}, pageQuery = ''}) {
     return prices.length === 0 || (site && site.members_signup_access === 'invite');
 }
 
+export function hasRecommendations({site}) {
+    return site?.recommendations_enabled === true;
+}
+
+export function isSigninAllowed({site}) {
+    return site?.members_signup_access === 'all' || site?.members_signup_access === 'invite';
+}
+
+export function isSignupAllowed({site}) {
+    return site?.members_signup_access === 'all' && (site?.is_stripe_configured || hasOnlyFreePlan({site}));
+}
+
 export function hasMultipleProducts({site}) {
     const products = getAvailableProducts({site});
 
@@ -236,6 +258,11 @@ export function hasMultipleProducts({site}) {
         return true;
     }
     return false;
+}
+
+export function getRefDomain() {
+    const referrerSource = window.location.hostname.replace(/^www\./, '');
+    return referrerSource;
 }
 
 export function hasMultipleProductsFeature({site}) {
@@ -398,7 +425,7 @@ export function hasBenefits({prices, site}) {
 
 export function getSiteProducts({site, pageQuery}) {
     const products = getAvailableProducts({site});
-    const showOnlyFree = pageQuery === 'free' && hasFreeProductPrice({site});
+    const showOnlyFree = pageQuery === 'free';
     if (showOnlyFree) {
         return [];
     }
@@ -444,7 +471,7 @@ export function freeHasBenefitsOrDescription({site}) {
     return false;
 }
 
-export function getProductBenefits({product, site = null}) {
+export function getProductBenefits({product}) {
     if (product?.monthlyPrice && product?.yearlyPrice) {
         const productBenefits = product?.benefits || [];
         const monthlyBenefits = productBenefits;

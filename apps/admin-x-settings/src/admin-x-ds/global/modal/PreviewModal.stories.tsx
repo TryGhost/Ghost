@@ -1,4 +1,5 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import {ReactNode} from 'react';
+import type {Meta, StoryContext, StoryObj} from '@storybook/react';
 
 import Heading from '../Heading';
 import NiceModal from '@ebay/nice-modal-react';
@@ -10,7 +11,7 @@ const meta = {
     title: 'Global / Modal / Preview Modal',
     component: PreviewModal,
     tags: ['autodocs'],
-    decorators: [(_story: any, context: any) => (
+    decorators: [(_story: () => ReactNode, context: StoryContext) => (
         <NiceModal.Provider>
             <PreviewModalContainer {...context.args} />
         </NiceModal.Provider>
@@ -38,13 +39,13 @@ export const Default: Story = {
     args: {
         title: 'Preview modal',
         preview: (
-            <div className='flex h-full items-center justify-center text-sm text-grey-500'>
-                Preview area
+            <div className='flex h-[150%] items-center justify-center text-sm text-grey-500'>
+                Scrollable preview area
             </div>
         ),
         sidebar: (
             <div className='flex h-full items-center justify-center text-sm text-grey-500'>
-                Sidebar area
+                Scrollable sidebar area
             </div>
         ),
         previewToolbarTabs: previewURLs,
@@ -56,17 +57,7 @@ export const Default: Story = {
 
 export const NoPreviewToolbar: Story = {
     args: {
-        title: 'Preview modal',
-        preview: (
-            <div className='flex h-full items-center justify-center text-sm text-grey-500'>
-                Preview area
-            </div>
-        ),
-        sidebar: (
-            <div className='flex h-full items-center justify-center text-sm text-grey-500'>
-                Sidebar area
-            </div>
-        ),
+        ...Default.args,
         previewToolbar: false
     }
 };

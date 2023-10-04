@@ -1,23 +1,39 @@
+import PortalFrame from './PortalFrame';
+import PortalLinks from './PortalLinks';
 import React from 'react';
+import {Setting} from '../../../../api/settings';
+import {Tier} from '../../../../api/tiers';
 
 interface PortalPreviewProps {
     selectedTab: string;
+    localSettings: Setting[];
+    localTiers: Tier[];
 }
 
 const PortalPreview: React.FC<PortalPreviewProps> = ({
-    selectedTab = 'signup'
+    selectedTab = 'signup',
+    localSettings,
+    localTiers
 }) => {
     let tabContents = <></>;
 
     switch (selectedTab) {
     case 'account':
-        tabContents = <>Account preview</>;
+        tabContents = (
+            <>
+                <PortalFrame selectedTab={selectedTab} settings={localSettings} tiers={localTiers} />
+            </>
+        );
         break;
     case 'links':
-        tabContents = <>Links</>;
+        tabContents = <PortalLinks />;
         break;
     default:
-        tabContents = <>Signup preview</>;
+        tabContents = (
+            <>
+                <PortalFrame selectedTab={selectedTab} settings={localSettings} tiers={localTiers} />
+            </>
+        );
         break;
     }
 

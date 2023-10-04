@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.53.3",
+  "version": "5.66.1",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -16,7 +16,7 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "ember serve",
+    "dev": "ember serve",
     "build": "ember build --environment=production --silent",
     "build:dev": "yarn build --environment=development",
     "test:unit": "true",
@@ -26,35 +26,35 @@
     "lint": "yarn lint:js && yarn lint:hbs"
   },
   "engines": {
-    "node": "^16.13.0 || ^18.12.1"
+    "node": "^16.14.0 || ^18.12.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.22.5",
+    "@babel/eslint-parser": "7.22.11",
     "@babel/plugin-proposal-class-properties": "7.18.6",
-    "@babel/plugin-proposal-decorators": "7.22.5",
+    "@babel/plugin-proposal-decorators": "7.22.10",
     "@ember/jquery": "2.0.0",
     "@ember/optional-features": "2.0.0",
     "@ember/render-modifiers": "2.1.0",
     "@ember/test-helpers": "2.9.4",
-    "@embroider/macros": "1.11.1",
+    "@embroider/macros": "1.13.2",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@joeattardi/emoji-button": "4.6.4",
-    "@sentry/ember": "7.54.0",
+    "@sentry/ember": "7.70.0",
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.77",
-    "@tryghost/kg-clean-basic-html": "3.0.19",
-    "@tryghost/kg-converters": "0.0.7",
-    "@tryghost/kg-parser-plugins": "3.0.18",
+    "@tryghost/kg-clean-basic-html": "3.0.34",
+    "@tryghost/kg-converters": "0.0.14",
+    "@tryghost/kg-parser-plugins": "3.0.35",
     "@tryghost/kg-simplemde": "1.11.2",
-    "@tryghost/limit-service": "1.2.6",
+    "@tryghost/limit-service": "1.2.10",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.2",
     "@tryghost/nql": "0.11.0",
     "@tryghost/nql-lang": "0.5.0",
     "@tryghost/string": "0.2.4",
-    "@tryghost/timezone-data": "0.3.0",
+    "@tryghost/timezone-data": "0.3.8",
     "autoprefixer": "9.8.6",
     "babel-eslint": "10.1.0",
     "babel-plugin-transform-class-properties": "6.24.1",
@@ -64,7 +64,7 @@
     "broccoli-funnel": "3.0.8",
     "broccoli-merge-trees": "4.2.0",
     "broccoli-terser-sourcemap": "4.1.0",
-    "chai": "4.3.7",
+    "chai": "4.3.8",
     "chai-dom": "1.11.0",
     "codemirror": "5.48.2",
     "cssnano": "4.1.10",
@@ -75,12 +75,12 @@
     "ember-classic-decorator": "3.0.1",
     "ember-cli": "3.24.0",
     "ember-cli-app-version": "5.0.0",
-    "ember-cli-babel": "7.26.11",
+    "ember-cli-babel": "8.1.0",
     "ember-cli-chart": "3.7.2",
     "ember-cli-code-coverage": "1.0.3",
     "ember-cli-dependency-checker": "3.3.2",
     "ember-cli-deprecation-workflow": "2.1.0",
-    "ember-cli-htmlbars": "6.2.0",
+    "ember-cli-htmlbars": "6.3.0",
     "ember-cli-inject-live-reload": "2.1.0",
     "ember-cli-mirage": "2.4.0",
     "ember-cli-node-assets": "0.2.2",
@@ -88,11 +88,11 @@
     "ember-cli-shims": "1.2.0",
     "ember-cli-string-helpers": "6.1.0",
     "ember-cli-terser": "4.0.2",
-    "ember-cli-test-loader": "3.0.0",
+    "ember-cli-test-loader": "3.1.0",
     "ember-composable-helpers": "5.0.0",
     "ember-concurrency": "2.3.7",
     "ember-could-get-used-to-this": "1.0.1",
-    "ember-css-transitions": "4.3.2",
+    "ember-css-transitions": "4.4.0",
     "ember-data": "3.24.0",
     "ember-decorators": "6.1.1",
     "ember-drag-drop": "0.4.8",
@@ -102,7 +102,7 @@
     "ember-fetch": "8.1.2",
     "ember-in-viewport": "4.1.0",
     "ember-infinity": "2.3.0",
-    "ember-keyboard": "8.2.0",
+    "ember-keyboard": "8.2.1",
     "ember-load": "0.0.17",
     "ember-load-initializers": "2.1.2",
     "ember-mocha": "0.16.2",
@@ -112,18 +112,16 @@
     "ember-power-datepicker": "cibernox/ember-power-datepicker",
     "ember-power-select": "6.0.1",
     "ember-resolver": "8.1.0",
-    "ember-simple-auth": "4.2.2",
+    "ember-simple-auth": "5.0.0",
     "ember-sinon": "5.0.0",
     "ember-source": "3.24.0",
-    "ember-svg-jar": "2.4.2",
-    "ember-template-lint": "5.7.2",
+    "ember-svg-jar": "2.4.6",
+    "ember-template-lint": "5.11.0",
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.6.0",
     "ember-truth-helpers": "3.1.1",
     "ember-websockets": "10.2.1",
-    "eslint": "8.37.0",
     "eslint-plugin-babel": "5.3.1",
-    "eslint-plugin-react": "7.32.2",
     "faker": "5.5.3",
     "fs-extra": "11.1.1",
     "glob": "8.1.0",
@@ -132,7 +130,7 @@
     "liquid-fire": "0.34.0",
     "liquid-wormhole": "3.0.1",
     "loader.js": "4.7.0",
-    "markdown-it": "13.0.1",
+    "markdown-it": "13.0.2",
     "markdown-it-footnote": "3.0.3",
     "markdown-it-lazy-headers": "0.1.3",
     "markdown-it-mark": "3.0.1",
@@ -150,10 +148,10 @@
     "process": "0.11.10",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "reframe.js": "4.0.1",
-    "semver": "7.5.3",
+    "reframe.js": "4.0.2",
+    "semver": "7.5.4",
     "testem": "3.10.1",
-    "tracked-built-ins": "3.1.1",
+    "tracked-built-ins": "3.2.0",
     "util": "0.12.5",
     "validator": "7.2.0",
     "walk-sync": "3.0.0"
@@ -180,8 +178,34 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "jose": "4.13.1",
+    "jose": "4.15.1",
     "path-browserify": "1.0.1",
-    "webpack": "5.77.0"
+    "webpack": "5.88.2"
+  },
+  "nx": {
+    "targets": {
+      "build:dev": {
+        "dependsOn": [
+          "build:dev",
+          {
+            "projects": [
+              "@tryghost/admin-x-settings"
+            ],
+            "target": "build"
+          }
+        ]
+      },
+      "build": {
+        "dependsOn": [
+          "build",
+          {
+            "projects": [
+              "@tryghost/admin-x-settings"
+            ],
+            "target": "build"
+          }
+        ]
+      }
+    }
   }
 }

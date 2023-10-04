@@ -1,4 +1,3 @@
-import React from 'react';
 import App from '../App.js';
 import {fireEvent, appRender, within, waitFor} from '../utils/test-utils';
 import {offer as FixtureOffer, site as FixtureSite} from '../utils/test-fixtures';
@@ -538,9 +537,7 @@ describe('Signup', () => {
             window.location.hash = '';
         });
     });
-});
 
-describe('Signup', () => {
     describe('as free member on multi tier site', () => {
         test('with default settings', async () => {
             const {
@@ -643,6 +640,22 @@ describe('Signup', () => {
             // Check if magic link page is shown
             const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
             expect(magicLink).toBeInTheDocument();
+        });
+
+        test('should not show free plan if it is hidden', async () => {
+            let {
+                popupFrame, triggerButtonFrame, emailInput, nameInput,
+                siteTitle, freePlanTitle
+            } = await multiTierSetup({
+                site: FixtureSite.multipleTiers.onlyPaidPlans
+            });
+
+            expect(popupFrame).toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(freePlanTitle.length).toBe(0);
         });
     });
 
@@ -770,3 +783,4 @@ describe('Signup', () => {
         });
     });
 });
+

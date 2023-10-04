@@ -80,6 +80,7 @@ const allowStripe = () => {
 
 const mockStripe = () => {
     disableNetwork();
+    stripeMocker.reset();
     stripeMocker.stub();
 };
 

@@ -13,6 +13,10 @@ import FeedbackPage from './components/pages/FeedbackPage';
 import EmailSuppressedPage from './components/pages/EmailSuppressedPage';
 import EmailSuppressionFAQ from './components/pages/EmailSuppressionFAQ';
 import EmailReceivingFAQ from './components/pages/EmailReceivingFAQ';
+import SupportPage from './components/pages/SupportPage';
+import SupportSuccess from './components/pages/SupportSuccess';
+import SupportError from './components/pages/SupportError';
+import RecommendationsPage from './components/pages/RecommendationsPage';
 
 /** List of all available pages in Portal, mapped to their UI component
  * Any new page added to portal needs to be mapped here
@@ -32,7 +36,11 @@ const Pages = {
     feedback: FeedbackPage,
     emailSuppressed: EmailSuppressedPage,
     emailSuppressionFAQ: EmailSuppressionFAQ,
-    emailReceivingFAQ: EmailReceivingFAQ
+    emailReceivingFAQ: EmailReceivingFAQ,
+    support: SupportPage,
+    supportSuccess: SupportSuccess,
+    supportError: SupportError,
+    recommendations: RecommendationsPage
 };
 
 /** Return page if valid, fallback to signup */
@@ -49,6 +57,10 @@ export const isAccountPage = function ({page}) {
 
 export const isOfferPage = function ({page}) {
     return page.includes('offer');
+};
+
+export const isSupportPage = function ({page}) {
+    return page.includes('support');
 };
 
 export default Pages;

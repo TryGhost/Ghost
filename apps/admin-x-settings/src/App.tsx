@@ -1,53 +1,74 @@
-import Button from './admin-x-ds/global/Button';
-import DataProvider from './components/providers/DataProvider';
-import Heading from './admin-x-ds/global/Heading';
+import DesignSystemProvider from './admin-x-ds/providers/DesignSystemProvider';
+import GlobalDataProvider from './components/providers/GlobalDataProvider';
+import MainContent from './MainContent';
 import NiceModal from '@ebay/nice-modal-react';
-import Settings from './components/Settings';
-import Sidebar from './components/Sidebar';
+import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
+import clsx from 'clsx';
+import {DefaultHeaderTypes} from './utils/unsplash/UnsplashTypes';
+import {FetchKoenigLexical, OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
-import {OfficialTheme} from './models/themes';
-import {ServicesProvider} from './components/providers/ServiceProvider';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
 import {Toaster} from 'react-hot-toast';
+import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
 
 interface AppProps {
     ghostVersion: string;
-    officialThemes: OfficialTheme[]
-    setDirty?: (dirty: boolean) => void;
+    officialThemes: OfficialTheme[];
+    zapierTemplates: ZapierTemplate[];
+    externalNavigate: (link: ExternalLink) => void;
+    darkMode?: boolean;
+    unsplashConfig: DefaultHeaderTypes
+    sentryDSN: string | null;
+    fetchKoenigLexical: FetchKoenigLexical;
+    onUpdate: (dataType: string, response: unknown) => void;
+    onInvalidate: (dataType: string) => void;
+    onDelete: (dataType: string, id: string) => void;
 }
 
-function App({ghostVersion, officialThemes, setDirty}: AppProps) {
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+            staleTime: 5 * (60 * 1000), // 5 mins
+            cacheTime: 10 * (60 * 1000), // 10 mins
+            // We have custom retry logic for specific errors in fetchApi()
+            retry: false
+        }
+    }
+});
+
+function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, fetchKoenigLexical, sentryDSN, onUpdate, onInvalidate, onDelete}: AppProps) {
+    const appClassName = clsx(
+        'admin-x-settings h-[100vh] w-full overflow-y-auto overflow-x-hidden',
+        darkMode && 'dark'
+    );
+
     return (
-        <ServicesProvider ghostVersion={ghostVersion} officialThemes={officialThemes}>
-            <DataProvider>
-                <GlobalDirtyStateProvider setDirty={setDirty}>
-                    <div className="admin-x-settings">
-                        <Toaster />
-                        <NiceModal.Provider>
-                            <div className='fixed left-6 top-4'>
-                                <Button label='&larr; Done' link={true} onClick={() => window.history.back()} />
-                            </div>
-
-                            {/* Main container */}
-                            <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] py-[12vmin] md:flex-row md:items-start md:gap-x-10 md:py-[8vmin]">
-
-                                {/* Sidebar */}
-                                <div className="relative min-w-[260px] grow-0 md:fixed md:top-[8vmin] md:basis-[260px]">
-                                    <div className='h-[84px]'>
-                                        <Heading>Settings</Heading>
+        <SentryErrorBoundary>
+            <QueryClientProvider client={queryClient}>
+                <ServicesProvider fetchKoenigLexical={fetchKoenigLexical} ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
+                    <GlobalDataProvider>
+                        <RoutingProvider externalNavigate={externalNavigate}>
+                            <GlobalDirtyStateProvider>
+                                <DesignSystemProvider>
+                                    <div className={appClassName} id="admin-x-root" style={{
+                                        height: '100vh',
+                                        width: '100%'
+                                    }}
+                                    >
+                                        <Toaster />
+                                        <NiceModal.Provider>
+                                            <MainContent />
+                                        </NiceModal.Provider>
                                     </div>
-                                    <div className="relative mt-[-32px] w-[260px] overflow-x-hidden after:absolute after:inset-x-0 after:top-0 after:block after:h-[40px] after:bg-gradient-to-b after:from-white after:to-transparent after:content-['']">
-                                        <Sidebar />
-                                    </div>
-                                </div>
-                                <div className="flex-auto pt-[3vmin] md:ml-[300px] md:pt-[55px]">
-                                    <Settings />
-                                </div>
-                            </div>
-                        </NiceModal.Provider>
-                    </div>
-                </GlobalDirtyStateProvider>
-            </DataProvider>
-        </ServicesProvider>
+                                </DesignSystemProvider>
+                            </GlobalDirtyStateProvider>
+                        </RoutingProvider>
+                    </GlobalDataProvider>
+                </ServicesProvider>
+            </QueryClientProvider>
+        </SentryErrorBoundary>
     );
 }
 

@@ -55,7 +55,7 @@ export default class ModalPostHistory extends Component {
                 feature_image_caption: revision.get('featureImageCaption'),
                 author: {
                     name: revision.get('author.name') || 'Deleted staff user',
-                    profile_image_url: revision.get('author.profileImage') || this.ghostPaths.assetRoot.replace(/\/$/, '') + '/img/user-image.png'
+                    profile_image_url: revision.get('author.profileImageUrl')
                 },
                 postStatus: revision.get('postStatus'),
                 reason: revision.get('reason'),
