@@ -1,10 +1,9 @@
 import Heading from '../../../../admin-x-ds/global/Heading';
 import MarketplaceBgImage from '../../../../assets/images/footer-marketplace-bg.png';
 import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {OfficialTheme, useOfficialThemes} from '../../../providers/ServiceProvider';
 import {getGhostPaths, resolveAsset} from '../../../../utils/helpers';
-import {useEffect, useState} from 'react';
 
 const sourceDemos = [
     {image: 'Source.png', category: 'News'},
@@ -23,15 +22,27 @@ const OfficialThemes: React.FC<{
     const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => {
-        const interval = setInterval(() => {
+        const switchSourceDemos = () => {
             if (isHovered) {
                 setCurrentSourceDemoIndex(prevIndex => (prevIndex + 1) % sourceDemos.length);
             }
+        };
+
+        switchSourceDemos();
+
+        const interval = setInterval(() => {
+            switchSourceDemos();
         }, 3000);
 
         return () => {
             clearInterval(interval);
         };
+    }, [isHovered]);
+
+    useEffect(() => {
+        if (!isHovered) {
+            setCurrentSourceDemoIndex(0);
+        }
     }, [isHovered]);
 
     return (
@@ -43,7 +54,7 @@ const OfficialThemes: React.FC<{
                             onSelectTheme?.(theme);
                         }}>
                             {/* <img alt={theme.name} src={`${assetRoot}/${theme.image}`}/> */}
-                            <div className='relative w-full bg-grey-100 shadow-md transition-all duration-500 hover:scale-[1.05]' onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+                            <div className='relative w-full bg-grey-100 shadow-md transition-all duration-500 hover:scale-[1.05]' onMouseEnter={() => theme.name === 'Source' && setIsHovered(true)} onMouseLeave={() => theme.name === 'Source' && setIsHovered(false)}>
                                 {theme.name !== 'Source' ?
                                     <img
                                         alt={`${theme.name} Theme`}
@@ -67,7 +78,7 @@ const OfficialThemes: React.FC<{
                                 {theme.name !== 'Source' ?
                                     <span className='text-sm text-grey-700'>{theme.category}</span> :
                                     sourceDemos.map((demo, index) => (
-                                        <span className={`${index === 0 ? 'relative' : 'absolute bottom-[1px]'} left-0 inline-block w-24 bg-white text-sm text-grey-700 ${index === currentSourceDemoIndex ? 'opacity-100' : 'opacity-0'}`}>{demo.category}</span>
+                                        <span className={`${index === 0 ? 'absolute' : 'absolute'} left-0 translate-y-px text-sm text-grey-700 ${index === currentSourceDemoIndex ? 'opacity-100' : 'opacity-0'}`}>{demo.category}</span>
                                     ))
                                 }
                             </div>
