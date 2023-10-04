@@ -104,9 +104,9 @@
     "@tryghost/kg-converters": "0.0.14",
     "@tryghost/kg-default-atoms": "4.0.3",
     "@tryghost/kg-default-cards": "9.1.4",
-    "@tryghost/kg-default-nodes": "0.1.32",
-    "@tryghost/kg-html-to-lexical": "0.0.8",
-    "@tryghost/kg-lexical-html-renderer": "0.3.29",
+    "@tryghost/kg-default-nodes": "0.1.34",
+    "@tryghost/kg-html-to-lexical": "0.0.10",
+    "@tryghost/kg-lexical-html-renderer": "0.3.31",
     "@tryghost/kg-mobiledoc-html-renderer": "6.0.11",
     "@tryghost/limit-service": "1.2.10",
     "@tryghost/link-redirects": "0.0.0",
@@ -162,7 +162,7 @@
     "@tryghost/verification-trigger": "0.0.0",
     "@tryghost/version": "0.1.22",
     "@tryghost/webmentions": "0.0.0",
-    "@tryghost/zip": "1.1.37",
+    "@tryghost/zip": "1.1.38",
     "amperize": "0.6.1",
     "analytics-node": "6.2.0",
     "body-parser": "1.20.2",
@@ -189,7 +189,7 @@
     "ghost-storage-base": "1.0.0",
     "glob": "8.1.0",
     "got": "11.8.6",
-    "gscan": "4.37.5",
+    "gscan": "4.39.4",
     "human-number": "2.0.3",
     "image-size": "1.0.2",
     "intl": "1.2.5",
@@ -227,7 +227,7 @@
     "yjs": "13.6.8"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "2.0.33",
+    "@tryghost/html-to-mobiledoc": "2.0.35",
     "sqlite3": "5.1.6"
   },
   "devDependencies": {
