@@ -30,7 +30,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@rollup/plugin-babel": "6.0.3",
+    "@rollup/plugin-babel": "6.0.4",
     "c8": "8.0.1",
     "mocha": "10.2.0",
     "rollup": "2.79.1",
