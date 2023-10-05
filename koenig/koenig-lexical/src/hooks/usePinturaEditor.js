@@ -1,11 +1,12 @@
 import trackEvent from '../utils/analytics';
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 
 export default function usePinturaEditor({
     config, disabled = false
 }) {
     const [scriptLoaded, setScriptLoaded] = useState(false);
     const [cssLoaded, setCssLoaded] = useState(false);
+    const allowClose = useRef(false);
 
     const isEnabled = !disabled && scriptLoaded && cssLoaded;
 
@@ -63,6 +64,8 @@ export default function usePinturaEditor({
     }, [config?.cssUrl]);
 
     const openEditor = useCallback(({image, handleSave}) => {
+        allowClose.current = false;
+
         trackEvent('Image Edit Button Clicked', {location: 'editor'});
         if (image && isEnabled) {
             // add a timestamp to the image src to bypass cache
@@ -126,7 +129,8 @@ export default function usePinturaEditor({
                 locale: {
                     labelButtonExport: 'Save and close'
                 },
-                previewPad: true
+                previewPad: true,
+                willClose: () => (allowClose.current) // prevent closing on escape, only allow on close button clicks
             });
 
             editor.on('loaderror', () => {
@@ -140,6 +144,20 @@ export default function usePinturaEditor({
             });
         }
     }, [isEnabled]);
+
+    useEffect(() => {
+        const handleCloseClick = (event) => {
+            if (event.target.closest('.PinturaModal button[title="Close"]')) {
+                allowClose.current = true;
+            }
+        };
+
+        window.addEventListener('click', handleCloseClick, {capture: true});
+
+        return () => {
+            window.removeEventListener('click', handleCloseClick);
+        };
+    }, []);
 
     return {
         isEnabled,
