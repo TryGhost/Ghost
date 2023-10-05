@@ -106,8 +106,8 @@ const Sidebar: React.FC = () => {
                     <SettingNavItem keywords={emailSearchKeywords.enableNewsletters} navid='enable-newsletters' title="Newsletter sending" onClick={handleSectionClick} />
                     {newslettersEnabled !== 'disabled' && (
                         <>
-                            <SettingNavItem keywords={emailSearchKeywords.newsletters} navid='newsletters' title="Newsletters" onClick={handleSectionClick} />
                             <SettingNavItem keywords={emailSearchKeywords.defaultRecipients} navid='default-recipients' title="Default recipients" onClick={handleSectionClick} />
+                            <SettingNavItem keywords={emailSearchKeywords.newsletters} navid='newsletters' title="Newsletters" onClick={handleSectionClick} />
                             {!config.mailgunIsConfigured && <SettingNavItem keywords={emailSearchKeywords.mailgun} navid='mailgun' title="Mailgun settings" onClick={handleSectionClick} />}
                         </>
                     )}
