@@ -1,16 +1,5 @@
-import {Locator, expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, updatedSettingsResponse} from '../../utils/acceptance';
-
-const testUrlValidation = async (input: Locator, textToEnter: string, expectedResult: string, expectedError?: string) => {
-    await input.fill(textToEnter);
-    await input.blur();
-
-    await expect(input).toHaveValue(expectedResult);
-
-    if (expectedError) {
-        await expect(input.locator('xpath=..')).toContainText(expectedError);
-    }
-};
+import {expect, test} from '@playwright/test';
+import {globalDataRequests, mockApi, testUrlValidation, updatedSettingsResponse} from '../../utils/acceptance';
 
 test.describe('Social account settings', async () => {
     test('Supports editing social URLs', async ({page}) => {

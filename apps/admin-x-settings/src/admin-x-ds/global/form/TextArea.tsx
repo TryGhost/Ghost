@@ -1,4 +1,4 @@
-import React, {useId} from 'react';
+import React, {FocusEventHandler, HTMLProps, useId} from 'react';
 
 import Heading from '../Heading';
 import Hint from '../Hint';
@@ -8,7 +8,7 @@ import {useFocusContext} from '../../providers/DesignSystemProvider';
 type ResizeOptions = 'both' | 'vertical' | 'horizontal' | 'none';
 type FontStyles = 'sans' | 'mono';
 
-interface TextAreaProps {
+interface TextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     inputRef?: React.RefObject<HTMLTextAreaElement>;
     title?: string;
     value?: string;
@@ -38,17 +38,21 @@ const TextArea: React.FC<TextAreaProps> = ({
     fontStyle = 'sans',
     className,
     onChange,
+    onFocus,
+    onBlur,
     ...props
 }) => {
     const id = useId();
     const {setFocusState} = useFocusContext();
 
-    const handleFocus = () => {
+    const handleFocus: FocusEventHandler<HTMLTextAreaElement> = (e) => {
         setFocusState(true);
+        onFocus?.(e);
     };
 
-    const handleBlur = () => {
+    const handleBlur: FocusEventHandler<HTMLTextAreaElement> = (e) => {
         setFocusState(false);
+        onBlur?.(e);
     };
 
     let styles = clsx(

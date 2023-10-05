@@ -4,12 +4,10 @@ import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupCon
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {User, hasAdminAccess} from '../../../../api/users';
-import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     const hasWebmentions = useFeatureFlag('webmentions');
     const hasRecommendations = useFeatureFlag('recommendations');
-    const {currentUser} = useGlobalData();
 
     return (
         <SettingGroupContent>
@@ -22,7 +20,7 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
                     setUserData?.({...user, comment_notifications: e.target.checked});
                 }}
             />
-            {hasAdminAccess(currentUser) && <>
+            {hasAdminAccess(user) && <>
                 {hasWebmentions && <Toggle
                     checked={user.mention_notifications}
                     direction='rtl'

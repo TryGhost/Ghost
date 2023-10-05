@@ -3,7 +3,7 @@ import {ConfigResponseType} from '../../src/api/config';
 import {CustomThemeSettingsResponseType} from '../../src/api/customThemeSettings';
 import {InvitesResponseType} from '../../src/api/invites';
 import {LabelsResponseType} from '../../src/api/labels';
-import {Locator, Page} from '@playwright/test';
+import {Locator, Page, expect} from '@playwright/test';
 import {NewslettersResponseType} from '../../src/api/newsletters';
 import {OffersResponseType} from '../../src/api/offers';
 import {RolesResponseType} from '../../src/api/roles';
@@ -151,3 +151,14 @@ export async function chooseOptionInSelect(select: Locator, optionText: string |
     await select.click();
     await select.page().locator('[data-testid="select-option"]', {hasText: optionText}).click();
 }
+
+export async function testUrlValidation(input: Locator, textToEnter: string, expectedResult: string, expectedError?: string) {
+    await input.fill(textToEnter);
+    await input.blur();
+
+    expect(input).toHaveValue(expectedResult);
+
+    if (expectedError) {
+        await expect(input.locator('xpath=..')).toContainText(expectedError);
+    }
+};
