@@ -84,10 +84,8 @@ export default function usePinturaEditor({
                     'redact',
                     'annotate',
                     'trim',
-                    'frame',
-                    'sticker'
+                    'frame'
                 ],
-                stickerStickToImage: true,
                 frameOptions: [
                     // No frame
                     [undefined, locale => locale.labelNone],
