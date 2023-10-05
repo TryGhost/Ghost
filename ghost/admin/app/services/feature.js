@@ -73,6 +73,12 @@ export default class FeatureService extends Service {
     @feature('signupForm') signupForm;
     @feature('collections') collections;
     @feature('adminXSettings') adminXSettings;
+    @feature('mailEvents') mailEvents;
+    @feature('collectionsCard') collectionsCard;
+    @feature('importMemberTier') importMemberTier;
+    @feature('tipsAndDonations') tipsAndDonations;
+    @feature('recommendations') recommendations;
+    @feature('lexicalIndicators') lexicalIndicators;
 
     _user = null;
 

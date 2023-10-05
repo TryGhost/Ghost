@@ -1,7 +1,15 @@
+import {UniqueChecker} from './UniqueChecker';
 import {ValidationError} from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
+import nql from '@tryghost/nql';
+import {posts as postExpansions} from '@tryghost/nql-filter-expansions';
+import {CollectionPost} from './CollectionPost';
+import {CollectionPostAdded} from './events/CollectionPostAdded';
+import {CollectionPostRemoved} from './events/CollectionPostRemoved';
 
 import ObjectID from 'bson-objectid';
+
+type CollectionEvent = CollectionPostAdded | CollectionPostRemoved;
 
 const messages = {
     invalidIDProvided: 'Invalid ID provided for Collection',
@@ -9,23 +17,99 @@ const messages = {
     invalidFilterProvided: {
         message: 'Invalid filter provided for automatic Collection',
         context: 'Automatic type of collection should always have a filter value'
-    }
+    },
+    noTitleProvided: 'Title must be provided',
+    slugMustBeUnique: 'Slug must be unique'
 };
 
+function validateFilter(filter: string | null, type: 'manual' | 'automatic', isAllowedEmpty = false) {
+    const allowedProperties = ['featured', 'published_at', 'tag', 'tags'];
+    if (type === 'manual') {
+        if (filter !== null) {
+            throw new ValidationError({
+                message: tpl(messages.invalidFilterProvided.message),
+                context: tpl(messages.invalidFilterProvided.context)
+            });
+        }
+        return;
+    }
+
+    // type === 'automatic' now
+    if (filter === null) {
+        throw new ValidationError({
+            message: tpl(messages.invalidFilterProvided.message),
+            context: tpl(messages.invalidFilterProvided.context)
+        });
+    }
+
+    if (filter.trim() === '' && !isAllowedEmpty) {
+        throw new ValidationError({
+            message: tpl(messages.invalidFilterProvided.message),
+            context: tpl(messages.invalidFilterProvided.context)
+        });
+    }
+
+    try {
+        const parsedFilter = nql(filter);
+        const keysUsed: string[] = [];
+        nql.utils.mapQuery(parsedFilter.toJSON(), function (value: unknown, key: string) {
+            keysUsed.push(key);
+        });
+        if (keysUsed.some(key => !allowedProperties.includes(key))) {
+            throw new ValidationError({
+                message: tpl(messages.invalidFilterProvided.message)
+            });
+        }
+    } catch (err) {
+        throw new ValidationError({
+            message: tpl(messages.invalidFilterProvided.message)
+        });
+    }
+}
+
 export class Collection {
+    events: CollectionEvent[];
     id: string;
     title: string;
-    slug: string;
+    private _slug: string;
+    get slug() {
+        return this._slug;
+    }
+
+    async setSlug(slug: string, uniqueChecker: UniqueChecker) {
+        if (slug === this.slug) {
+            return;
+        }
+        if (await uniqueChecker.isUniqueSlug(slug)) {
+            this._slug = slug;
+        } else {
+            throw new ValidationError({
+                message: tpl(messages.slugMustBeUnique)
+            });
+        }
+    }
     description: string;
     type: 'manual' | 'automatic';
-    filter: string | null;
+    _filter: string | null;
+    get filter() {
+        return this._filter;
+    }
+    set filter(value) {
+        if (this.slug === 'latest' || this.slug === 'featured') {
+            return;
+        }
+        validateFilter(value, this.type);
+        this._filter = value;
+    }
     featureImage: string | null;
     createdAt: Date;
     updatedAt: Date;
-    deletable: boolean;
-    _deleted: boolean = false;
+    get deletable() {
+        return this.slug !== 'latest' && this.slug !== 'featured';
+    }
+    private _deleted: boolean = false;
 
-    _posts: string[];
+    private _posts: string[];
     get posts() {
         return this._posts;
     }
@@ -40,18 +124,36 @@ export class Collection {
         }
     }
 
+    postMatchesFilter(post: CollectionPost) {
+        const filterNql = nql(this.filter, {
+            expansions: postExpansions
+        });
+        return filterNql.queryJSON(post);
+    }
+
     /**
      * @param post {{id: string}} - The post to add to the collection
      * @param index {number} - The index to insert the post at, use negative numbers to count from the end.
      */
-    addPost(post: {id: string}, index: number = -0) {
-        // if (this.type === 'automatic') {
-        //     TODO: Test the post against the NQL filter stored in `this.filter`
-        //     This will need the `post` param to include more data.
-        // }
+    addPost(post: CollectionPost, index: number = -0) {
+        if (this.slug === 'latest') {
+            return false;
+        }
+        if (this.type === 'automatic') {
+            const matchesFilter = this.postMatchesFilter(post);
+
+            if (!matchesFilter) {
+                return false;
+            }
+        }
 
         if (this.posts.includes(post.id)) {
             this._posts = this.posts.filter(id => id !== post.id);
+        } else {
+            this.events.push(CollectionPostAdded.create({
+                post_id: post.id,
+                collection_id: this.id
+            }));
         }
 
         if (index < 0 || Object.is(index, -0)) {
@@ -59,31 +161,47 @@ export class Collection {
         }
 
         this.posts.splice(index, 0, post.id);
+        return true;
     }
 
     removePost(id: string) {
         if (this.posts.includes(id)) {
             this._posts = this.posts.filter(postId => postId !== id);
+            this.events.push(CollectionPostRemoved.create({
+                post_id: id,
+                collection_id: this.id
+            }));
         }
     }
 
+    includesPost(id: string) {
+        return this.posts.includes(id);
+    }
+
     removeAllPosts() {
+        for (const id of this._posts) {
+            this.events.push(CollectionPostRemoved.create({
+                post_id: id,
+                collection_id: this.id
+            }));
+        }
         this._posts = [];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private constructor(data: any) {
         this.id = data.id;
         this.title = data.title;
-        this.slug = data.slug;
+        this._slug = data.slug;
         this.description = data.description;
         this.type = data.type;
-        this.filter = data.filter;
+        this._filter = data.filter;
         this.featureImage = data.featureImage;
         this.createdAt = data.createdAt;
         this.updatedAt = data.updatedAt;
-        this.deletable = data.deletable;
         this.deleted = data.deleted;
         this._posts = data.posts;
+        this.events = [];
     }
 
     toJSON() {
@@ -101,6 +219,7 @@ export class Collection {
         };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static validateDateField(date: any, fieldName: string): Date {
         if (!date) {
             return new Date();
@@ -115,6 +234,7 @@ export class Collection {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static async create(data: any): Promise<Collection> {
         let id;
 
@@ -130,10 +250,13 @@ export class Collection {
             });
         }
 
-        if (data.type === 'automatic' && !data.filter) {
+        const type = data.type === 'automatic' ? 'automatic' : 'manual';
+        const filter = typeof data.filter === 'string' ? data.filter : null;
+        validateFilter(filter, type, data.slug === 'latest');
+
+        if (!data.title) {
             throw new ValidationError({
-                message: tpl(messages.invalidFilterProvided.message),
-                context: tpl(messages.invalidFilterProvided.context)
+                message: tpl(messages.noTitleProvided)
             });
         }
 
@@ -142,14 +265,13 @@ export class Collection {
             title: data.title,
             slug: data.slug,
             description: data.description || null,
-            type: data.type || 'manual',
-            filter: data.filter || null,
+            type: type,
+            filter: filter,
             featureImage: data.feature_image || null,
             createdAt: Collection.validateDateField(data.created_at, 'created_at'),
             updatedAt: Collection.validateDateField(data.updated_at, 'updated_at'),
             deleted: data.deleted || false,
-            deletable: (data.deletable !== false),
-            posts: data.posts || []
+            posts: data.slug !== 'latest' ? (data.posts || []) : []
         });
     }
 }

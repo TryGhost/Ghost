@@ -1,5 +1,4 @@
 const should = require('should');
-const Promise = require('bluebird');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
@@ -54,7 +53,9 @@ describe('Actions API', function () {
         res2.body.actions[0].actor.name.should.eql(testUtils.DataGenerator.Content.users[0].name);
         res2.body.actions[0].actor.slug.should.eql(testUtils.DataGenerator.Content.users[0].slug);
 
-        await Promise.delay(1000);
+        await new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+        });
 
         const res3 = await request
             .put(localUtils.API.getApiQuery(`posts/${postId}/`))
@@ -92,7 +93,9 @@ describe('Actions API', function () {
         res4.body.actions[0].actor.name.should.eql(testUtils.DataGenerator.Content.users[0].name);
         res4.body.actions[0].actor.slug.should.eql(testUtils.DataGenerator.Content.users[0].slug);
 
-        await Promise.delay(1000);
+        await new Promise((resolve) => {
+            setTimeout(resolve, 1000);
+        });
 
         const integrationRequest = supertest.agent(config.get('url'));
         await integrationRequest

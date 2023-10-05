@@ -201,6 +201,18 @@ module.exports = {
         return apiFramework.pipeline(require('./links'), localUtils);
     },
 
+    get mailEvents() {
+        return apiFramework.pipeline(require('./mail-events'), localUtils);
+    },
+
+    get recommendations() {
+        return apiFramework.pipeline(require('./recommendations'), localUtils);
+    },
+
+    get incomingRecommendations() {
+        return apiFramework.pipeline(require('./incoming-recommendations'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *
@@ -211,6 +223,10 @@ module.exports = {
      */
     get pagesPublic() {
         return apiFramework.pipeline(require('./pages-public'), localUtils, 'content');
+    },
+
+    get collectionsPublic() {
+        return apiFramework.pipeline(require('./collections-public'), localUtils);
     },
 
     get tagsPublic() {
@@ -247,5 +263,9 @@ module.exports = {
 
     get feedbackMembers() {
         return apiFramework.pipeline(require('./feedback-members'), localUtils, 'members');
+    },
+
+    get recommendationsPublic() {
+        return apiFramework.pipeline(require('./recommendations-public'), localUtils, 'content');
     }
 };

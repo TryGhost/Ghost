@@ -2,7 +2,7 @@
 
 exports[`page.* events page.added event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -21,6 +21,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -35,6 +36,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "slug": "joe-bloggs",
           "status": "active",
           "tour": null,
@@ -71,6 +73,7 @@ Object {
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -85,6 +88,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "slug": "joe-bloggs",
         "status": "active",
         "tour": null,
@@ -95,6 +99,7 @@ Object {
       },
       "primary_tag": null,
       "published_at": null,
+      "show_title_and_feature_image": true,
       "slug": "testing-page-added-webhook",
       "status": "draft",
       "tags": Array [],
@@ -152,7 +157,7 @@ Object {
 
 exports[`page.* events page.deleted event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -172,6 +177,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -186,6 +192,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -217,6 +224,7 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "show_title_and_feature_image": true,
       "slug": "testing-page-deleted-webhook",
       "status": "published",
       "title": "testing page.deleted webhook",
@@ -230,7 +238,7 @@ Object {
 
 exports[`page.* events page.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -249,6 +257,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -263,6 +272,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -315,6 +325,7 @@ Object {
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -329,6 +340,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -348,6 +360,7 @@ Object {
       },
       "primary_tag": null,
       "published_at": null,
+      "show_title_and_feature_image": true,
       "slug": "updated-test-page",
       "status": "draft",
       "tags": Array [],
@@ -447,7 +460,7 @@ Object {
 
 exports[`page.* events page.published event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -466,6 +479,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -480,6 +494,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -532,6 +547,7 @@ Object {
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -546,6 +562,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -565,6 +582,7 @@ Object {
       },
       "primary_tag": null,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "show_title_and_feature_image": true,
       "slug": "testing-page-published-webhook",
       "status": "published",
       "tags": Array [],
@@ -664,7 +682,7 @@ Object {
 
 exports[`page.* events page.published.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -683,6 +701,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -697,6 +716,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -749,6 +769,7 @@ Object {
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -763,6 +784,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -782,6 +804,7 @@ Object {
       },
       "primary_tag": null,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "show_title_and_feature_image": true,
       "slug": "testing-page-published-edited-webhook",
       "status": "published",
       "tags": Array [],
@@ -880,7 +903,7 @@ Object {
 
 exports[`page.* events page.rescheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -899,6 +922,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -913,6 +937,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -965,6 +990,7 @@ Object {
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -979,6 +1005,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -998,6 +1025,7 @@ Object {
       },
       "primary_tag": null,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "show_title_and_feature_image": true,
       "slug": "testing-page-rescheduled-webhook",
       "status": "scheduled",
       "tags": Array [],
@@ -1096,7 +1124,7 @@ Object {
 
 exports[`page.* events page.scheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1115,6 +1143,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -1129,6 +1158,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1181,6 +1211,7 @@ Object {
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -1195,6 +1226,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1214,6 +1246,7 @@ Object {
       },
       "primary_tag": null,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "show_title_and_feature_image": true,
       "slug": "testing-page-scheduled-webhook",
       "status": "scheduled",
       "tags": Array [],
@@ -1313,7 +1346,7 @@ Object {
 
 exports[`page.* events page.tag.attached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1332,6 +1365,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -1346,6 +1380,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1398,6 +1433,7 @@ Object {
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -1412,6 +1448,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1453,6 +1490,7 @@ Object {
         "visibility": "public",
       },
       "published_at": null,
+      "show_title_and_feature_image": true,
       "slug": "testing-page-tag-attached-webhook",
       "status": "draft",
       "tags": Array [
@@ -1574,7 +1612,7 @@ Object {
 
 exports[`page.* events page.tag.detached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1593,6 +1631,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -1607,6 +1646,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1659,6 +1699,7 @@ Object {
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -1673,6 +1714,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1692,6 +1734,7 @@ Object {
       },
       "primary_tag": null,
       "published_at": null,
+      "show_title_and_feature_image": true,
       "slug": "test-page-tag-detached-webhook",
       "status": "draft",
       "tags": Array [],
@@ -1775,7 +1818,7 @@ Object {
 
 exports[`page.* events page.unpublished event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1794,6 +1837,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -1808,6 +1852,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1860,6 +1905,7 @@ Object {
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -1874,6 +1920,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1893,6 +1940,7 @@ Object {
       },
       "primary_tag": null,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "show_title_and_feature_image": true,
       "slug": "testing-page-unpublished-webhook",
       "status": "draft",
       "tags": Array [],
@@ -1991,7 +2039,7 @@ Object {
 
 exports[`page.* events page.unscheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -2010,6 +2058,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -2024,6 +2073,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2076,6 +2126,7 @@ Object {
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -2090,6 +2141,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2109,6 +2161,7 @@ Object {
       },
       "primary_tag": null,
       "published_at": null,
+      "show_title_and_feature_image": true,
       "slug": "testing-page-unscheduled-webhook",
       "status": "draft",
       "tags": Array [],

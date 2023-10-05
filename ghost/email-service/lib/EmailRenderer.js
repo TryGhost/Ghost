@@ -8,6 +8,7 @@ const {textColorForBackgroundColor, darkenToContrastThreshold} = require('@trygh
 const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const tpl = require('@tryghost/tpl');
+const cheerio = require('cheerio');
 
 const messages = {
     subscriptionStatus: {
@@ -204,11 +205,11 @@ class EmailRenderer {
 		Returns all the segments that we need to render the email for because they have different content.
         WARNING: The sum of all the returned segments should always include all the members. Those members are later limited if needed based on the recipient filter of the email.
         @param {Post} post
-        @returns {Segment[]}
+        @returns {Promise<Segment[]>}
 	*/
-    getSegments(post) {
+    async getSegments(post) {
         const allowedSegments = ['status:free', 'status:-free'];
-        const html = this.renderPostBaseHtml(post);
+        const html = await this.renderPostBaseHtml(post);
 
         /**
          * Always add free and paid segments if email has paywall card
@@ -218,7 +219,6 @@ class EmailRenderer {
             return allowedSegments;
         }
 
-        const cheerio = require('cheerio');
         const $ = cheerio.load(html);
 
         let allSegments = $('[data-gh-segment]')
@@ -235,11 +235,12 @@ class EmailRenderer {
         return allowedSegments;
     }
 
-    renderPostBaseHtml(post) {
+    async renderPostBaseHtml(post) {
         const postUrl = this.#getPostUrl(post);
         let html;
         if (post.get('lexical')) {
-            html = this.#renderers.lexical.render(
+            // only lexical's renderer is async
+            html = await this.#renderers.lexical.render(
                 post.get('lexical'), {target: 'email', postUrl}
             );
         } else {
@@ -259,7 +260,7 @@ class EmailRenderer {
      * @returns {Promise<EmailBody>}
      */
     async renderBody(post, newsletter, segment, options) {
-        let html = this.renderPostBaseHtml(post);
+        let html = await this.renderPostBaseHtml(post);
 
         // We don't allow the usage of the %%{uuid}%% replacement in the email body (only in links and special cases)
         // So we need to filter them before we introduce the real %%{uuid}%%
@@ -281,17 +282,49 @@ class EmailRenderer {
             }
         }
 
+        let $ = cheerio.load(html);
+
+        // Remove parts of the HTML not applicable to the current segment - We do this
+        // before rendering the template as the preheader for the email may be generated
+        // using the HTML and we don't want to include content that should not be
+        // visible depending on the segment
+        $('[data-gh-segment]').get().forEach((node) => {
+            // TODO: replace with NQL interpretation
+            if (node.attribs['data-gh-segment'] !== segment) {
+                $(node).remove();
+            } else {
+                // Getting rid of the attribute for a cleaner html output
+                $(node).removeAttr('data-gh-segment');
+            }
+        });
+
+        html = $.html();
+
         const templateData = await this.getTemplateData({
             post,
             newsletter,
             html,
-            addPaywall
+            addPaywall,
+            segment
         });
         html = await this.renderTemplate(templateData);
 
+        // We pass the base option to the link replacer so relative links are replaced with absolute links, relative to this base url
+        const base = templateData.post.url;
+
         // Link tracking
         if (options.clickTrackingEnabled) {
-            html = await this.#linkReplacer.replace(html, async (url) => {
+            html = await this.#linkReplacer.replace(html, async (url, originalPath) => {
+                if (originalPath.startsWith('%%{') && originalPath.endsWith('}%%')) {
+                    // Don't add the base url to replacement strings
+                    return originalPath;
+                }
+
+                // Ignore empty hashtags (used as a hack for email addresses to prevent making them clickable)
+                if (originalPath === '#') {
+                    return originalPath;
+                }
+
                 // We ignore all links that contain %%{uuid}%%
                 // because otherwise we would add tracking to links that need to be replaced first
                 if (url.toString().indexOf('%%{uuid}%%') !== -1) {
@@ -318,33 +351,37 @@ class EmailRenderer {
                 // We need to convert to a string at this point, because we need invalid string characters in the URL
                 const str = url.toString().replace(/--uuid--/g, '%%{uuid}%%');
                 return str;
-            });
+            }, {base});
+        } else {
+            // Replace all relative links to absolute ones
+            html = await this.#linkReplacer.replace(html, (url, originalPath) => {
+                if (originalPath.startsWith('%%{') && originalPath.endsWith('}%%')) {
+                    // Don't add the base url to replacement strings
+                    return originalPath;
+                }
+
+                // Ignore empty hashtags (used as a hack for email addresses to prevent making them clickable)
+                if (originalPath === '#') {
+                    return originalPath;
+                }
+                return url;
+            }, {base});
         }
 
         // Juice HTML (inline CSS)
         const juice = require('juice');
+        juice.heightElements = ['TABLE', 'TD', 'TH'];
+        juice.widthElements = ['TABLE', 'TD', 'TH'];
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
-        const cheerio = require('cheerio');
-        const $ = cheerio.load(html);
+        $ = cheerio.load(html);
 
         // force all links to open in new tab
         $('a').attr('target', '_blank');
 
         // convert figure and figcaption to div so that Outlook applies margins
         $('figure, figcaption').each((i, elem) => !!(elem.tagName = 'div'));
-
-        // Remove/hide parts of the email based on segment data attributes
-        $('[data-gh-segment]').get().forEach((node) => {
-            // TODO: replace with NQL interpretation
-            if (node.attribs['data-gh-segment'] !== segment) {
-                $(node).remove();
-            } else {
-                // Getting rid of the attribute for a cleaner html output
-                $(node).removeAttr('data-gh-segment');
-            }
-        });
 
         // Remove duplicate black/white images (CSS based solution not working in Outlook)
         if (templateData.backgroundIsDark) {
@@ -631,7 +668,7 @@ class EmailRenderer {
     }
 
     async renderTemplate(data) {
-        this.#handlebars = require('handlebars');
+        this.#handlebars = require('handlebars').create();
 
         // Helpers
         this.#handlebars.registerHelper('if', function (conditional, options) {
@@ -715,13 +752,19 @@ class EmailRenderer {
      * @param {object} postModel
      * @returns
      */
-    #getEmailPreheader(postModel) {
+    #getEmailPreheader(postModel, segment, html) {
         let plaintext = postModel.get('plaintext');
         let customExcerpt = postModel.get('custom_excerpt');
         if (customExcerpt) {
             return customExcerpt;
         } else {
             if (plaintext) {
+                // The plaintext field on the model may contain paid only content
+                // so we use the provided HTML to generate the plaintext as this
+                // should have already had the paid content removed
+                if (segment === 'status:free') {
+                    plaintext = htmlToPlaintext.email(html);
+                }
                 return plaintext.substring(0, 500);
             } else {
                 return `${postModel.get('title')} – `;
@@ -821,7 +864,7 @@ class EmailRenderer {
     /**
      * @private
      */
-    async getTemplateData({post, newsletter, html, addPaywall}) {
+    async getTemplateData({post, newsletter, html, addPaywall, segment}) {
         let accentColor = this.#settingsCache.get('accent_color') || '#15212A';
         let adjustedAccentColor;
         let adjustedAccentContrastColor;
@@ -931,7 +974,7 @@ class EmailRenderer {
                         image: this.#settingsCache.get('icon')
                     }, true) : null
             },
-            preheader: this.#getEmailPreheader(post),
+            preheader: this.#getEmailPreheader(post, segment, html),
             html,
 
             post: {

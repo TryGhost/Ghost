@@ -19,13 +19,69 @@ module.exports = class Mention {
         return this.#verified;
     }
 
+    /** @type {boolean} */
+    #deleted = false;
+
+    get deleted() {
+        return this.#deleted;
+    }
+
+    delete() {
+        this.#deleted = true;
+    }
+
+    #undelete() {
+        // When an earlier mention is deleted, but then it gets verified again, we need to undelete it
+        if (this.#deleted) {
+            this.#deleted = false;
+            this.events.push(MentionCreatedEvent.create({mention: this}));
+        }
+    }
+
     /**
      * @param {string} html
+     * @param {string} contentType
      */
-    verify(html) {
-        const $ = cheerio.load(html);
-        const hasTargetUrl = $('a[href*="' + this.target.href + '"], img[src*="' + this.target.href + '"], video[src*="' + this.target.href + '"]').length > 0;
-        this.#verified = hasTargetUrl;
+    verify(html, contentType) {
+        const wasVerified = this.#verified;
+
+        if (contentType.includes('text/html')) {
+            try {
+                const $ = cheerio.load(html);
+                const hasTargetUrl = $('a[href*="' + this.target.href + '"], img[src*="' + this.target.href + '"], video[src*="' + this.target.href + '"]').length > 0;
+                this.#verified = hasTargetUrl;
+
+                if (wasVerified && !this.#verified) {
+                    // Delete the mention, but keep it verified (it was just deleted, because it was verified earlier, so now it is removed from the site according to the spec)
+                    this.#deleted = true;
+                    this.#verified = true;
+                } else {
+                    this.#undelete();
+                }
+            } catch (e) {
+                this.#verified = false;
+            }
+        }
+
+        if (contentType.includes('application/json')) {
+            try {
+                // Check valid JSON
+                JSON.parse(html);
+
+                // Check full text string is present in the json
+                this.#verified = !!html.includes(JSON.stringify(this.target.href));
+
+                if (wasVerified && !this.#verified) {
+                    // Delete the mention, but keep it verified (it was just deleted, because it was verified earlier, so now it is removed from the site according to the spec)
+                    this.#deleted = true;
+                    this.#verified = true;
+                } else {
+                    this.#undelete();
+                }
+            } catch (e) {
+                this.#verified = false;
+            }
+        }
     }
 
     /** @type {URL} */
@@ -144,11 +200,6 @@ module.exports = class Mention {
         this.#sourceFeaturedImage = sourceFeaturedImage;
     }
 
-    #deleted = false;
-    delete() {
-        this.#deleted = true;
-    }
-
     toJSON() {
         return {
             id: this.id,
@@ -178,6 +229,7 @@ module.exports = class Mention {
         this.#resourceId = data.resourceId;
         this.#resourceType = data.resourceType;
         this.#verified = data.verified;
+        this.#deleted = data.deleted || false;
     }
 
     /**
@@ -263,7 +315,8 @@ module.exports = class Mention {
             payload,
             resourceId,
             resourceType,
-            verified
+            verified,
+            deleted: isNew ? false : !!data.deleted
         });
 
         mention.setSourceMetadata(data);
@@ -275,11 +328,18 @@ module.exports = class Mention {
     }
 
     /**
+     * @returns {boolean}
+     */
+    isDeleted() {
+        return this.#deleted;
+    }
+
+    /**
      * @param {Mention} mention
      * @returns {boolean}
      */
     static isDeleted(mention) {
-        return mention.#deleted;
+        return mention.isDeleted();
     }
 };
 

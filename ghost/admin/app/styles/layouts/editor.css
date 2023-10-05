@@ -104,7 +104,7 @@
 }
 
 .post-view-link:hover {
-    color: var(--darkgrey);
+    color: var(--midgrey-d2);
 }
 
 .post-view-link svg {
@@ -112,12 +112,11 @@
     width: 12px;
     height: 12px;
     vertical-align: middle;
-    margin-bottom: 2px;
-    fill: var(--midgrey);
+    transition: all .15s ease;
 }
 
 .post-view-link:hover svg {
-    fill: var(--darkgrey);
+    transform: translateY(-1px);
 }
 
 
@@ -524,6 +523,10 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     opacity: 1;
 }
 
+.gh-editor-feature-image .faded {
+    opacity: .5;
+}
+
 .gh-editor-feature-image .image-action {
     display: flex;
     align-items: center;
@@ -619,12 +622,13 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor-feature-image-alttext,
 .gh-editor-feature-image-caption {
     width: 100%;
+    height: 24px;
     margin: 0 0 1.7em 0;
     outline: none;
     border-width: 0;
     border-style: none;
     font-size: 1.4rem;
-    line-height: 1.65;
+    line-height: 24px;
     letter-spacing: .04rem;
     background-color: transparent !important;
     transition: border-color .15s linear;
@@ -639,6 +643,11 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 
 .gh-editor-feature-image-caption p {
     margin: 0;
+}
+
+.gh-editor-feature-image-alttext.faded:not(:focus),
+.gh-editor-feature-image-caption.faded p {
+    opacity: .5;
 }
 
 .gh-editor-title {
@@ -659,6 +668,10 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor-title:focus {
     box-shadow: none !important;
     border: none !important;
+}
+
+.gh-editor-title.faded {
+    opacity: .5;
 }
 
 .gh-editor-back-button {
@@ -727,6 +740,29 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 18px;
     height: 18px;
     margin-left: 1rem;
+}
+
+.gh-editor-post-status .view-post {
+    display: inline-flex;
+    align-items: center;
+    color: var(--midgrey-l2);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.gh-editor-post-status .view-post:hover {
+    color: var(--midgrey-d1);
+}
+
+.gh-editor-post-status .view-post svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin: 1px 0 0 .6rem;
+    transition: all .15s ease;
+}
+
+.gh-editor-post-status .view-post:hover svg {
+    transform: translateY(-1px);
 }
 
 @media (max-width: 720px) {
@@ -1187,4 +1223,50 @@ figure {
 
 .gh-announcement-editor div {
     width: 100%;
+}
+
+/* Labs
+/* ---------------------------------------------------------- */
+
+.gh-editor-title-container.page-improvements {
+    position: relative;
+    max-width: 740px;
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    border: none;
+    background: transparent;
+}
+
+.gh-editor .page-improvements .gh-editor-title {
+    display: block;
+    width: 100%;
+    max-width: unset;
+    min-height: auto;
+    margin: 0 0 1.2rem;
+    border: none;
+    background: transparent;
+    color: var(--black);
+    font-size: 4.8rem;
+    letter-spacing: -0.017em;
+    line-height: 1.1em;
+    font-weight: 700;
+    overflow: hidden;
+    box-shadow: none;
+}
+
+.gh-editor-hidden-indicator {
+    position: absolute;
+    top: -1px;
+    height: 2.4rem;
+    margin-left: -6rem;
+    color: var(--midgrey-l2);
+}
+
+.gh-editor-title-container .gh-editor-hidden-indicator {
+    top: 1.8rem;
+}
+
+.gh-editor-hidden-indicator svg {
+    height: 2.4rem;
 }

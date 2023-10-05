@@ -1,5 +1,5 @@
 const cheerio = require('cheerio');
-const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 
 module.exports = class MentionDiscoveryService {
     #externalRequest;
@@ -16,18 +16,18 @@ module.exports = class MentionDiscoveryService {
     async getEndpoint(url) {
         try {
             const response = await this.#externalRequest(url.href, {
-                throwHttpErrors: false,
+                throwHttpErrors: true,
                 followRedirect: true,
-                maxRedirects: 10
+                maxRedirects: 10,
+                timeout: 15000,
+                retry: {
+                    // Only retry on network issues, or specific HTTP status codes
+                    limit: 3
+                }
             });
-            if (response.statusCode === 404) {
-                throw new errors.BadRequestError({
-                    message: 'Webmention discovery service could not find target site',
-                    statusCode: response.statusCode
-                });
-            }
             return this.getEndpointFromResponse(response);
         } catch (error) {
+            logging.error(`Error fetching ${url.href} to discover webmention endpoint`, error);
             return null;
         }
     }

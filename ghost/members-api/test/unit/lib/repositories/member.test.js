@@ -191,14 +191,14 @@ describe('MemberRepository', function () {
 
             Member = {
                 findOne: sinon.stub().resolves({
-                    related: () => {
+                    related: (relation) => {
                         return {
                             query: sinon.stub().returns({
                                 fetchOne: sinon.stub().resolves({})
                             }),
-                            toJSON: sinon.stub().returns([]),
+                            toJSON: sinon.stub().returns(relation === 'products' ? [] : {}),
                             fetch: sinon.stub().resolves({
-                                toJSON: sinon.stub().returns({})
+                                toJSON: sinon.stub().returns(relation === 'products' ? [] : {})
                             })
                         };
                     },

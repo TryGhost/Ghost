@@ -15,6 +15,7 @@ import {tracked} from '@glimmer/tracking';
 export default class KoenigCardEmailCtaComponent extends Component {
     @service feature;
     @service store;
+    @service settings;
     @service membersUtils;
     @service ui;
 
@@ -66,7 +67,7 @@ export default class KoenigCardEmailCtaComponent extends Component {
         items.push({
             buttonClass: 'fw4 flex items-center white',
             icon: 'koenig/kg-edit',
-            iconClass: 'fill-white',
+            iconClass: 'fill-white-no-conflict',
             title: 'Edit',
             text: '',
             action: run.bind(this, this.args.editCard)
@@ -83,17 +84,31 @@ export default class KoenigCardEmailCtaComponent extends Component {
             url: this.config.getSiteUrl('/')
         }, {
             name: 'Free signup',
-            url: this.config.getSiteUrl('/#/portal/signup/free')
+            url: '#/portal/signup/free'
         }]);
 
         if (this.membersUtils.paidMembersEnabled) {
             urls.push(...[{
                 name: 'Paid signup',
-                url: this.config.getSiteUrl('/#/portal/signup')
+                url: '#/portal/signup'
             }, {
                 name: 'Upgrade or change plan',
-                url: this.config.getSiteUrl('/#/portal/account/plans')
+                url: '#/portal/account/plans'
             }]);
+        }
+
+        if (this.feature.tipsAndDonations && this.settings.donationsEnabled) {
+            urls.push({
+                name: 'Tip or donation',
+                url: '#/portal/support'
+            });
+        }
+
+        if (this.settings.recommendationsEnabled) {
+            urls.push({
+                name: 'Recommendations',
+                url: '#/portal/recommendations'
+            });
         }
 
         if (this.offers) {

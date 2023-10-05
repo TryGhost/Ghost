@@ -76,7 +76,7 @@
 :root {
     /* Primary colours */
     --black: #fafafb;
-    --white: #101114;
+    --white: #15171A;
     --lime: #B5FF18;
 
     --darkgrey: #E3E6E8;
@@ -87,8 +87,8 @@
     --whitegrey: #17191C;
     --blue: color-mod(#3eb0ef l(+5%) s(+5%));
 
-    --main-bg-color: #101114;
-    --dark-main-bg-color: #101114;
+    --main-bg-color: #15171A;
+    --dark-main-bg-color: #15171A;
     --hairline-color-1: #22252A;
     --hairline-color-2: #5E6874;
 
@@ -933,6 +933,10 @@ input:focus,
     fill: var(--darkgrey);
 }
 
+.gh-editor-feature-image-caption {
+    color: var(--darkgrey);
+}
+
 .gh-editor-wordcount-container {
     background: var(--white);
 }
@@ -1428,12 +1432,12 @@ kbd {
 .feature-audienceFeedback .gh-post-analytics-box.gh-post-analytics-source-attribution,
 .gh-post-analytics-box.gh-post-analytics-mentions
  {
-    background: #101114;
+    background: var(--white);
     border-color: #26282b;
 }
 
 .gh-tabs-analytics {
-    background: #101114;
+    background: var(--white);
     border-color: #26282b;
 }
 
@@ -1443,7 +1447,7 @@ kbd {
 
 .gh-tabs-analytics .tab-panel-selected,
 .gh-tabs-analytics .tab-selected {
-    background: #101114;
+    background: var(--white);
     border-color: transparent;
 }
 

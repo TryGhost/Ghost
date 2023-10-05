@@ -2,13 +2,18 @@
 module.exports = {
     root: true,
     extends: [
-        'react-app',
-        'plugin:ghost/browser'
+        'plugin:ghost/ts',
+        'plugin:react/recommended'
     ],
     plugins: [
         'ghost',
         'tailwindcss'
     ],
+    settings: {
+        react: {
+            version: 'detect'
+        }
+    },
     rules: {
         // sort multiple import lines into alphabetical groups
         'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {

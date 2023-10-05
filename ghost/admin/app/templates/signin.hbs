@@ -15,7 +15,7 @@
                 <form id="login" method="post" class="gh-signin" novalidate="novalidate" {{on "submit" (perform this.validateAndAuthenticateTask)}}>
                     <header>
                         <div class="gh-site-icon" style={{site-icon-style}}></div>
-                        <h1>Sign in to {{this.config.blogTitle}}.</h1>
+                        <h1>{{this.config.blogTitle}}</h1>
                     </header>
                     <GhFormGroup @errors={{this.signin.errors}} @hasValidated={{this.hasValidated}} @property="identification">
                         <label for="identification">Email address</label>

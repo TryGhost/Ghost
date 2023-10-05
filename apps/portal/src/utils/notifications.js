@@ -1,4 +1,4 @@
-export const handleAuthActions = ({qsParams, action, status}) => {
+export const handleAuthActions = ({action, status}) => {
     if (status && ['true', 'false'].includes(status)) {
         const successStatus = JSON.parse(status);
         return {
@@ -57,7 +57,7 @@ export default function NotificationParser({billingOnly = false} = {}) {
     let notificationData = null;
 
     if (stripeStatus) {
-        return handleStripeActions({qsParams, status: stripeStatus, billingOnly});
+        return handleStripeActions({status: stripeStatus, billingOnly});
     }
 
     if (action && successStatus && !billingOnly) {

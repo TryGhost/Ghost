@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/announcement-bar",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -17,43 +17,47 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@testing-library/jest-dom": "5.16.5",
-    "@testing-library/react": "12.1.5",
-    "@testing-library/user-event": "14.4.3",
     "@tryghost/content-api": "1.11.7",
-    "flexsearch": "0.7.21",
     "react": "17.0.2",
-    "react-dom": "17.0.2",
-    "react-scripts": "5.0.1"
+    "react-dom": "17.0.2"
   },
   "scripts": {
-    "start": "BROWSER=none react-scripts start",
-    "start:combined": "BROWSER=none node ./scripts/start-combined.js",
-    "start:dev": "node ./scripts/start-mode.js",
-    "dev": "node ./scripts/dev-mode.js",
-    "build": "npm run build:combined",
-    "build:original": "react-scripts build",
-    "build:combined": "node ./scripts/build-combined.js",
-    "build:bundle": "webpack --config webpack.config.js",
-    "test:ui": "react-scripts test",
-    "test:unit": "yarn test",
-    "test": "yarn test:ui --watchAll=false --coverage",
-    "eject": "react-scripts eject",
+    "dev": "concurrently \"vite preview -l silent\" \"yarn build:watch\"",
+    "build": "vite build",
+    "build:watch": "vite build --watch",
+    "test": "vitest run",
+    "test:ci": "yarn test --coverage",
+    "test:unit": "yarn test:ci",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
     "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
-    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && yarn publish . --tag $npm_package_version",
+    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
     "prepublishOnly": "yarn build"
   },
   "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest",
-      "plugin:ghost/browser"
-    ],
-    "plugins": [
-      "ghost"
-    ]
+    "env": {
+        "browser": true,
+        "jest": true
+      },
+      "parserOptions": {
+        "sourceType": "module",
+        "ecmaVersion": 2022
+      },
+      "extends": [
+        "plugin:ghost/browser",
+        "plugin:react/recommended"
+      ],
+      "plugins": [
+        "ghost"
+      ],
+      "rules": {
+        "react/prop-types": "off"
+      },
+      "settings": {
+        "react": {
+          "version": "detect"
+        }
+      }
   },
   "browserslist": {
     "production": [
@@ -75,20 +79,9 @@
     ]
   },
   "devDependencies": {
-    "autoprefixer": "10.4.14",
-    "chalk": "4.1.2",
-    "chokidar": "3.5.3",
-    "copy-webpack-plugin": "11.0.0",
-    "eslint-plugin-ghost": "3.2.0",
-    "minimist": "1.2.8",
-    "nock": "13.3.0",
-    "postcss": "8.4.24",
-    "rewire": "6.0.0",
-    "serve-handler": "6.1.5",
-    "webpack-cli": "3.3.12"
-  },
-  "resolutions": {
-    "//": "See https://github.com/facebook/create-react-app/issues/11773",
-    "react-error-overlay": "6.0.11"
+    "@vitejs/plugin-react": "4.1.0",
+    "vite": "4.4.10",
+    "vite-plugin-svgr": "3.3.0",
+    "vitest": "0.34.3"
   }
 }

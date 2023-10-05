@@ -1,29 +1,21 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
 const {anyGhostAgent, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyNumber} = matchers;
 
-const buildNewsletterSnapshot = (deleteMember = false) => {
+const buildNewsletterSnapshot = () => {
     const newsLetterSnapshot = {
-        id: anyObjectId,
-        uuid: anyUuid,
-        created_at: anyISODateTime,
-        updated_at: anyISODateTime
+        id: anyObjectId
     };
-
-    if (deleteMember) {
-        newsLetterSnapshot._pivot_member_id = anyObjectId;
-        newsLetterSnapshot._pivot_newsletter_id = anyObjectId;
-    }
 
     return newsLetterSnapshot;
 };
 
-const buildMemberSnapshot = (deleteMember = false) => {
+const buildMemberSnapshot = () => {
     const memberSnapshot = {
         id: anyObjectId,
         uuid: anyUuid,
         created_at: anyISODateTime,
         updated_at: anyISODateTime,
-        newsletters: new Array(1).fill(buildNewsletterSnapshot(deleteMember))
+        newsletters: new Array(1).fill(buildNewsletterSnapshot())
     };
 
     return memberSnapshot;
@@ -99,7 +91,7 @@ describe('member.* events', function () {
                 }]
             })
             .expectStatus(201);
-        
+
         const id = res.body.members[0].id;
 
         await adminAPIAgent
@@ -117,7 +109,7 @@ describe('member.* events', function () {
             .matchBodySnapshot({
                 member: {
                     current: {},
-                    previous: buildMemberSnapshot(true)
+                    previous: buildMemberSnapshot()
                 }
             });
     });
@@ -140,7 +132,7 @@ describe('member.* events', function () {
                 }]
             })
             .expectStatus(201);
-        
+
         const id = res.body.members[0].id;
 
         await adminAPIAgent

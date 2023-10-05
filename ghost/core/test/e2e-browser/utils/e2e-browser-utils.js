@@ -133,6 +133,7 @@ const enableLabs = async (page) => {
     await page.locator('.gh-setting-group').filter({hasText: 'Labs'}).click();
     const alphaList = page.locator('.gh-main-section').filter({hasText: 'Alpha Features'});
     await alphaList.locator('label[for="labs-webmentions"]').click();
+    await alphaList.locator('label[for="labs-tipsAndDonations"]').click();
 };
 
 /**
@@ -366,6 +367,9 @@ const completeStripeSubscription = async (page) => {
     await fillInputIfExists(page, '#billingAddressLine2', 'Apt 1');
     await fillInputIfExists(page, '#billingLocality', 'Testville');
 
+    // Wait for submit button complete
+    await page.waitForSelector('[data-testid="hosted-payment-submit-button"].SubmitButton--complete', {state: 'attached'});
+
     await page.getByTestId('hosted-payment-submit-button').click();
 
     await page.waitForLoadState('networkidle');
@@ -430,6 +434,9 @@ const createPostDraft = async (page, {title = 'Hello world', body = 'This is my 
     // Fill in the post title
     await page.locator('[data-test-editor-title-input]').click();
     await page.locator('[data-test-editor-title-input]').fill(title);
+
+    // wait for editor to be ready
+    await expect(page.locator('[data-lexical-editor="true"]')).toBeVisible();
 
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');

@@ -72,6 +72,17 @@
                     {{#if (eq this.selectedType.value 'manual')}}
                         <p>Add posts to this collection one by one through post settings menu.</p>
                     {{/if}}
+
+                    {{#if (eq this.selectedType.value 'automatic')}}
+                        <input type="text" 
+                            class="gh-input" 
+                            id="collection-filter" 
+                            name="filter" 
+                            value={{@collection.filter}} 
+                            {{on "input" (pick "target.value" (fn this.setCollectionProperty "filter" ))}} 
+                            {{on "blur" (fn this.validateCollectionProperty "filter" )}}
+                            data-test-input="collection-filter" />
+                    {{/if}}
                 </div>
             </GhFormGroup>
         </div>

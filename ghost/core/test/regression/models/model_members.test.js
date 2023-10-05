@@ -22,7 +22,8 @@ describe('Member Model', function run() {
             const context = testUtils.context.admin;
             await Member.add({
                 email: 'test@test.member',
-                labels: []
+                labels: [],
+                email_disabled: false
             }, context);
             const member = await Member.findOne({
                 email: 'test@test.member'
@@ -115,7 +116,8 @@ describe('Member Model', function run() {
         it('Is correctly mapped to the stripe customers', async function () {
             const context = testUtils.context.admin;
             const testMember = await Member.add({
-                email: 'test@test.member'
+                email: 'test@test.member',
+                email_disabled: false
             }, context);
 
             await MemberStripeCustomer.add({
@@ -159,7 +161,8 @@ describe('Member Model', function run() {
                 labels: [{
                     name: 'A label',
                     slug: 'a-unique-slug-for-testing-members-model'
-                }]
+                }],
+                email_disabled: false
             }, context);
             const member = await Member.findOne({
                 email: 'test@test.member'
@@ -284,7 +287,8 @@ describe('Member Model', function run() {
                 email: 'testing-products@test.member',
                 products: [{
                     id: product.id
-                }]
+                }],
+                email_disabled: false
             }, {
                 ...context,
                 withRelated: ['products']
@@ -317,7 +321,8 @@ describe('Member Model', function run() {
                 email: 'filter-test@test.member',
                 products: [{
                     id: vipProduct.id
-                }]
+                }],
+                email_disabled: false
             }, context);
 
             const member = await Member.findOne({
@@ -362,7 +367,8 @@ describe('Member Model', function run() {
                     name: 'VIP',
                     slug: 'vip',
                     type: 'paid'
-                }]
+                }],
+                email_disabled: false
             }, context);
 
             const member = await Member.findOne({
@@ -386,7 +392,8 @@ describe('Member Model', function run() {
                     name: 'VIP',
                     slug: 'vip',
                     type: 'paid'
-                }]
+                }],
+                email_disabled: false
             }, context);
 
             const member = await Member.findOne({
@@ -406,7 +413,8 @@ describe('Member Model', function run() {
 
             const member = await Member.add({
                 email: 'test@test.member',
-                labels: []
+                labels: [],
+                email_disabled: false
             }, context);
 
             const product = await Product.add({
@@ -511,7 +519,8 @@ describe('Member Model', function run() {
             let email = 'test@offers.com';
             const member = await Member.add({
                 email: email,
-                labels: []
+                labels: [],
+                email_disabled: false
             }, context);
 
             const product = await Product.add({

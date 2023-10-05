@@ -45,9 +45,11 @@ function finaliseStructuredData(meta) {
 }
 
 function getMembersHelper(data, frontendKey) {
-    if (!settingsCache.get('members_enabled')) {
+    // Do not load Portal if both Memberships and Tips & Donations are disabled
+    if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled')) {
         return '';
     }
+
     const {scriptUrl} = getFrontendAppConfig('portal');
 
     const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
@@ -76,6 +78,11 @@ function getMembersHelper(data, frontendKey) {
 function getSearchHelper(frontendKey) {
     const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
     const {scriptUrl, stylesUrl} = getFrontendAppConfig('sodoSearch');
+
+    if (!scriptUrl) {
+        return '';
+    }
+
     const attrs = {
         key: frontendKey,
         styles: stylesUrl,

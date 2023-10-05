@@ -4,6 +4,8 @@ exports[`API Versioning Admin API Does an internal rewrite for canary URLs with 
 Object {
   "site": Object {
     "accent_color": "#FF1A75",
+    "allow_external_signup": true,
+    "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "icon": null,
     "locale": "en",
@@ -81,6 +83,8 @@ exports[`API Versioning Admin API allows invalid accept-version header 1: [body]
 Object {
   "site": Object {
     "accent_color": "#FF1A75",
+    "allow_external_signup": true,
+    "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "icon": null,
     "locale": "en",
@@ -227,6 +231,8 @@ exports[`API Versioning Admin API responds with content version header even when
 Object {
   "site": Object {
     "accent_color": "#FF1A75",
+    "allow_external_signup": true,
+    "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "icon": null,
     "locale": "en",
@@ -255,6 +261,8 @@ exports[`API Versioning Admin API responds with current content version header w
 Object {
   "site": Object {
     "accent_color": "#FF1A75",
+    "allow_external_signup": true,
+    "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "icon": null,
     "locale": "en",
@@ -283,6 +291,8 @@ exports[`API Versioning Admin API responds with current content version header w
 Object {
   "site": Object {
     "accent_color": "#FF1A75",
+    "allow_external_signup": true,
+    "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "icon": null,
     "locale": "en",
@@ -1339,6 +1349,7 @@ Object {
   "meta": Object {},
   "settings": Object {
     "accent_color": "#FF1A75",
+    "allow_self_signup": true,
     "codeinjection_foot": null,
     "codeinjection_head": null,
     "comments_enabled": "off",
@@ -1380,6 +1391,7 @@ Object {
     "og_description": null,
     "og_image": null,
     "og_title": null,
+    "outbound_link_tagging": true,
     "paid_members_enabled": true,
     "portal_button": true,
     "portal_button_icon": null,
@@ -1391,6 +1403,7 @@ Object {
     ],
     "portal_signup_checkbox_required": false,
     "portal_signup_terms_html": null,
+    "recommendations_enabled": false,
     "secondary_navigation": Array [
       Object {
         "label": "Data & privacy",
@@ -1435,6 +1448,7 @@ Object {
   "meta": Object {},
   "settings": Object {
     "accent_color": "#FF1A75",
+    "allow_self_signup": true,
     "codeinjection_foot": null,
     "codeinjection_head": null,
     "comments_enabled": "off",
@@ -1476,6 +1490,7 @@ Object {
     "og_description": null,
     "og_image": null,
     "og_title": null,
+    "outbound_link_tagging": true,
     "paid_members_enabled": true,
     "portal_button": true,
     "portal_button_icon": null,
@@ -1487,6 +1502,7 @@ Object {
     ],
     "portal_signup_checkbox_required": false,
     "portal_signup_terms_html": null,
+    "recommendations_enabled": false,
     "secondary_navigation": Array [
       Object {
         "label": "Data & privacy",

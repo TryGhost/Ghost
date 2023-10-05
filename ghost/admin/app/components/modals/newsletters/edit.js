@@ -52,7 +52,7 @@ export default class EditNewsletterModal extends Component {
 
             const result = yield newsletter.save({
                 adapterOptions: {
-                    include: 'count.members,count.posts'
+                    include: 'count.active_members,count.posts'
                 }
             });
 

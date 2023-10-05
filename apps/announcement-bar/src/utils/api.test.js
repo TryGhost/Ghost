@@ -24,6 +24,6 @@ test('should call settings endpoint on init', () => {
             headers: {'Content-Type': 'application/json'},
             credentials: undefined,
             body: undefined
-        }),
+        })
     );
 });

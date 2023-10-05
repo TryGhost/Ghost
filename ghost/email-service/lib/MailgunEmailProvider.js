@@ -30,8 +30,6 @@ class MailgunEmailProvider {
     #mailgunClient;
     #errorHandler;
 
-    static BATCH_SIZE = 1000;
-
     /**
      * @param {object} dependencies
      * @param {import('@tryghost/mailgun-client/lib/MailgunClient')} dependencies.mailgunClient - mailgun client to send emails
@@ -172,7 +170,7 @@ class MailgunEmailProvider {
     }
 
     getMaximumRecipients() {
-        return MailgunEmailProvider.BATCH_SIZE;
+        return this.#mailgunClient.getBatchSize();
     }
 }
 

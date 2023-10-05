@@ -11,6 +11,7 @@ async function createMember(data) {
     const member = await models.Member.add({
         email: uuid.v4() + '@example.com',
         name: '',
+        email_disabled: false,
         ...data
     });
 

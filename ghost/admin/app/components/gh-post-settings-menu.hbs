@@ -1,5 +1,5 @@
 <div
-    class="settings-menu-container {{if this.isViewingSubview "settings-menu-container-wide"}}"
+    class="settings-menu-container {{if (or (eq this.subview "codeinjection") (eq this.subview "meta-data") (eq this.subview "twitter-data") (eq this.subview "facebook-data")) "settings-menu-container-wide"}}"
     {{did-insert this.setSidebarWidthFromElement}}
     {{did-update this.setSidebarWidthFromElement this.isViewingSubview}}
 >
@@ -17,11 +17,11 @@
                             {{#unless this.post.isNew}}
                                 {{#if (or this.post.isPublished this.post.isSent)}}
                                 <a class="post-view-link" target="_blank" href="{{this.post.url}}" rel="noopener noreferrer">
-                                    View {{this.post.displayName}} {{svg-jar "external"}}
+                                    View {{this.post.displayName}} {{svg-jar "arrow-top-right"}}
                                 </a>
                                 {{else if this.post.isScheduled}}
                                 <a class="post-view-link" target="_blank" href="{{this.post.previewUrl}}" rel="noopener noreferrer">
-                                    Preview {{svg-jar "external"}}
+                                    Preview {{svg-jar "arrow-top-right"}}
                                 </a>
                                 {{/if}}
                             {{/unless}}
@@ -123,6 +123,34 @@
                     </section>
 
                     <ul class="nav-list">
+                        {{#if (and this.post.isPage this.post.lexical)}}
+                            <li class="nav-list-item">
+                                <div class="for-switch x-small">
+                                    <label class="switch">
+                                        <span>
+                                            <Icons::EyeOpenClose class="feature" @closed={{not this.post.showTitleAndFeatureImage}} />
+                                            Show title and feature image
+                                        </span>
+                                        <div class="gh-toggle-featured">
+                                            <input
+                                                type="checkbox"
+                                                checked={{this.post.showTitleAndFeatureImage}}
+                                                class="gh-input post-settings-featured"
+                                                {{on "change" this.toggleShowTitleAndFeatureImage}}
+                                                data-test-checkbox="hide-title-and-feature-image"
+                                            >
+                                            <span class="input-toggle-component"></span>
+                                        </div>
+                                    </label>
+                                    {{#liquid-if (and (not this.post.showTitleAndFeatureImage) this.themeMissingShowTitleAndFeatureImage)}}
+                                        <div class="nav-list-item-notification">
+                                            Uh-oh. Looks like your theme doesn't support this feature.
+                                            <a href="https://ghost.org/docs/themes/helpers/">Learn more</a>
+                                        </div>
+                                    {{/liquid-if}}
+                                </div>
+                            </li>
+                        {{/if}}
                         {{#unless this.session.user.isAuthorOrContributor}}
                             <li class="nav-list-item">
                                 <div class="for-switch x-small">
@@ -171,13 +199,19 @@
                         </li>
                         <li class="nav-list-item">
                             <button type="button"  {{action "showSubview" "twitter-data"}} data-test-button="twitter-data">
-                                <span>{{svg-jar "twitter-logo"}} Twitter card</span>
+                                <span>{{svg-jar "x-logo"}} X card</span>
                             </button>
                             {{svg-jar "arrow-right" class="arrow-right"}}
                         </li>
                         <li class="nav-list-item">
                             <button type="button" {{action "showSubview" "facebook-data"}} data-test-button="facebook-data">
                                 <span>{{svg-jar "social-facebook"}} Facebook card</span>
+                            </button>
+                            {{svg-jar "arrow-right" class="arrow-right"}}
+                        </li>
+                        <li class="nav-list-item">
+                            <button type="button" {{action "showSubview" "keyboard-shortcuts"}} data-test-button="keyboard-shortcuts">
+                                <span>{{svg-jar "keyboard"}} Keyboard shortcuts</span>
                             </button>
                             {{svg-jar "arrow-right" class="arrow-right"}}
                         </li>
@@ -194,8 +228,349 @@
         </div>{{! .post-settings-menu }}
 
         {{#if this.isViewingSubview}}
-        <div class="settings-menu settings-menu-pane settings-menu-pane-wide">
+        <div class="settings-menu settings-menu-pane {{if (or (eq this.subview "codeinjection") (eq this.subview "meta-data") (eq this.subview "twitter-data") (eq this.subview "facebook-data")) "settings-menu-pane-wide"}}">
             <div class="active">
+                    {{#if (eq this.subview "keyboard-shortcuts")}}
+                        <div class="settings-menu-header subview">
+                            <button aria-label="Close Facebook card panel" class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{action "closeSubview"}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
+                            <h4>Keyboard shortcuts</h4>
+                            <div style="width:23px;"></div>
+                        </div>
+
+                        <div class="settings-menu-content keyboard-shortcuts">
+                            <form class="gh-post-settings">
+                                <GhFormGroup>
+                                    <label>Formatting</label>
+                                    <div class="gh-shortcut">
+                                        <div><strong>Bold</strong></div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">B</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div><em>Emphasize</em></div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">I</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div><u>Underline</u></div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">U</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div><s>Strike through</s></div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">X</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div class="link">Link</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">K</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div class="code">Inline code</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <span class="gh-key" data-tooltip="Shift">&#8679;</span>
+                                            <span class="gh-key mono">K</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>List</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <span class="gh-key mono">L</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Ordered list</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <GhPostSettingsMenu::OptionOrAlt />
+                                            <span class="gh-key mono">L</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Quote</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <span class="gh-key mono">Q</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>H2</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <span class="gh-key mono">H</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>H3</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <span class="gh-key mono">H</span>
+                                            <span class="gh-key mono clear">2x</span>
+                                        </div>
+                                    </div>
+                                </GhFormGroup>
+
+                                <GhFormGroup>
+                                    <label>Editing</label>
+                                    <div class="gh-shortcut">
+                                        <div>Toggle card edit mode</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key" data-tooltip="Return">&#8617;</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Indent</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">tab</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Unindent</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key" data-tooltip="Shift">&#8679;</span>
+                                            <span class="gh-key mono">tab</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Line break</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key" data-tooltip="Shift">&#8679;</span>
+                                            <span class="gh-key" data-tooltip="Return">&#8617;</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Undo</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">Z</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Redo</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key" data-tooltip="Shift">&#8679;</span>
+                                            <span class="gh-key mono">Z</span>
+                                        </div>
+                                    </div>
+                                </GhFormGroup>
+
+                                <GhFormGroup>
+                                    <label>Application</label>
+                                    <div class="gh-shortcut">
+                                        <div>Save</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">S</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Preview</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key mono">P</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Publish</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key" data-tooltip="Shift">&#8679;</span>
+                                            <span class="gh-key mono">P</span>
+                                        </div>
+                                    </div>
+                                </GhFormGroup>
+
+                                <GhFormGroup>
+                                    <label>Inserting</label>
+                                    <div class="gh-shortcut">
+                                        <div>Code block</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">```</span>
+                                            <span class="gh-key" data-tooltip="Return">&#8617;</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Language code block</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">```html</span>
+                                            <span class="gh-key" data-tooltip="Return">&#8617;</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Image</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/image</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Markdown</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/md</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>HTML</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/html</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Gallery</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/gallery</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Divider</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">---</span>
+                                            <span class="gh-key mono clear">or</span>
+                                            <span class="gh-key mono">/hr</span>
+
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Bookmark</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/bookmark [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Public preview</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/paywall</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Button</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/button</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Callout</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/callout</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Toggle</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/toggle</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Video</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/video</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Audio</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/audio</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>File</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/file</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Product</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/product</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Header</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/header</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>GIF</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/gif</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Signup</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/signup</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>YouTube</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/youtube [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>X (formerly Twitter)</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/twitter [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Unsplash</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/unsplash</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Vimeo</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/vimeo [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>CodePen</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/codepen [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Spotify</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/spotify [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>SoundCloud</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/soundcloud [url]</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Other embed</div>
+                                        <div class="gh-keys">
+                                            <span class="gh-key mono">/embed [url]</span>
+                                        </div>
+                                    </div>
+                                </GhFormGroup>
+                            </form>
+                        </div>
+                    {{/if}}
+
+
+
                     {{#if (eq this.subview "meta-data")}}
                         <div class="settings-menu-header subview">
                             <button aria-label="Close meta data panel" class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{action "closeSubview"}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
@@ -272,7 +647,7 @@
                     {{#if (eq this.subview "twitter-data")}}
                         <div class="settings-menu-header subview">
                             <button aria-label="Close Twitter card panel" class="back settings-menu-header-action" data-test-button="close-psm-subview" type="button" {{action "closeSubview"}}>{{svg-jar "arrow-left"}}<span class="hidden">Back</span></button>
-                            <h4>Twitter card</h4>
+                            <h4>X card</h4>
                             <div style="width:23px;"></div>
                         </div>
 
@@ -281,13 +656,13 @@
                             <form {{action "discardEnter" on="submit"}} class="gh-post-settings" aria-label="Twitter card settings">
                                 <GhImageUploaderWithPreview
                                     @image={{this.post.twitterImage}}
-                                    @text="Add Twitter image"
+                                    @text="Add X image"
                                     @allowUnsplash={{true}}
                                     @update={{action "setTwitterImage"}}
                                     @remove={{action "clearTwitterImage"}}
                                 />
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="twitterTitle">
-                                    <label for="twitter-title">Twitter title</label>
+                                    <label for="twitter-title">X title</label>
                                     <GhTextInput
                                         @class="post-setting-twitter-title"
                                         @id="twitter-title"
@@ -302,7 +677,7 @@
                                 </GhFormGroup>
 
                                 <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="twitterDescription">
-                                    <label for="twitter-description">Twitter description</label>
+                                    <label for="twitter-description">X description</label>
                                     <GhTextarea
                                         @class="post-setting-twitter-description"
                                         @id="twitter-description"
@@ -317,7 +692,7 @@
                                 </GhFormGroup>
 
                                 <div class="form-group">
-                                    <label>Twitter preview</label>
+                                    <label>X preview</label>
                                     <div class="gh-social-twitter-post-preview">
                                         {{#if this.twitterImage}}
                                             <div class="gh-social-twitter-preview-image" style={{background-image-style this.twitterImage}}></div>

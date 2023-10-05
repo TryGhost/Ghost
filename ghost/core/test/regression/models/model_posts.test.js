@@ -4,7 +4,6 @@ const sinon = require('sinon');
 const testUtils = require('../../utils');
 const moment = require('moment');
 const _ = require('lodash');
-const Promise = require('bluebird');
 const {sequence} = require('@tryghost/promise');
 const urlService = require('../../../core/server/services/url');
 const ghostBookshelf = require('../../../core/server/models/base');
@@ -475,7 +474,9 @@ describe('Post Model', function () {
                     should.exist(eventsTriggered['post.rescheduled']);
                     eventsTriggered = {};
 
-                    return Promise.delay(1000 * 3);
+                    return new Promise((resolve) => {
+                        setTimeout(resolve, 3000);
+                    });
                 }).then(function () {
                     return models.Post.edit({
                         status: 'scheduled'
@@ -1732,7 +1733,7 @@ describe('Post Model', function () {
                 });
         });
 
-        beforeEach(function () {
+        beforeEach(async function () {
             tagJSON = [];
 
             const post = _.cloneDeep(testUtils.DataGenerator.forModel.posts[0]);
@@ -1752,21 +1753,21 @@ describe('Post Model', function () {
             post.tags = postTags;
             post.status = 'published';
 
-            return Promise.props({
-                post: models.Post.add(post, _.extend({}, context, {withRelated: ['tags']})),
-                tag1: models.Tag.add(extraTags[0], context),
-                tag2: models.Tag.add(extraTags[1], context),
-                tag3: models.Tag.add(extraTags[2], context)
-            }).then(function (result) {
-                postJSON = result.post.toJSON({withRelated: ['tags']});
-                tagJSON.push(result.tag1.toJSON());
-                tagJSON.push(result.tag2.toJSON());
-                tagJSON.push(result.tag3.toJSON());
-                editOptions = _.extend({}, context, {id: postJSON.id, withRelated: ['tags']});
+            const [newPost, tag1, tag2, tag3] = await Promise.all([
+                models.Post.add(post, _.extend({}, context, {withRelated: ['tags']})),
+                models.Tag.add(extraTags[0], context),
+                models.Tag.add(extraTags[1], context),
+                models.Tag.add(extraTags[2], context)
+            ]);
 
-                // reset the eventSpy here
-                sinon.restore();
-            });
+            postJSON = newPost.toJSON({withRelated: ['tags']});
+            tagJSON.push(tag1.toJSON());
+            tagJSON.push(tag2.toJSON());
+            tagJSON.push(tag3.toJSON());
+            editOptions = _.extend({}, context, {id: postJSON.id, withRelated: ['tags']});
+
+            // reset the eventSpy here
+            sinon.restore();
         });
 
         it('should create the test data correctly', function (done) {
@@ -1823,7 +1824,9 @@ describe('Post Model', function () {
             delete newJSON.tags[0].parent;
 
             // Edit the post
-            return Promise.delay(1000)
+            return new Promise((resolve) => {
+                setTimeout(resolve, 1000);
+            })
                 .then(function () {
                     return models.Post.edit(newJSON, editOptions);
                 })

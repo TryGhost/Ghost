@@ -112,6 +112,24 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     throw new Error('Failed to fetch offer data');
                 }
             });
+        },
+
+        recommendations({limit}) {
+            let url = contentEndpointFor({resource: 'recommendations'});
+            url = url.replace('limit=all', `limit=${limit}`);
+            return makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch recommendations');
+                }
+            });
         }
     };
 
@@ -142,6 +160,18 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             } else {
                 throw (await HumanReadableError.fromApiResponse(res)) ?? new Error('Failed to save feedback');
             }
+        }
+    };
+
+    api.recommendations = {
+        trackClicked({recommendationId}) {
+            let url = endpointFor({type: 'members', resource: 'recommendations/' + recommendationId + '/clicked'});
+            navigator.sendBeacon(url);
+        },
+
+        trackSubscribed({recommendationId}) {
+            let url = endpointFor({type: 'members', resource: 'recommendations/' + recommendationId + '/subscribed'});
+            navigator.sendBeacon(url);
         }
     };
 
@@ -213,7 +243,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, customUrlHistory, autoRedirect = true}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -223,9 +253,10 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 emailType,
                 labels,
                 requestSrc: 'portal',
-                redirect
+                redirect,
+                autoRedirect
             };
-            const urlHistory = getUrlHistory();
+            const urlHistory = customUrlHistory ?? getUrlHistory();
             if (urlHistory) {
                 body.urlHistory = urlHistory;
             }
@@ -395,6 +426,47 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     }
                 });
             });
+        },
+
+        async checkoutDonation({successUrl, cancelUrl, metadata = {}} = {}) {
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
+
+            const metadataObj = {
+                fp_tid: (window.FPROM || window.$FPROM)?.data?.tid,
+                urlHistory: getUrlHistory(),
+                ...metadata
+            };
+
+            const body = {
+                identity,
+                metadata: metadataObj,
+                successUrl,
+                cancelUrl,
+                type: 'donation'
+            };
+
+            const response = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            const responseJson = await response.json();
+
+            if (!response.ok) {
+                const error = responseJson?.errors?.[0];
+                if (error) {
+                    throw error;
+                }
+
+                throw new Error('We\'re unable to process your payment right now. Please try again later.');
+            }
+
+            return responseJson;
         },
 
         async editBilling({successUrl, cancelUrl, subscriptionId} = {}) {

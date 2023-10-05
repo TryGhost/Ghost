@@ -1,8 +1,7 @@
-import React from 'react';
 import {render, fireEvent} from '@testing-library/react';
 import Switch from './Switch';
 
-const setup = (overrides = {}) => {
+const setup = () => {
     const mockOnToggle = jest.fn();
     const props = {
         onToggle: mockOnToggle,

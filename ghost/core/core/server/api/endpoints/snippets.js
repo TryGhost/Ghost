@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const models = require('../../models');

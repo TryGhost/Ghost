@@ -1,39 +1,48 @@
 class PostsRepository {
-    constructor({models, browsePostsAPI}) {
+    constructor({models, moment}) {
         this.models = models;
-        this.browsePostsAPI = browsePostsAPI;
+        this.moment = moment;
     }
 
-    async getAll({filter}) {
-        const posts = await this.models.Post.findAll({
-            // @NOTE: enforce "post" type to avoid ever fetching pages
-            filter: `(${filter})+type:post`
-        });
+    /**
+     * @param {Object} options
+     * @returns Promise<string[]>
+     */
+    async getAllIds({transaction} = {}) {
+        const query = this.models.Post.query().select('id').where('type', 'post');
+        const rows = transaction ? await query.transacting(transaction) : await query;
 
-        return posts.toJSON();
+        return rows.map(row => row.id);
     }
-
-    async getBulk(ids) {
-        const response = await this.browsePostsAPI({
-            options: {
-                filter: `id:[${ids.join(',')}]+type:post`
-            }
+    async getAll({filter, transaction}) {
+        const {data: models} = await this.models.Post.findPage({
+            filter: `(${filter})+type:post`,
+            transacting: transaction,
+            limit: 'all',
+            status: 'all',
+            withRelated: ['tags']
         });
 
-        return response.posts;
+        const json = models.map(m => m.toJSON());
+
+        return json.map((postJson) => {
+            return {
+                id: postJson.id,
+                featured: postJson.featured,
+                published_at: this.moment(postJson.published_at).toISOString(true),
+                tags: postJson.tags.map(tag => ({
+                    slug: tag.slug
+                }))
+            };
+        });
     }
 }
 
 module.exports = PostsRepository;
 
 module.exports.getInstance = () => {
+    const moment = require('moment-timezone');
     const models = require('../../models');
-    const browsePostsAPI = async (options) => {
-        const rawPosts = await require('../../api/').endpoints.posts.browse.query(options);
-        await require('../../api/').endpoints.serializers.output.posts.all(rawPosts, {}, options);
 
-        return options.response;
-    };
-
-    return new PostsRepository({models, browsePostsAPI});
+    return new PostsRepository({models, moment});
 };

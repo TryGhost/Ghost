@@ -1,4 +1,4 @@
-const AccountFooter = ({onClose, handleSignout, supportAddress = '', t}) => {
+const AccountFooter = ({handleSignout, supportAddress = '', t}) => {
     const supportAddressMail = `mailto:${supportAddress}`;
     return (
         <footer className='gh-portal-account-footer'>

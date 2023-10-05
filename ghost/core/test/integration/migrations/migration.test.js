@@ -2,14 +2,68 @@ const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const _ = require('lodash');
-const Promise = require('bluebird');
 const Models = require('../../../core/server/models');
 
-describe('Database Migration (special functions)', function () {
-    before(testUtils.teardownDb);
-    afterEach(testUtils.teardownDb);
+const KnexMigrator = require('knex-migrator');
+const path = require('path');
+const semver = require('semver');
+
+const knexMigrator = new KnexMigrator({
+    knexMigratorFilePath: path.join(__dirname, '../../../')
+});
+
+const db = require('../../../core/server/data/db');
+const dbUtils = require('../../utils/db-utils');
+
+const currentVersion = require('@tryghost/version');
+const currentMajor = semver.major(currentVersion.original);
+const previousMinor = semver.minor(currentVersion.original) - 1;
+const previousVersion = `${currentMajor}.${previousMinor}`;
+
+describe('Migrations', function () {
+    beforeEach(async function () {
+        await dbUtils.teardown();
+    });
+
     afterEach(function () {
         sinon.restore();
+    });
+
+    describe('Database initialization + rollback', function () {
+        beforeEach(async function () {
+            await knexMigrator.reset({force: true});
+            await knexMigrator.init();
+        });
+
+        it('can rollback to the previous minor version', async function () {
+            await knexMigrator.rollback({
+                version: previousVersion,
+                force: true
+            });
+        });
+
+        it('can rollback to the previous minor version and then forwards again', async function () {
+            await knexMigrator.rollback({
+                version: previousVersion,
+                force: true
+            });
+            await knexMigrator.migrate({
+                force: true
+            });
+        });
+
+        it('should have idempotent migrations', async function () {
+            // Delete all knowledge that we've run migrations so we can run them again
+            if (dbUtils.isMySQL()) {
+                await db.knex('migrations').whereILike('version', `${currentMajor}.%`).del();
+            } else {
+                await db.knex('migrations').whereLike('version', `${currentMajor}.%`).del();
+            }
+
+            await knexMigrator.migrate({
+                force: true
+            });
+        });
     });
 
     describe('Fixtures', function () {
@@ -45,7 +99,7 @@ describe('Database Migration (special functions)', function () {
             const permissions = this.obj;
 
             // If you have to change this number, please add the relevant `havePermission` checks below
-            permissions.length.should.eql(115);
+            permissions.length.should.eql(120);
 
             permissions.should.havePermission('Export database', ['Administrator', 'DB Backup Integration']);
             permissions.should.havePermission('Import database', ['Administrator', 'Self-Serve Migration Integration', 'DB Backup Integration']);
@@ -193,59 +247,57 @@ describe('Database Migration (special functions)', function () {
         describe('Populate', function () {
             beforeEach(testUtils.setup('default'));
 
-            it('should populate all fixtures correctly', function () {
-                const props = {
-                    posts: Models.Post.findAll({withRelated: ['tags']}),
-                    tags: Models.Tag.findAll(),
-                    users: Models.User.findAll({
+            it('should populate all fixtures correctly', async function () {
+                const [posts, tags, users, roles, permissions] = await Promise.all([
+                    Models.Post.findAll({withRelated: ['tags']}),
+                    Models.Tag.findAll(),
+                    Models.User.findAll({
                         filter: 'status:inactive',
                         context: {internal: true},
                         withRelated: ['roles']
                     }),
-                    roles: Models.Role.findAll(),
-                    permissions: Models.Permission.findAll({withRelated: ['roles']})
-                };
-                return Promise.props(props).then(function (result) {
-                    // Post
-                    should.exist(result.posts);
-                    result.posts.length.should.eql(7);
-                    result.posts.at(0).get('title').should.eql('Start here for a quick overview of everything you need to know');
-                    result.posts.at(6).get('title').should.eql('Setting up apps and custom integrations');
+                    Models.Role.findAll(),
+                    Models.Permission.findAll({withRelated: ['roles']})
+                ]);
+                // Post
+                should.exist(posts);
+                posts.length.should.eql(7);
+                posts.at(0).get('title').should.eql('Start here for a quick overview of everything you need to know');
+                posts.at(6).get('title').should.eql('Setting up apps and custom integrations');
 
-                    // Tag
-                    should.exist(result.tags);
-                    result.tags.length.should.eql(1);
-                    result.tags.at(0).get('name').should.eql('Getting Started');
+                // Tag
+                should.exist(tags);
+                tags.length.should.eql(1);
+                tags.at(0).get('name').should.eql('Getting Started');
 
-                    // Post Tag relation
-                    result.posts.at(0).related('tags').length.should.eql(1);
-                    result.posts.at(0).related('tags').at(0).get('name').should.eql('Getting Started');
+                // Post Tag relation
+                posts.at(0).related('tags').length.should.eql(1);
+                posts.at(0).related('tags').at(0).get('name').should.eql('Getting Started');
 
-                    // User (Owner)
-                    should.exist(result.users);
-                    result.users.length.should.eql(1);
-                    result.users.at(0).get('name').should.eql('Ghost');
-                    result.users.at(0).get('status').should.eql('inactive');
-                    result.users.at(0).related('roles').length.should.eql(1);
-                    result.users.at(0).related('roles').at(0).get('name').should.eql('Owner');
+                // User (Owner)
+                should.exist(users);
+                users.length.should.eql(1);
+                users.at(0).get('name').should.eql('Ghost');
+                users.at(0).get('status').should.eql('inactive');
+                users.at(0).related('roles').length.should.eql(1);
+                users.at(0).related('roles').at(0).get('name').should.eql('Owner');
 
-                    // Roles
-                    should.exist(result.roles);
-                    result.roles.length.should.eql(10);
-                    result.roles.at(0).get('name').should.eql('Administrator');
-                    result.roles.at(1).get('name').should.eql('Editor');
-                    result.roles.at(2).get('name').should.eql('Author');
-                    result.roles.at(3).get('name').should.eql('Contributor');
-                    result.roles.at(4).get('name').should.eql('Owner');
-                    result.roles.at(5).get('name').should.eql('Admin Integration');
-                    result.roles.at(6).get('name').should.eql('Ghost Explore Integration');
-                    result.roles.at(7).get('name').should.eql('Self-Serve Migration Integration');
-                    result.roles.at(8).get('name').should.eql('DB Backup Integration');
-                    result.roles.at(9).get('name').should.eql('Scheduler Integration');
+                // Roles
+                should.exist(roles);
+                roles.length.should.eql(10);
+                roles.at(0).get('name').should.eql('Administrator');
+                roles.at(1).get('name').should.eql('Editor');
+                roles.at(2).get('name').should.eql('Author');
+                roles.at(3).get('name').should.eql('Contributor');
+                roles.at(4).get('name').should.eql('Owner');
+                roles.at(5).get('name').should.eql('Admin Integration');
+                roles.at(6).get('name').should.eql('Ghost Explore Integration');
+                roles.at(7).get('name').should.eql('Self-Serve Migration Integration');
+                roles.at(8).get('name').should.eql('DB Backup Integration');
+                roles.at(9).get('name').should.eql('Scheduler Integration');
 
-                    // Permissions
-                    result.permissions.toJSON().should.be.CompletePermissions();
-                });
+                // Permissions
+                permissions.toJSON().should.be.CompletePermissions();
             });
         });
     });

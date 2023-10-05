@@ -20,6 +20,7 @@ export default class GhPostSettingsMenu extends Component {
     @service slugGenerator;
     @service session;
     @service settings;
+    @service themeManagement;
     @service ui;
 
     @inject config;
@@ -163,6 +164,10 @@ export default class GhPostSettingsMenu extends Component {
         return true;
     }
 
+    get themeMissingShowTitleAndFeatureImage() {
+        return !this.themeManagement.activeTheme.hasPageBuilderFeature('show_title_and_feature_image');
+    }
+
     willDestroyElement() {
         super.willDestroyElement(...arguments);
 
@@ -197,11 +202,27 @@ export default class GhPostSettingsMenu extends Component {
 
     @action
     toggleFeatured() {
-        this.toggleProperty('post.featured');
+        this.post.featured = !this.post.featured;
 
         // If this is a new post.  Don't save the post.  Defer the save
         // to the user pressing the save button
-        if (this.get('post.isNew')) {
+        if (this.post.isNew) {
+            return;
+        }
+
+        this.savePostTask.perform().catch((error) => {
+            this.showError(error);
+            this.post.rollbackAttributes();
+        });
+    }
+
+    @action
+    toggleShowTitleAndFeatureImage(event) {
+        this.post.showTitleAndFeatureImage = event.target.checked;
+
+        // If this is a new post.  Don't save the post.  Defer the save
+        // to the user pressing the save button
+        if (this.post.isNew) {
             return;
         }
 
@@ -622,5 +643,6 @@ export default class GhPostSettingsMenu extends Component {
 
     setSidebarWidthVariable(width) {
         document.documentElement.style.setProperty('--editor-sidebar-width', `${width}px`);
+        document.documentElement.style.setProperty('--kg-breakout-adjustment', `${width}px`);
     }
 }

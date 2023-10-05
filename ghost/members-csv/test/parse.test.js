@@ -35,6 +35,24 @@ describe('parse', function () {
         assert.equal(result.length, 0);
     });
 
+    it('one column with bom', async function () {
+        const filePath = csvPath + 'single-column-with-header-bom.csv';
+        const result = await parse(filePath, DEFAULT_HEADER_MAPPING);
+
+        assert.ok(result);
+        assert.equal(result.length, 2);
+        assert.equal(result[0].email, 'jbloggs@example.com');
+        assert.equal(result[1].email, 'test@example.com');
+    });
+
+    it('one column with bom and without header mapping returns empty result', async function () {
+        const filePath = csvPath + 'single-column-with-header-bom.csv';
+        const result = await parse(filePath);
+
+        assert.ok(result);
+        assert.equal(result.length, 0);
+    });
+
     it('two columns, 1 filter', async function () {
         const filePath = csvPath + 'two-columns-with-header.csv';
         const result = await parse(filePath, DEFAULT_HEADER_MAPPING);

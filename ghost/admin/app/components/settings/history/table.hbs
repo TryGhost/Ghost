@@ -7,6 +7,7 @@
     <tbody>
         {{#each @events as |event|}}
         {{#let (parse-history-event event) as |ev|}}
+        {{#unless ev.original.skip}}
         <tr>
             <div class="gh-list-data">
                 <div class="gh-history-object flex items-center ma3">
@@ -47,6 +48,7 @@
                                 {{else}}
                                     <span class="midlightgrey">(unknown)</span>
                                 {{/if}}
+                                {{#if ev.original.count}}{{ev.original.count}} times{{/if}}
                             {{/unless}}
 
                             <span class="gh-history-name">
@@ -65,6 +67,7 @@
                 </div>
             </div>
         </tr>
+        {{/unless}}
         {{/let}}
         {{/each}}
     </tbody>

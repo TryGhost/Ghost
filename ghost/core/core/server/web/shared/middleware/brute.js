@@ -117,5 +117,18 @@ module.exports = {
                 return _next('webmention_blocked');
             }
         })(req, res, next);
+    },
+
+    /**
+     * Blocks preview email spam
+     */
+
+    previewEmailLimiter(req, res, next) {
+        return spamPrevention.emailPreviewBlock().getMiddleware({
+            ignoreIP: false,
+            key(_req, _res, _next) {
+                return _next('preview_email_blocked');
+            }
+        })(req, res, next);
     }
 };

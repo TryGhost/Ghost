@@ -1,8 +1,20 @@
 /* eslint-disable */
 'use strict';
 
+const path = require('path');
+
 module.exports = {
     name: 'asset-delivery',
+
+    env: null,
+
+    config(env) {
+        // only set this.env on the first call otherwise when `postBuild()` is
+        // called this.env will always be 'test' due to multiple `config()` calls
+        if (!this.env) {
+            this.env = env;
+        }
+    },
 
     isDevelopingAddon() {
         return true;
@@ -12,7 +24,7 @@ module.exports = {
         const fs = this.project.require('fs-extra');
         const walkSync = this.project.require('walk-sync');
 
-        const assetsOut = `../core/core/built/admin`;
+        const assetsOut = path.join(path.dirname(require.resolve('ghost')), `core/built/admin`);
         fs.removeSync(assetsOut);
         fs.ensureDirSync(assetsOut);
 
@@ -33,5 +45,32 @@ module.exports = {
 
             fs.copySync(`${results.directory}/assets/${relativePath}`, `${assetsOut}/assets/${relativePath}`, {overwrite: true, dereference: true});
         });
+
+        // copy the @tryghost/admin-x-settings assets
+        const adminXSettingsPath = '../../apps/admin-x-settings/dist';
+        const assetsAdminXPath = `${assetsOut}/assets/admin-x-settings`;
+
+        if (fs.existsSync(adminXSettingsPath)) {
+            if (this.env === 'production') {
+                fs.copySync(adminXSettingsPath, assetsAdminXPath, {overwrite: true, dereference: true});
+            } else {
+                fs.ensureSymlinkSync(adminXSettingsPath, assetsAdminXPath);
+            }
+        } else  {
+            console.log('Admin-X-Settings folder not found');
+        }
+
+        // if we are passed a URL for Koenig-Lexical dev server, we don't need to copy the assets
+        if (!process.env.EDITOR_URL) {
+            // copy the @tryghost/koenig-lexical assets
+            const koenigLexicalPath = path.dirname(require.resolve('@tryghost/koenig-lexical'));
+            const assetsKoenigLexicalPath = `${assetsOut}/assets/koenig-lexical`;
+
+            if (fs.existsSync(koenigLexicalPath)) {
+                fs.copySync(koenigLexicalPath, assetsKoenigLexicalPath, {overwrite: true, dereference: true});
+            } else {
+                console.log('Koenig-Lexical folder not found');
+            }
+        }
     }
 };

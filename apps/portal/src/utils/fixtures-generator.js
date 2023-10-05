@@ -40,7 +40,9 @@ export function getSiteData({
     portalButtonStyle: portal_button_style = 'icon-and-text',
     membersSupportAddress: members_support_address = 'support@example.com',
     newsletters = [],
-    commentsEnabled
+    commentsEnabled,
+    recommendations = [],
+    recommendationsEnabled
 } = {}) {
     return {
         title,
@@ -65,7 +67,9 @@ export function getSiteData({
         portal_button_style,
         members_support_address,
         comments_enabled: !!commentsEnabled,
-        newsletters
+        newsletters,
+        recommendations,
+        recommendations_enabled: !!recommendationsEnabled
     };
 }
 
@@ -189,7 +193,8 @@ export function getProductData({
     id = `product_${objectId()}`,
     monthlyPrice = getPriceData(),
     yearlyPrice = getPriceData({interval: 'year'}),
-    numOfBenefits = 2
+    numOfBenefits = 2,
+    trialDays = null
 }) {
     return {
         id: id,
@@ -198,7 +203,8 @@ export function getProductData({
         monthlyPrice: type === 'free' ? null : monthlyPrice,
         yearlyPrice: type === 'free' ? null : yearlyPrice,
         type: type,
-        benefits: getBenefits({numOfBenefits})
+        benefits: getBenefits({numOfBenefits}),
+        trial_days: trialDays
     };
 }
 

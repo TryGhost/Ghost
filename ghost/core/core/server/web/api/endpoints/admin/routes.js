@@ -17,14 +17,15 @@ module.exports = function apiRoutes() {
 
     // ## Public
     router.get('/site', mw.publicAdminApi, http(api.site.read));
+    router.post('/mail_events', mw.publicAdminApi, http(api.mailEvents.add));
 
     // ## Collections
-    router.get('/collections', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.browse));
-    router.get('/collections/:id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.read));
+    router.get('/collections', mw.authAdminApi, http(api.collections.browse));
+    router.get('/collections/:id', mw.authAdminApi, http(api.collections.read));
+    router.get('/collections/slug/:slug', mw.authAdminApi, http(api.collections.read));
     router.post('/collections', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.add));
     router.put('/collections/:id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.edit));
     router.del('/collections/:id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.destroy));
-    router.get('/collections/:id/posts', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.browsePosts));
 
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(api.config.read));
@@ -45,7 +46,7 @@ module.exports = function apiRoutes() {
     router.del('/posts/:id', mw.authAdminApi, http(api.posts.destroy));
     router.post('/posts/:id/copy', mw.authAdminApi, http(api.posts.copy));
 
-    router.get('/mentions', labs.enabledMiddleware('webmentions'), mw.authAdminApi, http(api.mentions.browse));
+    router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
 
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
 
@@ -313,7 +314,8 @@ module.exports = function apiRoutes() {
 
     // ## Email Preview
     router.get('/email_previews/posts/:id', mw.authAdminApi, http(api.email_previews.read));
-    router.post('/email_previews/posts/:id', mw.authAdminApi, http(api.email_previews.sendTestEmail));
+    // preview sending have an additional rate limiter to prevent abuse
+    router.post('/email_previews/posts/:id', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.email_previews.sendTestEmail));
 
     // ## Emails
     router.get('/emails', mw.authAdminApi, http(api.emails.browse));
@@ -344,6 +346,16 @@ module.exports = function apiRoutes() {
 
     router.get('/links', mw.authAdminApi, http(api.links.browse));
     router.put('/links/bulk', mw.authAdminApi, http(api.links.bulkEdit));
+
+    // Recommendations
+    router.get('/recommendations', mw.authAdminApi, http(api.recommendations.browse));
+    router.get('/recommendations/:id', mw.authAdminApi, http(api.recommendations.read));
+    router.post('/recommendations', mw.authAdminApi, http(api.recommendations.add));
+    router.put('/recommendations/:id', mw.authAdminApi, http(api.recommendations.edit));
+    router.del('/recommendations/:id', mw.authAdminApi, http(api.recommendations.destroy));
+
+    // Incoming recommendations
+    router.get('/incoming_recommendations', mw.authAdminApi, http(api.incomingRecommendations.browse));
 
     return router;
 };

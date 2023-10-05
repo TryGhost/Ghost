@@ -217,7 +217,7 @@
     letter-spacing: 0.3px;
     font-size: 1.3rem;
     font-weight: 400;
-    margin: 8px 0 12px;
+    margin: 8px 0 0;
 }
 
 .gh-setting-desc.mb0 {
@@ -225,7 +225,7 @@
 }
 
 .gh-setting-title + .gh-setting-desc {
-    margin-top: -4px;
+    margin-top: -6px;
 }
 
 .gh-setting-error {
@@ -1774,7 +1774,7 @@ p.theme-validation-details {
 /* ---------------------------------------------------- */
 
 .gh-nav-contextual {
-    flex: 0 0 360px;
+    flex: 0 0 clamp(320px, 17.09vw + 86.5px, 360px);
 }
 
 .gh-nav-header {
@@ -2000,11 +2000,15 @@ p.theme-validation-details {
 }
 
 .gh-nav-design .gh-setting {
-    padding: 12px 0;
+    padding: 16px 0;
 }
 
 .gh-nav-design .gh-setting-first {
-    padding-bottom: 12px;
+    padding-bottom: 16px;
+}
+
+.gh-nav-design .gh-setting-boolean + .gh-setting-boolean {
+    padding-top: 8px;
 }
 
 .gh-nav-design .gh-setting-title {
@@ -2114,6 +2118,10 @@ p.theme-validation-details {
     display: flex;
     flex-direction: column;
     height: 100%;
+}
+
+.gh-design.gh-canvas {
+    padding: 0 clamp(24px, 10.26vw + -116.1px, 48px);
 }
 
 .gh-preview-page-selector,
@@ -2519,8 +2527,9 @@ p.theme-validation-details {
     font-size: 1.25rem;
 }
 
-.gh-setting-members-tierscontainer .gh-expandable:not(:first-of-type) {
-    margin-top: 20px;
+.gh-stripe-connect-link {
+    color:#635bff;
+    font-weight:500;
 }
 
 .gh-setting-members-portal-mock {
@@ -3181,6 +3190,43 @@ p.theme-validation-details {
     box-shadow: none;
 }
 
+/* Tips & donations
+/* ---------------------------------------------------------- */
+.gh-tips-and-donations-suggested-amount {
+    max-width: 200px;
+    margin-right: 24px;
+}
+
+.gh-tips-and-donations-suggested-amount .gh-input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.gh-tips-and-donations-currency {
+    width: 120px;
+}
+
+.gh-tips-and-donations-currency select {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: none !important;
+}
+
+.gh-tips-and-donations-link-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.4rem;
+    height: 38px;
+    background: var(--whitegrey-l2);
+    border-radius: 4px;
+    border: 1px solid var(--whitegrey);
+    color: var(--darkgrey);
+    font-weight: 500;
+    width: 100%;
+}
+
 /* History log
 /* ---------------------------------------------------------- */
 .gh-history-filter-li {
@@ -3261,7 +3307,6 @@ p.theme-validation-details {
     color: var(--darkgrey);
     white-space: nowrap;
     margin-top: 2px;
-    font-weight: 500;
 }
 
 .gh-history-description a {

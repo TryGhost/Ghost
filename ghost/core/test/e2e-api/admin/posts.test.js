@@ -1,8 +1,11 @@
 const should = require('should');
+const assert = require('assert/strict');
+const DomainEvents = require('@tryghost/domain-events');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {anyArray, anyContentVersion, anyEtag, anyErrorId, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyStringNumber, anyUuid, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 const escapeRegExp = require('lodash/escapeRegExp');
+const {mobiledocToLexical} = require('@tryghost/kg-converters');
 
 const tierSnapshot = {
     id: anyObjectId,
@@ -24,6 +27,24 @@ const matchPostShallowIncludes = {
     updated_at: anyISODateTime,
     published_at: anyISODateTime,
     post_revisions: anyArray
+};
+
+const buildMatchPostShallowIncludes = (tiersCount = 2) => {
+    return {
+        id: anyObjectId,
+        uuid: anyUuid,
+        comment_id: anyString,
+        url: anyString,
+        authors: anyArray,
+        primary_author: anyObject,
+        tags: anyArray,
+        primary_tag: anyObject,
+        tiers: Array(tiersCount).fill(tierSnapshot),
+        created_at: anyISODateTime,
+        updated_at: anyISODateTime,
+        published_at: anyISODateTime,
+        post_revisions: anyArray
+    };
 };
 
 function testCleanedSnapshot(text, ignoreReplacements) {
@@ -88,12 +109,24 @@ describe('Posts API', function () {
     let agent;
 
     before(async function () {
+        mockManager.mockLabsEnabled('collections', true);
+        mockManager.mockLabsEnabled('collectionsCard', true);
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();
+
+        // convert inserted pages to lexical so we can test page.html reset/re-render
+        const pages = await models.Post.where('type', 'page').fetchAll();
+        for (const page of pages) {
+            const lexical = mobiledocToLexical(page.get('mobiledoc'));
+            await models.Base.knex.raw('UPDATE posts SET mobiledoc=NULL, lexical=? where id=?', [lexical, page.id]);
+        }
     });
 
-    afterEach(function () {
+    afterEach(async function () {
+        // gives pages some HTML back to alleviate test interdependence when pages are reset on create/update/delete
+        await models.Base.knex.raw('update posts set html = "<p>Testing</p>" where type = \'page\'');
+
         mockManager.restore();
     });
 
@@ -130,6 +163,23 @@ describe('Posts API', function () {
             })
             .matchBodySnapshot({
                 posts: new Array(2).fill(matchPostShallowIncludes)
+            });
+    });
+
+    it('Can browse filtering by collection using paging parameters', async function () {
+        await agent
+            .get(`posts/?collection=latest&limit=1&page=6`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                posts: Array(1).fill(buildMatchPostShallowIncludes(2))
+            })
+            .expect((res) => {
+                // the total of posts with any status is 13
+                assert.equal(res.body.meta.pagination.total, 13);
             });
     });
 
@@ -275,6 +325,50 @@ describe('Posts API', function () {
             mobiledocRevisions.length.should.equal(0);
         });
 
+        it('Can create a post with html', async function () {
+            mockManager.mockLabsDisabled('lexicalEditor');
+
+            const post = {
+                title: 'HTML test',
+                html: '<p>Testing post creation with html</p>'
+            };
+
+            await agent
+                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
+                .body({posts: [post]})
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('posts')
+                });
+        });
+
+        it('Can create a post with html (labs.lexicalEditor)', async function () {
+            mockManager.mockLabsEnabled('lexicalEditor');
+
+            const post = {
+                title: 'HTML test',
+                html: '<p>Testing post creation with html</p>'
+            };
+
+            await agent
+                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
+                .body({posts: [post]})
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('posts')
+                });
+        });
+
         it('Errors if both mobiledoc and lexical are present', async function () {
             const post = {
                 title: 'Mobiledoc+lexical test',
@@ -320,6 +414,50 @@ describe('Posts API', function () {
                     'content-version': anyContentVersion,
                     'content-length': anyStringNumber
                 });
+        });
+
+        it('Clears all page html fields when creating published post', async function () {
+            const totalPageCount = await models.Post.where({type: 'page'}).count();
+            should.exist(totalPageCount, 'total page count');
+
+            // sanity check for pages with no html
+            const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
+            should.exist(sanityCheckEmptyPageCount);
+            sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
+
+            const post = {
+                title: 'Page reset test',
+                lexical: createLexical('Testing page.html reset when creating post'),
+                status: 'published'
+            };
+
+            await agent
+                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
+                .body({posts: [post]})
+                .expectStatus(201);
+
+            // all pages have html cleared
+            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
+            should.exist(emptyPageCount);
+            emptyPageCount.should.equal(totalPageCount, 'post-creation empty page count');
+        });
+
+        it('Does not clear page html fields when creating draft post', async function () {
+            const post = {
+                title: 'Page reset test',
+                lexical: createLexical('Testing page.html reset when creating post'),
+                status: 'draft'
+            };
+
+            await agent
+                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
+                .body({posts: [post]})
+                .expectStatus(201);
+
+            // no pages have html cleared
+            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
+            should.exist(emptyPageCount);
+            emptyPageCount.should.equal(0, 'post-creation empty page count');
         });
     });
 
@@ -472,6 +610,9 @@ describe('Posts API', function () {
                     }]
                 });
 
+            const collectionPostMatcher = {
+                id: anyObjectId
+            };
             const collectionMatcher = {
                 id: anyObjectId,
                 created_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
@@ -480,12 +621,26 @@ describe('Posts API', function () {
                     id: anyObjectId
                 }]
             };
+            const buildCollectionMatcher = (postsCount) => {
+                return {
+                    id: anyObjectId,
+                    created_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
+                    updated_at: stringMatching(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/),
+                    posts: Array(postsCount).fill(collectionPostMatcher)
+                };
+            };
 
             await agent.put(`/posts/${postResponse.id}/`)
                 .body({posts: [Object.assign({}, postResponse, {collections: [collectionToRemove.id]})]})
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [collectionMatcher]})]
+                    posts: [
+                        Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
+                            // collectionToRemove
+                            collectionMatcher,
+                            // automatic "latest" collection which cannot be removed
+                            buildCollectionMatcher(22)
+                        ]})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
@@ -497,13 +652,50 @@ describe('Posts API', function () {
                 .body({posts: [Object.assign({}, postResponse, {collections: [collectionToAdd.id]})]})
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [collectionMatcher]})]
+                    posts: [
+                        Object.assign({}, matchPostShallowIncludes, {published_at: null}, {collections: [
+                            // collectionToAdd
+                            collectionMatcher,
+                            // automatic "latest" collection which cannot be removed
+                            buildCollectionMatcher(22)
+                        ]})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag,
                     'x-cache-invalidate': stringMatching(/\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/)
                 });
+        });
+
+        it('Clears all page html fields when publishing a post', async function () {
+            const totalPageCount = await models.Post.where({type: 'page'}).count();
+            should.exist(totalPageCount, 'total page count');
+
+            // sanity check for pages with no html
+            const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
+            should.exist(sanityCheckEmptyPageCount);
+            sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
+
+            const {body: postBody} = await agent
+                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
+                .body({posts: [{
+                    title: 'Page reset test',
+                    lexical: createLexical('Testing page.html reset when updating post'),
+                    status: 'draft'
+                }]})
+                .expectStatus(201);
+
+            const [postResponse] = postBody.posts;
+
+            await agent
+                .put(`/posts/${postResponse.id}/?source=html&formats=mobiledoc,lexical,html`)
+                .body({posts: [Object.assign({}, postResponse, {status: 'published'})]})
+                .expectStatus(200);
+
+            // all pages have html cleared
+            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
+            should.exist(emptyPageCount);
+            emptyPageCount.should.equal(totalPageCount, 'post-update empty page count');
         });
     });
 
@@ -535,6 +727,59 @@ describe('Posts API', function () {
                     }]
                 });
         });
+
+        it('Can delete posts belonging to a collection and returns empty response when filtering by that collection', async function () {
+            const res = await agent.get('posts/?collection=featured')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    posts: new Array(2).fill(matchPostShallowIncludes)
+                });
+
+            const posts = res.body.posts;
+
+            await agent.delete(`posts/${posts[0].id}/`).expectStatus(204);
+            await agent.delete(`posts/${posts[1].id}/`).expectStatus(204);
+
+            await DomainEvents.allSettled();
+
+            await agent
+                .get(`posts/?collection=featured`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot();
+        });
+
+        it('Clears all page html fields when deleting a published post', async function () {
+            const totalPageCount = await models.Post.where({type: 'page'}).count();
+            should.exist(totalPageCount, 'total page count');
+
+            // sanity check for pages with no html
+            const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
+            should.exist(sanityCheckEmptyPageCount);
+            sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
+
+            const {body: postBody} = await agent
+                .get('/posts/?limit=1&filter=status:published')
+                .expectStatus(200);
+
+            const [postResponse] = postBody.posts;
+
+            await agent
+                .delete(`/posts/${postResponse.id}/`)
+                .expectStatus(204);
+
+            // all pages have html cleared
+            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
+            should.exist(emptyPageCount);
+            emptyPageCount.should.equal(totalPageCount, 'post-deletion empty page count');
+        });
     });
 
     describe('Copy', function () {
@@ -565,6 +810,42 @@ describe('Posts API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag,
                     location: anyLocationFor('posts')
+                });
+        });
+    });
+
+    describe('Convert', function () {
+        it('can convert a mobiledoc post to lexical', async function () {
+            const mobiledoc = createMobiledoc('This is some great content.');
+            const expectedLexical = createLexical('This is some great content.');
+            const postData = {
+                title: 'Test Post',
+                status: 'published',
+                mobiledoc: mobiledoc,
+                lexical: null
+            };
+
+            const {body} = await agent
+                .post('/posts/?formats=mobiledoc,lexical,html', {
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                })
+                .body({posts: [postData]})
+                .expectStatus(201);
+
+            const [postResponse] = body.posts;
+
+            await agent
+                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
+                .body({posts: [Object.assign({}, postResponse)]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    posts: [Object.assign({}, matchPostShallowIncludes, {lexical: expectedLexical, mobiledoc: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
                 });
         });
     });

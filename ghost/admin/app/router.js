@@ -35,16 +35,15 @@ Router.map(function () {
 
     this.route('pages');
 
-    this.route('editor', function () {
+    this.route('editor', {path: 'mobiledoc-editor'}, function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
     });
 
-    this.route('lexical-editor', {path: 'editor-beta'}, function () {
+    this.route('lexical-editor', {path: 'editor'}, function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});
     });
-    this.route('lexicalsandbox');
 
     this.route('tags');
     this.route('tag.new', {path: '/tags/new'});
@@ -54,7 +53,9 @@ Router.map(function () {
     this.route('collection.new', {path: '/collections/new'});
     this.route('collection', {path: '/collections/:collection_slug'});
 
-    this.route('settings-x');
+    this.route('settings-x', function () {
+        this.route('settings-x', {path: '/*sub'});
+    });
     this.route('settings');
     this.route('settings.general', {path: '/settings/general'});
     this.route('settings.membership', {path: '/settings/members'});

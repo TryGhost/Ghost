@@ -21,7 +21,7 @@ jobs:
               labels: ["migration"]
             })
 
-      - uses: peter-evans/create-or-update-comment@c470f6fd6d4e4aa68bdf7d16e7b5935bde5d01b5
+      - uses: peter-evans/create-or-update-comment@ddff993e3c91296d410ace8836568b0e4aeada34
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
@@ -32,7 +32,7 @@ jobs:
 
             - [ ]  Satisfies idempotency requirement (both `up()` and `down()`)
             - [ ]  Does not reference models
-            - [ ]  Filename is in the correct format
+            - [ ]  Filename is in the correct format (and correctly ordered)
             - [ ]  Targets the next minor version
             - [ ]  All code paths have appropriate log messages
             - [ ]  Uses the correct utils

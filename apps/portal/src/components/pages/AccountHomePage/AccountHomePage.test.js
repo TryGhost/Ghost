@@ -1,4 +1,3 @@
-import React from 'react';
 import {render, fireEvent} from '../../../utils/test-utils';
 import AccountHomePage from './AccountHomePage';
 import {site} from '../../../utils/fixtures';
