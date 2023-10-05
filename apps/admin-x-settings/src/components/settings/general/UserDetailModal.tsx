@@ -500,7 +500,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 
 const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     const {users, hasNextPage, fetchNextPage} = useStaffUsers();
-    const user = users.find(({slug}) => slug === params?.slug);
+    const {currentUser} = useGlobalData();
+    const user = currentUser.slug === params?.slug ? currentUser : users.find(({slug}) => slug === params?.slug);
 
     useEffect(() => {
         if (!user && !hasNextPage) {

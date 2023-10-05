@@ -124,6 +124,18 @@ export function updatedSettingsResponse(newSettings: Array<{ key: string, value:
     };
 }
 
+export function meWithRole(name: string) {
+    const role = responseFixtures.roles.roles.find(r => r.name === name);
+
+    return {
+        ...responseFixtures.me,
+        users: [{
+            ...responseFixtures.me.users[0],
+            roles: [role]
+        }]
+    };
+};
+
 export async function mockSitePreview({page, url, response}: {page: Page, url: string, response: string}) {
     let lastRequest: {previewHeader?: string} = {};
 
