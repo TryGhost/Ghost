@@ -84,7 +84,8 @@ export default function usePinturaEditor({
                     'redact',
                     'annotate',
                     'trim',
-                    'frame'
+                    'frame',
+                    'resize'
                 ],
                 frameOptions: [
                     // No frame
