@@ -132,9 +132,9 @@ if (DASH_DASH_ARGS.includes('lexical')) {
         //        reverse_proxy http://127.0.0.1:4173
         //    }
 
-        COMMAND_GHOST.env['editor__url'] = 'https://localhost:41730/koenig-lexical.umd.js';
+        COMMAND_ADMIN.env['EDITOR_URL'] = 'https://localhost:41730/';
     } else {
-        COMMAND_GHOST.env['editor__url'] = 'http://localhost:4173/koenig-lexical.umd.js';
+        COMMAND_ADMIN.env['EDITOR_URL'] = 'http://localhost:4173/';
     }
 }
 

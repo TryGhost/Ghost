@@ -1,6 +1,8 @@
 /* eslint-disable */
 'use strict';
 
+const path = require('path');
+
 module.exports = {
     name: 'asset-delivery',
 
@@ -22,7 +24,7 @@ module.exports = {
         const fs = this.project.require('fs-extra');
         const walkSync = this.project.require('walk-sync');
 
-        const assetsOut = `../core/core/built/admin`;
+        const assetsOut = path.join(path.dirname(require.resolve('ghost')), `core/built/admin`);
         fs.removeSync(assetsOut);
         fs.ensureDirSync(assetsOut);
 
@@ -56,6 +58,19 @@ module.exports = {
             }
         } else  {
             console.log('Admin-X-Settings folder not found');
+        }
+
+        // if we are passed a URL for Koenig-Lexical dev server, we don't need to copy the assets
+        if (!process.env.EDITOR_URL) {
+            // copy the @tryghost/koenig-lexical assets
+            const koenigLexicalPath = path.dirname(require.resolve('@tryghost/koenig-lexical'));
+            const assetsKoenigLexicalPath = `${assetsOut}/assets/koenig-lexical`;
+
+            if (fs.existsSync(koenigLexicalPath)) {
+                fs.copySync(koenigLexicalPath, assetsKoenigLexicalPath, {overwrite: true, dereference: true});
+            } else {
+                console.log('Koenig-Lexical folder not found');
+            }
         }
     }
 };

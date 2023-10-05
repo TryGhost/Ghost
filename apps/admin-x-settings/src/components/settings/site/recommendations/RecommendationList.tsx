@@ -9,6 +9,7 @@ import EditRecommendationModal from './EditRecommendationModal';
 import Link from '../../../../admin-x-ds/global/Link';
 import NiceModal from '@ebay/nice-modal-react';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
+import Tooltip from '../../../../admin-x-ds/global/Tooltip';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {PaginationData} from '../../../../hooks/usePagination';
@@ -35,7 +36,8 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     };
 
     const isGhostSite = recommendation.one_click_subscribe;
-    const count = (isGhostSite ? recommendation.count?.subscribers : recommendation.count?.clicks) || 0;
+    const showSubscribers = isGhostSite && !!recommendation.count?.subscribers;
+    const count = (showSubscribers ? recommendation.count?.subscribers : recommendation.count?.clicks) || 0;
     const newMembers = count === 1 ? 'new member' : 'new members';
     const clicks = count === 1 ? 'click' : 'clicks';
 
@@ -54,7 +56,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
             <TableCell className='hidden w-8 align-middle md:!visible md:!table-cell' onClick={showDetails}>
                 {(count === 0) ? (<span className="text-grey-500 dark:text-grey-900">-</span>) : (<div className='-mt-px flex grow items-end gap-1'>
                     <span>{count}</span>
-                    <span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{isGhostSite ? newMembers : clicks}</span>
+                    <span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{showSubscribers ? newMembers : clicks}</span>
                 </div>)}
             </TableCell>
         </TableRow>
@@ -81,7 +83,12 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
     };
 
     if (isLoading || recommendations.length) {
-        return <Table hint={<span className='flex items-center gap-1'>Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link><Button color='clear' hideLabel={true} icon={copied ? 'check-circle' : 'duplicate'} iconColorClass={copied ? 'text-green' : 'text-grey-600 hover:opacity-80'} label={copied ? 'Copied' : 'Copy'} size='sm' unstyled={true} onClick={copyRecommendationsUrl} /></span>} isLoading={isLoading} pagination={pagination} showMore={showMore} hintSeparator>
+        return <Table
+            hint={<span className='flex items-center gap-1'>Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link><Tooltip containerClassName='leading-none' content={copied ? 'Copied' : 'Copy link'} size='sm'><Button color='clear' hideLabel={true} icon={copied ? 'check-circle' : 'duplicate'} iconColorClass={copied ? 'text-green w-[14px] h-[14px]' : 'text-grey-600 hover:opacity-80 w-[14px] h-[14px]'} label={copied ? 'Copied' : 'Copy'} unstyled={true} onClick={copyRecommendationsUrl} /></Tooltip></span>}
+            isLoading={isLoading}
+            pagination={pagination}
+            showMore={showMore}
+            hintSeparator>
             {recommendations && recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
         </Table>;
     } else {

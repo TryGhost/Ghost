@@ -52,7 +52,7 @@ const Button: React.FC<ButtonProps> = ({
 
     if (!unstyled) {
         className = clsx(
-            'flex items-center justify-center whitespace-nowrap rounded-sm text-sm transition',
+            'inline-flex items-center justify-center whitespace-nowrap rounded-sm text-sm transition',
             ((link && color !== 'clear' && color !== 'black') || (!link && color !== 'clear')) ? 'font-bold' : 'font-semibold',
             !link ? `${size === 'sm' ? ' h-7 px-3 ' : ' h-[34px] px-4 '}` : '',
             (link && linkWithPadding) && '-m-1 p-1',

@@ -9,7 +9,6 @@ type Frame = {
     data: unknown,
     options: unknown,
     user: unknown,
-    member: unknown,
 };
 
 const RecommendationIncludesMap = {
@@ -18,9 +17,14 @@ const RecommendationIncludesMap = {
 };
 
 const RecommendationOrderMap = {
+    title: 'title' as const,
+    reason: 'reason' as const,
+    excerpt: 'excerpt' as const,
+    one_click_subscribe: 'oneClickSubscribe' as const,
+    created_at: 'createdAt' as const,
+    updated_at: 'updatedAt' as const,
     'count.clicks': 'clickCount' as const,
-    'count.subscribers': 'subscriberCount' as const,
-    created_at: 'createdAt' as const
+    'count.subscribers': 'subscriberCount' as const
 };
 
 export class RecommendationController {
@@ -101,10 +105,10 @@ export class RecommendationController {
 
         const parts = str.split(',');
         const order: OrderOption<Recommendation> = [];
-        for (const part of parts) {
+        for (const [index, part] of parts.entries()) {
             const trimmed = part.trim();
-            const fieldData = new UnsafeData(trimmed.split(' ')[0].trim());
-            const directionData = new UnsafeData(trimmed.split(' ')[1]?.trim() ?? 'asc');
+            const fieldData = new UnsafeData(trimmed.split(' ')[0].trim(), {field: ['order', index.toString(), 'field']});
+            const directionData = new UnsafeData(trimmed.split(' ')[1]?.trim() ?? 'desc', {field: ['order', index.toString(), 'direction']});
 
             const validatedField = fieldData.enum(
                 Object.keys(RecommendationOrderMap) as (keyof typeof RecommendationOrderMap)[]
@@ -119,15 +123,6 @@ export class RecommendationController {
             });
         }
 
-        if (order.length === 0) {
-            // Default order
-            return [
-                {
-                    field: 'createdAt' as const,
-                    direction: 'desc' as const
-                }
-            ];
-        }
         return order;
     }
 
@@ -218,8 +213,8 @@ export class RecommendationController {
                     favicon: entity.favicon?.toString() ?? null,
                     url: entity.url.toString(),
                     one_click_subscribe: entity.oneClickSubscribe,
-                    created_at: entity.createdAt,
-                    updated_at: entity.updatedAt,
+                    created_at: entity.createdAt.toISOString(),
+                    updated_at: entity.updatedAt?.toISOString() ?? null,
                     count: entity.clickCount !== undefined || entity.subscriberCount !== undefined ? {
                         clicks: entity.clickCount,
                         subscribers: entity.subscriberCount

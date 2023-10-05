@@ -1,0 +1,53 @@
+<header id="gh-navigation" class="gh-navigation is-{{#match navigationLayout "Logo on the left"}}left-logo{{else match navigationLayout "Stacked"}}stacked{{else}}middle-logo{{/match}}{{#match @custom.header_and_footer_color "Accent color"}} has-accent-color{{/match}} gh-outer">
+    <div class="gh-navigation-inner gh-inner">
+
+        <div class="gh-navigation-brand">
+            <a class="gh-navigation-logo is-title" href="{{@site.url}}">
+                {{#if @site.logo}}
+                    <img src="{{@site.logo}}" alt="{{@site.title}}">
+                {{else}}
+                    {{@site.title}}
+                {{/if}}
+            </a>
+            {{> "search-toggle"}}
+            <button class="gh-burger gh-icon-button">
+                {{> "icons/burger"}}
+                {{> "icons/close"}}
+            </button>
+        </div>
+
+        <nav class="gh-navigation-menu">
+            {{navigation}}
+            {{#unless @site.members_enabled}}
+                {{#match navigationLayout "Stacked"}}
+                    {{> "search-toggle"}}
+                {{/match}}
+            {{/unless}}
+        </nav>
+
+        <div class="gh-navigation-actions">
+            {{#unless @site.members_enabled}}
+                {{^match navigationLayout "Stacked"}}
+                    {{> "search-toggle"}}
+                {{/match}}
+            {{else}}
+                {{> "search-toggle"}}
+                <div class="gh-navigation-members">
+                    {{#unless @member}}
+                        {{#unless @site.members_invite_only}}
+                            <a href="#/portal/signin" data-portal="signin">Sign in</a>
+                            {{#unless hideSubscribeButton}}
+                                <a class="gh-button" href="#/portal/signup" data-portal="signup">Subscribe</a>
+                            {{/unless}}
+                        {{else}}
+                            <a class="gh-button" href="#/portal/signin" data-portal="signin">Sign in</a>
+                        {{/unless}}
+                    {{else}}
+                        <a class="gh-button" href="#/portal/account" data-portal="account">Account</a>
+                    {{/unless}}
+                </div>
+            {{/unless}}
+        </div>
+
+    </div>
+</header>

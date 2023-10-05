@@ -2,12 +2,10 @@
     <ul class="recommendations">
         {{#each recommendations as |rec|}}
         <li class="recommendation">
-            <a href="{{rec.url}}">
+            <a href="{{rec.url}}" data-recommendation="{{rec.id}}" target="_blank" rel="noopener">
                 <img class="recommendation-favicon" src="{{rec.favicon}}" alt="{{rec.title}}">
-                <div class="recommendation-content">
-                    <h5 class="recommendation-title">{{rec.title}}</h5>
-                    <p class="recommendation-reason">{{rec.reason}}</p>
-                </div>
+                <h5 class="recommendation-title">{{rec.title}}</h5>
+                <p class="recommendation-reason">{{rec.reason}}</p>
             </a>
         </li>
         {{/each}}

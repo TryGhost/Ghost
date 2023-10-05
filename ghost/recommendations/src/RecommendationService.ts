@@ -1,5 +1,6 @@
-import {BookshelfRepository, IncludeOption, OrderOption} from '@tryghost/bookshelf-repository';
+import {IncludeOption, OrderOption} from '@tryghost/bookshelf-repository';
 import errors from '@tryghost/errors';
+import {InMemoryRepository} from '@tryghost/in-memory-repository';
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
 import {ClickEvent} from './ClickEvent';
@@ -23,8 +24,8 @@ const messages = {
 
 export class RecommendationService {
     repository: RecommendationRepository;
-    clickEventRepository: BookshelfRepository<string, ClickEvent>;
-    subscribeEventRepository: BookshelfRepository<string, SubscribeEvent>;
+    clickEventRepository: InMemoryRepository<string, ClickEvent>;
+    subscribeEventRepository: InMemoryRepository<string, SubscribeEvent>;
 
     wellknownService: WellknownService;
     mentionSendingService: MentionSendingService;
@@ -32,8 +33,8 @@ export class RecommendationService {
 
     constructor(deps: {
         repository: RecommendationRepository,
-        clickEventRepository: BookshelfRepository<string, ClickEvent>,
-        subscribeEventRepository: BookshelfRepository<string, SubscribeEvent>,
+        clickEventRepository: InMemoryRepository<string, ClickEvent>,
+        subscribeEventRepository: InMemoryRepository<string, SubscribeEvent>,
         wellknownService: WellknownService,
         mentionSendingService: MentionSendingService,
         recommendationEnablerService: RecommendationEnablerService
@@ -182,5 +183,14 @@ export class RecommendationService {
     async trackSubscribed({id, memberId}: { id: string, memberId: string }) {
         const subscribeEvent = SubscribeEvent.create({recommendationId: id, memberId});
         await this.subscribeEventRepository.save(subscribeEvent);
+    }
+
+    async readRecommendationByUrl(url: URL): Promise<RecommendationPlain|null> {
+        const recommendation = await this.repository.getByUrl(url);
+
+        if (!recommendation) {
+            return null;
+        }
+        return recommendation.plain;
     }
 }
