@@ -5,6 +5,8 @@ import type { Preview } from "@storybook/react";
 import '../src/admin-x-ds/providers/DesignSystemProvider';
 import DesignSystemProvider from '../src/admin-x-ds/providers/DesignSystemProvider';
 
+import '../src/admin-x-ds/styles/storybook.css';
+
 const preview: Preview = {
 	parameters: {
 		actions: { argTypesRegex: "^on[A-Z].*" },
@@ -17,7 +19,7 @@ const preview: Preview = {
 		options: {
 			storySort: {
 				mathod: 'alphabetical',
-				order: ['Global', ['Chrome', 'Form', 'Modal', 'Layout', 'List', '*'], 'Settings', ['Setting Section', 'Setting Group', '*'], 'Experimental'],
+				order: ['Welcome', 'Foundations', 'Global', ['Chrome', 'Form', 'Modal', 'Layout', 'List', 'Table', '*'], 'Settings', ['Setting Section', 'Setting Group', '*'], 'Experimental'],
 			},
 		},
 	},

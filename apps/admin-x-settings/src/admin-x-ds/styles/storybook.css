@@ -1,0 +1,92 @@
+.sbdocs-wrapper {
+    padding: 3vmin !important;
+}
+
+.sb-doc {
+    max-width: 740px;
+    width: 100%;
+    margin: 0 auto !important;
+}
+
+.sb-doc,
+.sb-doc a,
+.sb-doc h1,
+.sb-doc h2,
+.sb-doc h3,
+.sb-doc h4,
+.sb-doc h5,
+.sb-doc h6,
+.sb-doc p,
+.sb-doc ul li,
+.sbdocs-title,
+.sb-doc ol li {
+    font-family: Inter, sans-serif !important;
+    padding: 0 !important;
+}
+
+.sb-doc a {
+    color: #30CF43;
+}
+
+.sb-doc h1,
+.sbdocs-title {
+    font-size: 48px !important;
+    letter-spacing: -0.04em !important;
+    margin-bottom: 20px;
+}
+
+.sb-doc h2 {
+    margin-top: 40px !important;
+    font-size: 32px;
+    border: none;
+    margin-bottom: 2px;
+}
+
+.sb-doc h3 {
+    margin-top: 40px !important;
+    margin-bottom: 4px !important;
+    font-size: 20px;
+}
+
+.sb-doc p,
+.sb-doc ul li,
+.sb-doc ol li {
+    font-size: 15px;
+    line-height: 1.5em;
+}
+
+.sb-doc ul li,
+.sb-doc ol li {
+    margin-bottom: 8px;
+}
+
+.sb-doc h2 + p,
+.sb-doc h3 + p {
+    margin-top: 8px;
+}
+
+.sb-doc img {
+    margin-top: 40px !important;
+    margin-bottom: 40px !important;
+}
+
+.sb-doc img.small {
+    max-width: 520px;
+    margin: 0 auto;
+    display: block;
+}
+
+.sb-doc p.excerpt {
+    font-size: 19px;
+    letter-spacing: -0.02em;
+}
+
+/* Welcome */
+.sb-doc img.main-image {
+    margin-top: -2vmin !important;
+    margin-left: -44px;
+    margin-right: -32px;
+    margin-bottom: 0 !important;
+    max-width: unset;
+    width: calc(100% + 64px);
+}
