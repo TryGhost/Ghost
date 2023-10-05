@@ -1,18 +1,47 @@
 /* eslint-disable */
 'use strict';
 
+const crypto = require('crypto');
+const fs = require('fs');
 const path = require('path');
+
+const adminXSettingsPath = '../../apps/admin-x-settings/dist';
+
+function generateHash(filePath) {
+    const fileName = path.basename(filePath);
+    const fileContents = fs.readFileSync(filePath, 'utf8');
+    const hash = crypto.createHash('sha256').update(fileContents).digest('hex').slice(0, 10);
+    return hash;
+}
 
 module.exports = {
     name: 'asset-delivery',
 
     env: null,
 
+    packageConfig: {},
+
     config(env) {
         // only set this.env on the first call otherwise when `postBuild()` is
         // called this.env will always be 'test' due to multiple `config()` calls
         if (!this.env) {
             this.env = env;
+
+            const koenigLexicalPath = require.resolve('@tryghost/koenig-lexical');
+            this.packageConfig['editorFilename'] = path.basename(koenigLexicalPath);
+            this.packageConfig['editorHash'] = process.env.EDITOR_URL ? 'development' : generateHash(koenigLexicalPath);
+
+            // TODO: ideally take this from the package, but that's broken thanks to .cjs file ext
+            const defaultAdminXSettingFilename = 'admin-x-settings.js';
+            this.packageConfig['adminXSettingsFilename'] = defaultAdminXSettingFilename;
+            this.packageConfig['adminXSettingsHash'] = (this.env === 'production') ? generateHash(path.join(adminXSettingsPath, defaultAdminXSettingFilename)) : 'development';
+
+            if (true) {
+                console.log('Admin-X Settings:', this.packageConfig['adminXSettingsFilename'], this.packageConfig['adminXSettingsHash']);
+                console.log('Koenig-Lexical:', this.packageConfig['editorFilename'], this.packageConfig['editorHash']);
+            }
+
+            return this.packageConfig;
         }
     },
 
@@ -47,7 +76,6 @@ module.exports = {
         });
 
         // copy the @tryghost/admin-x-settings assets
-        const adminXSettingsPath = '../../apps/admin-x-settings/dist';
         const assetsAdminXPath = `${assetsOut}/assets/admin-x-settings`;
 
         if (fs.existsSync(adminXSettingsPath)) {
