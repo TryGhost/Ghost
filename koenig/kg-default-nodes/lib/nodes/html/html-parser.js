@@ -1,10 +1,9 @@
 export function parseHtmlNode(HtmlNode) {
     return {
-        '#comment': () => {
-            return {
-                conversion(domNode) {
-                    const isCommentNode = domNode.nodeType === 8;
-                    if (isCommentNode && domNode.nodeValue.trim() === 'kg-card-begin: html') {
+        '#comment': (nodeElem) => {
+            if (nodeElem.nodeType === 8 && nodeElem.nodeValue.trim() === 'kg-card-begin: html') {
+                return {
+                    conversion(domNode) {
                         let html = [];
                         let nextNode = domNode.nextSibling;
 
@@ -19,12 +18,12 @@ export function parseHtmlNode(HtmlNode) {
                         let payload = {html: html.join('\n').trim()};
                         const node = new HtmlNode(payload);
                         return {node};
-                    }
+                    },
+                    priority: 0
+                };
+            }
 
-                    return null;
-                },
-                priority: 0
-            };
+            return null;
         },
         table: (nodeElem) => {
             if (nodeElem.nodeType === 1 && nodeElem.tagName === 'TABLE' && nodeElem.parentNode.tagName !== 'TABLE') {

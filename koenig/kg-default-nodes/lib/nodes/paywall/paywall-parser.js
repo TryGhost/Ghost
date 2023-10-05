@@ -1,18 +1,16 @@
 export function parsePaywallNode(PaywallNode) {
     return {
-        '#comment': () => {
-            return {
-                conversion(domNode) {
-                    const isCommentNode = domNode.nodeType === 8;
-                    if (isCommentNode && domNode.nodeValue.trim() === 'members-only') {
+        '#comment': (nodeElem) => {
+            if (nodeElem.nodeType === 8 && nodeElem.nodeValue.trim() === 'members-only') {
+                return {
+                    conversion() {
                         const node = new PaywallNode();
                         return {node};
-                    }
-
-                    return null;
-                },
-                priority: 0
-            };
+                    },
+                    priority: 0
+                };
+            }
+            return null;
         }
     };
 }
