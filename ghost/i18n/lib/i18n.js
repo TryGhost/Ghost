@@ -35,7 +35,8 @@ const SUPPORTED_LOCALES = [
     'sr', // Serbian
     'sv', // Swedish
     'tr', // Turkish
-    'uk', // Ukrainian
+    'uk', // Ukrainian,
+    'ur', // Urdu
     'uz', // Uzbek
     'vi', // Vietnamese
     'zh', // Chinese
