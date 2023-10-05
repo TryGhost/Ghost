@@ -3,7 +3,7 @@ import {Config} from '../api/config';
 import {Setting} from '../api/settings';
 import {getGhostPaths} from '../utils/helpers';
 import {getSettingValues} from '../api/settings';
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
 
 interface PinturaEditorConfig {
@@ -42,6 +42,7 @@ declare global {
                     labelButtonExport: string;
                 };
                 previewPad: boolean;
+                willClose: () => boolean;
             }) => {
                 on: (event: string, callback: (result: { dest: File }) => void) => void;
             };
@@ -58,6 +59,8 @@ export default function usePinturaEditor({
     const [pintura] = getSettingValues<boolean>(settings, ['pintura']);
     const [scriptLoaded, setScriptLoaded] = useState<boolean>(false);
     const [cssLoaded, setCssLoaded] = useState<boolean>(false);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const allowClose = useRef<boolean>(false);
 
     let isEnabled = pintura && scriptLoaded && cssLoaded || false;
     const pinturaConfig = globalConfig?.pintura as { js?: string; css?: string };
@@ -205,7 +208,16 @@ export default function usePinturaEditor({
                     locale: {
                         labelButtonExport: 'Save and close'
                     },
-                    previewPad: true
+                    previewPad: true,
+                    // Skip default Escape to close behaviour, only allow when the close button is clicked
+                    willClose: () => {
+                        if (allowClose.current) {
+                            setIsOpen(false);
+                            return true;
+                        }
+
+                        return false;
+                    }
                 });
 
                 editor.on('loaderror', () => {
@@ -215,10 +227,31 @@ export default function usePinturaEditor({
                 editor.on('process', (result) => {
                     handleSave(result.dest);
                 });
+
+                setIsOpen(true);
             }
         },
         [isEnabled]
     );
+
+    // Only allow closing the modal if the close button was clicked
+    useEffect(() => {
+        if (!isOpen) {
+            return;
+        }
+
+        const handleCloseClick = (event: MouseEvent) => {
+            if (event.target instanceof Element && event.target.closest('.PinturaModal button[title="Close"]')) {
+                allowClose.current = true;
+            }
+        };
+
+        window.addEventListener('click', handleCloseClick, {capture: true});
+
+        return () => {
+            window.removeEventListener('click', handleCloseClick, {capture: true});
+        };
+    }, [isOpen]);
 
     return {
         isEnabled,
