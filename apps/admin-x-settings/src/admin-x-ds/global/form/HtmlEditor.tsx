@@ -85,6 +85,10 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
         setFocusState(false);
     };
 
+    const handleFocus = () => {
+        setFocusState(true);
+    };
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const koenig = useMemo(() => new Proxy({} as { [key: string]: any }, {
         get: (_target, prop) => {
@@ -132,6 +136,7 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
                 placeholderText={placeholder}
                 singleParagraph={true}
                 onBlur={handleBlur}
+                onFocus={handleFocus}
             >
                 <koenig.HtmlOutputPlugin html={value} setHtml={handleSetHtml} />
             </koenig.KoenigComposableEditor>
@@ -148,13 +153,8 @@ const HtmlEditor: React.FC<HtmlEditorProps & {
     const {fetchKoenigLexical} = useServices();
     const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
 
-    const {setFocusState} = useFocusContext();
-    // this is not ideal, we need to add a focus plugin inside the Koenig editor package to handle this properly
-    const handleFocus = () => {
-        setFocusState(true);
-    };
     return <div className={className || 'w-full'}>
-        <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit" onFocus={handleFocus}>
+        <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit">
             <ErrorBoundary name='editor'>
                 <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                     <KoenigWrapper {...props} editor={editorResource} />
