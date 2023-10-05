@@ -35,7 +35,6 @@ declare global {
                 enableTransparencyGrid: boolean;
                 util: string;
                 utils: string[];
-                stickerStickToImage: boolean;
                 frameOptions: [FrameOptionType, (locale: PinturaLocale) => string][];
                 cropSelectPresetFilter: string;
                 cropSelectPresetOptions: [number | undefined, string][];
@@ -164,10 +163,8 @@ export default function usePinturaEditor({
                         'redact',
                         'annotate',
                         'trim',
-                        'frame',
-                        'sticker'
+                        'frame'
                     ],
-                    stickerStickToImage: true,
                     frameOptions: [
                         // No frame
                         [undefined, locale => locale.labelNone],
