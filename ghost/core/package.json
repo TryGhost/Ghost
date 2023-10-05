@@ -242,7 +242,7 @@
     "expect": "29.3.1",
     "form-data": "4.0.0",
     "inquirer": "8.2.6",
-    "jwks-rsa": "3.0.1",
+    "jwks-rsa": "3.1.0",
     "mocha": "10.2.0",
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#d8b93b1c20d4820323477f2c60db016ab3e73192",
