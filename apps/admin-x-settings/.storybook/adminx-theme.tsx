@@ -22,7 +22,7 @@ export default create({
     appBorderRadius: 0,
 
     // Text colors
-    textColor: '#10162F',
+    textColor: '#15171A',
     textInverseColor: '#ffffff',
 
     // Toolbar default and active colors
@@ -32,7 +32,7 @@ export default create({
 
     // Form colors
     inputBg: '#ffffff',
-    inputBorder: '#10162F',
-    inputTextColor: '#10162F',
+    inputBorder: '#15171A',
+    inputTextColor: '#15171A',
     inputBorderRadius: 2,
 });
