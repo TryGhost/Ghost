@@ -8471,7 +8471,7 @@
     "@types/qs" "*"
     "@types/range-parser" "*"
 
-"@types/express@*", "@types/express@4.17.18", "@types/express@^4.17.14", "@types/express@^4.17.2", "@types/express@^4.7.0":
+"@types/express@*", "@types/express@4.17.18", "@types/express@^4.17.17", "@types/express@^4.17.2", "@types/express@^4.7.0":
   version "4.17.18"
   resolved "https://registry.yarnpkg.com/@types/express/-/express-4.17.18.tgz#efabf5c4495c1880df1bdffee604b143b29c4a95"
   integrity sha512-Sxv8BSLLgsBYmcnGdGjjEjqET2U+AKAdCRODmMiq02FgjwuV75Ut85DRpvFjyw/Mk0vgUOliGRU0UUmuuZHByQ==
@@ -8567,7 +8567,7 @@
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.12.tgz#d70faba7039d5fca54c83c7dbab41051d2b6f6cb"
   integrity sha512-Hr5Jfhc9eYOQNPYO5WLDq/n4jqijdHNlDXjuAQkkt+mWdQR+XJToOHrsD4cPaMXpn6KO7y2+wM8AZEs8VpBLVA==
 
-"@types/jsonwebtoken@9.0.3", "@types/jsonwebtoken@^9", "@types/jsonwebtoken@^9.0.0":
+"@types/jsonwebtoken@9.0.3", "@types/jsonwebtoken@^9", "@types/jsonwebtoken@^9.0.2":
   version "9.0.3"
   resolved "https://registry.yarnpkg.com/@types/jsonwebtoken/-/jsonwebtoken-9.0.3.tgz#1f22283b8e1f933af9e195d720798b64b399d84c"
   integrity sha512-b0jGiOgHtZ2jqdPgPnP6WLCXZk1T8p06A/vPGzUvxpFGgKMbjXJDjC5m52ErqBnIuWZFgGoIJyRdeG5AyreJjA==
@@ -21107,7 +21107,7 @@ join-component@^1.1.0:
   resolved "https://registry.yarnpkg.com/join-component/-/join-component-1.1.0.tgz#b8417b750661a392bee2c2537c68b2a9d4977cd5"
   integrity sha512-bF7vcQxbODoGK1imE2P9GS9aw4zD0Sd+Hni68IMZLj7zRnquH7dXUmMw9hDI5S/Jzt7q+IyTXN0rSg2GI0IKhQ==
 
-jose@4.15.2, jose@^4.10.4:
+jose@4.15.2, jose@^4.14.6:
   version "4.15.2"
   resolved "https://registry.yarnpkg.com/jose/-/jose-4.15.2.tgz#61f97383f0b433d45da26d35094155a30a672d92"
   integrity sha512-IY73F228OXRl9ar3jJagh7Vnuhj/GzBunPiZP13K0lOl7Am9SoWW3kEzq3MCllJMTtZqHTiDXQvoRd4U95aU6A==
@@ -21484,17 +21484,17 @@ jwk-to-pem@2.0.5:
     elliptic "^6.5.4"
     safe-buffer "^5.0.1"
 
-jwks-rsa@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-3.0.1.tgz#ba79ddca7ee7520f7bb26b942ef1aee91df8d7e4"
-  integrity sha512-UUOZ0CVReK1QVU3rbi9bC7N5/le8ziUj0A2ef1Q0M7OPD2KvjEYizptqIxGIo6fSLYDkqBrazILS18tYuRc8gw==
+jwks-rsa@3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-3.1.0.tgz#50406f23e38c9b2682cd437f824d7d61aa983171"
+  integrity sha512-v7nqlfezb9YfHHzYII3ef2a2j1XnGeSE/bK3WfumaYCqONAIstJbrEGapz4kadScZzEt7zYCN7bucj8C0Mv/Rg==
   dependencies:
-    "@types/express" "^4.17.14"
-    "@types/jsonwebtoken" "^9.0.0"
+    "@types/express" "^4.17.17"
+    "@types/jsonwebtoken" "^9.0.2"
     debug "^4.3.4"
-    jose "^4.10.4"
+    jose "^4.14.6"
     limiter "^1.1.5"
-    lru-memoizer "^2.1.4"
+    lru-memoizer "^2.2.0"
 
 jws@^3.2.2:
   version "3.2.2"
@@ -22604,10 +22604,10 @@ lru-cache@~4.0.0:
     pseudomap "^1.0.1"
     yallist "^2.0.0"
 
-lru-memoizer@^2.1.4:
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/lru-memoizer/-/lru-memoizer-2.1.4.tgz#b864d92b557f00b1eeb322156a0409cb06dafac6"
-  integrity sha512-IXAq50s4qwrOBrXJklY+KhgZF+5y98PDaNo0gi/v2KQBFLyWr+JyFvijZXkGKjQj/h9c0OwoE+JZbwUXce76hQ==
+lru-memoizer@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/lru-memoizer/-/lru-memoizer-2.2.0.tgz#b9d90c91637b4b1a423ef76f3156566691293df8"
+  integrity sha512-QfOZ6jNkxCcM/BkIPnFsqDhtrazLRsghi9mBwFAzol5GCvj4EkFT899Za3+QwikCg5sRX8JstioBDwOxEyzaNw==
   dependencies:
     lodash.clonedeep "^4.5.0"
     lru-cache "~4.0.0"
