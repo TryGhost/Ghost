@@ -60,8 +60,13 @@ let defaultLabFlags = {
     members: false
 };
 
-// Inject defaultLabFlags into responseFixtures.settings
+// Inject defaultLabFlags into responseFixtures.settings and config
 let labsSetting = responseFixtures.settings.settings.find(s => s.key === 'labs');
+let configSettings = responseFixtures.config.config;
+
+if (configSettings) {
+    configSettings.labs = defaultLabFlags;
+}
 
 if (!labsSetting) {
     // If 'labs' key doesn't exist, create it
@@ -72,6 +77,42 @@ if (!labsSetting) {
 } else {
     // If 'labs' key exists, update its value
     labsSetting.value = JSON.stringify(defaultLabFlags);
+}
+
+interface LabsSettings {
+    [key: string]: boolean;
+}
+
+export function toggleLabsFlag(flag: string, value: boolean) {
+    // Update responseFixtures.settings
+    labsSetting = responseFixtures.settings.settings.find(s => s.key === 'labs');
+
+    if (!labsSetting) {
+        throw new Error('Labs settings not found');
+    }
+
+    if (typeof labsSetting.value !== 'string') {
+        throw new Error('Labs settings value is not a string');
+    }
+
+    let labs: LabsSettings;
+    try {
+        labs = JSON.parse(labsSetting.value);
+    } catch (e) {
+        throw new Error('Failed to parse labs settings');
+    }
+
+    labs[flag] = value;
+    labsSetting.value = JSON.stringify(labs);
+
+    // Update responseFixtures.config
+    configSettings = responseFixtures.config.config;
+
+    if (configSettings && configSettings.labs) {
+        configSettings.labs[flag] = value;
+    } else {
+        throw new Error('Config settings or labs settings in config not found');
+    }
 }
 
 export const globalDataRequests = {
@@ -177,31 +218,4 @@ export async function mockSitePreview({page, url, response}: {page: Page, url: s
 export async function chooseOptionInSelect(select: Locator, optionText: string | RegExp) {
     await select.click();
     await select.page().locator('[data-testid="select-option"]', {hasText: optionText}).click();
-}
-
-interface LabsSettings {
-    [key: string]: boolean;
-}
-
-export function toggleLabsFlag(flag: string, value: boolean) {
-    labsSetting = responseFixtures.settings.settings.find(s => s.key === 'labs');
-
-    if (!labsSetting) {
-        throw new Error('Labs settings not found');
-    }
-
-    if (typeof labsSetting.value !== 'string') {
-        throw new Error('Labs settings value is not a string');
-    }
-
-    let labs: LabsSettings;
-    try {
-        labs = JSON.parse(labsSetting.value);
-    } catch (e) {
-        throw new Error('Failed to parse labs settings');
-    }
-
-    labs[flag] = value;
-
-    labsSetting.value = JSON.stringify(labs);
 }
