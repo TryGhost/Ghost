@@ -158,10 +158,8 @@ export default class KoenigImageEditor extends Component {
                     'redact',
                     'annotate',
                     'trim',
-                    'frame',
-                    'sticker'
+                    'frame'
                 ],
-                stickerStickToImage: true,
                 frameOptions: [
                     // No frame
                     [undefined, locale => locale.labelNone],
