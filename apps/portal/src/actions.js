@@ -502,6 +502,18 @@ async function oneClickSubscribe({data: {siteUrl}, state}) {
 }
 
 function trackRecommendationClicked({data: {recommendationId}, api}) {
+    try {
+        const existing = localStorage.getItem('ghost-recommendations-clicked');
+        const clicked = existing ? JSON.parse(existing) : [];
+        if (clicked.includes(recommendationId)) {
+            // Already tracked
+            return;
+        }
+        clicked.push(recommendationId);
+        localStorage.setItem('ghost-recommendations-clicked', JSON.stringify(clicked));
+    } catch (e) {
+        // Ignore localstorage errors (browser not supported or in private mode)
+    }
     api.recommendations.trackClicked({
         recommendationId
     });
