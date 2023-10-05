@@ -200,8 +200,8 @@ export function toggleLabsFlag(flag: string, value: boolean) {
     } catch (e) {
         throw new Error('Failed to parse labs settings');
     }
-  
+
     labs[flag] = value;
-  
+
     labsSetting.value = JSON.stringify(labs);
 }
