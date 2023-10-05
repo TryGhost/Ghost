@@ -1,7 +1,8 @@
+import {$isRangeSelection} from 'lexical';
 import {createDOMRange, createRectsFromDOMRange} from '@lexical/selection';
 
 export function $getSelectionRangeRect({selection, editor}) {
-    if (!selection) {
+    if (!selection || !$isRangeSelection(selection)) {
         return null;
     }
     const anchor = selection.anchor;

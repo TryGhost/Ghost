@@ -90,7 +90,7 @@ function useFloatingFormatToolbar(editor, anchorElem, isSnippetsEnabled, hiddenF
             editor.getEditorState().read(() => {
                 const selection = $getSelection();
                 // save selection range rect to calculate toolbar arrow position
-                if (toolbarItemType) {
+                if (toolbarItemType && $isRangeSelection(selection)) {
                     setSelectionRangeRect($getSelectionRangeRect({selection, editor}));
                 }
             });
