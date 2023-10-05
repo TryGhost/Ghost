@@ -158,7 +158,8 @@ export default class KoenigImageEditor extends Component {
                     'redact',
                     'annotate',
                     'trim',
-                    'frame'
+                    'frame',
+                    'resize'
                 ],
                 frameOptions: [
                     // No frame
