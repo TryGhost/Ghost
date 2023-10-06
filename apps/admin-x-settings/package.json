@@ -70,7 +70,7 @@
     "@tailwindcss/line-clamp": "0.4.4",
     "@types/react": "18.2.22",
     "@types/react-dom": "18.2.7",
-    "@types/validator": "13.11.1",
+    "@types/validator": "13.11.2",
     "@vitejs/plugin-react": "4.1.0",
     "autoprefixer": "10.4.16",
     "concurrently": "8.2.1",
