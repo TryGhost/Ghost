@@ -17,35 +17,35 @@ export function parseImageNode(ImageNode) {
             priority: 1
         }),
         figure: (nodeElem) => {
-            if (!nodeElem.querySelector('img')) {
-                return null;
+            const img = nodeElem.querySelector('img');
+            if (img) {
+                return {
+                    conversion(domNode) {
+                        const kgClass = domNode.className.match(/kg-width-(wide|full)/);
+                        const grafClass = domNode.className.match(/graf--layout(FillWidth|OutsetCenter)/);
+
+                        if (!img) {
+                            return null;
+                        }
+
+                        const payload = readImageAttributesFromElement(img);
+
+                        if (kgClass) {
+                            payload.cardWidth = kgClass[1];
+                        } else if (grafClass) {
+                            payload.cardWidth = grafClass[1] === 'FillWidth' ? 'full' : 'wide';
+                        }
+
+                        payload.caption = readCaptionFromElement(domNode);
+
+                        const {src, width, height, alt, title, caption, cardWidth, href} = payload;
+                        const node = new ImageNode({alt, src, title, width, height, caption, cardWidth, href});
+                        return {node};
+                    },
+                    priority: 0 // since we are generically parsing figure elements, we want this to run after others (like the gallery)
+                };
             }
-            return {
-                conversion(domNode) {
-                    const img = domNode.querySelector('img');
-                    const kgClass = domNode.className.match(/kg-width-(wide|full)/);
-                    const grafClass = domNode.className.match(/graf--layout(FillWidth|OutsetCenter)/);
-
-                    if (!img) {
-                        return null;
-                    }
-
-                    const payload = readImageAttributesFromElement(img);
-
-                    if (kgClass) {
-                        payload.cardWidth = kgClass[1];
-                    } else if (grafClass) {
-                        payload.cardWidth = grafClass[1] === 'FillWidth' ? 'full' : 'wide';
-                    }
-
-                    payload.caption = readCaptionFromElement(domNode);
-
-                    const {src, width, height, alt, title, caption, cardWidth, href} = payload;
-                    const node = new ImageNode({alt, src, title, width, height, caption, cardWidth, href});
-                    return {node};
-                },
-                priority: 1
-            };
+            return null;
         }
     };
 }

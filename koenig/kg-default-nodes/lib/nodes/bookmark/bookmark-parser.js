@@ -5,14 +5,14 @@ export function parseBookmarkNode(BookmarkNode) {
             if (nodeElem.tagName === 'FIGURE' && isKgBookmarkCard) {
                 return {
                     conversion(domNode) {
-                        const url = domNode?.querySelector('.kg-bookmark-container').href;
-                        const icon = domNode?.querySelector('.kg-bookmark-icon').src;
-                        const title = domNode?.querySelector('.kg-bookmark-title').textContent;
-                        const description = domNode?.querySelector('.kg-bookmark-description').textContent;
-                        const author = domNode?.querySelector('.kg-bookmark-publisher').textContent; // NOTE: This is NOT in error. The classes are reversed for theme backwards-compatibility.
-                        const publisher = domNode?.querySelector('.kg-bookmark-author').textContent; // NOTE: This is NOT in error. The classes are reversed for theme backwards-compatibility.
-                        const thumbnail = domNode?.querySelector('.kg-bookmark-thumbnail img').src;
-                        const caption = domNode?.querySelector('figure.kg-bookmark-card figcaption').textContent;
+                        const url = domNode?.querySelector('.kg-bookmark-container')?.href;
+                        const icon = domNode?.querySelector('.kg-bookmark-icon')?.src;
+                        const title = domNode?.querySelector('.kg-bookmark-title')?.textContent;
+                        const description = domNode?.querySelector('.kg-bookmark-description')?.textContent;
+                        const author = domNode?.querySelector('.kg-bookmark-publisher')?.textContent; // NOTE: This is NOT in error. The classes are reversed for theme backwards-compatibility.
+                        const publisher = domNode?.querySelector('.kg-bookmark-author')?.textContent; // NOTE: This is NOT in error. The classes are reversed for theme backwards-compatibility.
+                        const thumbnail = domNode?.querySelector('.kg-bookmark-thumbnail img')?.src;
+                        const caption = domNode?.querySelector('figure.kg-bookmark-card figcaption')?.textContent;
                         const payload = {
                             url: url,
                             metadata: {

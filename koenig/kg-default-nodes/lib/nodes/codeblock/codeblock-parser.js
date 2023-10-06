@@ -2,44 +2,40 @@ import {readCaptionFromElement} from '../../utils/read-caption-from-element';
 
 export function parseCodeBlockNode(CodeBlockNode) {
     return {
-        figure: () => ({
-            conversion(domNode) {
-                if (domNode.tagName === 'FIGURE') {
-                    const pre = domNode.querySelector('pre');
-
-                    // If this figure doesn't have a pre tag in it
-                    if (!pre) {
-                        return null;
-                    }
-
-                    let code = pre.querySelector('code');
-                    let figcaption = domNode.querySelector('figcaption');
-
-                    // if there's no caption the pre key should pick it up
-                    if (!code || !figcaption) {
-                        return null;
-                    }
-
-                    let payload = {
-                        code: code.textContent,
-                        caption: readCaptionFromElement(domNode)
-                    };
-
-                    let preClass = pre.getAttribute('class') || '';
-                    let codeClass = code.getAttribute('class') || '';
-                    let langRegex = /lang(?:uage)?-(.*?)(?:\s|$)/i;
-                    let languageMatches = preClass.match(langRegex) || codeClass.match(langRegex);
-                    if (languageMatches) {
-                        payload.language = languageMatches[1].toLowerCase();
-                    }
-
-                    const node = new CodeBlockNode(payload);
-                    return {node};
-                }
-                return null;
-            },
-            priority: 2 // falls back to pre if no caption
-        }),
+        figure: (nodeElem) => {
+            const pre = nodeElem.querySelector('pre');
+            if (nodeElem.tagName === 'FIGURE' && pre) {
+                return {
+                    conversion(domNode) {        
+                        let code = pre.querySelector('code');
+                        let figcaption = domNode.querySelector('figcaption');
+    
+                        // if there's no caption the pre key should pick it up
+                        if (!code || !figcaption) {
+                            return null;
+                        }
+    
+                        let payload = {
+                            code: code.textContent,
+                            caption: readCaptionFromElement(domNode)
+                        };
+    
+                        let preClass = pre.getAttribute('class') || '';
+                        let codeClass = code.getAttribute('class') || '';
+                        let langRegex = /lang(?:uage)?-(.*?)(?:\s|$)/i;
+                        let languageMatches = preClass.match(langRegex) || codeClass.match(langRegex);
+                        if (languageMatches) {
+                            payload.language = languageMatches[1].toLowerCase();
+                        }
+    
+                        const node = new CodeBlockNode(payload);
+                        return {node};
+                    },
+                    priority: 2 // falls back to pre if no caption
+                };
+            }
+            return null;
+        },
         pre: () => ({
             conversion(domNode) {
                 if (domNode.tagName === 'PRE') {

@@ -2,65 +2,66 @@ import {readCaptionFromElement} from '../../utils/read-caption-from-element';
 
 export function parseVideoNode(VideoNode) {
     return {
-        figure: () => ({
-            conversion(domNode) {
-                const isKgVideoCard = domNode.classList?.contains('kg-video-card');
-                if (domNode.tagName === 'FIGURE' && isKgVideoCard) {
-                    const videoNode = domNode.querySelector('.kg-video-container video');
-                    const durationNode = domNode.querySelector('.kg-video-duration');
-                    const videoSrc = videoNode && videoNode.src;
-                    const videoWidth = videoNode && videoNode.width;
-                    const videoHeight = videoNode && videoNode.height;
-                    const durationText = durationNode && durationNode.innerHTML.trim();
-                    const captionText = readCaptionFromElement(domNode);
+        figure: (nodeElem) => {
+            const isKgVideoCard = nodeElem.classList?.contains('kg-video-card');
+            if (nodeElem.tagName === 'FIGURE' && isKgVideoCard) {
+                return {
+                    conversion(domNode) {
+                        const videoNode = domNode.querySelector('.kg-video-container video');
+                        const durationNode = domNode.querySelector('.kg-video-duration');
+                        const videoSrc = videoNode && videoNode.src;
+                        const videoWidth = videoNode && videoNode.width;
+                        const videoHeight = videoNode && videoNode.height;
+                        const durationText = durationNode && durationNode.innerHTML.trim();
+                        const captionText = readCaptionFromElement(domNode);
 
-                    if (!videoSrc) {
-                        return null;
-                    }
-
-                    const payload = {
-                        src: videoSrc,
-                        loop: !!videoNode.loop,
-                        cardWidth: getCardWidth(videoNode)
-                    };
-
-                    if (durationText) {
-                        const [minutes, seconds] = durationText.split(':');
-                        try {
-                            payload.duration = parseInt(minutes) * 60 + parseInt(seconds);
-                        } catch (e) {
-                            // ignore duration
+                        if (!videoSrc) {
+                            return null;
                         }
-                    }
 
-                    if (domNode.dataset.kgThumbnail) {
-                        payload.thumbnailSrc = domNode.dataset.kgThumbnail;
-                    }
+                        const payload = {
+                            src: videoSrc,
+                            loop: !!videoNode.loop,
+                            cardWidth: getCardWidth(videoNode)
+                        };
 
-                    if (domNode.dataset.kgCustomThumbnail) {
-                        payload.customThumbnailSrc = domNode.dataset.kgCustomThumbnail;
-                    }
+                        if (durationText) {
+                            const [minutes, seconds] = durationText.split(':');
+                            try {
+                                payload.duration = parseInt(minutes) * 60 + parseInt(seconds);
+                            } catch (e) {
+                                // ignore duration
+                            }
+                        }
 
-                    if (captionText) {
-                        payload.caption = captionText;
-                    }
+                        if (domNode.dataset.kgThumbnail) {
+                            payload.thumbnailSrc = domNode.dataset.kgThumbnail;
+                        }
 
-                    if (videoWidth) {
-                        payload.width = videoWidth;
-                    }
+                        if (domNode.dataset.kgCustomThumbnail) {
+                            payload.customThumbnailSrc = domNode.dataset.kgCustomThumbnail;
+                        }
 
-                    if (videoHeight) {
-                        payload.height = videoHeight;
-                    }
+                        if (captionText) {
+                            payload.caption = captionText;
+                        }
 
-                    const node = new VideoNode(payload);
-                    return {node};
-                }
+                        if (videoWidth) {
+                            payload.width = videoWidth;
+                        }
 
-                return null;
-            },
-            priority: 1
-        })
+                        if (videoHeight) {
+                            payload.height = videoHeight;
+                        }
+
+                        const node = new VideoNode(payload);
+                        return {node};
+                    },
+                    priority: 1
+                };
+            }
+            return null;
+        }
     };
 }
 
