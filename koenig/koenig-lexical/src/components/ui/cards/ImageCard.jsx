@@ -6,15 +6,20 @@ import {CardText, MediaPlaceholder} from '../MediaPlaceholder';
 import {ProgressBar} from '../ProgressBar';
 import {openFileSelection} from '../../../utils/openFileSelection';
 
-function PopulatedImageCard({src, alt, previewSrc, imageUploader, imageCardDragHandler}) {
+function PopulatedImageCard({src, alt, previewSrc, imageUploader, imageCardDragHandler, imageFileDragHandler}) {
     const progressStyle = {
         width: `${imageUploader.progress?.toFixed(0)}%`
     };
 
     const progressAlt = imageUploader.progress.toFixed(0) < 100 ? `upload in progress, ${imageUploader.progress}` : '';
 
+    function setRef(element) {
+        imageFileDragHandler?.setRef(element);
+        imageCardDragHandler?.setRef(element);
+    }
+
     return (
-        <div ref={imageCardDragHandler?.setRef} className="not-kg-prose relative">
+        <div ref={setRef} className="not-kg-prose relative">
             <img
                 alt={alt ? alt : progressAlt}
                 className={`mx-auto block ${previewSrc ? 'opacity-40' : ''}`}
@@ -30,6 +35,11 @@ function PopulatedImageCard({src, alt, previewSrc, imageUploader, imageCardDragH
             {imageCardDragHandler?.isDraggedOver ? (
                 <div className={`absolute inset-0 flex items-center justify-center border border-grey/20 bg-black/80 dark:border-grey/10 dark:bg-grey-950`}>
                     <CardText text="Drop to convert to a gallery" />
+                </div>
+            ) : null}
+            {imageFileDragHandler?.isDraggedOver ? (
+                <div className={`absolute inset-0 flex items-center justify-center border border-grey/20 bg-black/80 dark:border-grey/10 dark:bg-grey-950`} data-testid="drag-overlay">
+                    <CardText text="Drop to replace image" />
                 </div>
             ) : null}
         </div>
@@ -78,6 +88,7 @@ const ImageHolder = ({
             <PopulatedImageCard
                 alt={altText}
                 imageCardDragHandler={imageCardDragHandler}
+                imageFileDragHandler={imageFileDragHandler}
                 imageUploader={imageUploader}
                 previewSrc={previewSrc}
                 src={src}
@@ -169,7 +180,8 @@ PopulatedImageCard.propTypes = {
     alt: PropTypes.string,
     previewSrc: PropTypes.string,
     imageUploader: PropTypes.object,
-    imageCardDragHandler: PropTypes.object
+    imageCardDragHandler: PropTypes.object,
+    imageFileDragHandler: PropTypes.object
 };
 
 EmptyImageCard.propTypes = {

@@ -519,7 +519,7 @@ test.describe('Image card', async () => {
         await expect(await page.locator('[data-kg-card-drag-text="true"]')).toHaveCount(0);
     });
 
-    test('can handle image drop', async function () {
+    test('can handle image drop on empty card', async function () {
         await focusEditor(page);
         await page.keyboard.type('image! ');
 
@@ -551,6 +551,31 @@ test.describe('Image card', async () => {
             </div>
             <div contenteditable="false" data-lexical-cursor="true"></div>
         `);
+    });
+
+    test('replaces image when new image file dropped on populated card', async function () {
+        await focusEditor(page);
+        await insertImage(page);
+
+        const originalSrc = await page.locator('[data-kg-card="image"] img').getAttribute('src');
+
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image-1.png');
+        const dataTransfer = await createDataTransfer(page, [{filePath, fileName: 'large-image-1.png', fileType: 'image/png'}]);
+
+        await page.locator('[data-kg-card="image"] [data-testid="image-card-populated"]').dispatchEvent('dragenter', {dataTransfer});
+
+        // Dragover text should be visible
+        await expect(await page.locator('[data-kg-card="image"] [data-testid="drag-overlay"]')).toBeVisible();
+
+        await page.locator('[data-kg-card="image"] [data-testid="image-card-populated"]').dispatchEvent('drop', {dataTransfer});
+
+        // wait for upload to complete
+        await expect(page.getByTestId('upload-progress')).toBeVisible();
+        await expect(page.getByTestId('progress-bar')).toBeHidden();
+
+        const newSrc = await page.locator('[data-kg-card="image"] img').getAttribute('src');
+
+        expect(originalSrc).not.toEqual(newSrc);
     });
 
     test('adds extra paragraph when image is inserted at end of document', async function () {
@@ -1102,8 +1127,8 @@ test.describe('Image card', async () => {
     });
 });
 
-async function insertImage(page) {
-    const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+async function insertImage(page, image = 'large-image.png') {
+    const filePath = path.relative(process.cwd(), __dirname + `/../fixtures/${image}`);
 
     await focusEditor(page);
     await page.keyboard.type('image! ');
