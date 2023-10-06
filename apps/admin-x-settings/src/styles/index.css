@@ -12,41 +12,42 @@
         font-weight: 100 900;
     }
 
-    body {
-        @apply font-sans text-black text-base leading-normal;
-    }
+    .admin-x-base {
+        & {
+            @apply font-sans text-black text-base leading-normal;
+        }
 
-    h1, h2, h3, h4, h5, h6 {
-        @apply font-bold tracking-tight leading-tighter;
-    }
+        h1, h2, h3, h4, h5, h6 {
+            @apply font-bold tracking-tight leading-tighter;
+        }
 
-    h1 {
-        @apply text-4xl leading-supertight;
-    }
+        h1 {
+            @apply text-4xl leading-supertight;
+        }
 
-    h2 {
-        @apply text-2xl;
-    }
+        h2 {
+            @apply text-2xl;
+        }
 
-    h3 {
-        @apply text-xl;
-    }
+        h3 {
+            @apply text-xl;
+        }
 
-    h4 {
-        @apply text-lg;
-    }
+        h4 {
+            @apply text-lg;
+        }
 
-    h5 {
-        @apply text-md leading-supertight;
-    }
+        h5 {
+            @apply text-md leading-supertight;
+        }
 
-    h6 {
-        @apply text-md leading-normal;
+        h6 {
+            @apply text-md leading-normal;
+        }
     }
 }
 
-:root {
-    font-size: 62.5%;
+.admin-x-base {
     line-height: 1.5;
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
@@ -55,31 +56,26 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
-}
-
-html, body, #root {
-    width: 100%;
-    height: 100%;
     letter-spacing: unset;
 }
 
-.dark {
+.admin-x-base.dark {
     color: #FAFAFB;
 }
 
-.dark .gh-loading-orb-container {
+.admin-x-base.dark .gh-loading-orb-container {
     background-color: #000000;
 }
 
-.dark .gh-loading-orb {
+.admin-x-base.dark .gh-loading-orb {
     filter: invert(100%);
 }
 
-.no-scrollbar::-webkit-scrollbar {
+.admin-x-base .no-scrollbar::-webkit-scrollbar {
     display: none; /* Chrome */
 }
 
-.no-scrollbar {
+.admin-x-base .no-scrollbar {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
 }
