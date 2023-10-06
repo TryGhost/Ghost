@@ -5,6 +5,7 @@ const {
     mockManager,
     matchers
 } = require('../../utils/e2e-framework');
+const models = require('../../../core/server/models/index');
 const {anyContentVersion, anyEtag} = matchers;
 
 describe('Tiers API', function () {
@@ -188,5 +189,55 @@ describe('Tiers API', function () {
                     currency: 'USD'
                 })
             });
+    });
+
+    it('Can update a benefit\'s capitalization', async function () {
+        const tierData = {
+            name: 'benefit test tier',
+            monthly_price: 100,
+            currency: 'usd',
+            benefits: ['TEST BENEFIT']
+        };
+
+        let {body: {tiers: [tier]}} = await agent.post('/tiers/')
+            .body({tiers: [tierData]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                tiers: Array(1).fill({
+                    id: matchers.anyObjectId,
+                    created_at: matchers.anyISODate,
+                    name: 'benefit test tier',
+                    slug: 'benefit-test-tier',
+                    monthly_price: 100,
+                    currency: 'USD'
+                })
+            });
+
+        await agent.put(`/tiers/${tier.id}/`)
+            .body({
+                tiers: [{
+                    benefits: ['Test benefit']
+                }]
+            })
+            .expectStatus(200);
+
+        await agent.get(`/tiers/${tier.id}/`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                tiers: Array(1).fill({
+                    id: matchers.anyObjectId,
+                    created_at: matchers.anyISODate,
+                    benefits: ['Test benefit']
+                })
+            });
+
+        const benefit = await models.Benefit.findOne({slug: 'test-benefit'});
+        assert(benefit.attributes.name === 'Test benefit', 'The benefit should have been updated.');
+        const previousBenefit = await models.Benefit.findOne({slug: 'test-benefit-2'});
+        assert(!previousBenefit, 'The previous benefit should have been overwritten');
     });
 });

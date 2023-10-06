@@ -82,7 +82,7 @@ const Product = ghostBookshelf.Model.extend({
                 return benefitToSave.name.toLowerCase() === existingBenefit.get('name').toLowerCase();
             });
             if (existingBenefitModel) {
-                benefitToSave.name = existingBenefitModel.get('name');
+                benefitToSave.id = existingBenefitModel.id;
             }
         });
 
