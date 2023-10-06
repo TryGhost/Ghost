@@ -133,9 +133,13 @@ export function isActiveTheme(theme: Theme): boolean {
 }
 
 export function isDefaultTheme(theme: Theme): boolean {
+    return theme.name === 'source';
+}
+
+export function isLegacyTheme(theme: Theme): boolean {
     return theme.name === 'casper';
 }
 
 export function isDeletableTheme(theme: Theme): boolean {
-    return !isDefaultTheme(theme) && !isActiveTheme(theme);
+    return !isDefaultTheme(theme) && !isLegacyTheme(theme) && !isActiveTheme(theme);
 }

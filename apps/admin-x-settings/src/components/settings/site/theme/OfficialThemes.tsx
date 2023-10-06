@@ -1,9 +1,15 @@
 import Heading from '../../../../admin-x-ds/global/Heading';
 import MarketplaceBgImage from '../../../../assets/images/footer-marketplace-bg.png';
 import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {OfficialTheme, useOfficialThemes} from '../../../providers/ServiceProvider';
 import {getGhostPaths, resolveAsset} from '../../../../utils/helpers';
+
+const sourceDemos = [
+    {image: 'Source.png', category: 'News'},
+    {image: 'Source-Magazine.png', category: 'Magazine'},
+    {image: 'Source-Newsletter.png', category: 'Newsletter'}
+];
 
 const OfficialThemes: React.FC<{
     onSelectTheme?: (theme: OfficialTheme) => void;
@@ -12,6 +18,32 @@ const OfficialThemes: React.FC<{
 }) => {
     const {adminRoot} = getGhostPaths();
     const officialThemes = useOfficialThemes();
+    const [currentSourceDemoIndex, setCurrentSourceDemoIndex] = useState(0);
+    const [isHovered, setIsHovered] = useState(false);
+
+    useEffect(() => {
+        const switchSourceDemos = () => {
+            if (isHovered) {
+                setCurrentSourceDemoIndex(prevIndex => (prevIndex + 1) % sourceDemos.length);
+            }
+        };
+
+        switchSourceDemos();
+
+        const interval = setInterval(() => {
+            switchSourceDemos();
+        }, 3000);
+
+        return () => {
+            clearInterval(interval);
+        };
+    }, [isHovered]);
+
+    useEffect(() => {
+        if (!isHovered) {
+            setCurrentSourceDemoIndex(0);
+        }
+    }, [isHovered]);
 
     return (
         <ModalPage heading='Themes'>
@@ -22,16 +54,33 @@ const OfficialThemes: React.FC<{
                             onSelectTheme?.(theme);
                         }}>
                             {/* <img alt={theme.name} src={`${assetRoot}/${theme.image}`}/> */}
-                            <div className='w-full bg-grey-100 shadow-md transition-all duration-500 hover:scale-[1.05]'>
-                                <img
-                                    alt={`${theme.name} Theme`}
-                                    className='h-full w-full object-contain'
-                                    src={resolveAsset(theme.image, adminRoot)}
-                                />
+                            <div className='relative w-full bg-grey-100 shadow-md transition-all duration-500 hover:scale-[1.05]' onMouseEnter={() => theme.name === 'Source' && setIsHovered(true)} onMouseLeave={() => theme.name === 'Source' && setIsHovered(false)}>
+                                {theme.name !== 'Source' ?
+                                    <img
+                                        alt={`${theme.name} Theme`}
+                                        className='h-full w-full object-contain'
+                                        src={resolveAsset(theme.image, adminRoot)}
+                                    /> :
+                                    <>
+                                        {sourceDemos.map((demo, index) => (
+                                            <img
+                                                key={`source-theme-${demo.category}`}
+                                                alt={`${theme.name} Theme - ${demo.category}`}
+                                                className={`${index === 0 ? 'relative' : 'absolute'} left-0 top-0 h-full w-full object-contain transition-opacity duration-500 ${index === currentSourceDemoIndex ? 'opacity-100' : 'opacity-0'}`}
+                                                src={resolveAsset(`assets/img/themes/${demo.image}`, adminRoot)}
+                                            />
+                                        ))}
+                                    </>
+                                }
                             </div>
-                            <div className='mt-3'>
+                            <div className='relative mt-3'>
                                 <Heading level={4}>{theme.name}</Heading>
-                                <span className='text-sm text-grey-700'>{theme.category}</span>
+                                {theme.name !== 'Source' ?
+                                    <span className='text-sm text-grey-700'>{theme.category}</span> :
+                                    sourceDemos.map((demo, index) => (
+                                        <span className={`${index === 0 ? 'absolute' : 'absolute'} left-0 translate-y-px text-sm text-grey-700 ${index === currentSourceDemoIndex ? 'opacity-100' : 'opacity-0'}`}>{demo.category}</span>
+                                    ))
+                                }
                             </div>
                         </button>
                     );

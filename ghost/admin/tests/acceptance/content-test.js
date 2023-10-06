@@ -10,6 +10,10 @@ describe('Acceptance: Content', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    beforeEach(async function () {
+        this.server.loadFixtures('configs');
+    });
+
     it('redirects to signin when not authenticated', async function () {
         await invalidateSession();
         await visit('/posts');

@@ -55,7 +55,7 @@ const checkPostPublished = async (page, {slug, title, body}) => {
     expect(response.status()).toBe(200);
 
     // Check if the title and body are present on this page
-    await expect(page.locator('.gh-canvas .article-title')).toHaveText(title);
+    await expect(page.locator('.gh-article-title')).toHaveText(title);
     await expect(page.locator('.gh-content.gh-canvas > p')).toHaveText(body);
 };
 
@@ -75,6 +75,9 @@ const createPage = async (page, {title = 'Hello world', body = 'This is my post 
     // Fill in the post title
     await page.locator('[data-test-editor-title-input]').click();
     await page.locator('[data-test-editor-title-input]').fill(title);
+
+    // wait for editor to be ready
+    await expect(page.locator('[data-lexical-editor="true"]')).toBeVisible();
 
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');
@@ -281,7 +284,7 @@ test.describe('Publishing', () => {
 
     test.describe('Update post', () => {
         test.describe.configure({retries: 1});
-        
+
         test('Can update a published post', async ({page: adminPage}) => {
             await adminPage.goto('/ghost');
 

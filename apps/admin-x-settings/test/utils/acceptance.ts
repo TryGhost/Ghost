@@ -6,6 +6,7 @@ import {LabelsResponseType} from '../../src/api/labels';
 import {Locator, Page} from '@playwright/test';
 import {NewslettersResponseType} from '../../src/api/newsletters';
 import {OffersResponseType} from '../../src/api/offers';
+import {RecommendationResponseType} from '../../src/api/recommendations';
 import {RolesResponseType} from '../../src/api/roles';
 import {SettingsResponseType} from '../../src/api/settings';
 import {SiteResponseType} from '../../src/api/site';
@@ -31,6 +32,7 @@ const siteFixture = JSON.parse(readFileSync(`${__dirname}/responses/site.json`).
 
 export const responseFixtures = {
     settings: JSON.parse(readFileSync(`${__dirname}/responses/settings.json`).toString()) as SettingsResponseType,
+    recommendations: JSON.parse(readFileSync(`${__dirname}/responses/recommendations.json`).toString()) as RecommendationResponseType,
     config: JSON.parse(readFileSync(`${__dirname}/responses/config.json`).toString()) as ConfigResponseType,
     users: JSON.parse(readFileSync(`${__dirname}/responses/users.json`).toString()) as UsersResponseType,
     me: JSON.parse(readFileSync(`${__dirname}/responses/me.json`).toString()) as UsersResponseType,
@@ -46,6 +48,74 @@ export const responseFixtures = {
     actions: JSON.parse(readFileSync(`${__dirname}/responses/actions.json`).toString()) as ActionsResponseType,
     latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]}
 };
+
+let defaultLabFlags = {
+    adminXSettings: false,
+    recommendations: false,
+    audienceFeedback: false,
+    collections: false,
+    themeErrorsNotification: false,
+    outboundLinkTagging: false,
+    announcementBar: false,
+    signupForm: false,
+    lexicalEditor: false,
+    members: false
+};
+
+// Inject defaultLabFlags into responseFixtures.settings and config
+let labsSetting = responseFixtures.settings.settings.find(s => s.key === 'labs');
+let configSettings = responseFixtures.config.config;
+
+if (configSettings) {
+    configSettings.labs = defaultLabFlags;
+}
+
+if (!labsSetting) {
+    // If 'labs' key doesn't exist, create it
+    responseFixtures.settings.settings.push({
+        key: 'labs',
+        value: JSON.stringify(defaultLabFlags)
+    });
+} else {
+    // If 'labs' key exists, update its value
+    labsSetting.value = JSON.stringify(defaultLabFlags);
+}
+
+interface LabsSettings {
+    [key: string]: boolean;
+}
+
+export function toggleLabsFlag(flag: string, value: boolean) {
+    // Update responseFixtures.settings
+    labsSetting = responseFixtures.settings.settings.find(s => s.key === 'labs');
+
+    if (!labsSetting) {
+        throw new Error('Labs settings not found');
+    }
+
+    if (typeof labsSetting.value !== 'string') {
+        throw new Error('Labs settings value is not a string');
+    }
+
+    let labs: LabsSettings;
+    try {
+        labs = JSON.parse(labsSetting.value);
+    } catch (e) {
+        throw new Error('Failed to parse labs settings');
+    }
+
+    labs[flag] = value;
+    labsSetting.value = JSON.stringify(labs);
+
+    // Update responseFixtures.config
+    configSettings = responseFixtures.config.config;
+
+    if (configSettings && configSettings.labs) {
+        configSettings.labs[flag] = value;
+    } else {
+        throw new Error('Config settings or labs settings in config not found');
+    }
+}
 
 export const globalDataRequests = {
     browseSettings: {method: 'GET', path: /^\/settings\/\?group=/, response: responseFixtures.settings},

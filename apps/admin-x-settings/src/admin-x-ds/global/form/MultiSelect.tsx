@@ -42,6 +42,7 @@ type MultiSelectProps = MultiSelectOptionProps & {
     hint?: string;
     onChange: (selected: MultiValue<MultiSelectOption>) => void;
     canCreate?: boolean;
+    testId?: string;
 }
 
 const multiValueColor = (color?: MultiSelectColor) => {
@@ -92,6 +93,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     values,
     onChange,
     canCreate = false,
+    testId,
     ...props
 }) => {
     const id = useId();
@@ -155,11 +157,12 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     return (
         <div className='flex flex-col'>
             {title && <Heading htmlFor={id} grey useLabelTag>{title}</Heading>}
-            {
-                async ?
+            <div data-testid={testId}>
+                {async ?
                     (canCreate ? <AsyncCreatableSelect {...commonOptions} defaultOptions={defaultOptions} loadOptions={loadOptions} /> : <AsyncSelect {...commonOptions} defaultOptions={defaultOptions} loadOptions={loadOptions} />) :
                     (canCreate ? <CreatableSelect {...commonOptions} options={options} /> : <ReactSelect {...commonOptions} options={options} />)
-            }
+                }
+            </div>
             {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
         </div>
     );

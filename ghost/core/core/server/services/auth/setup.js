@@ -200,8 +200,8 @@ async function installTheme(data, api) {
         return data;
     }
 
-    if (themeName.toLowerCase() === 'tryghost/casper') {
-        logging.warn('Skipping theme install as Casper is the default theme.');
+    if (themeName.toLowerCase() === 'tryghost/source') {
+        logging.warn('Skipping theme install as Source is the default theme.');
         return data;
     }
 
@@ -219,7 +219,7 @@ async function installTheme(data, api) {
             context: {internal: true}
         });
     } catch (error) {
-        //Fallback to Casper by doing nothing as the theme setting update is the last step
+        //Fallback to Casper/Source by doing nothing as the theme setting update is the last step
         logging.warn(tpl(messages.failedThemeInstall, {themeName, error: error.message}));
     }
 

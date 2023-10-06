@@ -124,7 +124,7 @@ const prepareContentFolder = async ({contentFolder, redirectsFile = true, routes
     await fs.ensureDir(path.join(contentFolderForTests, 'adapters'));
     await fs.ensureDir(path.join(contentFolderForTests, 'settings'));
 
-    // Copy all themes into the new test content folder. Default active theme is always casper.
+    // Copy all themes into the new test content folder. Default active theme is always source.
     // If you want to use a different theme, you have to set the active theme (e.g. stub)
     await fs.copy(
         path.join(__dirname, 'fixtures', 'themes'),

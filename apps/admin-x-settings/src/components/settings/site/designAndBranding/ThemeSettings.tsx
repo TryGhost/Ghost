@@ -54,6 +54,7 @@ const ThemeSetting: React.FC<{
                 hint={setting.description}
                 options={setting.options.map(option => ({label: option, value: option}))}
                 selectedOption={{label: setting.value, value: setting.value}}
+                testId={`setting-select-${setting.key}`}
                 title={humanizeSettingKey(setting.key)}
                 onSelect={option => setSetting(option?.value || null)}
             />

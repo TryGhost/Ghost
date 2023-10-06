@@ -21,10 +21,6 @@ const BetaFeatures: React.FC = () => {
     return (
         <List titleSeparator={false}>
             <LabItem
-                action={<FeatureToggle flag='lexicalEditor' />}
-                detail={<>Try out <a className='text-green' href="https://ghost.org/changelog/editor-beta/" rel="noopener noreferrer" target="_blank">Ghost{`'`}s brand new editor</a>, and get early access to the latest features and improvements</>}
-                title='Ghost editor (beta)' />
-            <LabItem
                 action={<Button color='grey' label='Open' size='sm' onClick={() => updateRoute({isExternal: true, route: 'migrate'})} />}
                 detail={<>A <a className='text-green' href="https://ghost.org/help/importing-from-substack/" rel="noopener noreferrer" target="_blank">step-by-step tool</a> to easily import all your content, members and paid subscriptions</>}
                 title='Substack migrator' />
