@@ -2624,10 +2624,10 @@
   resolved "https://registry.yarnpkg.com/@doist/react-interpolate/-/react-interpolate-0.4.1.tgz#696d14e90ffc849e94a4e3e94578c5eade1590b8"
   integrity sha512-JxBJMpDlXByMrA7T6Z+tRdCqXlbnM1ikfasLaqMrWvV4TvvrPuD7dngU/X01iP9tpAycfxasNvbNKFs/QehViQ==
 
-"@ebay/nice-modal-react@1.2.10":
-  version "1.2.10"
-  resolved "https://registry.yarnpkg.com/@ebay/nice-modal-react/-/nice-modal-react-1.2.10.tgz#6b2406bfce4a5daffc43f5b85f5f238311cdfe93"
-  integrity sha512-qNp8vQo5kPRwB9bHlkh8lcwH/0KFWpp58X/b9KaLB/gNlJ3W24nCT2l/qBBSnWgV7NEIq25uLowaPS2mbfpZiw==
+"@ebay/nice-modal-react@1.2.13":
+  version "1.2.13"
+  resolved "https://registry.yarnpkg.com/@ebay/nice-modal-react/-/nice-modal-react-1.2.13.tgz#7e8229fe3a48a11f27cd7f5e21190d82d6f609ce"
+  integrity sha512-jx8xIWe/Up4tpNuM02M+rbnLoxdngTGk3Y8LjJsLGXXcSoKd/+eZStZcAlIO/jwxyz/bhPZnpqPJZWAmhOofuA==
 
 "@elastic/elasticsearch@8.5.0", "@elastic/elasticsearch@8.6.0":
   version "8.5.0"
