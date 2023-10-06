@@ -8,7 +8,6 @@ const path = require('path');
 const adminXSettingsPath = '../../apps/admin-x-settings/dist';
 
 function generateHash(filePath) {
-    const fileName = path.basename(filePath);
     const fileContents = fs.readFileSync(filePath, 'utf8');
     const hash = crypto.createHash('sha256').update(fileContents).digest('hex').slice(0, 10);
     return hash;
@@ -36,7 +35,7 @@ module.exports = {
             this.packageConfig['adminXSettingsFilename'] = defaultAdminXSettingFilename;
             this.packageConfig['adminXSettingsHash'] = (this.env === 'production') ? generateHash(path.join(adminXSettingsPath, defaultAdminXSettingFilename)) : 'development';
 
-            if (true) {
+            if (this.env === 'production') {
                 console.log('Admin-X Settings:', this.packageConfig['adminXSettingsFilename'], this.packageConfig['adminXSettingsHash']);
                 console.log('Koenig-Lexical:', this.packageConfig['editorFilename'], this.packageConfig['editorHash']);
             }
