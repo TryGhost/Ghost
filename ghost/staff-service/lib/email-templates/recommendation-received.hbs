@@ -11,7 +11,7 @@
     <table border="0" cellpadding="0" cellspacing="0" class="body" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
       <tr>
         <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">&nbsp;</td>
-        <td class="container" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; padding: 10px;">
+        <td class="container" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; padding: 10px; width: 540px;">
           <div class="content" style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;">
 
             <!-- START CENTERED CONTAINER -->
@@ -54,31 +54,24 @@
                         <!--[if vml]>
                         <table style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; width: 100%; border: 1px solid #f9f9fa; background: #f9f9fa; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;">
                             <tr>
-                                <td width="100%" style="padding: 20px;">
+                                <td width="100%" style="padding: 20px;background-color:#F9F9FA;">
                                     <table style="margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;">
                                         <tr>
-                                            <td><a style="color: #15212A; font-size: 15px; line-height: 1.5em; font-weight: 600; text-decoration: none;" href="{{sourceUrl}}">{{sourceTitle}}</a></td>
+                                            <td style="padding-bottom: 12px;">
+                                              <table style="margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;">
+                                                  <tr>
+                                                      {{#if sourceFavicon}}
+                                                          <td valign="middle" style="padding-right: 8px; font-size: 0; line-height: 1.5em">
+                                                              <a href="{{sourceUrl}}" style="color: #15212A; text-decoration: none;"><img src="{{sourceFavicon}}" width="20" height="20" alt=" "></a>
+                                                          </td>
+                                                      {{/if}}
+                                                      <td><a style="color: #15212A; font-size: 15px; line-height: 1.5em; font-weight: 600; text-decoration: none;" href="{{sourceUrl}}">{{sourceTitle}}</a></td>
+                                                  </tr>
+                                              </table>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td><div><a href="{{sourceUrl}}" style="margin-top: 12px; color: #738a94; font-size: 13px; line-height: 1.5em; font-weight: 400;text-decoration: none;">{{sourceExcerpt}}</a></div></td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding-top: 14px; color: #15212A; font-size: 13px; font-weight: 400; line-height: 1.5em;">
-                                                <table style="margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;">
-                                                    <tr>
-                                                        {{#if sourceFavicon}}
-                                                            <td valign="middle" style="padding-right: 8px; font-size: 0; line-height: 1.5em">
-                                                                <a href="{{sourceUrl}}" style="color: #15212A; text-decoration: none;"><img src="{{sourceFavicon}}" width="22" height="22" alt=" "></a>
-                                                            </td>
-                                                        {{/if}}
-                                                        <td valign="middle">
-                                                            <a href="{{sourceUrl}}" style="color: #15212A; text-decoration: none;">
-                                                                {{sourceSiteTitle}}
-                                                            </a>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </td>
                                         </tr>
                                     </table>
                                 </td>
@@ -96,7 +89,7 @@
                                         {{#if recommendation.recommendingBack}}
                                             <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: #15171a; border-radius: 5px; text-align: center;"> <a href="{{siteUrl}}ghost/#/settings-x/recommendations" target="_blank" style="display: inline-block; color: #ffffff; background-color: #15171a; border: solid 1px #15171a; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #15171a;">View recommendations</a></td>
                                         {{else}}
-                                            <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: {{accentColor}}; border-radius: 5px; text-align: center;"> <a href="{{siteUrl}}ghost/#/settings-x/recommendations/add?url={{ encodeURIComponent recommendation.url }}" target="_blank" style="display: inline-block; color: #ffffff; background-color: {{accentColor}}; border: solid 1px {{accentColor}}; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: {{accentColor}};">Recommend back</a></td>
+                                            <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: #15171a; border-radius: 5px; text-align: center;"> <a href="{{siteUrl}}ghost/#/settings-x/recommendations/add?url={{ encodeURIComponent recommendation.url }}" target="_blank" style="display: inline-block; color: #ffffff; background-color: #15171a; border: solid 1px #15171a; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: #15171a;">Recommend back</a></td>
                                         {{/if}}
                                     </tr>
                                   </tbody>
