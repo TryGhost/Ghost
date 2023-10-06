@@ -6,6 +6,7 @@ import {LabelsResponseType} from '../../src/api/labels';
 import {Locator, Page} from '@playwright/test';
 import {NewslettersResponseType} from '../../src/api/newsletters';
 import {OffersResponseType} from '../../src/api/offers';
+import {RecommendationResponseType} from '../../src/api/recommendations';
 import {RolesResponseType} from '../../src/api/roles';
 import {SettingsResponseType} from '../../src/api/settings';
 import {SiteResponseType} from '../../src/api/site';
@@ -31,6 +32,7 @@ const siteFixture = JSON.parse(readFileSync(`${__dirname}/responses/site.json`).
 
 export const responseFixtures = {
     settings: JSON.parse(readFileSync(`${__dirname}/responses/settings.json`).toString()) as SettingsResponseType,
+    recommendations: JSON.parse(readFileSync(`${__dirname}/responses/recommendations.json`).toString()) as RecommendationResponseType,
     config: JSON.parse(readFileSync(`${__dirname}/responses/config.json`).toString()) as ConfigResponseType,
     users: JSON.parse(readFileSync(`${__dirname}/responses/users.json`).toString()) as UsersResponseType,
     me: JSON.parse(readFileSync(`${__dirname}/responses/me.json`).toString()) as UsersResponseType,
