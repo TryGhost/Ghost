@@ -61,6 +61,7 @@
     max-width: 20px;
     vertical-align: middle;
     fill: var(--midgrey);
+    color: var(--midgrey);
 }
 
 .gh-publish-preview-newtab {
