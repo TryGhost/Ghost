@@ -45,7 +45,7 @@
 
 .settings-menu-container {
     z-index: 999;
-    height: 100vh;
+    height: 100dvh;
     min-width: 420px;
     overflow-x: visible;
     overflow-y: auto;
@@ -67,6 +67,19 @@
         -30.1px 0 24.1px rgba(0, 0, 0, 0.01),
         -100px 0 80px rgba(0, 0, 0, 0.02)
     ;
+    }
+}
+
+@media (max-width: 800px) {
+    .settings-menu-container {
+        padding-bottom: 64px;
+    }
+}
+
+@media (max-width: 500px) {
+    .settings-menu-container {
+        width: 100vw;
+        min-width: 100vw;
     }
 }
 
@@ -93,7 +106,14 @@
     top: auto;
     right: auto;
     bottom: auto;
-    height: 100vh;
+    height: 100dvh;
+}
+
+@media (max-width: 500px) {
+    .settings-menu-container .settings-menu-pane {
+        width: 100vw;
+        min-width: 100vw;
+    }
 }
 
 /* Header
