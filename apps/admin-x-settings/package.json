@@ -42,7 +42,7 @@
     "@codemirror/lang-html": "^6.4.5",
     "@dnd-kit/core": "6.0.8",
     "@dnd-kit/sortable": "7.0.2",
-    "@ebay/nice-modal-react": "1.2.10",
+    "@ebay/nice-modal-react": "1.2.13",
     "@sentry/react": "7.70.0",
     "@tanstack/react-query": "4.35.7",
     "@tryghost/color-utils": "0.1.24",
