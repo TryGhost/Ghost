@@ -35,7 +35,7 @@ module.exports = {
             this.packageConfig['adminXSettingsFilename'] = defaultAdminXSettingFilename;
             this.packageConfig['adminXSettingsHash'] = (this.env === 'production') ? generateHash(path.join(adminXSettingsPath, defaultAdminXSettingFilename)) : 'development';
 
-            if (true) {
+            if (this.env === 'production') {
                 console.log('Admin-X Settings:', this.packageConfig['adminXSettingsFilename'], this.packageConfig['adminXSettingsHash']);
                 console.log('Koenig-Lexical:', this.packageConfig['editorFilename'], this.packageConfig['editorHash']);
             }
