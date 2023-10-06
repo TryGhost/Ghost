@@ -204,3 +204,11 @@
 .swatch.red {
     background: #F50B23;
 }
+
+/* Icons */
+
+.sb-doc .streamline {
+    display: grid;
+    grid-template-columns: auto 240px;
+    gap: 32px;
+}
