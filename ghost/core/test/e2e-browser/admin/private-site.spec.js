@@ -52,7 +52,7 @@ test.describe('Site Settings', () => {
             // check the site is publicly accessible
             await expect(async () => {
                 await frontendPage.goto('/');
-                await expect(frontendPage.locator('.site-title')).toHaveText('The Local Test');
+                await expect(frontendPage.locator('.gh-navigation-brand')).toHaveText('The Local Test');
             }).toPass();
         });
     });

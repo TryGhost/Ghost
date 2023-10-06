@@ -15,7 +15,13 @@ export type RecommendationPlain = {
     url: URL
     oneClickSubscribe: boolean,
     createdAt: Date,
-    updatedAt: Date|null
+    updatedAt: Date|null,
+
+    /**
+     * These are read only, you cannot change them
+     */
+    clickCount?: number
+    subscriberCount?: number
 }
 
 export type RecommendationCreateData = {
@@ -28,7 +34,13 @@ export type RecommendationCreateData = {
     url: URL|string
     oneClickSubscribe: boolean
     createdAt?: Date
-    updatedAt?: Date|null
+    updatedAt?: Date|null,
+
+    /**
+     * These are read only, you cannot change them
+     */
+    clickCount?: number
+    subscriberCount?: number
 }
 
 export type AddRecommendation = Omit<RecommendationCreateData, 'id'|'createdAt'|'updatedAt'>
@@ -45,11 +57,21 @@ export class Recommendation {
     oneClickSubscribe: boolean;
     createdAt: Date;
     updatedAt: Date|null;
+    #clickCount: number|undefined;
+    #subscriberCount: number|undefined;
 
     #deleted: boolean;
 
     get deleted() {
         return this.#deleted;
+    }
+
+    get clickCount() {
+        return this.#clickCount;
+    }
+
+    get subscriberCount() {
+        return this.#subscriberCount;
     }
 
     private constructor(data: RecommendationPlain) {
@@ -63,6 +85,8 @@ export class Recommendation {
         this.oneClickSubscribe = data.oneClickSubscribe;
         this.createdAt = data.createdAt;
         this.updatedAt = data.updatedAt;
+        this.#clickCount = data.clickCount;
+        this.#subscriberCount = data.subscriberCount;
         this.#deleted = false;
     }
 
@@ -117,12 +141,14 @@ export class Recommendation {
             title: data.title,
             reason: data.reason,
             excerpt: data.excerpt,
-            featuredImage: new UnsafeData(data.featuredImage).nullable.url,
-            favicon: new UnsafeData(data.favicon).nullable.url,
-            url: new UnsafeData(data.url).url,
+            featuredImage: new UnsafeData(data.featuredImage, {field: ['featuredImage']}).nullable.url,
+            favicon: new UnsafeData(data.favicon, {field: ['favicon']}).nullable.url,
+            url: new UnsafeData(data.url, {field: ['url']}).url,
             oneClickSubscribe: data.oneClickSubscribe,
             createdAt: data.createdAt ?? new Date(),
-            updatedAt: data.updatedAt ?? null
+            updatedAt: data.updatedAt ?? null,
+            clickCount: data.clickCount,
+            subscriberCount: data.subscriberCount
         };
 
         this.validate(d);
@@ -143,7 +169,9 @@ export class Recommendation {
             url: this.url,
             oneClickSubscribe: this.oneClickSubscribe,
             createdAt: this.createdAt,
-            updatedAt: this.updatedAt
+            updatedAt: this.updatedAt,
+            clickCount: this.clickCount,
+            subscriberCount: this.subscriberCount
         };
     }
 

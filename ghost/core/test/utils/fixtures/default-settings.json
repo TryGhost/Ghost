@@ -224,7 +224,7 @@
     },
     "theme": {
         "active_theme": {
-            "defaultValue": "casper",
+            "defaultValue": "source",
             "flags": "RO",
             "type": "string"
         }

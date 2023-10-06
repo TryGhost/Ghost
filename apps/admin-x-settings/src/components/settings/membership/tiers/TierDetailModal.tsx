@@ -227,6 +227,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                             options={currencySelectGroups()}
                                             selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === formState.currency)}
                                             size='xs'
+                                            isSearchable
                                             onSelect={option => updateForm(state => ({...state, currency: option?.value}))}
                                         />
                                     </div>
@@ -274,16 +275,16 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 />
                             </div>
                         </div>
-                        <URLTextField
-                            baseUrl={siteData?.url}
-                            hint='Redirect to this URL after signup for premium membership'
-                            placeholder={siteData?.url}
-                            title='Welcome page'
-                            value={formState.welcome_page_url || ''}
-                            transformPathWithoutSlash
-                            onChange={value => updateForm(state => ({...state, welcome_page_url: value || null}))}
-                        />
                     </>)}
+                    <URLTextField
+                        baseUrl={siteData?.url}
+                        hint='Redirect to this URL after signup for premium membership'
+                        placeholder={siteData?.url}
+                        title='Welcome page'
+                        value={formState.welcome_page_url || ''}
+                        transformPathWithoutSlash
+                        onChange={value => updateForm(state => ({...state, welcome_page_url: value || null}))}
+                    />
                 </Form>
 
                 <Form gap='none' title='Benefits' grouped>

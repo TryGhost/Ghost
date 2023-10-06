@@ -65,7 +65,7 @@ const Sidebar: React.FC = () => {
     };
 
     return (
-        <div>
+        <div data-testid="sidebar">
             <div className='relative md:pt-4 tablet:h-[64px] tablet:pt-[32px]'>
                 <Icon className='absolute top-2 md:top-6 tablet:top-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                 <TextField autoComplete="off" className='border-b border-grey-500 bg-transparent px-3 py-1.5 pl-[24px] text-sm dark:text-white' inputRef={searchInputRef} placeholder="Search" title="Search" value={filter} hideTitle unstyled onChange={updateSearch} />
@@ -79,7 +79,7 @@ const Sidebar: React.FC = () => {
                     <SettingNavItem keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.publicationLanguage} navid='publication-language' title="Publication language" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.metadata} navid='metadata' title="Meta data" onClick={handleSectionClick} />
-                    <SettingNavItem keywords={generalSearchKeywords.twitter} navid='twitter' title="Twitter card" onClick={handleSectionClick} />
+                    <SettingNavItem keywords={generalSearchKeywords.twitter} navid='twitter' title="X card" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.facebook} navid='facebook' title="Facebook card" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.socialAccounts} navid='social-accounts' title="Social accounts" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.lockSite} navid='locksite' title="Make this site private" onClick={handleSectionClick} />
@@ -106,8 +106,8 @@ const Sidebar: React.FC = () => {
                     <SettingNavItem keywords={emailSearchKeywords.enableNewsletters} navid='enable-newsletters' title="Newsletter sending" onClick={handleSectionClick} />
                     {newslettersEnabled !== 'disabled' && (
                         <>
-                            <SettingNavItem keywords={emailSearchKeywords.newsletters} navid='newsletters' title="Newsletters" onClick={handleSectionClick} />
                             <SettingNavItem keywords={emailSearchKeywords.defaultRecipients} navid='default-recipients' title="Default recipients" onClick={handleSectionClick} />
+                            <SettingNavItem keywords={emailSearchKeywords.newsletters} navid='newsletters' title="Newsletters" onClick={handleSectionClick} />
                             {!config.mailgunIsConfigured && <SettingNavItem keywords={emailSearchKeywords.mailgun} navid='mailgun' title="Mailgun settings" onClick={handleSectionClick} />}
                         </>
                     )}

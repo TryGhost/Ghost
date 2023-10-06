@@ -1,73 +1,11 @@
-import React, {useRef, useState} from 'react';
+import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import validator from 'validator';
+import {facebookHandleToUrl, facebookUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 import {getSettingValues} from '../../../api/settings';
 import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
-
-function validateFacebookUrl(newUrl: string) {
-    const errMessage = 'The URL must be in a format like https://www.facebook.com/yourPage';
-    if (!newUrl) {
-        return '';
-    }
-
-    // strip any facebook URLs out
-    newUrl = newUrl.replace(/(https?:\/\/)?(www\.)?facebook\.com/i, '');
-
-    // don't allow any non-facebook urls
-    if (newUrl.match(/^(http|\/\/)/i)) {
-        throw new Error(errMessage);
-    }
-
-    // strip leading / if we have one then concat to full facebook URL
-    newUrl = newUrl.replace(/^\//, '');
-    newUrl = `https://www.facebook.com/${newUrl}`;
-
-    // don't allow URL if it's not valid
-    if (!validator.isURL(newUrl)) {
-        throw new Error(errMessage);
-    }
-
-    return newUrl;
-}
-
-function validateTwitterUrl(newUrl: string) {
-    if (!newUrl) {
-        return '';
-    }
-    if (newUrl.match(/(?:twitter\.com\/)(\S+)/) || newUrl.match(/([a-z\d.]+)/i)) {
-        let username = [];
-
-        if (newUrl.match(/(?:twitter\.com\/)(\S+)/)) {
-            [, username] = newUrl.match(/(?:twitter\.com\/)(\S+)/);
-        } else {
-            [username] = newUrl.match(/([^/]+)\/?$/mi);
-        }
-
-        // check if username starts with http or www and show error if so
-        if (username.match(/^(http|www)|(\/)/) || !username.match(/^[a-z\d._]{1,15}$/mi)) {
-            const message = !username.match(/^[a-z\d._]{1,15}$/mi)
-                ? 'Your Username is not a valid Twitter Username'
-                : 'The URL must be in a format like https://twitter.com/yourUsername';
-            throw new Error(message);
-        }
-        return `https://twitter.com/${username}`;
-    } else {
-        const message = 'The URL must be in a format like https://twitter.com/yourUsername';
-        throw new Error(message);
-    }
-}
-
-const facebookHandleToUrl = (handle: string) => `https://www.facebook.com/${handle}`;
-const twitterHandleToUrl = (handle: string) => `https://twitter.com/${handle.replace('@', '')}`;
-
-const facebookUrlToHandle = (url: string) => url.match(/(?:https:\/\/)(?:www\.)(?:facebook\.com)\/(?:#!\/)?(\w+\/?\S+)/mi)?.[1] || null;
-const twitterUrlToHandle = (url: string) => {
-    const handle = url.match(/(?:https:\/\/)(?:twitter\.com)\/(?:#!\/)?@?([^/]*)/)?.[1];
-    return handle ? `@${handle}` : null;
-};
 
 const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -86,8 +24,6 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
         twitter?: string;
     }>({});
 
-    const twitterInputRef = useRef<HTMLInputElement>(null);
-
     const [facebookHandle, twitterHandle] = getSettingValues<string | null>(localSettings, ['facebook', 'twitter']);
 
     const [facebookUrl, setFacebookUrl] = useState(facebookHandle ? facebookHandleToUrl(facebookHandle) : '');
@@ -103,7 +39,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     hideEmptyValue: true
                 },
                 {
-                    heading: 'URL of your TWITTER PROFILE',
+                    heading: 'URL of your X (formerly Twitter) profile',
                     key: 'twitter',
                     value: twitterUrl,
                     hideEmptyValue: true
@@ -125,34 +61,43 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     try {
                         const newUrl = validateFacebookUrl(e.target.value);
                         updateSetting('facebook', facebookUrlToHandle(newUrl));
-                        if (focusRef.current) {
-                            focusRef.current.value = newUrl;
-                        }
+                        setFacebookUrl(newUrl);
                     } catch (err) {
-                        // ignore error
+                        if (err instanceof Error) {
+                            setErrors({...errors, facebook: err.message});
+                        }
                     }
                 }}
                 onChange={e => setFacebookUrl(e.target.value)}
+                onKeyDown={() => {
+                    if (errors.facebook) {
+                        setErrors({...errors, facebook: ''});
+                    }
+                }}
             />
             <TextField
                 error={!!errors.twitter}
                 hint={errors.twitter}
-                inputRef={twitterInputRef}
                 placeholder="https://twitter.com/ghost"
-                title="URL of your Twitter profile"
+                title="URL of your X (formerly Twitter) profile"
                 value={twitterUrl}
                 onBlur={(e) => {
                     try {
                         const newUrl = validateTwitterUrl(e.target.value);
                         updateSetting('twitter', twitterUrlToHandle(newUrl));
-                        if (twitterInputRef.current) {
-                            twitterInputRef.current.value = newUrl;
-                        }
+                        setTwitterUrl(newUrl);
                     } catch (err) {
-                        // ignore error
+                        if (err instanceof Error) {
+                            setErrors({...errors, twitter: err.message});
+                        }
                     }
                 }}
                 onChange={e => setTwitterUrl(e.target.value)}
+                onKeyDown={() => {
+                    if (errors.twitter) {
+                        setErrors({...errors, twitter: ''});
+                    }
+                }}
             />
         </SettingGroupContent>
     );

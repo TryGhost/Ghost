@@ -1501,6 +1501,116 @@ Object {
 }
 `;
 
+exports[`Recommendations Admin API browse Can include click and subscribe counts and order by clicks+subscribe count 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 5,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 5,
+    },
+  },
+  "recommendations": Array [
+    Object {
+      "count": Object {
+        "clicks": 3,
+        "subscribers": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "excerpt": "Test excerpt",
+      "favicon": "https://recommendation3.com/favicon.ico",
+      "featured_image": "https://recommendation3.com/featured.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": true,
+      "reason": "Reason 3",
+      "title": "Recommendation 3",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation3.com/",
+    },
+    Object {
+      "count": Object {
+        "clicks": 2,
+        "subscribers": 3,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "excerpt": "Test excerpt",
+      "favicon": "https://recommendation4.com/favicon.ico",
+      "featured_image": "https://recommendation4.com/featured.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": true,
+      "reason": "Reason 4",
+      "title": "Recommendation 4",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation4.com/",
+    },
+    Object {
+      "count": Object {
+        "clicks": 0,
+        "subscribers": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "excerpt": "Test excerpt",
+      "favicon": "https://recommendation0.com/favicon.ico",
+      "featured_image": "https://recommendation0.com/featured.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": true,
+      "reason": "Reason 0",
+      "title": "Recommendation 0",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation0.com/",
+    },
+    Object {
+      "count": Object {
+        "clicks": 0,
+        "subscribers": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "excerpt": "Test excerpt",
+      "favicon": "https://recommendation1.com/favicon.ico",
+      "featured_image": "https://recommendation1.com/featured.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": true,
+      "reason": "Reason 1",
+      "title": "Recommendation 1",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation1.com/",
+    },
+    Object {
+      "count": Object {
+        "clicks": 0,
+        "subscribers": 2,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "excerpt": "Test excerpt",
+      "favicon": "https://recommendation2.com/favicon.ico",
+      "featured_image": "https://recommendation2.com/featured.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": true,
+      "reason": "Reason 2",
+      "title": "Recommendation 2",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation2.com/",
+    },
+  ],
+}
+`;
+
+exports[`Recommendations Admin API browse Can include click and subscribe counts and order by clicks+subscribe count 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2103",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Recommendations Admin API browse Can include only clicks 1: [body] 1`] = `
 Object {
   "meta": Object {
@@ -1703,6 +1813,116 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "2048",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Recommendations Admin API browse Can order by click and subscribe counts and they will be included by default 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 5,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 5,
+    },
+  },
+  "recommendations": Array [
+    Object {
+      "count": Object {
+        "clicks": 3,
+        "subscribers": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "excerpt": "Test excerpt",
+      "favicon": "https://recommendation3.com/favicon.ico",
+      "featured_image": "https://recommendation3.com/featured.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": true,
+      "reason": "Reason 3",
+      "title": "Recommendation 3",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation3.com/",
+    },
+    Object {
+      "count": Object {
+        "clicks": 2,
+        "subscribers": 3,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "excerpt": "Test excerpt",
+      "favicon": "https://recommendation4.com/favicon.ico",
+      "featured_image": "https://recommendation4.com/featured.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": true,
+      "reason": "Reason 4",
+      "title": "Recommendation 4",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation4.com/",
+    },
+    Object {
+      "count": Object {
+        "clicks": 0,
+        "subscribers": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "excerpt": "Test excerpt",
+      "favicon": "https://recommendation0.com/favicon.ico",
+      "featured_image": "https://recommendation0.com/featured.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": true,
+      "reason": "Reason 0",
+      "title": "Recommendation 0",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation0.com/",
+    },
+    Object {
+      "count": Object {
+        "clicks": 0,
+        "subscribers": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "excerpt": "Test excerpt",
+      "favicon": "https://recommendation1.com/favicon.ico",
+      "featured_image": "https://recommendation1.com/featured.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": true,
+      "reason": "Reason 1",
+      "title": "Recommendation 1",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation1.com/",
+    },
+    Object {
+      "count": Object {
+        "clicks": 0,
+        "subscribers": 2,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "excerpt": "Test excerpt",
+      "favicon": "https://recommendation2.com/favicon.ico",
+      "featured_image": "https://recommendation2.com/featured.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "one_click_subscribe": true,
+      "reason": "Reason 2",
+      "title": "Recommendation 2",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": "https://recommendation2.com/",
+    },
+  ],
+}
+`;
+
+exports[`Recommendations Admin API browse Can order by click and subscribe counts and they will be included by default 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2103",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

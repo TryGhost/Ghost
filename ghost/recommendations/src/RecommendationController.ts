@@ -1,14 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import errors from '@tryghost/errors';
-import {AddRecommendation, RecommendationPlain} from './Recommendation';
-import {RecommendationIncludeFields, RecommendationService, RecommendationWithIncludes} from './RecommendationService';
+import {AddRecommendation, Recommendation, RecommendationPlain} from './Recommendation';
+import {RecommendationService} from './RecommendationService';
 import {UnsafeData} from './UnsafeData';
+import {OrderOption} from '@tryghost/bookshelf-repository';
 
 type Frame = {
     data: unknown,
     options: unknown,
     user: unknown,
-    member: unknown,
+};
+
+const RecommendationIncludesMap = {
+    'count.clicks': 'clickCount' as const,
+    'count.subscribers': 'subscriberCount' as const
+};
+
+const RecommendationOrderMap = {
+    title: 'title' as const,
+    reason: 'reason' as const,
+    excerpt: 'excerpt' as const,
+    one_click_subscribe: 'oneClickSubscribe' as const,
+    created_at: 'createdAt' as const,
+    updated_at: 'updatedAt' as const,
+    'count.clicks': 'clickCount' as const,
+    'count.subscribers': 'subscriberCount' as const
 };
 
 export class RecommendationController {
@@ -76,23 +92,54 @@ export class RecommendationController {
         await this.service.deleteRecommendation(id);
     }
 
+    #stringToOrder(str?: string) {
+        if (!str) {
+            // Default order
+            return [
+                {
+                    field: 'createdAt' as const,
+                    direction: 'desc' as const
+                }
+            ];
+        }
+
+        const parts = str.split(',');
+        const order: OrderOption<Recommendation> = [];
+        for (const [index, part] of parts.entries()) {
+            const trimmed = part.trim();
+            const fieldData = new UnsafeData(trimmed.split(' ')[0].trim(), {field: ['order', index.toString(), 'field']});
+            const directionData = new UnsafeData(trimmed.split(' ')[1]?.trim() ?? 'desc', {field: ['order', index.toString(), 'direction']});
+
+            const validatedField = fieldData.enum(
+                Object.keys(RecommendationOrderMap) as (keyof typeof RecommendationOrderMap)[]
+            );
+            const direction = directionData.enum(['asc' as const, 'desc' as const]);
+
+            // Convert 'count.' and camelCase to snake_case
+            const field = RecommendationOrderMap[validatedField];
+            order.push({
+                field,
+                direction
+            });
+        }
+
+        return order;
+    }
+
     async browse(frame: Frame) {
         const options = new UnsafeData(frame.options);
 
         const page = options.optionalKey('page')?.integer ?? 1;
         const limit = options.optionalKey('limit')?.integer ?? 5;
-        const include = options.optionalKey('withRelated')?.array.map(item => item.enum<RecommendationIncludeFields>(['count.clicks', 'count.subscribers'])) ?? [];
+        const include = options.optionalKey('withRelated')?.array.map((item) => {
+            return RecommendationIncludesMap[item.enum(
+                Object.keys(RecommendationIncludesMap) as (keyof typeof RecommendationIncludesMap)[]
+            )];
+        }) ?? [];
         const filter = options.optionalKey('filter')?.string;
 
-        const orderOption = options.optionalKey('order')?.regex(/^[a-zA-Z]+ (asc|desc)$/) ?? 'createdAt desc';
-        const field = orderOption?.split(' ')[0] as keyof RecommendationPlain;
-        const direction = orderOption?.split(' ')[1] as 'asc'|'desc';
-        const order = [
-            {
-                field,
-                direction
-            }
-        ];
+        const orderOption = options.optionalKey('order')?.string;
+        const order = this.#stringToOrder(orderOption);
 
         const count = await this.service.countRecommendations({});
         const recommendations = (await this.service.listRecommendations({page, limit, filter, include, order}));
@@ -154,7 +201,7 @@ export class RecommendationController {
         return null;
     }
 
-    #serialize(recommendations: RecommendationWithIncludes[], meta?: any) {
+    #serialize(recommendations: RecommendationPlain[], meta?: any) {
         return {
             data: recommendations.map((entity) => {
                 const d = {
@@ -166,34 +213,13 @@ export class RecommendationController {
                     favicon: entity.favicon?.toString() ?? null,
                     url: entity.url.toString(),
                     one_click_subscribe: entity.oneClickSubscribe,
-                    created_at: entity.createdAt,
-                    updated_at: entity.updatedAt,
-                    count: undefined as undefined|{clicks?: number, subscribers?: number}
+                    created_at: entity.createdAt.toISOString(),
+                    updated_at: entity.updatedAt?.toISOString() ?? null,
+                    count: entity.clickCount !== undefined || entity.subscriberCount !== undefined ? {
+                        clicks: entity.clickCount,
+                        subscribers: entity.subscriberCount
+                    } : undefined
                 };
-
-                for (const [key, value] of Object.entries(entity)) {
-                    if (key === 'count.clicks') {
-                        if (typeof value !== 'number') {
-                            continue;
-                        }
-                        d.count = {
-                            ...(d.count ?? {}),
-                            clicks: value
-                        };
-                        continue;
-                    }
-
-                    if (key === 'count.subscribers') {
-                        if (typeof value !== 'number') {
-                            continue;
-                        }
-                        d.count = {
-                            ...(d.count ?? {}),
-                            subscribers: value
-                        };
-                        continue;
-                    }
-                }
 
                 return d;
             }),
