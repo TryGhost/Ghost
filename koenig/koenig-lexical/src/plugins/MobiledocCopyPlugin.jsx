@@ -13,6 +13,8 @@ import {mergeRegister} from '@lexical/utils';
 import {shouldIgnoreEvent} from '../utils/shouldIgnoreEvent';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
+const TEXT_NODE_TYPES = ['text', 'extended-text'];
+
 async function copyToClipboardWithMobiledoc(editor, event) {
     if (!(event instanceof ClipboardEvent)) {
         return;
@@ -30,7 +32,7 @@ async function copyToClipboardWithMobiledoc(editor, event) {
             children: copiedLexical.nodes.map((node) => {
                 // Lexical will place plain text nodes top-level in the array when copying
                 // from inside a paragraph. Mobiledoc always expects a paragraph
-                if (node.type === 'text') {
+                if (TEXT_NODE_TYPES.includes(node.type)) {
                     return {
                         children: [node],
                         direction: 'ltr',
