@@ -96,6 +96,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                     options={webhookEventOptions}
                     prompt='Select an event'
                     selectedOption={webhookEventOptions.flatMap(group => group.options).find(option => option.value === formState.event)}
+                    testId='event-select'
                     title='Event'
                     hideTitle
                     onSelect={(option) => {

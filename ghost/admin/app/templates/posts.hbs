@@ -23,7 +23,7 @@
             />
 
             <div class="view-actions-top-row">
-                <LinkTo @route="editor.new" @model="post" class="gh-btn gh-btn-primary" data-test-new-post-button={{true}}><span>New post</span></LinkTo>
+                <LinkTo @route="lexical-editor.new" @model="post" class="gh-btn gh-btn-primary" data-test-new-post-button={{true}}><span>New post</span></LinkTo>
             </div>
         </section>
     </GhCanvasHeader>
@@ -38,7 +38,7 @@
                     {{#if this.showingAll}}
                         {{svg-jar "posts-placeholder" class="gh-posts-placeholder"}}
                         <h4>Start creating content.</h4>
-                        <LinkTo @route="editor.new" @model="post" class="gh-btn gh-btn-green" data-test-link="write-a-new-post">
+                        <LinkTo @route="lexical-editor.new" @model="post" class="gh-btn gh-btn-green" data-test-link="write-a-new-post">
                             <span>Write a new post</span>
                         </LinkTo>
                     {{else}}

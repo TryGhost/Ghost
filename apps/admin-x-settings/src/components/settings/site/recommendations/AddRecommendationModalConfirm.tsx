@@ -2,7 +2,8 @@ import AddRecommendationModal from './AddRecommendationModal';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import RecommendationReasonForm from './RecommendationReasonForm';
+import RecommendationReasonForm, {validateReasonForm} from './RecommendationReasonForm';
+import trackEvent from '../../../../utils/plausible';
 import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
@@ -20,29 +21,33 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     const {mutateAsync: addRecommendation} = useAddRecommendation();
     const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, saveState, errors, clearError} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors, clearError, setErrors} = useForm({
         initialState: {
             ...recommendation
         },
-        onSave: async () => {
-            await addRecommendation(formState);
+        onSave: async (state) => {
+            await addRecommendation(state);
             modal.remove();
             showToast({
                 message: 'Successfully added a recommendation',
                 type: 'success'
             });
+            trackEvent('Recommendation Added', {
+                oneClickSubscribe: state.one_click_subscribe
+            });
             updateRoute('recommendations');
         },
         onSaveError: handleError,
-        onValidate: () => {
-            const newErrors: Record<string, string> = {};
-            if (!formState.title) {
-                newErrors.title = 'Title is required';
+        onValidate: (state) => {
+            const newErrors = validateReasonForm(state);
+
+            if (Object.keys(newErrors).length !== 0) {
+                showToast({
+                    type: 'pageError',
+                    message: 'Can\'t add recommendation, please double check that you\'ve filled all mandatory fields correctly.'
+                });
             }
 
-            if (formState.reason && formState.reason.length > 200) {
-                newErrors.reason = 'Description cannot be longer than 200 characters';
-            }
             return newErrors;
         }
     });
@@ -59,6 +64,8 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     let leftButtonProps = {
         label: 'Back',
         icon: 'arrow-left',
+        iconColorClass: 'text-black dark:text-white',
+        link: true,
         size: 'sm' as const,
         onClick: () => {
             if (saveState === 'saving') {
@@ -94,6 +101,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         size='sm'
         testId='add-recommendation-modal'
         title={'Add recommendation'}
+        stickyFooter
         onCancel={() => {
             if (saveState === 'saving') {
                 // Already saving
@@ -119,7 +127,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             }
         }}
     >
-        <RecommendationReasonForm clearError={clearError} errors={errors} formState={formState} showURL={false} updateForm={updateForm}/>
+        <RecommendationReasonForm clearError={clearError} errors={errors} formState={formState} setErrors={setErrors} showURL={false} updateForm={updateForm}/>
     </Modal>;
 };
 

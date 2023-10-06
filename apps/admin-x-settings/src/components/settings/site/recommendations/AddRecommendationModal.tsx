@@ -4,15 +4,15 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
-import useForm from '../../../../hooks/useForm';
+import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {AlreadyExistsError} from '../../../../utils/errors';
 import {EditOrAddRecommendation, RecommendationResponseType, useGetRecommendationByUrl} from '../../../../api/recommendations';
 import {LoadingIndicator} from '../../../../admin-x-ds/global/LoadingIndicator';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
+import {arePathsEqual, trimSearchAndHash} from '../../../../utils/url';
 import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
 import {formatUrl} from '../../../../admin-x-ds/global/form/URLTextField';
-import {trimSearchAndHash} from '../../../../utils/url';
 import {useExternalGhostSite} from '../../../../api/external-ghost-site';
 import {useGetOembed} from '../../../../api/oembed';
 
@@ -23,6 +23,22 @@ interface AddRecommendationModalProps {
 
 const doFormatUrl = (url: string) => {
     return formatUrl(url).save;
+};
+
+const validateUrl = function (errors: ErrorMessages, url: string) {
+    try {
+        const u = new URL(url);
+
+        // Check domain includes a dot
+        if (!u.hostname.includes('.')) {
+            errors.url = 'Please enter a valid URL.';
+        } else {
+            delete errors.url;
+        }
+    } catch (e) {
+        errors.url = 'Please enter a valid URL.';
+    }
+    return errors;
 };
 
 const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModalProps> = ({searchParams, recommendation, animate}) => {
@@ -41,7 +57,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
     const didInitialSubmit = React.useRef(false);
     const [showLoadingView, setShowLoadingView] = React.useState(!!initialUrlCleaned);
 
-    const {formState, updateForm, handleSave, errors, saveState, clearError} = useForm({
+    const {formState, updateForm, handleSave, errors, saveState, clearError, setErrors} = useForm({
         initialState: recommendation ?? {
             title: '',
             url: initialUrlCleaned,
@@ -59,7 +75,11 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             // Check if the recommendation already exists
             const {recommendations = []} = await getRecommendationByUrl(validatedUrl) as RecommendationResponseType;
             if (recommendations && recommendations.length > 0) {
-                throw new AlreadyExistsError('A recommendation with this URL already exists.');
+                const existing = recommendations.find(r => arePathsEqual(r.url, validatedUrl.toString()));
+
+                if (existing) {
+                    throw new AlreadyExistsError('A recommendation with this URL already exists.');
+                }
             }
 
             // Check if it's a Ghost site or not:
@@ -115,16 +135,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         onValidate: () => {
             const newErrors: Record<string, string> = {};
 
-            try {
-                const u = new URL(formState.url);
-
-                // Check domain includes a dot
-                if (!u.hostname.includes('.')) {
-                    newErrors.url = 'Please enter a valid URL.';
-                }
-            } catch (e) {
-                newErrors.url = 'Please enter a valid URL.';
-            }
+            validateUrl(newErrors, formState.url);
 
             // If we have errors: close direct submit view
             if (showLoadingView) {
@@ -221,7 +232,13 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 placeholder='https://www.example.com'
                 title='URL'
                 value={formState.url}
-                onBlur={() => updateForm(state => ({...state, url: doFormatUrl(formState.url)}))}
+                onBlur={() => {
+                    const url = doFormatUrl(formState.url);
+                    setErrors(
+                        validateUrl(errors, url)
+                    );
+                    updateForm(state => ({...state, url: url}));
+                }}
                 onChange={(e) => {
                     clearError?.('url');
                     updateForm(state => ({...state, url: e.target.value}));

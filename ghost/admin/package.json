@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.66.0",
+  "version": "5.68.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -36,7 +36,7 @@
     "@ember/optional-features": "2.0.0",
     "@ember/render-modifiers": "2.1.0",
     "@ember/test-helpers": "2.9.4",
-    "@embroider/macros": "1.13.1",
+    "@embroider/macros": "1.13.2",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@joeattardi/emoji-button": "4.6.4",
@@ -44,10 +44,11 @@
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.77",
-    "@tryghost/kg-clean-basic-html": "3.0.32",
-    "@tryghost/kg-converters": "0.0.14",
-    "@tryghost/kg-parser-plugins": "3.0.33",
+    "@tryghost/kg-clean-basic-html": "3.0.35",
+    "@tryghost/kg-converters": "0.0.15",
+    "@tryghost/kg-parser-plugins": "3.0.36",
     "@tryghost/kg-simplemde": "1.11.2",
+    "@tryghost/koenig-lexical": "0.4.22",
     "@tryghost/limit-service": "1.2.10",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/mobiledoc-kit": "0.12.5-ghost.2",
@@ -75,7 +76,7 @@
     "ember-classic-decorator": "3.0.1",
     "ember-cli": "3.24.0",
     "ember-cli-app-version": "5.0.0",
-    "ember-cli-babel": "8.0.1",
+    "ember-cli-babel": "8.1.0",
     "ember-cli-chart": "3.7.2",
     "ember-cli-code-coverage": "1.0.3",
     "ember-cli-dependency-checker": "3.3.2",
@@ -151,7 +152,7 @@
     "reframe.js": "4.0.2",
     "semver": "7.5.4",
     "testem": "3.10.1",
-    "tracked-built-ins": "3.2.0",
+    "tracked-built-ins": "3.3.0",
     "util": "0.12.5",
     "validator": "7.2.0",
     "walk-sync": "3.0.0"
@@ -178,7 +179,7 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "jose": "4.14.6",
+    "jose": "4.15.2",
     "path-browserify": "1.0.1",
     "webpack": "5.88.2"
   },

@@ -92,6 +92,13 @@ export const WithCallback: Story = {
     }
 };
 
+export const Searchable: Story = {
+    args: {
+        options: selectOptions,
+        isSearchable: true
+    }
+};
+
 export const Error: Story = {
     args: {
         title: 'Title',

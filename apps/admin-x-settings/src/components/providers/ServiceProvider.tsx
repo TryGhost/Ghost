@@ -44,7 +44,7 @@ const ServicesContext = createContext<ServicesContextProps>({
     ghostVersion: '',
     officialThemes: [],
     zapierTemplates: [],
-    search: {filter: '', setFilter: () => {}, checkVisible: () => true},
+    search: {filter: '', setFilter: () => {}, checkVisible: () => true, highlightKeywords: () => ''},
     unsplashConfig: {
         Authorization: '',
         'Accept-Version': '',
