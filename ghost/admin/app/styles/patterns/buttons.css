@@ -450,6 +450,7 @@ Usage: CTA buttons grouped together horizontally.
 
 .gh-btn-group .gh-btn-group-selected svg {
     fill: var(--black);
+    color: var(--black);
 }
 
 .gh-btn-group.icons .gh-btn {
