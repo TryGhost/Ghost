@@ -1,3 +1,4 @@
+import {NewslettersResponseType} from '../../../src/api/newsletters';
 import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../utils/acceptance';
 import {expect, test} from '@playwright/test';
 
@@ -110,11 +111,60 @@ test.describe('Newsletter settings', async () => {
 
         const modal = page.getByTestId('newsletter-modal');
 
+        await modal.getByLabel('Sender email').fill('not-an-email');
+        await modal.getByRole('button', {name: 'Save'}).click();
+
+        await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
+        await expect(modal).toHaveText(/Invalid email/);
+
         await modal.getByLabel('Sender email').fill('test@test.com');
         await modal.getByRole('button', {name: 'Save'}).click();
 
         await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
         await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm newsletter email address/);
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/default email address \(noreply@test.com\)/);
+    });
+
+    test('Displays the current email when changing sender address', async ({page}) => {
+        const response = {
+            ...responseFixtures.newsletters,
+            newsletters: [{
+                ...responseFixtures.newsletters.newsletters[0],
+                sender_email: 'current@test.com'
+            }]
+        } satisfies NewslettersResponseType;
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response},
+            editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[0].id}/?include=count.active_members%2Ccount.posts`, response: {
+                newsletters: response.newsletters,
+                meta: {
+                    sent_email_verification: ['sender_email']
+                }
+            }}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('newsletters');
+
+        await section.getByText('Awesome newsletter').click();
+
+        const modal = page.getByTestId('newsletter-modal');
+
+        await modal.getByLabel('Sender email').fill('not-an-email');
+        await modal.getByRole('button', {name: 'Save'}).click();
+
+        await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
+        await expect(modal).toHaveText(/Invalid email/);
+
+        await modal.getByLabel('Sender email').fill('test@test.com');
+        await modal.getByRole('button', {name: 'Save'}).click();
+
+        await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm newsletter email address/);
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/previous email address \(current@test.com\)/);
     });
 
     test('Supports archiving newsletters', async ({page}) => {
@@ -228,5 +278,31 @@ test.describe('Newsletter settings', async () => {
         await newsletterModal.getByRole('button', {name: 'Reactivate newsletter'}).click();
 
         await expect(page.getByTestId('limit-modal')).toHaveText(/Your plan supports up to 1 newsletters/);
+    });
+
+    test('Warns when leaving without saving', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
+            editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[1].id}/?include=count.active_members%2Ccount.posts`, response: responseFixtures.newsletters}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('newsletters');
+        await section.getByText('Awesome newsletter').click();
+
+        const modal = page.getByTestId('newsletter-modal');
+
+        await modal.getByPlaceholder('Weekly Roundup').fill('New title');
+
+        await modal.getByRole('button', {name: 'Close'}).click();
+
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
+
+        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Leave'}).click();
+
+        await expect(modal).toBeHidden();
+        expect(lastApiRequests.editNewsletter).toBeUndefined();
     });
 });

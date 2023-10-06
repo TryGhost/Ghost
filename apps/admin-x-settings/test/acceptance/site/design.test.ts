@@ -56,6 +56,54 @@ test.describe('Design settings', async () => {
         await expect(modal.frameLocator('[data-testid="theme-preview"] iframe[data-visible=true]').getByText('post preview')).toHaveCount(1);
     });
 
+    test('Warns when leaving without saving', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: responseFixtures.settings},
+            browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: responseFixtures.customThemeSettings},
+            browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('design');
+
+        // Brand setting
+
+        await section.getByRole('button', {name: 'Customize'}).click();
+
+        const modal = page.getByTestId('design-modal');
+
+        await modal.getByLabel('Site description').fill('new description');
+        // set timeout of 500ms to wait for the debounce
+        await page.waitForTimeout(1000);
+        await modal.getByRole('button', {name: 'Close'}).click();
+
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
+
+        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Leave'}).click();
+
+        await expect(modal).toBeHidden();
+
+        // Custom theme setting
+
+        await section.getByRole('button', {name: 'Customize'}).click();
+
+        await modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Post'}).click();
+
+        await modal.getByLabel('Email signup text').fill('test');
+
+        await modal.getByRole('button', {name: 'Close'}).click();
+
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
+
+        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Leave'}).click();
+
+        await expect(modal).toBeHidden();
+
+        expect(lastApiRequests.editSettings).toBeUndefined();
+    });
+
     test('Editing brand settings', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
@@ -141,6 +189,37 @@ test.describe('Design settings', async () => {
                 {key: 'navigation_layout', value: 'Logo in the middle'}
             ]
         });
+    });
+
+    test('Rendering with no custom theme settings', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseCustomThemeSettings: {method: 'GET', path: '/custom_theme_settings/', response: {
+                custom_theme_settings: []
+            }},
+            browseLatestPost: {method: 'GET', path: /^\/posts\/.+limit=1/, response: responseFixtures.latestPost}
+        }});
+        const lastPreviewRequest = await mockSitePreview({
+            page,
+            url: responseFixtures.site.site.url,
+            response: '<html><head><style></style></head><body><div>homepage preview</div></body></html>'
+        });
+
+        await page.goto('/');
+
+        const section = page.getByTestId('design');
+
+        await section.getByRole('button', {name: 'Customize'}).click();
+
+        const modal = page.getByTestId('design-modal');
+
+        await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Brand'})).toBeVisible();
+        await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Site wide'})).toBeHidden();
+        await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Homepage'})).toBeHidden();
+        await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Post'})).toBeHidden();
+
+        const expectedEncoded = new URLSearchParams([['custom', JSON.stringify({})]]).toString();
+        expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 
     test('Custom theme setting visibility', async ({page}) => {

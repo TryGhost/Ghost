@@ -65,7 +65,7 @@ const Sidebar: React.FC = () => {
     };
 
     return (
-        <div>
+        <div data-testid="sidebar">
             <div className='relative md:pt-4 tablet:h-[64px] tablet:pt-[32px]'>
                 <Icon className='absolute top-2 md:top-6 tablet:top-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                 <TextField autoComplete="off" className='border-b border-grey-500 bg-transparent px-3 py-1.5 pl-[24px] text-sm dark:text-white' inputRef={searchInputRef} placeholder="Search" title="Search" value={filter} hideTitle unstyled onChange={updateSearch} />

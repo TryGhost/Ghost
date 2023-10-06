@@ -1,4 +1,4 @@
-import {Meta, createMutation, createPaginatedQuery} from '../utils/api/hooks';
+import {Meta, createMutation, createQuery} from '../utils/api/hooks';
 
 export type staffToken = {
     id: string;
@@ -20,12 +20,12 @@ export interface StaffTokenResponseType {
 
 const dataType = 'StaffTokenResponseType';
 
-export const getStaffToken = createPaginatedQuery<StaffTokenResponseType>({
+export const getStaffToken = createQuery<StaffTokenResponseType>({
     dataType,
-    path: '/users/me/token'
+    path: '/users/me/token/'
 });
 
 export const genStaffToken = createMutation<StaffTokenResponseType, []>({
-    path: () => '/users/me/token',
+    path: () => '/users/me/token/',
     method: 'PUT'
 });

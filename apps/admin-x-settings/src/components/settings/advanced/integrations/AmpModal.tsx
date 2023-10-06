@@ -44,6 +44,7 @@ const AmpModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('integrations');
             }}
+            dirty={enabled !== ampEnabled || trackingId !== ampId}
             okColor='black'
             okLabel='Save & close'
             testId='amp-modal'

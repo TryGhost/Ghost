@@ -101,19 +101,44 @@ test.describe('Tier settings', async () => {
 
         const modal = page.getByTestId('tier-detail-modal');
 
+        const preview = await modal.getByTestId('tier-preview');
+
+        await expect(preview).toContainText('Basic Supporter');
+        await expect(preview).toContainText('$5/month');
+        await expect(preview).toContainText('Simple benefit');
+
+        // Failing validations
+
         await modal.getByLabel('Name').fill('');
         await modal.getByRole('button', {name: 'Save & close'}).click();
 
         await expect(page.getByTestId('toast-error')).toHaveText(/Can't save tier/);
         await expect(modal).toHaveText(/You must specify a name/);
 
+        // Valid values
+
         await modal.getByLabel('Name').fill('Supporter updated');
         await modal.getByLabel('Description').fill('Supporter description');
         await modal.getByLabel('Monthly price').fill('10.01');
+        await modal.getByLabel('Yearly price').fill('100');
         await modal.getByLabel('Add a free trial').check();
         await modal.getByLabel('Trial days').fill('7');
         await modal.getByLabel('New benefit').fill('New benefit');
         await modal.getByRole('button', {name: 'Add'}).click();
+
+        // Check that the preview is updated
+
+        await expect(preview).toContainText('Supporter updated');
+        await expect(preview).toContainText('Supporter description');
+        await expect(preview).toContainText('$10.01/month');
+        await expect(preview).toContainText('New benefit');
+
+        await preview.getByRole('button', {name: 'Yearly'}).click();
+        await expect(preview).not.toContainText('$10.01/month');
+        await expect(preview).toContainText('$100/year');
+        await expect(preview).toContainText('17% discount');
+
+        // Save changes
 
         await modal.getByRole('button', {name: 'Save & close'}).click();
 
@@ -127,6 +152,7 @@ test.describe('Tier settings', async () => {
                 name: 'Supporter updated',
                 description: 'Supporter description',
                 monthly_price: 1001,
+                yearly_price: 10000,
                 trial_days: 7,
                 benefits: [
                     'Simple benefit',
@@ -162,6 +188,7 @@ test.describe('Tier settings', async () => {
         const modal = page.getByTestId('tier-detail-modal');
 
         await modal.getByLabel('Description').fill('Free tier description');
+        await modal.getByLabel('Welcome page').fill('welcome-page');
         await modal.getByLabel('New benefit').fill('First benefit');
         await modal.getByRole('button', {name: 'Add'}).click();
         await modal.getByLabel('New benefit').fill('Second benefit');
@@ -174,6 +201,7 @@ test.describe('Tier settings', async () => {
             tiers: [{
                 id: responseFixtures.tiers.tiers[0].id,
                 description: 'Free tier description',
+                welcome_page_url: '/welcome-page/',
                 benefits: [
                     'First benefit',
                     'Second benefit'

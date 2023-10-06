@@ -16,7 +16,7 @@ test.describe('Unsplash integration', async () => {
         await unsplashElement.hover();
         await page.getByRole('button', {name: 'Configure'}).click();
         const unsplashModal = page.getByTestId('unsplash-modal');
-        
+
         const unsplashToggle = unsplashModal.getByRole('switch');
         await unsplashToggle.click();
 

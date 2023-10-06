@@ -38,7 +38,7 @@ const APIKeyField: React.FC<APIKeyFieldProps> = ({label, text = '', hint, onRege
 
 const APIKeys: React.FC<{hasLabel?: boolean; keys: APIKeyFieldProps[];}> = ({keys}) => {
     return (
-        <div>
+        <div data-testid='api-keys'>
             {keys.map(key => <APIKeyField key={key.label} {...key} />)}
         </div>
     );

@@ -1,6 +1,6 @@
 import Heading from '../Heading';
 import Hint from '../Hint';
-import React, {useId} from 'react';
+import React, {FocusEventHandler, useId} from 'react';
 import clsx from 'clsx';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
 
@@ -40,6 +40,7 @@ const TextField: React.FC<TextFieldProps> = ({
     hint,
     clearBg = true,
     onChange,
+    onFocus,
     onBlur,
     className = '',
     maxLength,
@@ -53,14 +54,13 @@ const TextField: React.FC<TextFieldProps> = ({
     const id = useId();
     const {setFocusState} = useFocusContext();
 
-    const handleFocus = () => {
+    const handleFocus: FocusEventHandler<HTMLInputElement> = (e) => {
+        onFocus?.(e);
         setFocusState(true);
     };
 
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        if (onBlur) {
-            onBlur(e);
-        }
+    const handleBlur: FocusEventHandler<HTMLInputElement> = (e) => {
+        onBlur?.(e);
         setFocusState(false);
     };
 
