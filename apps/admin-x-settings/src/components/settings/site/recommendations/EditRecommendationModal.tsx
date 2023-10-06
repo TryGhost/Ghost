@@ -2,7 +2,7 @@ import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationM
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import RecommendationReasonForm, {validateReasonForm} from './RecommendationReasonForm';
+import RecommendationDescriptionForm, {validateDescriptionForm} from './RecommendationDescriptionForm';
 import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
@@ -33,7 +33,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         },
         onSaveError: handleError,
         onValidate: (state) => {
-            const newErrors = validateReasonForm(state);
+            const newErrors = validateDescriptionForm(state);
 
             if (Object.keys(newErrors).length !== 0) {
                 showToast({
@@ -119,7 +119,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
             }
         }}
     >
-        <RecommendationReasonForm clearError={clearError} errors={errors} formState={formState} setErrors={setErrors} showURL={true} updateForm={updateForm as any}/>
+        <RecommendationDescriptionForm clearError={clearError} errors={errors} formState={formState} setErrors={setErrors} showURL={true} updateForm={updateForm as any}/>
     </Modal>;
 };
 

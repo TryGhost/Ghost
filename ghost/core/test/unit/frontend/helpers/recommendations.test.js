@@ -41,11 +41,11 @@ describe('{{#recommendations}} helper', function () {
         sinon.stub(api, 'recommendationsPublic').get(() => {
             return {
                 browse: sinon.stub().resolves({recommendations: [
-                    {id: '1', title: 'Recommendation 1', url: 'https://recommendations1.com', favicon: 'https://recommendations1.com/favicon.ico', reason: 'Reason 1'},
-                    {id: '2', title: 'Recommendation 2', url: 'https://recommendations2.com', favicon: 'https://recommendations2.com/favicon.ico', reason: 'Reason 2'},
-                    {id: '3', title: 'Recommendation 3', url: 'https://recommendations3.com', favicon: 'https://recommendations3.com/favicon.ico', reason: 'Reason 3'},
-                    {id: '4', title: 'Recommendation 4', url: 'https://recommendations4.com', favicon: 'https://recommendations4.com/favicon.ico', reason: 'Reason 4'},
-                    {id: '5', title: 'Recommendation 5', url: 'https://recommendations5.com', favicon: 'https://recommendations5.com/favicon.ico', reason: 'Reason 5'}
+                    {id: '1', title: 'Recommendation 1', url: 'https://recommendations1.com', favicon: 'https://recommendations1.com/favicon.ico', description: 'Description 1'},
+                    {id: '2', title: 'Recommendation 2', url: 'https://recommendations2.com', favicon: 'https://recommendations2.com/favicon.ico', description: 'Description 2'},
+                    {id: '3', title: 'Recommendation 3', url: 'https://recommendations3.com', favicon: 'https://recommendations3.com/favicon.ico', description: 'Description 3'},
+                    {id: '4', title: 'Recommendation 4', url: 'https://recommendations4.com', favicon: 'https://recommendations4.com/favicon.ico', description: 'Description 4'},
+                    {id: '5', title: 'Recommendation 5', url: 'https://recommendations5.com', favicon: 'https://recommendations5.com/favicon.ico', description: 'Description 5'}
                 ], meta: meta})
             };
         });
@@ -74,35 +74,35 @@ describe('{{#recommendations}} helper', function () {
                 <a href="https://recommendations1.com" data-recommendation="1" target="_blank" rel="noopener">
                     <img class="recommendation-favicon" src="https://recommendations1.com/favicon.ico" alt="Recommendation 1">
                     <h5 class="recommendation-title">Recommendation 1</h5>
-                    <p class="recommendation-reason">Reason 1</p>
+                    <p class="recommendation-description">Description 1</p>
                 </a>
             </li>
             <li class="recommendation">
                 <a href="https://recommendations2.com" data-recommendation="2" target="_blank" rel="noopener">
                     <img class="recommendation-favicon" src="https://recommendations2.com/favicon.ico" alt="Recommendation 2">
                     <h5 class="recommendation-title">Recommendation 2</h5>
-                    <p class="recommendation-reason">Reason 2</p>
+                    <p class="recommendation-description">Description 2</p>
                 </a>
             </li>
             <li class="recommendation">
                 <a href="https://recommendations3.com" data-recommendation="3" target="_blank" rel="noopener">
                     <img class="recommendation-favicon" src="https://recommendations3.com/favicon.ico" alt="Recommendation 3">
                     <h5 class="recommendation-title">Recommendation 3</h5>
-                    <p class="recommendation-reason">Reason 3</p>
+                    <p class="recommendation-description">Description 3</p>
                 </a>
             </li>
             <li class="recommendation">
                 <a href="https://recommendations4.com" data-recommendation="4" target="_blank" rel="noopener">
                     <img class="recommendation-favicon" src="https://recommendations4.com/favicon.ico" alt="Recommendation 4">
                     <h5 class="recommendation-title">Recommendation 4</h5>
-                    <p class="recommendation-reason">Reason 4</p>
+                    <p class="recommendation-description">Description 4</p>
                 </a>
             </li>
             <li class="recommendation">
                 <a href="https://recommendations5.com" data-recommendation="5" target="_blank" rel="noopener">
                     <img class="recommendation-favicon" src="https://recommendations5.com/favicon.ico" alt="Recommendation 5">
                     <h5 class="recommendation-title">Recommendation 5</h5>
-                    <p class="recommendation-reason">Reason 5</p>
+                    <p class="recommendation-description">Description 5</p>
                 </a>
             </li>
         </ul>
