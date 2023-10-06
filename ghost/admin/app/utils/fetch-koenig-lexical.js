@@ -10,12 +10,12 @@ export default async function fetchKoenigLexical() {
     // Else, if we pass a CDN URL, use that
     // Else, use the asset root from the ghostPaths util
     const baseUrl = (config.editorUrl || (config.cdnUrl ? `${config.cdnUrl}assets/koenig-lexical/` : `${ghostPaths().assetRootWithHost}koenig-lexical/`));
-    const url = new URL(`${baseUrl}koenig-lexical.umd.js`);
+    const url = new URL(`${baseUrl}${config.editorFilename}?v=${config.editorHash}`);
 
     if (url.protocol === 'http:') {
-        await import(`http://${url.host}${url.pathname}`);
+        await import(`http://${url.host}${url.pathname}${url.search}`);
     } else {
-        await import(`https://${url.host}${url.pathname}`);
+        await import(`https://${url.host}${url.pathname}${url.search}`);
     }
 
     return window['@tryghost/koenig-lexical'];

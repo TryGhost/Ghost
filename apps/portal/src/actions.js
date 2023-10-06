@@ -79,7 +79,7 @@ async function signout({api, state}) {
 
 async function signin({data, api, state}) {
     try {
-        await api.member.sendMagicLink({...data, emailType: 'signin', outboundLinkTagging: state.site.outbound_link_tagging});
+        await api.member.sendMagicLink({...data, emailType: 'signin'});
         return {
             page: 'magiclink',
             lastPage: 'signin'
@@ -100,7 +100,7 @@ async function signup({data, state, api}) {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
 
         if (plan.toLowerCase() === 'free') {
-            await api.member.sendMagicLink({emailType: 'signup', ...data, outboundLinkTagging: state.site.outbound_link_tagging});
+            await api.member.sendMagicLink({emailType: 'signup', ...data});
         } else {
             if (tierId && cadence) {
                 await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
@@ -487,15 +487,14 @@ async function oneClickSubscribe({data: {siteUrl}, state}) {
         name: member.name,
         email: member.email,
         autoRedirect: false,
-        outboundLinkTagging: state.site.outbound_link_tagging,
-        customUrlHistory: [
+        customUrlHistory: state.site.outbound_link_tagging ? [
             {
                 time: Date.now(),
                 referrerSource,
                 referrerMedium: 'Ghost Recommendations',
                 referrerUrl
             }
-        ]
+        ] : []
     });
 
     return {};

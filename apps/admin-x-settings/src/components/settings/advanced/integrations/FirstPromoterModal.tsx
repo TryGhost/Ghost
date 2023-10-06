@@ -50,6 +50,7 @@ const FirstpromoterModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('integrations');
             }}
+            dirty={enabled !== firstPromoterEnabled || accountId !== firstPromoterId}
             okColor='black'
             okLabel='Save & close'
             testId='firstpromoter-modal'
