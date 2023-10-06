@@ -7,7 +7,7 @@ const changeSubscriptionAccess = async (page, access) => {
     const section = page.getByTestId('access');
     await section.getByRole('button', {name: 'Edit'}).click();
 
-    const select = section.getByLabel('Subscription access');
+    const select = section.getByTestId('subscription-access-select');
     await select.click();
     await page.locator(`[data-testid="select-option"][data-value="${access}"]`).click();
 
