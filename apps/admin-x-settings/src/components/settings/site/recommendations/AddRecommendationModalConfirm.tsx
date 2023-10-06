@@ -3,6 +3,7 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationReasonForm, {validateReasonForm} from './RecommendationReasonForm';
+import trackEvent from '../../../../utils/plausible';
 import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
@@ -30,6 +31,9 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             showToast({
                 message: 'Successfully added a recommendation',
                 type: 'success'
+            });
+            trackEvent('Recommendation Added', {
+                oneClickSubscribe: state.one_click_subscribe
             });
             updateRoute('recommendations');
         },
