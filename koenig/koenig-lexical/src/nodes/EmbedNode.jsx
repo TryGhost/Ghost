@@ -106,7 +106,7 @@ export class EmbedNode extends BaseEmbedNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        this.__createdWithUrl = !!dataset.url;
+        this.__createdWithUrl = !!dataset.url && !dataset.html;
 
         setupNestedEditor(this, '__captionEditor', {editor: dataset.captionEditor, nodes: MINIMAL_NODES});
 

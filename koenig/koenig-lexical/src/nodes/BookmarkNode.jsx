@@ -33,7 +33,7 @@ export class BookmarkNode extends BaseBookmarkNode {
     constructor(dataset = {}, key) {
         super(dataset, key);
 
-        this.__createdWithUrl = !!dataset.url;
+        this.__createdWithUrl = !!dataset.url && !dataset.metadata;
 
         // set up nested editor instances
         setupNestedEditor(this, '__captionEditor', {editor: dataset.captionEditor, nodes: MINIMAL_NODES});
