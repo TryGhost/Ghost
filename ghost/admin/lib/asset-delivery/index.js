@@ -8,7 +8,6 @@ const path = require('path');
 const adminXSettingsPath = '../../apps/admin-x-settings/dist';
 
 function generateHash(filePath) {
-    const fileName = path.basename(filePath);
     const fileContents = fs.readFileSync(filePath, 'utf8');
     const hash = crypto.createHash('sha256').update(fileContents).digest('hex').slice(0, 10);
     return hash;
