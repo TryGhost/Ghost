@@ -21,7 +21,7 @@ const preview: Preview = {
 		options: {
 			storySort: {
 				mathod: 'alphabetical',
-				order: ['Welcome', 'Foundations', ['Colors', 'Icons', 'ErrorHandling'], 'Global', ['Chrome', 'Form', 'Modal', 'Layout', 'List', 'Table', '*'], 'Settings', ['Setting Section', 'Setting Group', '*'], 'Experimental'],
+				order: ['Welcome', 'Foundations', ['Style Guide', 'Colors', 'Icons', 'ErrorHandling'], 'Global', ['Form', 'Chrome', 'Modal', 'Layout', 'List', 'Table', '*'], 'Settings', ['Setting Section', 'Setting Group', '*'], 'Experimental'],
 			},
 		},
 		docs: {
