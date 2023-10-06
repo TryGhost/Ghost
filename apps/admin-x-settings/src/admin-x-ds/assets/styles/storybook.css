@@ -146,3 +146,61 @@
     margin: 0;
     font-size: 13.5px;
 }
+
+/* Colors */
+.color-grid {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.color-grid div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid #EBEEF0;
+}
+
+.color-grid .swatch {
+    display: block;
+    background: #EFEFEF;
+    border-radius: 100%;
+    width: 28px;
+    height: 28px;
+}
+
+.swatch.green {
+    background: #30CF43;
+}
+
+.swatch.black {
+    background: #15171A;
+}
+
+.swatch.white {
+    background: #FFFFFF;
+    border: 1px solid #EBEEF0;
+}
+
+.swatch.lime {
+    background: #B5FF18;
+}
+.swatch.blue {
+    background: #14B8FF;
+}
+.swatch.purple {
+    background: #8E42FF;
+}
+.swatch.pink {
+    background: #FB2D8D;
+}
+.swatch.yellow {
+    background: #FFB41F;
+}
+.swatch.red {
+    background: #F50B23;
+}
