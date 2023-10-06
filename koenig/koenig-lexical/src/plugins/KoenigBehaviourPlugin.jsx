@@ -1188,16 +1188,25 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 PASTE_COMMAND,
                 (clipboard) => {
-                    // avoid Koenig behaviours when an inner element (e.g. a card input) has focus and event wasn't triggered from nested editor
+                    // avoid Koenig behaviours when an inner element (e.g. a card input) has focus
+                    // and event wasn't triggered from nested editor
                     if (document.activeElement !== editor.getRootElement() && !isNested) {
                         return false;
                     }
 
                     const text = clipboard?.clipboardData?.getData(MIME_TEXT_PLAIN);
                     const html = clipboard?.clipboardData?.getData(MIME_TEXT_HTML);
-                    const linkMatch = text?.match(/^(https?:\/\/[^\s]+)$/); // replace with better regex to include more protocols like mailto, ftp, etc
+                    // TODO: replace with better regex to include more protocols like mailto, ftp, etc
+                    const linkMatch = text?.match(/^(https?:\/\/[^\s]+)$/);
 
                     if (linkMatch) {
+                        // avoid any conversion if we're pasting onto a card shortcut
+                        const node = $getSelection().anchor.getNode();
+                        if (node.getTextContent().startsWith('/')) {
+                            return false;
+                        }
+
+                        // we're pasting a URL, convert it to an embed/bookmark/link
                         editor.dispatchCommand(PASTE_LINK_COMMAND, {linkMatch});
 
                         return true;

@@ -95,8 +95,8 @@ test.describe('Paste behaviour', async () => {
         test('pasted on blank paragraph creates embed/bookmark', async function () {
             await focusEditor(page);
             await pasteText(page, 'https://ghost.org/');
-            await expect(await page.getByTestId('embed-url-loading-container')).toBeVisible();
-            await expect(await page.getByTestId('embed-url-loading-container')).toBeHidden();
+            await expect(page.getByTestId('embed-url-loading-container')).toBeVisible();
+            await expect(page.getByTestId('embed-url-loading-container')).toBeHidden();
             await expect(page.getByTestId('embed-iframe')).toBeVisible();
         });
 
@@ -113,6 +113,24 @@ test.describe('Paste behaviour', async () => {
                     </a>
                 </p>
             `);
+        });
+
+        test('pasted on a card shortcut avoids conversion', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/embed ');
+            await pasteText(page, 'https://ghost.org/');
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">/embed https://ghost.org/</span>
+                </p>
+            `);
+
+            await page.keyboard.press('Enter');
+
+            await expect(page.getByTestId('embed-url-loading-container')).toBeVisible();
+            await expect(page.getByTestId('embed-url-loading-container')).toBeHidden();
+            await expect(page.getByTestId('embed-iframe')).toBeVisible();
         });
     });
 
