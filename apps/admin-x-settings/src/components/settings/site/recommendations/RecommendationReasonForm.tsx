@@ -14,12 +14,56 @@ interface Props<T extends EditOrAddRecommendation> {
     formState: T,
     errors: ErrorMessages,
     updateForm: (fn: (state: T) => T) => void,
-    clearError?: (key: keyof ErrorMessages) => void
+    clearError?: (key: keyof ErrorMessages) => void,
+    setErrors: (errors: ErrorMessages) => void
 }
 
-const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recommendation>> = ({showURL, formState, updateForm, errors, clearError}) => {
+export const validateReasonFormField = function (errors: ErrorMessages, field: 'title'|'reason', value: string|null) {
+    const cloned = {...errors};
+    switch (field) {
+    case 'title':
+        if (!value) {
+            cloned.title = 'Title is required';
+        } else {
+            delete cloned.title;
+        }
+        break;
+    case 'reason':
+        if (value && value.length > 200) {
+            cloned.reason = 'Description cannot be longer than 200 characters';
+        } else {
+            delete cloned.reason;
+        }
+        break;
+    default:
+        // Will throw a compile error if we forget to add a case for a field
+        const f: never = field;
+        throw new Error(`Unknown field ${f}`);
+    }
+    return cloned;
+};
+
+export const validateReasonForm = function (formState: EditOrAddRecommendation) {
+    let newErrors: ErrorMessages = {};
+    newErrors = validateReasonFormField(newErrors, 'title', formState.title);
+    newErrors = validateReasonFormField(newErrors, 'reason', formState.reason);
+    return newErrors;
+};
+
+const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recommendation>> = ({showURL, formState, updateForm, errors, clearError, setErrors}) => {
     const [reasonLength, setReasonLength] = React.useState(formState?.reason?.length || 0);
     const reasonLengthColor = reasonLength > 200 ? 'text-red' : 'text-green';
+
+    // Do an intial validation on mounting
+    const didValidate = React.useRef(false);
+    React.useEffect(() => {
+        if (didValidate.current) {
+            return;
+        }
+        didValidate.current = true;
+        setErrors(validateReasonForm(formState));
+    }, [formState, setErrors]);
+
     return <Form
         marginBottom={false}
         marginTop
@@ -63,6 +107,9 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
             hint={errors.title}
             title="Title"
             value={formState.title ?? ''}
+            onBlur={() => setErrors(
+                validateReasonFormField(errors, 'title', formState.title)
+            )}
             onChange={(e) => {
                 clearError?.('title');
                 updateForm(state => ({...state, title: e.target.value}));
@@ -71,10 +118,14 @@ const RecommendationReasonForm: React.FC<Props<EditOrAddRecommendation | Recomme
         <TextArea
             clearBg={true}
             error={Boolean(errors.reason)}
-            hint={errors.reason || <>Max: <strong>200</strong> characters. You&#8217;ve used <strong className={reasonLengthColor}>{reasonLength}</strong></>}
+            // Note: we don't show the error text here, because errors are related to the character count
+            hint={<>Max: <strong>200</strong> characters. You&#8217;ve used <strong className={reasonLengthColor}>{reasonLength}</strong></>}
             rows={4}
             title="Short description"
             value={formState.reason ?? ''}
+            onBlur={() => setErrors(
+                validateReasonFormField(errors, 'reason', formState.reason)
+            )}
             onChange={(e) => {
                 clearError?.('reason');
                 setReasonLength(e.target.value.length);
