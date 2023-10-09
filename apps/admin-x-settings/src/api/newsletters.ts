@@ -97,3 +97,15 @@ export const useEditNewsletter = createMutation<NewslettersEditResponseType, New
         update: updateQueryCache('newsletters')
     }
 });
+
+export const useVerifyNewsletterEmail = createMutation<NewslettersResponseType, {token: string}>({
+    method: 'PUT',
+    path: () => '/newsletters/verifications/',
+    body: ({token}) => ({token}),
+    defaultSearchParams: {include: 'count.active_members,count.posts'},
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: updateQueryCache('newsletters')
+    }
+});
