@@ -1187,15 +1187,15 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             ),
             editor.registerCommand(
                 PASTE_COMMAND,
-                (clipboard) => {
+                (clipboardEvent) => {
                     // avoid Koenig behaviours when an inner element (e.g. a card input) has focus
                     // and event wasn't triggered from nested editor
                     if (document.activeElement !== editor.getRootElement() && !isNested) {
                         return false;
                     }
 
-                    const text = clipboard?.clipboardData?.getData(MIME_TEXT_PLAIN);
-                    const html = clipboard?.clipboardData?.getData(MIME_TEXT_HTML);
+                    const text = clipboardEvent?.clipboardData?.getData(MIME_TEXT_PLAIN);
+                    const html = clipboardEvent?.clipboardData?.getData(MIME_TEXT_HTML);
                     // TODO: replace with better regex to include more protocols like mailto, ftp, etc
                     const linkMatch = text?.match(/^(https?:\/\/[^\s]+)$/);
 
@@ -1213,6 +1213,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     }
 
                     if (text && !html) {
+                        clipboardEvent?.preventDefault();
                         editor.dispatchCommand(PASTE_MARKDOWN_COMMAND, {text, allowBr: true});
 
                         return true;

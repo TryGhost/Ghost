@@ -16,6 +16,18 @@ test.describe('Paste behaviour', async () => {
         await page.close();
     });
 
+    test.describe('Text', function () {
+        test('converts line breaks to paragraphs', async function () {
+            await focusEditor(page);
+            await pasteText(page, 'One\n\nTwo\n\nThree');
+            await assertHTML(page, html`
+                <p dir="ltr"><span data-lexical-text="true">One</span></p>
+                <p dir="ltr"><span data-lexical-text="true">Two</span></p>
+                <p dir="ltr"><span data-lexical-text="true">Three</span></p>
+            `);
+        });
+    });
+
     test.describe('URLs', function () {
         test('pasted at start of populated paragraph creates a link', async function () {
             await focusEditor(page);
