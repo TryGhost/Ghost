@@ -4,8 +4,9 @@ import {DefaultHeaderTypes} from '../../utils/unsplash/UnsplashTypes';
 import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
 
 export type ThemeVariant = {
-    image: string;
     category: string;
+    previewUrl: string;
+    image: string;
 };
 
 export type OfficialTheme = {
