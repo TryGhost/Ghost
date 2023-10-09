@@ -77,8 +77,7 @@ jobs:
 
     - name: Build Admin
       if: env.ENVIRONMENT == 'browser-tests-local'
-      working-directory: ghost/admin
-      run: yarn build:dev
+      run: yarn nx run ghost-admin:build:dev
 
     - name: Run Playwright tests on a remote site
       if: env.ENVIRONMENT == 'browser-tests-staging'

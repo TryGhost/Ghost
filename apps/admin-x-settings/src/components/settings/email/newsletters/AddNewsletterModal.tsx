@@ -40,7 +40,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 feedback_enabled: true
             });
 
-            updateRoute({route: `newsletters/show/${response.newsletters[0].id}`});
+            updateRoute({route: `newsletters/${response.newsletters[0].id}`});
         },
         onSaveError: handleError,
         onValidate: () => {

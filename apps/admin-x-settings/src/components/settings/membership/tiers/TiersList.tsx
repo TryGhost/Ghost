@@ -27,9 +27,9 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
     const currencySymbol = currency ? getSymbol(currency) : '$';
 
     return (
-        <div className={cardContainerClasses} data-testid='tier-card'>
+        <div className={cardContainerClasses} data-testid='tier-card' data-tier={tier.slug}>
             <div className='w-full grow' onClick={() => {
-                updateRoute({route: `tiers/show/${tier.id}`});
+                updateRoute({route: `tiers/${tier.id}`});
             }}>
                 <div className='text-[1.65rem] font-bold leading-tight tracking-tight text-pink'>{tier.name}</div>
                 <div className='mt-2 flex items-baseline'>
