@@ -4,6 +4,10 @@ import '../src/styles/demo.css';
 import type { Preview } from "@storybook/react";
 import '../src/admin-x-ds/providers/DesignSystemProvider';
 import DesignSystemProvider from '../src/admin-x-ds/providers/DesignSystemProvider';
+import adminxTheme from './adminx-theme';
+import { themes } from '@storybook/theming';
+
+import '../src/admin-x-ds/assets/styles/storybook.css';
 
 const preview: Preview = {
 	parameters: {
@@ -17,8 +21,11 @@ const preview: Preview = {
 		options: {
 			storySort: {
 				mathod: 'alphabetical',
-				order: ['Global', ['Chrome', 'Form', 'Modal', 'Layout', 'List', '*'], 'Settings', ['Setting Section', 'Setting Group', '*'], 'Experimental'],
+				order: ['Welcome', 'Foundations', ['Style Guide', 'Colors', 'Icons', 'ErrorHandling'], 'Global', ['Form', 'Chrome', 'Modal', 'Layout', 'List', 'Table', '*'], 'Settings', ['Setting Section', 'Setting Group', '*'], 'Experimental'],
 			},
+		},
+		docs: {
+			theme: adminxTheme,
 		},
 	},
 	decorators: [
