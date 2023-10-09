@@ -1,3 +1,4 @@
+import fs from 'fs';
 import {assertHTML, focusEditor, html, initialize, pasteHtml, pasteText} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
@@ -154,6 +155,48 @@ test.describe('Paste behaviour', async () => {
             await assertHTML(page, html`
                 <p dir="ltr">
                     <span data-lexical-text="true">Testing</span>
+                </p>
+            `, {ignoreClasses: false, ignoreInlineStyles: false});
+        });
+    });
+
+    test.describe('Office.com Word', function () {
+        test('supports basic text formatting', async function () {
+            const copiedHtml = fs.readFileSync('test/e2e/fixtures/paste/office-com-text-formats.html', 'utf8');
+
+            await focusEditor(page);
+            await pasteHtml(page, copiedHtml);
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">Testing</span>
+                    <strong data-lexical-text="true">bold</strong>
+                    <span data-lexical-text="true"></span>
+                    <em class="italic" data-lexical-text="true">italic</em>
+                    <span class="underline" data-lexical-text="true">underline</span>
+                    <span data-lexical-text="true"></span>
+                    <span class="line-through" data-lexical-text="true">strikethrough</span>
+                    <span data-lexical-text="true"></span>
+                    <sub data-lexical-text="true"><span>subscript</span></sub>
+                    <sup data-lexical-text="true"><span>supscript</span></sup>
+                    <a href="https://ghost.org/" target="_blank" rel="noreferrer noopener" dir="ltr">
+                        <span class="underline" data-lexical-text="true">link</span>
+                    </a>
+                    <span data-lexical-text="true">&nbsp;</span>
+                </p>
+                <p dir="ltr">
+                    <strong class="italic underline" data-lexical-text="true">Bold+italic+underline</strong>
+                    <span data-lexical-text="true">&nbsp;</span>
+                </p>
+                <p>
+                    <a href="https://ghost.org/" target="_blank" rel="noreferrer noopener" dir="ltr">
+                        <strong class="italic" data-lexical-text="true">Bold+italic+link</strong>
+                    </a>
+                    <span data-lexical-text="true">&nbsp;</span>
+                </p>
+                <p dir="ltr">
+                    <mark data-lexical-text="true"><span>highlight</span></mark>
+                    <span data-lexical-text="true">&nbsp;</span>
                 </p>
             `, {ignoreClasses: false, ignoreInlineStyles: false});
         });
