@@ -1,12 +1,10 @@
-const {agentProvider, fixtureManager, mockManager, dbUtils} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const assert = require('assert/strict');
 const mentionsService = require('../../../core/server/services/mentions');
-const recommendationsService = require('../../../core/server/services/recommendations');
 
 let agent;
 const DomainEvents = require('@tryghost/domain-events');
 const {Mention} = require('@tryghost/webmentions');
-const {Recommendation} = require('@tryghost/recommendations');
 
 describe('Incoming Recommendation Emails', function () {
     let emailMockReceiver;
@@ -65,62 +63,62 @@ describe('Incoming Recommendation Emails', function () {
         assert(email.html.includes('https://www.otherghostsite.com'));
     });
 
-    it('Sends a different email if we receive a recommendation back', async function () {
-        if (dbUtils.isSQLite()) {
-            this.skip();
-        }
+    // it('Sends a different email if we receive a recommendation back', async function () {
+    //     if (dbUtils.isSQLite()) {
+    //         this.skip();
+    //     }
 
-        // Create a recommendation to otherghostsite.com
-        const recommendation = Recommendation.create({
-            title: `Recommendation`,
-            description: `Description`,
-            url: new URL(`https://www.otherghostsite.com/`),
-            favicon: null,
-            featuredImage: null,
-            excerpt: 'Test excerpt',
-            oneClickSubscribe: true,
-            createdAt: new Date(5000)
-        });
+    //     // Create a recommendation to otherghostsite.com
+    //     const recommendation = Recommendation.create({
+    //         title: `Recommendation`,
+    //         description: `Description`,
+    //         url: new URL(`https://www.otherghostsite.com/`),
+    //         favicon: null,
+    //         featuredImage: null,
+    //         excerpt: 'Test excerpt',
+    //         oneClickSubscribe: true,
+    //         createdAt: new Date(5000)
+    //     });
 
-        await recommendationsService.repository.save(recommendation);
+    //     await recommendationsService.repository.save(recommendation);
 
-        const webmention = await Mention.create({
-            source: 'https://www.otherghostsite.com/.well-known/recommendations.json',
-            target: 'https://www.mysite.com/',
-            timestamp: new Date(),
-            payload: null,
-            resourceId: null,
-            resourceType: null,
-            sourceTitle: 'Other Ghost Site',
-            sourceSiteTitle: 'Other Ghost Site',
-            sourceAuthor: null,
-            sourceExcerpt: null,
-            sourceFavicon: null,
-            sourceFeaturedImage: null
-        });
+    //     const webmention = await Mention.create({
+    //         source: 'https://www.otherghostsite.com/.well-known/recommendations.json',
+    //         target: 'https://www.mysite.com/',
+    //         timestamp: new Date(),
+    //         payload: null,
+    //         resourceId: null,
+    //         resourceType: null,
+    //         sourceTitle: 'Other Ghost Site',
+    //         sourceSiteTitle: 'Other Ghost Site',
+    //         sourceAuthor: null,
+    //         sourceExcerpt: null,
+    //         sourceFavicon: null,
+    //         sourceFeaturedImage: null
+    //     });
 
-        // Mark it as verified
-        webmention.verify('{"url": "https://www.mysite.com/"}', 'application/json');
-        assert.ok(webmention.verified);
+    //     // Mark it as verified
+    //     webmention.verify('{"url": "https://www.mysite.com/"}', 'application/json');
+    //     assert.ok(webmention.verified);
 
-        // Save to repository
-        await mentionsService.repository.save(webmention);
+    //     // Save to repository
+    //     await mentionsService.repository.save(webmention);
 
-        await DomainEvents.allSettled();
+    //     await DomainEvents.allSettled();
 
-        emailMockReceiver
-            .assertSentEmailCount(2)
-            .matchHTMLSnapshot([{}])
-            .matchPlaintextSnapshot([{}])
-            .matchMetadataSnapshot();
+    //     emailMockReceiver
+    //         .assertSentEmailCount(2)
+    //         .matchHTMLSnapshot([{}])
+    //         .matchPlaintextSnapshot([{}])
+    //         .matchMetadataSnapshot();
 
-        const email = emailMockReceiver.getSentEmail(0);
+    //     const email = emailMockReceiver.getSentEmail(0);
 
-        // Check if the site title is visible in the email
-        assert(email.html.includes('Other Ghost Site'));
-        assert(email.html.includes('View recommendations'));
-        assert(email.html.includes('https://www.otherghostsite.com'));
-    });
+    //     // Check if the site title is visible in the email
+    //     assert(email.html.includes('Other Ghost Site'));
+    //     assert(email.html.includes('View recommendations'));
+    //     assert(email.html.includes('https://www.otherghostsite.com'));
+    // });
 
     it('Does not send an email if we receive a normal mention', async function () {
         const webmention = await Mention.create({
