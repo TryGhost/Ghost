@@ -22,7 +22,7 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
             <div className='flex flex-col gap-4 pb-7 text-sm'>
                 <GhostLogo className="h-auto w-[120px] dark:invert"/>
                 <div className='mt-3 flex flex-col gap-1.5'>
-                    <div><strong>Version:</strong> 5.67.0+moya</div>
+                    <div><strong>Version:</strong> <a className='text-green' href="https://github.com/TryGhost/Ghost/releases/tag/v5.67.0+moya" rel="noopener noreferrer" target="_blank">5.67.0+moya</a></div>
                     <div><strong>Developer experiments:</strong> Enabled</div>
 
                 </div>
