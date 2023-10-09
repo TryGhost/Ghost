@@ -22,9 +22,14 @@ export function resolveAsset(assetPath: string, relativeTo: string) {
     return `${relativeTo}${assetPath}`;
 }
 
-export function getLocalTime(timeZone: string) {
+export function getLocalTime(timeZone: string, format?:string) {
     const date = new Date();
     const options = {timeZone: timeZone};
+    if (format && format === 'timeOnly') {
+        const localTime = date.toLocaleString('en-US', options);
+        const timeOnly = localTime.split(',')[1];
+        return timeOnly;
+    }
     const localTime = date.toLocaleString('en-US', options);
     return localTime;
 }

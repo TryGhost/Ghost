@@ -18,11 +18,11 @@ interface HintProps {
 }
 
 const Hint: React.FC<HintProps> = ({timezone}) => {
-    const [currentTime, setCurrentTime] = useState(getLocalTime(timezone));
+    const [currentTime, setCurrentTime] = useState(getLocalTime(timezone, 'timeOnly'));
 
     useEffect(() => {
         const timer = setInterval(() => {
-            setCurrentTime(getLocalTime(timezone));
+            setCurrentTime(getLocalTime(timezone, 'timeOnly'));
         }, 1000);
 
         return () => {
