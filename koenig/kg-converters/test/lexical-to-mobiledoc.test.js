@@ -1556,6 +1556,50 @@ describe('lexicalToMobiledoc', function () {
             }));
         });
 
+        it('converts H1s with extended-heading type', function () {
+            const result = lexicalToMobiledoc(JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Heading 1',
+                                    type: 'text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'extended-heading',
+                            version: 1,
+                            tag: 'h1'
+                        }
+                    ],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+
+            assert.equal(result, JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [
+                    [1, 'h1', [[0, [], 0, 'Heading 1']]]
+                ]
+            }));
+        });
+
         it('converts H2s', function () {
             const result = lexicalToMobiledoc(JSON.stringify({
                 root: {
