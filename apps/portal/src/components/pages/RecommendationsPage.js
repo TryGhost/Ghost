@@ -104,11 +104,11 @@ export const RecommendationsPageStyles = `
         animation: 0.5s ease-in-out fadeIn;
     }
 
-    .gh-portal-recommendation-subscribed.with-reason {
+    .gh-portal-recommendation-subscribed.with-description {
         position: absolute;
     }
 
-    .gh-portal-recommendation-subscribed.without-reason {
+    .gh-portal-recommendation-subscribed.without-description {
         margin-top: 5px;
     }
 
@@ -184,7 +184,7 @@ const openTab = (url) => {
 
 const RecommendationItem = (recommendation) => {
     const {t, onAction, member, site} = useContext(AppContext);
-    const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
+    const {title, url, description, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
     const allowOneClickSubscribe = member && oneClickSubscribe;
     const [subscribed, setSubscribed] = useState(false);
     const [clicked, setClicked] = useState(false);
@@ -263,8 +263,8 @@ const RecommendationItem = (recommendation) => {
                     <ArrowIcon className="gh-portal-recommendation-arrow-icon" />
                 </div>
                 <div className="gh-portal-recommendation-description-container">
-                    {subscribed && <div className={'gh-portal-recommendation-subscribed ' + (reason ? 'with-reason' : 'without-reason')}><span>{t('Verification link sent, check your inbox')}</span><CheckmarkIcon className="gh-portal-recommendation-checkmark-icon" alt=''/></div>}
-                    {reason && <p className={subscribed ? 'gh-portal-recommendation-description-hidden' : ''}>{reason}</p>}
+                    {subscribed && <div className={'gh-portal-recommendation-subscribed ' + (description ? 'with-description' : 'without-description')}><span>{t('Verification link sent, check your inbox')}</span><CheckmarkIcon className="gh-portal-recommendation-checkmark-icon" alt=''/></div>}
+                    {description && <p className={subscribed ? 'gh-portal-recommendation-description-hidden' : ''}>{description}</p>}
                 </div>
             </div>
             <div className="gh-portal-recommendation-item-action">

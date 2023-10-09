@@ -15,7 +15,7 @@ describe('BookshelfRecommendationRepository', function () {
             repository.toPrimitive(Recommendation.create({
                 id: 'id',
                 title: 'title',
-                reason: 'reason',
+                description: 'description',
                 excerpt: 'excerpt',
                 featuredImage: new URL('https://example.com'),
                 favicon: new URL('https://example.com'),
@@ -27,7 +27,7 @@ describe('BookshelfRecommendationRepository', function () {
             {
                 id: 'id',
                 title: 'title',
-                reason: 'reason',
+                description: 'description',
                 excerpt: 'excerpt',
                 featured_image: 'https://example.com/',
                 favicon: 'https://example.com/',
@@ -48,7 +48,7 @@ describe('BookshelfRecommendationRepository', function () {
             get: (key: string) => {
                 return {
                     title: 'title',
-                    reason: 'reason',
+                    description: 'description',
                     excerpt: 'excerpt',
                     featured_image: 'https://example.com/',
                     favicon: 'https://example.com/',
@@ -65,7 +65,7 @@ describe('BookshelfRecommendationRepository', function () {
             Recommendation.create({
                 id: 'id',
                 title: 'title',
-                reason: 'reason',
+                description: 'description',
                 excerpt: 'excerpt',
                 featuredImage: new URL('https://example.com'),
                 favicon: new URL('https://example.com'),
@@ -121,7 +121,7 @@ describe('BookshelfRecommendationRepository', function () {
         const recommendation = Recommendation.create({
             id: 'id',
             title: 'title',
-            reason: 'reason',
+            description: 'description',
             excerpt: 'excerpt',
             featuredImage: new URL('https://example.com'),
             favicon: new URL('https://example.com'),
@@ -149,7 +149,7 @@ describe('BookshelfRecommendationRepository', function () {
         const recommendation = Recommendation.create({
             id: 'id',
             title: 'title',
-            reason: 'reason',
+            description: 'description',
             excerpt: 'excerpt',
             featuredImage: new URL('https://example.com'),
             favicon: new URL('https://example.com'),

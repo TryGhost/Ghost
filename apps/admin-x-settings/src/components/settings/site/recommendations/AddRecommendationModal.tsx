@@ -61,7 +61,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         initialState: recommendation ?? {
             title: '',
             url: initialUrlCleaned,
-            reason: '',
+            description: '',
             excerpt: null,
             featured_image: null,
             favicon: null,
@@ -119,7 +119,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 updatedRecommendation.favicon = oembed?.metadata?.icon ?? formState.favicon ?? null;
                 updatedRecommendation.one_click_subscribe = false;
             }
-            updatedRecommendation.reason = updatedRecommendation.excerpt || null;
+            updatedRecommendation.description = updatedRecommendation.excerpt || null;
 
             // Switch modal without changing the route (the second modal is not reachable by URL)
             modal.remove();

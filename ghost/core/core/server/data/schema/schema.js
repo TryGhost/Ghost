@@ -1076,7 +1076,7 @@ module.exports = {
         excerpt: {type: 'string', maxlength: 2000, nullable: true},
         featured_image: {type: 'string', maxlength: 2000, nullable: true},
         favicon: {type: 'string', maxlength: 2000, nullable: true},
-        reason: {type: 'string', maxlength: 2000, nullable: true},
+        description: {type: 'string', maxlength: 2000, nullable: true},
         one_click_subscribe: {type: 'boolean', nullable: false, defaultTo: false},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}

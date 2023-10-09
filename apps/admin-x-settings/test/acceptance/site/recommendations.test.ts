@@ -15,7 +15,7 @@ test.describe('Recommendations', async () => {
                     favicon: null,
                     featured_image: null,
                     one_click_subscribe: false,
-                    reason: 'This is a cool website',
+                    description: 'This is a cool website',
                     title: 'example.com',
                     url: 'https://example.com/a-cool-website'}
             ]}}
@@ -38,7 +38,7 @@ test.describe('Recommendations', async () => {
                     favicon: null,
                     featured_image: null,
                     one_click_subscribe: false,
-                    reason: 'This is a cool website',
+                    description: 'This is a cool website',
                     title: 'example.com',
                     url: 'https://example.com/a-cool-website'}
             ]

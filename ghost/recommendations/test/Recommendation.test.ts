@@ -7,7 +7,7 @@ describe('Recommendation', function () {
             assert.throws(() => {
                 Recommendation.validate({
                     title: '',
-                    reason: null,
+                    description: null,
                     excerpt: null,
                     featuredImage: null,
                     favicon: null,
@@ -24,7 +24,7 @@ describe('Recommendation', function () {
             assert.throws(() => {
                 Recommendation.validate({
                     title: 'a'.repeat(2001),
-                    reason: null,
+                    description: null,
                     excerpt: null,
                     featuredImage: null,
                     favicon: null,
@@ -37,11 +37,11 @@ describe('Recommendation', function () {
             });
         });
 
-        it('Throws for a long reason', function () {
+        it('Throws for a long description', function () {
             assert.throws(() => {
                 Recommendation.validate({
                     title: 'Test',
-                    reason: 'a'.repeat(2001),
+                    description: 'a'.repeat(2001),
                     excerpt: null,
                     featuredImage: null,
                     favicon: null,
@@ -50,7 +50,7 @@ describe('Recommendation', function () {
                 });
             }, {
                 name: 'ValidationError',
-                message: 'Reason must be less than 2000 characters'
+                message: 'Description must be less than 2000 characters'
             });
         });
 
@@ -58,7 +58,7 @@ describe('Recommendation', function () {
             assert.throws(() => {
                 Recommendation.validate({
                     title: 'Test',
-                    reason: null,
+                    description: null,
                     excerpt: 'a'.repeat(2001),
                     featuredImage: null,
                     favicon: null,
@@ -76,7 +76,7 @@ describe('Recommendation', function () {
         it('sets createdAt ms to 0', function () {
             const recommendation = Recommendation.create({
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -91,7 +91,7 @@ describe('Recommendation', function () {
         it('sets updatedAt ms to 0', function () {
             const recommendation = Recommendation.create({
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -103,10 +103,10 @@ describe('Recommendation', function () {
             assert.equal(recommendation.updatedAt!.getMilliseconds(), 0);
         });
 
-        it('sets empty reason to null', function () {
+        it('sets empty description to null', function () {
             const recommendation = Recommendation.create({
                 title: 'Test',
-                reason: '',
+                description: '',
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -115,13 +115,13 @@ describe('Recommendation', function () {
                 updatedAt: new Date('2021-01-01T00:00:05Z')
             });
 
-            assert.equal(recommendation.reason, null);
+            assert.equal(recommendation.description, null);
         });
 
         it('removes search and hash params', function () {
             const recommendation = Recommendation.create({
                 title: 'Test',
-                reason: '',
+                description: '',
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -138,7 +138,7 @@ describe('Recommendation', function () {
         it('does not return instance of self', function () {
             const recommendation = Recommendation.create({
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -155,7 +155,7 @@ describe('Recommendation', function () {
         it('can edit known properties', function () {
             const recommendation = Recommendation.create({
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -176,7 +176,7 @@ describe('Recommendation', function () {
         it('can not edit unknown properties', function () {
             const recommendation = Recommendation.create({
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -199,7 +199,7 @@ describe('Recommendation', function () {
         it('can delete', function () {
             const recommendation = Recommendation.create({
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,

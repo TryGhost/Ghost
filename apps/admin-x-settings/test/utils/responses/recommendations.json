@@ -2,7 +2,7 @@
     "recommendations": {
         "id": "21452552",
         "title": "Some Recommendation",
-        "reason": "i like this website",
+        "description": "i like this website",
         "excerpt": "this is a great website",
         "feature_image": null,
         "favicon": null,

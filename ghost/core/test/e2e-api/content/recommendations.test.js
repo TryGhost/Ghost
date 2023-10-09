@@ -22,7 +22,7 @@ describe('Recommendations Content API', function () {
         for (let i = 0; i < 7; i++) {
             const recommendation = Recommendation.create({
                 title: `Recommendation ${i}`,
-                reason: `Reason ${i}`,
+                description: `Description ${i}`,
                 url: new URL(`https://recommendation${i}.com`),
                 favicon: null,
                 featuredImage: null,

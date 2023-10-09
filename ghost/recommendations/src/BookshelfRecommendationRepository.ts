@@ -45,7 +45,7 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
         return {
             id: entity.id,
             title: entity.title,
-            reason: entity.reason,
+            description: entity.description,
             excerpt: entity.excerpt,
             featured_image: entity.featuredImage?.toString(),
             favicon: entity.favicon?.toString(),
@@ -62,7 +62,7 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
             return Recommendation.create({
                 id: model.id,
                 title: model.get('title') as string,
-                reason: model.get('reason') as string | null,
+                description: model.get('description') as string | null,
                 excerpt: model.get('excerpt') as string | null,
                 featuredImage: model.get('featured_image') as string | null,
                 favicon: model.get('favicon') as string | null,
@@ -84,7 +84,7 @@ export class BookshelfRecommendationRepository extends BookshelfRepository<strin
         return {
             id: 'id',
             title: 'title',
-            reason: 'reason',
+            description: 'description',
             excerpt: 'excerpt',
             featuredImage: 'featured_image',
             favicon: 'favicon',
