@@ -80,7 +80,7 @@
     "@tryghost/kg-default-nodes": "^0.1.36",
     "@tryghost/kg-markdown-html-renderer": "^6.0.12",
     "@tryghost/kg-simplemde": "^2.0.24",
-    "@types/react": "18.2.25",
+    "@types/react": "18.2.26",
     "@types/react-dom": "18.2.11",
     "@uiw/react-codemirror": "^4.19.6",
     "@vitejs/plugin-react": "4.1.0",
