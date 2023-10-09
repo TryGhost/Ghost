@@ -23,7 +23,7 @@ class TwitterOEmbedProvider {
      * @returns {Promise<boolean>}
      */
     async canSupportRequest(url) {
-        return url.host === 'twitter.com' && TWITTER_PATH_REGEX.test(url.pathname);
+        return (url.host === 'twitter.com' || url.host === 'x.com') && TWITTER_PATH_REGEX.test(url.pathname);
     }
 
     /**
@@ -33,6 +33,10 @@ class TwitterOEmbedProvider {
      * @returns {Promise<object>}
      */
     async getOEmbedData(url, externalRequest) {
+        if (url.host === 'x.com') { // api is still at twitter.com... also not certain how people are getting x urls because twitter currently redirects every x host to twitter
+            url = new URL('https://twitter.com' + url.pathname);
+        }
+
         const [match, tweetId] = url.pathname.match(TWITTER_PATH_REGEX);
         if (!match) {
             return null;

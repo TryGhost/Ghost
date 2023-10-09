@@ -18,7 +18,7 @@ describe('TwitterOEmbedProvider', function () {
         mockManager.restore();
     });
 
-    it('Can support requests for Tweet URLs', async function () {
+    it('Can support requests for Twitter URLs', async function () {
         const provider = new TwitterOEmbedProvider();
 
         const tweetURL = new URL(
@@ -27,8 +27,21 @@ describe('TwitterOEmbedProvider', function () {
 
         const supportsRequest = await provider.canSupportRequest(tweetURL);
 
-        assert(supportsRequest, 'Should support Tweet URL');
+        assert(supportsRequest, 'Should support Twitter URL');
     });
+
+    it('Can support requests for X.com URLs', async function () {
+        const provider = new TwitterOEmbedProvider();
+
+        const tweetURL = new URL(
+            'https://x.com/Ghost/status/1630581157568839683'
+        );
+
+        const supportsRequest = await provider.canSupportRequest(tweetURL);
+
+        assert(supportsRequest, 'Should support X (Twitter) URL');
+    });
+
 
     it('Receives JSON from external request to Twitter API', async function () {
         const provider = new TwitterOEmbedProvider({
