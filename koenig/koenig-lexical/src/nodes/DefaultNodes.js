@@ -1,5 +1,7 @@
 import {
+    ExtendedHeadingNode,
     ExtendedTextNode,
+    extendedHeadingNodeReplacement,
     extendedTextNodeReplacement
 } from '@tryghost/kg-default-nodes';
 
@@ -32,6 +34,8 @@ import {VideoNode} from './VideoNode';
 const DEFAULT_NODES = [
     ExtendedTextNode,
     extendedTextNodeReplacement,
+    ExtendedHeadingNode,
+    extendedHeadingNodeReplacement,
     HeadingNode,
     ListNode,
     ListItemNode,

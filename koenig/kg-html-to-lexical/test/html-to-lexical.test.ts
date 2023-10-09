@@ -204,7 +204,7 @@ describe('HTMLtoLexical', function () {
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
-            assert.equal(lexical.root.children[0].type, 'heading');
+            assert.equal(lexical.root.children[0].type, 'extended-heading');
             assert.equal(lexical.root.children[0].tag, 'h1');
             assert.equal(lexical.root.children[0].children.length, 1);
             assert.equal(lexical.root.children[0].children[0].text, 'Hello World');

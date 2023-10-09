@@ -200,5 +200,19 @@ test.describe('Paste behaviour', async () => {
                 </p>
             `, {ignoreClasses: false, ignoreInlineStyles: false});
         });
+
+        test('supports headings', async function () {
+            const copiedHtml = fs.readFileSync('test/e2e/fixtures/paste/office-com-headings.html', 'utf8');
+
+            await focusEditor(page);
+            await pasteHtml(page, copiedHtml);
+
+            await assertHTML(page, html`
+                <h1 dir="ltr"><span data-lexical-text="true">Heading one&nbsp;</span></h1>
+                <h2 dir="ltr"><span data-lexical-text="true">Heading two&nbsp;</span></h2>
+                <h3 dir="ltr"><span data-lexical-text="true">Heading three&nbsp;</span></h3>
+                <h4 dir="ltr"><em data-lexical-text="true">Heading four&nbsp;</em></h4>
+            `);
+        });
     });
 });
