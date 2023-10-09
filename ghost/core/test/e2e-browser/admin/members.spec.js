@@ -1,4 +1,5 @@
-const {expect, test} = require('@playwright/test');
+const {expect} = require('@playwright/test');
+const test = require('../fixtures/ghost-test');
 const {createMember, deleteAllMembers} = require('../utils/e2e-browser-utils');
 const fs = require('fs');
 

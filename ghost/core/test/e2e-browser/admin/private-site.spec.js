@@ -1,4 +1,5 @@
-const {test, expect} = require('@playwright/test');
+const {expect} = require('@playwright/test');
+const test = require('../fixtures/ghost-test');
 
 test.describe('Site Settings', () => {
     test.describe('Privacy setting', () => {
