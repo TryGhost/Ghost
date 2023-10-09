@@ -70,7 +70,7 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
             description='The details used to identify your publication around the web'
             isEditing={isEditing}
             keywords={keywords}
-            navid='title-and-description'
+            navid='general'
             saveState={saveState}
             testId='title-and-description'
             title='Title & description'

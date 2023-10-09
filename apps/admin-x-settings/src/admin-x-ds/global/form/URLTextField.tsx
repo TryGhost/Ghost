@@ -26,7 +26,7 @@ export const formatUrl = (value: string, baseUrl?: string) => {
 
     if (!baseUrl) {
         // Absolute URL with no base URL
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        if (!url.startsWith('http')) {
             url = `https://${url}`;
         }
     }

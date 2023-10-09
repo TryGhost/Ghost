@@ -7,14 +7,6 @@ export default class SettingsXRoute extends AuthenticatedRoute {
     @service ui;
     @service modals;
 
-    beforeModel() {
-        super.beforeModel(...arguments);
-
-        if (!this.feature.adminXSettings) {
-            return this.router.transitionTo('settings');
-        }
-    }
-
     activate() {
         super.activate(...arguments);
         this.ui.set('isFullScreen', true);

@@ -43,6 +43,36 @@ test.describe('Access settings', async () => {
         });
     });
 
+    test('Disables other sections when signup is disabled', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'members_signup_access', value: 'none'}
+            ])}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('access');
+
+        await section.getByRole('button', {name: 'Edit'}).click();
+
+        await chooseOptionInSelect(section.getByTestId('subscription-access-select'), 'Nobody');
+
+        await section.getByRole('button', {name: 'Save'}).click();
+
+        expect(lastApiRequests.editSettings?.body).toEqual({
+            settings: [
+                {key: 'members_signup_access', value: 'none'}
+            ]
+        });
+
+        await expect(section.getByTestId('subscription-access-select')).toHaveCount(0);
+
+        await expect(page.getByTestId('portal').getByRole('button', {name: 'Customize'})).toBeDisabled();
+        await expect(page.getByTestId('enable-newsletters')).toContainText('only existing members will receive newsletters');
+    });
+
     test('Supports selecting specific tiers', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,

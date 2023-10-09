@@ -17,9 +17,14 @@ const RecommendationIncludesMap = {
 };
 
 const RecommendationOrderMap = {
+    title: 'title' as const,
+    reason: 'reason' as const,
+    excerpt: 'excerpt' as const,
+    one_click_subscribe: 'oneClickSubscribe' as const,
+    created_at: 'createdAt' as const,
+    updated_at: 'updatedAt' as const,
     'count.clicks': 'clickCount' as const,
-    'count.subscribers': 'subscriberCount' as const,
-    created_at: 'createdAt' as const
+    'count.subscribers': 'subscriberCount' as const
 };
 
 export class RecommendationController {

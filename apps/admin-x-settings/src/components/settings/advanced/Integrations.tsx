@@ -158,7 +158,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
             <List borderTop={false}>
                 {integrations.map(integration => (
                     <IntegrationItem
-                        action={() => updateRoute({route: `integrations/show/${integration.id}`})}
+                        action={() => updateRoute({route: `integrations/${integration.id}`})}
                         detail={integration.description || 'No description'}
                         icon={
                             integration.icon_image ?
@@ -218,7 +218,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const buttons = (
         <Button className='hidden md:!visible md:!block' color='green' label='Add custom integration' link linkWithPadding onClick={() => {
-            updateRoute('integrations/add');
+            updateRoute('integrations/new');
             setSelectedTab('custom');
         }} />
     );
@@ -234,7 +234,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
                 <Button color='green' label='Add custom integration' link onClick={() => {
-                    updateRoute('integrations/add');
+                    updateRoute('integrations/new');
                     setSelectedTab('custom');
                 }} />
             </div>
