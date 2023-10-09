@@ -67,7 +67,7 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         {isDisabled &&
                         <Banner className='mt-6 text-sm' color='grey'>
                             Your <button className='!underline' type="button" onClick={() => {
-                                updateRoute('access');
+                                updateRoute('members');
                             }}>Subscription access</button> is set to &lsquo;Nobody&rsquo;, only existing members will receive newsletters.
                         </Banner>
                         }
