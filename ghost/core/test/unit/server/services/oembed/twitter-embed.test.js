@@ -38,7 +38,6 @@ describe('TwitterOEmbedProvider', function () {
         assert(supportsRequest, 'Should support X (Twitter) URL');
     });
 
-
     it('Receives JSON from external request to Twitter API', async function () {
         const provider = new TwitterOEmbedProvider({
             config: {
