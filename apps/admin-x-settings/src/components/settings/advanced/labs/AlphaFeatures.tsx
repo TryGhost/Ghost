@@ -36,10 +36,6 @@ const features = [{
     description: 'Enables the Collections Card for pages - requires Collections and the beta Editor to be enabled',
     flag: 'collectionsCard'
 },{
-    title: 'Admin X',
-    description: 'Enables Admin X, the new admin UI for Ghost',
-    flag: 'adminXSettings'
-},{
     title: 'Mail Events',
     description: 'Enables processing of mail events',
     flag: 'mailEvents'
