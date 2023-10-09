@@ -47,7 +47,7 @@ class LexicalHTMLRenderer {
         }));
 
         options.renderData = renderData;
-
+        
         // render nodes
         editor.setEditorState(editorState);
         let html = '';

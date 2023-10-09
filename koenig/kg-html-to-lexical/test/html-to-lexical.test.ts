@@ -42,7 +42,7 @@ describe('HTMLtoLexical', function () {
                                     mode: 'normal',
                                     style: '',
                                     text: 'Hello World',
-                                    type: 'extended-text',
+                                    type: 'text',
                                     version: 1
                                 }
                             ],
@@ -76,7 +76,7 @@ describe('HTMLtoLexical', function () {
                                     mode: 'normal',
                                     style: '',
                                     text: 'Hello',
-                                    type: 'extended-text',
+                                    type: 'text',
                                     version: 1
                                 }
                             ],
@@ -94,7 +94,7 @@ describe('HTMLtoLexical', function () {
                                     mode: 'normal',
                                     style: '',
                                     text: 'World',
-                                    type: 'extended-text',
+                                    type: 'text',
                                     version: 1
                                 }
                             ],
@@ -127,7 +127,7 @@ describe('HTMLtoLexical', function () {
                                 mode: 'normal',
                                 style: '',
                                 text: 'Hello',
-                                type: 'extended-text',
+                                type: 'text',
                                 version: 1
                             }
                         ],
@@ -145,7 +145,7 @@ describe('HTMLtoLexical', function () {
                                 mode: 'normal',
                                 style: '',
                                 text: 'World',
-                                type: 'extended-text',
+                                type: 'text',
                                 version: 1
                             }
                         ],
@@ -381,31 +381,31 @@ describe('HTMLtoLexical', function () {
                     <div class="kg-product-card-title-container">
                         <h4 class="kg-product-card-title"><span style="white-space: pre-wrap;">product title</span></h4>
                     </div>
-
+                    
 
                     <div class="kg-product-card-description"><p dir="ltr"><span style="white-space: pre-wrap;">product description</span></p></div>
-
+                    
                 </div>
             </div><div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide " style="background-color: #000000;" data-background-color="#000000">
-
+                
                 <div class="kg-header-card-content">
-
+                    
                     <div class="kg-header-card-text kg-align-center">
                         <h2 id="header-v2" class="kg-header-card-heading" style="color: #FFFFFF;" data-text-color="#FFFFFF"><span style="white-space: pre-wrap;">header v2</span></h2>
                         <p id="subheader" class="kg-header-card-subheading" style="color: #FFFFFF;" data-text-color="#FFFFFF"><span style="white-space: pre-wrap;">subheader</span></p>
-
+                        
                     </div>
                 </div>
             </div><div class="kg-card kg-signup-card kg-width-wide " data-lexical-signup-form="" style="background-color: #F0F0F0; display: none;">
-
+                
                 <div class="kg-signup-card-content">
-
+                    
                     <div class="kg-signup-card-text ">
                         <h2 class="kg-signup-card-heading" style="color: #000000;"><span style="white-space: pre-wrap;">Sign up for test site</span></h2>
                         <p class="kg-signup-card-subheading" style="color: #000000;"><span style="white-space: pre-wrap;">Thoughts, stories and ideas.</span></p>
-
+                        
             <form class="kg-signup-card-form" data-members-form="signup">
-
+                
                 <div class="kg-signup-card-fields">
                     <input class="kg-signup-card-input" id="email" data-members-email="" type="email" required="true" placeholder="Your email">
                     <button class="kg-signup-card-button kg-style-accent" style="color: #FFFFFF;" type="submit">
@@ -434,7 +434,7 @@ describe('HTMLtoLexical', function () {
                 </div>
                 <div class="kg-signup-card-error" style="color: #000000;" data-members-error=""></div>
             </form>
-
+            
                         <p class="kg-signup-card-disclaimer" style="color: #000000;"><span style="white-space: pre-wrap;">No spam. Unsubscribe anytime.</span></p>
                     </div>
                 </div>

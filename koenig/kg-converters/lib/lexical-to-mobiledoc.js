@@ -39,8 +39,6 @@ const L_FORMAT_MAP = new Map([
     [L_IS_SUPERSCRIPT, 'sup']
 ]);
 
-const TEXT_TYPES = ['text', 'extended-text'];
-
 // TODO: Feels a little too explicit as it will need updating every time we add a new card.
 //
 // One alternative is to use a list of all built-in Lexical types and assume that anything
@@ -226,7 +224,7 @@ function buildMarkers(childWithFormats, mobiledoc) {
         // marker: a piece of text with 0 or more markups
 
         childWithFormats.children.forEach((child, childIndex) => {
-            if (TEXT_TYPES.includes(child.type)) {
+            if (child.type === 'text') {
                 if (child.format !== 0) {
                     // text child has formats, track which are new and which have closed
                     const openedFormats = [];
@@ -241,7 +239,7 @@ function buildMarkers(childWithFormats, mobiledoc) {
                     });
 
                     // mobiledoc will immediately close any formats if the next section doesn't use them or it's not a text section
-                    if (!childWithFormats.children[childIndex + 1] || !TEXT_TYPES.includes(childWithFormats.children[childIndex + 1].type)) {
+                    if (!childWithFormats.children[childIndex + 1] || childWithFormats.children[childIndex + 1].type !== 'text') {
                         // no more children, close all formats
                         closedFormatCount = openMarkups.length;
                         openMarkups = [];

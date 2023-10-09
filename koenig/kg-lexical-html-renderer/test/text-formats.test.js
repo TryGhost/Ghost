@@ -1,5 +1,4 @@
 const {shouldRender} = require('./utils');
-const {ExtendedTextNode} = require('@tryghost/kg-default-nodes');
 
 describe('Basic formats', function () {
     it('bold', shouldRender({
@@ -89,13 +88,5 @@ describe('Formats with linebreaks', function () {
     it('bold br bold+italic', shouldRender({
         input: `{"root":{"children":[{"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"First bold","type":"text","version":1},{"type":"linebreak","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"Second bold+italic","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
         output: `<p><strong>First bold<br><em>Second bold+italic</em></strong></p>`
-    }));
-});
-
-describe('ExtendedTextNode', function () {
-    it('italic+bold+italic', shouldRender({
-        options: {nodes: [ExtendedTextNode]},
-        input: `{"root":{"children":[{"children":[{"detail":0,"format":2,"mode":"normal","style":"","text":"Italic ","type":"extended-text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"Strong","type":"extended-text","version":1},{"detail":0,"format":2,"mode":"normal","style":"","text":" Italic","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
-        output: `<p><em>Italic <strong>Strong</strong> Italic</em></p>`
     }));
 });

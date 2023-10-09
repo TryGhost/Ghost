@@ -1,8 +1,3 @@
-import {
-    ExtendedTextNode,
-    extendedTextNodeReplacement
-} from '@tryghost/kg-default-nodes';
-
 import {AsideNode} from './AsideNode';
 import {AudioNode} from './AudioNode';
 import {BookmarkNode} from './BookmarkNode';
@@ -30,8 +25,6 @@ import {ToggleNode} from './ToggleNode';
 import {VideoNode} from './VideoNode';
 
 const DEFAULT_NODES = [
-    ExtendedTextNode,
-    extendedTextNodeReplacement,
     HeadingNode,
     ListNode,
     ListItemNode,

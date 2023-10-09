@@ -12,8 +12,6 @@ export interface htmlToLexicalOptions {
     editorConfig: CreateEditorArgs
 }
 
-const TEXT_NODE_TYPES = ['text', 'extended-text'];
-
 const defaultNodes = [
     // basic HTML nodes
     HeadingNode,
@@ -42,7 +40,7 @@ export function htmlToLexical(html: string, options?: htmlToLexicalOptions): Ser
         // which will break `rootNode.append()` so we need to wrap them in a paragraph
         // so contents don't get lost when converting
         const normalizedNodes = nodes.map((node) => {
-            if (TEXT_NODE_TYPES.includes(node.getType())) {
+            if (node.getType() === 'text') {
                 const p = $createParagraphNode();
                 p.append(node);
                 return p;
