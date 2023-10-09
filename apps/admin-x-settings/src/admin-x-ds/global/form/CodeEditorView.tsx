@@ -1,7 +1,7 @@
 import CodeMirror, {ReactCodeMirrorProps, ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import Heading from '../Heading';
 import Hint from '../Hint';
-import React, {forwardRef, useEffect, useId, useRef, useState} from 'react';
+import React, {FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
 import clsx from 'clsx';
 import {EditorView} from '@codemirror/view';
 import {Extension} from '@codemirror/state';
@@ -38,6 +38,8 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     clearBg = true,
     extensions,
     onChange,
+    onFocus,
+    onBlur,
     ...props
 }, ref) {
     const id = useId();
@@ -46,11 +48,13 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     const [resolvedExtensions, setResolvedExtensions] = React.useState<Extension[] | null>(null);
     const {setFocusState} = useFocusContext();
 
-    const handleFocus = () => {
+    const handleFocus: FocusEventHandler<HTMLDivElement> = (e) => {
+        onFocus?.(e);
         setFocusState(true);
     };
 
-    const handleBlur = () => {
+    const handleBlur: FocusEventHandler<HTMLDivElement> = (e) => {
+        onBlur?.(e);
         setFocusState(false);
     };
 

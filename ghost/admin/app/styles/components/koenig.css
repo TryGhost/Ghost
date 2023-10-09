@@ -930,6 +930,14 @@
     height: 1.6rem;
 }
 
+/* Scroll container for the editor canvas */
+.gh-koenig-editor {
+    width: 100%;
+    height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
 /* Padded container housing title + editor canvas, scrollable content */
 .gh-koenig-editor-pane {
     padding: 11vw 92px;

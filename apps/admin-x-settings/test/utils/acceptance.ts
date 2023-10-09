@@ -3,7 +3,7 @@ import {ConfigResponseType} from '../../src/api/config';
 import {CustomThemeSettingsResponseType} from '../../src/api/customThemeSettings';
 import {InvitesResponseType} from '../../src/api/invites';
 import {LabelsResponseType} from '../../src/api/labels';
-import {Locator, Page} from '@playwright/test';
+import {Locator, Page, expect} from '@playwright/test';
 import {NewslettersResponseType} from '../../src/api/newsletters';
 import {OffersResponseType} from '../../src/api/offers';
 import {RecommendationResponseType} from '../../src/api/recommendations';
@@ -194,6 +194,18 @@ export function updatedSettingsResponse(newSettings: Array<{ key: string, value:
     };
 }
 
+export function meWithRole(name: string) {
+    const role = responseFixtures.roles.roles.find(r => r.name === name);
+
+    return {
+        ...responseFixtures.me,
+        users: [{
+            ...responseFixtures.me.users[0],
+            roles: [role]
+        }]
+    };
+};
+
 export async function mockSitePreview({page, url, response}: {page: Page, url: string, response: string}) {
     let lastRequest: {previewHeader?: string} = {};
 
@@ -221,3 +233,14 @@ export async function chooseOptionInSelect(select: Locator, optionText: string |
     await select.click();
     await select.page().locator('[data-testid="select-option"]', {hasText: optionText}).click();
 }
+
+export async function testUrlValidation(input: Locator, textToEnter: string, expectedResult: string, expectedError?: string) {
+    await input.fill(textToEnter);
+    await input.blur();
+
+    expect(input).toHaveValue(expectedResult);
+
+    if (expectedError) {
+        await expect(input.locator('xpath=..')).toContainText(expectedError);
+    }
+};
