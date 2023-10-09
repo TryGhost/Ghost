@@ -1,5 +1,5 @@
 /* eslint-disable ghost/filenames/match-exported-class */
-import {TextNode} from 'lexical';
+import {$isTextNode, TextNode} from 'lexical';
 
 // Since the TextNode is foundational to all Lexical packages, including the
 // plain text use case. Handling any rich text logic is undesirable. This creates
@@ -26,7 +26,11 @@ export class ExtendedTextNode extends TextNode {
     static importDOM() {
         const importers = TextNode.importDOM();
         return {
-            ...importers
+            ...importers,
+            span: () => ({
+                conversion: patchConversion(importers?.span, convertSpanElement),
+                priority: 1
+            })
         };
     }
 
@@ -46,4 +50,67 @@ export class ExtendedTextNode extends TextNode {
             this.__mode === 0
         );
     }
+}
+
+function patchConversion(originalDOMConverter, convertFn) {
+    return (node) => {
+        const original = originalDOMConverter?.(node);
+        if (!original) {
+            return null;
+        }
+        const originalOutput = original.conversion(node);
+
+        if (!originalOutput) {
+            return originalOutput;
+        }
+
+        return {
+            ...originalOutput,
+            forChild: (lexicalNode, parent) => {
+                const originalForChild = originalOutput?.forChild ?? (x => x);
+                const result = originalForChild(lexicalNode, parent);
+                if ($isTextNode(result)) {
+                    return convertFn(result, node);
+                }
+                return result;
+            }
+        };
+    };
+}
+
+function convertSpanElement(lexicalNode, domNode) {
+    const span = domNode;
+
+    // Word uses span tags + font-weight for bold text
+    const hasBoldFontWeight = span.style.fontWeight === 'bold' || span.parentElement?.style.fontWeight === 'bold';
+    // Word uses span tags + font-style for italic text
+    const hasItalicFontStyle = span.style.fontStyle === 'italic' || span.parentElement?.style.fontStyle === 'italic';
+    // Word uses span tags + text-decoration for underline text
+    const hasUnderlineTextDecoration = span.style.textDecoration === 'underline' || span.parentElement?.style.textDecoration === 'underline';
+    // Word uses span tags + "Strikethrough" class for strikethrough text
+    const hasStrikethroughClass = span.classList.contains('Strikethrough') || span.parentElement?.classList.contains('Strikethrough');
+    // Word uses span tags + "Highlight" class for highlighted text
+    const hasHighlightClass = span.classList.contains('Highlight') || span.parentElement?.classList.contains('Highlight');
+
+    if (hasBoldFontWeight) {
+        lexicalNode = lexicalNode.toggleFormat('bold');
+    }
+
+    if (hasItalicFontStyle) {
+        lexicalNode = lexicalNode.toggleFormat('italic');
+    }
+
+    if (hasUnderlineTextDecoration) {
+        lexicalNode = lexicalNode.toggleFormat('underline');
+    }
+
+    if (hasStrikethroughClass) {
+        lexicalNode = lexicalNode.toggleFormat('strikethrough');
+    }
+
+    if (hasHighlightClass) {
+        lexicalNode = lexicalNode.toggleFormat('highlight');
+    }
+
+    return lexicalNode;
 }
