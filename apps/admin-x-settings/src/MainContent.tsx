@@ -26,8 +26,8 @@ const MainContent: React.FC = () => {
     const {route, updateRoute, loadingModal} = useRouting();
 
     useEffect(() => {
-        if (!canAccessSettings(currentUser) && route !== `users/show/${currentUser.slug}`) {
-            updateRoute(`users/show/${currentUser.slug}`);
+        if (!canAccessSettings(currentUser) && route !== `staff/${currentUser.slug}`) {
+            updateRoute(`staff/${currentUser.slug}`);
         }
     }, [currentUser, route, updateRoute]);
 

@@ -52,7 +52,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         initialState: {
             ...(tier || {}),
             trial_days: tier?.trial_days?.toString() || '',
-            currency: tier?.currency || currencies[0].isoCode
+            currency: tier?.currency || currencies[0].isoCode,
+            visibility: tier?.visibility || 'none'
         },
         onSave: async () => {
             const {trial_days: trialDays, currency, ...rest} = formState;

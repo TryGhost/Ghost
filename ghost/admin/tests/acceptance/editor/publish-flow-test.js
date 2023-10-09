@@ -431,39 +431,40 @@ describe('Acceptance: Publish flow', function () {
         it('can publish');
         it('can schedule publish');
 
-        it('respects default recipient settings - usually nobody', async function () {
-            // switch to "usually nobody" setting
-            // - doing it this way so we're not testing potentially stale mocked setting keys/values
-            await loginAsRole('Administrator', this.server);
-            await visit('/settings/newsletters');
-            await click('[data-test-toggle-membersemail]');
-            await selectChoose('[data-test-select="default-recipients"]', 'Usually nobody');
-            await click('[data-test-button="save-members-settings"]');
+        // TODO: Update to E2E test
+        // it('respects default recipient settings - usually nobody', async function () {
+        //     // switch to "usually nobody" setting
+        //     // - doing it this way so we're not testing potentially stale mocked setting keys/values
+        //     await loginAsRole('Administrator', this.server);
+        //     await visit('/settings/newsletters');
+        //     await click('[data-test-toggle-membersemail]');
+        //     await selectChoose('[data-test-select="default-recipients"]', 'Usually nobody');
+        //     await click('[data-test-button="save-members-settings"]');
 
-            const post = this.server.create('post', {status: 'draft'});
-            await visit(`/editor/post/${post.id}`);
-            await click('[data-test-button="publish-flow"]');
+        //     const post = this.server.create('post', {status: 'draft'});
+        //     await visit(`/editor/post/${post.id}`);
+        //     await click('[data-test-button="publish-flow"]');
 
-            expect(
-                find('[data-test-setting="publish-type"] [data-test-setting-title]'), 'publish type title'
-            ).to.have.trimmed.rendered.text('Publish');
+        //     expect(
+        //         find('[data-test-setting="publish-type"] [data-test-setting-title]'), 'publish type title'
+        //     ).to.have.trimmed.rendered.text('Publish');
 
-            expect(
-                find('[data-test-setting="email-recipients"] [data-test-setting-title]'), 'recipients title'
-            ).to.have.trimmed.rendered.text('Not sent as newsletter');
+        //     expect(
+        //         find('[data-test-setting="email-recipients"] [data-test-setting-title]'), 'recipients title'
+        //     ).to.have.trimmed.rendered.text('Not sent as newsletter');
 
-            await click('[data-test-setting="publish-type"] [data-test-setting-title]');
+        //     await click('[data-test-setting="publish-type"] [data-test-setting-title]');
 
-            // email-related options are enabled
-            expect(find('[data-test-publish-type="publish+send"]')).to.not.have.attribute('disabled');
-            expect(find('[data-test-publish-type="send"]')).to.not.have.attribute('disabled');
+        //     // email-related options are enabled
+        //     expect(find('[data-test-publish-type="publish+send"]')).to.not.have.attribute('disabled');
+        //     expect(find('[data-test-publish-type="send"]')).to.not.have.attribute('disabled');
 
-            await click('[data-test-publish-type="publish+send"]');
+        //     await click('[data-test-publish-type="publish+send"]');
 
-            expect(
-                find('[data-test-setting="email-recipients"] [data-test-setting-title]'), 'recipients title'
-            ).to.have.trimmed.rendered.text('All 7 subscribers');
-        });
+        //     expect(
+        //         find('[data-test-setting="email-recipients"] [data-test-setting-title]'), 'recipients title'
+        //     ).to.have.trimmed.rendered.text('All 7 subscribers');
+        // });
 
         it('handles Mailgun not being set up', async function () {
             disableMailgun(this.server);

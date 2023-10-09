@@ -75,7 +75,7 @@ const Sidebar: React.FC = () => {
             </div>
             <div className="no-scrollbar hidden pt-10 tablet:!visible tablet:!block tablet:h-[calc(100vh-5vmin-84px-64px)] tablet:w-[240px] tablet:overflow-y-auto" id='admin-x-settings-sidebar'>
                 <SettingNavSection keywords={Object.values(generalSearchKeywords).flat()} title="General">
-                    <SettingNavItem keywords={generalSearchKeywords.titleAndDescription} navid='title-and-description' title="Title & description" onClick={handleSectionClick} />
+                    <SettingNavItem keywords={generalSearchKeywords.titleAndDescription} navid='general' title="Title & description" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.publicationLanguage} navid='publication-language' title="Publication language" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.metadata} navid='metadata' title="Meta data" onClick={handleSectionClick} />
@@ -83,7 +83,7 @@ const Sidebar: React.FC = () => {
                     <SettingNavItem keywords={generalSearchKeywords.facebook} navid='facebook' title="Facebook card" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.socialAccounts} navid='social-accounts' title="Social accounts" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.lockSite} navid='locksite' title="Make this site private" onClick={handleSectionClick} />
-                    <SettingNavItem keywords={generalSearchKeywords.users} navid='users' title="Staff" onClick={handleSectionClick} />
+                    <SettingNavItem keywords={generalSearchKeywords.users} navid='staff' title="Staff" onClick={handleSectionClick} />
                 </SettingNavSection>
 
                 <SettingNavSection keywords={Object.values(siteSearchKeywords).flat()} title="Site">
@@ -93,7 +93,7 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 <SettingNavSection keywords={Object.values(membershipSearchKeywords).flat()} title="Membership">
-                    <SettingNavItem keywords={membershipSearchKeywords.access} navid='access' title="Access" onClick={handleSectionClick} />
+                    <SettingNavItem keywords={membershipSearchKeywords.access} navid='members' title="Access" onClick={handleSectionClick} />
                     <SettingNavItem keywords={membershipSearchKeywords.portal} navid='portal' title="Portal" onClick={handleSectionClick} />
                     <SettingNavItem keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
                     {hasTipsAndDonations && <SettingNavItem keywords={membershipSearchKeywords.tips} navid='tips-or-donations' title="Tips or donations" onClick={handleSectionClick} />}

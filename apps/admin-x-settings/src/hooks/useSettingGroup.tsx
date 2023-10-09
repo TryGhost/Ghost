@@ -89,9 +89,15 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}):
 
     // function to update the local state
     const updateSetting = (key: string, value: SettingValue) => {
-        updateForm(state => state.map(setting => (
-            setting.key === key ? {...setting, value, dirty: true} : setting
-        )));
+        updateForm((state) => {
+            if (state.some(setting => setting.key === key)) {
+                return state.map(setting => (
+                    setting.key === key ? {...setting, value, dirty: true} : setting
+                ));
+            } else {
+                return [...state, {key, value, dirty: true}];
+            }
+        });
     };
 
     return {

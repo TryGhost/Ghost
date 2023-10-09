@@ -62,7 +62,7 @@ const AlphaFeatures: React.FC = () => {
         <List titleSeparator={false}>
             {features.map(feature => (
                 <LabItem
-                    action={<FeatureToggle flag={feature.flag} />}
+                    action={<FeatureToggle flag={feature.flag} label={feature.title} />}
                     detail={feature.description}
                     title={feature.title} />
             ))}

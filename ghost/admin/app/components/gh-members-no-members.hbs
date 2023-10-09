@@ -9,14 +9,8 @@
         <p class="gh-members-empty-secondary-cta">Have members already? <LinkTo @route="member.new">Add them manually</LinkTo> or <LinkTo @route="members.import">import from CSV</LinkTo></p>
     {{else}}
         <p>Memberships have been disabled. Adjust your Subscription Access settings to start adding members.</p>
-        {{#if (feature "adminXSettings")}}
-            <LinkTo @route="settings-x.settings-x" @model="access" class="gh-btn gh-btn-green">
-                <span>Membership settings</span>
-            </LinkTo>
-        {{else}}
-            <LinkTo @route="settings.membership" class="gh-btn gh-btn-green">
-                <span>Membership settings</span>
-            </LinkTo>
-        {{/if}}
+        <LinkTo @route="settings-x.settings-x" @model="access" class="gh-btn gh-btn-green">
+            <span>Membership settings</span>
+        </LinkTo>
     {{/if}}
 </div>

@@ -2,22 +2,18 @@ const {expect, test} = require('@playwright/test');
 const {createPostDraft, createTier, disconnectStripe, generateStripeIntegrationToken, setupStripe} = require('../utils');
 
 const changeSubscriptionAccess = async (page, access) => {
-    // Go to settings page
     await page.locator('[data-test-nav="settings"]').click();
 
-    // Go to members settings page
-    await page.locator('[data-test-nav="members-membership"]').click();
+    const section = page.getByTestId('access');
+    await section.getByRole('button', {name: 'Edit'}).click();
 
-    // Change subscription access
-    await page.locator('[data-test-members-subscription-access] [data-test-members-subscription-option]').click();
-    await page.locator(`[data-test-members-subscription-option="${access}"]`).click();
+    const select = section.getByTestId('subscription-access-select');
+    await select.click();
+    await page.locator(`[data-testid="select-option"][data-value="${access}"]`).click();
 
     // Save settings
-    await page.locator('[data-test-button="save-settings"]').click();
-    await page.getByRole('button', {name: 'Saved'}).waitFor({
-        state: 'visible',
-        timeout: 1000
-    });
+    await section.getByRole('button', {name: 'Save'}).click();
+    await expect(select).not.toBeVisible();
 };
 
 const checkPortalScriptLoaded = async (page, loaded = true) => {

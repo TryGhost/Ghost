@@ -182,7 +182,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             description='Set up default access options for subscription and posts'
             isEditing={isEditing}
             keywords={keywords}
-            navid='access'
+            navid='members'
             saveState={saveState}
             testId='access'
             title='Access'

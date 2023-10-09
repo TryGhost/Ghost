@@ -51,7 +51,7 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
             try {
                 const data = await createIntegration({name});
                 modal.remove();
-                updateRoute({route: `integrations/show/${data.integrations[0].id}`});
+                updateRoute({route: `integrations/${data.integrations[0].id}`});
             } catch (e) {
                 handleError(e);
             }

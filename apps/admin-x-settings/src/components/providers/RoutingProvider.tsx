@@ -35,19 +35,19 @@ export type RoutingModalProps = {
 }
 
 const modalPaths: {[key: string]: ModalName} = {
-    'design/edit/themes': 'DesignAndThemeModal',
+    'design/change-theme': 'DesignAndThemeModal',
     'design/edit': 'DesignAndThemeModal',
     // this is a special route, because it can install a theme directly from the Ghost Marketplace
     'design/change-theme/install': 'DesignAndThemeModal',
     'navigation/edit': 'NavigationModal',
-    'users/invite': 'InviteUserModal',
-    'users/show/:slug': 'UserDetailModal',
+    'staff/invite': 'InviteUserModal',
+    'staff/:slug': 'UserDetailModal',
     'portal/edit': 'PortalModal',
     'tiers/add': 'TierDetailModal',
-    'tiers/show/:id': 'TierDetailModal',
+    'tiers/:id': 'TierDetailModal',
     'stripe-connect': 'StripeConnectModal',
-    'newsletters/add': 'AddNewsletterModal',
-    'newsletters/show/:id': 'NewsletterDetailModal',
+    'newsletters/new': 'AddNewsletterModal',
+    'newsletters/:id': 'NewsletterDetailModal',
     'history/view': 'HistoryModal',
     'history/view/:user': 'HistoryModal',
     'integrations/zapier': 'ZapierModal',
@@ -56,8 +56,8 @@ const modalPaths: {[key: string]: ModalName} = {
     'integrations/unsplash': 'UnsplashModal',
     'integrations/firstpromoter': 'FirstpromoterModal',
     'integrations/pintura': 'PinturaModal',
-    'integrations/add': 'AddIntegrationModal',
-    'integrations/show/:id': 'CustomIntegrationModal',
+    'integrations/new': 'AddIntegrationModal',
+    'integrations/:id': 'CustomIntegrationModal',
     'recommendations/add': 'AddRecommendationModal',
     'recommendations/edit': 'EditRecommendationModal',
     'announcement-bar/edit': 'AnnouncementBarModal',
@@ -68,7 +68,7 @@ function getHashPath(urlPath: string | undefined) {
     if (!urlPath) {
         return null;
     }
-    const regex = /\/settings-x\/(.*)/;
+    const regex = /\/settings\/(.*)/;
     const match = urlPath?.match(regex);
 
     if (match) {
@@ -142,9 +142,9 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
         const newPath = options.route;
 
         if (newPath) {
-            window.location.hash = `/settings-x/${newPath}`;
+            window.location.hash = `/settings/${newPath}`;
         } else {
-            window.location.hash = `/settings-x`;
+            window.location.hash = `/settings`;
         }
     }, [externalNavigate]);
 

@@ -97,13 +97,13 @@ export const getActorLinkTarget = (action: Action): InternalLink | ExternalLink 
             return;
         }
 
-        return {route: `integrations/show/${action.actor.id}`};
+        return {route: `integrations/${action.actor.id}`};
     case 'user':
         if (!action.actor.slug) {
             return;
         }
 
-        return {route: `users/show/${action.actor.slug}`};
+        return {route: `staff/${action.actor.slug}`};
     }
 
     return;
@@ -136,7 +136,7 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
                 return;
             }
 
-            return {route: `integrations/show/${action.resource.id}`};
+            return {route: `integrations/${action.resource.id}`};
         case 'offer':
             if (!action.resource || !action.resource.id) {
                 return;
@@ -164,7 +164,7 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
                 return;
             }
 
-            return {route: `users/show/${action.resource.slug}`};
+            return {route: `staff/${action.resource.slug}`};
         }
     }
 

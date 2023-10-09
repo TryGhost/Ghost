@@ -66,7 +66,7 @@ const Sidebar: React.FC<{
                 <div className='w-full px-7'>
                     <button className='group flex w-full items-center justify-between text-sm font-medium opacity-80 transition-all hover:opacity-100' data-testid='change-theme' type='button' onClick={async () => {
                         await handleSave();
-                        updateRoute('design/edit/themes');
+                        updateRoute('design/change-theme');
                     }}>
                         <div className='text-left'>
                             <div className='font-semibold'>Change theme</div>

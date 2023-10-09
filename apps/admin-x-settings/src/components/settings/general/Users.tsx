@@ -39,7 +39,7 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
 
     const showDetailModal = () => {
         if (hasAdminAccess(currentUser)) {
-            updateRoute({route: `users/show/${user.slug}`});
+            updateRoute({route: `staff/${user.slug}`});
         }
     };
 
@@ -63,7 +63,7 @@ const UsersList: React.FC<UsersListProps> = ({users, groupname}) => {
     const {currentUser} = useGlobalData();
 
     const showDetailModal = (user: User) => {
-        updateRoute({route: `users/show/${user.slug}`});
+        updateRoute({route: `staff/${user.slug}`});
     };
 
     if (!users || !users.length) {
@@ -221,7 +221,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
     const {updateRoute} = useRouting();
 
     const showInviteModal = () => {
-        updateRoute('users/invite');
+        updateRoute('staff/invite');
     };
 
     const buttons = (
@@ -265,7 +265,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
             customButtons={buttons}
             highlightOnModalClose={highlight}
             keywords={keywords}
-            navid='users'
+            navid='staff'
             testId='users'
             title='Staff'
         >
