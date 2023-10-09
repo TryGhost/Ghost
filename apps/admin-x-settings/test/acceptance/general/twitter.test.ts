@@ -22,7 +22,7 @@ test.describe('Twitter settings', async () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(`${__dirname}/../../utils/images/image.png`);
 
-        await expect(section.getByRole('img')).toBeVisible();
+        await expect(section.locator('img[src="http://example.com/image.png"]')).toBeVisible();
 
         await section.getByLabel('X title').fill('Twititle');
         await section.getByLabel('X description').fill('Twitscription');
