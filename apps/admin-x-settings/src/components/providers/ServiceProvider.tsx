@@ -3,6 +3,11 @@ import useSearchService, {SearchService} from '../../utils/search';
 import {DefaultHeaderTypes} from '../../utils/unsplash/UnsplashTypes';
 import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
 
+export type ThemeVariant = {
+    image: string;
+    category: string;
+};
+
 export type OfficialTheme = {
     name: string;
     category: string;
@@ -10,6 +15,7 @@ export type OfficialTheme = {
     ref: string;
     image: string;
     url?: string;
+    variants?: ThemeVariant[]
 };
 
 export type FetchKoenigLexical = () => Promise<any>
