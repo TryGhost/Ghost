@@ -21,7 +21,6 @@ import * as emailCta from './nodes/email-cta/EmailCtaNode';
 import * as signup from './nodes/signup/SignupNode';
 import * as collection from './nodes/collection/CollectionNode';
 import * as textnode from './nodes/ExtendedTextNode';
-import * as headingnode from './nodes/ExtendedHeadingNode';
 
 // re-export everything for easier importing
 export * from './KoenigDecoratorNode';
@@ -48,14 +47,11 @@ export * from './nodes/email-cta/EmailCtaNode';
 export * from './nodes/signup/SignupNode';
 export * from './nodes/collection/CollectionNode';
 export * from './nodes/ExtendedTextNode';
-export * from './nodes/ExtendedHeadingNode';
 
 // export convenience objects for use elsewhere
 export const DEFAULT_NODES = [
     textnode.ExtendedTextNode,
     textnode.extendedTextNodeReplacement,
-    headingnode.ExtendedHeadingNode,
-    headingnode.extendedHeadingNodeReplacement,
     codeblock.CodeBlockNode,
     image.ImageNode,
     markdown.MarkdownNode,

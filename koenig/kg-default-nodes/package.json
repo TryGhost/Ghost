@@ -44,7 +44,6 @@
     "sinon": "16.1.0"
   },
   "dependencies": {
-    "@lexical/rich-text": "^0.12.2",
     "@tryghost/kg-clean-basic-html": "^3.0.35",
     "@tryghost/kg-markdown-html-renderer": "^6.0.12",
     "html-minifier": "^4.0.0",

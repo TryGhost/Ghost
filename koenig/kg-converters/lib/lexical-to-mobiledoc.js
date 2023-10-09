@@ -39,7 +39,6 @@ const L_FORMAT_MAP = new Map([
     [L_IS_SUPERSCRIPT, 'sup']
 ]);
 
-const HEADING_TYPES = ['heading', 'extended-heading'];
 const TEXT_TYPES = ['text', 'extended-text'];
 
 // TODO: Feels a little too explicit as it will need updating every time we add a new card.
@@ -141,7 +140,7 @@ function addRootChild(child, mobiledoc) {
         addTextSection(child, mobiledoc);
     }
 
-    if (HEADING_TYPES.includes(child.type)) {
+    if (child.type === 'heading') {
         addTextSection(child, mobiledoc, child.tag);
     }
 
