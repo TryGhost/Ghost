@@ -4,7 +4,7 @@ import {Meta, apiUrl, createInfiniteQuery, createMutation, useFetchApi} from '..
 export type Recommendation = {
     id: string
     title: string
-    reason: string|null
+    description: string|null
     excerpt: string|null // Fetched from the site meta data
     featured_image: string|null // Fetched from the site meta data
     favicon: string|null // Fetched from the site meta data

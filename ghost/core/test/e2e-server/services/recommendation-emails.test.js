@@ -73,7 +73,7 @@ describe('Incoming Recommendation Emails', function () {
         // Create a recommendation to otherghostsite.com
         const recommendation = Recommendation.create({
             title: `Recommendation`,
-            reason: `Reason`,
+            description: `Description`,
             url: new URL(`https://www.otherghostsite.com/`),
             favicon: null,
             featuredImage: null,

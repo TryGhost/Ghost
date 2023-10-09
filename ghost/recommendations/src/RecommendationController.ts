@@ -18,7 +18,7 @@ const RecommendationIncludesMap = {
 
 const RecommendationOrderMap = {
     title: 'title' as const,
-    reason: 'reason' as const,
+    description: 'description' as const,
     excerpt: 'excerpt' as const,
     one_click_subscribe: 'oneClickSubscribe' as const,
     created_at: 'createdAt' as const,
@@ -54,7 +54,7 @@ export class RecommendationController {
 
             // Optional fields
             oneClickSubscribe: recommendation.optionalKey('one_click_subscribe')?.boolean ?? false,
-            reason: recommendation.optionalKey('reason')?.nullable.string ?? null,
+            description: recommendation.optionalKey('description')?.nullable.string ?? null,
             excerpt: recommendation.optionalKey('excerpt')?.nullable.string ?? null,
             featuredImage: recommendation.optionalKey('featured_image')?.nullable.url ?? null,
             favicon: recommendation.optionalKey('favicon')?.nullable.url ?? null
@@ -75,7 +75,7 @@ export class RecommendationController {
             title: recommendation.optionalKey('title')?.string,
             url: recommendation.optionalKey('url')?.url,
             oneClickSubscribe: recommendation.optionalKey('one_click_subscribe')?.boolean,
-            reason: recommendation.optionalKey('reason')?.nullable.string,
+            description: recommendation.optionalKey('description')?.nullable.string,
             excerpt: recommendation.optionalKey('excerpt')?.nullable.string,
             featuredImage: recommendation.optionalKey('featured_image')?.nullable.url,
             favicon: recommendation.optionalKey('favicon')?.nullable.url
@@ -207,7 +207,7 @@ export class RecommendationController {
                 const d = {
                     id: entity.id,
                     title: entity.title,
-                    reason: entity.reason,
+                    description: entity.description,
                     excerpt: entity.excerpt,
                     featured_image: entity.featuredImage?.toString() ?? null,
                     favicon: entity.favicon?.toString() ?? null,

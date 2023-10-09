@@ -30,7 +30,7 @@ describe('WellknownService', function () {
         const recommendations = [
             Recommendation.create({
                 title: 'My Blog',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -41,7 +41,7 @@ describe('WellknownService', function () {
             }),
             Recommendation.create({
                 title: 'My Other Blog',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
