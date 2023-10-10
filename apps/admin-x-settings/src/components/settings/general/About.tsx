@@ -7,12 +7,14 @@ import useRouting from '../../../hooks/useRouting';
 import {ReactComponent as GhostLogo} from '../../../admin-x-ds/assets/images/ghost-logo.svg';
 import {RoutingModalProps} from '../../providers/RoutingProvider';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useUpgradeStatus} from '../../providers/ServiceProvider';
 
 const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
     const {updateRoute} = useRouting();
     const globalData = useGlobalData();
     let config = globalData.config;
-    
+    const upgradeStatus = useUpgradeStatus();
+
     function linkToGitHubReleases():string {
         if (config.version.includes('-pre.')) {
             try {
@@ -83,6 +85,16 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
             <div className='flex flex-col gap-4 pb-7 text-sm'>
                 <GhostLogo className="h-auto w-[120px] dark:invert"/>
                 <div className='mt-3 flex flex-col gap-1.5'>
+                    {
+                        upgradeStatus?.message && (
+                            <>
+                                <strong>Update available!</strong>
+                                <div>
+                                    {upgradeStatus.message}
+                                </div>
+                            </>
+                        )
+                    }
                     {
                         linkToGitHubReleases() && (
                             <div><strong>Version:</strong> <a className='text-green' href={linkToGitHubReleases()} rel="noopener noreferrer" target="_blank">{config.version}</a></div>

@@ -1,6 +1,7 @@
 import React, {createContext, useContext} from 'react';
 import useSearchService, {SearchService} from '../../utils/search';
 import {DefaultHeaderTypes} from '../../utils/unsplash/UnsplashTypes';
+import {UpgradeStatusType} from '../../utils/globalTypes';
 import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
 
 export type ThemeVariant = {
@@ -31,6 +32,7 @@ interface ServicesContextProps {
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
     fetchKoenigLexical: FetchKoenigLexical;
+    upgradeStatus?: UpgradeStatusType;
 }
 
 interface ServicesProviderProps {
@@ -44,6 +46,7 @@ interface ServicesProviderProps {
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
     fetchKoenigLexical: FetchKoenigLexical;
+    upgradeStatus?: UpgradeStatusType;
 }
 
 const ServicesContext = createContext<ServicesContextProps>({
@@ -62,10 +65,14 @@ const ServicesContext = createContext<ServicesContextProps>({
     onUpdate: () => {},
     onInvalidate: () => {},
     onDelete: () => {},
-    fetchKoenigLexical: async () => {}
+    fetchKoenigLexical: async () => {},
+    upgradeStatus: {
+        isRequired: false,
+        message: ''
+    }
 });
 
-const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, unsplashConfig, sentryDSN, onUpdate, onInvalidate, onDelete, fetchKoenigLexical}) => {
+const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, unsplashConfig, sentryDSN, onUpdate, onInvalidate, onDelete, fetchKoenigLexical, upgradeStatus}) => {
     const search = useSearchService();
 
     return (
@@ -79,7 +86,8 @@ const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersi
             onUpdate,
             onInvalidate,
             onDelete,
-            fetchKoenigLexical
+            fetchKoenigLexical,
+            upgradeStatus
         }}>
             {children}
         </ServicesContext.Provider>
@@ -95,3 +103,5 @@ export const useOfficialThemes = () => useServices().officialThemes;
 export const useSearch = () => useServices().search;
 
 export const useSentryDSN = () => useServices().sentryDSN;
+
+export const useUpgradeStatus = () => useServices().upgradeStatus;

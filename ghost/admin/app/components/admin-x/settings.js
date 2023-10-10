@@ -290,6 +290,7 @@ export default class AdminXSettings extends Component {
     @service router;
     @service membersUtils;
     @service themeManagement;
+    @service upgradeStatus;
 
     @inject config;
 
@@ -428,6 +429,7 @@ export default class AdminXSettings extends Component {
                             onUpdate={this.onUpdate}
                             onInvalidate={this.onInvalidate}
                             onDelete={this.onDelete}
+                            upgradeStatus={this.upgradeStatus}
                         />
                     </Suspense>
                 </ErrorHandler>
