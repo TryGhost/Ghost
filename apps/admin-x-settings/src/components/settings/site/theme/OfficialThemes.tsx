@@ -12,8 +12,9 @@ const hasVariants = (theme: OfficialTheme) => theme.variants && theme.variants.l
 
 const getAllVariants = (theme: OfficialTheme) : ThemeVariant[] => {
     const variants = [{
-        image: theme.image,
-        category: theme.category
+        category: theme.category,
+        previewUrl: theme.previewUrl,
+        image: theme.image
     }];
 
     if (theme.variants && theme.variants.length > 0) {
