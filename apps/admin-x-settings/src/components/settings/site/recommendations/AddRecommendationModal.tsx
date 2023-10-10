@@ -4,7 +4,7 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
-import useForm from '../../../../hooks/useForm';
+import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {AlreadyExistsError} from '../../../../utils/errors';
 import {EditOrAddRecommendation, RecommendationResponseType, useGetRecommendationByUrl} from '../../../../api/recommendations';
@@ -25,6 +25,22 @@ const doFormatUrl = (url: string) => {
     return formatUrl(url).save;
 };
 
+const validateUrl = function (errors: ErrorMessages, url: string) {
+    try {
+        const u = new URL(url);
+
+        // Check domain includes a dot
+        if (!u.hostname.includes('.')) {
+            errors.url = 'Please enter a valid URL.';
+        } else {
+            delete errors.url;
+        }
+    } catch (e) {
+        errors.url = 'Please enter a valid URL.';
+    }
+    return errors;
+};
+
 const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModalProps> = ({searchParams, recommendation, animate}) => {
     const [enterPressed, setEnterPressed] = useState(false);
     const modal = useModal();
@@ -41,11 +57,11 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
     const didInitialSubmit = React.useRef(false);
     const [showLoadingView, setShowLoadingView] = React.useState(!!initialUrlCleaned);
 
-    const {formState, updateForm, handleSave, errors, saveState, clearError} = useForm({
+    const {formState, updateForm, handleSave, errors, saveState, clearError, setErrors} = useForm({
         initialState: recommendation ?? {
             title: '',
             url: initialUrlCleaned,
-            reason: '',
+            description: '',
             excerpt: null,
             featured_image: null,
             favicon: null,
@@ -103,7 +119,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 updatedRecommendation.favicon = oembed?.metadata?.icon ?? formState.favicon ?? null;
                 updatedRecommendation.one_click_subscribe = false;
             }
-            updatedRecommendation.reason = updatedRecommendation.excerpt || null;
+            updatedRecommendation.description = updatedRecommendation.excerpt || null;
 
             // Switch modal without changing the route (the second modal is not reachable by URL)
             modal.remove();
@@ -119,16 +135,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         onValidate: () => {
             const newErrors: Record<string, string> = {};
 
-            try {
-                const u = new URL(formState.url);
-
-                // Check domain includes a dot
-                if (!u.hostname.includes('.')) {
-                    newErrors.url = 'Please enter a valid URL.';
-                }
-            } catch (e) {
-                newErrors.url = 'Please enter a valid URL.';
-            }
+            validateUrl(newErrors, formState.url);
 
             // If we have errors: close direct submit view
             if (showLoadingView) {
@@ -225,7 +232,13 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 placeholder='https://www.example.com'
                 title='URL'
                 value={formState.url}
-                onBlur={() => updateForm(state => ({...state, url: doFormatUrl(formState.url)}))}
+                onBlur={() => {
+                    const url = doFormatUrl(formState.url);
+                    setErrors(
+                        validateUrl(errors, url)
+                    );
+                    updateForm(state => ({...state, url: url}));
+                }}
                 onChange={(e) => {
                     clearError?.('url');
                     updateForm(state => ({...state, url: e.target.value}));

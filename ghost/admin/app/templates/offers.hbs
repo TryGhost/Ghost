@@ -30,15 +30,9 @@
                 <div class="gh-offers-list-cta missing-tiers">
                     {{svg-jar "discount-bubble" class="discount-bubble"}}
                     <h4>You must have an active tier to create offers</h4>
-                    {{#if (feature "adminXSettings")}}
-                        <LinkTo @route="settings-x.settings-x" @model="tiers" class="gh-btn gh-btn-green">
-                            <span>Manage tiers</span>
-                        </LinkTo>
-                    {{else}}
-                        <LinkTo @route="settings.membership" class="gh-btn gh-btn-green">
-                            <span>Manage tiers</span>
-                        </LinkTo>
-                    {{/if}}
+                    <LinkTo @route="settings-x.settings-x" @model="tiers" class="gh-btn gh-btn-green">
+                        <span>Manage tiers</span>
+                    </LinkTo>
                 </div>
         {{else if (and this.offersExist this.filteredOffers.length)}}
             <table class="gh-list gh-offers-list" data-test-offers-list>

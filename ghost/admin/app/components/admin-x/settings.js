@@ -16,7 +16,11 @@ const officialThemes = [{
     category: 'News',
     previewUrl: 'https://source.ghost.io/',
     ref: 'default',
-    image: 'assets/img/themes/Source.png'
+    image: 'assets/img/themes/Source.png',
+    variants: [
+        {image: 'assets/img/themes/Source-Magazine.png', category: 'Magazine'},
+        {image: 'assets/img/themes/Source-Newsletter.png', category: 'Newsletter'}
+    ]
 }, {
     name: 'Casper',
     category: 'Blog',
@@ -224,12 +228,12 @@ export const importSettings = async () => {
     }
 
     const baseUrl = (config.cdnUrl ? `${config.cdnUrl}assets/` : ghostPaths().assetRootWithHost);
-    const url = new URL(`${baseUrl}admin-x-settings/admin-x-settings.js`);
+    const url = new URL(`${baseUrl}admin-x-settings/${config.adminXSettingsFilename}?v=${config.adminXSettingsHash}`);
 
     if (url.protocol === 'http:') {
-        window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}`);
+        window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}${url.search}`);
     } else {
-        window['@tryghost/admin-x-settings'] = await import(`https://${url.host}${url.pathname}`);
+        window['@tryghost/admin-x-settings'] = await import(`https://${url.host}${url.pathname}${url.search}`);
     }
 
     return window['@tryghost/admin-x-settings'];

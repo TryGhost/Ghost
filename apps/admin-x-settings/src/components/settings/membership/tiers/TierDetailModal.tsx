@@ -52,7 +52,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         initialState: {
             ...(tier || {}),
             trial_days: tier?.trial_days?.toString() || '',
-            currency: tier?.currency || currencies[0].isoCode
+            currency: tier?.currency || currencies[0].isoCode,
+            visibility: tier?.visibility || 'none'
         },
         onSave: async () => {
             const {trial_days: trialDays, currency, ...rest} = formState;
@@ -274,16 +275,16 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 />
                             </div>
                         </div>
-                        <URLTextField
-                            baseUrl={siteData?.url}
-                            hint='Redirect to this URL after signup for premium membership'
-                            placeholder={siteData?.url}
-                            title='Welcome page'
-                            value={formState.welcome_page_url || ''}
-                            transformPathWithoutSlash
-                            onChange={value => updateForm(state => ({...state, welcome_page_url: value || null}))}
-                        />
                     </>)}
+                    <URLTextField
+                        baseUrl={siteData?.url}
+                        hint='Redirect to this URL after signup for premium membership'
+                        placeholder={siteData?.url}
+                        title='Welcome page'
+                        value={formState.welcome_page_url || ''}
+                        transformPathWithoutSlash
+                        onChange={value => updateForm(state => ({...state, welcome_page_url: value || null}))}
+                    />
                 </Form>
 
                 <Form gap='none' title='Benefits' grouped>

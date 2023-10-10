@@ -17,7 +17,11 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 category: 'News',
                 previewUrl: 'https://source.ghost.io/',
                 ref: 'default',
-                image: 'assets/img/themes/Source.png'
+                image: 'assets/img/themes/Source.png',
+                variants: [
+                    {image: 'assets/img/themes/Source-Magazine.png', category: 'Magazine'},
+                    {image: 'assets/img/themes/Source-Newsletter.png', category: 'Newsletter'}
+                ]
             }, {
                 name: 'Casper',
                 category: 'Blog',

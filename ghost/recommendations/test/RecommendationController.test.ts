@@ -17,7 +17,7 @@ describe('RecommendationController', function () {
                 return {
                     id,
                     title: 'Test',
-                    reason: null,
+                    description: null,
                     excerpt: null,
                     featuredImage: new URL('https://example.com/image.png'),
                     favicon: new URL('https://example.com/favicon.ico'),
@@ -40,7 +40,7 @@ describe('RecommendationController', function () {
                 data: [{
                     id: '1',
                     title: 'Test',
-                    reason: null,
+                    description: null,
                     excerpt: null,
                     featured_image: 'https://example.com/image.png',
                     favicon: 'https://example.com/favicon.ico',
@@ -61,7 +61,7 @@ describe('RecommendationController', function () {
                 return {
                     id: '1',
                     title: plain.title,
-                    reason: plain.reason,
+                    description: plain.description,
                     excerpt: plain.excerpt,
                     featuredImage: plain.featuredImage ? new URL(plain.featuredImage.toString()) : null,
                     favicon: plain.favicon ? new URL(plain.favicon.toString()) : null,
@@ -77,7 +77,7 @@ describe('RecommendationController', function () {
                     recommendations: [
                         {
                             title: 'Test',
-                            reason: 'My reason',
+                            description: 'My description',
                             excerpt: 'My excerpt',
                             featured_image: 'https://example.com/image.png',
                             favicon: 'https://example.com/favicon.ico',
@@ -94,7 +94,7 @@ describe('RecommendationController', function () {
                 data: [{
                     id: '1',
                     title: 'Test',
-                    reason: 'My reason',
+                    description: 'My description',
                     excerpt: 'My excerpt',
                     featured_image: 'https://example.com/image.png',
                     favicon: 'https://example.com/favicon.ico',
@@ -113,7 +113,7 @@ describe('RecommendationController', function () {
                 return {
                     id: '1',
                     title: plain.title,
-                    reason: plain.reason,
+                    description: plain.description,
                     excerpt: plain.excerpt,
                     featuredImage: plain.featuredImage ? new URL(plain.featuredImage.toString()) : null,
                     favicon: plain.favicon ? new URL(plain.favicon.toString()) : null,
@@ -141,7 +141,7 @@ describe('RecommendationController', function () {
                 data: [{
                     id: '1',
                     title: 'Test',
-                    reason: null,
+                    description: null,
                     excerpt: null,
                     featured_image: null,
                     favicon: null,
@@ -162,7 +162,7 @@ describe('RecommendationController', function () {
                 return {
                     id: '1',
                     title: edit.title || 'Test',
-                    reason: edit.reason || null,
+                    description: edit.description || null,
                     excerpt: edit.excerpt || null,
                     featuredImage: edit.featuredImage ? new URL(edit.featuredImage.toString()) : null,
                     favicon: edit.favicon ? new URL(edit.favicon.toString()) : null,
@@ -191,7 +191,7 @@ describe('RecommendationController', function () {
                 data: [{
                     id: '1',
                     title: 'Test',
-                    reason: null,
+                    description: null,
                     excerpt: null,
                     featured_image: null,
                     favicon: null,
@@ -210,7 +210,7 @@ describe('RecommendationController', function () {
                 return {
                     id: '1',
                     title: edit.title || 'Test',
-                    reason: edit.reason || null,
+                    description: edit.description || null,
                     excerpt: edit.excerpt || null,
                     featuredImage: edit.featuredImage ? new URL(edit.featuredImage.toString()) : null,
                     favicon: edit.favicon ? new URL(edit.favicon.toString()) : null,
@@ -226,7 +226,7 @@ describe('RecommendationController', function () {
                     recommendations: [
                         {
                             // All execpt title
-                            reason: 'My reason',
+                            description: 'My description',
                             excerpt: 'My excerpt',
                             featured_image: 'https://example.com/image.png',
                             favicon: 'https://example.com/favicon.ico',
@@ -245,7 +245,7 @@ describe('RecommendationController', function () {
                 data: [{
                     id: '1',
                     title: 'Test',
-                    reason: 'My reason',
+                    description: 'My description',
                     excerpt: 'My excerpt',
                     featured_image: 'https://example.com/image.png',
                     favicon: 'https://example.com/favicon.ico',
@@ -285,7 +285,7 @@ describe('RecommendationController', function () {
                     {
                         id: '1',
                         title: 'Test',
-                        reason: null,
+                        description: null,
                         excerpt: null,
                         featuredImage: new URL('https://example.com/image.png'),
                         favicon: new URL('https://example.com/favicon.ico'),
@@ -312,7 +312,7 @@ describe('RecommendationController', function () {
                 data: [{
                     id: '1',
                     title: 'Test',
-                    reason: null,
+                    description: null,
                     excerpt: null,
                     featured_image: 'https://example.com/image.png',
                     favicon: 'https://example.com/favicon.ico',
@@ -341,7 +341,7 @@ describe('RecommendationController', function () {
                     {
                         id: '1',
                         title: 'Test',
-                        reason: null,
+                        description: null,
                         excerpt: null,
                         featuredImage: new URL('https://example.com/image.png'),
                         favicon: new URL('https://example.com/favicon.ico'),
@@ -369,7 +369,7 @@ describe('RecommendationController', function () {
                 data: [{
                     id: '1',
                     title: 'Test',
-                    reason: null,
+                    description: null,
                     excerpt: null,
                     featured_image: 'https://example.com/image.png',
                     favicon: 'https://example.com/favicon.ico',
@@ -489,7 +489,7 @@ describe('RecommendationController', function () {
                         user: {}
                     }),
                     {
-                        message: 'order.0.field must be one of title, reason, excerpt, one_click_subscribe, created_at, updated_at, count.clicks, count.subscribers'
+                        message: 'order.0.field must be one of title, description, excerpt, one_click_subscribe, created_at, updated_at, count.clicks, count.subscribers'
                     }
                 );
             });
@@ -515,7 +515,7 @@ describe('RecommendationController', function () {
             let rec = {
                 id: '1',
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: new URL('https://example.com/image.png'),
                 favicon: new URL('https://example.com/favicon.ico'),

@@ -11,10 +11,11 @@ test.describe('Membership Settings', () => {
             // Open Portal settings
             await page.goto('/ghost');
             await page.locator('.gh-nav a[href="#/settings/"]').click();
-            await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
-            await page.locator('[data-test-toggle="portal-settings"]').click();
+            await page.getByTestId('portal').getByRole('button', {name: 'Customize'}).click();
+
+            const modal = page.getByTestId('portal-modal');
             // Check free tier toggle is visible
-            await expect(page.locator('label').filter({hasText: 'Free'}).first()).toBeVisible();
+            await expect(modal.locator('label').filter({hasText: 'Free'}).first()).toBeVisible();
 
             // Reconnect Stripe for other tests
             const stripeToken = await generateStripeIntegrationToken();
