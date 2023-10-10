@@ -374,6 +374,11 @@ export default class AdminXSettings extends Component {
         }
 
         run(() => this.store.unloadAll(type));
+
+        if (dataType === 'TiersResponseType') {
+            // membersUtils has local state which needs to be updated
+            this.membersUtils.reload();
+        }
     };
 
     onDelete = (dataType, id) => {
