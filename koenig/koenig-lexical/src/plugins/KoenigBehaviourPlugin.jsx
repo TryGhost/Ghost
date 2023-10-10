@@ -26,6 +26,7 @@ import {
     COMMAND_PRIORITY_LOW,
     CUT_COMMAND,
     DELETE_LINE_COMMAND,
+    FORMAT_TEXT_COMMAND,
     INSERT_PARAGRAPH_COMMAND,
     KEY_ARROW_DOWN_COMMAND,
     KEY_ARROW_LEFT_COMMAND,
@@ -846,25 +847,33 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         }
                     }
 
+                    // Ctrl/Cmd+H to toggle heading
+                    // Ctrl+Option+H to toggle highlight
                     if ((metaKey || ctrlKey) && code === 'KeyH') {
                         // avoid hide behaviour
                         event.preventDefault();
 
-                        const selection = $getSelection();
-                        if ($isRangeSelection(selection)) {
-                            const firstNode = selection.anchor.getNode().getTopLevelElement();
+                        // highlight
+                        if (ctrlKey && altKey) {
+                            editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'highlight');
+                        // heading
+                        } else {
+                            const selection = $getSelection();
+                            if ($isRangeSelection(selection)) {
+                                const firstNode = selection.anchor.getNode().getTopLevelElement();
 
-                            if ($isParagraphNode(firstNode)) {
-                                $setBlocksType(selection, () => $createHeadingNode('h2'));
-                            } else if ($isHeadingNode(firstNode)) {
-                                const tag = firstNode.getTag();
-                                const level = parseInt(tag.slice(1), 10);
-                                const newLevel = level + 1;
+                                if ($isParagraphNode(firstNode)) {
+                                    $setBlocksType(selection, () => $createHeadingNode('h2'));
+                                } else if ($isHeadingNode(firstNode)) {
+                                    const tag = firstNode.getTag();
+                                    const level = parseInt(tag.slice(1), 10);
+                                    const newLevel = level + 1;
 
-                                if (newLevel > 6) {
-                                    $setBlocksType(selection, () => $createParagraphNode());
-                                } else {
-                                    $setBlocksType(selection, () => $createHeadingNode(`h${newLevel}`));
+                                    if (newLevel > 6) {
+                                        $setBlocksType(selection, () => $createParagraphNode());
+                                    } else {
+                                        $setBlocksType(selection, () => $createHeadingNode(`h${newLevel}`));
+                                    }
                                 }
                             }
                         }
