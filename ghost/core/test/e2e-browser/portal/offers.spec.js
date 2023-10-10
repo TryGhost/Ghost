@@ -137,7 +137,7 @@ test.describe('Portal', () => {
             await page.locator('.gh-nav a[href="#/members/"]').click();
 
             // 1 member, should be Testy, on Portal Tier
-            await expect(page.getByRole('link', {name: 'Testy McTesterson example.com'}), 'Should have 1 paid member').toBeVisible();
+            await expect(page.getByRole('link', {name: 'Testy McTesterson testy@example.com'}), 'Should have 1 paid member').toBeVisible();
             await expect(page.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
         });
 
