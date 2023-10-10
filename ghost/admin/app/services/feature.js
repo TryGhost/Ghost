@@ -72,7 +72,6 @@ export default class FeatureService extends Service {
     @feature('signupCard') signupCard;
     @feature('signupForm') signupForm;
     @feature('collections') collections;
-    @feature('adminXSettings') adminXSettings;
     @feature('mailEvents') mailEvents;
     @feature('collectionsCard') collectionsCard;
     @feature('importMemberTier') importMemberTier;
