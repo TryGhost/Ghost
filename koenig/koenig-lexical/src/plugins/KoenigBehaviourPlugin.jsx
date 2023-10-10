@@ -1214,8 +1214,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     if (linkMatch) {
                         // avoid any conversion if we're pasting onto a card shortcut
-                        const node = $getSelection().anchor.getNode();
-                        if (node.getTextContent().startsWith('/')) {
+                        const node = $getSelection()?.anchor.getNode();
+                        if (node && node.getTextContent().startsWith('/')) {
                             return false;
                         }
 
