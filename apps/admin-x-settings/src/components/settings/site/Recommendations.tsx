@@ -21,7 +21,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {data: {meta: recommendationsMeta, recommendations} = {}, isLoading: areRecommendationsLoading, hasNextPage, fetchNextPage} = useBrowseRecommendations({
         searchParams: {
             include: 'count.clicks,count.subscribers',
-            order: 'count.subscribers desc, count.clicks desc, created_at desc',
+            order: 'created_at desc',
             limit: '5'
         },
 
