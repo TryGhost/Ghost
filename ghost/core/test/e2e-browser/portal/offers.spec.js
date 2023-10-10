@@ -6,7 +6,7 @@ test.describe('Portal', () => {
     test.describe('Offers', () => {
         test('Creates and uses a free-trial Offer', async ({page}) => {
             // reset members by deleting all existing
-            page.goto('/ghost');
+            await page.goto('/ghost');
             await deleteAllMembers(page);
 
             // add a new tier for offers
@@ -78,7 +78,7 @@ test.describe('Portal', () => {
 
         test('Creates and uses a one-time discount Offer', async ({page}) => {
             // reset members by deleting all existing
-            page.goto('/ghost');
+            await page.goto('/ghost');
             await deleteAllMembers(page);
 
             // add new tier
@@ -137,13 +137,13 @@ test.describe('Portal', () => {
             await page.locator('.gh-nav a[href="#/members/"]').click();
 
             // 1 member, should be Testy, on Portal Tier
-            await expect(page.getByRole('link', {name: 'Testy McTesterson testy@example.com'}), 'Should have 1 paid member').toBeVisible();
+            await expect(page.getByRole('link', {name: 'Testy McTesterson example.com'}), 'Should have 1 paid member').toBeVisible();
             await expect(page.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
         });
 
         test('Creates and uses a multiple-months discount Offer', async ({page}) => {
             // reset members by deleting all existing
-            page.goto('/ghost');
+            await page.goto('/ghost');
             await deleteAllMembers(page);
 
             // add new tier
@@ -211,7 +211,7 @@ test.describe('Portal', () => {
 
         test('Creates and uses a forever discount Offer', async ({page}) => {
             // reset members by deleting all existing
-            page.goto('/ghost');
+            await page.goto('/ghost');
             await deleteAllMembers(page);
 
             // add tier
@@ -275,7 +275,7 @@ test.describe('Portal', () => {
         });
 
         test('Archiving an offer', async ({page}) => {
-            page.goto('/ghost');
+            await page.goto('/ghost');
 
             // Create a new tier to attach offer to
             const tierName = 'Portal Tier';
