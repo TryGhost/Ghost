@@ -12,7 +12,6 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
     const {updateRoute} = useRouting();
     const globalData = useGlobalData();
     let config = globalData.config;
-    // let upgradeStatus = false;
     
     function linkToGitHubReleases():string {
         if (config.version.includes('-pre.')) {
@@ -83,14 +82,6 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
         >
             <div className='flex flex-col gap-4 pb-7 text-sm'>
                 <GhostLogo className="h-auto w-[120px] dark:invert"/>
-                {/* {
-                    upgradeStatus && (
-                        <section>
-                            <strong>Update available!</strong>
-                            <div>Some message</div>
-                        </section>
-                    )
-                } */}
                 <div className='mt-3 flex flex-col gap-1.5'>
                     {
                         linkToGitHubReleases() && (
