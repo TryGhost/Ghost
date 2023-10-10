@@ -71,12 +71,11 @@
                         aria-label="Alt text for feature image"
                     >
                 {{else}}
-                    <KoenigBasicHtmlInput
-                        @html={{@caption}}
-                        @placeholder={{if this.captionInputFocused "" "Add a caption to the feature image"}}
-                        @class="gh-editor-feature-image-caption {{if (and @isHidden (not this.captionInputFocused)) "faded"}}"
-                        @name="caption"
-                        @onChange={{@updateCaption}}
+                    <KoenigLexicalEditorInput
+                        class="gh-editor-feature-image-caption {{if (and @isHidden (not this.captionInputFocused)) "faded"}}"
+                        @html={{this.caption}}
+                        @onChangeHtml={{this.setCaption}}
+                        @placeholderText={{if this.captionInputFocused "" "Add a caption to the feature image"}}
                         @onFocus={{fn (mut this.captionInputFocused) true}}
                         @onBlur={{fn (mut this.captionInputFocused) false}}
                     />

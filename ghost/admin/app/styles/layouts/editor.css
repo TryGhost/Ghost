@@ -641,6 +641,13 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     opacity: 1 !important;
 }
 
+.gh-editor-feature-image-caption :is(.koenig-lexical *) {
+    font-size: inherit !important;
+    font-family: inherit !important;
+    line-height: inherit !important;
+    letter-spacing: inherit !important;
+}
+
 .gh-editor-feature-image-caption p {
     margin: 0;
 }

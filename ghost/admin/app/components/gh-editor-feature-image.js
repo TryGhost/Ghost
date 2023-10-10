@@ -1,7 +1,15 @@
 import Component from '@glimmer/component';
+import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
+
+function hasParagraphWrapper(html) {
+    const domParser = new DOMParser();
+    const doc = domParser.parseFromString(html, 'text/html');
+
+    return doc.body?.firstElementChild?.tagName === 'P';
+}
 
 export default class GhEditorFeatureImageComponent extends Component {
     @service settings;
@@ -14,6 +22,21 @@ export default class GhEditorFeatureImageComponent extends Component {
 
     get hideButton() {
         return !this.canDrop && !this.isHovered && !this.args.forceButtonDisplay;
+    }
+
+    get caption() {
+        const content = this.args.caption;
+        if (!content) {
+            return null;
+        }
+        // wrap in a paragraph, so it gets parsed correctly
+        return hasParagraphWrapper(content) ? content : `<p>${content}</p>`;
+    }
+
+    @action
+    setCaption(html) {
+        const cleanedHtml = cleanBasicHtml(html || '', {firstChildInnerContent: true});
+        this.args.updateCaption(cleanedHtml);
     }
 
     @action
