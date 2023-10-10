@@ -280,7 +280,7 @@ test.describe('Admin', () => {
         });
 
         test('A member can be granted a comp in admin', async ({page}) => {
-            page.goto('/ghost');
+            await page.goto('/ghost');
             await deleteAllMembers(page);
 
             // create a new member with a comped plan
