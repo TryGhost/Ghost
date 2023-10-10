@@ -4,10 +4,11 @@ import MainContent from './MainContent';
 import NiceModal from '@ebay/nice-modal-react';
 import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
 import clsx from 'clsx';
+import queryClient from './utils/api/queryClient';
 import {DefaultHeaderTypes} from './utils/unsplash/UnsplashTypes';
 import {FetchKoenigLexical, OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {QueryClientProvider} from '@tanstack/react-query';
 import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
 import {Toaster} from 'react-hot-toast';
 import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
@@ -25,18 +26,6 @@ interface AppProps {
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
 }
-
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            refetchOnWindowFocus: false,
-            staleTime: 5 * (60 * 1000), // 5 mins
-            cacheTime: 10 * (60 * 1000), // 10 mins
-            // We have custom retry logic for specific errors in fetchApi()
-            retry: false
-        }
-    }
-});
 
 function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, fetchKoenigLexical, sentryDSN, onUpdate, onInvalidate, onDelete}: AppProps) {
     const appClassName = clsx(

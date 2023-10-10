@@ -57,6 +57,10 @@ Router.map(function () {
         this.route('settings-x', {path: '/*sub'});
     });
 
+    this.route('offers-x', function () {
+        this.route('offers-x', {path: '/*sub'});
+    });
+
     // testing websockets
     this.route('websockets');
 
