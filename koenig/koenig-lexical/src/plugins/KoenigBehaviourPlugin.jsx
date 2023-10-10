@@ -51,7 +51,7 @@ import {
     getTopLevelNativeElement
 } from '../utils/';
 import {$isKoenigCard, ImageNode} from '@tryghost/kg-default-nodes';
-import {$isListItemNode, $isListNode, INSERT_UNORDERED_LIST_COMMAND, ListNode} from '@lexical/list';
+import {$isListItemNode, $isListNode, INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, ListNode} from '@lexical/list';
 import {$setBlocksType} from '@lexical/selection';
 import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin.jsx';
 import {mergeRegister} from '@lexical/utils';
@@ -905,7 +905,11 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                     pNode.setIndent(0);
                                 });
                             } else {
-                                editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
+                                if (altKey) {
+                                    editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
+                                } else {
+                                    editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
+                                }
                             }
                         }
                     }

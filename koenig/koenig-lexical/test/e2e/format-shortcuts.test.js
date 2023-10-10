@@ -251,7 +251,7 @@ test.describe('Editor keyboard shortcuts', async () => {
         `);
     });
 
-    test('list', async function () {
+    test('unordered list', async function () {
         await focusEditor(page);
 
         await page.keyboard.type('test');
@@ -261,6 +261,25 @@ test.describe('Editor keyboard shortcuts', async () => {
             <ul>
                 <li value="1" dir="ltr"><span data-lexical-text="true">test</span></li>
             </ul>
+        `);
+
+        await page.keyboard.press('Control+l');
+
+        await assertHTML(page, html`
+            <p dir="ltr"><span data-lexical-text="true">test</span></p>
+        `);
+    });
+
+    test('ordered list', async function () {
+        await focusEditor(page);
+
+        await page.keyboard.type('test');
+        await page.keyboard.press('Control+Alt+l');
+
+        await assertHTML(page, html`
+            <ol>
+                <li value="1" dir="ltr"><span data-lexical-text="true">test</span></li>
+            </ol>
         `);
 
         await page.keyboard.press('Control+l');
