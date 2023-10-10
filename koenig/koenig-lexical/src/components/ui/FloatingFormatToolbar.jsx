@@ -33,7 +33,7 @@ export function FloatingFormatToolbar({
     // toolbar opacity is 0 by default
     // shouldn't display until selection via mouse is complete to avoid toolbar re-positioning while dragging
     const toggleVisibility = React.useCallback(() => {
-        if (toolbarItemType && toolbarRef.current.style.opacity === '0') {
+        if (toolbarItemType && toolbarRef.current?.style.opacity === '0') {
             toolbarRef.current.style.opacity = '1';
             updateArrowStyles();
         }
