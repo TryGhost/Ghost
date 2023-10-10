@@ -854,7 +854,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         event.preventDefault();
 
                         // highlight
-                        if (ctrlKey && altKey) {
+                        if (altKey) {
                             editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'highlight');
                         // heading
                         } else {
