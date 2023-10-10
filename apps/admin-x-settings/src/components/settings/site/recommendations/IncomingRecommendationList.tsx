@@ -70,7 +70,7 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
             <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
                 {signups === 0 ? <span className="text-grey-500">-</span> : (<div className='-mt-px flex grow items-end gap-1'><span>{signups}</span><span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{freeMembersLabel}</span></div>)}
             </TableCell>
-            {incomingRecommendation.recommending_back && <TableCell className='group-hover/table-row:visible md:invisible'><div className='text-right text-sm leading-[1.8] text-grey-700'>Recommending back</div></TableCell>}
+            {incomingRecommendation.recommending_back && <TableCell className='group-hover/table-row:visible md:invisible'><div className='mt-1 whitespace-nowrap text-right text-sm leading-[1.8] text-grey-700'>Recommending back</div></TableCell>}
         </TableRow>
     );
 };

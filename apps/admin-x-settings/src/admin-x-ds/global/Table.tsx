@@ -43,7 +43,7 @@ const OptionalShowMore = ({showMore}: {showMore?: ShowMoreData}) => {
     }
 
     return (
-        <div className={`mt-1 flex items-center gap-2 text-xs text-green`}>
+        <div className={`mt-2 flex items-center gap-2 text-sm font-bold text-green hover:text-green-400`}>
             <button type='button' onClick={showMore.loadMore}>Show all</button>
         </div>
     );
@@ -131,9 +131,9 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
                 <div className="-mt-px">
                     {(hintSeparator || pagination) && <Separator />}
                     <div className="flex flex-col-reverse items-start justify-between gap-1 pt-2 md:flex-row md:items-center md:gap-0 md:pt-0">
+                        <OptionalShowMore showMore={showMore} />
                         <Hint>{hint ?? ' '}</Hint>
                         <OptionalPagination pagination={pagination} />
-                        <OptionalShowMore showMore={showMore} />
                     </div>
                 </div>}
             </div>
