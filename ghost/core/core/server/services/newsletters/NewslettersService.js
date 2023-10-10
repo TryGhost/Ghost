@@ -199,7 +199,7 @@ class NewslettersService {
         }
 
         let updatedNewsletter;
-        
+
         try {
             updatedNewsletter = await this.NewsletterModel.edit(cleanedAttrs, options);
         } catch (error) {
@@ -215,7 +215,7 @@ class NewslettersService {
 
         // Load relations correctly in the response
         updatedNewsletter = await this.NewsletterModel.findOne({id: updatedNewsletter.id}, {...options, require: true});
-        
+
         await this.respondWithEmailVerification(updatedNewsletter, emailsToVerify);
         return updatedNewsletter;
     }
