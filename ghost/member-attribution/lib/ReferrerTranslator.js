@@ -78,7 +78,7 @@ class ReferrerTranslator {
             // If referrer is from query params
             if (referrerSource) {
                 const urlData = referrerUrl ? this.getDataFromUrl(referrerUrl) : null;
-                const knownSource = Object.values(knownReferrers).find(item => item.source.toLowerCase() === referrerSource.toLowerCase());
+                const knownSource = Object.values(knownReferrers).find(referrer => referrer.source.toLowerCase() === referrerSource.toLowerCase());
                 return {
                     referrerSource: knownSource?.source || referrerSource,
                     referrerMedium: knownSource?.medium || referrerMedium || urlData?.medium || null,
