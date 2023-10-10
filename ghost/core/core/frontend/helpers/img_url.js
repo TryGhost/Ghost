@@ -54,7 +54,7 @@ module.exports = function imgUrl(requestedImageUrl, options) {
                 // ignore errors and just return the original URL
             }
         }
-        
+
         return requestedImageUrl;
     }
 
@@ -117,7 +117,7 @@ function getUnsplashImage(imagePath, sizeOptions) {
     const parsedUrl = new URL(imagePath);
     const {requestedSize, imageSizes, requestedFormat} = sizeOptions;
 
-    if (requestedFormat) {        
+    if (requestedFormat) {
         const supportedFormats = ['avif', 'gif', 'jpg', 'png', 'webp'];
         if (supportedFormats.includes(requestedFormat)) {
             parsedUrl.searchParams.set('fm', requestedFormat);
@@ -150,13 +150,13 @@ function getUnsplashImage(imagePath, sizeOptions) {
 }
 
 /**
- * 
- * @param {string} imagePath 
- * @param {Object} sizeOptions 
+ *
+ * @param {string} imagePath
+ * @param {Object} sizeOptions
  * @param {string} sizeOptions.requestedSize
  * @param {Object[]} sizeOptions.imageSizes
  * @param {string} [sizeOptions.requestedFormat]
- * @returns 
+ * @returns
  */
 function getImageWithSize(imagePath, sizeOptions) {
     const hasLeadingSlash = imagePath[0] === '/';
