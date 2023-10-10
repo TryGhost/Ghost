@@ -31,7 +31,7 @@ export const EmEnDashPlugin = () => {
                 const genericDashRegExp = /---?./;
                 const node = getSelectedNode(selection);
                 const text = node.getTextContent();
-                if (!node || !$isTextNode(node) || !text.match(genericDashRegExp)) {
+                if (!node || !$isTextNode(node) || !text?.match || !text.match(genericDashRegExp)) {
                     return;
                 }
 
@@ -67,7 +67,7 @@ export const EmEnDashPlugin = () => {
                     selection.focus.offset = index + 3;
                     return;
                 }
-                
+
                 return;
             }, {tag: 'history-merge'}); // this makes it so the transform isn't added to the undo stack - breaks undo without this
         });
