@@ -1,5 +1,6 @@
 import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 import {renderEmptyContainer} from '../../utils/render-empty-container';
+import {resizeImage} from '../../utils/resize-image';
 
 export function renderProductNode(node, options = {}) {
     addCreateDocumentOption(options);
@@ -62,13 +63,26 @@ export function cardTemplate({data}) {
 }
 
 export function emailCardTemplate({data}) {
+    let imageDimensions;
+
+    if (data.productImageWidth && data.productImageHeight) {
+        imageDimensions = {
+            width: data.productImageWidth,
+            height: data.productImageHeight
+        };
+
+        if (data.productImageWidth >= 560) {
+            imageDimensions = resizeImage(imageDimensions, {width: 560});
+        }
+    }
+
     return (
         `
          <table cellspacing="0" cellpadding="0" border="0" style="width:100%; padding:20px; border:1px solid #E9E9E9; border-radius: 5px; margin: 0 0 1.5em; width: 100%;">
             ${data.productImageSrc ? `
                 <tr>
                     <td align="center" style="padding-top:0; padding-bottom:0; margin-bottom:0; padding-bottom:0;">
-                        <img src="${data.productImageSrc}" ${data.productImageWidth ? `width="${data.productImageWidth}"` : ''} ${data.productImageHeight ? `height="${data.productImageHeight}"` : ''} style="width: 100%; height: auto; border: none; padding-bottom: 16px;" border="0"/>
+                        <img src="${data.productImageSrc}" ${imageDimensions ? `width="${imageDimensions.width}"` : ''} ${imageDimensions ? `height="${imageDimensions.height}"` : ''} style="display: block; width: 100%; height: auto; max-width: 100%; border: none; padding-bottom: 16px;" border="0"/>
                     </td>
                 </tr>
             ` : ''}
