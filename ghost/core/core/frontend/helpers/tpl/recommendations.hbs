@@ -4,6 +4,7 @@
         <li class="recommendation">
             <a href="{{rec.url}}" data-recommendation="{{rec.id}}" target="_blank" rel="noopener">
                 <img class="recommendation-favicon" src="{{rec.favicon}}" alt="{{rec.title}}">
+                <span class="recommendation-url">{{readable_url rec.url}}</span>
                 <h5 class="recommendation-title">{{rec.title}}</h5>
                 <p class="recommendation-description">{{rec.description}}</p>
             </a>
