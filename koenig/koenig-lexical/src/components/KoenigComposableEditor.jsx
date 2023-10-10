@@ -33,7 +33,7 @@ const KoenigComposableEditor = ({
     children,
     placeholder,
     singleParagraph,
-    placeholderText = '',
+    placeholderText,
     placeholderClassName = '',
     className = '',
     readOnly = false,
