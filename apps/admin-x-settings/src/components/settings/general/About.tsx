@@ -87,12 +87,12 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
                 <div className='mt-3 flex flex-col gap-1.5'>
                     {
                         upgradeStatus?.message && (
-                            <>
+                            <div className='gh-prose-links mb-4 rounded-sm border border-green p-5'>
                                 <strong>Update available!</strong>
                                 <div>
                                     {upgradeStatus.message}
                                 </div>
-                            </>
+                            </div>
                         )
                     }
                     {
