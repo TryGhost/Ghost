@@ -58,7 +58,7 @@ const MainContent: React.FC = () => {
 
             {/* Sidebar */}
             <div className="sticky top-[-47px] z-30 min-w-[260px] grow-0 md:top-[-52px] tablet:fixed tablet:top-[8vmin] tablet:basis-[260px]">
-                <div className='-mx-6 h-[84px] bg-white px-6 tablet:m-0 tablet:bg-transparent tablet:p-0'>
+                <div className='-mx-6 h-[84px] bg-white px-6 dark:bg-black tablet:m-0 tablet:bg-transparent tablet:p-0'>
                     <Heading>Settings</Heading>
                 </div>
                 <div className="relative mt-[-32px] w-full overflow-x-hidden bg-white dark:bg-black">
