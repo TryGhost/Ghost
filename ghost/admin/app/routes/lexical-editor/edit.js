@@ -27,7 +27,8 @@ export default class EditRoute extends AuthenticatedRoute {
 
         let query = {
             // eslint-disable-next-line camelcase
-            id: post_id
+            id: post_id,
+            include: 'tags,authors,authors.roles,email,tiers,newsletter,count.clicks,post_revisions,post_revisions.author'
         };
 
         const records = await this.store.query(modelName, query);
