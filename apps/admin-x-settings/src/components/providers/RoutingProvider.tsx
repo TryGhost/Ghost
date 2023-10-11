@@ -61,7 +61,8 @@ const modalPaths: {[key: string]: ModalName} = {
     'recommendations/add': 'AddRecommendationModal',
     'recommendations/edit': 'EditRecommendationModal',
     'announcement-bar/edit': 'AnnouncementBarModal',
-    'embed-signup-form/show': 'EmbedSignupFormModal'
+    'embed-signup-form/show': 'EmbedSignupFormModal',
+    about: 'AboutModal'
 };
 
 function getHashPath(urlPath: string | undefined) {
