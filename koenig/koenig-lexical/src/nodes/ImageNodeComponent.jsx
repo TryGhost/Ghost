@@ -246,7 +246,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                         onClick={() => handleImageCardResize('full')}
                     />
                     <ToolbarMenuSeparator hide={isGif(src)} />
-                    <ToolbarMenuItem icon="link" isActive={href === true || false} label="Link" onClick = {() => {
+                    <ToolbarMenuItem icon="link" isActive={href || false} label="Link" onClick = {() => {
                         setShowLink(true);
                     }} />
                     <ToolbarMenuItem
