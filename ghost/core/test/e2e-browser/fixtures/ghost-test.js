@@ -8,9 +8,11 @@ const {allowStripe, mockMail} = require('../../utils/e2e-framework-mock-manager'
 const MailgunClient = require('@tryghost/mailgun-client');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
+const Stripe = require('stripe').Stripe;
+const configUtils = require('../../utils/configUtils');
 
 const startWebhookServer = (port) => {
-    const command = `stripe listen --forward-to http://127.0.0.1:${port}/members/webhooks/stripe/`;
+    const command = `stripe listen --forward-connect-to http://127.0.0.1:${port}/members/webhooks/stripe/`;
     return spawn(command.split(' ')[0], command.split(' ').slice(1));
 };
 
@@ -20,14 +22,43 @@ const getWebhookSecret = async () => {
     return webhookSecret.toString().trim();
 };
 
-const generateStripeIntegrationToken = async () => {
+const getStripeAccountId = async (workerIndex) => {
+    let accountId;
+    const accountEmail = `test${workerIndex}@example.com`;
+
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    const stripe = new Stripe(secretKey, {
+        apiVersion: '2020-08-27'
+    });
+    const accounts = await stripe.accounts.list();
+    if (accounts.data.length > 0) {
+        const account = accounts.data.find(acc => acc.email === accountEmail);
+        if (account) {
+            await stripe.accounts.del(account.id);
+        }
+    }
+    if (!accountId) {
+        const account = await stripe.accounts.create({
+            type: 'standard',
+            email: accountEmail,
+            business_type: 'company',
+            company: {
+                name: `Test Company ${workerIndex}`
+            }
+        });
+        accountId = account.id;
+    }
+
+    return accountId;
+};
+
+const generateStripeIntegrationToken = async (accountId) => {
     if (!('STRIPE_PUBLISHABLE_KEY' in process.env) || !('STRIPE_SECRET_KEY' in process.env)) {
         throw new Error('Missing STRIPE_PUBLISHABLE_KEY or STRIPE_SECRET_KEY environment variables');
     }
 
     const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
     const secretKey = process.env.STRIPE_SECRET_KEY;
-    const accountId = process.env.STRIPE_ACCOUNT_ID ?? JSON.parse((await promisify(exec)('stripe get account')).stdout).id;
 
     return Buffer.from(JSON.stringify({
         a: secretKey,
@@ -39,7 +70,6 @@ const generateStripeIntegrationToken = async () => {
 
 // Global promises for webhook secret / Stripe integration token
 const webhookSecretPromise = getWebhookSecret();
-const stripeIntegrationTokenPromise = generateStripeIntegrationToken();
 
 module.exports = base.test.extend({
     baseURL: async ({port, baseURL}, use) => {
@@ -64,31 +94,35 @@ module.exports = base.test.extend({
         const currentDate = new Date();
         const formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}-${String(currentDate.getHours()).padStart(2, '0')}-${String(currentDate.getMinutes()).padStart(2, '0')}-${String(currentDate.getSeconds()).padStart(2, '0')}`;
         process.env.database__connection__filename = `/tmp/ghost-playwright.${workerInfo.workerIndex}.${formattedDate}.db`;
+        configUtils.set('database:connection:filename', process.env.database__connection__filename);
+        configUtils.set('server:port', port);
+        configUtils.set('url', `http://127.0.0.1:${port}`);
+
+        const stripeAccountId = await getStripeAccountId(workerInfo.workerIndex);
+        const stripeIntegrationToken = await generateStripeIntegrationToken(stripeAccountId);
+
+        const WebhookManager = require('../../../../stripe/lib/WebhookManager');
+        const originalParseWebhook = WebhookManager.prototype.parseWebhook;
         const sandbox = sinon.createSandbox();
-        const originalConfigGet = config.get.bind(config);
-        sandbox.stub(config, 'get').callsFake((key) => {
-            if (key === 'database:connection:filename') {
-                return process.env.database__connection__filename;
+        sandbox.stub(WebhookManager.prototype, 'parseWebhook').callsFake(function (body, signature) {
+            const parsedBody = JSON.parse(body);
+            if (!('account' in parsedBody)) {
+                throw new Error('Webhook without account');
+            } else if (parsedBody.account !== stripeAccountId) {
+                throw new Error('Webhook for wrong account');
+            } else {
+                return originalParseWebhook.call(this, body, signature);
             }
-            if (key === 'database') {
-                return {
-                    client: 'sqlite3',
-                    connection: {
-                        filename: process.env.database__connection__filename
-                    },
-                    useNullAsDefault: true,
-                    debug: false
-                };
-            }
-            if (key === 'server') {
-                return {
-                    port
-                };
-            }
-            if (key === 'url') {
-                return `http://127.0.0.1:${port}`;
-            }
-            return originalConfigGet(key);
+        });
+
+        const StripeAPI = require('../../../../stripe/lib/StripeAPI');
+        const originalStripeConfigure = StripeAPI.prototype.configure;
+        sandbox.stub(StripeAPI.prototype, 'configure').callsFake(function (stripeConfig) {
+            originalStripeConfigure.call(this, stripeConfig);
+            this._stripe = new Stripe(stripeConfig.secretKey, {
+                apiVersion: '2020-08-27',
+                stripeAccount: stripeAccountId
+            });
         });
 
         const stripeServer = startWebhookServer(port);
@@ -124,7 +158,7 @@ module.exports = base.test.extend({
         });
 
         await setupGhost(page);
-        await setupStripe(page, await stripeIntegrationTokenPromise);
+        await setupStripe(page, stripeIntegrationToken);
         await setupMailgun(page);
         await enableLabs(page);
         const state = await page.context().storageState();
@@ -132,15 +166,16 @@ module.exports = base.test.extend({
         await page.close();
 
         // Use the server in the tests.
-        await use({
-            server,
-            state
-        });
-
-        // Cleanup.
-        const {stopGhost} = require('../../utils/e2e-utils');
-        await stopGhost();
-        stripeServer.kill();
-        sandbox.restore();
+        try {
+            await use({
+                server,
+                state
+            });
+        } finally {
+            const {stopGhost} = require('../../utils/e2e-utils');
+            await stopGhost();
+            stripeServer.kill();
+            sandbox.restore();
+        }
     }, {scope: 'worker', auto: true}]
 });
