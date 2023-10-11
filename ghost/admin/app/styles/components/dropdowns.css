@@ -400,5 +400,5 @@ Post context menu
     margin: 5px 0;
     width: 100%;
     height: 1px;
-    background-color: #dfe1e3;
+    background-color: var(--whitegrey-d1);
 }
