@@ -89,9 +89,7 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
                         upgradeStatus?.message && (
                             <div className='gh-prose-links mb-4 rounded-sm border border-green p-5'>
                                 <strong>Update available!</strong>
-                                <div>
-                                    {upgradeStatus.message}
-                                </div>
+                                <div dangerouslySetInnerHTML={{__html: upgradeStatus.message}}/>
                             </div>
                         )
                     }
