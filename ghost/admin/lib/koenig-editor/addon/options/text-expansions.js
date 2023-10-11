@@ -200,41 +200,6 @@ function _matchLink(editor, text) {
     }
 }
 
-function _matchImage(editor, text) {
-    let matches = text.match(/^!\[(.*?)\]\((.*?)\)$/);
-    if (matches) {
-        let {range: {head, head: {section}}} = editor;
-        let src = matches[2].trim();
-        let alt = matches[1].trim();
-
-        // skip if cursor is not at end of section
-        if (!head.isTail()) {
-            return;
-        }
-
-        // mobiledoc lists don't support cards
-        if (section.isListItem) {
-            return;
-        }
-
-        editor.run((postEditor) => {
-            let card = postEditor.builder.createCardSection('image', {src, alt});
-            // need to check the section before replacing else it will always
-            // add a trailing paragraph
-            let needsTrailingParagraph = !section.next;
-
-            editor.range.extend(-(matches[0].length));
-            postEditor.replaceSection(editor.range.headSection, card);
-
-            if (needsTrailingParagraph) {
-                let newSection = editor.builder.createMarkupSection('p');
-                postEditor.insertSectionAtEnd(newSection);
-                postEditor.setRange(newSection.tailPosition());
-            }
-        });
-    }
-}
-
 function registerDashTextExpansions(mobiledocEditor) {
     // --\s = en dash –
     // ---. = em dash —
@@ -310,7 +275,6 @@ function registerInlineMarkdownTextExpansions(mobiledocEditor) {
                 break;
             case ')':
                 _matchLink(editor, text);
-                _matchImage(editor, text);
                 break;
             case '~':
                 _matchSub(editor, text);

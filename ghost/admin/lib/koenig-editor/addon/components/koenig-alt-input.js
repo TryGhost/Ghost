@@ -9,8 +9,6 @@ import {inject as service} from '@ember/service';
 @tagName('figcaption')
 @classNameBindings('figCaptionClass')
 export default class KoenigAltInput extends Component {
-    @service koenigUi;
-
     alt = '';
     placeholder = '';
 
@@ -27,11 +25,6 @@ export default class KoenigAltInput extends Component {
     didInsertElement() {
         super.didInsertElement(...arguments);
         this.element.querySelector('input').focus();
-    }
-
-    willDestroyElement() {
-        super.willDestroyElement(...arguments);
-        this.koenigUi.captionLostFocus(this);
     }
 
     @action

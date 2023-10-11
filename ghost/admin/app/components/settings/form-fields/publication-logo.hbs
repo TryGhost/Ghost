@@ -24,13 +24,11 @@
                             {{on "click" uploader.triggerFileDialog}}
                             data-test-logo-img
                         >
-                        {{#if (feature 'lexicalEditor')}}
                         <KoenigImageEditor
                             @className="gh-setting-action-smallimg-delete gh-setting-action-smallimg-edit"
                             @imageSrc={{this.settings.logo}}
                             @saveImage={{fn this.saveImage uploader.setFiles}}
                         />
-                        {{/if}}
                         <button type="button" class="gh-setting-action-smallimg-delete" {{on "click" (fn this.update null)}} data-test-delete-image="logo">
                             {{svg-jar "trash" class="w4 h4"}}
                         </button>
