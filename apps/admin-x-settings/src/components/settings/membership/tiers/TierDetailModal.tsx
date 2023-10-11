@@ -53,7 +53,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             ...(tier || {}),
             trial_days: tier?.trial_days?.toString() || '',
             currency: tier?.currency || currencies[0].isoCode,
-            visibility: tier?.visibility || 'none'
+            visibility: tier?.visibility || 'none',
+            welcome_page_url: tier?.welcome_page_url || null
         },
         onSave: async () => {
             const {trial_days: trialDays, currency, ...rest} = formState;
@@ -281,7 +282,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         hint='Redirect to this URL after signup for premium membership'
                         placeholder={siteData?.url}
                         title='Welcome page'
-                        value={formState.welcome_page_url || ''}
+                        value={formState.welcome_page_url || null}
+                        nullable
                         transformPathWithoutSlash
                         onChange={value => updateForm(state => ({...state, welcome_page_url: value || null}))}
                     />
