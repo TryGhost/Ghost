@@ -817,22 +817,34 @@ export default class LexicalEditorController extends Controller {
         this.syncMobiledocSnippets();
     }
 
+    sleep(ms) {
+        return new Promise((r) => {
+            setTimeout(r, ms);
+        });
+    }
+
     @action
     async syncMobiledocSnippets() {
         const snippets = this.store.peekAll('snippet');
 
         // very early in the beta we had a bug where lexical snippets were saved with double-encoded JSON
         // we fix that here by re-saving any snippets that are still in that state
-        const snippetFixSaves = [];
-        snippets.forEach((snippet) => {
+        for (let i = 0; i < snippets.length; i++) {
+            const snippet = snippets.objectAt(i);
             if (typeof snippet.lexical === 'string') {
                 try {
                     snippet.lexical = JSON.parse(snippet.lexical);
                     snippet.mobiledoc = {};
-                    snippetFixSaves.push(snippet.save());
+                    await snippet.save();
+                    // Temp fix: Timeout for 100 ms between requests to avoid hitting rate limit (50req/s)
+                    // refs https://github.com/TryGhost/Product/issues/4022
+                    await this.sleep(100);
                 } catch (e) {
                     snippet.lexical = null;
-                    snippetFixSaves.push(snippet.save());
+                    await snippet.save();
+                    // Temp fix: Timeout for 100 ms between requests to avoid hitting rate limit (50req/s)
+                    // refs https://github.com/TryGhost/Product/issues/4022
+                    await this.sleep(100);
 
                     console.error(e); // eslint-disable-line no-console
 
@@ -845,10 +857,10 @@ export default class LexicalEditorController extends Controller {
                     }
                 }
             }
-        });
-        await Promise.all(snippetFixSaves);
+        }
 
-        snippets.forEach((snippet) => {
+        for (let i = 0; i < snippets.length; i++) {
+            const snippet = snippets.objectAt(i);
             if (!snippet.lexical || snippet.lexical.syncedAt && moment.utc(snippet.lexical.syncedAt).isBefore(snippet.updatedAtUTC)) {
                 const serializedLexical = mobiledocToLexical(JSON.stringify(snippet.mobiledoc));
 
@@ -875,8 +887,12 @@ export default class LexicalEditorController extends Controller {
 
                 // kick off a background save, we already have .lexical updated which is what we need
                 snippet.save();
+
+                // Temp fix: Timeout for 100 ms between requests to avoid hitting rate limit (50req/s)
+                // refs https://github.com/TryGhost/Product/issues/4022
+                await this.sleep(100);
             }
-        });
+        }
     }
 
     /* Public methods --------------------------------------------------------*/
