@@ -27,6 +27,7 @@ export default class PostSerializer extends ApplicationSerializer.extend(Embedde
         delete json.email_recipient_filter;
         delete json.email;
         delete json.newsletter;
+        delete json.post_revisions;
         // Deprecated property (replaced with data.authors)
         delete json.author;
         // Page-only properties
