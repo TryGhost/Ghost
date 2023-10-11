@@ -10,6 +10,7 @@ import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
 import {Toaster} from 'react-hot-toast';
+import {UpgradeStatusType} from './utils/globalTypes';
 import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
 
 interface AppProps {
@@ -24,6 +25,7 @@ interface AppProps {
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
+    upgradeStatus?: UpgradeStatusType;
 }
 
 const queryClient = new QueryClient({
@@ -38,7 +40,7 @@ const queryClient = new QueryClient({
     }
 });
 
-function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, fetchKoenigLexical, sentryDSN, onUpdate, onInvalidate, onDelete}: AppProps) {
+function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, fetchKoenigLexical, sentryDSN, onUpdate, onInvalidate, onDelete, upgradeStatus}: AppProps) {
     const appClassName = clsx(
         'admin-x-settings admin-x-base h-[100vh] w-full overflow-y-auto overflow-x-hidden',
         darkMode && 'dark'
@@ -47,7 +49,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
     return (
         <SentryErrorBoundary>
             <QueryClientProvider client={queryClient}>
-                <ServicesProvider fetchKoenigLexical={fetchKoenigLexical} ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} unsplashConfig={unsplashConfig} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
+                <ServicesProvider fetchKoenigLexical={fetchKoenigLexical} ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} unsplashConfig={unsplashConfig} upgradeStatus={upgradeStatus} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
                     <GlobalDataProvider>
                         <RoutingProvider externalNavigate={externalNavigate}>
                             <GlobalDirtyStateProvider>

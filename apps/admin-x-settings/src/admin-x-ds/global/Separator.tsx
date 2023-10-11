@@ -6,7 +6,7 @@ interface SeparatorProps {
 
 const Separator: React.FC<SeparatorProps> = ({className}) => {
     if (!className) {
-        className = 'border-grey-200 dark:border-grey-600';
+        className = 'border-grey-200 dark:border-grey-800';
     }
     return <hr className={className} />;
 };

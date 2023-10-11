@@ -15,10 +15,14 @@ export type Config = {
         url: string,
         version: string
     }
+    enableDeveloperExperiments: boolean;
+    database: string;
     blogUrl: string;
     labs: Record<string, boolean>;
     stripeDirect: boolean;
+    mail: string;
     hostSettings?: {
+        siteId?: string;
         limits?: {
             // Partially typed, see https://github.com/TryGhost/SDK/tree/main/packages/limit-service
             customIntegrations?: {
