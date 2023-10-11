@@ -71,17 +71,17 @@ describe('{{#recommendations}} helper', function () {
         <ul class="recommendations">
             <li class="recommendation">
                 <a href="https://recommendations1.com" data-recommendation="1" target="_blank" rel="noopener">
-                    <img class="recommendation-favicon" src="https://recommendations1.com/favicon.ico" alt="Recommendation 1">
-                    <span class="recommendation-url">recommendations1.com</span>
+                    <img class="recommendation-favicon" src="https://recommendations1.com/favicon.ico" alt="Recommendation 1" loading="lazy">
                     <h5 class="recommendation-title">Recommendation 1</h5>
+                    <span class="recommendation-url">recommendations1.com</span>
                     <p class="recommendation-description">Description 1</p>
                 </a>
             </li>
             <li class="recommendation">
                 <a href="https://recommendations2.com" data-recommendation="2" target="_blank" rel="noopener">
-                    <img class="recommendation-favicon" src="https://recommendations2.com/favicon.ico" alt="Recommendation 2">
-                    <span class="recommendation-url">recommendations2.com</span>
+                    <img class="recommendation-favicon" src="https://recommendations2.com/favicon.ico" alt="Recommendation 2" loading="lazy">
                     <h5 class="recommendation-title">Recommendation 2</h5>
+                    <span class="recommendation-url">recommendations2.com</span>
                     <p class="recommendation-description">Description 2</p>
                 </a>
             </li>
