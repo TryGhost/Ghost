@@ -4286,10 +4286,10 @@
     nan "^2.17.0"
     semver "^7.5.2"
 
-"@newrelic/security-agent@0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@newrelic/security-agent/-/security-agent-0.2.1.tgz#4f1c97486fa16ec1d1e804f841c9eebf7a790e72"
-  integrity sha512-oFPnBO+BlJap/qC3r80NuiHmedXdjpWnVnzAlNjsSZoAT7qJM/29tip6ZX/Qmp17mZAIiOVJ2MkyQ5OXHXPdLw==
+"@newrelic/security-agent@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@newrelic/security-agent/-/security-agent-0.3.0.tgz#95c171b80779c48a2deec8e158e9b3e8eae275fa"
+  integrity sha512-HdaznRDgUNmTvemuFoFzmv25BI/CMjjFWptMhC5E5PV1HiYJzGnFN0acMKabvqOu+3H0QuDFoKehxqA/4w/xsg==
   dependencies:
     "@aws-sdk/client-lambda" "^3.363.0"
     axios "0.21.4"
@@ -23928,16 +23928,16 @@ neo-async@^2.5.0, neo-async@^2.6.1, neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-newrelic@11.1.0:
-  version "11.1.0"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-11.1.0.tgz#e6a4b49459c8f1e917facab61838ddf7f7ffff8a"
-  integrity sha512-TMpUUuVOTjVQs9cp6DsSocf9pQYyQ2QHp3cFYOUZyxfJewjvb4J9TG6uZZP9xN+0olDt2oef/d6eZNTAFM3tsw==
+newrelic@11.2.0:
+  version "11.2.0"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-11.2.0.tgz#eded32c7b7d97cae36e45396e8926a201e441793"
+  integrity sha512-gkt6c5nphsKTRBmKd0H12xELwnhdV9Xph5CL8IXT7nj0C1gL/xxfuTrwj6g+JqDvVz983iNNfdfXBEhIUJC4nQ==
   dependencies:
     "@grpc/grpc-js" "^1.8.10"
     "@grpc/proto-loader" "^0.7.5"
     "@newrelic/aws-sdk" "^7.0.0"
     "@newrelic/koa" "^8.0.0"
-    "@newrelic/security-agent" "0.2.1"
+    "@newrelic/security-agent" "0.3.0"
     "@newrelic/superagent" "^7.0.0"
     "@tyriar/fibonacci-heap" "^2.0.7"
     concat-stream "^2.0.0"
@@ -23945,6 +23945,7 @@ newrelic@11.1.0:
     import-in-the-middle "^1.4.2"
     json-bigint "^1.0.0"
     json-stringify-safe "^5.0.0"
+    module-details-from-path "^1.0.3"
     readable-stream "^3.6.1"
     require-in-the-middle "^7.2.0"
     semver "^7.5.2"
