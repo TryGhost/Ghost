@@ -1220,6 +1220,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         }
 
                         // we're pasting a URL, convert it to an embed/bookmark/link
+                        clipboardEvent.preventDefault();
                         editor.dispatchCommand(PASTE_LINK_COMMAND, {linkMatch});
 
                         return true;
