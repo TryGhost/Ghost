@@ -43,8 +43,7 @@ const matchPostShallowIncludes = {
     tiers: anyArray,
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
-    published_at: anyISODateTime,
-    post_revisions: anyArray
+    published_at: anyISODateTime
 };
 
 async function trackDb(fn, skip) {

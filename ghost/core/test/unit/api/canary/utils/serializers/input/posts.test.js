@@ -358,7 +358,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
             serializers.input.posts.copy({}, frame);
 
-            frame.options.withRelated.should.eql(['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.clicks', 'post_revisions', 'post_revisions.author']);
+            frame.options.withRelated.should.eql(['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.clicks']);
         });
     });
 });
