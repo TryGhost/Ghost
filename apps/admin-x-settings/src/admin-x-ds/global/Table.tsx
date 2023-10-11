@@ -38,12 +38,14 @@ const OptionalPagination = ({pagination}: {pagination?: PaginationData}) => {
 };
 
 const OptionalShowMore = ({showMore}: {showMore?: ShowMoreData}) => {
-    if (!showMore || !showMore.hasMore) {
+    if (!showMore) {
         return null;
+    } else if (!showMore.hasMore) {
+        return <div></div>;
     }
 
     return (
-        <div className={`mt-2 flex items-center gap-2 text-sm font-bold text-green hover:text-green-400`}>
+        <div className={`mt-1 flex items-center gap-2 text-sm font-bold text-green hover:text-green-400`}>
             <button type='button' onClick={showMore.loadMore}>Show all</button>
         </div>
     );
@@ -52,7 +54,7 @@ const OptionalShowMore = ({showMore}: {showMore?: ShowMoreData}) => {
 const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSeparator, pageTitle, className, pagination, showMore, isLoading}) => {
     const tableClasses = clsx(
         (borderTop || pageTitle) && 'border-t border-grey-300',
-        'w-full',
+        'w-full overflow-x-auto',
         pageTitle ? 'mb-0 mt-14' : 'my-0',
         className
     );
@@ -111,7 +113,7 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
 
     return (
         <>
-            <div className='w-full overflow-x-auto'>
+            <div className='w-full'>
                 {pageTitle && <Heading>{pageTitle}</Heading>}
 
                 <table className={tableClasses}>
@@ -130,7 +132,7 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
                 {(hint || pagination || showMore) &&
                 <div className="-mt-px">
                     {(hintSeparator || pagination) && <Separator />}
-                    <div className="flex flex-col-reverse items-start justify-between gap-1 pt-2 md:flex-row md:items-center md:gap-0 md:pt-0">
+                    <div className="mt-1 flex flex-col-reverse items-start justify-between gap-1 pt-2 md:flex-row md:items-center md:gap-0 md:pt-0">
                         <OptionalShowMore showMore={showMore} />
                         <Hint>{hint ?? ' '}</Hint>
                         <OptionalPagination pagination={pagination} />
