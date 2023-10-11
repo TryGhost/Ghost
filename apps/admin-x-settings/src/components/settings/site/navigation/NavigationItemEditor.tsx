@@ -44,7 +44,7 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                     unstyled={unstyled}
                     value={item.url}
                     hideTitle
-                    onChange={value => updateItem?.({url: value})}
+                    onChange={value => updateItem?.({url: value || ''})}
                     onKeyDown={() => clearError?.('url')}
                 />
             </div>

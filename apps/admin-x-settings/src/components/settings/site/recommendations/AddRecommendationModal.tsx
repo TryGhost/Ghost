@@ -22,7 +22,7 @@ interface AddRecommendationModalProps {
 }
 
 const doFormatUrl = (url: string) => {
-    return formatUrl(url).save;
+    return formatUrl(url).save || '';
 };
 
 const validateUrl = function (errors: ErrorMessages, url: string) {
@@ -60,7 +60,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
     const {formState, updateForm, handleSave, errors, saveState, clearError, setErrors} = useForm({
         initialState: recommendation ?? {
             title: '',
-            url: initialUrlCleaned,
+            url: initialUrlCleaned || '',
             description: '',
             excerpt: null,
             featured_image: null,

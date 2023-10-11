@@ -96,7 +96,7 @@ const RecommendationDescriptionForm: React.FC<Props<EditOrAddRecommendation | Re
             onChange={u => updateForm((state) => {
                 return {
                     ...state,
-                    url: u
+                    url: u || ''
                 };
             })}
         />}
