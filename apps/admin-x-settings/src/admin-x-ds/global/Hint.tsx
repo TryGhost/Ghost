@@ -23,7 +23,7 @@ const Hint: React.FC<HintProps> = ({children, color, className, ...props}) => {
     }
 
     className = clsx(
-        'mt-2 inline-block text-xs',
+        'mt-1 inline-block text-xs',
         colorClassName,
         className
     );
