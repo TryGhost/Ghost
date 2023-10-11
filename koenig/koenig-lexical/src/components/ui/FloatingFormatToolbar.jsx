@@ -1,10 +1,11 @@
 import FloatingToolbar from '../../components/ui/FloatingToolbar';
 import FormatToolbar from './FormatToolbar';
 import React from 'react';
-import {$getSelection, $isRangeSelection} from 'lexical';
+import {$getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, DELETE_CHARACTER_COMMAND} from 'lexical';
 import {LinkActionToolbar} from './LinkActionToolbar.jsx';
 import {SnippetActionToolbar} from './SnippetActionToolbar';
 import {debounce} from 'lodash-es';
+import {mergeRegister} from '@lexical/utils';
 
 export const toolbarItemTypes = {
     snippet: 'snippet',
@@ -50,6 +51,20 @@ export function FloatingFormatToolbar({
             document.removeEventListener('touchend', toggleVisibility); // mobile
         };
     }, [toggleVisibility]);
+
+    // clear out toolbar when use removes selected content
+    React.useEffect(() => {
+        return mergeRegister(
+            editor.registerCommand(
+                DELETE_CHARACTER_COMMAND,
+                () => {
+                    setToolbarItemType(null);
+                    return false;
+                },
+                COMMAND_PRIORITY_LOW
+            )
+        );
+    }, [editor, setToolbarItemType]);
 
     React.useEffect(() => {
         const onMouseMove = (e) => {
