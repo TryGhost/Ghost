@@ -1,4 +1,5 @@
 import DesignSystemProvider from './admin-x-ds/providers/DesignSystemProvider';
+import Modal from './admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import clsx from 'clsx';
@@ -24,6 +25,14 @@ interface AppProps {
     onDelete: (dataType: string, id: string) => void;
 }
 
+const TestModal = () => {
+    return <Modal title="Test modal">
+        Hello from React!
+    </Modal>;
+};
+
+const TM = NiceModal.create(TestModal);
+
 const Offers = () => {
     const {data: {tiers} = {}} = useBrowseTiers();
     const {mutateAsync: editTier} = useEditTier();
@@ -32,6 +41,9 @@ const Offers = () => {
         {tiers?.map(tier => <div key={tier.id}>{tier.name}</div>)}
         <button className="text-green" type="button" onClick={() => tiers?.[0] && editTier({...tiers[0], name: `Updated name ${Date.now()}`})}>
             Edit tier
+        </button>
+        <button className="text-green" type="button" onClick={() => NiceModal.show(TM)}>
+            Show modal
         </button>
     </div>;
 };
