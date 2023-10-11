@@ -1,6 +1,7 @@
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
+import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin';
 import {Button} from '../Button';
 import {ButtonGroupSetting, DropdownSetting, InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
@@ -70,7 +71,9 @@ export function EmailCtaCard({
                     placeholderClassName={`bg-transparent whitespace-normal font-serif text-xl !text-grey-500 !dark:text-grey-800 ` }
                     placeholderText="Email only text... (optional)"
                     textClassName={`w-full bg-transparent whitespace-normal font-serif text-xl text-grey-900 dark:text-grey-200 ${alignment === 'left' ? 'text-left' : 'text-center mx-auto [&:has(.placeholder)]:w-fit [&:has(.placeholder)]:text-left'} ` }
-                />
+                >
+                    <ReplacementStringsPlugin />
+                </KoenigNestedEditor>
 
                 {/* Button */}
                 { (showButton && (isEditing || (buttonText && buttonUrl))) &&

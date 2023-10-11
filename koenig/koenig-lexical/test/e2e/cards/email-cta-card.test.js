@@ -473,4 +473,73 @@ test.describe('Email card', async () => {
             <p><br /></p>
             `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true});
     });
+
+    // placeholders like {test} or {test, "string"} should be formatted as code
+    test('formats typed placeholders', async function () {
+        await focusEditor(page);
+        await insertEmailCard(page);
+
+        await page.keyboard.type(`testing {this}?`);
+        await page.keyboard.press('Escape'); // use escape to avoid the settings panel
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div><svg></svg></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="email-cta">
+                    <div>
+                        <div>Free members</div>
+                        <hr />
+                        <div>
+                            <div data-kg="editor">
+                                <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
+                                    <p dir="ltr">
+                                        <span data-lexical-text="true">testing </span>
+                                        <code spellcheck="false" data-lexical-text="true">
+                                            <span>{this}</span>
+                                        </code>
+                                        <span data-lexical-text="true">?</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <hr />
+                        <div></div>
+                    </div>
+                    <div data-kg-card-toolbar="email-cta"></div>
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true});
+
+        // remove the formatting using backspace
+        await page.keyboard.press(`${ctrlOrCmd}+Enter`);
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press('Escape'); // avoid settings panel
+        
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div><svg></svg></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="email-cta">
+                    <div>
+                        <div>Free members</div>
+                        <hr />
+                        <div>
+                            <div data-kg="editor">
+                                <div contenteditable="false" role="textbox" spellcheck="true" data-lexical-editor="true" aria-autocomplete="none" aria-readonly="true">
+                                    <p dir="ltr">
+                                        <span data-lexical-text="true">testing {this</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <hr />
+                        <div></div>
+                    </div>
+                    <div data-kg-card-toolbar="email-cta"></div>
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true});
+    });
 });

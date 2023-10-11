@@ -1,6 +1,7 @@
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
+import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin';
 import {ReactComponent as HelpIcon} from '../../../assets/icons/kg-help.svg';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 
@@ -13,7 +14,9 @@ export function EmailCard({htmlEditor, htmlEditorInitialState, isEditing}) {
                 initialEditorState={htmlEditorInitialState}
                 nodes='basic'
                 textClassName='kg-email-html whitespace-normal pb-1'
-            />
+            >
+                <ReplacementStringsPlugin />
+            </KoenigNestedEditor>
 
             {isEditing &&
                 <div className="!-mx-3 !mt-3 flex items-center justify-center bg-grey-100 p-2 font-sans text-sm font-normal leading-none text-grey-600 dark:bg-grey-950 dark:text-grey-800">

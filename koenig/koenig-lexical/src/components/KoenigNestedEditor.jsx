@@ -24,7 +24,8 @@ const KoenigNestedEditor = ({
     hasSettingsPanel = false,
     defaultKoenigEnterBehaviour = false,
     hiddenFormats = [],
-    dataTestId
+    dataTestId,
+    children
 }) => {
     const initialNodes = nodes === 'minimal' ? MINIMAL_NODES : BASIC_NODES;
     const markdownTransformers = nodes === 'minimal' ? MINIMAL_TRANSFORMERS : BASIC_TRANSFORMERS;
@@ -45,6 +46,9 @@ const KoenigNestedEditor = ({
                 placeholder={<Placeholder className={placeholderClassName} text={placeholderText} />}
             >
                 {singleParagraph && <RestrictContentPlugin paragraphs={1} />}
+
+                {children}
+
                 <KoenigNestedEditorPlugin
                     autoFocus={autoFocus}
                     defaultKoenigEnterBehaviour={defaultKoenigEnterBehaviour}

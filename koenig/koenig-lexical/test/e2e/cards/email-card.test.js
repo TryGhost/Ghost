@@ -185,4 +185,87 @@ test.describe('Email card', async () => {
         const emailCard = page.locator('[data-kg-card="email"] ul > li:first-child');
         await expect(emailCard).toHaveText('List item 1');
     });
+
+    // placeholders like {test} or {test, "string"} should be formatted as code
+    test('formats typed placeholders', async function () {
+        await focusEditor(page);
+        await insertEmailCard(page);
+
+        await page.keyboard.press(`Enter`);
+        await page.keyboard.type(`testing {this}?`);
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div><svg></svg></div>
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="email">
+                    <div>
+                        <div>
+                            <div data-kg="editor">
+                                <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true">
+                                    <p dir="ltr">
+                                        <span data-lexical-text="true">Hey</span>
+                                        <code spellcheck="false" data-lexical-text="true">
+                                        <span>{first_name, "there"}</span>
+                                        </code>
+                                        <span data-lexical-text="true">,</span>
+                                    </p>
+                                    <p dir="ltr">
+                                        <span data-lexical-text="true">testing </span>
+                                        <code spellcheck="false" data-lexical-text="true">
+                                            <span>{this}</span>
+                                        </code>
+                                        <span data-lexical-text="true">?</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            Only visible when delivered by email, this card will not be published on your site.
+                            <a href="https://ghost.org/help/email-newsletters/#email-cards" rel="noopener noreferrer" target="_blank">
+                                <svg></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p><br /></p>
+    `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true});
+
+        // remove the formatting using backspace
+        await page.keyboard.press('Backspace');
+        await page.keyboard.press('Backspace');
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div><svg></svg></div>
+                <div data-kg-card-editing="true" data-kg-card-selected="true" data-kg-card="email">
+                    <div>
+                        <div>
+                            <div data-kg="editor">
+                                <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true">
+                                    <p dir="ltr">
+                                        <span data-lexical-text="true">Hey</span>
+                                        <code spellcheck="false" data-lexical-text="true">
+                                        <span>{first_name, "there"}</span>
+                                        </code>
+                                        <span data-lexical-text="true">,</span>
+                                    </p>
+                                    <p dir="ltr">
+                                        <span data-lexical-text="true">testing {this</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            Only visible when delivered by email, this card will not be published on your site.
+                            <a href="https://ghost.org/help/email-newsletters/#email-cards" rel="noopener noreferrer" target="_blank">
+                                <svg></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p><br /></p>
+    `, {ignoreInnerSVG: true, ignoreCardToolbarContents: true});
+    });
 });

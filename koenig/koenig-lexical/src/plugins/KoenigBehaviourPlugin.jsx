@@ -997,8 +997,14 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 for (const tag of Object.keys(SPECIAL_MARKUPS)) {
                                     if (anchorNode.hasFormat(tag)) {
                                         const markup = SPECIAL_MARKUPS[tag];
-                                        let newText = markup + textContent + markup;
-                                        newText = newText.slice(0,-1); // remove last markup character
+                                        // for replacement strings e.g. {{variable}} we shouldn't add the markup (assumes use of ReplacementStringsPlugin)
+                                        let newText = textContent;
+                                        if (tag === 'code' && textContent.match(/{.*?}(?![A-Za-z\s])/)) {
+                                            newText = newText.slice(0,-1);
+                                        } else {
+                                            newText = markup + newText + markup;
+                                            newText = newText.slice(0,-1); // remove last markup character
+                                        }
 
                                         // manually clear formatting and push offset to accommodate for the added markup
                                         anchorNode.setFormat(0);
