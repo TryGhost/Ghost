@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.23.0",
-    "@babel/preset-env": "7.22.20",
+    "@babel/preset-env": "7.23.2",
     "@rollup/plugin-babel": "6.0.4",
     "@tryghost/mobiledoc-kit": "0.11.2-ghost.4",
     "c8": "8.0.1",
