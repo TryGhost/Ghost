@@ -82,6 +82,16 @@ const CARD_PROPERTY_MAP = {
     }
 };
 
+const CARD_FIXES_MAP = {
+    callout: (payload) => {
+        if (payload.backgroundColor && !payload.backgroundColor.match(/^[a-zA-Z\d-]+$/)) {
+            payload.backgroundColor = 'white';
+        }
+
+        return payload;
+    }
+};
+
 export function mobiledocToLexical(serializedMobiledoc) {
     if (serializedMobiledoc === null || serializedMobiledoc === undefined || serializedMobiledoc === '') {
         return JSON.stringify(BLANK_DOC);
@@ -329,6 +339,11 @@ function convertCardSectionToLexical(child, mobiledoc) {
             payload[newName] = payload[oldName];
             delete payload[oldName];
         }
+    }
+
+    // run any payload fixes
+    if (CARD_FIXES_MAP[cardName]) {
+        payload = CARD_FIXES_MAP[cardName](payload);
     }
 
     delete payload.type;

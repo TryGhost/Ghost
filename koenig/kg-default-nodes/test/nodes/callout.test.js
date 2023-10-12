@@ -151,6 +151,24 @@ describe('CalloutNode', function () {
                 </div>
                 `);
         }));
+
+        it('can render to HTML with invalid backgroundColor', editorTest(function () {
+            dataset.backgroundColor = 'rgba(124, 139, 154, 0.13)';
+
+            const node = $createCalloutNode(dataset);
+            const {element} = node.exportDOM(exportOptions);
+
+            element.outerHTML.should.prettifyTo(html`
+                <div class="kg-card kg-callout-card kg-callout-card-white">
+                    <div class="kg-callout-emoji">💡</div>
+                    <div class="kg-callout-text">
+                        <b><strong>Hello!</strong></b
+                        >Check<i><em class="italic">this</em></i
+                        ><a href="https://ghost.org" rel="noopener">out</a>.
+                    </div>
+                </div>
+            `);
+        }));
     });
 
     describe('importDOM', function () {

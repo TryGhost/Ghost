@@ -1357,7 +1357,7 @@ describe('mobiledocToLexical', function () {
                         [1, `h${i}`, [[0, [], 0, `Heading ${i}`]]]
                     ]
                 }));
-    
+
                 assert.equal(result, JSON.stringify({
                     root: {
                         children: [
@@ -2303,6 +2303,43 @@ describe('mobiledocToLexical', function () {
                             type: 'embed',
                             version: 1,
                             embedType: 'twitter'
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            }));
+        });
+
+        it('fixes payload properties', function () {
+            const result = mobiledocToLexical(JSON.stringify({
+                version: MOBILEDOC_VERSION,
+                ghostVersion: GHOST_VERSION,
+                atoms: [],
+                cards: [
+                    ['callout', {
+                        version: 1,
+                        backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                        calloutText: '<strong>Test</strong>'
+                    }]
+                ],
+                markups: [],
+                sections: [
+                    [10, 0]
+                ]
+            }));
+
+            assert.equal(result, JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            type: 'callout',
+                            version: 1,
+                            backgroundColor: 'white',
+                            calloutText: '<strong>Test</strong>'
                         }
                     ],
                     direction: null,
