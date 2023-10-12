@@ -1,9 +1,8 @@
 // express-test.js
-const config = require('../../../core/shared/config');
 const base = require('@playwright/test');
 const {promisify} = require('util');
 const {spawn, exec} = require('child_process');
-const {setupGhost, setupMailgun, enableLabs, setupStripe} = require('../utils/e2e-browser-utils');
+const {setupGhost, setupMailgun, enableLabs, setupStripe, getStripeAccountId, generateStripeIntegrationToken} = require('../utils/e2e-browser-utils');
 const {allowStripe, mockMail} = require('../../utils/e2e-framework-mock-manager');
 const MailgunClient = require('@tryghost/mailgun-client');
 const sinon = require('sinon');
@@ -20,52 +19,6 @@ const getWebhookSecret = async () => {
     const command = `stripe listen --print-secret ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
     const webhookSecret = (await promisify(exec)(command)).stdout;
     return webhookSecret.toString().trim();
-};
-
-const getStripeAccountId = async (workerIndex) => {
-    let accountId;
-    const accountEmail = `test${workerIndex}@example.com`;
-
-    const secretKey = process.env.STRIPE_SECRET_KEY;
-    const stripe = new Stripe(secretKey, {
-        apiVersion: '2020-08-27'
-    });
-    const accounts = await stripe.accounts.list();
-    if (accounts.data.length > 0) {
-        const account = accounts.data.find(acc => acc.email === accountEmail);
-        if (account) {
-            await stripe.accounts.del(account.id);
-        }
-    }
-    if (!accountId) {
-        const account = await stripe.accounts.create({
-            type: 'standard',
-            email: accountEmail,
-            business_type: 'company',
-            company: {
-                name: `Test Company ${workerIndex}`
-            }
-        });
-        accountId = account.id;
-    }
-
-    return accountId;
-};
-
-const generateStripeIntegrationToken = async (accountId) => {
-    if (!('STRIPE_PUBLISHABLE_KEY' in process.env) || !('STRIPE_SECRET_KEY' in process.env)) {
-        throw new Error('Missing STRIPE_PUBLISHABLE_KEY or STRIPE_SECRET_KEY environment variables');
-    }
-
-    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
-    const secretKey = process.env.STRIPE_SECRET_KEY;
-
-    return Buffer.from(JSON.stringify({
-        a: secretKey,
-        p: publishableKey,
-        l: false,
-        i: accountId
-    })).toString('base64');
 };
 
 // Global promises for webhook secret / Stripe integration token
@@ -89,8 +42,7 @@ module.exports = base.test.extend({
     }, {scope: 'worker'}],
 
     ghost: [async ({browser, port}, use, workerInfo) => {
-        process.env.PORT = port;
-
+        // Do not initialise database before this block
         const currentDate = new Date();
         const formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}-${String(currentDate.getHours()).padStart(2, '0')}-${String(currentDate.getMinutes()).padStart(2, '0')}-${String(currentDate.getSeconds()).padStart(2, '0')}`;
         process.env.database__connection__filename = `/tmp/ghost-playwright.${workerInfo.workerIndex}.${formattedDate}.db`;
@@ -98,7 +50,7 @@ module.exports = base.test.extend({
         configUtils.set('server:port', port);
         configUtils.set('url', `http://127.0.0.1:${port}`);
 
-        const stripeAccountId = await getStripeAccountId(workerInfo.workerIndex);
+        const stripeAccountId = await getStripeAccountId();
         const stripeIntegrationToken = await generateStripeIntegrationToken(stripeAccountId);
 
         const WebhookManager = require('../../../../stripe/lib/WebhookManager');
@@ -119,10 +71,12 @@ module.exports = base.test.extend({
         const originalStripeConfigure = StripeAPI.prototype.configure;
         sandbox.stub(StripeAPI.prototype, 'configure').callsFake(function (stripeConfig) {
             originalStripeConfigure.call(this, stripeConfig);
-            this._stripe = new Stripe(stripeConfig.secretKey, {
-                apiVersion: '2020-08-27',
-                stripeAccount: stripeAccountId
-            });
+            if (stripeConfig) {
+                this._stripe = new Stripe(stripeConfig.secretKey, {
+                    apiVersion: '2020-08-27',
+                    stripeAccount: stripeAccountId
+                });
+            }
         });
 
         const stripeServer = startWebhookServer(port);
