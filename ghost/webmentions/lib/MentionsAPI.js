@@ -183,6 +183,7 @@ module.exports = class MentionsAPI {
 
     async #updateWebmention(mention, webmention) {
         const isNew = !mention;
+        const wasDeleted = mention?.deleted ?? false;
         const targetExists = await this.#routingService.pageExists(webmention.target);
 
         if (!targetExists) {
@@ -235,23 +236,23 @@ module.exports = class MentionsAPI {
             }
 
             if (metadata?.body) {
-                try {
-                    mention.verify(metadata.body, metadata.contentType);
-                } catch (e) {
-                    logging.error(e);
-                }
+                mention.verify(metadata.body, metadata.contentType);
             }
         }
 
         await this.#repository.save(mention);
 
         if (isNew) {
-            logging.info('[Webmention] Created ' + webmention.source + ' to ' + webmention.target + ', verified: ' + mention.verified);
+            logging.info('[Webmention] Created ' + webmention.source + ' to ' + webmention.target + ', verified: ' + mention.verified + ', deleted: ' + mention.deleted);
         } else {
-            if (mention.deleted) {
+            if (mention.deleted && !wasDeleted) {
                 logging.info('[Webmention] Deleted ' + webmention.source + ' to ' + webmention.target + ', verified: ' + mention.verified);
             } else {
-                logging.info('[Webmention] Updated ' + webmention.source + ' to ' + webmention.target + ', verified: ' + mention.verified);
+                if (!mention.deleted && wasDeleted) {
+                    logging.info('[Webmention] Restored ' + webmention.source + ' to ' + webmention.target + ', verified: ' + mention.verified);
+                } else {
+                    logging.info('[Webmention] Updated ' + webmention.source + ' to ' + webmention.target + ', verified: ' + mention.verified + ', deleted: ' + mention.deleted);
+                }
             }
         }
 

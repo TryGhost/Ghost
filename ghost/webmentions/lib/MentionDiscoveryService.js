@@ -1,4 +1,5 @@
 const cheerio = require('cheerio');
+const logging = require('@tryghost/logging');
 
 module.exports = class MentionDiscoveryService {
     #externalRequest;
@@ -26,6 +27,7 @@ module.exports = class MentionDiscoveryService {
             });
             return this.getEndpointFromResponse(response);
         } catch (error) {
+            logging.error(`Error fetching ${url.href} to discover webmention endpoint`, error);
             return null;
         }
     }

@@ -10,6 +10,11 @@ import {ReactComponent as CheckmarkIcon} from '../../images/icons/check-circle.s
 import {getRefDomain} from '../../utils/helpers';
 
 export const RecommendationsPageStyles = `
+    .gh-portal-recommendations-header .gh-portal-main-title {
+        padding: 0 32px;
+        text-wrap: balance;
+    }
+
     .gh-portal-recommendation-item {
         min-height: 38px;
     }
@@ -99,11 +104,11 @@ export const RecommendationsPageStyles = `
         animation: 0.5s ease-in-out fadeIn;
     }
 
-    .gh-portal-recommendation-subscribed.with-reason {
+    .gh-portal-recommendation-subscribed.with-description {
         position: absolute;
     }
 
-    .gh-portal-recommendation-subscribed.without-reason {
+    .gh-portal-recommendation-subscribed.without-description {
         margin-top: 5px;
     }
 
@@ -125,6 +130,14 @@ export const RecommendationsPageStyles = `
 
     .gh-portal-recommendation-item-action {
         min-height: 28px;
+    }
+
+    .gh-portal-popup-container.recommendations .gh-portal-action-footer
+
+    .gh-portal-btn-recommendations-later {
+        margin: 8px auto 24px;
+        color: var(--grey6);
+        font-weight: 400;
     }
 `;
 
@@ -153,7 +166,7 @@ const RecommendationIcon = ({title, favicon, featuredImage}) => {
     };
 
     if (!icon) {
-        return null;
+        return <div className="gh-portal-recommendation-item-favicon"></div>;
     }
 
     return (<img className="gh-portal-recommendation-item-favicon" src={icon} alt={title} onError={hideIcon} />);
@@ -171,7 +184,7 @@ const openTab = (url) => {
 
 const RecommendationItem = (recommendation) => {
     const {t, onAction, member, site} = useContext(AppContext);
-    const {title, url, reason, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
+    const {title, url, description, favicon, one_click_subscribe: oneClickSubscribe, featured_image: featuredImage} = recommendation;
     const allowOneClickSubscribe = member && oneClickSubscribe;
     const [subscribed, setSubscribed] = useState(false);
     const [clicked, setClicked] = useState(false);
@@ -250,8 +263,8 @@ const RecommendationItem = (recommendation) => {
                     <ArrowIcon className="gh-portal-recommendation-arrow-icon" />
                 </div>
                 <div className="gh-portal-recommendation-description-container">
-                    {subscribed && <div className={'gh-portal-recommendation-subscribed ' + (reason ? 'with-reason' : 'without-reason')}><span>{t('Verification link sent, check your inbox')}</span><CheckmarkIcon className="gh-portal-recommendation-checkmark-icon" alt=''/></div>}
-                    {reason && <p className={subscribed ? 'gh-portal-recommendation-description-hidden' : ''}>{reason}</p>}
+                    {subscribed && <div className={'gh-portal-recommendation-subscribed ' + (description ? 'with-description' : 'without-description')}><span>{t('Verification link sent, check your inbox')}</span><CheckmarkIcon className="gh-portal-recommendation-checkmark-icon" alt=''/></div>}
+                    {description && <p className={subscribed ? 'gh-portal-recommendation-description-hidden' : ''}>{description}</p>}
                 </div>
             </div>
             <div className="gh-portal-recommendation-item-action">
@@ -263,7 +276,7 @@ const RecommendationItem = (recommendation) => {
 };
 
 const RecommendationsPage = () => {
-    const {api, site, pageData, t} = useContext(AppContext);
+    const {api, site, pageData, t, onAction} = useContext(AppContext);
     const {title, icon} = site;
     const {recommendations_enabled: recommendationsEnabled = false} = site;
     const [recommendations, setRecommendations] = useState(null);
@@ -303,7 +316,7 @@ const RecommendationsPage = () => {
     }, []);
 
     const heading = pageData && pageData.signup ? t('Welcome to {{siteTitle}}', {siteTitle: title, interpolation: {escapeValue: false}}) : t('Recommendations');
-    const subheading = pageData && pageData.signup ? t('Thanks for subscribing. Here are a few other sites you may enjoy. ') : t('Here are a few other sites you may enjoy.');
+    const subheading = pageData && pageData.signup ? t('Thank you for subscribing. Before you start reading, below are a few other sites you may enjoy.') : t('Here are a few other sites you may enjoy.');
 
     if (!recommendationsEnabled) {
         return null;
@@ -328,11 +341,14 @@ const RecommendationsPage = () => {
                 ))}
             </div>
 
-            {numToShow < recommendations.length && (
+            {((numToShow < recommendations.length) || (pageData && pageData.signup)) && (
                 <footer className='gh-portal-action-footer'>
-                    <button className='gh-portal-btn gh-portal-center' style={{width: '100%'}} onClick={showAllRecommendations}>
+                    {(numToShow < recommendations.length) && <button className='gh-portal-btn gh-portal-center' style={{width: '100%'}} onClick={showAllRecommendations}>
                         <span>{t('Show all')}</span>
-                    </button>
+                    </button>}
+                    {(pageData && pageData.signup) && <button className='gh-portal-btn gh-portal-center gh-portal-btn-link gh-portal-btn-recommendations-later' style={{width: '100%'}} onClick={showAllRecommendations}>
+                        <span onClick={() => onAction('closePopup')}>{t('Maybe later')}</span>
+                    </button>}
                 </footer>
             )}
         </div>

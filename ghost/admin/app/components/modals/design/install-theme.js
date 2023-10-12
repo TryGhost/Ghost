@@ -31,8 +31,8 @@ export default class InstallThemeModal extends Component {
         return this.args.data.theme?.ref || this.args.data.ref;
     }
 
-    get isDefaultTheme() {
-        return this.themeName.toLowerCase() === 'casper';
+    get isDefaultOrLegacyTheme() {
+        return this.themeName.toLowerCase() === 'casper' || this.themeName.toLowerCase() === 'source';
     }
 
     get isConfirming() {
@@ -48,7 +48,7 @@ export default class InstallThemeModal extends Component {
     }
 
     get willOverwriteExisting() {
-        return !this.isDefaultTheme && this.themes.findBy('name', this.themeName.toLowerCase());
+        return !this.isDefaultOrLegacyTheme && this.themes.findBy('name', this.themeName.toLowerCase());
     }
 
     get hasWarningsOrErrors() {
@@ -67,9 +67,10 @@ export default class InstallThemeModal extends Component {
     @task
     *installThemeTask() {
         try {
-            if (this.isDefaultTheme) {
+            if (this.isDefaultOrLegacyTheme) {
                 // default theme can't be installed, only activated
-                const defaultTheme = this.store.peekRecord('theme', 'casper');
+                const themeName = this.themeName.toLowerCase();
+                const defaultTheme = this.store.peekRecord('theme', themeName);
                 yield this.themeManagement.activateTask.perform(defaultTheme, {skipErrors: true});
                 this.installedTheme = defaultTheme;
 

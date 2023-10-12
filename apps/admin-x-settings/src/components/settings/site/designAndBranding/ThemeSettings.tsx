@@ -7,8 +7,8 @@ import Select from '../../../../admin-x-ds/global/form/Select';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import handleError from '../../../../utils/handleError';
-import {CustomThemeSetting} from '../../../../api/customThemeSettings';
+import useHandleError from '../../../../utils/api/handleError';
+import {CustomThemeSetting, isCustomThemeSettingVisible} from '../../../../api/customThemeSettings';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {humanizeSettingKey} from '../../../../api/settings';
 
@@ -17,6 +17,7 @@ const ThemeSetting: React.FC<{
     setSetting: <Setting extends CustomThemeSetting>(value: Setting['value']) => void
 }> = ({setting, setSetting}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
+    const handleError = useHandleError();
 
     const handleImageUpload = async (file: File) => {
         try {
@@ -52,9 +53,10 @@ const ThemeSetting: React.FC<{
             <Select
                 hint={setting.description}
                 options={setting.options.map(option => ({label: option, value: option}))}
-                selectedOption={setting.value}
+                selectedOption={{label: setting.value, value: setting.value}}
+                testId={`setting-select-${setting.key}`}
                 title={humanizeSettingKey(setting.key)}
-                onSelect={value => setSetting(value || null)}
+                onSelect={option => setSetting(option?.value || null)}
             />
         );
     case 'color':
@@ -84,9 +86,13 @@ const ThemeSetting: React.FC<{
 };
 
 const ThemeSettings: React.FC<{ settings: CustomThemeSetting[], updateSetting: (setting: CustomThemeSetting) => void }> = ({settings, updateSetting}) => {
+    // Filter out custom theme settings that should not be visible
+    const settingsKeyValueObj = settings.reduce((obj, {key, value}) => ({...obj, [key]: value}), {});
+    const filteredSettings = settings.filter(setting => isCustomThemeSettingVisible(setting, settingsKeyValueObj));
+
     return (
         <SettingGroupContent className='mt-7'>
-            {settings.map(setting => <ThemeSetting key={setting.key} setSetting={value => updateSetting({...setting, value} as CustomThemeSetting)} setting={setting} />)}
+            {filteredSettings.map(setting => <ThemeSetting key={setting.key} setSetting={value => updateSetting({...setting, value} as CustomThemeSetting)} setting={setting} />)}
         </SettingGroupContent>
     );
 };

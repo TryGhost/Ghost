@@ -7,7 +7,7 @@ const {Recommendation, ClickEvent, SubscribeEvent} = require('@tryghost/recommen
 async function addDummyRecommendation(i = 0) {
     const recommendation = Recommendation.create({
         title: `Recommendation ${i}`,
-        reason: `Reason ${i}`,
+        description: `Description ${i}`,
         url: new URL(`https://recommendation${i}.com`),
         favicon: new URL(`https://recommendation${i}.com/favicon.ico`),
         featuredImage: new URL(`https://recommendation${i}.com/featured.jpg`),
@@ -246,6 +246,58 @@ describe('Recommendations Admin API', function () {
             assert.equal(page1.recommendations[2].count.subscribers, 2);
         });
 
+        it('Can include click and subscribe counts and order by clicks+subscribe count', async function () {
+            await addDummyRecommendations(5);
+            await addClicksAndSubscribers({memberId});
+
+            const {body: page1} = await agent.get('recommendations/?include=count.clicks,count.subscribers&order=' + encodeURIComponent('count.clicks desc, count.subscribers asc'))
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    recommendations: new Array(5).fill({
+                        id: anyObjectId,
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
+                    })
+                });
+
+            assert.equal(page1.recommendations[0].count.clicks, 3);
+            assert.equal(page1.recommendations[1].count.clicks, 2);
+
+            assert.equal(page1.recommendations[0].count.subscribers, 0);
+            assert.equal(page1.recommendations[1].count.subscribers, 3);
+            assert.equal(page1.recommendations[2].count.subscribers, 0);
+        });
+
+        it('Can order by click and subscribe counts and they will be included by default', async function () {
+            await addDummyRecommendations(5);
+            await addClicksAndSubscribers({memberId});
+
+            const {body: page1} = await agent.get('recommendations/?order=' + encodeURIComponent('count.clicks desc, count.subscribers asc'))
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    recommendations: new Array(5).fill({
+                        id: anyObjectId,
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime
+                    })
+                });
+
+            assert.equal(page1.recommendations[0].count.clicks, 3);
+            assert.equal(page1.recommendations[1].count.clicks, 2);
+
+            assert.equal(page1.recommendations[0].count.subscribers, 0);
+            assert.equal(page1.recommendations[1].count.subscribers, 3);
+            assert.equal(page1.recommendations[2].count.subscribers, 0);
+        });
+
         it('Can fetch recommendations with relations when there are no recommendations', async function () {
             const recommendations = await recommendationsService.repository.getCount();
             assert.equal(recommendations, 0, 'This test expects there to be no recommendations');
@@ -305,7 +357,7 @@ describe('Recommendations Admin API', function () {
             assert.equal(body.recommendations[0].id, id);
             assert.equal(body.recommendations[0].title, 'Recommendation 1');
             assert.equal(body.recommendations[0].url, 'https://recommendation1.com/');
-            assert.equal(body.recommendations[0].reason, 'Reason 1');
+            assert.equal(body.recommendations[0].description, 'Description 1');
             assert.equal(body.recommendations[0].excerpt, 'Test excerpt');
             assert.equal(body.recommendations[0].featured_image, 'https://recommendation1.com/featured.jpg');
             assert.equal(body.recommendations[0].favicon, 'https://recommendation1.com/favicon.ico');
@@ -341,7 +393,7 @@ describe('Recommendations Admin API', function () {
                     recommendations: [{
                         title: 'Cat Pictures',
                         url: 'https://dogpictures.com',
-                        reason: 'Because cats are cute',
+                        description: 'Because cats are cute',
                         excerpt: 'Cats are cute',
                         featured_image: 'https://catpictures.com/cat.jpg',
                         favicon: 'https://catpictures.com/favicon.ico',
@@ -367,7 +419,7 @@ describe('Recommendations Admin API', function () {
             assert.equal(body.recommendations[0].id, id);
             assert.equal(body.recommendations[0].title, 'Cat Pictures');
             assert.equal(body.recommendations[0].url, 'https://dogpictures.com/');
-            assert.equal(body.recommendations[0].reason, 'Because cats are cute');
+            assert.equal(body.recommendations[0].description, 'Because cats are cute');
             assert.equal(body.recommendations[0].excerpt, 'Cats are cute');
             assert.equal(body.recommendations[0].featured_image, 'https://catpictures.com/cat.jpg');
             assert.equal(body.recommendations[0].favicon, 'https://catpictures.com/favicon.ico');
@@ -379,7 +431,7 @@ describe('Recommendations Admin API', function () {
             const {body} = await agent.put(`recommendations/${id}/`)
                 .body({
                     recommendations: [{
-                        reason: null,
+                        description: null,
                         excerpt: null,
                         featured_image: null,
                         favicon: null
@@ -402,7 +454,7 @@ describe('Recommendations Admin API', function () {
 
             // Check everything is set correctly
             assert.equal(body.recommendations[0].id, id);
-            assert.equal(body.recommendations[0].reason, null);
+            assert.equal(body.recommendations[0].description, null);
             assert.equal(body.recommendations[0].excerpt, null);
             assert.equal(body.recommendations[0].featured_image, null);
             assert.equal(body.recommendations[0].favicon, null);
@@ -435,7 +487,7 @@ describe('Recommendations Admin API', function () {
             assert.equal(body.recommendations[0].id, id);
             assert.equal(body.recommendations[0].title, 'Changed');
             assert.equal(body.recommendations[0].url, 'https://recommendation0.com/');
-            assert.equal(body.recommendations[0].reason, 'Reason 0');
+            assert.equal(body.recommendations[0].description, 'Description 0');
             assert.equal(body.recommendations[0].excerpt, 'Test excerpt');
             assert.equal(body.recommendations[0].featured_image, 'https://recommendation0.com/featured.jpg');
             assert.equal(body.recommendations[0].favicon, 'https://recommendation0.com/favicon.ico');
@@ -450,7 +502,7 @@ describe('Recommendations Admin API', function () {
                     recommendations: [{
                         title: 'Cat Pictures',
                         url: 'https://dogpictures.com',
-                        reason: 'Because cats are cute',
+                        description: 'Because cats are cute',
                         excerpt: 'Cats are cute',
                         featured_image: 'ftp://dogpictures.com/dog.jpg',
                         favicon: 'ftp://dogpictures.com/favicon.ico',
@@ -499,7 +551,7 @@ describe('Recommendations Admin API', function () {
             // Check everything is set correctly
             assert.equal(body.recommendations[0].title, 'Dog Pictures');
             assert.equal(body.recommendations[0].url, 'https://dogpictures.com/');
-            assert.equal(body.recommendations[0].reason, null);
+            assert.equal(body.recommendations[0].description, null);
             assert.equal(body.recommendations[0].excerpt, null);
             assert.equal(body.recommendations[0].featured_image, null);
             assert.equal(body.recommendations[0].favicon, null);
@@ -512,7 +564,7 @@ describe('Recommendations Admin API', function () {
                     recommendations: [{
                         title: 'Dog Pictures',
                         url: 'https://dogpictures.com',
-                        reason: 'Because dogs are cute',
+                        description: 'Because dogs are cute',
                         excerpt: 'Dogs are cute',
                         featured_image: 'https://dogpictures.com/dog.jpg',
                         favicon: 'https://dogpictures.com/favicon.ico',
@@ -537,7 +589,7 @@ describe('Recommendations Admin API', function () {
             // Check everything is set correctly
             assert.equal(body.recommendations[0].title, 'Dog Pictures');
             assert.equal(body.recommendations[0].url, 'https://dogpictures.com/');
-            assert.equal(body.recommendations[0].reason, 'Because dogs are cute');
+            assert.equal(body.recommendations[0].description, 'Because dogs are cute');
             assert.equal(body.recommendations[0].excerpt, 'Dogs are cute');
             assert.equal(body.recommendations[0].featured_image, 'https://dogpictures.com/dog.jpg');
             assert.equal(body.recommendations[0].favicon, 'https://dogpictures.com/favicon.ico');

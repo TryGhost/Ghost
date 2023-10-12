@@ -16,7 +16,7 @@ const NewsletterItem: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const {updateRoute} = useRouting();
 
     const showDetails = () => {
-        updateRoute({route: `newsletters/show/${newsletter.id}`});
+        updateRoute({route: `newsletters/${newsletter.id}`});
     };
 
     return (

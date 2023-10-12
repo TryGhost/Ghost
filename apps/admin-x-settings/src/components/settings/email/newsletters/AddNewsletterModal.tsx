@@ -6,8 +6,8 @@ import React, {useEffect} from 'react';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import handleError from '../../../../utils/handleError';
 import useForm from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
@@ -19,6 +19,7 @@ import {useBrowseMembers} from '../../../../api/members';
 const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
+    const handleError = useHandleError();
 
     const {data: members} = useBrowseMembers({
         searchParams: {filter: 'newsletters.status:active+email_disabled:0', limit: '1', page: '1', include: 'newsletters,labels'}
@@ -35,10 +36,11 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             const response = await addNewsletter({
                 name: formState.name,
                 description: formState.description,
-                opt_in_existing: formState.optInExistingSubscribers
+                opt_in_existing: formState.optInExistingSubscribers,
+                feedback_enabled: true
             });
 
-            updateRoute({route: `newsletters/show/${response.newsletters[0].id}`});
+            updateRoute({route: `newsletters/${response.newsletters[0].id}`});
         },
         onSaveError: handleError,
         onValidate: () => {

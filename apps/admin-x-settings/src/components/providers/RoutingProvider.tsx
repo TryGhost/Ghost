@@ -30,21 +30,24 @@ export const RouteContext = createContext<RoutingContextData>({
 
 export type RoutingModalProps = {
     pathName: string;
-    params?: Record<string, string>
+    params?: Record<string, string>,
+    searchParams?: URLSearchParams
 }
 
 const modalPaths: {[key: string]: ModalName} = {
-    'design/edit/themes': 'DesignAndThemeModal',
+    'design/change-theme': 'DesignAndThemeModal',
     'design/edit': 'DesignAndThemeModal',
+    // this is a special route, because it can install a theme directly from the Ghost Marketplace
+    'design/change-theme/install': 'DesignAndThemeModal',
     'navigation/edit': 'NavigationModal',
-    'users/invite': 'InviteUserModal',
-    'users/show/:slug': 'UserDetailModal',
+    'staff/invite': 'InviteUserModal',
+    'staff/:slug': 'UserDetailModal',
     'portal/edit': 'PortalModal',
     'tiers/add': 'TierDetailModal',
-    'tiers/show/:id': 'TierDetailModal',
+    'tiers/:id': 'TierDetailModal',
     'stripe-connect': 'StripeConnectModal',
-    'newsletters/add': 'AddNewsletterModal',
-    'newsletters/show/:id': 'NewsletterDetailModal',
+    'newsletters/new': 'AddNewsletterModal',
+    'newsletters/:id': 'NewsletterDetailModal',
     'history/view': 'HistoryModal',
     'history/view/:user': 'HistoryModal',
     'integrations/zapier': 'ZapierModal',
@@ -53,19 +56,20 @@ const modalPaths: {[key: string]: ModalName} = {
     'integrations/unsplash': 'UnsplashModal',
     'integrations/firstpromoter': 'FirstpromoterModal',
     'integrations/pintura': 'PinturaModal',
-    'integrations/add': 'AddIntegrationModal',
-    'integrations/show/:id': 'CustomIntegrationModal',
+    'integrations/new': 'AddIntegrationModal',
+    'integrations/:id': 'CustomIntegrationModal',
     'recommendations/add': 'AddRecommendationModal',
     'recommendations/edit': 'EditRecommendationModal',
     'announcement-bar/edit': 'AnnouncementBarModal',
-    'embed-signup-form/show': 'EmbedSignupFormModal'
+    'embed-signup-form/show': 'EmbedSignupFormModal',
+    about: 'AboutModal'
 };
 
 function getHashPath(urlPath: string | undefined) {
     if (!urlPath) {
         return null;
     }
-    const regex = /\/settings-x\/(.*)/;
+    const regex = /\/settings\/(.*)/;
     const match = urlPath?.match(regex);
 
     if (match) {
@@ -85,6 +89,7 @@ const handleNavigation = (currentRoute: string | undefined) => {
     let url = new URL(hash, domain);
 
     const pathName = getHashPath(url.pathname);
+    const searchParams = url.searchParams;
 
     if (pathName) {
         const [, currentModalName] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(currentRoute || '', modalPath)) || [];
@@ -93,9 +98,9 @@ const handleNavigation = (currentRoute: string | undefined) => {
         return {
             pathName,
             changingModal: modalName && modalName !== currentModalName,
-            modal: (path && modalName) ?
+            modal: (path && modalName) ? // we should consider adding '&& modalName !== currentModalName' here, but this breaks tests
                 import('./routing/modals').then(({default: modals}) => {
-                    NiceModal.show(modals[modalName] as ModalComponent, {pathName, params: matchRoute(pathName, path)});
+                    NiceModal.show(modals[modalName] as ModalComponent, {pathName, params: matchRoute(pathName, path), searchParams});
                 }) :
                 undefined
         };
@@ -138,9 +143,9 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
         const newPath = options.route;
 
         if (newPath) {
-            window.location.hash = `/settings-x/${newPath}`;
+            window.location.hash = `/settings/${newPath}`;
         } else {
-            window.location.hash = `/settings-x`;
+            window.location.hash = `/settings`;
         }
     }, [externalNavigate]);
 

@@ -11,7 +11,8 @@ module.exports = {
             'limit',
             'page',
             'include',
-            'filter'
+            'filter',
+            'order'
         ],
         permissions: true,
         validation: {},

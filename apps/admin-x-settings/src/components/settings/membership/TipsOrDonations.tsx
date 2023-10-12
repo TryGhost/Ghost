@@ -102,8 +102,11 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         containerClassName='w-14'
                         fullWidth={false}
                         options={currencySelectGroups()}
-                        selectedOption={donationsCurrency}
-                        onSelect={currency => updateSetting('donations_currency', currency || 'USD')}
+                        selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === donationsCurrency)}
+                        title='Currency'
+                        hideTitle
+                        isSearchable
+                        onSelect={option => updateSetting('donations_currency', option?.value || 'USD')}
                     />
                 )}
                 title='Suggested amount'

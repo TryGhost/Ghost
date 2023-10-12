@@ -7,8 +7,8 @@ import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
 import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
-import handleError from '../../../utils/handleError';
 import useForm from '../../../hooks/useForm';
+import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../api/customThemeSettings';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
@@ -66,7 +66,7 @@ const Sidebar: React.FC<{
                 <div className='w-full px-7'>
                     <button className='group flex w-full items-center justify-between text-sm font-medium opacity-80 transition-all hover:opacity-100' data-testid='change-theme' type='button' onClick={async () => {
                         await handleSave();
-                        updateRoute('design/edit/themes');
+                        updateRoute('design/change-theme');
                     }}>
                         <div className='text-left'>
                             <div className='font-semibold'>Change theme</div>
@@ -93,6 +93,7 @@ const DesignModal: React.FC = () => {
     });
     const {data: themeSettings} = useBrowseCustomThemeSettings();
     const {mutateAsync: editThemeSettings} = useEditCustomThemeSettings();
+    const handleError = useHandleError();
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
     const {updateRoute} = useRouting();
 
@@ -218,6 +219,7 @@ const DesignModal: React.FC = () => {
         cancelLabel='Close'
         defaultTab='homepage'
         dirty={saveState === 'unsaved'}
+        okColor={saveState === 'saved' ? 'green' : 'black'}
         okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save')}
         preview={previewContent}
         previewToolbarTabs={previewTabs}

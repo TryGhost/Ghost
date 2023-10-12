@@ -622,12 +622,13 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor-feature-image-alttext,
 .gh-editor-feature-image-caption {
     width: 100%;
+    height: 24px;
     margin: 0 0 1.7em 0;
     outline: none;
     border-width: 0;
     border-style: none;
     font-size: 1.4rem;
-    line-height: 1.65;
+    line-height: 24px;
     letter-spacing: .04rem;
     background-color: transparent !important;
     transition: border-color .15s linear;
@@ -638,6 +639,13 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor-feature-image-caption p::placeholder {
     color: var(--midlightgrey);
     opacity: 1 !important;
+}
+
+.gh-editor-feature-image-caption :is(.koenig-lexical *) {
+    font-size: inherit !important;
+    font-family: inherit !important;
+    line-height: inherit !important;
+    letter-spacing: inherit !important;
 }
 
 .gh-editor-feature-image-caption p {

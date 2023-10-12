@@ -2,7 +2,7 @@ import Button from '../../../../admin-x-ds/global/Button';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
-import handleError from '../../../../utils/handleError';
+import useHandleError from '../../../../utils/api/handleError';
 import {User, useUpdatePassword} from '../../../../api/users';
 import {ValidationError} from '../../../../utils/errors';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
@@ -69,6 +69,7 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
     const confirmNewPasswordRef = useRef<HTMLInputElement>(null);
 
     const {mutateAsync: updatePassword} = useUpdatePassword();
+    const handleError = useHandleError();
 
     const isCurrentUser = user.id === currentUser.id;
 

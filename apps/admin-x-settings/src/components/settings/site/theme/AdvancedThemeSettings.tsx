@@ -6,8 +6,8 @@ import Menu from '../../../../admin-x-ds/global/Menu';
 import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
-import handleError from '../../../../utils/handleError';
-import {Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, useActivateTheme, useDeleteTheme} from '../../../../api/themes';
+import useHandleError from '../../../../utils/api/handleError';
+import {Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '../../../../api/themes';
 import {downloadFile, getGhostPaths} from '../../../../utils/helpers';
 
 interface ThemeActionProps {
@@ -23,6 +23,8 @@ function getThemeLabel(theme: Theme): React.ReactNode {
 
     if (isDefaultTheme(theme)) {
         label += ' (default)';
+    } else if (isLegacyTheme(theme)) {
+        label += ' (legacy)';
     } else if (theme.package?.name !== theme.name) {
         label =
             <span className='text-sm md:text-base'>
@@ -49,6 +51,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
 }) => {
     const {mutateAsync: activateTheme} = useActivateTheme();
     const {mutateAsync: deleteTheme} = useDeleteTheme();
+    const handleError = useHandleError();
 
     const handleActivate = async () => {
         try {

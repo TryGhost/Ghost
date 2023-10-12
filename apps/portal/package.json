@@ -85,7 +85,7 @@
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "12.1.5",
     "@tryghost/i18n": "0.0.0",
-    "@vitejs/plugin-react": "4.0.4",
+    "@vitejs/plugin-react": "4.1.0",
     "@vitest/coverage-v8": "0.34.3",
     "@vitest/ui": "0.34.3",
     "concurrently": "8.2.1",
@@ -94,7 +94,7 @@
     "jsdom": "22.1.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "vite": "4.4.9",
+    "vite": "4.4.11",
     "vite-plugin-css-injected-by-js": "3.3.0",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "0.34.3"

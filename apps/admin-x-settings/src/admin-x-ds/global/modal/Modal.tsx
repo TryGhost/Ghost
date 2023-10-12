@@ -27,6 +27,7 @@ export interface ModalProps {
     leftButtonProps?: ButtonProps;
     buttonsDisabled?: boolean;
     footer?: boolean | React.ReactNode;
+    header?: boolean;
     padding?: boolean;
     onOk?: () => void;
     onCancel?: () => void;
@@ -42,6 +43,7 @@ export interface ModalProps {
     dirty?: boolean;
     animate?: boolean;
     formSheet?: boolean;
+    enableCMDS?: boolean;
 }
 
 export const topLevelBackdropClasses = 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]';
@@ -55,6 +57,7 @@ const Modal: React.FC<ModalProps> = ({
     okLoading = false,
     cancelLabel = 'Cancel',
     footer,
+    header,
     leftButtonProps,
     buttonsDisabled,
     padding = true,
@@ -72,7 +75,8 @@ const Modal: React.FC<ModalProps> = ({
     scrolling = true,
     dirty = false,
     animate = true,
-    formSheet = false
+    formSheet = false,
+    enableCMDS = true
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -113,6 +117,23 @@ const Modal: React.FC<ModalProps> = ({
 
         return () => clearTimeout(timeout);
     }, []);
+
+    useEffect(() => {
+        if (onOk) {
+            const handleCMDS = (e: KeyboardEvent) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                    e.preventDefault();
+                    onOk();
+                }
+            };
+            if (enableCMDS) {
+                window.addEventListener('keydown', handleCMDS);
+                return () => {
+                    window.removeEventListener('keydown', handleCMDS);
+                };
+            }
+        }
+    });
 
     let buttons: ButtonProps[] = [];
 
@@ -369,7 +390,7 @@ const Modal: React.FC<ModalProps> = ({
                 formSheet && 'bg-[rgba(98,109,121,0.08)]'
             )}></div>
             <section className={modalClasses} data-testid={testId} style={modalStyles}>
-                {!topRightContent || topRightContent === 'close' ?
+                {header === false ? '' : (!topRightContent || topRightContent === 'close' ?
                     (<header className={headerClasses}>
                         {title && <Heading level={3}>{title}</Heading>}
                         <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute right-6 top-6`}>
@@ -380,7 +401,7 @@ const Modal: React.FC<ModalProps> = ({
                     (<header className={headerClasses}>
                         {title && <Heading level={3}>{title}</Heading>}
                         {topRightContent}
-                    </header>)}
+                    </header>))}
                 <div className={contentClasses}>
                     {children}
                 </div>

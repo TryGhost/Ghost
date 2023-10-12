@@ -136,25 +136,28 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <Select
                 hint='Who should be able to subscribe to your site?'
                 options={MEMBERS_SIGNUP_ACCESS_OPTIONS}
-                selectedOption={membersSignupAccess}
+                selectedOption={MEMBERS_SIGNUP_ACCESS_OPTIONS.find(option => option.value === membersSignupAccess)}
+                testId='subscription-access-select'
                 title="Subscription access"
-                onSelect={(value) => {
-                    updateSetting('members_signup_access', value || null);
+                onSelect={(option) => {
+                    updateSetting('members_signup_access', option?.value || null);
                 }}
             />
             <Select
                 hint='When a new post is created, who should have access?'
                 options={DEFAULT_CONTENT_VISIBILITY_OPTIONS}
-                selectedOption={defaultContentVisibility}
+                selectedOption={DEFAULT_CONTENT_VISIBILITY_OPTIONS.find(option => option.value === defaultContentVisibility)}
+                testId='default-post-access-select'
                 title="Default post access"
-                onSelect={(value) => {
-                    updateSetting('default_content_visibility', value || null);
+                onSelect={(option) => {
+                    updateSetting('default_content_visibility', option?.value || null);
                 }}
             />
             {defaultContentVisibility === 'tiers' && (
                 <MultiSelect
                     color='black'
                     options={tierOptionGroups.filter(group => group.options.length > 0)}
+                    testId='tiers-select'
                     title='Select tiers'
                     values={selectedTierOptions}
                     clearBg
@@ -164,10 +167,11 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <Select
                 hint='Who can comment on posts?'
                 options={COMMENTS_ENABLED_OPTIONS}
-                selectedOption={commentsEnabled}
+                selectedOption={COMMENTS_ENABLED_OPTIONS.find(option => option.value === commentsEnabled)}
+                testId='commenting-select'
                 title="Commenting"
-                onSelect={(value) => {
-                    updateSetting('comments_enabled', value || null);
+                onSelect={(option) => {
+                    updateSetting('comments_enabled', option?.value || null);
                 }}
             />
         </SettingGroupContent>
@@ -178,7 +182,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             description='Set up default access options for subscription and posts'
             isEditing={isEditing}
             keywords={keywords}
-            navid='access'
+            navid='members'
             saveState={saveState}
             testId='access'
             title='Access'

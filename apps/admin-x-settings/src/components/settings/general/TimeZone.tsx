@@ -49,7 +49,7 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const [publicationTimezone] = getSettingValues(localSettings, ['timezone']) as string[];
 
-    const timezoneOptions = timezoneData.map((tzOption: TimezoneDataDropdownOption) => {
+    const timezoneOptions: Array<{value: string; label: string}> = timezoneData.map((tzOption: TimezoneDataDropdownOption) => {
         return {
             value: tzOption.name,
             label: tzOption.label
@@ -76,9 +76,11 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <Select
                 hint={<Hint timezone={publicationTimezone} />}
                 options={timezoneOptions}
-                selectedOption={publicationTimezone}
+                selectedOption={timezoneOptions.find(option => option.value === publicationTimezone)}
+                testId='timezone-select'
                 title="Site timezone"
-                onSelect={handleTimezoneChange}
+                isSearchable
+                onSelect={option => handleTimezoneChange(option?.value)}
             />
         </SettingGroupContent>
     );

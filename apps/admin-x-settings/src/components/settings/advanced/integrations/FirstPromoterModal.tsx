@@ -4,7 +4,7 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import handleError from '../../../../utils/handleError';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as Icon} from '../../../../assets/icons/firstpromoter.svg';
 import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
@@ -17,8 +17,9 @@ const FirstpromoterModal = NiceModal.create(() => {
 
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
-    const [accountId, setAccountId] = useState('');
+    const [accountId, setAccountId] = useState<string | null>('');
     const [enabled, setEnabled] = useState(false);
 
     const [firstPromoterEnabled] = getSettingValues<boolean>(settings, ['firstpromoter']);
@@ -26,7 +27,7 @@ const FirstpromoterModal = NiceModal.create(() => {
 
     useEffect(() => {
         setEnabled(firstPromoterEnabled || false);
-        setAccountId(firstPromoterId || '');
+        setAccountId(firstPromoterId || null);
     }, [firstPromoterEnabled, firstPromoterId]);
 
     const handleSave = async () => {
@@ -49,6 +50,7 @@ const FirstpromoterModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('integrations');
             }}
+            dirty={enabled !== firstPromoterEnabled || accountId !== firstPromoterId}
             okColor='black'
             okLabel='Save & close'
             testId='firstpromoter-modal'
@@ -86,7 +88,7 @@ const FirstpromoterModal = NiceModal.create(() => {
                             </>}
                             placeholder='XXXXXXXX'
                             title='FirstPromoter account ID'
-                            value={accountId}
+                            value={accountId || ''}
                             onChange={(e) => {
                                 setAccountId(e.target.value);
                             }}

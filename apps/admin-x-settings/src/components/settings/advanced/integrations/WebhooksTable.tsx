@@ -6,7 +6,7 @@ import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableHead from '../../../../admin-x-ds/global/TableHead';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import WebhookModal from './WebhookModal';
-import handleError from '../../../../utils/handleError';
+import useHandleError from '../../../../utils/api/handleError';
 import {Integration} from '../../../../api/integrations';
 import {getWebhookEventLabel} from './webhookEventOptions';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
@@ -14,6 +14,7 @@ import {useDeleteWebhook} from '../../../../api/webhooks';
 
 const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
     const {mutateAsync: deleteWebhook} = useDeleteWebhook();
+    const handleError = useHandleError();
 
     const handleDelete = (id: string) => {
         NiceModal.show(ConfirmationModal, {

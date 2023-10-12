@@ -1,13 +1,14 @@
-import React, {useId} from 'react';
+import React, {FocusEventHandler, HTMLProps, useId} from 'react';
 
 import Heading from '../Heading';
 import Hint from '../Hint';
 import clsx from 'clsx';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 
 type ResizeOptions = 'both' | 'vertical' | 'horizontal' | 'none';
 type FontStyles = 'sans' | 'mono';
 
-interface TextAreaProps {
+interface TextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     inputRef?: React.RefObject<HTMLTextAreaElement>;
     title?: string;
     value?: string;
@@ -37,9 +38,22 @@ const TextArea: React.FC<TextAreaProps> = ({
     fontStyle = 'sans',
     className,
     onChange,
+    onFocus,
+    onBlur,
     ...props
 }) => {
     const id = useId();
+    const {setFocusState} = useFocusContext();
+
+    const handleFocus: FocusEventHandler<HTMLTextAreaElement> = (e) => {
+        setFocusState(true);
+        onFocus?.(e);
+    };
+
+    const handleBlur: FocusEventHandler<HTMLTextAreaElement> = (e) => {
+        setFocusState(false);
+        onBlur?.(e);
+    };
 
     let styles = clsx(
         'peer order-2 rounded-sm border px-3 py-2 dark:text-white',
@@ -78,7 +92,9 @@ const TextArea: React.FC<TextAreaProps> = ({
                 placeholder={placeholder}
                 rows={rows}
                 value={value}
+                onBlur={handleBlur}
                 onChange={onChange}
+                onFocus={handleFocus}
                 {...props}>
             </textarea>
             {title && <Heading className={'order-1 !text-grey-700 peer-focus:!text-black dark:!text-grey-300 dark:peer-focus:!text-white'} htmlFor={id} useLabelTag={true}>{title}</Heading>}

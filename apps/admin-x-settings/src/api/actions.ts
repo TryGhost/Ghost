@@ -1,7 +1,7 @@
 import {ExternalLink, InternalLink} from '../components/providers/RoutingProvider';
 import {InfiniteData} from '@tanstack/react-query';
 import {JSONObject} from './config';
-import {Meta, createInfiniteQuery} from '../utils/apiRequests';
+import {Meta, createInfiniteQuery} from '../utils/api/hooks';
 
 // Types
 
@@ -74,10 +74,12 @@ export const useBrowseActions = createInfiniteQuery<ActionsResponseType>({
             }
         });
 
+        const meta = pages.at(-1)!.meta;
+
         return {
             actions: actions.reverse(),
-            meta: pages.at(-1)!.meta,
-            isEnd: pages.at(-1)!.actions.length < pages.at(-1)!.meta.pagination.limit
+            meta,
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
 });
@@ -95,13 +97,13 @@ export const getActorLinkTarget = (action: Action): InternalLink | ExternalLink 
             return;
         }
 
-        return {route: `integrations/show/${action.actor.id}`};
+        return {route: `integrations/${action.actor.id}`};
     case 'user':
         if (!action.actor.slug) {
             return;
         }
 
-        return {route: `users/show/${action.actor.slug}`};
+        return {route: `staff/${action.actor.slug}`};
     }
 
     return;
@@ -134,7 +136,7 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
                 return;
             }
 
-            return {route: `integrations/show/${action.resource.id}`};
+            return {route: `integrations/${action.resource.id}`};
         case 'offer':
             if (!action.resource || !action.resource.id) {
                 return;
@@ -162,7 +164,7 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
                 return;
             }
 
-            return {route: `users/show/${action.resource.slug}`};
+            return {route: `staff/${action.resource.slug}`};
         }
     }
 
@@ -191,13 +193,13 @@ export const getActionTitle = (action: Action) => {
     let actionName = action.event;
 
     if (action.event === 'edited') {
-        if (action.context.action_name) {
-            actionName = action.context.action_name as string;
+        if (action.context?.action_name) {
+            actionName = action.context?.action_name as string;
         }
     }
 
-    if (action.context.count && (action.context.count as number) > 1) {
-        return `${action.context.count} ${resourceType}s ${actionName}`;
+    if (action.context?.count && (action.context?.count as number) > 1) {
+        return `${action.context?.count} ${resourceType}s ${actionName}`;
     }
 
     return `${resourceType.slice(0, 1).toUpperCase()}${resourceType.slice(1)} ${actionName}`;
@@ -207,11 +209,11 @@ export const getContextResource = (action: Action) => {
     if (action.resource_type === 'setting') {
         if (action.context?.group && action.context?.key) {
             return {
-                group: action.context.group as string,
-                key: action.context.key as string
+                group: action.context?.group as string,
+                key: action.context?.key as string
             };
         }
     }
 };
 
-export const isBulkAction = (action: Action) => typeof action.context.count === 'number' && action.context.count > 1;
+export const isBulkAction = (action: Action) => typeof action.context?.count === 'number' && action.context?.count > 1;

@@ -3,10 +3,10 @@ import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
-import handleError from '../../../utils/handleError';
+import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/twitter-logo.svg';
+import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/x-logo.svg';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
 import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
@@ -22,20 +22,18 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateSetting,
         handleEditingChange
     } = useSettingGroup();
+    const handleError = useHandleError();
 
     const {mutateAsync: uploadImage} = useUploadImage();
-    const [pintura] = getSettingValues<boolean>(localSettings, ['pintura']);
+
     const [pinturaJsUrl] = getSettingValues<string>(localSettings, ['pintura_js_url']);
     const [pinturaCssUrl] = getSettingValues<string>(localSettings, ['pintura_css_url']);
-
-    const pinturaEnabled = Boolean(pintura) && Boolean(pinturaJsUrl) && Boolean(pinturaCssUrl);
 
     const editor = usePinturaEditor(
         {config: {
             jsUrl: pinturaJsUrl || '',
             cssUrl: pinturaCssUrl || ''
-        },
-        disabled: !pinturaEnabled}
+        }}
     );
 
     const [
@@ -87,7 +85,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         imageURL={twitterImage}
                         pintura={
                             {
-                                isEnabled: pinturaEnabled,
+                                isEnabled: editor.isEnabled,
                                 openEditor: async () => editor.openEditor({
                                     image: twitterImage || '',
                                     handleSave: async (file:File) => {
@@ -107,14 +105,14 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             clearBg={true}
                             inputRef={focusRef}
                             placeholder={siteTitle}
-                            title="Twitter title"
+                            title="X title"
                             value={twitterTitle}
                             onChange={handleTitleChange}
                         />
                         <TextField
                             clearBg={true}
                             placeholder={siteDescription}
-                            title="Twitter description"
+                            title="X description"
                             value={twitterDescription}
                             onChange={handleDescriptionChange}
                         />
@@ -126,13 +124,13 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <SettingGroup
-            description='Customize structured data of your site'
+            description='Customize structured data of your site for X (formerly Twitter)'
             isEditing={isEditing}
             keywords={keywords}
             navid='twitter'
             saveState={saveState}
             testId='twitter'
-            title='Twitter card'
+            title='X card'
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
             onSave={handleSave}

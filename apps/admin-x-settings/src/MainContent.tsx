@@ -6,6 +6,7 @@ import Users from './components/settings/general/Users';
 import useRouting from './hooks/useRouting';
 import {ReactNode, useEffect} from 'react';
 import {canAccessSettings, isEditorUser} from './api/users';
+import {toast} from 'react-hot-toast';
 import {topLevelBackdropClasses} from './admin-x-ds/global/modal/Modal';
 import {useGlobalData} from './components/providers/GlobalDataProvider';
 
@@ -26,8 +27,13 @@ const MainContent: React.FC = () => {
     const {route, updateRoute, loadingModal} = useRouting();
 
     useEffect(() => {
-        if (!canAccessSettings(currentUser) && route !== `users/show/${currentUser.slug}`) {
-            updateRoute(`users/show/${currentUser.slug}`);
+        // resets any toasts that may have been left open on initial load
+        toast.remove();
+    }, []);
+
+    useEffect(() => {
+        if (!canAccessSettings(currentUser) && route !== `staff/${currentUser.slug}`) {
+            updateRoute(`staff/${currentUser.slug}`);
         }
     }, [currentUser, route, updateRoute]);
 

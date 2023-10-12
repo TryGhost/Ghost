@@ -2,13 +2,14 @@ import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import Radio from '../../../admin-x-ds/global/form/Radio';
 import TextField from '../../../admin-x-ds/global/form/TextField';
-import handleError from '../../../utils/handleError';
+import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import validator from 'validator';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {showToast} from '../../../admin-x-ds/global/Toast';
-import {useAddInvite} from '../../../api/invites';
+import {useAddInvite, useBrowseInvites} from '../../../api/invites';
 import {useBrowseRoles} from '../../../api/roles';
+import {useBrowseUsers} from '../../../api/users';
 import {useEffect, useRef, useState} from 'react';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';
@@ -32,7 +33,10 @@ const InviteUserModal = NiceModal.create(() => {
         role?: string;
     }>({});
 
+    const {data: {users} = {}} = useBrowseUsers();
+    const {data: {invites} = {}} = useBrowseInvites();
     const {mutateAsync: addInvite} = useAddInvite();
+    const handleError = useHandleError();
 
     useEffect(() => {
         if (focusRef.current) {
@@ -86,14 +90,28 @@ const InviteUserModal = NiceModal.create(() => {
             return;
         }
 
-        if (Object.values(errors).some(error => error)) {
-            return;
-        }
-
         if (!validator.isEmail(email)) {
             setErrors({
                 email: 'Please enter a valid email address.'
             });
+            return;
+        }
+
+        if (users?.some(({email: userEmail}) => userEmail === email)) {
+            setErrors({
+                email: 'A user with that email address already exists.'
+            });
+            return;
+        }
+
+        if (invites?.some(({email: inviteEmail}) => inviteEmail === email)) {
+            setErrors({
+                email: 'A user with that email address was already invited.'
+            });
+            return;
+        }
+
+        if (errors.role) {
             return;
         }
 
@@ -112,7 +130,7 @@ const InviteUserModal = NiceModal.create(() => {
             });
 
             modal.remove();
-            updateRoute('users');
+            updateRoute('staff');
         } catch (e) {
             setSaveState('error');
 
@@ -157,7 +175,7 @@ const InviteUserModal = NiceModal.create(() => {
     return (
         <Modal
             afterClose={() => {
-                updateRoute('users');
+                updateRoute('staff');
             }}
             cancelLabel=''
             okLabel={okLabel}
@@ -181,6 +199,7 @@ const InviteUserModal = NiceModal.create(() => {
                     onChange={(event) => {
                         setEmail(event.target.value);
                     }}
+                    onKeyDown={() => setErrors(e => ({...e, email: undefined}))}
                 />
                 <div>
                     <Radio

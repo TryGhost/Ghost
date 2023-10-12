@@ -45,7 +45,7 @@ class ExternalMediaInliner {
         try {
             return await request(requestURL, {
                 followRedirect: true,
-                encoding: null
+                responseType: 'buffer'
             });
         } catch (error) {
             // NOTE: add special case for 404s
