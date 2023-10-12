@@ -25,7 +25,7 @@
         "sinon": "15.2.0"
     },
     "dependencies": {
-        "@tryghost/errors": "1.2.25",
+        "@tryghost/errors": "1.2.26",
         "@tryghost/in-memory-repository": "0.0.0",
         "@tryghost/tpl": "0.1.25"
     },

@@ -88,7 +88,7 @@
     "@tryghost/email-mock-receiver": "0.3.1",
     "@tryghost/email-service": "0.0.0",
     "@tryghost/email-suppression-list": "0.0.0",
-    "@tryghost/errors": "1.2.24",
+    "@tryghost/errors": "1.2.26",
     "@tryghost/event-aware-cache-wrapper": "0.0.0",
     "@tryghost/express-dynamic-redirects": "0.0.0",
     "@tryghost/external-media-inliner": "0.0.0",
@@ -112,7 +112,7 @@
     "@tryghost/link-redirects": "0.0.0",
     "@tryghost/link-replacer": "0.0.0",
     "@tryghost/link-tracking": "0.0.0",
-    "@tryghost/logging": "2.4.4",
+    "@tryghost/logging": "2.4.8",
     "@tryghost/magic-link": "0.0.0",
     "@tryghost/mail-events": "0.0.0",
     "@tryghost/mailgun-client": "0.0.0",
@@ -260,8 +260,8 @@
   },
   "resolutions": {
     "@elastic/elasticsearch": "8.5.0",
-    "@tryghost/errors": "1.2.24",
-    "@tryghost/logging": "2.4.4",
+    "@tryghost/errors": "1.2.26",
+    "@tryghost/logging": "2.4.8",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"
   },

@@ -40,8 +40,8 @@
   },
   "resolutions": {
     "@elastic/elasticsearch": "8.5.0",
-    "@tryghost/errors": "1.2.24",
-    "@tryghost/logging": "2.4.4",
+    "@tryghost/errors": "1.2.26",
+    "@tryghost/logging": "2.4.8",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"
   },
