@@ -54,9 +54,6 @@ test.describe('Portal', () => {
     });
 
     test.describe('Upgrade: Single Tier', () => {
-        // Because memberUrl is set during first test, we need to run these tests in series
-        test.describe.configure({mode: 'serial'});
-
         let memberUrl;
         const tierName = 'The Local Test';
         const member = {

@@ -5,7 +5,6 @@ const config = {
     expect: {
         timeout: 10000
     },
-    workers: process.env.CI ? '100%' : (process.env.PLAYWRIGHT_SLOWMO ? 1 : undefined),
     reporter: [['list', {printSteps: true}]],
     use: {
         // Use a single browser since we can't simultaneously test multiple browsers
