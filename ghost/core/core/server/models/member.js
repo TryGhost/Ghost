@@ -373,8 +373,10 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     searchQuery: function searchQuery(queryBuilder, query) {
-        queryBuilder.where('members.name', 'like', `%${query}%`);
-        queryBuilder.orWhere('members.email', 'like', `%${query}%`);
+        queryBuilder.where(function () {
+            this.where('members.name', 'like', `%${query}%`)
+                .orWhere('members.email', 'like', `%${query}%`);
+        });
     },
 
     orderRawQuery(field, direction) {
