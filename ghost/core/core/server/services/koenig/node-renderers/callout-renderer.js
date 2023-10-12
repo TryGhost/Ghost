@@ -5,6 +5,14 @@ export function renderCalloutNode(node, options = {}) {
     addCreateDocumentOption(options);
     const document = options.createDocument();
     const element = document.createElement('div');
+
+    // backgroundColor can end up with `rgba(0, 0, 0, 0)` from old mobiledoc copy/paste
+    // that is invalid when used in a class name so fall back to `white` when we don't have
+    // something that looks like a valid class
+    if (!node.backgroundColor || !node.backgroundColor.match(/^[a-zA-Z\d-]+$/)) {
+        node.backgroundColor = 'white';
+    }
+
     element.classList.add('kg-card', 'kg-callout-card', `kg-callout-card-${node.backgroundColor}`);
 
     if (node.calloutEmoji) {
