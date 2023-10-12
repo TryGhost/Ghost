@@ -1,6 +1,6 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
-const {disconnectStripe, setupStripe, generateStripeIntegrationToken} = require('../utils');
+const {disconnectStripe, setupStripe, generateStripeIntegrationToken, getStripeAccountId} = require('../utils');
 
 test.describe('Membership Settings', () => {
     test.describe('Portal settings', () => {
@@ -19,7 +19,8 @@ test.describe('Membership Settings', () => {
             await expect(modal.locator('label').filter({hasText: 'Free'}).first()).toBeVisible();
 
             // Reconnect Stripe for other tests
-            const stripeToken = await generateStripeIntegrationToken();
+            const stripeAccountId = await getStripeAccountId();
+            const stripeToken = await generateStripeIntegrationToken(stripeAccountId);
             await page.goto('/ghost');
             await setupStripe(page, stripeToken);
         });
