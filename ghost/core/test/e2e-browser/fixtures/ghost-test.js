@@ -12,7 +12,13 @@ const configUtils = require('../../utils/configUtils');
 
 const startWebhookServer = (port) => {
     const command = `stripe listen --forward-connect-to http://127.0.0.1:${port}/members/webhooks/stripe/`;
-    return spawn(command.split(' ')[0], command.split(' ').slice(1));
+    const webhookServer = spawn(command.split(' ')[0], command.split(' ').slice(1));
+
+    // Adding event listeners here seems to prevent heisenbug where webhooks aren't received
+    webhookServer.stdout.on('data', () => {});
+    webhookServer.stderr.on('data', () => {});
+
+    return webhookServer;
 };
 
 const getWebhookSecret = async () => {
