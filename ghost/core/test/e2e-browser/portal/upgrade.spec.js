@@ -1,5 +1,4 @@
-const {expect} = require('@playwright/test');
-const test = require('../fixtures/ghost-test');
+const {expect, test} = require('@playwright/test');
 const {completeStripeSubscription, createMember, impersonateMember} = require('../utils');
 
 test.describe('Portal', () => {

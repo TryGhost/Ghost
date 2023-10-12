@@ -1,5 +1,4 @@
-const {expect} = require('@playwright/test');
-const test = require('../fixtures/ghost-test');
+const {expect, test} = require('@playwright/test');
 const {createTier, createOffer, getUniqueName, getSlug, goToMembershipPage, openTierModal} = require('../utils');
 
 test.describe('Admin', () => {

@@ -1,5 +1,4 @@
-const {expect} = require('@playwright/test');
-const test = require('../fixtures/ghost-test');
+const {expect, test} = require('@playwright/test');
 const {DateTime} = require('luxon');
 const {slugify} = require('@tryghost/string');
 const {createTier, createMember, createPostDraft, impersonateMember} = require('../utils');

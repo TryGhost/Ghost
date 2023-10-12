@@ -1,5 +1,4 @@
-const {expect} = require('@playwright/test');
-const test = require('../fixtures/ghost-test');
+const {expect, test} = require('@playwright/test');
 const {createPostDraft, createTier, disconnectStripe, generateStripeIntegrationToken, setupStripe} = require('../utils');
 
 const changeSubscriptionAccess = async (page, access) => {
