@@ -5,7 +5,6 @@ const config = {
     expect: {
         timeout: 10000
     },
-    retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? '100%' : (process.env.PLAYWRIGHT_SLOWMO ? 1 : undefined),
     reporter: [['list', {printSteps: true}]],
     use: {

@@ -1,6 +1,6 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
-const {createPostDraft, createTier, disconnectStripe, generateStripeIntegrationToken, setupStripe, getStripeAccountId} = require('../utils');
+const {createPostDraft, createTier, disconnectStripe, generateStripeIntegrationToken, setupStripe} = require('../utils');
 
 const changeSubscriptionAccess = async (page, access) => {
     await page.locator('[data-test-nav="settings"]').click();
@@ -126,8 +126,7 @@ test.describe('Site Settings', () => {
             await changeSubscriptionAccess(page, 'all');
 
             await page.goto('/ghost');
-            const stripeAccountId = await getStripeAccountId();
-            const stripeToken = await generateStripeIntegrationToken(stripeAccountId);
+            const stripeToken = await generateStripeIntegrationToken();
             await setupStripe(page, stripeToken);
         });
     });
