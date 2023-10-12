@@ -68,19 +68,17 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
                     </div>
                 </div>
             </TableCell>
-
-            <TableCell className='hidden !pr-1 pl-0 text-right align-middle md:!visible md:!table-cell' onClick={showDetails}>
+            <TableCell className='hidden w-[1%] whitespace-nowrap !pr-1 pl-0 text-right align-middle md:!visible md:!table-cell' padding={false} onClick={showDetails}>
                 {(signups === 0) ? (<span className="text-grey-500 dark:text-grey-900">-</span>) : (<div className='-mt-px text-right'>
                     <span className='text-right'>{numberWithCommas(signups)}</span>
                 </div>)}
             </TableCell>
-            <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
+            <TableCell className='hidden w-[1%] whitespace-nowrap align-middle md:!visible md:!table-cell' onClick={showDetails}>
                 {(signups === 0) ? (null) : (<div className='-mt-px text-left'>
                     <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{freeMembersLabel}</span>
                 </div>)}
             </TableCell>
-
-            {incomingRecommendation.recommending_back && <TableCell className='group-hover/table-row:visible md:invisible'><div className='mt-1 whitespace-nowrap text-right text-sm text-grey-700'>Recommending back</div></TableCell>}
+            {incomingRecommendation.recommending_back && <TableCell className='w-[1%] whitespace-nowrap group-hover/table-row:visible md:invisible'><div className='mt-1 whitespace-nowrap text-right text-sm text-grey-700'>Recommending back</div></TableCell>}
         </TableRow>
     );
 };
