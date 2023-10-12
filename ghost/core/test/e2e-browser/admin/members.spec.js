@@ -5,7 +5,7 @@ const fs = require('fs');
 
 test.describe('Admin', () => {
     test.describe('Members', () => {
-        test.describe.configure({retries: 1});
+        test.describe.configure({retries: 1, mode: 'serial'});
         test('A member can be created', async ({page}) => {
             await page.goto('/ghost');
             await page.locator('.gh-nav a[href="#/members/"]').click();

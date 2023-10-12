@@ -192,7 +192,7 @@ test.describe('Publishing', () => {
             };
 
             // Create a member to send and email to
-            await createMember(page, {email: 'example@example.com', name: 'Publishing member'});
+            await createMember(page, {email: 'test+recipient1@example.com', name: 'Publishing member'});
 
             await page.goto('/ghost');
             await createPostDraft(page, postData);
@@ -221,11 +221,12 @@ test.describe('Publishing', () => {
 
         // Post should be available on web and sent as a newsletter
         test('Email only', async ({page}) => {
-            // Note: this currently depends on 'Publish and Email' to create a member!
             const postData = {
                 title: 'Email only post',
                 body: 'This is my post body.'
             };
+
+            await createMember(page, {email: 'test+recipient2@example.com', name: 'Publishing member'});
 
             await page.goto('/ghost');
             await createPostDraft(page, postData);
@@ -328,12 +329,13 @@ test.describe('Publishing', () => {
     test.describe('Schedule post', () => {
         // Post should be published to web and sent as a newsletter at the scheduled time
         test('Publish and Email', async ({page}) => {
-            // Note: this currently depends on the first 'Publish and Email' to create a member!
             const postData = {
                 // This title should be unique
                 title: 'Scheduled post publish+email test',
                 body: 'This is my scheduled post body.'
             };
+
+            await createMember(page, {email: 'test+recipient3@example.com', name: 'Publishing member'});
 
             await page.goto('/ghost');
             await createPostDraft(page, postData);
@@ -395,6 +397,8 @@ test.describe('Publishing', () => {
                 title: 'Scheduled email only test',
                 body: 'This is my scheduled post body.'
             };
+
+            await createMember(page, {email: 'test+recipient4@example.com', name: 'Publishing member'});
 
             await page.goto('/ghost');
             await createPostDraft(page, postData);
