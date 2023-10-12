@@ -4,7 +4,7 @@ const base = require('@playwright/test');
 const {promisify} = require('util');
 const {spawn, exec} = require('child_process');
 const {setupGhost, setupMailgun, enableLabs, setupStripe} = require('../utils/e2e-browser-utils');
-const {allowStripe, mockMail} = require('../../utils/e2e-framework-mock-manager');
+const {allowStripe} = require('../../utils/e2e-framework-mock-manager');
 const MailgunClient = require('@tryghost/mailgun-client');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
@@ -21,10 +21,6 @@ const getWebhookSecret = async () => {
 };
 
 const generateStripeIntegrationToken = async () => {
-    if (!('STRIPE_PUBLISHABLE_KEY' in process.env) || !('STRIPE_SECRET_KEY' in process.env)) {
-        throw new Error('Missing STRIPE_PUBLISHABLE_KEY or STRIPE_SECRET_KEY environment variables');
-    }
-
     const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
     const secretKey = process.env.STRIPE_SECRET_KEY;
     const accountId = process.env.STRIPE_ACCOUNT_ID ?? JSON.parse((await promisify(exec)('stripe get account')).stdout).id;
@@ -35,6 +31,20 @@ const generateStripeIntegrationToken = async () => {
         l: false,
         i: accountId
     })).toString('base64');
+};
+
+const stubMailgun = () => {
+    // We need to stub the Mailgun client before starting Ghost
+    sinon.stub(MailgunClient.prototype, 'getInstance').returns({
+        // @ts-ignore
+        messages: {
+            create: async function () {
+                return {
+                    id: `mailgun-mock-id-${ObjectID().toHexString()}`
+                };
+            }
+        }
+    });
 };
 
 // Global promises for webhook secret / Stripe integration token
@@ -95,18 +105,7 @@ module.exports = base.test.extend({
 
         process.env.WEBHOOK_SECRET = await webhookSecretPromise;
 
-        sandbox.stub(MailgunClient.prototype, 'getInstance').returns({
-            // @ts-ignore
-            messages: {
-                create: async function () {
-                    return {
-                        id: `mailgun-mock-id-${ObjectID().toHexString()}`
-                    };
-                }
-            }
-        });
-
-        mockMail();
+        stubMailgun();
 
         const {startGhost} = require('../../utils/e2e-framework');
         const server = await startGhost({
