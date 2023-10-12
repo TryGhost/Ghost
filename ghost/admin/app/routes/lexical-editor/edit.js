@@ -1,4 +1,5 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import {ALL_POST_INCLUDES} from '../../adapters/post';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
 export default class EditRoute extends AuthenticatedRoute {
@@ -28,7 +29,9 @@ export default class EditRoute extends AuthenticatedRoute {
         let query = {
             // eslint-disable-next-line camelcase
             id: post_id,
-            include: 'tags,authors,authors.roles,email,tiers,newsletter,count.clicks,post_revisions,post_revisions.author'
+            // we need to explicitly request post_revisions which means we need
+            // to specify every post include option
+            include: ALL_POST_INCLUDES
         };
 
         const records = await this.store.query(modelName, query);
