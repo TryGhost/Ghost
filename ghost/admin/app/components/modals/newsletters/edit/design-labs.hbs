@@ -285,12 +285,12 @@
 
                         <GhFormGroup class="gh-stack-item">
                             <label class="modal-fullsettings-title">Email footer</label>
-                            <KoenigBasicHtmlInput
-                                @name="footer"
-                                @html={{@newsletter.footerContent}}
-                                @class="miw-100 form-text gh-members-emailsettings-footer-input"
-                                @onChange={{fn this.changeSetting "footerContent"}}
-                            />
+                            <textarea
+                                id="footer"
+                                name="footer"
+                                class="miw-100 form-text gh-members-emailsettings-footer-input"
+                                {{on "change" (fn this.changeSetting "footerContent")}}
+                            >{{@newsletter.footerContent}}</textarea>
                             <p>Any extra information or legal text</p>
                         </GhFormGroup>
                     </div>

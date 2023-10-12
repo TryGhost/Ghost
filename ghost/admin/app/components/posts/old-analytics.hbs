@@ -35,7 +35,7 @@
                         {{moment-format publishedAt "HH:mm"}}
                     {{/let}}
                 </div>
-                <LinkTo @route="editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
+                <LinkTo @route="lexical-editor.edit" @models={{array this.post.displayName this.post.id}} class="gh-post-list-cta edit" title="">
                     {{svg-jar "pen" title=""}}<span>Edit post</span>
                 </LinkTo>
             </div>

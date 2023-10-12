@@ -36,22 +36,6 @@ export default class GhEditor extends Component {
     _viewActionsWidth = 190;
 
     @action
-    toggleFullScreen(isFullScreen) {
-        this.set('isFullScreen', isFullScreen);
-        this.ui.set('isFullScreen', isFullScreen);
-    }
-
-    @action
-    togglePreview(isPreview) {
-        this.set('isPreview', isPreview);
-    }
-
-    @action
-    toggleSplitScreen(isSplitScreen) {
-        this.set('isSplitScreen', isSplitScreen);
-    }
-
-    @action
     uploadImages(fileList, resetInput) {
         // convert FileList to an array so that resetting the input doesn't
         // clear the file references before upload actions can be triggered

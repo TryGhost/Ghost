@@ -172,6 +172,6 @@ export default class PostsController extends Controller {
 
     @action
     openEditor(post) {
-        this.router.transitionTo('editor.edit', 'post', post.id);
+        this.router.transitionTo('lexical-editor.edit', 'post', post.id);
     }
 }

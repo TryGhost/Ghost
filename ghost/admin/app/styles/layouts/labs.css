@@ -522,7 +522,3 @@ p.gh-content-import-errordetail:first-of-type {
 .gh-import-content-spinner .gh-loading-content {
     padding-bottom: 0;
 }
-
-.gh-feedback-lexical-labs .form-group {
-    margin: 10px 0;
-}

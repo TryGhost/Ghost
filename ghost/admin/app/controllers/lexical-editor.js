@@ -688,7 +688,7 @@ export default class LexicalEditorController extends Controller {
             this.post.set('emailOnly', previousEmailOnlyValue);
 
             if (this.config.sentry_dsn && (Date.now() - startTime > 2000)) {
-                captureMessage('Failed Mobiledoc save took > 2s', (scope) => {
+                captureMessage('Failed Lexical save took > 2s', (scope) => {
                     scope.setTag('save_time', Math.ceil((Date.now() - startTime) / 1000));
                     scope.setTag('post_type', post.isPage ? 'page' : 'post');
                     scope.setTag('save_revision', options.adapterOptions?.saveRevision);
