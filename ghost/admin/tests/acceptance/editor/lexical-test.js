@@ -23,15 +23,4 @@ describe('Acceptance: Lexical editor', function () {
         await visit('/editor/post/');
         expect(currentURL(), 'currentURL').to.equal('/editor/post/');
     });
-
-    it('redirects mobiledoc editor to lexical editor when post.lexical is present', async function () {
-        const post = this.server.create('post', {
-            lexical: JSON.stringify({})
-        });
-
-        await loginAsRole('Administrator', this.server);
-        await visit(`/editor/post/${post.id}`);
-
-        expect(currentURL()).to.equal(`/editor/post/${post.id}`);
-    });
 });

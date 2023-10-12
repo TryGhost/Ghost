@@ -45,12 +45,9 @@
     "@tryghost/helpers": "1.1.77",
     "@tryghost/kg-clean-basic-html": "3.0.36",
     "@tryghost/kg-converters": "0.0.19",
-    "@tryghost/kg-parser-plugins": "3.0.37",
-    "@tryghost/kg-simplemde": "1.11.2",
     "@tryghost/koenig-lexical": "0.5.5",
     "@tryghost/limit-service": "1.2.10",
     "@tryghost/members-csv": "0.0.0",
-    "@tryghost/mobiledoc-kit": "0.12.5-ghost.2",
     "@tryghost/nql": "0.11.0",
     "@tryghost/nql-lang": "0.5.0",
     "@tryghost/string": "0.2.4",
@@ -153,7 +150,6 @@
   "ember-addon": {
     "paths": [
       "lib/asset-delivery",
-      "lib/koenig-editor",
       "lib/ember-power-calendar-utils",
       "lib/ember-power-calendar-moment"
     ]

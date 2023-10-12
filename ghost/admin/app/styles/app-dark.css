@@ -32,7 +32,6 @@
 @import "components/power-select.css";
 @import "components/power-calendar.css";
 @import "components/koenig.css";
-@import "components/koenig-dark.css";
 @import "components/publishmenu.css";
 @import "components/popovers.css";
 @import "components/unsplash.css";
@@ -827,9 +826,6 @@ input:focus,
 }
 
 /* Koenig styles */
-.kg-link-input {
-    border-color: var(--green) !important;
-}
 
 .image-overlay button {
     background: var(--whitegrey);

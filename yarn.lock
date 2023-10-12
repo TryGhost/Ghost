@@ -7867,17 +7867,12 @@
     mobiledoc-dom-renderer "^0.7.0"
     simple-dom "^1.4.0"
 
-"@tryghost/kg-parser-plugins@3.0.37", "@tryghost/kg-parser-plugins@^3.0.36":
+"@tryghost/kg-parser-plugins@^3.0.36":
   version "3.0.37"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-3.0.37.tgz#202c2726906099709209db3cc3da8d887e65fca8"
   integrity sha512-lfg75fcauy5icI0n+j6zTpoawYTtYP8jCYgvHq1Sg+zRY+90y9JeknLSo85hQz6nO8kP/RJvhGZ4tg9Gv3DynQ==
   dependencies:
     "@tryghost/kg-clean-basic-html" "^3.0.36"
-
-"@tryghost/kg-simplemde@1.11.2":
-  version "1.11.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-simplemde/-/kg-simplemde-1.11.2.tgz#0fc19fe4bc55a2e6e7acd53da096593900466767"
-  integrity sha512-IukMySWtpYAyaVECqK0w7p6O0KM7mvpaX9t1qz/H2WRoxvT11vqufXWW3Dk2sNK3gliFWSfhdxnTyOHMTSReBQ==
 
 "@tryghost/kg-utils@^1.0.20":
   version "1.0.20"
@@ -7928,14 +7923,6 @@
     json-stringify-safe "^5.0.1"
   optionalDependencies:
     promise.allsettled "^1.0.5"
-
-"@tryghost/mobiledoc-kit@0.12.5-ghost.2":
-  version "0.12.5-ghost.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/mobiledoc-kit/-/mobiledoc-kit-0.12.5-ghost.2.tgz#ab28336ec02827045e57acfbee97978b30d1ad96"
-  integrity sha512-hsvxZxxlYeAgsYBUox0y+i278EcvlG8AePLaSidd1HTwCiFRpBbZQQJ71r0G43ieUw9VyTgSid9TJdVBbmtckw==
-  dependencies:
-    mobiledoc-dom-renderer "0.7.0"
-    mobiledoc-text-renderer "0.4.0"
 
 "@tryghost/mobiledoc-kit@^0.12.4-ghost.1":
   version "0.12.4-ghost.1"
