@@ -24,7 +24,8 @@ const config = {
         },
         {
             name: 'portal',
-            testDir: 'test/e2e-browser/portal'
+            testDir: 'test/e2e-browser/portal',
+            fullyParallel: true
         }
     ]
 };
