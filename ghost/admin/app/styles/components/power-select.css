@@ -239,7 +239,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1em;
+    line-height: 1.2em;
 }
 
 .ember-power-select-multiple-remove-btn {

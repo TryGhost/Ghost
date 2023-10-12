@@ -36,10 +36,6 @@ const features = [{
     description: 'Enables the Collections Card for pages - requires Collections and the beta Editor to be enabled',
     flag: 'collectionsCard'
 },{
-    title: 'Admin X',
-    description: 'Enables Admin X, the new admin UI for Ghost',
-    flag: 'adminXSettings'
-},{
     title: 'Mail Events',
     description: 'Enables processing of mail events',
     flag: 'mailEvents'
@@ -62,7 +58,7 @@ const AlphaFeatures: React.FC = () => {
         <List titleSeparator={false}>
             {features.map(feature => (
                 <LabItem
-                    action={<FeatureToggle flag={feature.flag} />}
+                    action={<FeatureToggle flag={feature.flag} label={feature.title} />}
                     detail={feature.description}
                     title={feature.title} />
             ))}

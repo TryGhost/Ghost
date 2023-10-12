@@ -91,8 +91,9 @@ export function allowCompMemberUpgrade({member}) {
 }
 
 export function getCompExpiry({member}) {
-    if (member?.subscriptions?.[0]?.tier?.expiry_at) {
-        return getDateString(member.subscriptions[0].tier.expiry_at);
+    const subscription = getMemberSubscription({member});
+    if (subscription?.tier?.expiry_at) {
+        return getDateString(subscription.tier.expiry_at);
     }
     return '';
 }
@@ -257,6 +258,11 @@ export function hasMultipleProducts({site}) {
         return true;
     }
     return false;
+}
+
+export function getRefDomain() {
+    const referrerSource = window.location.hostname.replace(/^www\./, '');
+    return referrerSource;
 }
 
 export function hasMultipleProductsFeature({site}) {

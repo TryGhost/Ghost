@@ -40,11 +40,6 @@ const SlackModal = NiceModal.create(() => {
                 message: 'Check your Slack channel for the test message',
                 type: 'neutral'
             });
-        } else {
-            showToast({
-                type: 'pageError',
-                message: 'Can\'t save Slack settings! One or more fields have errors, please doublecheck you filled all mandatory fields'
-            });
         }
     };
 
@@ -63,11 +58,6 @@ const SlackModal = NiceModal.create(() => {
                 if (await handleSave()) {
                     modal.remove();
                     updateRoute('integrations');
-                } else {
-                    showToast({
-                        type: 'pageError',
-                        message: 'Can\'t save Slack settings! One or more fields have errors, please doublecheck you filled all mandatory fields'
-                    });
                 }
             }}
         >

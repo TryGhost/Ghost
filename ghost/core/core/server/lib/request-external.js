@@ -18,6 +18,11 @@ function isPrivateIp(addr) {
 }
 
 async function errorIfHostnameResolvesToPrivateIp(options) {
+    // Allow all requests if we are in development mode
+    if (config.get('env') === 'development') {
+        return Promise.resolve();
+    }
+
     // allow requests through to local Ghost instance
     const siteUrl = new URL(config.get('url'));
     const requestUrl = new URL(options.url.href);
@@ -37,6 +42,10 @@ async function errorIfHostnameResolvesToPrivateIp(options) {
 }
 
 async function errorIfInvalidUrl(options) {
+    if (config.get('env') === 'development') {
+        return Promise.resolve();
+    }
+
     if (!options.url.hostname || !validator.isURL(options.url.hostname)) {
         throw new errors.InternalServerError({
             message: 'URL invalid.',
@@ -44,6 +53,15 @@ async function errorIfInvalidUrl(options) {
             context: options.url.href
         });
     }
+}
+
+async function disableRetries(options) {
+    // Force disable retries
+    options.retry = {
+        limit: 0,
+        calculateDelay: () => 0
+    };
+    options.timeout = 5000;
 }
 
 // same as our normal request lib but if any request in a redirect chain resolves
@@ -54,13 +72,10 @@ const gotOpts = {
     },
     timeout: 10000, // default is no timeout
     hooks: {
+        init: process.env.NODE_ENV?.startsWith('test') ? [disableRetries] : [],
         beforeRequest: [errorIfInvalidUrl, errorIfHostnameResolvesToPrivateIp],
         beforeRedirect: [errorIfHostnameResolvesToPrivateIp]
     }
 };
-
-if (process.env.NODE_ENV?.startsWith('test')) {
-    gotOpts.retry = 0;
-}
 
 module.exports = got.extend(gotOpts);

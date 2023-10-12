@@ -58,12 +58,12 @@ const Form: React.FC<FormProps> = ({
     if (grouped) {
         classes = clsx(
             classes,
-            'rounded-sm border border-grey-200 p-4 md:p-7'
+            'rounded-sm border border-grey-200 p-4 dark:border-grey-900 md:p-7'
         );
     }
 
     let titleClasses = clsx(
-        grouped ? 'mb-2' : 'mb-3'
+        grouped ? 'mb-3' : 'mb-4'
     );
 
     if (grouped || title) {

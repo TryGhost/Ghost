@@ -114,8 +114,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        recommendations() {
-            const url = contentEndpointFor({resource: 'recommendations'});
+        recommendations({limit}) {
+            let url = contentEndpointFor({resource: 'recommendations'});
+            url = url.replace('limit=all', `limit=${limit}`);
             return makeRequest({
                 url,
                 method: 'GET',
@@ -159,6 +160,18 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             } else {
                 throw (await HumanReadableError.fromApiResponse(res)) ?? new Error('Failed to save feedback');
             }
+        }
+    };
+
+    api.recommendations = {
+        trackClicked({recommendationId}) {
+            let url = endpointFor({type: 'members', resource: 'recommendations/' + recommendationId + '/clicked'});
+            navigator.sendBeacon(url);
+        },
+
+        trackSubscribed({recommendationId}) {
+            let url = endpointFor({type: 'members', resource: 'recommendations/' + recommendationId + '/subscribed'});
+            navigator.sendBeacon(url);
         }
     };
 
@@ -230,7 +243,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, customUrlHistory, autoRedirect = true}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -240,9 +253,10 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 emailType,
                 labels,
                 requestSrc: 'portal',
-                redirect
+                redirect,
+                autoRedirect
             };
-            const urlHistory = getUrlHistory();
+            const urlHistory = customUrlHistory ?? getUrlHistory();
             if (urlHistory) {
                 body.urlHistory = urlHistory;
             }
@@ -537,20 +551,17 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         let newsletters = [];
         let tiers = [];
         let settings = {};
-        let recommendations = [];
 
         try {
-            [{settings}, {tiers}, {newsletters}, {recommendations}] = await Promise.all([
+            [{settings}, {tiers}, {newsletters}] = await Promise.all([
                 api.site.settings(),
                 api.site.tiers(),
-                api.site.newsletters(),
-                api.site.recommendations()
+                api.site.newsletters()
             ]);
             site = {
                 ...settings,
                 newsletters,
-                tiers: transformApiTiersData({tiers}),
-                recommendations
+                tiers: transformApiTiersData({tiers})
             };
         } catch (e) {
             // Ignore

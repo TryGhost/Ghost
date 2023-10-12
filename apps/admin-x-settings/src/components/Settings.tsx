@@ -8,16 +8,15 @@ import SiteSettings from './settings/site/SiteSettings';
 
 const Settings: React.FC = () => {
     return (
-        <div className='mb-[40vh]'>
-            <GeneralSettings />
-            <SiteSettings />
-            <MembershipSettings />
-            <EmailSettings />
-            <AdvancedSettings />
-            <div className='mt-40 text-sm'>
-                <a className='text-green' href="/ghost/#/settings">Click here</a> to open the original Admin settings.
+        <>
+            <div className='mb-[40vh]'>
+                <GeneralSettings />
+                <SiteSettings />
+                <MembershipSettings />
+                <EmailSettings />
+                <AdvancedSettings />
             </div>
-        </div>
+        </>
     );
 };
 

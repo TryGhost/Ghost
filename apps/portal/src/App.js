@@ -195,6 +195,7 @@ export default class App extends React.Component {
                     });
                 }
             }
+            this.setupRecommendationButtons();
         } catch (e) {
             /* eslint-disable no-console */
             console.error(`[Portal] Failed to initialize:`, e);
@@ -625,6 +626,13 @@ export default class App extends React.Component {
                 }, 2000);
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(`[Portal] Failed to dispatch action: ${action}`, error);
+
+            if (data && data.throwErrors) {
+                throw error;
+            }
+
             const popupNotification = createPopupNotification({
                 type: `${action}:failed`,
                 autoHide: true, closeable: true, status: 'error', state: this.state,
@@ -864,6 +872,7 @@ export default class App extends React.Component {
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
+            api: this.GhostApi,
             site,
             action,
             brandColor: this.getAccentColor(),
@@ -878,6 +887,35 @@ export default class App extends React.Component {
             t,
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
+    }
+
+    getRecommendationButtons() {
+        const customTriggerSelector = '[data-recommendation]';
+        return document.querySelectorAll(customTriggerSelector) || [];
+    }
+
+    /** Setup click tracking for recommendation buttons */
+    setupRecommendationButtons() {
+        // Handler for custom buttons
+        const clickHandler = (event) => {
+            // Send beacons for recommendation clicks
+            const recommendationId = event.currentTarget.dataset.recommendation;
+
+            if (recommendationId) {
+                this.dispatchAction('trackRecommendationClicked', {
+                    recommendationId
+                // eslint-disable-next-line no-console
+                }).catch(console.error);
+            } else {
+                // eslint-disable-next-line no-console
+                console.warn('[Portal] Invalid usage of data-recommendation attribute');
+            }
+        };
+
+        const elements = this.getRecommendationButtons();
+        for (const element of elements) {
+            element.addEventListener('click', clickHandler, {passive: true});
+        }
     }
 
     render() {

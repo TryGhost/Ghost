@@ -34,8 +34,6 @@ const DUPLICATED_POST_TITLE_SUFFIX = '(Copy)';
 const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
 const TIMEDSAVE_TIMEOUT = 60000;
-// time in ms to force a save even if the post is already saved so we trigger a new revision on the server
-const REVISIONSAVE_TIMEOUT = 1000 * 60 * 10; // 10 minutes
 
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
@@ -202,13 +200,12 @@ export default class LexicalEditorController extends Controller {
         return false;
     }
 
-    @computed('_autosaveTask.isRunning', '_timedSaveTask.isRunning', '_revisionSaveTask.isRunning')
+    @computed('_autosaveTask.isRunning', '_timedSaveTask.isRunning')
     get _autosaveRunning() {
         let autosave = this.get('_autosaveTask.isRunning');
         let timedsave = this.get('_timedSaveTask.isRunning');
-        let revisionsave = this.get('_revisionSaveTask.isRunning');
 
-        return autosave || timedsave || revisionsave;
+        return autosave || timedsave;
     }
 
     @computed('post.isDraft')
@@ -224,8 +221,6 @@ export default class LexicalEditorController extends Controller {
         this._autosaveTask.perform();
         // force save at 60 seconds
         this._timedSaveTask.perform();
-        // force save at 10 minutes to trigger revision
-        this._revisionSaveTask.perform();
     }
 
     @action
@@ -260,7 +255,6 @@ export default class LexicalEditorController extends Controller {
     cancelAutosave() {
         this._autosaveTask.cancelAll();
         this._timedSaveTask.cancelAll();
-        this._revisionSaveTask.cancelAll();
     }
 
     // called by the "are you sure?" modal
@@ -444,7 +438,7 @@ export default class LexicalEditorController extends Controller {
 
         this.cancelAutosave();
 
-        if (options.backgroundSave && !this.hasDirtyAttributes && !options.leavingEditor && !options.saveRevision) {
+        if (options.backgroundSave && !this.hasDirtyAttributes && !options.leavingEditor) {
             return;
         }
 
@@ -497,9 +491,6 @@ export default class LexicalEditorController extends Controller {
                 }
                 return true;
             }
-
-            // Even if we've just saved and nothing else has changed, we want to save in 10 minutes to force a revision
-            this._revisionSaveTask.perform();
 
             return post;
         } catch (error) {
@@ -817,22 +808,34 @@ export default class LexicalEditorController extends Controller {
         this.syncMobiledocSnippets();
     }
 
+    sleep(ms) {
+        return new Promise((r) => {
+            setTimeout(r, ms);
+        });
+    }
+
     @action
     async syncMobiledocSnippets() {
         const snippets = this.store.peekAll('snippet');
 
         // very early in the beta we had a bug where lexical snippets were saved with double-encoded JSON
         // we fix that here by re-saving any snippets that are still in that state
-        const snippetFixSaves = [];
-        snippets.forEach((snippet) => {
+        for (let i = 0; i < snippets.length; i++) {
+            const snippet = snippets.objectAt(i);
             if (typeof snippet.lexical === 'string') {
                 try {
                     snippet.lexical = JSON.parse(snippet.lexical);
                     snippet.mobiledoc = {};
-                    snippetFixSaves.push(snippet.save());
+                    await snippet.save();
+                    // Temp fix: Timeout for 100 ms between requests to avoid hitting rate limit (50req/s)
+                    // refs https://github.com/TryGhost/Product/issues/4022
+                    await this.sleep(100);
                 } catch (e) {
                     snippet.lexical = null;
-                    snippetFixSaves.push(snippet.save());
+                    await snippet.save();
+                    // Temp fix: Timeout for 100 ms between requests to avoid hitting rate limit (50req/s)
+                    // refs https://github.com/TryGhost/Product/issues/4022
+                    await this.sleep(100);
 
                     console.error(e); // eslint-disable-line no-console
 
@@ -845,10 +848,10 @@ export default class LexicalEditorController extends Controller {
                     }
                 }
             }
-        });
-        await Promise.all(snippetFixSaves);
+        }
 
-        snippets.forEach((snippet) => {
+        for (let i = 0; i < snippets.length; i++) {
+            const snippet = snippets.objectAt(i);
             if (!snippet.lexical || snippet.lexical.syncedAt && moment.utc(snippet.lexical.syncedAt).isBefore(snippet.updatedAtUTC)) {
                 const serializedLexical = mobiledocToLexical(JSON.stringify(snippet.mobiledoc));
 
@@ -875,8 +878,12 @@ export default class LexicalEditorController extends Controller {
 
                 // kick off a background save, we already have .lexical updated which is what we need
                 snippet.save();
+
+                // Temp fix: Timeout for 100 ms between requests to avoid hitting rate limit (50req/s)
+                // refs https://github.com/TryGhost/Product/issues/4022
+                await this.sleep(100);
             }
-        });
+        }
     }
 
     /* Public methods --------------------------------------------------------*/
@@ -969,7 +976,7 @@ export default class LexicalEditorController extends Controller {
         // Check if anything has changed since the last revision
         let postRevisions = post.get('postRevisions').toArray();
         let latestRevision = postRevisions[postRevisions.length - 1];
-        let hasChangedSinceLastRevision = !post.isNew && post.lexical !== latestRevision.lexical;
+        let hasChangedSinceLastRevision = !post.isNew && post.lexical.replaceAll(this.config.blogUrl, '') !== latestRevision.lexical.replaceAll(this.config.blogUrl, '');
 
         let fromNewToEdit = this.router.currentRouteName === 'lexical-editor.new'
             && transition.targetName === 'lexical-editor.edit'
@@ -1100,21 +1107,6 @@ export default class LexicalEditorController extends Controller {
         }
     }).drop())
         _timedSaveTask;
-
-    // save at 10 minutes even if the post is already saved
-    @(task(function* () {
-        if (!this._canAutosave) {
-            return;
-        }
-
-        while (config.environment !== 'test' && true) {
-            yield timeout(REVISIONSAVE_TIMEOUT);
-            this.autosaveTask.perform({
-                saveRevision: this._canAutosave
-            });
-        }
-    }).drop())
-        _revisionSaveTask;
 
     /* Private methods -------------------------------------------------------*/
 

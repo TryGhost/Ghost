@@ -2,6 +2,7 @@ import Button from '../../../../admin-x-ds/global/Button';
 import Heading from '../../../../admin-x-ds/global/Heading';
 import Icon from '../../../../admin-x-ds/global/Icon';
 import React, {useState} from 'react';
+import clsx from 'clsx';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {TierFormState} from './TierDetailModal';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
@@ -13,14 +14,20 @@ interface TierDetailPreviewProps {
     isFreeTier: boolean;
 }
 
-const TrialDaysLabel: React.FC<{trialDays: number}> = ({trialDays}) => {
+export const TrialDaysLabel: React.FC<{size?: 'sm' | 'md'; trialDays: number;}> = ({size = 'md', trialDays}) => {
     if (!trialDays) {
         return null;
     }
+
+    const containerClassName = clsx(
+        size === 'sm' ? 'px-1.5 py-0.5 text-xs' : 'px-2.5 py-1.5 text-sm',
+        'relative -mr-1 -mt-1 whitespace-nowrap rounded-full font-semibold leading-none tracking-wide text-grey-900'
+    );
+
     return (
-        <span className="relative -mr-1 -mt-1 whitespace-nowrap rounded-full px-2.5 py-1.5 text-sm font-semibold leading-none tracking-wide text-grey-900">
+        <span className={containerClassName}>
             <span className="absolute inset-0 block rounded-full bg-pink opacity-20"></span>
-            {trialDays} days free
+            <span className='dark:text-pink'>{trialDays} days free</span>
         </span>
     );
 };
@@ -82,15 +89,15 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
         : 0;
 
     return (
-        <div className="mt-1">
+        <div data-testid="tier-preview">
             <div className="flex items-baseline justify-between">
                 <Heading className="pb-2" level={6} grey>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Heading>
                 {!isFreeTier && <div className="flex gap-1">
-                    <Button className={`${showingYearly === true ? 'text-grey-500' : 'text-grey-900'}`} label="Monthly" link onClick={() => setShowingYearly(false)} />
-                    <Button className={`ml-2 ${showingYearly === true ? 'text-grey-900' : 'text-grey-500'}`} label="Yearly" link onClick={() => setShowingYearly(true)} />
+                    <Button className={`${showingYearly === true ? 'text-grey-500' : 'text-grey-900 dark:text-white'}`} label="Monthly" link unstyled onClick={() => setShowingYearly(false)} />
+                    <Button className={`ml-2 ${showingYearly === true ? 'text-grey-900 dark:text-white' : 'text-grey-500'}`} label="Yearly" link unstyled onClick={() => setShowingYearly(true)} />
                 </div>}
             </div>
-            <div className='border border-grey-200'>
+            <div className='rounded-sm border border-grey-200 bg-white dark:border-transparent'>
                 <div className="flex-column relative flex min-h-[200px] w-full max-w-[420px] scale-90 items-start justify-stretch rounded bg-white p-4">
                     <div className="min-h-[56px] w-full">
                         <h4 className={`-mt-1 mb-0 w-full break-words text-lg font-semibold leading-tight text-pink ${!name && 'opacity-30'}`}>{name || 'Bronze'}</h4>

@@ -1,10 +1,11 @@
 import ButtonGroup from '../global/ButtonGroup';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import SettingGroupHeader from './SettingGroupHeader';
 import clsx from 'clsx';
 import useRouting from '../../hooks/useRouting';
 import {ButtonProps} from '../global/Button';
 import {SaveState} from '../../hooks/useForm';
+import {useScrollSection} from '../../hooks/useScrollSection';
 import {useSearch} from '../../components/providers/ServiceProvider';
 
 interface SettingGroupProps {
@@ -22,6 +23,11 @@ interface SettingGroupProps {
     alwaysShowSaveButton?: boolean;
 
     /**
+     * Show a green outline in case the modal that's been triggered from the group is closed
+     */
+    highlightOnModalClose?: boolean;
+
+    /**
      * Remove borders and paddings
      */
     border?: boolean;
@@ -33,6 +39,7 @@ interface SettingGroupProps {
     onEditingChange?: (isEditing: boolean) => void
     onSave?: () => void
     onCancel?: () => void
+    enableCMDS?: boolean
 }
 
 const SettingGroup: React.FC<SettingGroupProps> = ({
@@ -49,18 +56,17 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     hideEditButton,
     alwaysShowSaveButton = true,
     border = true,
+    highlightOnModalClose = true,
     styles,
     onEditingChange,
     onSave,
-    onCancel
+    onCancel,
+    enableCMDS = true
 }) => {
     const {checkVisible} = useSearch();
-    const {yScroll, updateScrolled, route} = useRouting();
+    const {route} = useRouting();
     const [highlight, setHighlight] = useState(false);
-    const scrollRef = useRef<HTMLDivElement | null>(null);
-    const [currentRect, setCurrentRect] = useState<{top: number, bottom: number}>({top: 0, bottom: 0});
-    const topOffset = -193.5;
-    const bottomOffset = 36;
+    const {ref} = useScrollSection(navid);
 
     const handleEdit = () => {
         onEditingChange?.(true);
@@ -78,9 +84,9 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     if (saveState === 'unsaved') {
         styles += ' border-green';
     } else if (isEditing){
-        styles += ' border-grey-300';
+        styles += ' border-grey-300 dark:border-grey-800';
     } else {
-        styles += ' border-grey-200';
+        styles += ' border-grey-200 dark:border-grey-900';
     }
 
     let viewButtons: ButtonProps[] = [];
@@ -133,24 +139,6 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     }
 
     useEffect(() => {
-        if (scrollRef.current) {
-            const rootElement = document.getElementById('admin-x-settings-content');
-            const rootRect = rootElement?.getBoundingClientRect() || DOMRect.fromRect();
-            const sectionRect = scrollRef.current.getBoundingClientRect();
-            setCurrentRect({
-                top: sectionRect.top - rootRect!.top,
-                bottom: (sectionRect.top - rootRect!.top) + sectionRect.height
-            });
-        }
-    }, [checkVisible, navid]);
-
-    useEffect(() => {
-        if (currentRect.top && yScroll! >= currentRect.top + topOffset && yScroll! < currentRect.bottom + topOffset + bottomOffset) {
-            updateScrolled(navid!);
-        }
-    }, [yScroll, currentRect, navid, updateScrolled, topOffset, bottomOffset]);
-
-    useEffect(() => {
         setHighlight(route === navid);
     }, [route, navid]);
 
@@ -162,23 +150,37 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         }
     }, [highlight]);
 
+    useEffect(() => {
+        const handleCMDS = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault();
+                handleSave();
+            }
+        };
+        if (enableCMDS) {
+            window.addEventListener('keydown', handleCMDS);
+            return () => {
+                window.removeEventListener('keydown', handleCMDS);
+            };
+        }
+    });
+
     const containerClasses = clsx(
         'relative flex-col gap-6 rounded',
         border && 'border p-5 md:p-7',
         !checkVisible(keywords) ? 'hidden' : 'flex',
-        highlight && 'before:pointer-events-none before:absolute before:inset-[1px] before:animate-setting-highlight-fade-out before:rounded before:shadow-[0_0_0_3px_rgba(48,207,67,0.45)]',
-        !isEditing && 'is-not-editing group',
+        (highlight && highlightOnModalClose) && 'before:pointer-events-none before:absolute before:inset-[1px] before:animate-setting-highlight-fade-out before:rounded before:shadow-[0_0_0_3px_rgba(48,207,67,0.45)]',
+        !isEditing && 'is-not-editing group/setting-group',
         styles
     );
 
     return (
-        <div ref={scrollRef} className={containerClasses} data-testid={testId}>
-            {/* {yScroll} / {currentRect.top + topOffset} / {currentRect.bottom + topOffset + bottomOffset} */}
-            <div className='absolute top-[-193px]' id={navid && navid}></div>
+        <div className={containerClasses} data-testid={testId}>
+            <div ref={ref} className='absolute' id={navid && navid}></div>
             {customHeader ? customHeader :
                 <SettingGroupHeader description={description} title={title!}>
                     {customButtons ? customButtons :
-                        (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link={true} />)}
+                        (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link linkWithPadding />)}
                 </SettingGroupHeader>
             }
             {children}

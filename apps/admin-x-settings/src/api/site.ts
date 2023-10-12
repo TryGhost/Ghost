@@ -1,4 +1,4 @@
-import {createQuery} from '../utils/apiRequests';
+import {createQuery} from '../utils/api/hooks';
 
 // Types
 

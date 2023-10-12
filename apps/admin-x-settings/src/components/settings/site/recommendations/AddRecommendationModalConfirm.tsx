@@ -2,12 +2,13 @@ import AddRecommendationModal from './AddRecommendationModal';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import RecommendationReasonForm from './RecommendationReasonForm';
+import RecommendationDescriptionForm, {validateDescriptionForm} from './RecommendationDescriptionForm';
+import trackEvent from '../../../../utils/plausible';
 import useForm from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {EditOrAddRecommendation, useAddRecommendation} from '../../../../api/recommendations';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
-import {toast} from 'react-hot-toast';
+import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
 
 interface AddRecommendationModalProps {
     recommendation: EditOrAddRecommendation,
@@ -16,31 +17,46 @@ interface AddRecommendationModalProps {
 
 const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({recommendation, animate}) => {
     const modal = useModal();
-    const {updateRoute} = useRouting();
+    const {updateRoute, route} = useRouting();
     const {mutateAsync: addRecommendation} = useAddRecommendation();
+    const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, saveState, errors} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors, clearError, setErrors} = useForm({
         initialState: {
             ...recommendation
         },
-        onSave: async () => {
-            await addRecommendation(formState);
+        onSave: async (state) => {
+            await addRecommendation(state);
             modal.remove();
+            showToast({
+                message: 'Successfully added a recommendation',
+                type: 'success'
+            });
+            trackEvent('Recommendation Added', {
+                oneClickSubscribe: state.one_click_subscribe
+            });
             updateRoute('recommendations');
         },
-        onValidate: () => {
-            const newErrors: Record<string, string> = {};
-            if (!formState.title) {
-                newErrors.title = 'Title is required';
+        onSaveError: handleError,
+        onValidate: (state) => {
+            const newErrors = validateDescriptionForm(state);
+
+            if (Object.keys(newErrors).length !== 0) {
+                showToast({
+                    type: 'pageError',
+                    message: 'Can\'t add recommendation, please double check that you\'ve filled all mandatory fields correctly.'
+                });
             }
+
             return newErrors;
         }
     });
 
     let okLabel = 'Add';
+    let loadingState = false;
 
     if (saveState === 'saving') {
-        okLabel = 'Adding...';
+        loadingState = true;
     } else if (saveState === 'saved') {
         okLabel = 'Added';
     }
@@ -48,6 +64,8 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
     let leftButtonProps = {
         label: 'Back',
         icon: 'arrow-left',
+        iconColorClass: 'text-black dark:text-white',
+        link: true,
         size: 'sm' as const,
         onClick: () => {
             if (saveState === 'saving') {
@@ -58,6 +76,7 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
             // Switch modal without changing the route, but pass along any changes that were already made
             modal.remove();
             NiceModal.show(AddRecommendationModal, {
+                pathName: route,
                 animate: false,
                 recommendation: {
                     ...formState
@@ -78,9 +97,11 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
         leftButtonProps={leftButtonProps}
         okColor='black'
         okLabel={okLabel}
+        okLoading={loadingState}
         size='sm'
         testId='add-recommendation-modal'
         title={'Add recommendation'}
+        stickyFooter
         onCancel={() => {
             if (saveState === 'saving') {
                 // Already saving
@@ -95,18 +116,18 @@ const AddRecommendationModalConfirm: React.FC<AddRecommendationModalProps> = ({r
                 return;
             }
 
-            toast.remove();
-            if (await handleSave({force: true})) {
-                // Already handled
-            } else {
+            dismissAllToasts();
+            try {
+                await handleSave({force: true});
+            } catch (e) {
                 showToast({
                     type: 'pageError',
-                    message: 'One or more fields have errors, please doublecheck you filled all mandatory fields'
+                    message: 'Something went wrong when adding this recommendation, please try again.'
                 });
             }
         }}
     >
-        <RecommendationReasonForm errors={errors} formState={formState} updateForm={updateForm}/>
+        <RecommendationDescriptionForm clearError={clearError} errors={errors} formState={formState} setErrors={setErrors} showURL={false} updateForm={updateForm}/>
     </Modal>;
 };
 

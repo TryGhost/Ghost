@@ -3,10 +3,13 @@ import React from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../admin-x-ds/global/form/TextField';
+import useHandleError from '../../../utils/api/handleError';
+import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/twitter-logo.svg';
+import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/x-logo.svg';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -19,8 +22,19 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateSetting,
         handleEditingChange
     } = useSettingGroup();
+    const handleError = useHandleError();
 
     const {mutateAsync: uploadImage} = useUploadImage();
+
+    const [pinturaJsUrl] = getSettingValues<string>(localSettings, ['pintura_js_url']);
+    const [pinturaCssUrl] = getSettingValues<string>(localSettings, ['pintura_css_url']);
+
+    const editor = usePinturaEditor(
+        {config: {
+            jsUrl: pinturaJsUrl || '',
+            cssUrl: pinturaCssUrl || ''
+        }}
+    );
 
     const [
         twitterTitle, twitterDescription, twitterImage, siteTitle, siteDescription
@@ -38,8 +52,8 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
         try {
             const imageUrl = getImageUrl(await uploadImage({file}));
             updateSetting('twitter_image', imageUrl);
-        } catch (err) {
-            // TODO: handle error
+        } catch (e) {
+            handleError(e);
         }
     };
 
@@ -58,17 +72,29 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
             </div>
             <div className="w-full md:mr-[52px]">
                 <div className="mb-2">
-                    <span className="mr-1 font-semibold text-grey-900">{siteTitle}</span>
+                    <span className="mr-1 font-semibold text-grey-900 dark:text-grey-300">{siteTitle}</span>
                     <span className="text-grey-700">&#183; 2h</span>
                 </div>
-                <div className="mb-2 h-3 w-full rounded bg-grey-200"></div>
-                <div className="mb-4 h-3 w-3/5 rounded bg-grey-200"></div>
-                <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300">
+                <div className="mb-2 h-3 w-full rounded bg-grey-200 dark:bg-grey-900"></div>
+                <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
+                <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
                     <ImageUpload
-                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black'
+                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-75 p-3 text-sm font-semibold text-grey-800 hover:text-black dark:border-grey-900'
                         height='300px'
                         id='twitter-image'
                         imageURL={twitterImage}
+                        pintura={
+                            {
+                                isEnabled: editor.isEnabled,
+                                openEditor: async () => editor.openEditor({
+                                    image: twitterImage || '',
+                                    handleSave: async (file:File) => {
+                                        const imageUrl = getImageUrl(await uploadImage({file}));
+                                        updateSetting('twitter_image', imageUrl);
+                                    }
+                                })
+                            }
+                        }
                         onDelete={handleImageDelete}
                         onUpload={handleImageUpload}
                     >
@@ -79,14 +105,14 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             clearBg={true}
                             inputRef={focusRef}
                             placeholder={siteTitle}
-                            title="Twitter title"
+                            title="X title"
                             value={twitterTitle}
                             onChange={handleTitleChange}
                         />
                         <TextField
                             clearBg={true}
                             placeholder={siteDescription}
-                            title="Twitter description"
+                            title="X description"
                             value={twitterDescription}
                             onChange={handleDescriptionChange}
                         />
@@ -98,13 +124,13 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <SettingGroup
-            description='Customize structured data of your site'
+            description='Customize structured data of your site for X (formerly Twitter)'
             isEditing={isEditing}
             keywords={keywords}
             navid='twitter'
             saveState={saveState}
             testId='twitter'
-            title='Twitter card'
+            title='X card'
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
             onSave={handleSave}
@@ -115,4 +141,4 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Twitter;
+export default withErrorBoundary(Twitter, 'Twitter card');

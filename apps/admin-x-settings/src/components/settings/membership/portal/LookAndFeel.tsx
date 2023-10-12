@@ -7,6 +7,7 @@ import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import clsx from 'clsx';
+import useHandleError from '../../../../utils/api/handleError';
 import {ReactComponent as PortalIcon1} from '../../../../assets/icons/portal-icon-1.svg';
 import {ReactComponent as PortalIcon2} from '../../../../assets/icons/portal-icon-2.svg';
 import {ReactComponent as PortalIcon3} from '../../../../assets/icons/portal-icon-3.svg';
@@ -43,6 +44,7 @@ const LookAndFeel: React.FC<{
     updateSetting: (key: string, setting: SettingValue) => void
 }> = ({localSettings, updateSetting}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
+    const handleError = useHandleError();
 
     const [portalButton, portalButtonStyle, portalButtonIcon, portalButtonSignupText] = getSettingValues(localSettings, ['portal_button', 'portal_button_style', 'portal_button_icon', 'portal_button_signup_text']);
 
@@ -52,9 +54,13 @@ const LookAndFeel: React.FC<{
     const [uploadedIcon, setUploadedIcon] = useState(isDefaultIcon ? undefined : currentIcon);
 
     const handleImageUpload = async (file: File) => {
-        const imageUrl = getImageUrl(await uploadImage({file}));
-        updateSetting('portal_button_icon', imageUrl);
-        setUploadedIcon(imageUrl);
+        try {
+            const imageUrl = getImageUrl(await uploadImage({file}));
+            updateSetting('portal_button_icon', imageUrl);
+            setUploadedIcon(imageUrl);
+        } catch (e) {
+            handleError(e);
+        }
     };
 
     const handleImageDelete = () => {
@@ -62,7 +68,13 @@ const LookAndFeel: React.FC<{
         setUploadedIcon(undefined);
     };
 
-    return <Form marginTop>
+    const portalButtonOptions = [
+        {value: 'icon-and-text', label: 'Icon and text'},
+        {value: 'icon-only', label: 'Icon only'},
+        {value: 'text-only', label: 'Text only'}
+    ];
+
+    return <div className='mt-7'><Form>
         <Toggle
             checked={Boolean(portalButton)}
             label='Show portal button'
@@ -70,14 +82,10 @@ const LookAndFeel: React.FC<{
             onChange={e => updateSetting('portal_button', e.target.checked)}
         />
         <Select
-            options={[
-                {value: 'icon-and-text', label: 'Icon and text'},
-                {value: 'icon-only', label: 'Icon only'},
-                {value: 'text-only', label: 'Text only'}
-            ]}
-            selectedOption={portalButtonStyle as string}
+            options={portalButtonOptions}
+            selectedOption={portalButtonOptions.find(option => option.value === portalButtonStyle)}
             title='Portal button style'
-            onSelect={option => updateSetting('portal_button_style', option)}
+            onSelect={option => updateSetting('portal_button_style', option?.value || null)}
         />
         {portalButtonStyle?.toString()?.includes('icon') &&
             <div className='flex flex-col gap-2'>
@@ -86,7 +94,7 @@ const LookAndFeel: React.FC<{
 
                     {defaultButtonIcons.map(icon => (
                         <button className={clsx('border p-3', currentIcon === icon.value ? 'border-green' : 'border-transparent')} type="button" onClick={() => updateSetting('portal_button_icon', icon.value)}>
-                            <icon.Component className={`h-5 w-5 ${currentIcon === icon.value ? 'text-green' : 'text-black opacity-70 transition-all hover:opacity-100'}`} />
+                            <icon.Component className={`h-5 w-5 ${currentIcon === icon.value ? 'text-green' : 'text-black opacity-70 transition-all hover:opacity-100 dark:text-white'}`} />
                         </button>
                     ))}
                     <div className={clsx('relative w-[46px] border', currentIcon === uploadedIcon ? 'border-green' : 'border-transparent')}>
@@ -103,7 +111,7 @@ const LookAndFeel: React.FC<{
                             onImageClick={() => uploadedIcon && updateSetting('portal_button_icon', uploadedIcon)}
                             onUpload={handleImageUpload}
                         >
-                            <Icon name='upload' size='md' />
+                            <Icon className='dark:text-white' name='upload' size='md' />
                         </ImageUpload>
                     </div>
                 </div>
@@ -116,7 +124,7 @@ const LookAndFeel: React.FC<{
                 onChange={e => updateSetting('portal_button_signup_text', e.target.value)}
             />
         }
-    </Form>;
+    </Form></div>;
 };
 
 export default LookAndFeel;

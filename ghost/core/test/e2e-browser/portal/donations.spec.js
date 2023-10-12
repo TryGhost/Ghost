@@ -40,11 +40,17 @@ test.describe('Portal', () => {
         });
 
         test('Can donate with a fixed amount set and different currency', async ({page}) => {
-            await page.goto('/ghost/#/settings/members');
-            await page.getByTestId('expand-tips-and-donations').click();
-            await page.getByTestId('tips-and-donations-amount').fill('98');
-            await page.locator('#gh-tips-and-donations-currency').selectOption('EUR');
-            await page.locator('[data-test-button="save-settings"]').click();
+            await page.goto('/ghost/#/settings');
+
+            const section = page.getByTestId('tips-or-donations');
+
+            await section.getByRole('button', {name: 'Edit'}).click();
+            await section.getByLabel('Suggested amount').fill('98');
+            const select = section.getByLabel('Currency');
+            await select.click();
+            await page.locator(`[data-testid="select-option"][data-value="EUR"]`).click();
+            await section.getByRole('button', {name: 'Save'}).click();
+            await expect(select).not.toBeVisible();
 
             // go to website and open portal
             await page.goto('/#/portal/support');

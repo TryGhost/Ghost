@@ -1,5 +1,6 @@
+import nql from '@tryghost/nql';
 import {Setting} from './settings';
-import {createMutation, createQuery} from '../utils/apiRequests';
+import {createMutation, createQuery} from '../utils/api/hooks';
 
 type CustomThemeSettingData =
     { type: 'text', value: string | null, default: string | null } |
@@ -19,13 +20,18 @@ export type CustomThemeSetting = CustomThemeSettingData & {
     description?: string
     // homepage and post are the only two groups we handle, but technically theme authors can put other things in package.json
     group?: 'homepage' | 'post' | string
+    visibility?: string
 }
+
+export const hiddenCustomThemeSettingValue = null;
 
 export interface CustomThemeSettingsResponseType {
     custom_theme_settings: CustomThemeSetting[];
 }
 
 const dataType = 'CustomThemeSettingsResponseType';
+
+export const customThemeSettingsDataType = dataType;
 
 export const useBrowseCustomThemeSettings = createQuery<CustomThemeSettingsResponseType>({
     dataType,
@@ -38,7 +44,16 @@ export const useEditCustomThemeSettings = createMutation<CustomThemeSettingsResp
     body: settings => ({custom_theme_settings: settings}),
 
     updateQueries: {
+        emberUpdateType: 'skip',
         dataType,
         update: newData => newData
     }
 });
+
+export function isCustomThemeSettingVisible(setting: CustomThemeSetting, settingsKeyValueObj: Record<string, string>) {
+    if (!setting.visibility) {
+        return true;
+    }
+
+    return nql(setting.visibility).queryJSON(settingsKeyValueObj);
+}

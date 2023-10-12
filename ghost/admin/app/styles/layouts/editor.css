@@ -104,7 +104,7 @@
 }
 
 .post-view-link:hover {
-    color: var(--darkgrey);
+    color: var(--midgrey-d2);
 }
 
 .post-view-link svg {
@@ -112,12 +112,11 @@
     width: 12px;
     height: 12px;
     vertical-align: middle;
-    margin-bottom: 2px;
-    fill: var(--midgrey);
+    transition: all .15s ease;
 }
 
 .post-view-link:hover svg {
-    fill: var(--darkgrey);
+    transform: translateY(-1px);
 }
 
 
@@ -623,12 +622,13 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor-feature-image-alttext,
 .gh-editor-feature-image-caption {
     width: 100%;
+    height: 24px;
     margin: 0 0 1.7em 0;
     outline: none;
     border-width: 0;
     border-style: none;
     font-size: 1.4rem;
-    line-height: 1.65;
+    line-height: 24px;
     letter-spacing: .04rem;
     background-color: transparent !important;
     transition: border-color .15s linear;
@@ -639,6 +639,13 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor-feature-image-caption p::placeholder {
     color: var(--midlightgrey);
     opacity: 1 !important;
+}
+
+.gh-editor-feature-image-caption :is(.koenig-lexical *) {
+    font-size: inherit !important;
+    font-family: inherit !important;
+    line-height: inherit !important;
+    letter-spacing: inherit !important;
 }
 
 .gh-editor-feature-image-caption p {
@@ -740,6 +747,29 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 18px;
     height: 18px;
     margin-left: 1rem;
+}
+
+.gh-editor-post-status .view-post {
+    display: inline-flex;
+    align-items: center;
+    color: var(--midgrey-l2);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.gh-editor-post-status .view-post:hover {
+    color: var(--midgrey-d1);
+}
+
+.gh-editor-post-status .view-post svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin: 1px 0 0 .6rem;
+    transition: all .15s ease;
+}
+
+.gh-editor-post-status .view-post:hover svg {
+    transform: translateY(-1px);
 }
 
 @media (max-width: 720px) {

@@ -9,7 +9,7 @@
     "scripts": {
         "build": "tsc",
         "build:ts": "yarn build",
-        "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
+        "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura -- mocha --reporter dot -r ts-node/register './test/**/*.test.ts'",
         "test": "yarn test:types && yarn test:unit",
         "test:types": "tsc --noEmit",
         "lint:code": "eslint src/ --ext .ts --cache",
@@ -26,7 +26,8 @@
         "sinon": "15.2.0"
     },
     "dependencies": {
-        "@tryghost/collections": "0.0.0"
+        "@tryghost/collections": "0.0.0",
+        "@tryghost/post-events": "0.0.0"
     },
     "c8": {
         "exclude": [

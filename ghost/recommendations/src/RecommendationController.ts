@@ -1,61 +1,31 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {AddRecommendation, EditRecommendation, Recommendation} from "./Recommendation";
-import {RecommendationService} from "./RecommendationService";
 import errors from '@tryghost/errors';
+import {AddRecommendation, Recommendation, RecommendationPlain} from './Recommendation';
+import {RecommendationService} from './RecommendationService';
+import {UnsafeData} from './UnsafeData';
+import {OrderOption} from '@tryghost/bookshelf-repository';
 
 type Frame = {
-    data: any,
-    options: any,
-    user: any
+    data: unknown,
+    options: unknown,
+    user: unknown,
 };
 
-function validateString(object: any, key: string, {required = true, nullable = false} = {}): string|undefined|null {
-    if (typeof object !== 'object' || object === null) {
-        throw new errors.BadRequestError({message: `${key} must be an object`});
-    }
+const RecommendationIncludesMap = {
+    'count.clicks': 'clickCount' as const,
+    'count.subscribers': 'subscriberCount' as const
+};
 
-    if (nullable && object[key] === null) {
-        return null;
-    }
-
-    if (object[key] !== undefined && object[key] !== null) {
-        if (typeof object[key] !== "string") {
-            throw new errors.BadRequestError({message: `${key} must be a string`});
-        }
-        return object[key];
-    } else if (required) {
-        throw new errors.BadRequestError({message: `${key} is required`});
-    }
-}
-
-function validateBoolean(object: any, key: string, {required = true} = {}): boolean|undefined {
-    if (typeof object !== 'object' || object === null) {
-        throw new errors.BadRequestError({message: `${key} must be an object`});
-    }
-    if (object[key] !== undefined) {
-        if (typeof object[key] !== "boolean") {
-            throw new errors.BadRequestError({message: `${key} must be a boolean`});
-        }
-        return object[key];
-    } else if (required) {
-        throw new errors.BadRequestError({message: `${key} is required`});
-    }
-}
-
-function validateURL(object: any, key: string, {required = true, nullable = false} = {}): URL|undefined|null {
-    const string = validateString(object, key, {required, nullable});
-    if (string === null) {
-        return null;
-    }
-    if (string !== undefined) {
-        try {
-            return new URL(string);
-        } catch (e) {
-            throw new errors.BadRequestError({message: `${key} must be a valid URL`});
-        }
-    }
-}
-
+const RecommendationOrderMap = {
+    title: 'title' as const,
+    description: 'description' as const,
+    excerpt: 'excerpt' as const,
+    one_click_subscribe: 'oneClickSubscribe' as const,
+    created_at: 'createdAt' as const,
+    updated_at: 'updatedAt' as const,
+    'count.clicks': 'clickCount' as const,
+    'count.subscribers': 'subscriberCount' as const
+};
 
 export class RecommendationController {
     service: RecommendationService;
@@ -64,106 +34,209 @@ export class RecommendationController {
         this.service = deps.service;
     }
 
-    #getFrameId(frame: Frame): string {
-        if (!frame.options) {
-            throw new errors.BadRequestError();
-        }
+    async read(frame: Frame) {
+        const options = new UnsafeData(frame.options);
+        const id = options.key('id').string;
 
-        const id = frame.options.id;
-        if (!id) {
-            throw new errors.BadRequestError();
-        }
+        const recommendation = await this.service.readRecommendation(id);
 
-        return id;
+        return this.#serialize(
+            [recommendation]
+        );
     }
 
-    #getFrameRecommendation(frame: Frame): AddRecommendation {
-        if (!frame.data || !frame.data.recommendations || !frame.data.recommendations[0]) {
-            throw new errors.BadRequestError();
-        }
-
-        const recommendation = frame.data.recommendations[0];
-
-        const cleanedRecommendation: AddRecommendation = {
-            title: validateString(recommendation, "title") ?? '',
-            url: validateURL(recommendation, "url")!,
+    async add(frame: Frame) {
+        const data = new UnsafeData(frame.data);
+        const recommendation = data.key('recommendations').index(0);
+        const plain: AddRecommendation = {
+            title: recommendation.key('title').string,
+            url: recommendation.key('url').url,
 
             // Optional fields
-            oneClickSubscribe: validateBoolean(recommendation, "one_click_subscribe", {required: false}) ?? false,
-            reason: validateString(recommendation, "reason", {required: false, nullable: true}) ?? null,
-            excerpt: validateString(recommendation, "excerpt", {required: false, nullable: true}) ?? null,
-            featuredImage: validateURL(recommendation, "featured_image", {required: false, nullable: true}) ?? null,
-            favicon: validateURL(recommendation, "favicon", {required: false, nullable: true}) ?? null,
+            oneClickSubscribe: recommendation.optionalKey('one_click_subscribe')?.boolean ?? false,
+            description: recommendation.optionalKey('description')?.nullable.string ?? null,
+            excerpt: recommendation.optionalKey('excerpt')?.nullable.string ?? null,
+            featuredImage: recommendation.optionalKey('featured_image')?.nullable.url ?? null,
+            favicon: recommendation.optionalKey('favicon')?.nullable.url ?? null
         };
 
-        // Create a new recommendation
-        return cleanedRecommendation;
-    }
-
-    #getFrameRecommendationEdit(frame: Frame): Partial<EditRecommendation> {
-        if (!frame.data || !frame.data.recommendations || !frame.data.recommendations[0]) {
-            throw new errors.BadRequestError();
-        }
-
-        const recommendation = frame.data.recommendations[0];
-        const cleanedRecommendation: EditRecommendation = {
-            title: validateString(recommendation, "title", {required: false}) ?? undefined,
-            url: validateURL(recommendation, "url", {required: false}) ?? undefined,
-            oneClickSubscribe: validateBoolean(recommendation, "one_click_subscribe", {required: false}),
-            reason: validateString(recommendation, "reason", {required: false, nullable: true}),
-            excerpt: validateString(recommendation, "excerpt", {required: false, nullable: true}),
-            featuredImage: validateURL(recommendation, "featured_image", {required: false, nullable: true}),
-            favicon: validateURL(recommendation, "favicon", {required: false, nullable: true}),
-        };
-
-        // Create a new recommendation
-        return cleanedRecommendation;
-    }
-
-
-    #returnRecommendations(...recommendations: Recommendation[]) {
-        return {
-            data: recommendations.map(r => {
-                return {
-                    id: r.id,
-                    title: r.title,
-                    reason: r.reason,
-                    excerpt: r.excerpt,
-                    featured_image: r.featuredImage?.toString() ?? null,
-                    favicon: r.favicon?.toString() ?? null,
-                    url: r.url.toString(),
-                    one_click_subscribe: r.oneClickSubscribe,
-                    created_at: r.createdAt,
-                    updated_at: r.updatedAt
-                };
-            })
-        }
-    }
-
-    async addRecommendation(frame: Frame) {
-        const recommendation = this.#getFrameRecommendation(frame);
-        return this.#returnRecommendations(
-            await this.service.addRecommendation(recommendation)
+        return this.#serialize(
+            [await this.service.addRecommendation(plain)]
         );
     }
 
-    async editRecommendation(frame: Frame) {
-        const id = this.#getFrameId(frame);
-        const recommendationEdit = this.#getFrameRecommendationEdit(frame);
+    async edit(frame: Frame) {
+        const options = new UnsafeData(frame.options);
+        const data = new UnsafeData(frame.data);
+        const recommendation = data.key('recommendations').index(0);
 
-        return this.#returnRecommendations(
-            await this.service.editRecommendation(id, recommendationEdit)
+        const id = options.key('id').string;
+        const plain: Partial<RecommendationPlain> = {
+            title: recommendation.optionalKey('title')?.string,
+            url: recommendation.optionalKey('url')?.url,
+            oneClickSubscribe: recommendation.optionalKey('one_click_subscribe')?.boolean,
+            description: recommendation.optionalKey('description')?.nullable.string,
+            excerpt: recommendation.optionalKey('excerpt')?.nullable.string,
+            featuredImage: recommendation.optionalKey('featured_image')?.nullable.url,
+            favicon: recommendation.optionalKey('favicon')?.nullable.url
+        };
+
+        return this.#serialize(
+            [await this.service.editRecommendation(id, plain)]
         );
     }
 
-    async deleteRecommendation(frame: Frame) {
-        const id = this.#getFrameId(frame);
+    async destroy(frame: Frame) {
+        const options = new UnsafeData(frame.options);
+        const id = options.key('id').string;
         await this.service.deleteRecommendation(id);
     }
 
-    async listRecommendations() {
-        return this.#returnRecommendations(
-            ...(await this.service.listRecommendations())
+    #stringToOrder(str?: string) {
+        if (!str) {
+            // Default order
+            return [
+                {
+                    field: 'createdAt' as const,
+                    direction: 'desc' as const
+                }
+            ];
+        }
+
+        const parts = str.split(',');
+        const order: OrderOption<Recommendation> = [];
+        for (const [index, part] of parts.entries()) {
+            const trimmed = part.trim();
+            const fieldData = new UnsafeData(trimmed.split(' ')[0].trim(), {field: ['order', index.toString(), 'field']});
+            const directionData = new UnsafeData(trimmed.split(' ')[1]?.trim() ?? 'desc', {field: ['order', index.toString(), 'direction']});
+
+            const validatedField = fieldData.enum(
+                Object.keys(RecommendationOrderMap) as (keyof typeof RecommendationOrderMap)[]
+            );
+            const direction = directionData.enum(['asc' as const, 'desc' as const]);
+
+            // Convert 'count.' and camelCase to snake_case
+            const field = RecommendationOrderMap[validatedField];
+            order.push({
+                field,
+                direction
+            });
+        }
+
+        return order;
+    }
+
+    async browse(frame: Frame) {
+        const options = new UnsafeData(frame.options);
+
+        const page = options.optionalKey('page')?.integer ?? 1;
+        const limit = options.optionalKey('limit')?.integer ?? 5;
+        const include = options.optionalKey('withRelated')?.array.map((item) => {
+            return RecommendationIncludesMap[item.enum(
+                Object.keys(RecommendationIncludesMap) as (keyof typeof RecommendationIncludesMap)[]
+            )];
+        }) ?? [];
+        const filter = options.optionalKey('filter')?.string;
+
+        const orderOption = options.optionalKey('order')?.string;
+        const order = this.#stringToOrder(orderOption);
+
+        const count = await this.service.countRecommendations({});
+        const recommendations = (await this.service.listRecommendations({page, limit, filter, include, order}));
+
+        return this.#serialize(
+            recommendations,
+            {
+                pagination: this.#serializePagination({page, limit, count})
+            }
         );
+    }
+
+    async trackClicked(frame: Frame) {
+        const member = this.#optionalAuthMember(frame);
+        const options = new UnsafeData(frame.options);
+        const id = options.key('id').string;
+
+        await this.service.trackClicked({
+            id,
+            memberId: member?.id
+        });
+    }
+    async trackSubscribed(frame: Frame) {
+        const member = this.#authMember(frame);
+        const options = new UnsafeData(frame.options);
+        const id = options.key('id').string;
+
+        await this.service.trackSubscribed({
+            id,
+            memberId: member.id
+        });
+    }
+
+    #authMember(frame: Frame): {id: string} {
+        const options = new UnsafeData(frame.options);
+        const memberId = options.key('context').optionalKey('member')?.nullable.key('id').string;
+        if (!memberId) {
+            // This is an internal server error because authentication should happen outside this service.
+            throw new errors.UnauthorizedError({
+                message: 'Member not found'
+            });
+        }
+        return {
+            id: memberId
+        };
+    }
+
+    #optionalAuthMember(frame: Frame): {id: string}|null {
+        try {
+            const member = this.#authMember(frame);
+            return member;
+        } catch (e) {
+            if (e instanceof errors.UnauthorizedError) {
+                // This is fine, this is not required
+            } else {
+                throw e;
+            }
+        }
+        return null;
+    }
+
+    #serialize(recommendations: RecommendationPlain[], meta?: any) {
+        return {
+            data: recommendations.map((entity) => {
+                const d = {
+                    id: entity.id,
+                    title: entity.title,
+                    description: entity.description,
+                    excerpt: entity.excerpt,
+                    featured_image: entity.featuredImage?.toString() ?? null,
+                    favicon: entity.favicon?.toString() ?? null,
+                    url: entity.url.toString(),
+                    one_click_subscribe: entity.oneClickSubscribe,
+                    created_at: entity.createdAt.toISOString(),
+                    updated_at: entity.updatedAt?.toISOString() ?? null,
+                    count: entity.clickCount !== undefined || entity.subscriberCount !== undefined ? {
+                        clicks: entity.clickCount,
+                        subscribers: entity.subscriberCount
+                    } : undefined
+                };
+
+                return d;
+            }),
+            meta
+        };
+    }
+
+    #serializePagination({page, limit, count}: {page: number, limit: number, count: number}) {
+        const pages = Math.ceil(count / limit);
+
+        return {
+            page,
+            limit,
+            total: count,
+            pages,
+            prev: page > 1 ? page - 1 : null,
+            next: page < pages ? page + 1 : null
+        };
     }
 }

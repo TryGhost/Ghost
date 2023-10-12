@@ -4,12 +4,11 @@ import ColorIndicator from '../../../admin-x-ds/global/form/ColorIndicator';
 import Form from '../../../admin-x-ds/global/form/Form';
 import HtmlField from '../../../admin-x-ds/global/form/HtmlField';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useRef, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
 import {Tab} from '../../../admin-x-ds/global/TabView';
-import {debounce} from '../../../utils/debounce';
 import {getHomepageUrl} from '../../../api/site';
 import {getSettingValues} from '../../../api/settings';
 import {showToast} from '../../../admin-x-ds/global/Toast';
@@ -25,6 +24,7 @@ type SidebarProps = {
     toggleVisibility: (visibility: string, value: boolean) => void;
     visibility?: string[];
     paidMembersEnabled?: boolean;
+    onBlur: () => void;
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -35,10 +35,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     toggleColorSwatch,
     toggleVisibility,
     visibility = [],
-    paidMembersEnabled
+    paidMembersEnabled,
+    onBlur
 }) => {
-    const {config} = useGlobalData();
-
     const visibilityCheckboxes = [
         {
             label: 'Logged out visitors',
@@ -69,11 +68,11 @@ const Sidebar: React.FC<SidebarProps> = ({
     return (
         <Form>
             <HtmlField
-                config={config}
                 nodes='MINIMAL_NODES'
                 placeholder='Highlight breaking news, offers or updates'
                 title='Announcement'
                 value={announcementContent}
+                onBlur={onBlur}
                 onChange={announcementTextHandler}
             />
             <ColorIndicator
@@ -116,8 +115,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 const AnnouncementBarModal: React.FC = () => {
     const {siteData} = useGlobalData();
-    // const homePageURL = getHomepageUrl(siteData!);
-    const modal = NiceModal.useModal();
     const {localSettings, updateSetting, handleSave} = useSettingGroup();
     const [announcementContent] = getSettingValues<string>(localSettings, ['announcement_content']);
     const [accentColor] = getSettingValues<string>(localSettings, ['accent_color']);
@@ -127,6 +124,7 @@ const AnnouncementBarModal: React.FC = () => {
     const visibilitySettings = JSON.parse(announcementVisibility?.toString() || '[]') as string[];
     const {updateRoute} = useRouting();
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
+    const [announcementContentState, setAnnouncementContentState] = useState(announcementContent);
 
     const toggleColorSwatch = (e: string | null) => {
         updateSetting('announcement_background', e);
@@ -142,23 +140,28 @@ const AnnouncementBarModal: React.FC = () => {
         updateSetting('announcement_visibility', JSON.stringify(visibilitySettings));
     };
 
-    const updateAnnouncementContextDebounced = useRef(
-        debounce((value: string) => {
-            updateSetting('announcement_content', value);
-        }, 500)
-    );
+    const announcementTextHandler = useCallback((e:string) => {
+        setAnnouncementContentState(e);
+    }, []);
 
     const sidebar = <Sidebar
         accentColor={accentColor}
         announcementBackgroundColor={announcementBackgroundColor}
         announcementContent={announcementContent}
         announcementTextHandler={(e) => {
-            updateAnnouncementContextDebounced.current(e);
+            announcementTextHandler(e);
         }}
         paidMembersEnabled={paidMembersEnabled}
         toggleColorSwatch={toggleColorSwatch}
         toggleVisibility={toggleVisibility}
         visibility={announcementVisibility as string[]}
+        onBlur={() => {
+            if (announcementContentState) {
+                updateSetting('announcement_content', announcementContentState);
+            } else {
+                updateSetting('announcement_content', null);
+            }
+        }}
     />;
 
     const {data: {posts: [latestPost]} = {posts: []}} = useBrowsePosts({
@@ -184,14 +187,6 @@ const AnnouncementBarModal: React.FC = () => {
         }
     };
 
-    // const onTabChange = (id: string) => {
-    //     if (id === 'post' && latestPost) {
-    //         setSelectedPreviewTab('post');
-    //     } else {
-    //         setSelectedPreviewTab('homepage');
-    //     }
-    // };
-
     let selectedTabURL = getHomepageUrl(siteData!);
     switch (selectedPreviewTab) {
     case 'homepage':
@@ -202,16 +197,22 @@ const AnnouncementBarModal: React.FC = () => {
         break;
     }
 
+    const preview = <AnnouncementBarPreview
+        announcementBackgroundColor={announcementBackgroundColor}
+        announcementContent={announcementContent}
+        url={selectedTabURL}
+        visibility={visibilitySettings}
+    />;
+
     return <PreviewModalContent
         afterClose={() => {
-            modal.remove();
             updateRoute('announcement-bar');
         }}
         cancelLabel='Close'
-        deviceSelector={false}
+        deviceSelector={true}
         dirty={false}
         okLabel='Save'
-        preview={<AnnouncementBarPreview announcementBackgroundColor={announcementBackgroundColor} announcementContent={announcementContent} url={selectedTabURL} />}
+        preview={preview}
         previewBgColor='greygradient'
         previewToolbarTabs={previewTabs}
         selectedURL={selectedPreviewTab}
@@ -220,10 +221,8 @@ const AnnouncementBarModal: React.FC = () => {
         title='Announcement'
         titleHeadingLevel={5}
         onOk={async () => {
-            if (await handleSave()) {
-                modal.remove();
+            if (!(await handleSave())) {
                 updateRoute('announcement-bar');
-            } else {
                 showToast({
                     type: 'pageError',
                     message: 'An error occurred while saving your changes. Please try again.'

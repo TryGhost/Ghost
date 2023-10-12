@@ -4,15 +4,15 @@ import clsx from 'clsx';
 
 const TableHead: React.FC<HTMLProps<HTMLTableCellElement>> = ({className, children, ...props}) => {
     const tableCellClasses = clsx(
-        '!py-3 !pl-0 !pr-6 align-top',
+        '!py-2 !pl-0 !pr-6 text-left align-top',
         props.onClick && 'hover:cursor-pointer',
         className
     );
 
     return (
-        <td className={tableCellClasses} {...props}>
+        <th className={tableCellClasses} {...props}>
             <Heading className='whitespace-nowrap' level={6}>{children}</Heading>
-        </td>
+        </th>
     );
 };
 

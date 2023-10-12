@@ -161,6 +161,20 @@ const longContent = (
     </>
 );
 
+export const StickyHeader: Story = {
+    args: {
+        size: 'md',
+        stickyHeader: true,
+        onOk: () => {
+            alert('Clicked OK!');
+        },
+        onCancel: undefined,
+        title: 'Sticky header',
+        stickyFooter: true,
+        children: longContent
+    }
+};
+
 export const StickyFooter: Story = {
     args: {
         size: 'md',

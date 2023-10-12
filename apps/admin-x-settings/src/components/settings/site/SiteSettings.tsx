@@ -4,7 +4,7 @@ import Navigation from './Navigation';
 import React from 'react';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 
-const searchKeywords = {
+export const searchKeywords = {
     design: ['design', 'branding', 'logo', 'cover', 'colors', 'fonts', 'background', 'themes', 'appearance', 'style'],
     navigation: ['navigation', 'menus', 'primary', 'secondary', 'links'],
     announcementBar: ['announcement', 'bar', 'important', 'banner']

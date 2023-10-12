@@ -8,6 +8,7 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -32,14 +33,14 @@ const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const headerProps = {
         extensions: [html],
         hint: 'Code here will be injected into the {{ghost_head}} tag on every page of the site',
-        value: headerContent,
+        value: headerContent || '',
         onChange: (value: string) => updateSetting('codeinjection_head', value)
     };
 
     const footerProps = {
         extensions: [html],
         hint: 'Code here will be injected into the {{ghost_foot}} tag on every page of the site',
-        value: footerContent,
+        value: footerContent || '',
         onChange: (value: string) => updateSetting('codeinjection_foot', value)
     };
 
@@ -93,4 +94,4 @@ const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default CodeInjection;
+export default withErrorBoundary(CodeInjection, 'Code injection');

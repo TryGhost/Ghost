@@ -4,6 +4,7 @@ import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as Icon} from '../../../../assets/icons/amp.svg';
 import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
@@ -17,12 +18,13 @@ const AmpModal = NiceModal.create(() => {
     const [ampId] = getSettingValues<string>(settings, ['amp_gtag_id']);
     const modal = NiceModal.useModal();
     const [enabled, setEnabled] = useState(false);
-    const [trackingId, setTrackingId] = useState('');
+    const [trackingId, setTrackingId] = useState<string | null>('');
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     useEffect(() => {
         setEnabled(ampEnabled || false);
-        setTrackingId(ampId || '');
+        setTrackingId(ampId || null);
     }, [ampEnabled, ampId]);
 
     const handleSave = async () => {
@@ -30,7 +32,11 @@ const AmpModal = NiceModal.create(() => {
             {key: 'amp', value: enabled},
             {key: 'amp_gtag_id', value: trackingId}
         ];
-        await editSettings(updates);
+        try {
+            await editSettings(updates);
+        } catch (e) {
+            handleError(e);
+        }
     };
 
     return (
@@ -38,6 +44,7 @@ const AmpModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('integrations');
             }}
+            dirty={!(enabled === ampEnabled) || !(trackingId === ampId)}
             okColor='black'
             okLabel='Save & close'
             testId='amp-modal'
@@ -69,7 +76,7 @@ const AmpModal = NiceModal.create(() => {
                             hint='Tracks AMP traffic in Google Analytics'
                             placeholder='UA-XXXXXXX-X'
                             title='Google Analytics Tracking ID'
-                            value={trackingId}
+                            value={trackingId || ''}
                             onChange={(e) => {
                                 setTrackingId(e.target.value);
                             }}

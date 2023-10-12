@@ -83,7 +83,7 @@ const SignupOptions: React.FC<{
         });
     }
 
-    return <Form marginTop>
+    return <div className='mt-7'><Form>
         <Toggle
             checked={Boolean(portalName)}
             disabled={isDisabled}
@@ -124,7 +124,6 @@ const SignupOptions: React.FC<{
         )}
 
         <HtmlField
-            config={config}
             error={Boolean(errors.portal_signup_terms_html)}
             hint={errors.portal_signup_terms_html || <>Recommended: <strong>115</strong> characters. You&apos;ve used <strong className="text-green">{signupTermsLength}</strong></>}
             nodes='MINIMAL_NODES'
@@ -141,7 +140,7 @@ const SignupOptions: React.FC<{
             labelStyle='heading'
             onChange={e => updateSetting('portal_signup_checkbox_required', e.target.checked)}
         />}
-    </Form>;
+    </Form></div>;
 };
 
 export default SignupOptions;

@@ -13,8 +13,9 @@ class StaffServiceEmails {
         this.urlUtils = urlUtils;
         this.labs = labs;
 
-        this.Handlebars = require('handlebars');
+        this.Handlebars = require('handlebars').create();
         this.registerPartials();
+        this.registerHelpers();
     }
 
     async notifyFreeMemberSignup({
@@ -35,10 +36,6 @@ class StaffServiceEmails {
             }
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
-
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
 
             const templateData = {
                 memberData,
@@ -96,10 +93,6 @@ class StaffServiceEmails {
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
 
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
-
             const templateData = {
                 memberData,
                 attributionTitle,
@@ -153,10 +146,6 @@ class StaffServiceEmails {
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
 
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
-
             const templateData = {
                 memberData,
                 tierData,
@@ -188,10 +177,6 @@ class StaffServiceEmails {
      */
     async getSharedData(recipient) {
         let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${recipient.slug}`);
-
-        if (this.labs.isSet('adminXSettings')) {
-            staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${recipient.slug}`);
-        }
 
         return {
             siteTitle: this.settingsCache.get('title'),
@@ -236,9 +221,7 @@ class StaffServiceEmails {
             const to = user.email;
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
+
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
@@ -293,9 +276,6 @@ class StaffServiceEmails {
             const to = user.email;
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
 
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
@@ -478,10 +458,7 @@ class StaffServiceEmails {
         });
     }
 
-    async renderHTML(templateName, data) {
-        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `${templateName}.hbs`), 'utf8');
-        const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-
+    registerHelpers() {
         this.Handlebars.registerHelper('eq', function (arg, value, options) {
             if (arg === value) {
                 return options.fn(this);
@@ -496,6 +473,15 @@ class StaffServiceEmails {
             }
             return array.slice(0,limit);
         });
+
+        this.Handlebars.registerHelper('encodeURIComponent', function (string) {
+            return encodeURIComponent(string);
+        });
+    }
+
+    async renderHTML(templateName, data) {
+        const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `${templateName}.hbs`), 'utf8');
+        const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
 
         let sharedData = {};
         if (data.recipient) {

@@ -1,3 +1,4 @@
+import Button from '../../../admin-x-ds/global/Button';
 import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import StripeButton from '../../../admin-x-ds/settings/StripeButton';
@@ -8,14 +9,15 @@ import useRouting from '../../../hooks/useRouting';
 import {Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '../../../api/tiers';
 import {checkStripeEnabled} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}> = ({className, onClick}) => {
     className = clsx(
-        'group flex shrink-0 items-center justify-center whitespace-nowrap rounded border border-grey-300 px-3 py-1.5 text-sm font-semibold text-grey-900 transition-all hover:border-grey-500',
+        'group flex shrink-0 items-center justify-center whitespace-nowrap rounded border border-grey-300 px-3 py-1.5 text-sm font-semibold text-grey-900 transition-all hover:border-grey-500 dark:border-grey-900 dark:text-white',
         className
     );
     return (
-        <button className={className} type='button' onClick={onClick}>
+        <button className={className} data-testid='stripe-connected' type='button' onClick={onClick}>
             <span className="inline-flex h-2 w-2 rounded-full bg-green transition-all group-hover:bg-[#625BF6]"></span>
             <span className='ml-2'>Connected to Stripe</span>
         </button>
@@ -25,7 +27,7 @@ const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}
 const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState('active-tiers');
     const {settings, config} = useGlobalData();
-    const {data: {tiers} = {}} = useBrowseTiers();
+    const {data: {tiers, meta, isEnd} = {}, fetchNextPage} = useBrowseTiers();
     const activeTiers = getActiveTiers(tiers || []);
     const archivedTiers = getArchivedTiers(tiers || []);
     const {updateRoute} = useRouting();
@@ -35,14 +37,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const sortTiers = (t: Tier[]) => {
-        t.sort((a, b) => {
-            if ((a.monthly_price as number) < (b.monthly_price as number)) {
-                return -1;
-            } else {
-                return 1;
-            }
-        });
-        return t;
+        return [...t].sort((a, b) => (a.monthly_price ?? 0) - (b.monthly_price ?? 0));
     };
 
     const tabs = [
@@ -86,8 +81,13 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
             </div>
 
             {content}
+            {isEnd === false && <Button
+                label={`Load more (showing ${tiers?.length || 0}/${meta?.pagination.total || 0} tiers)`}
+                link
+                onClick={() => fetchNextPage()}
+            />}
         </SettingGroup>
     );
 };
 
-export default Tiers;
+export default withErrorBoundary(Tiers, 'Tiers');

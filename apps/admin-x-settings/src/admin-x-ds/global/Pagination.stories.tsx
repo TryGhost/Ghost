@@ -13,21 +13,49 @@ type Story = StoryObj<typeof Pagination>;
 
 export const Default: Story = {
     args: {
-        itemsPerPage: 5,
-        itemsTotal: 15
+        limit: 5,
+        total: 15,
+        page: 1,
+        nextPage: () => {},
+        prevPage: () => {}
     }
 };
 
 export const LessThanMaximum: Story = {
     args: {
-        itemsPerPage: 9,
-        itemsTotal: 5
+        limit: 9,
+        total: 5,
+        page: 1,
+        nextPage: () => {},
+        prevPage: () => {}
     }
 };
 
-export const MoreThanMaximum: Story = {
+export const MiddlePage: Story = {
     args: {
-        itemsPerPage: 5,
-        itemsTotal: 15
+        limit: 5,
+        total: 15,
+        page: 2,
+        nextPage: () => {},
+        prevPage: () => {}
+    }
+};
+
+export const LastPage: Story = {
+    args: {
+        limit: 5,
+        total: 15,
+        page: 3,
+        nextPage: () => {},
+        prevPage: () => {}
+    }
+};
+
+export const UnknownTotal: Story = {
+    args: {
+        limit: 5,
+        page: 1,
+        nextPage: () => {},
+        prevPage: () => {}
     }
 };

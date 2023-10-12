@@ -4,12 +4,14 @@ import clsx from 'clsx';
 
 interface StripeButtonProps {
     label?: React.ReactNode;
+    className?: string;
 }
 
-const StripeButton: React.FC<StripeButtonProps | ButtonProps> = ({label, ...props}) => {
+const StripeButton: React.FC<StripeButtonProps | ButtonProps> = ({label, className, ...props}) => {
     const classNames = clsx(
-        'cursor-pointer rounded-md bg-[#625BF6] font-semibold text-white transition-all hover:opacity-90',
-        label ? 'px-5 py-2 text-sm' : 'px-6 py-[9px]'
+        'inline-block cursor-pointer rounded-md bg-[#625BF6] font-semibold text-white transition-all hover:opacity-90',
+        label ? 'px-5 py-2 text-sm' : 'px-6 py-[9px]',
+        className
     );
 
     if (!label) {

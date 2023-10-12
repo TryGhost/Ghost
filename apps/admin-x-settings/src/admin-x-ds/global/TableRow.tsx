@@ -26,9 +26,9 @@ const TableRow: React.FC<TableRowProps> = ({id, action, hideActions, className, 
     separator = (separator === undefined) ? true : separator;
     const tableRowClasses = clsx(
         'group/table-row',
-        bgOnHover && 'hover:bg-gradient-to-r hover:from-white hover:to-grey-50',
+        bgOnHover && 'hover:bg-gradient-to-r hover:from-white hover:to-grey-50 dark:hover:from-black dark:hover:to-grey-950',
         onClick && 'cursor-pointer',
-        separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-grey-200' : 'border-y border-transparent first-of-type:hover:border-t-transparent',
+        separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-grey-200 dark:border-grey-950 dark:hover:border-grey-900' : 'border-y border-none first-of-type:hover:border-t-transparent',
         className
     );
 
@@ -36,8 +36,8 @@ const TableRow: React.FC<TableRowProps> = ({id, action, hideActions, className, 
         <tr className={tableRowClasses} data-testid={testId} id={id} onClick={handleClick}>
             {children}
             {action &&
-                <td className={`px-6 py-3`}>
-                    <div className={`visible flex items-center justify-end ${hideActions ? 'group-hover/table-row:visible md:invisible' : ''}`}>
+                <td className={`p-0 hover:cursor-pointer`}>
+                    <div className={`visible flex items-center justify-end py-3 pr-6 ${hideActions ? 'group-hover/table-row:visible md:invisible' : ''}`}>
                         {action}
                     </div>
                 </td>

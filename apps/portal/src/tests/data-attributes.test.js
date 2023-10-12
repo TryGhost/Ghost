@@ -63,7 +63,7 @@ function getMockData({newsletterQuerySelectorResult = null} = {}) {
                         value: 'Gold'
                     }];
                 }
-                if (elem === 'input[data-members-newsletter]' && newsletterQuerySelectorResult) {
+                if (elem === 'input[type=hidden][data-members-newsletter], input[type=checkbox][data-members-newsletter]:checked, input[type=radio][data-members-newsletter]:checked' && newsletterQuerySelectorResult) {
                     return newsletterQuerySelectorResult;
                 }
             }
@@ -244,7 +244,7 @@ describe('Member Data attributes:', () => {
         test('includes specified newsletters in request', () => {
             const {event, form, errorEl, siteUrl, submitHandler} = getMockData({
                 newsletterQuerySelectorResult: [{
-                    value: 'some_newsletter'
+                    value: 'Some Newsletter'
                 }]
             });
 
@@ -264,7 +264,7 @@ describe('Member Data attributes:', () => {
                     refUrl: 'https://example.com/blog/',
                     time: 1611234567890
                 }],
-                newsletters: [{id: 'some_newsletter'}]
+                newsletters: [{name: 'Some Newsletter'}]
             });
             expect(window.fetch).toHaveBeenCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
         });

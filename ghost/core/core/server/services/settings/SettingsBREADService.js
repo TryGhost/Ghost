@@ -65,7 +65,8 @@ class SettingsBREADService {
                 // @todo: need to make this more generic?
                 const adminUrl = urlUtils.urlFor('admin', true);
                 const signinURL = new URL(adminUrl);
-                signinURL.hash = `/settings/members/?verifyEmail=${token}`;
+                signinURL.hash = `/settings/portal/edit?verifyEmail=${token}`;
+
                 return signinURL.href;
             }
         };
