@@ -2,10 +2,11 @@ import Icon from '../../../admin-x-ds/global/Icon';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import Separator from '../../../admin-x-ds/global/Separator';
-import semverParse from 'semver/functions/parse';
 import useRouting from '../../../hooks/useRouting';
 import {ReactComponent as GhostLogo} from '../../../admin-x-ds/assets/images/ghost-logo.svg';
 import {RoutingModalProps} from '../../providers/RoutingProvider';
+import {linkToGitHubReleases} from '../../../utils/linkToGithubReleases';
+import {showDatabaseWarning} from '../../../utils/showDatabaseWarning';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useUpgradeStatus} from '../../providers/ServiceProvider';
 
@@ -14,24 +15,6 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
     const globalData = useGlobalData();
     let config = globalData.config;
     const upgradeStatus = useUpgradeStatus();
-
-    function linkToGitHubReleases():string {
-        if (config.version.includes('-pre.')) {
-            try {
-                const semverVersion = semverParse(config.version, {includePrerelease: true} as any);
-
-                if (semverVersion && semverVersion.build?.[0]) {
-                    return `https://github.com/TryGhost/Ghost/commit/${semverVersion.build[0]}`;
-                }
-
-                return '';
-            } catch (e) {
-                return '';
-            }
-        }
-
-        return `https://github.com/TryGhost/Ghost/releases/tag/v${config.version}`;
-    }
 
     function copyrightYear():number {
         const date = new Date();
@@ -53,23 +36,6 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
         }
 
         return true;
-    }
-
-    function showDatabaseWarning() : boolean {
-        const isProduction = !!config.environment.match?.(/production/i);
-        const database = config.database;
-
-        // Show a warning if we're in production and not using MySQL 8
-        if (isProduction && database !== 'mysql8') {
-            return true;
-        }
-
-        // Show a warning if we're in development and using MySQL 5
-        if (!isProduction && database === 'mysql5') {
-            return true;
-        }
-
-        return false;
     }
 
     return (
@@ -94,8 +60,8 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
                         )
                     }
                     {
-                        linkToGitHubReleases() && (
-                            <div><strong>Version:</strong> <a className='text-green' href={linkToGitHubReleases()} rel="noopener noreferrer" target="_blank">{config.version}</a></div>
+                        linkToGitHubReleases(config.version) && (
+                            <div><strong>Version:</strong> <a className='text-green' href={linkToGitHubReleases(config.version)} rel="noopener noreferrer" target="_blank">{config.version}</a></div>
                         ) || (
                             <div><strong>Version:</strong> {config.version}</div>
                         )
@@ -116,7 +82,7 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
                     }
 
                     {
-                        showSystemInfo() && showDatabaseWarning() && (
+                        showSystemInfo() && showDatabaseWarning(config.environment, config.database) && (
                             <div className='text-red-500 dark:text-red-400'>
                                  You are running an unsupported database in production. Please <a href="https://ghost.org/docs/faq/supported-databases/" rel="noopener noreferrer" target="_blank">upgrade to MySQL 8</a>.
                             </div>
