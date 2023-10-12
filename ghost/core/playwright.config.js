@@ -5,15 +5,15 @@ const config = {
     expect: {
         timeout: 10000
     },
-    retries: process.env.CI ? 2 : 0,
-    workers: process.env.CI ? '100%' : (process.env.PLAYWRIGHT_SLOWMO ? 1 : undefined),
+    workers: 1,
     reporter: [['list', {printSteps: true}]],
     use: {
         // Use a single browser since we can't simultaneously test multiple browsers
         browserName: 'chromium',
         headless: !process.env.PLAYWRIGHT_DEBUG,
-        // Port doesn't matter, overriden by baseURL fixture for each worker
-        baseURL: 'http://127.0.0.1:2368'
+        baseURL: process.env.TEST_URL ?? 'http://127.0.0.1:2369',
+        // TODO: Where to put this
+        storageState: 'playwright-state.json'
     },
     // separated tests to projects for better logging to console
     // portal tests are much more stable when running in the separate DB from admin tests
@@ -24,10 +24,11 @@ const config = {
         },
         {
             name: 'portal',
-            testDir: 'test/e2e-browser/portal',
-            fullyParallel: true
+            testDir: 'test/e2e-browser/portal'
         }
-    ]
+    ],
+    globalSetup: './test/e2e-browser/utils/global-setup',
+    globalTeardown: './test/e2e-browser/utils/global-teardown'
 };
 
 module.exports = config;
