@@ -1,11 +1,10 @@
-const {expect} = require('@playwright/test');
-const test = require('../fixtures/ghost-test');
+const {expect, test} = require('@playwright/test');
 const {createMember, deleteAllMembers} = require('../utils/e2e-browser-utils');
 const fs = require('fs');
 
 test.describe('Admin', () => {
     test.describe('Members', () => {
-        test.describe.configure({retries: 1, mode: 'serial'});
+        test.describe.configure({retries: 1});
         test('A member can be created', async ({page}) => {
             await page.goto('/ghost');
             await page.locator('.gh-nav a[href="#/members/"]').click();
@@ -280,7 +279,7 @@ test.describe('Admin', () => {
         });
 
         test('A member can be granted a comp in admin', async ({page}) => {
-            await page.goto('/ghost');
+            page.goto('/ghost');
             await deleteAllMembers(page);
 
             // create a new member with a comped plan
