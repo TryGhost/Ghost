@@ -11,7 +11,7 @@ const Stripe = require('stripe').Stripe;
 const configUtils = require('../../utils/configUtils');
 
 const startWebhookServer = (port) => {
-    const command = `stripe listen --forward-connect-to http://127.0.0.1:${port}/members/webhooks/stripe/`;
+    const command = `stripe listen --forward-connect-to http://127.0.0.1:${port}/members/webhooks/stripe/ ${process.env.CI ? `--api-key ${process.env.STRIPE_SECRET_KEY}` : ''}`.trim();
     const webhookServer = spawn(command.split(' ')[0], command.split(' ').slice(1));
 
     // Adding event listeners here seems to prevent heisenbug where webhooks aren't received
