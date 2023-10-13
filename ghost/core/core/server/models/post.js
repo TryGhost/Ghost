@@ -716,7 +716,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (!this.get('mobiledoc') && !this.get('lexical')) {
-            this.set('mobiledoc', JSON.stringify(mobiledocLib.blankDocument));
+            this.set('lexical', JSON.stringify(lexicalLib.blankDocument));
         }
 
         // If we're force re-rendering we want to make sure that all image cards
