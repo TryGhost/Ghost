@@ -76,6 +76,8 @@ class ExternalMediaInliner {
     async extractFileDataFromResponse(requestURL, response) {
         let extension;
 
+        // Attempt to get the file extension from the file itself
+        // If that fails, or if `.ext` is undefined, get the extension from the file path in the catch
         try {
             const fileInfo = await FileType.fromBuffer(response.body);
             extension = fileInfo.ext;
