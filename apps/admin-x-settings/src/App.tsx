@@ -4,7 +4,7 @@ import MainContent from './MainContent';
 import NiceModal from '@ebay/nice-modal-react';
 import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
 import clsx from 'clsx';
-import {DefaultHeaderTypes} from './utils/unsplash/UnsplashTypes';
+import {DefaultHeaderTypes} from './unsplash/UnsplashTypes';
 import {FetchKoenigLexical, OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';

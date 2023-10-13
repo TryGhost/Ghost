@@ -5,7 +5,7 @@ import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import React, {useRef, useState} from 'react';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
-import UnsplashSearchModal from '../../../../utils/unsplash/UnsplashSearchModal';
+import UnsplashSearchModal from '../../../../unsplash/UnsplashSearchModal';
 import useHandleError from '../../../../utils/api/handleError';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {SettingValue, getSettingValues} from '../../../../api/settings';
@@ -144,7 +144,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                             }
                         }
                         unsplashButtonClassName='!top-1 !right-1'
-                        unsplashEnabled={true}
+                        unsplashEnabled={unsplashEnabled}
                         onDelete={() => updateSetting('cover_image', null)}
                         onUpload={async (file) => {
                             try {

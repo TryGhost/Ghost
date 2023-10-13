@@ -2,7 +2,7 @@ import './styles/demo.css';
 import App from './App.tsx';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import {DefaultHeaderTypes} from './utils/unsplash/UnsplashTypes.ts';
+import {DefaultHeaderTypes} from './unsplash/UnsplashTypes.ts';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
