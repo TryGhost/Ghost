@@ -19,8 +19,7 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'signupForm',
-    'lexicalEditor'
+    'signupForm'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
