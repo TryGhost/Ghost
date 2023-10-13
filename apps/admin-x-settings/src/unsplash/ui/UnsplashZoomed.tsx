@@ -1,7 +1,6 @@
 import UnsplashImage, {UnsplashImageProps} from './UnsplashImage';
 import {FC} from 'react';
-
-import {Photo} from '../../../utils/unsplash/UnsplashTypes';
+import {Photo} from '../UnsplashTypes';
 
 interface UnsplashZoomedProps extends Omit<UnsplashImageProps, 'zoomed'> {
   zoomed: Photo | null;

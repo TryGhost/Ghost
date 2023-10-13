@@ -1,14 +1,6 @@
 import {DefaultHeaderTypes, Photo} from '../UnsplashTypes';
 
-export interface IUnsplashRepository {
-    fetchPhotos(): Promise<Photo[]>;
-    fetchNextPage(): Promise<Photo[] | null>;
-    searchPhotos(term: string): Promise<Photo[]>;
-    triggerDownload(photo: Photo): void;
-    searchIsRunning(): boolean;
-  }
-
-export class UnsplashRepository implements IUnsplashRepository {
+export class UnsplashProvider {
     API_URL: string = 'https://api.unsplash.com';
     HEADERS: DefaultHeaderTypes;
     ERROR: string | null = null;

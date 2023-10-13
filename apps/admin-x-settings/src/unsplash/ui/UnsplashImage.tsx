@@ -1,6 +1,6 @@
 import UnsplashButton from './UnsplashButton';
 import {FC, MouseEvent} from 'react';
-import {Links, Photo, User} from '../../../utils/unsplash/UnsplashTypes';
+import {Links, Photo, User} from '../UnsplashTypes';
 
 export interface UnsplashImageProps {
     payload: Photo;
