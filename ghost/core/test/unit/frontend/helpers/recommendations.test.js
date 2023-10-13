@@ -10,6 +10,7 @@ const proxy = require('../../../../core/frontend/services/proxy');
 
 const recommendations = require('../../../../core/frontend/helpers/recommendations');
 const foreach = require('../../../../core/frontend/helpers/foreach');
+const readable_url = require('../../../../core/frontend/helpers/readable_url');
 const {settingsCache} = proxy;
 
 function trimSpaces(string) {
@@ -30,6 +31,7 @@ describe('{{#recommendations}} helper', function () {
 
         // The recommendation template expects this helper
         hbs.registerHelper('foreach', foreach);
+        hbs.registerHelper('readable_url', readable_url);
 
         // Stub settings cache
         sinon.stub(settingsCache, 'get');
@@ -41,11 +43,8 @@ describe('{{#recommendations}} helper', function () {
         sinon.stub(api, 'recommendationsPublic').get(() => {
             return {
                 browse: sinon.stub().resolves({recommendations: [
-                    {title: 'Recommendation 1', url: 'https://recommendations1.com', favicon: 'https://recommendations1.com/favicon.ico', reason: 'Reason 1'},
-                    {title: 'Recommendation 2', url: 'https://recommendations2.com', favicon: 'https://recommendations2.com/favicon.ico', reason: 'Reason 2'},
-                    {title: 'Recommendation 3', url: 'https://recommendations3.com', favicon: 'https://recommendations3.com/favicon.ico', reason: 'Reason 3'},
-                    {title: 'Recommendation 4', url: 'https://recommendations4.com', favicon: 'https://recommendations4.com/favicon.ico', reason: 'Reason 4'},
-                    {title: 'Recommendation 5', url: 'https://recommendations5.com', favicon: 'https://recommendations5.com/favicon.ico', reason: 'Reason 5'}
+                    {id: '1', title: 'Recommendation 1', url: 'https://recommendations1.com', favicon: 'https://recommendations1.com/favicon.ico', description: 'Description 1'},
+                    {id: '2', title: 'Recommendation 2', url: 'https://recommendations2.com', favicon: 'https://recommendations2.com/favicon.ico', description: 'Description 2'}
                 ], meta: meta})
             };
         });
@@ -71,48 +70,19 @@ describe('{{#recommendations}} helper', function () {
         const expected = trimSpaces(html`
         <ul class="recommendations">
             <li class="recommendation">
-                <a href="https://recommendations1.com">
-                    <img class="recommendation-favicon" src="https://recommendations1.com/favicon.ico" alt="Recommendation 1">
-                    <div class="recommendation-content">
-                        <h5 class="recommendation-title">Recommendation 1</h5>
-                        <p class="recommendation-reason">Reason 1</p>
-                    </div>
+                <a href="https://recommendations1.com" data-recommendation="1" target="_blank" rel="noopener">
+                    <img class="recommendation-favicon" src="https://recommendations1.com/favicon.ico" alt="Recommendation 1" loading="lazy">
+                    <h5 class="recommendation-title">Recommendation 1</h5>
+                    <span class="recommendation-url">recommendations1.com</span>
+                    <p class="recommendation-description">Description 1</p>
                 </a>
             </li>
             <li class="recommendation">
-                <a href="https://recommendations2.com">
-                    <img class="recommendation-favicon" src="https://recommendations2.com/favicon.ico" alt="Recommendation 2">
-                    <div class="recommendation-content">
-                        <h5 class="recommendation-title">Recommendation 2</h5>
-                        <p class="recommendation-reason">Reason 2</p>
-                    </div>
-                </a>
-            </li>
-            <li class="recommendation">
-                <a href="https://recommendations3.com">
-                    <img class="recommendation-favicon" src="https://recommendations3.com/favicon.ico" alt="Recommendation 3">
-                    <div class="recommendation-content">
-                        <h5 class="recommendation-title">Recommendation 3</h5>
-                        <p class="recommendation-reason">Reason 3</p>
-                    </div>
-                </a>
-            </li>
-            <li class="recommendation">
-                <a href="https://recommendations4.com">
-                    <img class="recommendation-favicon" src="https://recommendations4.com/favicon.ico" alt="Recommendation 4">
-                    <div class="recommendation-content">
-                        <h5 class="recommendation-title">Recommendation 4</h5>
-                        <p class="recommendation-reason">Reason 4</p>
-                    </div>
-                </a>
-            </li>
-            <li class="recommendation">
-                <a href="https://recommendations5.com">
-                    <img class="recommendation-favicon" src="https://recommendations5.com/favicon.ico" alt="Recommendation 5">
-                    <div class="recommendation-content">
-                        <h5 class="recommendation-title">Recommendation 5</h5>
-                        <p class="recommendation-reason">Reason 5</p>
-                    </div>
+                <a href="https://recommendations2.com" data-recommendation="2" target="_blank" rel="noopener">
+                    <img class="recommendation-favicon" src="https://recommendations2.com/favicon.ico" alt="Recommendation 2" loading="lazy">
+                    <h5 class="recommendation-title">Recommendation 2</h5>
+                    <span class="recommendation-url">recommendations2.com</span>
+                    <p class="recommendation-description">Description 2</p>
                 </a>
             </li>
         </ul>

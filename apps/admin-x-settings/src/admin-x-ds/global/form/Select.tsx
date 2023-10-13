@@ -5,6 +5,7 @@ import Icon from '../Icon';
 import React, {useId, useMemo} from 'react';
 import ReactSelect, {ClearIndicatorProps, DropdownIndicatorProps, GroupBase, OptionProps, OptionsOrGroups, Props, components} from 'react-select';
 import clsx from 'clsx';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 
 export interface SelectOption {
     value: string;
@@ -58,10 +59,12 @@ export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
     clearBg?: boolean;
     border?: boolean;
     fullWidth?: boolean;
+    isSearchable?: boolean;
     containerClassName?: string;
     controlClasses?: SelectControlClasses;
     unstyled?: boolean;
     disabled?: boolean;
+    testId?: string;
 }
 
 const DropdownIndicator: React.FC<DropdownIndicatorProps<SelectOption, false> & {clearBg: boolean}> = ({clearBg, ...props}) => (
@@ -79,7 +82,7 @@ const ClearIndicator: React.FC<ClearIndicatorProps<SelectOption, false>> = props
 
 const Option: React.FC<OptionProps<SelectOption, false>> = ({children, ...optionProps}) => (
     <components.Option {...optionProps}>
-        <span data-testid="select-option">{children}</span>
+        <span data-testid="select-option" data-value={optionProps.data.value}>{children}</span>
         {optionProps.data.hint && <span className="block text-xs text-grey-700 dark:text-grey-300">{optionProps.data.hint}</span>}
     </components.Option>
 );
@@ -98,13 +101,23 @@ const Select: React.FC<SelectProps> = ({
     clearBg = true,
     border = true,
     fullWidth = true,
+    isSearchable = false,
     containerClassName,
     controlClasses,
     unstyled,
     disabled = false,
+    testId,
     ...props
 }) => {
     const id = useId();
+    const {setFocusState} = useFocusContext();
+    const handleFocus = () => {
+        setFocusState(true);
+    };
+
+    const handleBlur = () => {
+        setFocusState(false);
+    };
 
     let containerClasses = '';
     if (!unstyled) {
@@ -132,12 +145,12 @@ const Select: React.FC<SelectProps> = ({
         valueContainer: clsx('gap-1', controlClasses?.valueContainer),
         placeHolder: clsx('text-grey-500 dark:text-grey-800', controlClasses?.placeHolder),
         menu: clsx(
-            'z-[300] rounded-b bg-white py-2 shadow dark:border dark:border-grey-900 dark:bg-black',
+            'z-[300] rounded-b bg-white shadow dark:border dark:border-grey-900 dark:bg-black',
             size === 'xs' && 'text-xs',
             controlClasses?.menu
         ),
         option: clsx('px-3 py-[6px] hover:cursor-pointer hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900', controlClasses?.option),
-        noOptionsMessage: clsx('p-3 text-grey-600', controlClasses?.noOptionsMessage),
+        noOptionsMessage: clsx('nowrap p-3 text-grey-600', controlClasses?.noOptionsMessage),
         groupHeading: clsx('px-3 py-[6px] text-2xs font-semibold uppercase tracking-wide text-grey-700', controlClasses?.groupHeading),
         clearIndicator: clsx('', controlClasses?.clearIndicator)
     };
@@ -163,17 +176,20 @@ const Select: React.FC<SelectProps> = ({
         components: {DropdownIndicator: dropdownIndicatorComponent, Option, ClearIndicator},
         inputId: id,
         isClearable: false,
+        isSearchable: isSearchable,
         options,
         placeholder: prompt ? prompt : '',
         value: selectedOption,
         unstyled: true,
-        onChange: onSelect
+        onChange: onSelect,
+        onFocus: handleFocus,
+        onBlur: handleBlur
     };
 
     const select = (
         <>
             {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={selectedOption || !prompt ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
-            <div className={containerClasses}>
+            <div className={containerClasses} data-testid={testId}>
                 {async ?
                     <AsyncSelect<SelectOption, false> {...customProps} {...props} /> :
                     <ReactSelect<SelectOption, false> {...customProps} {...props} />

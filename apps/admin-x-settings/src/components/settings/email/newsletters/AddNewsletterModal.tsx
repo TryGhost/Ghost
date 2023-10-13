@@ -36,10 +36,11 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             const response = await addNewsletter({
                 name: formState.name,
                 description: formState.description,
-                opt_in_existing: formState.optInExistingSubscribers
+                opt_in_existing: formState.optInExistingSubscribers,
+                feedback_enabled: true
             });
 
-            updateRoute({route: `newsletters/show/${response.newsletters[0].id}`});
+            updateRoute({route: `newsletters/${response.newsletters[0].id}`});
         },
         onSaveError: handleError,
         onValidate: () => {

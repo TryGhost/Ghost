@@ -19,7 +19,7 @@ const FirstpromoterModal = NiceModal.create(() => {
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
 
-    const [accountId, setAccountId] = useState('');
+    const [accountId, setAccountId] = useState<string | null>('');
     const [enabled, setEnabled] = useState(false);
 
     const [firstPromoterEnabled] = getSettingValues<boolean>(settings, ['firstpromoter']);
@@ -27,7 +27,7 @@ const FirstpromoterModal = NiceModal.create(() => {
 
     useEffect(() => {
         setEnabled(firstPromoterEnabled || false);
-        setAccountId(firstPromoterId || '');
+        setAccountId(firstPromoterId || null);
     }, [firstPromoterEnabled, firstPromoterId]);
 
     const handleSave = async () => {
@@ -50,6 +50,7 @@ const FirstpromoterModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('integrations');
             }}
+            dirty={enabled !== firstPromoterEnabled || accountId !== firstPromoterId}
             okColor='black'
             okLabel='Save & close'
             testId='firstpromoter-modal'
@@ -87,7 +88,7 @@ const FirstpromoterModal = NiceModal.create(() => {
                             </>}
                             placeholder='XXXXXXXX'
                             title='FirstPromoter account ID'
-                            value={accountId}
+                            value={accountId || ''}
                             onChange={(e) => {
                                 setAccountId(e.target.value);
                             }}

@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/react';
 import ErrorBoundary from '../ErrorBoundary';
 import React, {Suspense, useCallback, useMemo} from 'react';
+import {FetchKoenigLexical, useServices} from '../../../components/providers/ServiceProvider';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
 
 export interface HtmlEditorProps {
@@ -18,22 +19,12 @@ declare global {
     }
 }
 
-const fetchKoenig = function ({editorUrl, editorVersion}: { editorUrl: string; editorVersion: string; }) {
+const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
     let status = 'pending';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let response: any;
 
-    const fetchPackage = async () => {
-        if (window['@tryghost/koenig-lexical']) {
-            return window['@tryghost/koenig-lexical'];
-        }
-
-        await import(editorUrl.replace('{version}', editorVersion));
-
-        return window['@tryghost/koenig-lexical'];
-    };
-
-    const suspender = fetchPackage().then(
+    const suspender = fetchKoenigLexical().then(
         (res) => {
             status = 'success';
             response = res;
@@ -58,7 +49,7 @@ const fetchKoenig = function ({editorUrl, editorVersion}: { editorUrl: string; e
     return {read};
 };
 
-type EditorResource = ReturnType<typeof fetchKoenig>;
+type EditorResource = ReturnType<typeof loadKoenig>;
 
 const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
     editor,
@@ -92,6 +83,10 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
             onBlur();
         }
         setFocusState(false);
+    };
+
+    const handleFocus = () => {
+        setFocusState(true);
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -141,6 +136,7 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
                 placeholderText={placeholder}
                 singleParagraph={true}
                 onBlur={handleBlur}
+                onFocus={handleFocus}
             >
                 <koenig.HtmlOutputPlugin html={value} setHtml={handleSetHtml} />
             </koenig.KoenigComposableEditor>
@@ -149,24 +145,16 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
 };
 
 const HtmlEditor: React.FC<HtmlEditorProps & {
-    config: { editor: { url: string; version: string; } };
     className?: string;
 }> = ({
-    config,
     className,
     ...props
 }) => {
-    const editorResource = useMemo(() => fetchKoenig({
-        editorUrl: config.editor.url,
-        editorVersion: config.editor.version
-    }), [config.editor.url, config.editor.version]);
-    const {setFocusState} = useFocusContext();
-    // this is not ideal, we need to add a focus plugin inside the Koenig editor package to handle this properly
-    const handleFocus = () => {
-        setFocusState(true);
-    };
+    const {fetchKoenigLexical} = useServices();
+    const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
+
     return <div className={className || 'w-full'}>
-        <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit" onFocus={handleFocus}>
+        <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit">
             <ErrorBoundary name='editor'>
                 <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                     <KoenigWrapper {...props} editor={editorResource} />

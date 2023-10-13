@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha --reporter dot './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura -- mocha --reporter dot --reporter dot './test/**/*.test.js'",
     "test": "yarn test:unit",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
@@ -31,8 +31,8 @@
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",
-    "@tryghost/errors": "1.2.24",
-    "@tryghost/logging": "2.4.4",
+    "@tryghost/errors": "1.2.26",
+    "@tryghost/logging": "2.4.8",
     "@tryghost/magic-link": "0.0.0",
     "@tryghost/member-events": "0.0.0",
     "@tryghost/members-payments": "0.0.0",

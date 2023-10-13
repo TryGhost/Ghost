@@ -98,7 +98,7 @@ function getLinkTarget(ev) {
             }
 
             return {
-                route: 'editor.edit',
+                route: 'lexical-editor.edit',
                 models: [resourceType, ev.resource.id]
             };
         case 'integration':

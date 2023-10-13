@@ -1,18 +1,20 @@
-import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
-import React from 'react';
-import RecommendationIcon from './RecommendationIcon';
-import Table, {ShowMoreData} from '../../../../admin-x-ds/global/Table';
-import TableCell from '../../../../admin-x-ds/global/TableCell';
-// import TableHead from '../../../../admin-x-ds/global/TableHead';
 import Button from '../../../../admin-x-ds/global/Button';
 import EditRecommendationModal from './EditRecommendationModal';
 import Link from '../../../../admin-x-ds/global/Link';
 import NiceModal from '@ebay/nice-modal-react';
+import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
+import React, {useState} from 'react';
+import RecommendationIcon from './RecommendationIcon';
+import Table, {ShowMoreData} from '../../../../admin-x-ds/global/Table';
+import TableCell from '../../../../admin-x-ds/global/TableCell';
+import TableHead from '../../../../admin-x-ds/global/TableHead';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
+import Tooltip from '../../../../admin-x-ds/global/Tooltip';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {PaginationData} from '../../../../hooks/usePagination';
 import {Recommendation} from '../../../../api/recommendations';
+import {numberWithCommas} from '../../../../utils/helpers';
 
 interface RecommendationListProps {
     recommendations: Recommendation[],
@@ -35,7 +37,8 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     };
 
     const isGhostSite = recommendation.one_click_subscribe;
-    const count = (isGhostSite ? recommendation.count?.subscribers : recommendation.count?.clicks) || 0;
+    const showSubscribers = isGhostSite && !!recommendation.count?.subscribers;
+    const count = (showSubscribers ? recommendation.count?.subscribers : recommendation.count?.clicks) || 0;
     const newMembers = count === 1 ? 'new member' : 'new members';
     const clicks = count === 1 ? 'click' : 'clicks';
 
@@ -51,18 +54,19 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                     </div>
                 </div>
             </TableCell>
-            <TableCell className='hidden w-8 align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                {(count === 0) ? (<span className="text-grey-500 dark:text-grey-900">-</span>) : (<div className='-mt-px flex grow items-end gap-1'>
-                    <span>{count}</span>
-                    <span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{isGhostSite ? newMembers : clicks}</span>
+            <TableCell className='hidden w-[1%] whitespace-nowrap !pr-1 pl-0 text-right align-middle md:!visible md:!table-cell' padding={false} onClick={showDetails}>
+                {(count === 0) ? (<span className="text-grey-500 dark:text-grey-900">-</span>) : (<div className='-mt-px items-end gap-1 text-right'>
+                    <span className='text-right'>{numberWithCommas(count)}</span>
+                </div>)}
+            </TableCell>
+            <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
+                {(count === 0) ? (null) : (<div className='-mt-px items-end gap-1 text-left'>
+                    <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{showSubscribers ? newMembers : clicks}</span>
                 </div>)}
             </TableCell>
         </TableRow>
     );
 };
-
-// TODO: Remove if we decide we don't need headers
-// const tableHeader = (<><TableHead>Site</TableHead><TableHead>Conversions from you</TableHead></>);
 
 const RecommendationList: React.FC<RecommendationListProps> = ({recommendations, pagination, showMore, isLoading}) => {
     const {
@@ -75,8 +79,24 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
         updateRoute('recommendations/add');
     };
 
+    const [copied, setCopied] = useState(false);
+
+    const copyRecommendationsUrl = () => {
+        navigator.clipboard.writeText(recommendationsURL);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const tableHeader = (<><TableHead>Site</TableHead><TableHead colSpan={2}>Conversions from you</TableHead></>);
+
     if (isLoading || recommendations.length) {
-        return <Table hint={<span>Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link></span>} isLoading={isLoading} pagination={pagination} showMore={showMore} hintSeparator>
+        return <Table
+            header={tableHeader}
+            hint={<span className='flex items-center gap-1'>Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link><Tooltip containerClassName='leading-none' content={copied ? 'Copied' : 'Copy link'} size='sm'><Button color='clear' hideLabel={true} icon={copied ? 'check-circle' : 'duplicate'} iconColorClass={copied ? 'text-green w-[14px] h-[14px]' : 'text-grey-600 hover:opacity-80 w-[14px] h-[14px]'} label={copied ? 'Copied' : 'Copy'} unstyled={true} onClick={copyRecommendationsUrl} /></Tooltip></span>}
+            isLoading={isLoading}
+            pagination={pagination}
+            showMore={showMore}
+            hintSeparator>
             {recommendations && recommendations.map(recommendation => <RecommendationItem key={recommendation.id} recommendation={recommendation} />)}
         </Table>;
     } else {

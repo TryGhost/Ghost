@@ -1,84 +1,92 @@
+import Button from '../../../../admin-x-ds/global/Button';
 import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React, {useMemo} from 'react';
 import RecommendationIcon from './RecommendationIcon';
-import Table from '../../../../admin-x-ds/global/Table';
+import Table, {ShowMoreData} from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
-import {Mention} from '../../../../api/mentions';
+import useRouting from '../../../../hooks/useRouting';
+import {IncomingRecommendation} from '../../../../api/recommendations';
 import {PaginationData} from '../../../../hooks/usePagination';
 import {ReferrerHistoryItem} from '../../../../api/referrers';
+import {numberWithCommas} from '../../../../utils/helpers';
 
 interface IncomingRecommendationListProps {
-    mentions: Mention[],
+    incomingRecommendations: IncomingRecommendation[],
     stats: ReferrerHistoryItem[],
-    pagination: PaginationData,
+    pagination?: PaginationData,
+    showMore?: ShowMoreData,
     isLoading: boolean
 }
 
-const IncomingRecommendationItem: React.FC<{mention: Mention, stats: ReferrerHistoryItem[]}> = ({mention, stats}) => {
-    const cleanedSource = mention.source.replace('/.well-known/recommendations.json', '');
+const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingRecommendation, stats: ReferrerHistoryItem[]}> = ({incomingRecommendation, stats}) => {
+    const {updateRoute} = useRouting();
 
-    const {signups, paidConversions, hasPaidColumn} = useMemo(() => {
+    const signups = useMemo(() => {
         // Note: this should match the `getDomainFromUrl` method from OutboundLinkTagger
-        let cleanedDomain = cleanedSource;
+        let cleanedDomain = incomingRecommendation.url;
         try {
-            cleanedDomain = new URL(cleanedSource).hostname.replace(/^www\./, '');
+            cleanedDomain = new URL(incomingRecommendation.url).hostname.replace(/^www\./, '');
         } catch (_) {
             // Ignore invalid urls
         }
 
-        return stats.reduce((acc, stat) => {
-            acc.hasPaidColumn = acc.hasPaidColumn || stat.paid_conversions > 0;
+        return stats.reduce((s, stat) => {
             if (stat.source === cleanedDomain) {
-                acc.signups += stat.signups;
-                acc.paidConversions += stat.paid_conversions;
-                return acc;
+                return s + stat.signups;
             }
-            return acc;
-        }, {
-            signups: 0,
-            paidConversions: 0,
-            hasPaidColumn: false
-        });
-    }, [stats, cleanedSource]);
+            return s;
+        }, 0);
+    }, [stats, incomingRecommendation.url]);
 
-    const showDetails = () => {
-        // Open url
-        window.open(cleanedSource, '_blank');
+    const recommendBack = () => {
+        updateRoute({route: `recommendations/add?url=${incomingRecommendation.url}`});
     };
 
-    const freeMembersLabel = (signups - paidConversions) === 1 ? 'free member' : 'free members';
-    const paidConversionsLabel = (paidConversions === 1) ? 'paid member' : 'paid members';
+    const showDetails = () => {
+        window.open(incomingRecommendation.url, '_blank');
+    };
+
+    const freeMembersLabel = signups === 1 ? 'free member' : 'free members';
 
     return (
-        <TableRow hideActions>
+        <TableRow action={
+            !incomingRecommendation.recommending_back && (
+                <div className="flex items-center justify-end">
+                    <Button color='green' label='Recommend back' size='sm' link onClick={recommendBack}
+                    />
+                </div>
+            )
+        } hideActions>
             <TableCell onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
                         <div className="mb-0.5 flex items-center gap-3">
-                            <RecommendationIcon favicon={mention.source_favicon} featured_image={mention.source_featured_image} title={mention.source_title || mention.source_site_title || cleanedSource} />
-                            <span className='line-clamp-1'>{mention.source_title || mention.source_site_title || cleanedSource}</span>
+                            <RecommendationIcon favicon={incomingRecommendation.favicon} featured_image={incomingRecommendation.featured_image} title={incomingRecommendation.title || incomingRecommendation.url} />
+                            <span className='line-clamp-1 font-medium'>{incomingRecommendation.title || incomingRecommendation.url}</span>
                         </div>
                     </div>
                 </div>
             </TableCell>
-            <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                {(signups - paidConversions) === 0 ? <span className="text-grey-500">-</span> : (<div className='-mt-px flex grow items-end gap-1'><span>{signups - paidConversions}</span><span className='-mb-px whitespace-nowrap text-sm lowercase text-grey-700'>{freeMembersLabel}</span></div>)}
+            <TableCell className='hidden w-[1%] whitespace-nowrap !pr-1 pl-0 text-right align-middle md:!visible md:!table-cell' padding={false} onClick={showDetails}>
+                {(signups === 0) ? (<span className="text-grey-500 dark:text-grey-900">-</span>) : (<div className='-mt-px text-right'>
+                    <span className='text-right'>{numberWithCommas(signups)}</span>
+                </div>)}
             </TableCell>
-            {hasPaidColumn &&
-                <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                    {paidConversions === 0 && <span className="dark:text-grey-900">-</span>}
-                    {paidConversions > 0 && (<div className='-mt-px flex grow items-end gap-1'><span>{paidConversions}</span><span className='whitespace-nowrap text-xs text-grey-700'>{paidConversionsLabel}</span></div>)}
-                </TableCell>
-            }
+            <TableCell className='hidden w-[1%] whitespace-nowrap align-middle md:!visible md:!table-cell' onClick={showDetails}>
+                {(signups === 0) ? (null) : (<div className='-mt-px text-left'>
+                    <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{freeMembersLabel}</span>
+                </div>)}
+            </TableCell>
+            {incomingRecommendation.recommending_back && <TableCell className='w-[1%] whitespace-nowrap group-hover/table-row:visible md:invisible'><div className='mt-1 whitespace-nowrap text-right text-sm text-grey-700'>Recommending back</div></TableCell>}
         </TableRow>
     );
 };
 
-const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({mentions, stats, pagination, isLoading}) => {
-    if (isLoading || mentions.length) {
-        return <Table isLoading={isLoading} pagination={pagination}>
-            {mentions.map(mention => <IncomingRecommendationItem key={mention.id} mention={mention} stats={stats} />)}
+const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({incomingRecommendations, stats, pagination, showMore, isLoading}) => {
+    if (isLoading || incomingRecommendations.length) {
+        return <Table isLoading={isLoading} pagination={pagination} showMore={showMore} hintSeparator>
+            {incomingRecommendations.map(rec => <IncomingRecommendationItem key={rec.id} incomingRecommendation={rec} stats={stats} />)}
         </Table>;
     } else {
         return <NoValueLabel>

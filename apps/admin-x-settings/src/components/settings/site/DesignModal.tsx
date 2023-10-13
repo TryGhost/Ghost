@@ -66,7 +66,7 @@ const Sidebar: React.FC<{
                 <div className='w-full px-7'>
                     <button className='group flex w-full items-center justify-between text-sm font-medium opacity-80 transition-all hover:opacity-100' data-testid='change-theme' type='button' onClick={async () => {
                         await handleSave();
-                        updateRoute('design/edit/themes');
+                        updateRoute('design/change-theme');
                     }}>
                         <div className='text-left'>
                             <div className='font-semibold'>Change theme</div>
@@ -219,6 +219,7 @@ const DesignModal: React.FC = () => {
         cancelLabel='Close'
         defaultTab='homepage'
         dirty={saveState === 'unsaved'}
+        okColor={saveState === 'saved' ? 'green' : 'black'}
         okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save')}
         preview={previewContent}
         previewToolbarTabs={previewTabs}

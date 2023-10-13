@@ -96,22 +96,16 @@
                 </button>
             </p>
         {{else}}
-            {{#if post.lexical}}
-                <FeedbackLexical::PostCompleteForm @post={{@publishOptions.post}} />
-                <LinkTo @route="dashboard" class="gh-feedback-lexical-published-back">Back to dashboard</LinkTo>
-            {{/if}}
-            {{#unless post.lexical}}
-                <p class="gh-publish-confirmation gh-publish-confirmation-with-feedback">
-                    <button
-                        type="button"
-                        class="gh-back-to-editor"
-                        {{on "click" @close}}
-                        data-test-button="back-to-editor"
-                    >
-                        <span>Back to editor</span>
-                    </button>
-                </p>
-            {{/unless}}
+            <p class="gh-publish-confirmation gh-publish-confirmation-with-feedback">
+                <button
+                    type="button"
+                    class="gh-back-to-editor"
+                    {{on "click" @close}}
+                    data-test-button="back-to-editor"
+                >
+                    <span>Back to editor</span>
+                </button>
+            </p>
         {{/if}}
     {{/if}}
 {{/let}}

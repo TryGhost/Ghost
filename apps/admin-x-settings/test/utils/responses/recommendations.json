@@ -1,0 +1,18 @@
+{
+    "recommendations": {
+        "id": "21452552",
+        "title": "Some Recommendation",
+        "description": "i like this website",
+        "excerpt": "this is a great website",
+        "feature_image": null,
+        "favicon": null,
+        "url": "http://www.google.com",
+        "one_click_subscribe": "false",
+        "created_at": "2023-10-28T20:00:00.000Z",
+        "updated_at": "2023-10-30T20:00:00.000Z",
+        "count": {
+            "impressions": 30,
+            "subscriptions": 3
+        }
+    }
+}

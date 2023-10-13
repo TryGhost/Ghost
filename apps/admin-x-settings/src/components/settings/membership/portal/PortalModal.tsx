@@ -210,6 +210,7 @@ const PortalModal: React.FC = () => {
         cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
+        okColor={saveState === 'saved' ? 'green' : 'black'}
         okLabel={okLabel}
         preview={preview}
         previewBgColor={selectedPreviewTab === 'links' ? 'white' : 'greygradient'}

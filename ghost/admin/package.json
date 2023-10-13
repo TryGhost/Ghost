@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.65.0",
+  "version": "5.69.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -29,28 +29,25 @@
     "node": "^16.14.0 || ^18.12.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.22.11",
+    "@babel/eslint-parser": "7.22.15",
     "@babel/plugin-proposal-class-properties": "7.18.6",
-    "@babel/plugin-proposal-decorators": "7.22.10",
+    "@babel/plugin-proposal-decorators": "7.23.2",
     "@ember/jquery": "2.0.0",
     "@ember/optional-features": "2.0.0",
     "@ember/render-modifiers": "2.1.0",
     "@ember/test-helpers": "2.9.4",
-    "@embroider/macros": "1.13.1",
+    "@embroider/macros": "1.13.2",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
-    "@joeattardi/emoji-button": "4.6.4",
     "@sentry/ember": "7.70.0",
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.77",
-    "@tryghost/kg-clean-basic-html": "3.0.32",
-    "@tryghost/kg-converters": "0.0.14",
-    "@tryghost/kg-parser-plugins": "3.0.33",
-    "@tryghost/kg-simplemde": "1.11.2",
+    "@tryghost/kg-clean-basic-html": "3.0.36",
+    "@tryghost/kg-converters": "0.0.19",
+    "@tryghost/koenig-lexical": "0.5.5",
     "@tryghost/limit-service": "1.2.10",
     "@tryghost/members-csv": "0.0.0",
-    "@tryghost/mobiledoc-kit": "0.12.5-ghost.2",
     "@tryghost/nql": "0.11.0",
     "@tryghost/nql-lang": "0.5.0",
     "@tryghost/string": "0.2.4",
@@ -75,7 +72,7 @@
     "ember-classic-decorator": "3.0.1",
     "ember-cli": "3.24.0",
     "ember-cli-app-version": "5.0.0",
-    "ember-cli-babel": "8.0.0",
+    "ember-cli-babel": "8.2.0",
     "ember-cli-chart": "3.7.2",
     "ember-cli-code-coverage": "1.0.3",
     "ember-cli-dependency-checker": "3.3.2",
@@ -130,12 +127,6 @@
     "liquid-fire": "0.34.0",
     "liquid-wormhole": "3.0.1",
     "loader.js": "4.7.0",
-    "markdown-it": "13.0.1",
-    "markdown-it-footnote": "3.0.3",
-    "markdown-it-lazy-headers": "0.1.3",
-    "markdown-it-mark": "3.0.1",
-    "markdown-it-sub": "1.0.0",
-    "markdown-it-sup": "1.0.0",
     "miragejs": "0.1.47",
     "moment-timezone": "0.5.23",
     "normalize.css": "3.0.3",
@@ -151,7 +142,7 @@
     "reframe.js": "4.0.2",
     "semver": "7.5.4",
     "testem": "3.10.1",
-    "tracked-built-ins": "3.2.0",
+    "tracked-built-ins": "3.3.0",
     "util": "0.12.5",
     "validator": "7.2.0",
     "walk-sync": "3.0.0"
@@ -159,7 +150,6 @@
   "ember-addon": {
     "paths": [
       "lib/asset-delivery",
-      "lib/koenig-editor",
       "lib/ember-power-calendar-utils",
       "lib/ember-power-calendar-moment"
     ]
@@ -178,7 +168,7 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "jose": "4.14.6",
+    "jose": "4.15.3",
     "path-browserify": "1.0.1",
     "webpack": "5.88.2"
   },

@@ -1,7 +1,14 @@
 import React, {createContext, useContext} from 'react';
 import useSearchService, {SearchService} from '../../utils/search';
-import {DefaultHeaderTypes} from '../../utils/unsplash/UnsplashTypes';
+import {DefaultHeaderTypes} from '../../unsplash/UnsplashTypes';
+import {UpgradeStatusType} from '../../utils/globalTypes';
 import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
+
+export type ThemeVariant = {
+    category: string;
+    previewUrl: string;
+    image: string;
+};
 
 export type OfficialTheme = {
     name: string;
@@ -10,7 +17,10 @@ export type OfficialTheme = {
     ref: string;
     image: string;
     url?: string;
+    variants?: ThemeVariant[]
 };
+
+export type FetchKoenigLexical = () => Promise<any>
 
 interface ServicesContextProps {
     ghostVersion: string
@@ -22,6 +32,8 @@ interface ServicesContextProps {
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
+    fetchKoenigLexical: FetchKoenigLexical;
+    upgradeStatus?: UpgradeStatusType;
 }
 
 interface ServicesProviderProps {
@@ -34,13 +46,15 @@ interface ServicesProviderProps {
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
+    fetchKoenigLexical: FetchKoenigLexical;
+    upgradeStatus?: UpgradeStatusType;
 }
 
 const ServicesContext = createContext<ServicesContextProps>({
     ghostVersion: '',
     officialThemes: [],
     zapierTemplates: [],
-    search: {filter: '', setFilter: () => {}, checkVisible: () => true},
+    search: {filter: '', setFilter: () => {}, checkVisible: () => true, highlightKeywords: () => ''},
     unsplashConfig: {
         Authorization: '',
         'Accept-Version': '',
@@ -51,10 +65,15 @@ const ServicesContext = createContext<ServicesContextProps>({
     sentryDSN: null,
     onUpdate: () => {},
     onInvalidate: () => {},
-    onDelete: () => {}
+    onDelete: () => {},
+    fetchKoenigLexical: async () => {},
+    upgradeStatus: {
+        isRequired: false,
+        message: ''
+    }
 });
 
-const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, unsplashConfig, sentryDSN, onUpdate, onInvalidate, onDelete}) => {
+const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersion, zapierTemplates, officialThemes, unsplashConfig, sentryDSN, onUpdate, onInvalidate, onDelete, fetchKoenigLexical, upgradeStatus}) => {
     const search = useSearchService();
 
     return (
@@ -67,7 +86,9 @@ const ServicesProvider: React.FC<ServicesProviderProps> = ({children, ghostVersi
             sentryDSN,
             onUpdate,
             onInvalidate,
-            onDelete
+            onDelete,
+            fetchKoenigLexical,
+            upgradeStatus
         }}>
             {children}
         </ServicesContext.Provider>
@@ -83,3 +104,5 @@ export const useOfficialThemes = () => useServices().officialThemes;
 export const useSearch = () => useServices().search;
 
 export const useSentryDSN = () => useServices().sentryDSN;
+
+export const useUpgradeStatus = () => useServices().upgradeStatus;

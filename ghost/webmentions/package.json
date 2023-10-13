@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --100  --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --100  --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
     "test": "yarn test:unit",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
@@ -25,8 +25,8 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.24",
-    "@tryghost/logging": "2.4.4",
+    "@tryghost/errors": "1.2.26",
+    "@tryghost/logging": "2.4.8",
     "cheerio": "0.22.0"
   }
 }

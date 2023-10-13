@@ -15,8 +15,8 @@ export type User = {
     bio: string|null;
     website: string;
     location: string;
-    facebook: string;
-    twitter: string;
+    facebook: string|null;
+    twitter: string|null;
     accessibility: string|null;
     status: string;
     meta_title: string|null;

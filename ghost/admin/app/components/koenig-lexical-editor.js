@@ -60,71 +60,17 @@ class ErrorHandler extends React.Component {
     }
 }
 
-const fetchKoenig = function () {
-    let status = 'pending';
-    let response;
-
-    const fetchPackage = async () => {
-        if (window['@tryghost/koenig-lexical']) {
-            return window['@tryghost/koenig-lexical'];
-        }
-
-        // the manual specification of the protocol in the import template string is
-        // required to work around ember-auto-import complaining about an unknown dynamic import
-        // during the build step
-        const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const urlTemplate = GhostAdmin.__container__.lookup('config:main').editor?.url;
-        const urlVersion = GhostAdmin.__container__.lookup('config:main').editor?.version;
-
-        const url = new URL(urlTemplate.replace('{version}', urlVersion));
-
-        if (url.protocol === 'http:') {
-            await import(`http://${url.host}${url.pathname}`);
-        } else {
-            await import(`https://${url.host}${url.pathname}`);
-        }
-
-        return window['@tryghost/koenig-lexical'];
-    };
-
-    const suspender = fetchPackage().then(
-        (res) => {
-            status = 'success';
-            response = res;
-        },
-        (err) => {
-            status = 'error';
-            response = err;
-        }
-    );
-
-    const read = () => {
-        switch (status) {
-        case 'pending':
-            throw suspender;
-        case 'error':
-            throw response;
-        default:
-            return response;
-        }
-    };
-
-    return {read};
-};
-
-const editorResource = fetchKoenig();
-
-const KoenigComposer = (props) => {
+const KoenigComposer = ({editorResource, ...props}) => {
     const {KoenigComposer: _KoenigComposer} = editorResource.read();
     return <_KoenigComposer {...props} />;
 };
 
-const KoenigEditor = (props) => {
+const KoenigEditor = ({editorResource, ...props}) => {
     const {KoenigEditor: _KoenigEditor} = editorResource.read();
     return <_KoenigEditor {...props} />;
 };
 
-const WordCountPlugin = (props) => {
+const WordCountPlugin = ({editorResource, ...props}) => {
     const {WordCountPlugin: _WordCountPlugin} = editorResource.read();
     return <_WordCountPlugin {...props} />;
 };
@@ -133,6 +79,7 @@ export default class KoenigLexicalEditor extends Component {
     @service ajax;
     @service feature;
     @service ghostPaths;
+    @service koenig;
     @service session;
     @service store;
     @service settings;
@@ -142,6 +89,8 @@ export default class KoenigLexicalEditor extends Component {
 
     offers = null;
     contentKey = null;
+
+    editorResource = this.koenig.resource;
 
     get pinturaJsUrl() {
         if (!this.settings.pintura) {
@@ -160,7 +109,7 @@ export default class KoenigLexicalEditor extends Component {
     get pinturaConfig() {
         const jsUrl = this.getImageEditorJSUrl();
         const cssUrl = this.getImageEditorCSSUrl();
-        if (!this.feature.lexicalEditor || !jsUrl || !cssUrl) {
+        if (!jsUrl || !cssUrl) {
             return null;
         }
         return {
@@ -561,6 +510,7 @@ export default class KoenigLexicalEditor extends Component {
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigComposer
+                            editorResource={this.editorResource}
                             cardConfig={cardConfig}
                             enableMultiplayer={enableMultiplayer}
                             fileUploader={{useFileUpload, fileTypes}}
@@ -572,13 +522,14 @@ export default class KoenigLexicalEditor extends Component {
                             darkMode={this.feature.nightShift}
                         >
                             <KoenigEditor
+                                editorResource={this.editorResource}
                                 cursorDidExitAtTop={this.args.cursorDidExitAtTop}
                                 placeholderText={this.args.placeholder}
                                 darkMode={this.feature.nightShift}
                                 onChange={this.args.onChange}
                                 registerAPI={this.args.registerAPI}
                             />
-                            <WordCountPlugin onChange={this.args.updateWordCount} />
+                            <WordCountPlugin editorResource={this.editorResource} onChange={this.args.updateWordCount} />
                         </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>

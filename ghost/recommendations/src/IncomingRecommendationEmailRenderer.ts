@@ -1,4 +1,5 @@
-import {IncomingRecommendation, EmailRecipient} from './IncomingRecommendationService';
+import {EmailRecipient} from './IncomingRecommendationService';
+import {IncomingRecommendation} from './IncomingRecommendationService';
 
 type StaffService = {
     api: {
@@ -17,7 +18,7 @@ export class IncomingRecommendationEmailRenderer {
     }
 
     async renderSubject(recommendation: IncomingRecommendation) {
-        return `${recommendation.siteTitle} recommended you`;
+        return `👍 New recommendation: ${recommendation.title}`;
     }
 
     async renderHTML(recommendation: IncomingRecommendation, recipient: EmailRecipient) {

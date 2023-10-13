@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import config from 'ghost-admin/config/environment';
+import fetchKoenigLexical from 'ghost-admin/utils/fetch-koenig-lexical';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -11,18 +12,29 @@ import {tracked} from '@glimmer/tracking';
 
 // TODO: Long term move asset management directly in AdminX
 const officialThemes = [{
+    name: 'Source',
+    category: 'News',
+    previewUrl: 'https://source.ghost.io/',
+    ref: 'default',
+    image: 'assets/img/themes/Source.png',
+    variants: [
+        {
+            category: 'Magazine',
+            previewUrl: 'https://source-magazine.ghost.io/',
+            image: 'assets/img/themes/Source-Magazine.png'
+        },
+        {
+            category: 'Newsletter',
+            previewUrl: 'https://source-newsletter.ghost.io/',
+            image: 'assets/img/themes/Source-Newsletter.png'
+        }
+    ]
+}, {
     name: 'Casper',
     category: 'Blog',
     previewUrl: 'https://demo.ghost.io/',
-    ref: 'default',
+    ref: 'TryGhost/Casper',
     image: 'assets/img/themes/Casper.png'
-}, {
-    name: 'Headline',
-    category: 'News',
-    url: 'https://github.com/TryGhost/Headline',
-    previewUrl: 'https://headline.ghost.io',
-    ref: 'TryGhost/Headline',
-    image: 'assets/img/themes/Headline.png'
 }, {
     name: 'Edition',
     category: 'Newsletter',
@@ -107,6 +119,13 @@ const officialThemes = [{
     previewUrl: 'https://ease.ghost.io',
     ref: 'TryGhost/Ease',
     image: 'assets/img/themes/Ease.png'
+}, {
+    name: 'Headline',
+    category: 'News',
+    url: 'https://github.com/TryGhost/Headline',
+    previewUrl: 'https://headline.ghost.io',
+    ref: 'TryGhost/Headline',
+    image: 'assets/img/themes/Headline.png'
 }, {
     name: 'Ruby',
     category: 'Magazine',
@@ -217,12 +236,12 @@ export const importSettings = async () => {
     }
 
     const baseUrl = (config.cdnUrl ? `${config.cdnUrl}assets/` : ghostPaths().assetRootWithHost);
-    const url = new URL(`${baseUrl}admin-x-settings/admin-x-settings.js`);
+    const url = new URL(`${baseUrl}admin-x-settings/${config.adminXSettingsFilename}?v=${config.adminXSettingsHash}`);
 
     if (url.protocol === 'http:') {
-        window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}`);
+        window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}${url.search}`);
     } else {
-        window['@tryghost/admin-x-settings'] = await import(`https://${url.host}${url.pathname}`);
+        window['@tryghost/admin-x-settings'] = await import(`https://${url.host}${url.pathname}${url.search}`);
     }
 
     return window['@tryghost/admin-x-settings'];
@@ -261,13 +280,12 @@ const emberDataTypeMapping = {
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
     NewslettersResponseType: {type: 'newsletter'},
-    RecommendationsResponseType: {type: 'recommendation'},
+    RecommendationResponseType: {type: 'recommendation'},
     SettingsResponseType: {type: 'setting', singleton: true},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
     UsersResponseType: {type: 'user'},
     CustomThemeSettingsResponseType: {type: 'custom-theme-setting'}
-
 };
 
 export default class AdminXSettings extends Component {
@@ -280,6 +298,7 @@ export default class AdminXSettings extends Component {
     @service router;
     @service membersUtils;
     @service themeManagement;
+    @service upgradeStatus;
 
     @inject config;
 
@@ -324,6 +343,8 @@ export default class AdminXSettings extends Component {
         if (dataType === 'SettingsResponseType') {
             // Blog title is based on settings, but the one stored in config is used instead in various places
             this.config.blogTitle = response.settings.find(setting => setting.key === 'title').value;
+
+            this.settings.reload();
         }
 
         if (dataType === 'TiersResponseType') {
@@ -354,6 +375,11 @@ export default class AdminXSettings extends Component {
         }
 
         run(() => this.store.unloadAll(type));
+
+        if (dataType === 'TiersResponseType') {
+            // membersUtils has local state which needs to be updated
+            this.membersUtils.reload();
+        }
     };
 
     onDelete = (dataType, id) => {
@@ -412,9 +438,11 @@ export default class AdminXSettings extends Component {
                             darkMode={this.feature.nightShift}
                             unsplashConfig={defaultUnsplashHeaders}
                             sentry={this.config.sentry_dsn ? Sentry : undefined}
+                            fetchKoenigLexical={fetchKoenigLexical}
                             onUpdate={this.onUpdate}
                             onInvalidate={this.onInvalidate}
                             onDelete={this.onDelete}
+                            upgradeStatus={this.upgradeStatus}
                         />
                     </Suspense>
                 </ErrorHandler>
