@@ -60,8 +60,8 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                 </div>)}
             </TableCell>
             <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                {(count === 0) ? (null) : (<div className='-mt-px items-end gap-1 text-left'>
-                    <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{showSubscribers ? newMembers : clicks}</span>
+                {(count === 0) ? (null) : (<div className=''>
+                    <span className='min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{showSubscribers ? newMembers : clicks}</span><span className='invisible whitespace-nowrap text-left text-sm lowercase text-grey-700 group-hover/table-row:visible'> from you</span>
                 </div>)}
             </TableCell>
         </TableRow>
