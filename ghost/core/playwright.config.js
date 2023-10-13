@@ -6,8 +6,7 @@ const config = {
         timeout: 10000
     },
     retries: process.env.CI ? 2 : 0,
-    // Use 5 workers in CI, since they shouldn't be CPU intensive but are limited by network
-    workers: process.env.CI ? 5 : (process.env.PLAYWRIGHT_SLOWMO ? 1 : undefined),
+    workers: process.env.CI ? '100%' : (process.env.PLAYWRIGHT_SLOWMO ? 1 : undefined),
     reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
     use: {
         // Use a single browser since we can't simultaneously test multiple browsers
