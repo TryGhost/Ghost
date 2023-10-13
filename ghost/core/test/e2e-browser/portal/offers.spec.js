@@ -1,15 +1,16 @@
-const {expect, test} = require('@playwright/test');
+const {expect} = require('@playwright/test');
+const test = require('../fixtures/ghost-test');
 const {deleteAllMembers, createTier, createOffer, completeStripeSubscription} = require('../utils');
 
 test.describe('Portal', () => {
     test.describe('Offers', () => {
         test('Creates and uses a free-trial Offer', async ({page}) => {
             // reset members by deleting all existing
-            page.goto('/ghost');
+            await page.goto('/ghost');
             await deleteAllMembers(page);
 
             // add a new tier for offers
-            const tierName = 'Portal Tier';
+            const tierName = 'Trial Tier';
             await createTier(page, {
                 name: tierName,
                 monthlyPrice: 6,
@@ -43,7 +44,7 @@ test.describe('Portal', () => {
 
             // fill member details and click start trial
             await portalFrame.locator('[data-test-input="input-name"]').fill('Testy McTesterson');
-            await portalFrame.locator('[data-test-input="input-email"]').fill('testy@example.com');
+            await portalFrame.locator('[data-test-input="input-email"]').fill('testy+trial@example.com');
             await portalFrame.getByRole('button', {name: 'Start 14-day free trial'}).click();
 
             // handle newsletter selection page if it opens and click continue
@@ -66,7 +67,7 @@ test.describe('Portal', () => {
             await page.locator('.gh-nav a[href="#/members/"]').click();
 
             // 1 member, should be Testy, on Portal Tier
-            await expect(page.getByRole('link', {name: 'Testy McTesterson testy@example.com'}), 'Should have 1 paid member').toBeVisible();
+            await expect(page.getByRole('link', {name: 'Testy McTesterson testy+trial@example.com'}), 'Should have 1 paid member').toBeVisible();
             await expect(page.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
 
             // Ensure the offer redemption count was bumped
@@ -77,11 +78,11 @@ test.describe('Portal', () => {
 
         test('Creates and uses a one-time discount Offer', async ({page}) => {
             // reset members by deleting all existing
-            page.goto('/ghost');
+            await page.goto('/ghost');
             await deleteAllMembers(page);
 
             // add new tier
-            const tierName = 'Portal Tier';
+            const tierName = 'One-off Tier';
             await createTier(page, {
                 name: tierName,
                 monthlyPrice: 6,
@@ -114,7 +115,7 @@ test.describe('Portal', () => {
 
             // fill member details and continue
             await portalFrame.locator('#input-name').fill('Testy McTesterson');
-            await portalFrame.locator('#input-email').fill('testy@example.com');
+            await portalFrame.locator('#input-email').fill('testy+oneoff@example.com');
             await portalFrame.getByRole('button', {name: 'Continue'}).click();
 
             // check if newsletter selection screen is shown and continue
@@ -136,17 +137,17 @@ test.describe('Portal', () => {
             await page.locator('.gh-nav a[href="#/members/"]').click();
 
             // 1 member, should be Testy, on Portal Tier
-            await expect(page.getByRole('link', {name: 'Testy McTesterson testy@example.com'}), 'Should have 1 paid member').toBeVisible();
+            await expect(page.getByRole('link', {name: 'Testy McTesterson testy+oneoff@example.com'}), 'Should have 1 paid member').toBeVisible();
             await expect(page.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
         });
 
         test('Creates and uses a multiple-months discount Offer', async ({page}) => {
             // reset members by deleting all existing
-            page.goto('/ghost');
+            await page.goto('/ghost');
             await deleteAllMembers(page);
 
             // add new tier
-            const tierName = 'Portal Tier';
+            const tierName = 'Multiple-month Tier';
             await createTier(page, {
                 name: tierName,
                 monthlyPrice: 6,
@@ -183,7 +184,7 @@ test.describe('Portal', () => {
 
             // fill member details and continue
             await portalFrame.locator('#input-name').fill('Testy McTesterson');
-            await portalFrame.locator('#input-email').fill('testy@example.com');
+            await portalFrame.locator('#input-email').fill('testy+multi@example.com');
             await portalFrame.getByRole('button', {name: 'Continue'}).click();
 
             // check newsletter selection if shown and continue
@@ -204,17 +205,17 @@ test.describe('Portal', () => {
             await page.locator('.gh-nav a[href="#/members/"]').click();
 
             // 1 member, should be Testy, on Portal Tier
-            await expect(page.getByRole('link', {name: 'Testy McTesterson testy@example.com'}), 'Should have 1 paid member').toBeVisible();
+            await expect(page.getByRole('link', {name: 'Testy McTesterson testy+multi@example.com'}), 'Should have 1 paid member').toBeVisible();
             await expect(page.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
         });
 
         test('Creates and uses a forever discount Offer', async ({page}) => {
             // reset members by deleting all existing
-            page.goto('/ghost');
+            await page.goto('/ghost');
             await deleteAllMembers(page);
 
             // add tier
-            const tierName = 'Portal Tier';
+            const tierName = 'Forever Tier';
             await createTier(page, {
                 name: tierName,
                 monthlyPrice: 6,
@@ -250,7 +251,7 @@ test.describe('Portal', () => {
 
             // fill member details and continue
             await portalFrame.locator('#input-name').fill('Testy McTesterson');
-            await portalFrame.locator('#input-email').fill('testy@example.com');
+            await portalFrame.locator('#input-email').fill('testy+forever@example.com');
             await portalFrame.getByRole('button', {name: 'Continue'}).click();
 
             // check if newsletter selection page is shown and continue
@@ -269,15 +270,15 @@ test.describe('Portal', () => {
             await page.locator('.gh-nav a[href="#/members/"]').click();
 
             // 1 member, should be Testy, on Portal Tier
-            await expect(page.getByRole('link', {name: 'Testy McTesterson testy@example.com'}), 'Should have 1 paid member').toBeVisible();
+            await expect(page.getByRole('link', {name: 'Testy McTesterson testy+forever@example.com'}), 'Should have 1 paid member').toBeVisible();
             await expect(page.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
         });
 
         test('Archiving an offer', async ({page}) => {
-            page.goto('/ghost');
+            await page.goto('/ghost');
 
             // Create a new tier to attach offer to
-            const tierName = 'Portal Tier';
+            const tierName = 'Archive Test Tier';
             await createTier(page, {
                 name: tierName,
                 monthlyPrice: 6,
