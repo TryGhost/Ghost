@@ -107,10 +107,6 @@
     height: 60px;
 }
 
-.gh-portal-settings .gh-members-emailsettings-footer-input .__mobiledoc-editor.__has-no-content:after {
-    line-height: 1.5em
-}
-
 .gh-portal-setting-sectionheading {
     font-size: 1.1rem;
     font-weight: 600;

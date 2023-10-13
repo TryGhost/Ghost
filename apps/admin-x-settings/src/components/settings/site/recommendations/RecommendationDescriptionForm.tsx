@@ -70,7 +70,7 @@ const RecommendationDescriptionForm: React.FC<Props<EditOrAddRecommendation | Re
     >
         <div>
             <Heading className='mb-2 block text-2xs font-semibold uppercase tracking-wider' grey={true} level={6}>Preview</Heading>
-            <div className="-mx-8 flex items-center justify-center overflow-hidden border border-grey-100 bg-grey-50 px-7 py-4">
+            <div className="-mx-8 flex items-center justify-center overflow-hidden border-y border-grey-100 bg-grey-50 px-7 py-4 dark:border-grey-950 dark:bg-black">
                 <div className="w-full rounded bg-white py-3 shadow">
                     <div className="">
                         <a className='flex items-center justify-between bg-white px-5 py-3' href={formState.url} rel="noopener noreferrer" target="_blank">

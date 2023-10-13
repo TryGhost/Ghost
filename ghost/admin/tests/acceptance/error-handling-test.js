@@ -47,7 +47,7 @@ describe('Acceptance: Error Handling', function () {
                 // try navigating back to the content list
                 await click('[data-test-link="posts"]');
 
-                expect(currentRouteName()).to.equal('editor.edit');
+                expect(currentRouteName()).to.equal('lexical-editor.edit');
             });
 
             it('displays alert and aborts the transition when navigating', async function () {

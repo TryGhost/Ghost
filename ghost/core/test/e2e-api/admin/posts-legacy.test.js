@@ -120,7 +120,7 @@ describe('Posts API', function () {
             jsonResponse.posts[0],
             'post',
             null,
-            ['authors', 'primary_author', 'email', 'tiers', 'newsletter', 'count', 'post_revisions']
+            ['authors', 'primary_author', 'email', 'tiers', 'newsletter', 'count']
         );
 
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
@@ -243,7 +243,7 @@ describe('Posts API', function () {
         should.exist(jsonResponse);
         should.exist(jsonResponse.posts);
 
-        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['count']);
+        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['count', 'post_revisions']);
 
         jsonResponse.posts[0].authors[0].should.be.an.Object();
         localUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user');
