@@ -10,6 +10,8 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.38.1-jammy
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
     steps:
     - uses: actions/checkout@v3
@@ -39,22 +41,6 @@ jobs:
     - name: Run migrations
       working-directory: ghost/core
       run: yarn knex-migrator init
-
-    - name: Get Playwright version
-      id: playwright-version
-      run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-    - uses: actions/cache@v3
-      name: Check if Playwright browser is cached
-      id: playwright-cache
-      with:
-        path: ~/.cache/ms-playwright
-        key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
-    - name: Install Playwright browser if not cached
-      if: steps.playwright-cache.outputs.cache-hit != 'true'
-      run: npx playwright install --with-deps
-    - name: Install OS dependencies of Playwright if cache hit
-      if: steps.playwright-cache.outputs.cache-hit == 'true'
-      run: npx playwright install-deps
 
     - name: Build Admin
       run: yarn nx run ghost-admin:build:dev
