@@ -23,7 +23,6 @@ const matchPageShallowIncludes = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     published_at: anyISODateTime,
-    post_revisions: anyArray,
     show_title_and_feature_image: anyBoolean
 };
 

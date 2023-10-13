@@ -28,6 +28,9 @@ export default class EditNewsletterDesignForm extends Component {
 
     @action
     changeSetting(property, value) {
+        if (value instanceof Event) {
+            value = value.target.value;
+        }
         this.args.newsletter[property] = value;
     }
 

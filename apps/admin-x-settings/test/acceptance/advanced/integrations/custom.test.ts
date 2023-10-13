@@ -123,10 +123,27 @@ test.describe('Custom integrations', async () => {
 
         const createModal = page.getByTestId('add-integration-modal');
 
-        createModal.getByLabel('Name').fill('My integration');
-        createModal.getByRole('button', {name: 'Add'}).click();
+        // Validation
+
+        await createModal.getByRole('button', {name: 'Add'}).click();
+        await expect(createModal).toHaveText(/Please enter a name/);
+
+        // Successful creation
+
+        await createModal.getByLabel('Name').fill('My integration');
+        await createModal.getByRole('button', {name: 'Add'}).click();
 
         const modal = page.getByTestId('custom-integration-modal');
+
+        // Warns when leaving without saving
+
+        await modal.getByLabel('Description').fill('Test description');
+
+        await modal.getByRole('button', {name: 'Cancel'}).click();
+
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
+
+        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Stay'}).click();
 
         // Regenerate API key
 

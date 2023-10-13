@@ -1,21 +1,26 @@
-const {expect, test} = require('@playwright/test');
+const {expect} = require('@playwright/test');
+const test = require('../fixtures/ghost-test');
 
 test.describe('Portal Settings', () => {
     test.describe('Links', () => {
-        test('can open portal on default page', async ({page}) => {
+        const openPortalLinks = async (page) => {
             await page.goto('/ghost');
-            // Navigate to the member settings
             await page.locator('[data-test-nav="settings"]').click();
-            await page.locator('[data-test-nav="members-membership"]').click();
 
-            // open portal settings
-            await page.locator('[data-test-toggle="portal-settings"]').click();
+            await page.getByTestId('portal').getByRole('button', {name: 'Customize'}).click();
 
-            // open links preview page
-            await page.locator('[data-test-select="page-selector"]').first().selectOption('links');
+            const modal = page.getByTestId('portal-modal');
+
+            await modal.getByRole('tab', {name: 'Links'}).click();
+
+            return modal;
+        };
+
+        test('can open portal on default page', async ({page}) => {
+            const modal = await openPortalLinks(page);
 
             // fetch portal default url from input
-            const portalUrl = await page.locator('[data-test-input="portal-link-default"]').inputValue();
+            const portalUrl = await modal.getByLabel('Default').inputValue();
             await page.goto(portalUrl);
 
             const portalFrame = page.locator('[data-testid="portal-popup-frame"]');
@@ -25,19 +30,10 @@ test.describe('Portal Settings', () => {
         });
 
         test('can open portal on signin page', async ({page}) => {
-            await page.goto('/ghost');
-            // Navigate to the member settings
-            await page.locator('[data-test-nav="settings"]').click();
-            await page.locator('[data-test-nav="members-membership"]').click();
-
-            // open portal settings
-            await page.locator('[data-test-toggle="portal-settings"]').click();
-
-            // open links preview page
-            await page.locator('[data-test-select="page-selector"]').first().selectOption('links');
+            const modal = await openPortalLinks(page);
 
             // fetch portal signin url from input
-            const portalUrl = await page.locator('[data-test-input="portal-link-signin"]').inputValue();
+            const portalUrl = await modal.getByLabel('Sign in').inputValue();
             await page.goto(portalUrl);
 
             const portalFrame = page.locator('[data-testid="portal-popup-frame"]');
@@ -50,19 +46,10 @@ test.describe('Portal Settings', () => {
         });
 
         test('can open portal on signup page', async ({page}) => {
-            await page.goto('/ghost');
-            // Navigate to the member settings
-            await page.locator('[data-test-nav="settings"]').click();
-            await page.locator('[data-test-nav="members-membership"]').click();
-
-            // open portal settings
-            await page.locator('[data-test-toggle="portal-settings"]').click();
-
-            // open links preview page
-            await page.locator('[data-test-select="page-selector"]').first().selectOption('links');
+            const modal = await openPortalLinks(page);
 
             // fetch portal signup url from input
-            const portalUrl = await page.locator('[data-test-input="portal-link-signup"]').inputValue();
+            const portalUrl = await modal.getByLabel('Sign up').inputValue();
             await page.goto(portalUrl);
 
             const portalFrame = page.locator('[data-testid="portal-popup-frame"]');
@@ -75,19 +62,10 @@ test.describe('Portal Settings', () => {
         });
 
         test('can open portal directly on monthly signup', async ({page}) => {
-            await page.goto('/ghost');
-            // Navigate to the member settings
-            await page.locator('[data-test-nav="settings"]').click();
-            await page.locator('[data-test-nav="members-membership"]').click();
-
-            // open portal settings
-            await page.locator('[data-test-toggle="portal-settings"]').click();
-
-            // open links preview page
-            await page.locator('[data-test-select="page-selector"]').first().selectOption('links');
+            const modal = await openPortalLinks(page);
 
             // fetch and go to portal directly monthly signup url
-            const portalUrl = await page.locator('[data-test-input="portal-tier-link-monthly"]').inputValue();
+            const portalUrl = await modal.getByLabel('Signup / Monthly').inputValue();
             await page.goto(portalUrl);
 
             // expect stripe checkout to have opeened
@@ -95,19 +73,10 @@ test.describe('Portal Settings', () => {
         });
 
         test('can open portal directly on yearly signup', async ({page}) => {
-            await page.goto('/ghost');
-            // Navigate to the member settings
-            await page.locator('[data-test-nav="settings"]').click();
-            await page.locator('[data-test-nav="members-membership"]').click();
+            const modal = await openPortalLinks(page);
 
-            // open portal settings
-            await page.locator('[data-test-toggle="portal-settings"]').click();
-
-            // open links preview page
-            await page.locator('[data-test-select="page-selector"]').first().selectOption('links');
-
-            // fetch and go to portal directly monthly signup url
-            const portalUrl = await page.locator('[data-test-input="portal-tier-link-yearly"]').inputValue();
+            // fetch and go to portal directly yearly signup url
+            const portalUrl = await modal.getByLabel('Signup / Yearly').inputValue();
             await page.goto(portalUrl);
 
             // expect stripe checkout to have opeened

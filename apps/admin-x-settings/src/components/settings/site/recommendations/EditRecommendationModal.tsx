@@ -2,7 +2,7 @@ import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationM
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import RecommendationReasonForm from './RecommendationReasonForm';
+import RecommendationDescriptionForm, {validateDescriptionForm} from './RecommendationDescriptionForm';
 import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
@@ -22,25 +22,24 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
     const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
     const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, saveState, errors, clearError} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors, clearError, setErrors} = useForm({
         initialState: {
             ...recommendation
         },
-        onSave: async () => {
-            await editRecommendation(formState);
+        onSave: async (state) => {
+            await editRecommendation(state);
             modal.remove();
             updateRoute('recommendations');
         },
         onSaveError: handleError,
-        onValidate: () => {
-            const newErrors: Record<string, string> = {};
+        onValidate: (state) => {
+            const newErrors = validateDescriptionForm(state);
 
-            if (!formState.title) {
-                newErrors.title = 'Title is required';
-            }
-
-            if (formState.reason && formState.reason.length > 200) {
-                newErrors.reason = 'Description cannot be longer than 200 characters';
+            if (Object.keys(newErrors).length !== 0) {
+                showToast({
+                    type: 'pageError',
+                    message: 'Can\'t edit recommendation, please double check that you\'ve filled all mandatory fields correctly.'
+                });
             }
 
             return newErrors;
@@ -120,7 +119,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
             }
         }}
     >
-        <RecommendationReasonForm clearError={clearError} errors={errors} formState={formState} showURL={true} updateForm={updateForm as any}/>
+        <RecommendationDescriptionForm clearError={clearError} errors={errors} formState={formState} setErrors={setErrors} showURL={true} updateForm={updateForm as any}/>
     </Modal>;
 };
 

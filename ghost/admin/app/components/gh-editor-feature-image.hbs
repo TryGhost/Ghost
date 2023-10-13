@@ -48,12 +48,10 @@
             <div class="gh-editor-feature-image">
                 <img src={{@image}} alt={{@alt}} role={{if @alt "img" "presentation"}} class="{{if @isHidden "faded"}}">
                 <div class="gh-editor-feature-image-overlay"></div>
-                {{#if (feature 'lexicalEditor')}}
-                    <KoenigImageEditor
-                        @imageSrc={{@image}}
-                        @saveImage={{fn this.saveImage uploader.setFiles}}
-                    />
-                {{/if}}
+                <KoenigImageEditor
+                    @imageSrc={{@image}}
+                    @saveImage={{fn this.saveImage uploader.setFiles}}
+                />
                 <button type="button" class="image-action image-delete" title="Delete image" {{on "click" @clearImage}}>
                     {{svg-jar "koenig/kg-trash"}}
                 </button>
@@ -71,12 +69,11 @@
                         aria-label="Alt text for feature image"
                     >
                 {{else}}
-                    <KoenigBasicHtmlInput
-                        @html={{@caption}}
-                        @placeholder={{if this.captionInputFocused "" "Add a caption to the feature image"}}
-                        @class="gh-editor-feature-image-caption {{if (and @isHidden (not this.captionInputFocused)) "faded"}}"
-                        @name="caption"
-                        @onChange={{@updateCaption}}
+                    <KoenigLexicalEditorInput
+                        class="gh-editor-feature-image-caption {{if (and @isHidden (not this.captionInputFocused)) "faded"}}"
+                        @html={{this.caption}}
+                        @onChangeHtml={{this.setCaption}}
+                        @placeholderText={{if this.captionInputFocused "" "Add a caption to the feature image"}}
                         @onFocus={{fn (mut this.captionInputFocused) true}}
                         @onBlur={{fn (mut this.captionInputFocused) false}}
                     />

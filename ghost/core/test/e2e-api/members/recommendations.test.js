@@ -74,7 +74,7 @@ describe('Recommendation Event Tracking', function () {
         // Add recommendation
         const recommendation = Recommendation.create({
             title: `Recommendation`,
-            reason: `Reason`,
+            description: `Description`,
             url: new URL(`https://recommendation.com`),
             favicon: null,
             featuredImage: null,

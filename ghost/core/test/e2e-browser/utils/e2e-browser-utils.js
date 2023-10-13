@@ -1,8 +1,7 @@
 const DataGenerator = require('../../utils/fixtures/data-generator');
 const {expect, test} = require('@playwright/test');
 const ObjectID = require('bson-objectid').default;
-const {promisify} = require('util');
-const {exec} = require('child_process');
+const Stripe = require('stripe').Stripe;
 
 /**
  * Tier
@@ -43,11 +42,6 @@ const setupGhost = async (page) => {
     // Add owner user data from usual fixture
     const ownerUser = DataGenerator.Content.users.find(user => user.id === '1');
 
-    if (process.env.CI && process.env.TEST_URL) {
-        ownerUser.email = process.env.TEST_OWNER_EMAIL;
-        ownerUser.password = process.env.TEST_OWNER_PASSWORD;
-    }
-
     if (action === actions.signin) {
         // Fill email + password
         await page.locator('#identification').fill(ownerUser.email);
@@ -74,54 +68,49 @@ const setupGhost = async (page) => {
 const disconnectStripe = async (page) => {
     await deleteAllMembers(page);
     await page.locator('.gh-nav a[href="#/settings/"]').click();
-    await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
-    if (await page.isVisible('.gh-btn-stripe-status.connected')) {
-        // Disconnect if already connected
-        await page.locator('.gh-btn-stripe-status.connected').click();
-        await page.locator('.modal-content .gh-btn-stripe-disconnect').first().click();
-        await page
-            .locator('.modal-content')
-            .filter({hasText: 'Are you sure you want to disconnect?'})
-            .first()
-            .getByRole('button', {name: 'Disconnect'})
-            .click();
+    await page.getByTestId('tiers').waitFor();
+    if (await page.isVisible('[data-testid="stripe-connected"]')) {
+        await page.getByTestId('stripe-connected').first().click();
+        await page.getByTestId('stripe-modal').getByRole('button', {name: 'Disconnect'}).click();
+        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Disconnect'}).click();
     }
 };
 
 const setupStripe = async (page, stripConnectIntegrationToken) => {
     await deleteAllMembers(page);
     await page.locator('.gh-nav a[href="#/settings/"]').click();
-    await page.locator('.gh-setting-group').filter({hasText: 'Membership'}).click();
-    if (await page.isVisible('.gh-btn-stripe-status.connected')) {
+    await page.getByTestId('tiers').waitFor();
+    if (await page.isVisible('[data-testid="stripe-connected"]')) {
         // Disconnect if already connected
-        await page.locator('.gh-btn-stripe-status.connected').click();
-        await page.locator('.modal-content .gh-btn-stripe-disconnect').first().click();
-        await page
-            .locator('.modal-content')
-            .filter({hasText: 'Are you sure you want to disconnect?'})
-            .first()
-            .getByRole('button', {name: 'Disconnect'})
-            .click();
+        await page.getByTestId('stripe-connected').first().click();
+        await page.getByTestId('stripe-modal').getByRole('button', {name: 'Disconnect'}).click();
+        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Disconnect'}).click();
     } else {
-        await page.locator('.gh-setting-members-tierscontainer .stripe-connect').click();
+        await page.getByRole('button', {name: 'Connect with Stripe'}).click();
     }
-    await page.getByPlaceholder('Paste your secure key here').first().fill(stripConnectIntegrationToken);
-    await page.getByRole('button', {name: 'Save Stripe settings'}).click();
+    const modal = page.getByTestId('stripe-modal');
+    await modal.getByRole('button', {name: /I have a Stripe account/}).click();
+    await modal.getByPlaceholder('Paste your secure key here').first().fill(stripConnectIntegrationToken);
+    await modal.getByRole('button', {name: 'Save Stripe settings'}).click();
     // We need to wait for the saving to succeed
-    await expect(page.locator('[data-test-button="stripe-disconnect"]')).toBeVisible();
-    await page.locator('[data-test-button="close-stripe-connect"]').click();
+    await expect(modal.getByRole('button', {name: 'Disconnect'})).toBeVisible();
+    await modal.getByRole('button', {name: 'Close'}).click();
+
+    await page.getByRole('button', {name: '← Done'}).click();
 };
 
 // Setup Mailgun with fake data, for Ghost Admin to allow bulk sending
 const setupMailgun = async (page) => {
     await page.locator('.gh-nav a[href="#/settings/"]').click();
-    await page.locator('.gh-setting-group').filter({hasText: 'Email newsletter'}).click();
-    await page.locator('.gh-expandable-block').filter({hasText: 'Mailgun configuration'}).getByRole('button', {name: 'Expand'}).click();
+    const section = page.getByTestId('mailgun');
 
-    await page.locator('[data-test-mailgun-domain-input]').fill('api.testgun.com');
-    await page.locator('[data-test-mailgun-api-key-input]').fill('Not an API key');
-    await page.locator('[data-test-button="save-members-settings"]').click();
-    await page.waitForSelector('[data-test-button="save-members-settings"] [data-test-task-button-state="success"]');
+    await section.getByRole('button', {name: 'Edit'}).click();
+    await section.getByLabel('Mailgun domain').fill('api.testgun.com');
+    await section.getByLabel('Mailgun private API key').fill('Not an API key');
+    await section.getByRole('button', {name: 'Save'}).click();
+    await section.getByText('Mailgun is set up').waitFor();
+
+    await page.getByRole('button', {name: '← Done'}).click();
 };
 
 /**
@@ -130,10 +119,15 @@ const setupMailgun = async (page) => {
  */
 const enableLabs = async (page) => {
     await page.locator('.gh-nav a[href="#/settings/"]').click();
-    await page.locator('.gh-setting-group').filter({hasText: 'Labs'}).click();
-    const alphaList = page.locator('.gh-main-section').filter({hasText: 'Alpha Features'});
-    await alphaList.locator('label[for="labs-webmentions"]').click();
-    await alphaList.locator('label[for="labs-tipsAndDonations"]').click();
+
+    const section = page.getByTestId('labs');
+    await section.getByRole('button', {name: 'Open'}).click();
+
+    await section.getByRole('tab', {name: 'Alpha features'}).click();
+    await section.getByLabel('Webmentions').click();
+    await section.getByLabel('Tips & donations').click();
+
+    await page.getByRole('button', {name: '← Done'}).click();
 };
 
 /**
@@ -213,62 +207,59 @@ const impersonateMember = async (page) => {
  * @param {number} [tier.trialDays]
  */
 const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, enableInPortal = true) => {
-    // Navigate to the member settings
-    await page.locator('[data-test-nav="settings"]').click();
-    await page.locator('[data-test-nav="members-membership"]').click();
+    await test.step('Create a tier', async () => {
+        // Navigate to the member settings
+        await page.locator('[data-test-nav="settings"]').click();
 
-    // Tiers request can take time, so waiting until there is no connections before interacting with them
-    await page.waitForLoadState('networkidle');
+        // Tiers request can take time, so waiting until there is no connections before interacting with them
+        await page.waitForLoadState('networkidle');
 
-    // Expand the premium tier list
-    await page.locator('[data-test-toggle-pub-info]').click();
-
-    // Archive if already exists
-    while (await page.locator('.gh-tier-card').filter({hasText: name}).first().isVisible()) {
-        const tierCard = page.locator('.gh-tier-card').filter({hasText: name}).first();
-        await tierCard.locator('.gh-tier-card-actions-button').click();
-        await tierCard.getByRole('button', {name: 'Archive'}).click();
-        await page.locator('.modal-content').getByRole('button', {name: 'Archive'}).click();
-        await page.locator('.modal-content').waitFor({state: 'detached', timeout: 1000});
-    }
-    if (!await page.locator('.gh-btn-add-tier').isVisible()) {
-        await page.locator('[data-test-toggle-pub-info]').click();
-    }
-    // Add the tier
-    await page.locator('.gh-btn-add-tier').click();
-    const modal = page.locator('.modal-content');
-    await modal.locator('input#name').first().fill(name);
-    await modal.locator('#monthlyPrice').fill(`${monthlyPrice}`);
-    await modal.locator('#yearlyPrice').fill(`${yearlyPrice}`);
-    if (trialDays) {
-        await modal.locator('[data-test-toggle="free-trial"]').click();
-        await modal.locator('#trial').fill(`${trialDays}`);
-    }
-    await modal.getByRole('button', {name: 'Add tier'}).click();
-    await page.waitForSelector('.modal-content input#name', {state: 'detached'});
-
-    // Close the premium tier list
-    await page.locator('[data-test-toggle-pub-info]').click();
-
-    // Enable the tier in portal
-    if (enableInPortal) {
-        await page.getByRole('button', {name: 'Customize Portal'}).click();
-        const portalSettings = page.locator('.modal-content').filter({hasText: 'Portal settings'});
-        if (!await portalSettings.locator('label').filter({hasText: name}).locator('input').first().isChecked()) {
-            await portalSettings.locator('label').filter({hasText: name}).locator('span').first().click();
+        // Archive if already exists
+        while (await page.getByTestId('tier-card').filter({hasText: name}).first().isVisible()) {
+            await page.getByTestId('tier-card').filter({hasText: name}).first().click();
+            await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Archive tier'}).click();
+            await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Archive'}).click();
+            await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Reactivate tier'}).waitFor();
+            await page.getByTestId('tier-detail-modal').getByRole('button', {name: 'Save & close'}).click();
         }
-        if (!await portalSettings.locator('label').filter({hasText: 'Monthly'}).locator('input').first().isChecked()) {
-            await portalSettings.locator('label').filter({hasText: 'Monthly'}).locator('span').first().click();
-        }
-        if (!await portalSettings.locator('label').filter({hasText: 'Yearly'}).locator('input').first().isChecked()) {
-            await portalSettings.locator('label').filter({hasText: 'Yearly'}).locator('span').first().click();
-        }
-        await portalSettings.getByRole('button', {name: 'Save and close'}).click();
-        await page.waitForSelector('.gh-portal-settings', {state: 'detached'});
-    }
 
-    // Navigate back to the dashboard
-    await page.goto('/ghost');
+        // Add the tier
+        await page.getByTestId('tiers').getByRole('button', {name: 'Add tier'}).click();
+
+        const modal = page.getByTestId('tier-detail-modal');
+        await modal.getByLabel('Name').fill(name);
+        await modal.getByLabel('Monthly price').fill(`${monthlyPrice}`);
+        await modal.getByLabel('Yearly price').fill(`${yearlyPrice}`);
+        if (trialDays) {
+            await modal.getByLabel('Add a free trial').check();
+            await modal.getByLabel('Trial days').fill(`${trialDays}`);
+        }
+        await modal.getByRole('button', {name: 'Save & close'}).click();
+        await page.locator('[data-testid="tier-card"]:visible').filter({hasText: name}).waitFor();
+
+        // Enable the tier in portal
+        if (enableInPortal) {
+            await page.getByTestId('portal').getByRole('button', {name: 'Customize'}).click();
+
+            const portalSettings = page.getByTestId('portal-modal');
+
+            if (!await portalSettings.getByLabel(name).first().isChecked()) {
+                await portalSettings.getByLabel(name).first().check();
+            }
+            if (!await portalSettings.getByLabel('Monthly').first().isChecked()) {
+                await portalSettings.getByLabel('Monthly').first().check();
+            }
+            if (!await portalSettings.getByLabel('Yearly').first().isChecked()) {
+                await portalSettings.getByLabel('Yearly').first().check();
+            }
+            await portalSettings.getByRole('button', {name: 'Save'}).click();
+            await page.waitForLoadState('networkidle');
+            await portalSettings.getByRole('button', {name: 'Close'}).click();
+        }
+
+        // Navigate back to the dashboard
+        await page.goto('/ghost');
+    });
 };
 
 /**
@@ -453,7 +444,6 @@ const goToMembershipPage = async (page) => {
     return await test.step('Open Membership settings', async () => {
         await page.goto('/ghost');
         await page.locator('[data-test-nav="settings"]').click();
-        await page.locator('[data-test-nav="members-membership"]').click();
         // Tiers request can take time, so waiting until there is no connections before interacting with UI
         await page.waitForLoadState('networkidle');
     });
@@ -463,40 +453,58 @@ const goToMembershipPage = async (page) => {
  * Get tier card from membership page
  * @param {import('@playwright/test').Page} page
  * @param {Object} options
- * @param {String} [options.id]
+ * @param {String} [options.slug]
  */
-const getTierCardById = async (page, {id}) => {
-    return await test.step('Expand the premium tier list and find the tier', async () => {
-        await page.locator('[data-test-toggle-pub-info]').click();
-        await page.waitForSelector(`[data-test-tier-card="${id}"]`);
+const openTierModal = async (page, {slug}) => {
+    return await test.step('Open the tier modal', async () => {
+        await page.getByTestId('tiers').locator(`[data-testid="tier-card"][data-tier="${slug}"]`).click();
 
-        return page.locator(`[data-test-tier-card="${id}"]`);
+        return page.getByTestId('tier-detail-modal');
     });
 };
 
-const generateStripeIntegrationToken = async () => {
-    const inquirer = require('inquirer');
-    const {knex} = require('../../../core/server/data/db');
+const getStripeAccountId = async () => {
+    if (!('STRIPE_PUBLISHABLE_KEY' in process.env) || !('STRIPE_SECRET_KEY' in process.env)) {
+        throw new Error('Missing STRIPE_PUBLISHABLE_KEY or STRIPE_SECRET_KEY environment variables');
+    }
 
-    const stripeDatabaseKeys = {
-        publishableKey: 'stripe_connect_publishable_key',
-        secretKey: 'stripe_connect_secret_key',
-        liveMode: 'stripe_connect_livemode'
-    };
-    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY ?? (await knex('settings').select('value').where('key', stripeDatabaseKeys.publishableKey).first())?.value
-        ?? (await inquirer.prompt([{
-            message: 'Stripe publishable key (starts "pk_test_")',
-            type: 'password',
-            name: 'value'
-        }])).value;
-    const secretKey = process.env.STRIPE_SECRET_KEY ?? (await knex('settings').select('value').where('key', stripeDatabaseKeys.secretKey).first())?.value
-        ?? (await inquirer.prompt([{
-            message: 'Stripe secret key (starts "sk_test_")',
-            type: 'password',
-            name: 'value'
-        }])).value;
+    const parallelIndex = process.env.TEST_PARALLEL_INDEX;
+    let accountId;
+    const accountEmail = `test${parallelIndex}@example.com`;
 
-    const accountId = process.env.STRIPE_ACCOUNT_ID ?? JSON.parse((await promisify(exec)('stripe get account')).stdout).id;
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    const stripe = new Stripe(secretKey, {
+        apiVersion: '2020-08-27'
+    });
+    const accounts = await stripe.accounts.list();
+    if (accounts.data.length > 0) {
+        const account = accounts.data.find(acc => acc.email === accountEmail);
+        if (account) {
+            await stripe.accounts.del(account.id);
+        }
+    }
+    if (!accountId) {
+        const account = await stripe.accounts.create({
+            type: 'standard',
+            email: accountEmail,
+            business_type: 'company',
+            company: {
+                name: `Test Company ${parallelIndex}`
+            }
+        });
+        accountId = account.id;
+    }
+
+    return accountId;
+};
+
+const generateStripeIntegrationToken = async (accountId) => {
+    if (!('STRIPE_PUBLISHABLE_KEY' in process.env) || !('STRIPE_SECRET_KEY' in process.env)) {
+        throw new Error('Missing STRIPE_PUBLISHABLE_KEY or STRIPE_SECRET_KEY environment variables');
+    }
+
+    const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
+    const secretKey = process.env.STRIPE_SECRET_KEY;
 
     return Buffer.from(JSON.stringify({
         a: secretKey,
@@ -511,6 +519,7 @@ module.exports = {
     setupStripe,
     disconnectStripe,
     enableLabs,
+    getStripeAccountId,
     generateStripeIntegrationToken,
     setupMailgun,
     deleteAllMembers,
@@ -522,5 +531,5 @@ module.exports = {
     completeStripeSubscription,
     impersonateMember,
     goToMembershipPage,
-    getTierCardById
+    openTierModal
 };

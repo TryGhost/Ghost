@@ -39,7 +39,8 @@ export default AuthenticatedRoute.extend({
         },
 
         authorizationFailed() {
-            this.controller.send('toggleReAuthenticateModal');
+            // noop - re-auth is handled by controller save
+            return;
         },
 
         willTransition(transition) {

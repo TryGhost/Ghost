@@ -2,7 +2,7 @@ import './styles/demo.css';
 import App from './App.tsx';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import {DefaultHeaderTypes} from './utils/unsplash/UnsplashTypes.ts';
+import {DefaultHeaderTypes} from './unsplash/UnsplashTypes.ts';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
@@ -17,7 +17,19 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 category: 'News',
                 previewUrl: 'https://source.ghost.io/',
                 ref: 'default',
-                image: 'assets/img/themes/Source.png'
+                image: 'assets/img/themes/Source.png',
+                variants: [
+                    {
+                        category: 'Magazine',
+                        previewUrl: 'https://source-magazine.ghost.io/',
+                        image: 'assets/img/themes/Source-Magazine.png'
+                    },
+                    {
+                        category: 'Newsletter',
+                        previewUrl: 'https://source-newsletter.ghost.io/',
+                        image: 'assets/img/themes/Source-Newsletter.png'
+                    }
+                ]
             }, {
                 name: 'Casper',
                 category: 'Blog',
