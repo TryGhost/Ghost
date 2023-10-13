@@ -1,7 +1,7 @@
 import React, {ReactNode, RefObject} from 'react';
 import UnsplashImage from './UnsplashImage';
 import UnsplashZoomed from './UnsplashZoomed';
-import {Photo} from '../../../utils/unsplash/UnsplashTypes';
+import {Photo} from '../UnsplashTypes';
 
 interface MasonryColumnProps {
     children: ReactNode;
