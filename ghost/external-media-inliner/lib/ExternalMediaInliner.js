@@ -100,7 +100,7 @@ class ExternalMediaInliner {
 
         return {
             fileBuffer: response.body,
-            filename: fileName,
+            filename: `${fileName}.${extension}`,
             extension: `.${extension}`
         };
     }

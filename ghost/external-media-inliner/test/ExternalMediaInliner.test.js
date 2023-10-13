@@ -544,7 +544,7 @@ describe('ExternalMediaInliner', function () {
             const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
             assert.ok(requestMock.isDone());
-            assert.equal(fileData.filename, 'ghost-logos-cool');
+            assert.equal(fileData.filename, 'ghost-logos-cool.png');
             assert.equal(fileData.extension, '.png');
         });
 
@@ -559,7 +559,7 @@ describe('ExternalMediaInliner', function () {
             const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
             assert.ok(requestMock.isDone());
-            assert.equal(fileData.filename, 'ghost-logo-with-spaces');
+            assert.equal(fileData.filename, 'ghost-logo-with-spaces.png');
             assert.equal(fileData.extension, '.png');
         });
 
@@ -574,7 +574,7 @@ describe('ExternalMediaInliner', function () {
             const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
             assert.ok(requestMock.isDone());
-            assert.equal(fileData.filename, 'ghost-logo');
+            assert.equal(fileData.filename, 'ghost-logo.png');
             assert.equal(fileData.extension, '.png');
         });
 
@@ -589,7 +589,7 @@ describe('ExternalMediaInliner', function () {
             const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
             assert.ok(requestMock.isDone());
-            assert.equal(fileData.filename, 'ni-hao');
+            assert.equal(fileData.filename, 'ni-hao.png');
             assert.equal(fileData.extension, '.png');
         });
 
@@ -604,7 +604,7 @@ describe('ExternalMediaInliner', function () {
             const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
             assert.ok(requestMock.isDone());
-            assert.equal(fileData.filename, 'ghost-logo');
+            assert.equal(fileData.filename, 'ghost-logo.png');
             assert.equal(fileData.extension, '.png');
         });
 
@@ -619,7 +619,7 @@ describe('ExternalMediaInliner', function () {
             const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
             assert.ok(requestMock.isDone());
-            assert.equal(fileData.filename, 'ghost-logo-version-1-size-large');
+            assert.equal(fileData.filename, 'ghost-logo-version-1-size-large.png');
             assert.equal(fileData.extension, '.png');
         });
 
@@ -634,7 +634,7 @@ describe('ExternalMediaInliner', function () {
             const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
             assert.ok(requestMock.isDone());
-            assert.equal(fileData.filename, 'ghost---logo');
+            assert.equal(fileData.filename, 'ghost---logo.png');
             assert.equal(fileData.extension, '.png');
         });
 
@@ -652,7 +652,7 @@ describe('ExternalMediaInliner', function () {
             const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
             assert.ok(requestMock.isDone());
-            assert.equal(fileData.filename, 'photo-v-1-s-2');
+            assert.equal(fileData.filename, 'photo-v-1-s-2.gif');
             assert.equal(fileData.extension, '.gif');
         });
 
@@ -667,7 +667,7 @@ describe('ExternalMediaInliner', function () {
             const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
             assert.ok(requestMock.isDone());
-            assert.equal(fileData.filename, 'photo-v-1-s-2');
+            assert.equal(fileData.filename, 'photo-v-1-s-2.gif');
             assert.equal(fileData.extension, '.gif');
         });
     });
