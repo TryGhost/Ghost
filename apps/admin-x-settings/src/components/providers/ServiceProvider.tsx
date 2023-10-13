@@ -1,6 +1,6 @@
 import React, {createContext, useContext} from 'react';
 import useSearchService, {SearchService} from '../../utils/search';
-import {DefaultHeaderTypes} from '../../utils/unsplash/UnsplashTypes';
+import {DefaultHeaderTypes} from '../../unsplash/UnsplashTypes';
 import {UpgradeStatusType} from '../../utils/globalTypes';
 import {ZapierTemplate} from '../settings/advanced/integrations/ZapierModal';
 

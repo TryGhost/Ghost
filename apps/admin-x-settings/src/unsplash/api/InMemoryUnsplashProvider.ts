@@ -1,9 +1,8 @@
 // for testing purposes
-import {IUnsplashRepository} from './UnsplashRepository';
 import {Photo} from '../UnsplashTypes';
 import {fixturePhotos} from './unsplashFixtures';
 
-export class InMemoryUnsplashRepository implements IUnsplashRepository {
+export class InMemoryUnsplashProvider {
     photos: Photo[] = fixturePhotos;
     PAGINATION: { [key: string]: string } = {};
     REQUEST_IS_RUNNING: boolean = false;
