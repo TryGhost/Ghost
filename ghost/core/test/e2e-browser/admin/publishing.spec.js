@@ -567,6 +567,7 @@ test.describe('Updating post access', () => {
         await openPostSettingsMenu(page);
 
         // saves the post with the new date
+        await expect(page.locator('[data-test-date-time-picker-timezone]')).toHaveText('UTC');
         await page.locator('[data-test-date-time-picker-datepicker]').click();
         await page.locator('.ember-power-calendar-nav-control--previous').click();
         await page.locator('.ember-power-calendar-day', {hasText: '15'}).click();
@@ -594,9 +595,9 @@ test.describe('Updating post access', () => {
 
         await openPostSettingsMenu(page);
 
-        await expect(page.locator('[data-test-date-time-picker-date-input]')).toHaveValue(/-16$/);
-        await expect(page.locator('[data-test-date-time-picker-time-input]')).toHaveValue('00:00');
         await expect(page.locator('[data-test-date-time-picker-timezone]')).toHaveText('+12');
+        await expect(page.locator('[data-test-date-time-picker-time-input]')).toHaveValue('00:00');
+        await expect(page.locator('[data-test-date-time-picker-date-input]')).toHaveValue(/-16$/);
     });
 
     test('default recipient settings - usually nobody', async ({page}) => {
