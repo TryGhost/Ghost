@@ -42,11 +42,6 @@ const setupGhost = async (page) => {
     // Add owner user data from usual fixture
     const ownerUser = DataGenerator.Content.users.find(user => user.id === '1');
 
-    if (process.env.CI && process.env.TEST_URL) {
-        ownerUser.email = process.env.TEST_OWNER_EMAIL;
-        ownerUser.password = process.env.TEST_OWNER_PASSWORD;
-    }
-
     if (action === actions.signin) {
         // Fill email + password
         await page.locator('#identification').fill(ownerUser.email);
