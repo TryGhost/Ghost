@@ -73,7 +73,7 @@ function defaultFormat(frame) {
         return;
     }
 
-    frame.options.formats = 'mobiledoc';
+    frame.options.formats = 'mobiledoc,lexical';
 }
 
 function handlePostsMeta(frame) {
