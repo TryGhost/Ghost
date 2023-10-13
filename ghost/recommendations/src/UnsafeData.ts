@@ -17,10 +17,10 @@ type NullData = {
     readonly number: null,
     readonly integer: null,
     readonly url: null
-    enum(): null
+    enum(allowedValues: unknown[]): null
     key(key: string): NullData
     optionalKey(key: string): NullData
-    readonly array: NullData
+    readonly array: null
     index(index: number): NullData
 }
 
@@ -53,7 +53,7 @@ export class UnsafeData {
      */
     optionalKey(key: string): UnsafeData|undefined {
         if (typeof this.data !== 'object' || this.data === null) {
-            throw new errors.ValidationError({message: `${this.fieldWithKey(key)} must be an object`});
+            throw new errors.ValidationError({message: `${this.field} must be an object`});
         }
 
         if (!Object.prototype.hasOwnProperty.call(this.data, key)) {
@@ -67,7 +67,7 @@ export class UnsafeData {
 
     key(key: string): UnsafeData {
         if (typeof this.data !== 'object' || this.data === null) {
-            throw new errors.ValidationError({message: `${this.fieldWithKey(key)} must be an object`});
+            throw new errors.ValidationError({message: `${this.field} must be an object`});
         }
 
         if (!Object.prototype.hasOwnProperty.call(this.data, key)) {
@@ -113,7 +113,7 @@ export class UnsafeData {
                     return d;
                 },
                 get array() {
-                    return d;
+                    return null;
                 },
                 index() {
                     return d;
@@ -140,7 +140,11 @@ export class UnsafeData {
 
     get number(): number {
         if (typeof this.data === 'string') {
-            return new UnsafeData(parseFloat(this.data), this.context).number;
+            const parsed = parseFloat(this.data);
+            if (isNaN(parsed) || parsed.toString() !== this.data) {
+                throw new errors.ValidationError({message: `${this.field} must be a number, got ${typeof this.data}`});
+            }
+            return new UnsafeData(parsed, this.context).number;
         }
 
         if (typeof this.data !== 'number') {
@@ -154,6 +158,10 @@ export class UnsafeData {
 
     get integer(): number {
         if (typeof this.data === 'string') {
+            const parsed = parseInt(this.data);
+            if (isNaN(parsed) || parsed.toString() !== this.data) {
+                throw new errors.ValidationError({message: `${this.field} must be an integer`});
+            }
             return new UnsafeData(parseInt(this.data), this.context).integer;
         }
 
@@ -184,7 +192,7 @@ export class UnsafeData {
 
     enum<T>(allowedValues: T[]): T {
         if (!allowedValues.includes(this.data as T)) {
-            throw new errors.ValidationError({message: `${this.field} must be one of ${allowedValues.join(',')}`});
+            throw new errors.ValidationError({message: `${this.field} must be one of ${allowedValues.join(', ')}`});
         }
         return this.data as T;
     }
@@ -198,7 +206,10 @@ export class UnsafeData {
 
     index(index: number) {
         const arr = this.array;
-        if (index < 0 || index >= arr.length) {
+        if (index < 0 || !Number.isSafeInteger(index)) {
+            throw new errors.IncorrectUsageError({message: `index must be a positive integer`});
+        }
+        if (index >= arr.length) {
             throw new errors.ValidationError({message: `${this.field} must be an array of length ${index + 1}`});
         }
         return arr[index];

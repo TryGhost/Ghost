@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
     "test": "yarn test:unit",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
@@ -25,10 +25,10 @@
   },
   "dependencies": {
     "@tryghost/debug": "0.1.24",
-    "@tryghost/errors": "1.2.24",
+    "@tryghost/errors": "1.2.26",
     "@tryghost/tpl": "0.1.24",
     "csso": "5.0.5",
-    "terser": "5.20.0",
+    "terser": "5.21.0",
     "tiny-glob": "0.2.9"
   }
 }

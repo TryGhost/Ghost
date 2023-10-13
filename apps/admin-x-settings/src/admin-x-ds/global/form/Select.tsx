@@ -1,10 +1,11 @@
-import React, {useId, useMemo} from 'react';
-import ReactSelect, {ClearIndicatorProps, DropdownIndicatorProps, OptionProps, Props, components} from 'react-select';
-
+import AsyncSelect from 'react-select/async';
 import Heading from '../Heading';
 import Hint from '../Hint';
 import Icon from '../Icon';
+import React, {useId, useMemo} from 'react';
+import ReactSelect, {ClearIndicatorProps, DropdownIndicatorProps, GroupBase, OptionProps, OptionsOrGroups, Props, components} from 'react-select';
 import clsx from 'clsx';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 
 export interface SelectOption {
     value: string;
@@ -31,23 +32,39 @@ export interface SelectControlClasses {
     clearIndicator?: string;
 }
 
-export interface SelectProps extends Props<SelectOption, false> {
+export type LoadOptions = (inputValue: string, callback: (options: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>) => void) => void
+
+type SelectOptionProps = {
+    async: true;
+    defaultOptions: boolean | OptionsOrGroups<SelectOption, GroupBase<SelectOption>>;
+    loadOptions: LoadOptions;
+    options?: never;
+} | {
+    async?: false;
+    options: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>;
+    defaultOptions?: never;
+    loadOptions?: never;
+}
+
+export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
+    async?: boolean;
     title?: string;
     hideTitle?: boolean;
     size?: 'xs' | 'md';
     prompt?: string;
-    options: SelectOption[] | SelectOptionGroup[];
-    selectedOption?: string
-    onSelect: (value: string | undefined) => void;
+    selectedOption?: SelectOption
+    onSelect: (option: SelectOption | null) => void;
     error?:boolean;
     hint?: React.ReactNode;
     clearBg?: boolean;
     border?: boolean;
     fullWidth?: boolean;
+    isSearchable?: boolean;
     containerClassName?: string;
     controlClasses?: SelectControlClasses;
     unstyled?: boolean;
     disabled?: boolean;
+    testId?: string;
 }
 
 const DropdownIndicator: React.FC<DropdownIndicatorProps<SelectOption, false> & {clearBg: boolean}> = ({clearBg, ...props}) => (
@@ -65,12 +82,13 @@ const ClearIndicator: React.FC<ClearIndicatorProps<SelectOption, false>> = props
 
 const Option: React.FC<OptionProps<SelectOption, false>> = ({children, ...optionProps}) => (
     <components.Option {...optionProps}>
-        <span data-testid="select-option">{children}</span>
+        <span data-testid="select-option" data-value={optionProps.data.value}>{children}</span>
         {optionProps.data.hint && <span className="block text-xs text-grey-700 dark:text-grey-300">{optionProps.data.hint}</span>}
     </components.Option>
 );
 
 const Select: React.FC<SelectProps> = ({
+    async,
     title,
     hideTitle,
     size = 'md',
@@ -83,13 +101,23 @@ const Select: React.FC<SelectProps> = ({
     clearBg = true,
     border = true,
     fullWidth = true,
+    isSearchable = false,
     containerClassName,
     controlClasses,
     unstyled,
     disabled = false,
+    testId,
     ...props
 }) => {
     const id = useId();
+    const {setFocusState} = useFocusContext();
+    const handleFocus = () => {
+        setFocusState(true);
+    };
+
+    const handleBlur = () => {
+        setFocusState(false);
+    };
 
     let containerClasses = '';
     if (!unstyled) {
@@ -107,8 +135,8 @@ const Select: React.FC<SelectProps> = ({
     const customClasses = {
         control: clsx(
             controlClasses?.control,
-            'min-h-[40px] w-full cursor-pointer appearance-none pr-4 outline-none dark:text-white',
-            size === 'xs' ? 'py-0 text-xs' : 'py-2',
+            'min-h-[40px] w-full cursor-pointer appearance-none outline-none dark:text-white',
+            size === 'xs' ? 'py-0 pr-2 text-xs' : 'py-2 pr-4',
             border && 'border-b',
             !clearBg && 'bg-grey-75 px-[10px] dark:bg-grey-950',
             error ? 'border-red' : 'border-grey-500 hover:border-grey-700 dark:border-grey-800 dark:hover:border-grey-700',
@@ -117,12 +145,12 @@ const Select: React.FC<SelectProps> = ({
         valueContainer: clsx('gap-1', controlClasses?.valueContainer),
         placeHolder: clsx('text-grey-500 dark:text-grey-800', controlClasses?.placeHolder),
         menu: clsx(
-            'z-[300] rounded-b bg-white py-2 shadow dark:border dark:border-grey-900 dark:bg-black',
+            'z-[300] rounded-b bg-white shadow dark:border dark:border-grey-900 dark:bg-black',
             size === 'xs' && 'text-xs',
             controlClasses?.menu
         ),
         option: clsx('px-3 py-[6px] hover:cursor-pointer hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900', controlClasses?.option),
-        noOptionsMessage: clsx('p-3 text-grey-600', controlClasses?.noOptionsMessage),
+        noOptionsMessage: clsx('nowrap p-3 text-grey-600', controlClasses?.noOptionsMessage),
         groupHeading: clsx('px-3 py-[6px] text-2xs font-semibold uppercase tracking-wide text-grey-700', controlClasses?.groupHeading),
         clearIndicator: clsx('', controlClasses?.clearIndicator)
     };
@@ -133,39 +161,39 @@ const Select: React.FC<SelectProps> = ({
         };
     }, [clearBg]);
 
-    const individualOptions = options.flatMap((option) => {
-        if ('options' in option) {
-            return option.options;
-        }
-        return option;
-    });
+    const customProps = {
+        classNames: {
+            menuList: () => 'z-[300]',
+            valueContainer: () => customClasses.valueContainer,
+            control: () => customClasses.control,
+            placeholder: () => customClasses.placeHolder,
+            menu: () => customClasses.menu,
+            option: () => customClasses.option,
+            noOptionsMessage: () => customClasses.noOptionsMessage,
+            groupHeading: () => customClasses.groupHeading,
+            clearIndicator: () => customClasses.clearIndicator
+        },
+        components: {DropdownIndicator: dropdownIndicatorComponent, Option, ClearIndicator},
+        inputId: id,
+        isClearable: false,
+        isSearchable: isSearchable,
+        options,
+        placeholder: prompt ? prompt : '',
+        value: selectedOption,
+        unstyled: true,
+        onChange: onSelect,
+        onFocus: handleFocus,
+        onBlur: handleBlur
+    };
 
     const select = (
         <>
             {title && <Heading className={hideTitle ? 'sr-only' : ''} grey={selectedOption || !prompt ? true : false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
-            <div className={containerClasses}>
-                <ReactSelect<SelectOption, false>
-                    classNames={{
-                        menuList: () => 'z-[300]',
-                        valueContainer: () => customClasses.valueContainer,
-                        control: () => customClasses.control,
-                        placeholder: () => customClasses.placeHolder,
-                        menu: () => customClasses.menu,
-                        option: () => customClasses.option,
-                        noOptionsMessage: () => customClasses.noOptionsMessage,
-                        groupHeading: () => customClasses.groupHeading,
-                        clearIndicator: () => customClasses.clearIndicator
-                    }}
-                    components={{DropdownIndicator: dropdownIndicatorComponent, Option, ClearIndicator}}
-                    inputId={id}
-                    isClearable={false}
-                    options={options}
-                    placeholder={prompt ? prompt : ''}
-                    value={individualOptions.find(option => option.value === selectedOption)}
-                    unstyled
-                    onChange={option => onSelect(option?.value)}
-                    {...props}
-                />
+            <div className={containerClasses} data-testid={testId}>
+                {async ?
+                    <AsyncSelect<SelectOption, false> {...customProps} {...props} /> :
+                    <ReactSelect<SelectOption, false> {...customProps} {...props} />
+                }
             </div>
             {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
         </>

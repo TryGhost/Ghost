@@ -6,6 +6,7 @@ import Users from './components/settings/general/Users';
 import useRouting from './hooks/useRouting';
 import {ReactNode, useEffect} from 'react';
 import {canAccessSettings, isEditorUser} from './api/users';
+import {toast} from 'react-hot-toast';
 import {topLevelBackdropClasses} from './admin-x-ds/global/modal/Modal';
 import {useGlobalData} from './components/providers/GlobalDataProvider';
 
@@ -26,8 +27,13 @@ const MainContent: React.FC = () => {
     const {route, updateRoute, loadingModal} = useRouting();
 
     useEffect(() => {
-        if (!canAccessSettings(currentUser) && route !== `users/show/${currentUser.slug}`) {
-            updateRoute(`users/show/${currentUser.slug}`);
+        // resets any toasts that may have been left open on initial load
+        toast.remove();
+    }, []);
+
+    useEffect(() => {
+        if (!canAccessSettings(currentUser) && route !== `staff/${currentUser.slug}`) {
+            updateRoute(`staff/${currentUser.slug}`);
         }
     }, [currentUser, route, updateRoute]);
 
@@ -52,7 +58,7 @@ const MainContent: React.FC = () => {
 
             {/* Sidebar */}
             <div className="sticky top-[-47px] z-30 min-w-[260px] grow-0 md:top-[-52px] tablet:fixed tablet:top-[8vmin] tablet:basis-[260px]">
-                <div className='-mx-6 h-[84px] bg-white px-6 tablet:m-0 tablet:bg-transparent tablet:p-0'>
+                <div className='-mx-6 h-[84px] bg-white px-6 dark:bg-black tablet:m-0 tablet:bg-transparent tablet:p-0'>
                     <Heading>Settings</Heading>
                 </div>
                 <div className="relative mt-[-32px] w-full overflow-x-hidden bg-white dark:bg-black">

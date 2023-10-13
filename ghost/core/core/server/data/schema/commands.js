@@ -157,6 +157,25 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
 }
 
 /**
+ * @param {string} tableName
+ * @param {string} from
+ * @param {string} to
+ * @param {import('knex').Knex.Transaction} [transaction]
+ */
+async function renameColumn(tableName, from, to, transaction = db.knex) {
+    logging.info(`Renaming column '${from}' to '${to}' in table '${tableName}'`);
+
+    if (DatabaseInfo.isMySQL(transaction)) {
+        // The knex helper does a lot of interesting things with foreign keys that are slow on bigger MySQL clusters
+        return await transaction.raw(`ALTER TABLE \`${tableName}\` RENAME COLUMN \`${from}\` TO \`${to}\`;`);
+    }
+
+    return await transaction.schema.table(tableName, function (table) {
+        table.renameColumn(from, to);
+    });
+}
+
+/**
  * Adds an unique index to a table over the given columns.
  *
  * @param {string} tableName - name of the table to add unique constraint to
@@ -520,6 +539,7 @@ module.exports = {
     addForeign,
     dropForeign,
     addColumn,
+    renameColumn,
     dropColumn,
     setNullable,
     dropNullable,

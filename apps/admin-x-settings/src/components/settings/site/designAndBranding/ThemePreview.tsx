@@ -1,6 +1,6 @@
 import IframeBuffering from '../../../../utils/IframeBuffering';
 import React, {useCallback} from 'react';
-import {CustomThemeSetting} from '../../../../api/customThemeSettings';
+import {CustomThemeSetting, hiddenCustomThemeSettingValue, isCustomThemeSettingVisible} from '../../../../api/customThemeSettings';
 
 type BrandSettings = {
     description: string;
@@ -35,6 +35,7 @@ function getPreviewData({
     if (!themeSettings) {
         return;
     }
+    const themeSettingsKeyValueObj = themeSettings.reduce((obj, {key, value}) => ({...obj, [key]: value}), {});
 
     const params = new URLSearchParams();
     params.append('c', accentColor);
@@ -42,13 +43,13 @@ function getPreviewData({
     params.append('icon', icon);
     params.append('logo', logo);
     params.append('cover', coverImage);
-    const themeSettingsObj: {
-        [key: string]: string;
+    const custom: {
+        [key: string]: string | typeof hiddenCustomThemeSettingValue;
     } = {};
     themeSettings.forEach((setting) => {
-        themeSettingsObj[setting.key] = setting.value as string;
+        custom[setting.key] = isCustomThemeSettingVisible(setting, themeSettingsKeyValueObj) ? setting.value as string : hiddenCustomThemeSettingValue;
     });
-    params.append('custom', JSON.stringify(themeSettingsObj));
+    params.append('custom', JSON.stringify(custom));
 
     return params.toString();
 }
@@ -81,8 +82,12 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
                 const htmlDoc = domParser.parseFromString(data, 'text/html');
 
                 const stylesheet = htmlDoc.querySelector('style') as HTMLStyleElement;
-                const originalCSS = stylesheet.innerHTML;
-                stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
+                const originalCSS = stylesheet?.innerHTML;
+                if (originalCSS) {
+                    stylesheet.innerHTML = `${originalCSS}\n\n${injectedCss}`;
+                } else {
+                    htmlDoc.head.innerHTML += `<style>${injectedCss}</style>`;
+                }
 
                 // replace the iframe contents with the doctored preview html
                 const doctype = htmlDoc.doctype ? new XMLSerializer().serializeToString(htmlDoc.doctype) : '';

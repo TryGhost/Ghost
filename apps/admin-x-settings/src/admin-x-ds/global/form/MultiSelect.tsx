@@ -1,9 +1,11 @@
+import AsyncCreatableSelect from 'react-select/async-creatable';
+import AsyncSelect from 'react-select/async';
 import CreatableSelect from 'react-select/creatable';
 import Heading from '../Heading';
 import Hint from '../Hint';
 import React, {useId, useMemo} from 'react';
 import clsx from 'clsx';
-import {DropdownIndicatorProps, GroupBase, MultiValue, OptionProps, OptionsOrGroups, default as ReactSelect, components} from 'react-select';
+import {DropdownIndicatorProps, GroupBase, MultiValue, OptionProps, OptionsOrGroups, Props, default as ReactSelect, components} from 'react-select';
 
 export type MultiSelectColor = 'grey' | 'black' | 'green' | 'pink';
 type FieldStyles = 'text' | 'dropdown';
@@ -14,9 +16,22 @@ export type MultiSelectOption = {
     color?: MultiSelectColor;
 }
 
-interface MultiSelectProps {
+export type LoadOptions = (inputValue: string, callback: (options: OptionsOrGroups<MultiSelectOption, GroupBase<MultiSelectOption>>) => void) => void
+
+type MultiSelectOptionProps = {
+    async: true;
+    defaultOptions: boolean | OptionsOrGroups<MultiSelectOption, GroupBase<MultiSelectOption>>;
+    loadOptions: LoadOptions;
+    options?: never;
+} | {
+    async?: false;
     options: OptionsOrGroups<MultiSelectOption, GroupBase<MultiSelectOption>>;
-    values: MultiSelectOption[];
+    defaultOptions?: never;
+    loadOptions?: never;
+}
+
+type MultiSelectProps = MultiSelectOptionProps & {
+    values: MultiValue<MultiSelectOption>;
     title?: string;
     clearBg?: boolean;
     error?: boolean;
@@ -27,6 +42,7 @@ interface MultiSelectProps {
     hint?: string;
     onChange: (selected: MultiValue<MultiSelectOption>) => void;
     canCreate?: boolean;
+    testId?: string;
 }
 
 const multiValueColor = (color?: MultiSelectColor) => {
@@ -70,10 +86,14 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     size = 'md',
     fieldStyle = 'dropdown',
     hint = '',
+    async,
     options,
+    defaultOptions,
+    loadOptions,
     values,
     onChange,
     canCreate = false,
+    testId,
     ...props
 }) => {
     const id = useId();
@@ -110,61 +130,39 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         return (ddiProps: DropdownIndicatorProps<MultiSelectOption, true>) => <DropdownIndicator {...ddiProps} clearBg={clearBg} fieldStyle={fieldStyle} />;
     }, [clearBg, fieldStyle]);
 
+    const commonOptions: Props<MultiSelectOption, true> = {
+        classNames: {
+            menuList: () => 'z-50',
+            valueContainer: () => customClasses.valueContainer,
+            control: () => customClasses.control,
+            placeholder: () => customClasses.placeHolder,
+            menu: () => customClasses.menu,
+            option: () => customClasses.option,
+            multiValue: ({data}) => customClasses.multiValue(data.color),
+            noOptionsMessage: () => customClasses.noOptionsMessage,
+            groupHeading: () => customClasses.groupHeading
+        },
+        closeMenuOnSelect: false,
+        components: {DropdownIndicator: dropdownIndicatorComponent, Option},
+        inputId: id,
+        isClearable: false,
+        placeholder: placeholder ? placeholder : '',
+        value: values,
+        isMulti: true,
+        unstyled: true,
+        onChange,
+        ...props
+    };
+
     return (
         <div className='flex flex-col'>
             {title && <Heading htmlFor={id} grey useLabelTag>{title}</Heading>}
-            {
-                canCreate ?
-                    <CreatableSelect
-                        classNames={{
-                            menuList: () => 'z-50',
-                            valueContainer: () => customClasses.valueContainer,
-                            control: () => customClasses.control,
-                            placeholder: () => customClasses.placeHolder,
-                            menu: () => customClasses.menu,
-                            option: () => customClasses.option,
-                            multiValue: ({data}) => customClasses.multiValue(data.color),
-                            noOptionsMessage: () => customClasses.noOptionsMessage,
-                            groupHeading: () => customClasses.groupHeading
-                        }}
-                        closeMenuOnSelect={false}
-                        components={{DropdownIndicator: dropdownIndicatorComponent, Option}}
-                        inputId={id}
-                        isClearable={false}
-                        options={options}
-                        placeholder={placeholder ? placeholder : ''}
-                        value={values}
-                        isMulti
-                        unstyled
-                        onChange={onChange}
-                        {...props}
-                    />
-                    :
-                    <ReactSelect
-                        classNames={{
-                            menuList: () => 'z-50',
-                            valueContainer: () => customClasses.valueContainer,
-                            control: () => customClasses.control,
-                            placeholder: () => customClasses.placeHolder,
-                            menu: () => customClasses.menu,
-                            option: () => customClasses.option,
-                            multiValue: ({data}) => customClasses.multiValue(data.color),
-                            noOptionsMessage: () => customClasses.noOptionsMessage,
-                            groupHeading: () => customClasses.groupHeading
-                        }}
-                        closeMenuOnSelect={false}
-                        components={{DropdownIndicator: dropdownIndicatorComponent, Option}}
-                        inputId={id}
-                        isClearable={false}
-                        options={options}
-                        placeholder={placeholder ? placeholder : ''}
-                        value={values}
-                        isMulti
-                        unstyled
-                        onChange={onChange}
-                        {...props}
-                    />
-            }
+            <div data-testid={testId}>
+                {async ?
+                    (canCreate ? <AsyncCreatableSelect {...commonOptions} defaultOptions={defaultOptions} loadOptions={loadOptions} /> : <AsyncSelect {...commonOptions} defaultOptions={defaultOptions} loadOptions={loadOptions} />) :
+                    (canCreate ? <CreatableSelect {...commonOptions} options={options} /> : <ReactSelect {...commonOptions} options={options} />)
+                }
+            </div>
             {hint && <Hint color={error ? 'red' : ''}>{hint}</Hint>}
         </div>
     );

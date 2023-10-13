@@ -4,9 +4,9 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
-import handleError from '../../../../utils/handleError';
 import toast from 'react-hot-toast';
 import useForm from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import validator from 'validator';
 import webhookEventOptions from './webhookEventOptions';
 import {Webhook, useCreateWebhook, useEditWebhook} from '../../../../api/webhooks';
@@ -21,6 +21,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
     const modal = useModal();
     const {mutateAsync: createWebhook} = useCreateWebhook();
     const {mutateAsync: editWebhook} = useEditWebhook();
+    const handleError = useHandleError();
 
     const {formState, updateForm, handleSave, errors, clearError, validate} = useForm<Partial<Webhook>>({
         initialState: webhook || {},
@@ -94,11 +95,12 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                     hint={errors.event}
                     options={webhookEventOptions}
                     prompt='Select an event'
-                    selectedOption={formState.event}
+                    selectedOption={webhookEventOptions.flatMap(group => group.options).find(option => option.value === formState.event)}
+                    testId='event-select'
                     title='Event'
                     hideTitle
-                    onSelect={(event) => {
-                        updateForm(state => ({...state, event}));
+                    onSelect={(option) => {
+                        updateForm(state => ({...state, event: option?.value}));
                         clearError('event');
                     }}
                 />

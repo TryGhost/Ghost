@@ -1,8 +1,13 @@
 import React, {useEffect, useState} from 'react';
 import TextField, {TextFieldProps} from './TextField';
 import validator from 'validator';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 
-const formatUrl = (value: string, baseUrl?: string) => {
+export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) => {
+    if (nullable && !value) {
+        return {save: null, display: ''};
+    }
+
     let url = value.trim();
 
     if (!url) {
@@ -25,7 +30,7 @@ const formatUrl = (value: string, baseUrl?: string) => {
 
     if (!baseUrl) {
         // Absolute URL with no base URL
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        if (!url.startsWith('http')) {
             url = `https://${url}`;
         }
     }
@@ -97,24 +102,27 @@ const formatUrl = (value: string, baseUrl?: string) => {
  * - Anchor links are displayed and saved as-is (e.g. `#test`)
  * - Values that don't look like URLs are displayed and saved as-is (e.g. `test`)
  */
-const URLTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
+const URLTextField: React.FC<Omit<TextFieldProps, 'value' | 'onChange'> & {
     baseUrl?: string;
     transformPathWithoutSlash?: boolean;
-    onChange: (value: string) => void;
-}> = ({baseUrl, value, transformPathWithoutSlash, onChange, ...props}) => {
+    nullable?: boolean;
+    value: string | null;
+    onChange: (value: string | null) => void;
+}> = ({baseUrl, value, transformPathWithoutSlash, nullable, onChange, ...props}) => {
     const [displayedUrl, setDisplayedUrl] = useState('');
+    const {setFocusState} = useFocusContext();
 
     useEffect(() => {
-        setDisplayedUrl(formatUrl(value || '', baseUrl).display);
-    }, [value, baseUrl]);
+        setDisplayedUrl(formatUrl(value || '', baseUrl, nullable).display);
+    }, [value, baseUrl, nullable]);
 
     const updateUrl = () => {
-        let urls = formatUrl(displayedUrl, baseUrl);
+        let urls = formatUrl(displayedUrl, baseUrl, nullable);
 
         // If the user entered something like "bla", try to parse it as a relative URL
         // If parsing as "/bla" results in a valid URL, use that instead
-        if (transformPathWithoutSlash && !urls.display.includes('//')) {
-            const candidate = formatUrl('/' + displayedUrl, baseUrl);
+        if (transformPathWithoutSlash && !urls.display.includes('//') && (displayedUrl || !nullable)) {
+            const candidate = formatUrl('/' + displayedUrl, baseUrl, nullable);
 
             if (candidate.display.includes('//')) {
                 urls = candidate;
@@ -122,7 +130,10 @@ const URLTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
         }
 
         setDisplayedUrl(urls.display);
-        onChange(urls.save);
+        if (urls.save !== value) {
+            onChange(urls.save);
+        }
+        setFocusState(false);
     };
 
     const handleFocus: React.FocusEventHandler<HTMLInputElement> = (e) => {
@@ -132,6 +143,7 @@ const URLTextField: React.FC<Omit<TextFieldProps, 'onChange'> & {
         }
 
         props.onFocus?.(e);
+        setFocusState(true);
     };
 
     const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {

@@ -6,8 +6,8 @@ import PortalPreview from './PortalPreview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './SignupOptions';
 import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
-import handleError from '../../../../utils/handleError';
 import useForm, {Dirtyable} from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useQueryParams from '../../../../hooks/useQueryParams';
 import useRouting from '../../../../hooks/useRouting';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
@@ -68,6 +68,7 @@ const PortalModal: React.FC = () => {
 
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
 
+    const handleError = useHandleError();
     const {settings, siteData} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
@@ -209,6 +210,7 @@ const PortalModal: React.FC = () => {
         cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
+        okColor={saveState === 'saved' ? 'green' : 'black'}
         okLabel={okLabel}
         preview={preview}
         previewBgColor={selectedPreviewTab === 'links' ? 'white' : 'greygradient'}

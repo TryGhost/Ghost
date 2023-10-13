@@ -13,7 +13,7 @@ import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import handleError from '../../../../utils/handleError';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {JSONError} from '../../../../utils/errors';
@@ -56,6 +56,7 @@ const Connect: React.FC = () => {
     });
     const {mutateAsync: editTier} = useEditTier();
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     const onTokenChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setToken(event.target.value);
@@ -64,7 +65,7 @@ const Connect: React.FC = () => {
 
     const saveTier = async () => {
         const {data} = await fetchActiveTiers();
-        const tier = data?.tiers[0];
+        const tier = data?.pages[0].tiers[0];
 
         if (tier) {
             tier.monthly_price = 500;
@@ -160,6 +161,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     });
 
     const {mutateAsync: deleteStripeSettings} = useDeleteStripeSettings();
+    const handleError = useHandleError();
 
     const openDisconnectStripeModal = async () => {
         const {data} = await fetchMembers();
@@ -290,7 +292,7 @@ const StripeConnectModal: React.FC = () => {
             updateRoute('tiers');
         }}
         cancelLabel=''
-        footer={<></>}
+        footer={<div className='mt-8'></div>}
         size={stripeConnectAccountId ? 740 : 520}
         testId='stripe-modal'
         title=''

@@ -11,10 +11,13 @@ import Popover from '../../../admin-x-ds/global/Popover';
 import Select, {SelectOption} from '../../../admin-x-ds/global/form/Select';
 import Toggle from '../../../admin-x-ds/global/form/Toggle';
 import ToggleGroup from '../../../admin-x-ds/global/form/ToggleGroup';
+import useFilterableApi from '../../../hooks/useFilterableApi';
 import useRouting from '../../../hooks/useRouting';
-import useStaffUsers from '../../../hooks/useStaffUsers';
 import {Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '../../../api/actions';
+import {LoadOptions} from '../../../admin-x-ds/global/form/MultiSelect';
 import {RoutingModalProps} from '../../providers/RoutingProvider';
+import {User} from '../../../api/users';
+import {debounce} from '../../../utils/debounce';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {useCallback, useState} from 'react';
 
@@ -73,14 +76,18 @@ const HistoryFilter: React.FC<{
     toggleResourceType: (resource: string, included: boolean) => void;
 }> = ({excludedEvents, excludedResources, toggleEventType, toggleResourceType}) => {
     const {updateRoute} = useRouting();
-    const {users} = useStaffUsers();
+    const usersApi = useFilterableApi<User, 'users', 'name'>({path: '/users/', filterKey: 'name', responseKey: 'users'});
+
+    const loadOptions: LoadOptions = async (input, callback) => {
+        const users = await usersApi.loadData(input);
+        callback(users.map(user => ({label: user.name, value: user.id})));
+    };
+
     const [searchedStaff, setSearchStaff] = useState<SelectOption | null>();
 
     const resetStaff = () => {
         setSearchStaff(null);
     };
-
-    const userOptions = users.map(user => ({label: user.name, value: user.id}));
 
     return (
         <div className='flex items-center gap-4'>
@@ -102,14 +109,16 @@ const HistoryFilter: React.FC<{
             </Popover>
             <div className='w-[200px]'>
                 <Select
-                    options={userOptions}
+                    loadOptions={debounce(loadOptions, 500)}
                     placeholder='Search staff'
                     value={searchedStaff}
+                    async
+                    defaultOptions
                     isClearable
-                    onSelect={(value) => {
-                        if (value) {
-                            setSearchStaff(userOptions.find(option => option.value === value)!);
-                            updateRoute(`history/view/${value}`);
+                    onSelect={(option) => {
+                        if (option) {
+                            setSearchStaff(option);
+                            updateRoute(`history/view/${option.value}`);
                         } else {
                             resetStaff();
                             updateRoute('history/view');

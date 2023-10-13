@@ -354,5 +354,8 @@ module.exports = function apiRoutes() {
     router.put('/recommendations/:id', mw.authAdminApi, http(api.recommendations.edit));
     router.del('/recommendations/:id', mw.authAdminApi, http(api.recommendations.destroy));
 
+    // Incoming recommendations
+    router.get('/incoming_recommendations', mw.authAdminApi, http(api.incomingRecommendations.browse));
+
     return router;
 };

@@ -1,5 +1,8 @@
 import * as Sentry from '@sentry/react';
-import React, {ReactNode, Suspense, useCallback, useMemo} from 'react';
+import ErrorBoundary from '../ErrorBoundary';
+import React, {Suspense, useCallback, useMemo} from 'react';
+import {FetchKoenigLexical, useServices} from '../../../components/providers/ServiceProvider';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 
 export interface HtmlEditorProps {
     value?: string
@@ -16,22 +19,12 @@ declare global {
     }
 }
 
-const fetchKoenig = function ({editorUrl, editorVersion}: { editorUrl: string; editorVersion: string; }) {
+const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
     let status = 'pending';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let response: any;
 
-    const fetchPackage = async () => {
-        if (window['@tryghost/koenig-lexical']) {
-            return window['@tryghost/koenig-lexical'];
-        }
-
-        await import(editorUrl.replace('{version}', editorVersion));
-
-        return window['@tryghost/koenig-lexical'];
-    };
-
-    const suspender = fetchPackage().then(
+    const suspender = fetchKoenigLexical().then(
         (res) => {
             status = 'success';
             response = res;
@@ -56,31 +49,7 @@ const fetchKoenig = function ({editorUrl, editorVersion}: { editorUrl: string; e
     return {read};
 };
 
-type EditorResource = ReturnType<typeof fetchKoenig>;
-
-class ErrorHandler extends React.Component<{ children: ReactNode }> {
-    state = {
-        hasError: false
-    };
-
-    static getDerivedStateFromError() {
-        return {hasError: true};
-    }
-
-    componentDidCatch(error: unknown, errorInfo: unknown) {
-        console.error(error, errorInfo); // eslint-disable-line
-    }
-
-    render() {
-        if (this.state.hasError) {
-            return (
-                <p className="koenig-react-editor-error">Loading has failed. Try refreshing the browser!</p>
-            );
-        }
-
-        return this.props.children;
-    }
-}
+type EditorResource = ReturnType<typeof loadKoenig>;
 
 const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
     editor,
@@ -107,6 +76,18 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
         }
         console.error(error); // eslint-disable-line
     }, []);
+    const {setFocusState} = useFocusContext();
+
+    const handleBlur = () => {
+        if (onBlur) {
+            onBlur();
+        }
+        setFocusState(false);
+    };
+
+    const handleFocus = () => {
+        setFocusState(true);
+    };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const koenig = useMemo(() => new Proxy({} as { [key: string]: any }, {
@@ -154,7 +135,8 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
                 placeholderClassName='koenig-lexical-editor-input-placeholder'
                 placeholderText={placeholder}
                 singleParagraph={true}
-                onBlur={onBlur}
+                onBlur={handleBlur}
+                onFocus={handleFocus}
             >
                 <koenig.HtmlOutputPlugin html={value} setHtml={handleSetHtml} />
             </koenig.KoenigComposableEditor>
@@ -163,25 +145,21 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
 };
 
 const HtmlEditor: React.FC<HtmlEditorProps & {
-    config: { editor: { url: string; version: string; } };
     className?: string;
 }> = ({
-    config,
     className,
     ...props
 }) => {
-    const editorResource = useMemo(() => fetchKoenig({
-        editorUrl: config.editor.url,
-        editorVersion: config.editor.version
-    }), [config.editor.url, config.editor.version]);
+    const {fetchKoenigLexical} = useServices();
+    const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
 
     return <div className={className || 'w-full'}>
         <div className="koenig-react-editor w-full [&_*]:!font-inherit [&_*]:!text-inherit">
-            <ErrorHandler>
+            <ErrorBoundary name='editor'>
                 <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                     <KoenigWrapper {...props} editor={editorResource} />
                 </Suspense>
-            </ErrorHandler>
+            </ErrorBoundary>
         </div>
     </div>;
 };

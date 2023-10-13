@@ -39,6 +39,7 @@ export interface PreviewModalProps {
     sidebarHeader?: React.ReactNode;
     sidebarPadding?: boolean;
     sidebarContentClasses?: string;
+    enableCMDS?: boolean;
 
     onCancel?: () => void;
     onOk?: () => void;
@@ -73,6 +74,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     sidebarHeader,
     sidebarPadding = true,
     sidebarContentClasses,
+    enableCMDS = true,
 
     onCancel,
     onOk,
@@ -87,6 +89,23 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     useEffect(() => {
         setGlobalDirtyState(dirty);
     }, [dirty, setGlobalDirtyState]);
+
+    useEffect(() => {
+        if (onOk) {
+            const handleCMDS = (e: KeyboardEvent) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                    e.preventDefault();
+                    onOk();
+                }
+            };
+            if (enableCMDS) {
+                window.addEventListener('keydown', handleCMDS);
+                return () => {
+                    window.removeEventListener('keydown', handleCMDS);
+                };
+            }
+        }
+    });
 
     const [view, setView] = useState('desktop');
 
@@ -108,7 +127,11 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         let toolbarLeft = (<></>);
         if (previewToolbarURLs) {
             toolbarLeft = (
-                <Select options={previewToolbarURLs!} selectedOption={selectedURL} onSelect={url => url && onSelectURL?.(url)} />
+                <Select
+                    options={previewToolbarURLs!}
+                    selectedOption={previewToolbarURLs!.find(option => option.value === selectedURL)}
+                    onSelect={option => option && onSelectURL?.(option.value)}
+                />
             );
         } else if (previewToolbarTabs) {
             toolbarLeft = <TabView

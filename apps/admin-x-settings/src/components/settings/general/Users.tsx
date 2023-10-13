@@ -7,7 +7,7 @@ import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import clsx from 'clsx';
-import handleError from '../../../utils/handleError';
+import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import {User, hasAdminAccess, isContributorUser, isEditorUser} from '../../../api/users';
@@ -39,7 +39,7 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
 
     const showDetailModal = () => {
         if (hasAdminAccess(currentUser)) {
-            updateRoute({route: `users/show/${user.slug}`});
+            updateRoute({route: `staff/${user.slug}`});
         }
     };
 
@@ -63,7 +63,7 @@ const UsersList: React.FC<UsersListProps> = ({users, groupname}) => {
     const {currentUser} = useGlobalData();
 
     const showDetailModal = (user: User) => {
-        updateRoute({route: `users/show/${user.slug}`});
+        updateRoute({route: `staff/${user.slug}`});
     };
 
     if (!users || !users.length) {
@@ -112,6 +112,7 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
 
     const {mutateAsync: deleteInvite} = useDeleteInvite();
     const {mutateAsync: addInvite} = useAddInvite();
+    const handleError = useHandleError();
 
     let revokeActionLabel = 'Revoke';
     if (revokeState === 'progress') {
@@ -206,17 +207,21 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
 
 const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords, highlight = true}) => {
     const {
+        totalUsers,
+        users,
         ownerUser,
         adminUsers,
         editorUsers,
         authorUsers,
         contributorUsers,
-        invites
+        invites,
+        hasNextPage,
+        fetchNextPage
     } = useStaffUsers();
     const {updateRoute} = useRouting();
 
     const showInviteModal = () => {
-        updateRoute('users/invite');
+        updateRoute('staff/invite');
     };
 
     const buttons = (
@@ -260,12 +265,17 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
             customButtons={buttons}
             highlightOnModalClose={highlight}
             keywords={keywords}
-            navid='users'
+            navid='staff'
             testId='users'
             title='Staff'
         >
             <Owner user={ownerUser} />
             <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+            {hasNextPage && <Button
+                label={`Load more (showing ${users.length}/${totalUsers} users)`}
+                link
+                onClick={() => fetchNextPage()}
+            />}
         </SettingGroup>
     );
 };

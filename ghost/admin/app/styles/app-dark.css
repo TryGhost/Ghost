@@ -32,7 +32,6 @@
 @import "components/power-select.css";
 @import "components/power-calendar.css";
 @import "components/koenig.css";
-@import "components/koenig-dark.css";
 @import "components/publishmenu.css";
 @import "components/popovers.css";
 @import "components/unsplash.css";
@@ -361,16 +360,6 @@ input:focus,
     background-color: rgba(0,0,0,0.3);
 }
 
-.email-cta-toolbar,
-.email-cta-toolbar .borders,
-.email-cta-toolbar .email-cta-align {
-    border-color: var(--lightgrey);
-}
-
-.email-cta-toolbar .gh-btn {
-    background: var(--dark-main-bg-color) !important;
-}
-
 .gh-badge-black,
 .gh-badge.owner {
     color: var(--lightgrey);
@@ -531,10 +520,6 @@ input:focus,
 
 .seo-preview-description {
     color: var(--midgrey);
-}
-
-.gh-markdown-editor .CodeMirror-cursor {
-    border-color: #fff;
 }
 
 .koenig-card-html--editor .CodeMirror-cursor {
@@ -841,54 +826,6 @@ input:focus,
 }
 
 /* Koenig styles */
-.kg-link-input {
-    border-color: var(--green) !important;
-}
-
-.kg-settings-panel {
-    background-color: var(--lightgrey-d1);
-    box-shadow:
-        0px -1px 10px rgba(0, 0, 0, 0.1),
-        0px 2.8px 2.2px rgba(0, 0, 0, 0.05),
-        0px 6.7px 5.3px rgba(0, 0, 0, 0.05),
-        0px 12.5px 10px rgba(0, 0, 0, 0.08),
-        0px 22.3px 17.9px rgba(0, 0, 0, 0.08),
-        0px 41.8px 33.4px rgba(0, 0, 0, 0.08),
-        0px 100px 80px rgba(0, 0, 0, 0.1)
-    ;
-}
-
-.kg-settings-panel .for-switch .input-toggle-component {
-    background: var(--lightgrey-l2);
-}
-
-.kg-settings-panel .gh-btn-group {
-    background: var(--lightgrey);
-}
-
-.kg-settings-panel .gh-btn-group .gh-btn-group-selected span {
-    background: var(--lightgrey-l2) !important;
-}
-
-.kg-settings-panel .kg-upload-thumbnail-xl:hover {
-    background: var(--lightgrey) !important;
-}
-
-.emoji-picker__emoji:hover {
-    background: var(--lightgrey) !important;
-}
-
-.kg-upload-title {
-    background: transparent;
-}
-
-.kg-upload-button .kg-audio-icon {
-    fill: var(--black);
-}
-
-.kg-video-thumbnail-xl-container {
-    background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ctitle%3ERectangle%3C/title%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath fill='%23303e46' d='M0 0h24v24H0z'/%3E%3Cpath fill='%233e515b' d='M0 0h12v12H0zM12 12h12v12H12z'/%3E%3C/g%3E%3C/svg%3E");
-}
 
 .image-overlay button {
     background: var(--whitegrey);
@@ -931,6 +868,10 @@ input:focus,
 
 .gh-editor-feature-image-unsplash svg:hover {
     fill: var(--darkgrey);
+}
+
+.gh-editor-feature-image-caption {
+    color: var(--darkgrey);
 }
 
 .gh-editor-wordcount-container {
@@ -1218,10 +1159,6 @@ input:focus,
 
 .kg-settings-headerstyle-btn-group .gh-btn {
     border-color: var(--midlightgrey);
-}
-
-.kg-header-card.kg-style-dark {
-    background: #08090C;
 }
 
 kbd {

@@ -57,7 +57,7 @@ const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = 
     if (!useLabelTag) {
         switch (level) {
         case 1:
-            styles += ' md:text-5xl leading-tight';
+            styles += ' md:text-5xl leading-tighter';
             break;
         case 2:
             styles += ' md:text-3xl';

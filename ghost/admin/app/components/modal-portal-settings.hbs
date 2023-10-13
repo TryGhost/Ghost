@@ -140,14 +140,14 @@
                                     </div>
 
                                     <GhFormGroup class="gh-stack-item mt5 mb5" @errors={{this.settings.errors}} @hasValidated={{this.settings.hasValidated}}>
-                                        <label class="modal-fullsettings-title">Display notice at signup</label>
-                                        <KoenigBasicHtmlInput
-                                            @name="footer"
-                                            @html={{this.settings.portalSignupTermsHtml}}
-                                            @class="miw-100 form-text gh-members-emailsettings-footer-input"
-                                            @placeholder="By signing up, I agree to receive emails from {{this.config.blogTitle}}."
-                                            @onChange={{action "setTermsHtml"}}
-                                        />
+                                        <label class="modal-fullsettings-title" for="footer">Display notice at signup</label>
+                                        <textarea
+                                            id="footer"
+                                            name="footer"
+                                            class="miw-100 form-text gh-members-emailsettings-footer-input"
+                                            placeholder="By signing up, I agree to receive emails from {{this.config.blogTitle}}."
+                                            {{on "change" this.setTermsHtml}}
+                                        >{{this.settings.portalSignupTermsHtml}}</textarea>
                                         <GhErrorMessage @errors={{this.settings.errors}} @property="portalSignupTermsHtml" />
                                         <p>
                                             Recommended: <strong>{{this.maxTermsLength}}</strong> characters.

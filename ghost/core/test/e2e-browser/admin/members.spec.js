@@ -1,10 +1,11 @@
-const {expect, test} = require('@playwright/test');
+const {expect} = require('@playwright/test');
+const test = require('../fixtures/ghost-test');
 const {createMember, deleteAllMembers} = require('../utils/e2e-browser-utils');
 const fs = require('fs');
 
 test.describe('Admin', () => {
     test.describe('Members', () => {
-        test.describe.configure({retries: 1});
+        test.describe.configure({retries: 1, mode: 'serial'});
         test('A member can be created', async ({page}) => {
             await page.goto('/ghost');
             await page.locator('.gh-nav a[href="#/members/"]').click();
@@ -279,7 +280,7 @@ test.describe('Admin', () => {
         });
 
         test('A member can be granted a comp in admin', async ({page}) => {
-            page.goto('/ghost');
+            await page.goto('/ghost');
             await deleteAllMembers(page);
 
             // create a new member with a comped plan
@@ -305,7 +306,7 @@ test.describe('Admin', () => {
             await page.goto(link);
 
             // click the paid-only post
-            await page.locator('.post-card-image-link[href="/sell/"]').click();
+            await page.locator('.gh-card-link[href="/sell/"]').click();
 
             // check for content CTA and expect it to be zero
             await expect(page.locator('.gh-post-upgrade-cta')).toHaveCount(0);

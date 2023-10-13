@@ -1,4 +1,5 @@
-const {expect, test} = require('@playwright/test');
+const {expect} = require('@playwright/test');
+const test = require('../fixtures/ghost-test');
 const {DateTime} = require('luxon');
 const {slugify} = require('@tryghost/string');
 const {createTier, createMember, createPostDraft, impersonateMember} = require('../utils');
@@ -55,7 +56,7 @@ const checkPostPublished = async (page, {slug, title, body}) => {
     expect(response.status()).toBe(200);
 
     // Check if the title and body are present on this page
-    await expect(page.locator('.gh-canvas .article-title')).toHaveText(title);
+    await expect(page.locator('.gh-article-title')).toHaveText(title);
     await expect(page.locator('.gh-content.gh-canvas > p')).toHaveText(body);
 };
 
@@ -75,6 +76,9 @@ const createPage = async (page, {title = 'Hello world', body = 'This is my post 
     // Fill in the post title
     await page.locator('[data-test-editor-title-input]').click();
     await page.locator('[data-test-editor-title-input]').fill(title);
+
+    // wait for editor to be ready
+    await expect(page.locator('[data-lexical-editor="true"]')).toBeVisible();
 
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');
@@ -188,7 +192,7 @@ test.describe('Publishing', () => {
             };
 
             // Create a member to send and email to
-            await createMember(page, {email: 'example@example.com', name: 'Publishing member'});
+            await createMember(page, {email: 'test+recipient1@example.com', name: 'Publishing member'});
 
             await page.goto('/ghost');
             await createPostDraft(page, postData);
@@ -217,11 +221,12 @@ test.describe('Publishing', () => {
 
         // Post should be available on web and sent as a newsletter
         test('Email only', async ({page}) => {
-            // Note: this currently depends on 'Publish and Email' to create a member!
             const postData = {
                 title: 'Email only post',
                 body: 'This is my post body.'
             };
+
+            await createMember(page, {email: 'test+recipient2@example.com', name: 'Publishing member'});
 
             await page.goto('/ghost');
             await createPostDraft(page, postData);
@@ -281,7 +286,7 @@ test.describe('Publishing', () => {
 
     test.describe('Update post', () => {
         test.describe.configure({retries: 1});
-        
+
         test('Can update a published post', async ({page: adminPage}) => {
             await adminPage.goto('/ghost');
 
@@ -324,12 +329,13 @@ test.describe('Publishing', () => {
     test.describe('Schedule post', () => {
         // Post should be published to web and sent as a newsletter at the scheduled time
         test('Publish and Email', async ({page}) => {
-            // Note: this currently depends on the first 'Publish and Email' to create a member!
             const postData = {
                 // This title should be unique
                 title: 'Scheduled post publish+email test',
                 body: 'This is my scheduled post body.'
             };
+
+            await createMember(page, {email: 'test+recipient3@example.com', name: 'Publishing member'});
 
             await page.goto('/ghost');
             await createPostDraft(page, postData);
@@ -391,6 +397,8 @@ test.describe('Publishing', () => {
                 title: 'Scheduled email only test',
                 body: 'This is my scheduled post body.'
             };
+
+            await createMember(page, {email: 'test+recipient4@example.com', name: 'Publishing member'});
 
             await page.goto('/ghost');
             await createPostDraft(page, postData);

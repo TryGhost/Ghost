@@ -22,7 +22,7 @@
                 @onOrderChange={{this.changeOrder}}
             />
 
-            <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-primary view-actions-top-row" data-test-new-page-button={{true}}><span>New page</span></LinkTo>
+            <LinkTo @route="lexical-editor.new" @model="page" class="gh-btn gh-btn-primary view-actions-top-row" data-test-new-page-button={{true}}><span>New page</span></LinkTo>
         </section>
     </GhCanvasHeader>
 
@@ -36,7 +36,7 @@
                     {{#if this.showingAll}}
                         {{svg-jar "pages-placeholder" class="gh-pages-placeholder"}}
                         <h4>Tell the world about yourself.</h4>
-                        <LinkTo @route="editor.new" @model="page" class="gh-btn gh-btn-green">
+                        <LinkTo @route="lexical-editor.new" @model="page" class="gh-btn gh-btn-green">
                             <span>Create a new page</span>
                         </LinkTo>
                     {{else}}

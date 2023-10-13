@@ -1,10 +1,10 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, apiUrl, createInfiniteQuery, createMutation, useFetchApi} from '../utils/apiRequests';
+import {Meta, apiUrl, createInfiniteQuery, createMutation, useFetchApi} from '../utils/api/hooks';
 
 export type Recommendation = {
     id: string
     title: string
-    reason: string|null
+    description: string|null
     excerpt: string|null // Fetched from the site meta data
     featured_image: string|null // Fetched from the site meta data
     favicon: string|null // Fetched from the site meta data
@@ -99,3 +99,37 @@ export const useGetRecommendationByUrl = () => {
         }
     };
 };
+
+export type IncomingRecommendation = {
+    id: string
+    title: string
+    url: string
+    excerpt: string|null
+    featured_image: string|null
+    favicon: string|null
+    recommending_back: boolean
+}
+
+export interface IncomingRecommendationResponseType {
+    meta?: Meta
+    recommendations: IncomingRecommendation[]
+}
+
+export const useBrowseIncomingRecommendations = createInfiniteQuery<IncomingRecommendationResponseType>({
+    dataType,
+    path: '/incoming_recommendations/',
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<IncomingRecommendationResponseType>;
+        let recommendations = pages.flatMap(page => page.recommendations);
+
+        // Remove duplicates
+        recommendations = recommendations.filter((mention, index) => {
+            return recommendations.findIndex(({id}) => id === mention.id) === index;
+        });
+
+        return {
+            recommendations,
+            meta: pages[pages.length - 1].meta
+        };
+    }
+});

@@ -53,7 +53,7 @@ class ExternalMediaInliner {
         try {
             const response = await request(requestURL, {
                 followRedirect: true,
-                encoding: null
+                responseType: 'buffer'
             });
 
             return response;

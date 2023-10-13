@@ -1,4 +1,4 @@
-import {useFetchApi} from '../utils/apiRequests';
+import {useFetchApi} from '../utils/api/hooks';
 
 export type GhostSiteResponse = {
     site: {
@@ -31,7 +31,8 @@ export const useExternalGhostSite = () => {
                 const result = await fetchApi(url, {
                     method: 'GET',
                     credentials: 'omit', // Allow CORS wildcard,
-                    timeout: 5000
+                    timeout: 5000,
+                    retry: false
                 });
 
                 // We need to validate all data types here for extra safety

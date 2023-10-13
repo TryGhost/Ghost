@@ -21,7 +21,11 @@ export class APIError extends Error {
         message?: string,
         errorOptions?: ErrorOptions
     ) {
-        super(message || response?.statusText, errorOptions);
+        if (!message && response && response.url.includes('/ghost/api/admin/')) {
+            message = `${response.statusText}, cannot fetch ${response.url.replace(/.+\/ghost\/api\/admin\//, '').replace(/\W.*/, '').replace('_', ' ')}`;
+        }
+
+        super(message || 'Unknown error', errorOptions);
     }
 }
 

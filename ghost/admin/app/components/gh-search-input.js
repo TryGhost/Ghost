@@ -54,17 +54,17 @@ export default class GhSearchInputComponent extends Component {
 
         if (selected.searchable === 'Posts') {
             let id = selected.id.replace('post.', '');
-            this.router.transitionTo('editor.edit', 'post', id);
+            this.router.transitionTo('lexical-editor.edit', 'post', id);
         }
 
         if (selected.searchable === 'Pages') {
             let id = selected.id.replace('page.', '');
-            this.router.transitionTo('editor.edit', 'page', id);
+            this.router.transitionTo('lexical-editor.edit', 'page', id);
         }
 
         if (selected.searchable === 'Users') {
             let id = selected.id.replace('user.', '');
-            this.router.transitionTo('settings.staff.user', id);
+            this.router.transitionTo('settings-x.settings-x', `staff/${id}`);
         }
 
         if (selected.searchable === 'Tags') {

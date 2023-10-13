@@ -2,7 +2,7 @@ import Button from '../../../../admin-x-ds/global/Button';
 import List from '../../../../admin-x-ds/global/List';
 import ListItem from '../../../../admin-x-ds/global/ListItem';
 import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useId, useState} from 'react';
 import Select from '../../../../admin-x-ds/global/form/Select';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import {getHomepageUrl} from '../../../../api/site';
@@ -15,6 +15,8 @@ interface PortalLinkPrefs {
 }
 
 const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
+    const id = useId();
+
     return (
         <ListItem
             action={<Button color='black' label='Copy' link onClick={(e) => {
@@ -29,8 +31,8 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
             separator
         >
             <div className='flex w-full grow items-center gap-5 py-3'>
-                <span className='inline-block w-[240px] whitespace-nowrap'>{name}</span>
-                <TextField className='border-b-500 grow bg-transparent p-1 text-grey-700' value={value} disabled unstyled />
+                <label className='inline-block w-[240px] whitespace-nowrap' htmlFor={id}>{name}</label>
+                <TextField className='border-b-500 grow bg-transparent p-1 text-grey-700' id={id} value={value} disabled unstyled />
             </div>
         </ListItem>
     );
@@ -81,10 +83,10 @@ const PortalLinks: React.FC = () => {
                         <span className='inline-block w-[240px] shrink-0'>Tier</span>
                         <Select
                             options={tierOptions}
-                            selectedOption={selectedTier}
-                            onSelect={(value) => {
-                                if (value) {
-                                    setSelectedTier(value);
+                            selectedOption={tierOptions.find(option => option.value === selectedTier)}
+                            onSelect={(option) => {
+                                if (option) {
+                                    setSelectedTier(option?.value);
                                 }
                             }}
                         />

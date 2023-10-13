@@ -13,8 +13,8 @@ import TextField from '../../../../admin-x-ds/global/form/TextField';
 import TierDetailPreview from './TierDetailPreview';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
-import handleError from '../../../../utils/handleError';
 import useForm from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
@@ -37,6 +37,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const {mutateAsync: updateTier} = useEditTier();
     const {mutateAsync: createTier} = useAddTier();
     const [hasFreeTrial, setHasFreeTrial] = React.useState(!!tier?.trial_days);
+    const handleError = useHandleError();
     const {localSettings, siteData} = useSettingGroup();
     const siteTitle = getSettingValues(localSettings, ['title']) as string[];
 
@@ -51,7 +52,9 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         initialState: {
             ...(tier || {}),
             trial_days: tier?.trial_days?.toString() || '',
-            currency: tier?.currency || currencies[0].isoCode
+            currency: tier?.currency || currencies[0].isoCode,
+            visibility: tier?.visibility || 'none',
+            welcome_page_url: tier?.welcome_page_url || null
         },
         onSave: async () => {
             const {trial_days: trialDays, currency, ...rest} = formState;
@@ -140,14 +143,14 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
 
     let leftButtonProps: ButtonProps = {};
     if (tier) {
-        if (tier.active) {
+        if (tier.active && tier.type !== 'free') {
             leftButtonProps = {
                 label: 'Archive tier',
                 color: 'red',
                 link: true,
                 onClick: confirmTierStatusChange
             };
-        } else {
+        } else if (!tier.active) {
             leftButtonProps = {
                 label: 'Reactivate tier',
                 color: 'green',
@@ -223,9 +226,10 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                             containerClassName='font-medium'
                                             controlClasses={{menu: 'w-14'}}
                                             options={currencySelectGroups()}
-                                            selectedOption={formState.currency}
+                                            selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === formState.currency)}
                                             size='xs'
-                                            onSelect={currency => updateForm(state => ({...state, currency}))}
+                                            isSearchable
+                                            onSelect={option => updateForm(state => ({...state, currency: option?.value}))}
                                         />
                                     </div>
                                 </div>
@@ -272,16 +276,17 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 />
                             </div>
                         </div>
-                        <URLTextField
-                            baseUrl={siteData?.url}
-                            hint='Redirect to this URL after signup for premium membership'
-                            placeholder={siteData?.url}
-                            title='Welcome page'
-                            value={formState.welcome_page_url || ''}
-                            transformPathWithoutSlash
-                            onChange={value => updateForm(state => ({...state, welcome_page_url: value || null}))}
-                        />
                     </>)}
+                    <URLTextField
+                        baseUrl={siteData?.url}
+                        hint='Redirect to this URL after signup for premium membership'
+                        placeholder={siteData?.url}
+                        title='Welcome page'
+                        value={formState.welcome_page_url || null}
+                        nullable
+                        transformPathWithoutSlash
+                        onChange={value => updateForm(state => ({...state, welcome_page_url: value || null}))}
+                    />
                 </Form>
 
                 <Form gap='none' title='Benefits' grouped>
@@ -339,15 +344,21 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
 };
 
 const TierDetailModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {data: {tiers} = {}} = useBrowseTiers();
+    const {data: {tiers, isEnd} = {}, fetchNextPage} = useBrowseTiers();
 
     let tier: Tier | undefined;
+
+    useEffect(() => {
+        if (params?.id && !tier && !isEnd) {
+            fetchNextPage();
+        }
+    }, [fetchNextPage, isEnd, params?.id, tier]);
 
     if (params?.id) {
         tier = tiers?.find(({id}) => id === params?.id);
 
         if (!tier) {
-            return;
+            return null;
         }
     }
 

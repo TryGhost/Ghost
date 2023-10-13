@@ -3,7 +3,7 @@ import IntegrationHeader from './IntegrationHeader';
 import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import handleError from '../../../../utils/handleError';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as Icon} from '../../../../assets/icons/unsplash.svg';
 import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
@@ -15,6 +15,7 @@ const UnsplashModal = NiceModal.create(() => {
     const {settings} = useGlobalData();
     const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     const handleToggleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const updates: Setting[] = [
