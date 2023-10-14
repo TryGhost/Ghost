@@ -12,8 +12,9 @@ const hasVariants = (theme: OfficialTheme) => theme.variants && theme.variants.l
 
 const getAllVariants = (theme: OfficialTheme) : ThemeVariant[] => {
     const variants = [{
-        image: theme.image,
-        category: theme.category
+        category: theme.category,
+        previewUrl: theme.previewUrl,
+        image: theme.image
     }];
 
     if (theme.variants && theme.variants.length > 0) {
@@ -59,6 +60,7 @@ const OfficialThemes: React.FC<{
                 {officialThemes.map((theme) => {
                     const showVariants = hasVariants(theme);
                     const variants = getAllVariants(theme);
+                    const isVariantLooping = variantLoopTheme === theme;
 
                     return (
                         <button key={theme.name} className='flex cursor-pointer flex-col gap-3 text-left' type='button' onClick={() => {
@@ -71,9 +73,8 @@ const OfficialThemes: React.FC<{
                                             <img
                                                 key={`theme-variant-${variant.category.toLowerCase()}`}
                                                 alt={`${theme.name} Theme - ${variant.category}`}
-                                                className={clsx('h-full w-full object-contain transition-opacity duration-500', {
-                                                    'opacity-100': idx === visibleVariantIdx,
-                                                    'opacity-0': idx !== visibleVariantIdx,
+                                                className={clsx('h-full w-full object-contain opacity-0 transition-opacity duration-500', {
+                                                    'opacity-100': idx === visibleVariantIdx && isVariantLooping || !isVariantLooping && idx === 0,
                                                     relative: idx === visibleVariantIdx,
                                                     absolute: idx !== visibleVariantIdx,
                                                     'left-0': idx !== visibleVariantIdx,
@@ -94,9 +95,8 @@ const OfficialThemes: React.FC<{
                                 <Heading level={4}>{theme.name}</Heading>
                                 {showVariants ?
                                     variants.map((variant, idx) => (
-                                        <span className={clsx('absolute left-0 translate-y-px text-sm text-grey-700', {
-                                            'opacity-100': idx === visibleVariantIdx,
-                                            'opacity-0': idx !== visibleVariantIdx
+                                        <span className={clsx('absolute left-0 translate-y-px text-sm text-grey-700 opacity-0', {
+                                            'opacity-100': idx === visibleVariantIdx && isVariantLooping || !isVariantLooping && idx === 0
                                         })}>{variant.category}</span>
                                     )) :
                                     <span className='text-sm text-grey-700'>{theme.category}</span>

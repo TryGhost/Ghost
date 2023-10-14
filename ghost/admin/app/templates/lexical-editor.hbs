@@ -123,11 +123,6 @@
         {{/if}}
     </button>
 
-    {{#if this.showReAuthenticateModal}}
-        <GhFullscreenModal @modal="re-authenticate"
-            @close={{this.toggleReAuthenticateModal}}
-            @modifier="action wide" />
-    {{/if}}
     {{#if this.showPostHistory}}
         <GhFullscreenModal
             @modal="post-history"

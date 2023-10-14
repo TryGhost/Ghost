@@ -1,6 +1,7 @@
 import type {NiceModalHocProps} from '@ebay/nice-modal-react';
 import type {RoutingModalProps} from '../RoutingProvider';
 
+import AboutModal from '../../settings/general/About';
 import AddIntegrationModal from '../../settings/advanced/integrations/AddIntegrationModal';
 import AddNewsletterModal from '../../settings/email/newsletters/AddNewsletterModal';
 import AddRecommendationModal from '../../settings/site/recommendations/AddRecommendationModal';
@@ -46,7 +47,8 @@ const modals = {
     UserDetailModal,
     ZapierModal,
     AnnouncementBarModal,
-    EmbedSignupFormModal
+    EmbedSignupFormModal,
+    AboutModal
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } satisfies {[key: string]: ModalComponent<any>};
 

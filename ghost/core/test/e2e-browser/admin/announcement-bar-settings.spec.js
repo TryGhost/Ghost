@@ -1,4 +1,5 @@
-const {expect, test} = require('@playwright/test');
+const {expect} = require('@playwright/test');
+const test = require('../fixtures/ghost-test');
 
 test.describe('Announcement Bar Settings', () => {
     test('Bar hidden by default', async ({page}) => {

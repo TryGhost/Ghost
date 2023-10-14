@@ -18,8 +18,16 @@ const officialThemes = [{
     ref: 'default',
     image: 'assets/img/themes/Source.png',
     variants: [
-        {image: 'assets/img/themes/Source-Magazine.png', category: 'Magazine'},
-        {image: 'assets/img/themes/Source-Newsletter.png', category: 'Newsletter'}
+        {
+            category: 'Magazine',
+            previewUrl: 'https://source-magazine.ghost.io/',
+            image: 'assets/img/themes/Source-Magazine.png'
+        },
+        {
+            category: 'Newsletter',
+            previewUrl: 'https://source-newsletter.ghost.io/',
+            image: 'assets/img/themes/Source-Newsletter.png'
+        }
     ]
 }, {
     name: 'Casper',
@@ -290,6 +298,7 @@ export default class AdminXSettings extends Component {
     @service router;
     @service membersUtils;
     @service themeManagement;
+    @service upgradeStatus;
 
     @inject config;
 
@@ -366,6 +375,11 @@ export default class AdminXSettings extends Component {
         }
 
         run(() => this.store.unloadAll(type));
+
+        if (dataType === 'TiersResponseType') {
+            // membersUtils has local state which needs to be updated
+            this.membersUtils.reload();
+        }
     };
 
     onDelete = (dataType, id) => {
@@ -428,6 +442,7 @@ export default class AdminXSettings extends Component {
                             onUpdate={this.onUpdate}
                             onInvalidate={this.onInvalidate}
                             onDelete={this.onDelete}
+                            upgradeStatus={this.upgradeStatus}
                         />
                     </Suspense>
                 </ErrorHandler>

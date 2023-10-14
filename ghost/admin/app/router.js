@@ -35,11 +35,6 @@ Router.map(function () {
 
     this.route('pages');
 
-    this.route('editor', {path: 'mobiledoc-editor'}, function () {
-        this.route('new', {path: ':type'});
-        this.route('edit', {path: ':type/:post_id'});
-    });
-
     this.route('lexical-editor', {path: 'editor'}, function () {
         this.route('new', {path: ':type'});
         this.route('edit', {path: ':type/:post_id'});

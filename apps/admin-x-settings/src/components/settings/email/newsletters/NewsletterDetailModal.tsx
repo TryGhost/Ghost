@@ -455,6 +455,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
                     onOk: (confirmModal) => {
                         confirmModal?.remove();
                         modal.remove();
+                        updateRoute('newsletters');
                     }
                 });
             }
