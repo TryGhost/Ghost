@@ -62,44 +62,6 @@ const codemirrorAssets = function () {
     return config;
 };
 
-const simplemdeAssets = function () {
-    let simplemdeFiles = [
-        'debug/simplemde.js'
-    ];
-
-    if (environment === 'test') {
-        return {import: simplemdeFiles};
-    }
-
-    let config = {};
-
-    config.public = {
-        include: simplemdeFiles,
-        destDir: '/',
-        processTree(tree) {
-            let jsTree = concat(tree, {
-                outputFile: 'assets/simplemde/simplemde.js',
-                inputFiles: ['debug/simplemde.js'],
-                sourceMapConfig: {enabled: false}
-            });
-
-            if (isProduction) {
-                jsTree = new Terser(jsTree);
-            }
-
-            let mergedTree = mergeTrees([tree, jsTree]);
-            return new Funnel(mergedTree, {include: ['assets/**/*']});
-        }
-    };
-
-    // put the files in vendor ready for importing into the test-support file
-    if (environment === 'development') {
-        config.vendor = simplemdeFiles;
-    }
-
-    return config;
-};
-
 let denylist = [];
 if (process.env.CI) {
     denylist.push('ember-cli-eslint');
@@ -173,8 +135,7 @@ module.exports = function (defaults) {
             enabled: false
         },
         nodeAssets: {
-            codemirror: codemirrorAssets(),
-            '@tryghost/kg-simplemde': simplemdeAssets()
+            codemirror: codemirrorAssets()
         },
         postcssOptions: {
             compile: {
@@ -223,8 +184,7 @@ module.exports = function (defaults) {
             strategy: 'inline',
             stripPath: false,
             sourceDirs: [
-                'public/assets/icons',
-                'lib/koenig-editor/public/icons'
+                'public/assets/icons'
             ],
             optimizer: {
                 plugins: [
@@ -268,24 +228,20 @@ module.exports = function (defaults) {
     app.import('node_modules/normalize.css/normalize.css');
 
     // 'dem Styles
-    // import codemirror + simplemde styles rather than lazy-loading so that
+    // import codemirror styles rather than lazy-loading so that
     // our overrides work correctly
     app.import('node_modules/codemirror/lib/codemirror.css');
     app.import('node_modules/codemirror/theme/xq-light.css');
-    app.import('node_modules/@tryghost/kg-simplemde/dist/simplemde.min.css');
 
     // 'dem Scripts
     app.import('node_modules/google-caja-bower/html-css-sanitizer-bundle.js');
     app.import('node_modules/keymaster/keymaster.js');
-    app.import('node_modules/@tryghost/mobiledoc-kit/dist/amd/mobiledoc-kit.js');
-    app.import('node_modules/@tryghost/mobiledoc-kit/dist/amd/mobiledoc-kit.map');
     app.import('node_modules/reframe.js/dist/noframe.js');
 
     // pull things we rely on via lazy-loading into the test-support.js file so
     // that tests don't break when running via http://localhost:4200/tests
     if (app.env === 'development') {
         app.import('vendor/codemirror/lib/codemirror.js', {type: 'test'});
-        app.import('vendor/@tryghost/kg-simplemde/debug/simplemde.js', {type: 'test'});
     }
 
     return app.toTree();

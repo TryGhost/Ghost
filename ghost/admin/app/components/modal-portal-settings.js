@@ -115,6 +115,10 @@ export default ModalComponent.extend({
         return !!visibleTiers?.length;
     }),
 
+    setTermsHtml: action((event) => {
+        this.settings.portalSignupTermsHtml = event.target.value;
+    }),
+
     init() {
         this._super(...arguments);
         this.buttonStyleOptions = [
@@ -261,10 +265,6 @@ export default ModalComponent.extend({
             } else {
                 this.settings.membersSupportAddress = supportAddress;
             }
-        },
-
-        setTermsHtml(html) {
-            this.settings.portalSignupTermsHtml = html;
         },
 
         toggleSignupCheckboxRequired(checked) {

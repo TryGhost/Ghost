@@ -23,13 +23,11 @@
                         {{on "click" uploader.triggerFileDialog}}
                         data-test-cover-img
                     >
-                    {{#if (feature 'lexicalEditor')}}
                     <KoenigImageEditor
                         @className="gh-setting-action-largeimg-delete gh-setting-action-largeimg-edit"
                         @imageSrc={{this.settings.coverImage}}
                         @saveImage={{fn this.saveImage uploader.setFiles}}
                     />
-                    {{/if}}
                     <button type="button" class="gh-setting-action-largeimg-delete" {{on "click" (fn this.update null)}} data-test-delete-image="coverImage">
                         {{svg-jar "trash" class="w4 h4"}}
                     </button>

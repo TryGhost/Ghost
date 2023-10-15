@@ -1,4 +1,5 @@
-const {expect, test} = require('@playwright/test');
+const {expect} = require('@playwright/test');
+const test = require('../fixtures/ghost-test');
 const {createMember, impersonateMember} = require('../utils');
 
 /**
@@ -22,7 +23,9 @@ const addNewsletter = async (page) => {
 
 test.describe('Portal', () => {
     test.describe('Member actions', () => {
-        test.describe.configure({retries: 1});
+        // Use serial mode as the order of tests matters, we create newsletters during the tests
+        // TODO: Use a `before` block to create all the requisite newsletters before the tests run
+        test.describe.configure({retries: 1, mode: 'serial'});
 
         test('can log out', async ({page}) => {
             // create a new free member

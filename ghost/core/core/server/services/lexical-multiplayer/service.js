@@ -93,7 +93,7 @@ module.exports = {
 
         _disable = async () => {
             logging.info('Stopping lexical multiplayer websockets service');
-            ghostServer.httpServer.off('upgrade', handleUpgrade);
+            ghostServer.httpServer?.off('upgrade', handleUpgrade);
 
             if (wss) {
                 _isClosing = true;
