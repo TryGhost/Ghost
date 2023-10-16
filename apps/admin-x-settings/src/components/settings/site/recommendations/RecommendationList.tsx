@@ -87,11 +87,8 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const tableHeader = (<><TableHead>Site</TableHead><TableHead colSpan={2}>Conversions from you</TableHead></>);
-
     if (isLoading || recommendations.length) {
         return <Table
-            header={tableHeader}
             hint={<span className='flex items-center gap-1'>Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link><Tooltip containerClassName='leading-none' content={copied ? 'Copied' : 'Copy link'} size='sm'><Button color='clear' hideLabel={true} icon={copied ? 'check-circle' : 'duplicate'} iconColorClass={copied ? 'text-green w-[14px] h-[14px]' : 'text-grey-600 hover:opacity-80 w-[14px] h-[14px]'} label={copied ? 'Copied' : 'Copy'} unstyled={true} onClick={copyRecommendationsUrl} /></Tooltip></span>}
             isLoading={isLoading}
             pagination={pagination}
