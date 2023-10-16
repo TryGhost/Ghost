@@ -59,7 +59,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     const apiKeysHint = (
-        <>Find your Mailgun API keys <Link href="https://app.mailgun.com/app/account/security/api_keys" rel="noopener noreferrer" target="_blank">here</Link></>
+        <>Find your Mailgun API keys <Link href="https://app.mailgun.com/settings/api_security" rel="noopener noreferrer" target="_blank">here</Link></>
     );
     const inputs = (
         <SettingGroupContent>
