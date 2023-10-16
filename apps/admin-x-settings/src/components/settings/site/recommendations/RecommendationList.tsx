@@ -7,7 +7,6 @@ import React, {useState} from 'react';
 import RecommendationIcon from './RecommendationIcon';
 import Table, {ShowMoreData} from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
-import TableHead from '../../../../admin-x-ds/global/TableHead';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import Tooltip from '../../../../admin-x-ds/global/Tooltip';
 import useRouting from '../../../../hooks/useRouting';
