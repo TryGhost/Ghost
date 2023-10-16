@@ -57,8 +57,8 @@ import {tracked} from '@glimmer/tracking';
 /**
  * @typedef PaidMembersByCadence
  * @type {Object}
- * @property {number} year Paid memebrs on annual plan
- * @property {number} month Paid memebrs on monthly plan
+ * @property {number} year Paid members on annual plan
+ * @property {number} month Paid members on monthly plan
  */
 
 /**

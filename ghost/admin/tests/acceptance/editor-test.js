@@ -169,9 +169,9 @@ describe('Acceptance: Editor', function () {
                 .to.match(/to be published\s+in (4|5) minutes/);
         });
 
-        it('shows author token input and allows changing of authors in PSM', async function () {
-            let adminRole = this.server.create('role', {name: 'Adminstrator'});
-            let authorRole = this.server.create('role', {name: 'Author'});
+        it('shows author token input and allows changing of '});
+            let authorRole = this.server.create('role', {name: 'Authauthors in PSM', async function () {
+            let adminRole = this.server.create('role', {name: 'Adminstratoror'});
             let user1 = this.server.create('user', {name: 'Primary', roles: [adminRole]});
             this.server.create('user', {name: 'Waldo', roles: [authorRole]});
             this.server.create('post', {authors: [user1]});
