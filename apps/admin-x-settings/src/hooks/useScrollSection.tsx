@@ -4,12 +4,16 @@ interface ScrollSectionContextData {
     updateSection: (id: string, element: HTMLDivElement) => void;
     updateNav: (id: string, element: HTMLLIElement) => void;
     currentSection: string | null;
+    updateNavigatedSection: (id: string) => void;
+    scrollToSection: (id: string) => void;
 }
 
 const ScrollSectionContext = createContext<ScrollSectionContextData>({
     updateSection: () => {},
     updateNav: () => {},
-    currentSection: null
+    currentSection: null,
+    updateNavigatedSection: () => {},
+    scrollToSection: () => {}
 });
 
 export const useScrollSectionContext = () => useContext(ScrollSectionContext);
@@ -63,51 +67,70 @@ const scrollSidebarNav = (navElement: HTMLLIElement, doneInitialScroll: boolean)
     }
 };
 
+const getIntersectingSections = (current: string[], entries: IntersectionObserverEntry[], sectionElements: Record<string, HTMLDivElement>) => {
+    const entriesWithId = entries.map(({isIntersecting, target}) => ({
+        isIntersecting,
+        id: Object.entries(sectionElements).find(([, element]) => element === target)?.[0]
+    })).filter(entry => entry.id) as {id: string; isIntersecting: boolean}[];
+
+    const newlyIntersectingIds = entriesWithId.filter(entry => !current.includes(entry.id) && entry.isIntersecting).map(entry => entry.id);
+    const unintersectingIds = entriesWithId.filter(entry => !entry.isIntersecting).map(entry => entry.id);
+
+    const newSections = current.filter(section => !unintersectingIds.includes(section)).concat(newlyIntersectingIds);
+
+    newSections.sort((first, second) => {
+        const firstElement = sectionElements[first];
+        const secondElement = sectionElements[second];
+
+        if (!firstElement || !secondElement) {
+            return 0;
+        }
+
+        return firstElement.getBoundingClientRect().top - secondElement.getBoundingClientRect().top;
+    });
+
+    return newSections;
+};
+
 export const ScrollSectionProvider: React.FC<{
-    navigatedSection: string;
     children: ReactNode;
-}> = ({navigatedSection, children}) => {
+}> = ({children}) => {
+    const [navigatedSection, _setNavigatedSection] = useState<string | null>(null);
     const sectionElements = useRef<Record<string, HTMLDivElement>>({});
+    const intersectionObserver = useRef<IntersectionObserver | null>(null);
     const [intersectingSections, setIntersectingSections] = useState<string[]>([]);
     const [lastIntersectedSection, setLastIntersectedSection] = useState<string | null>(null);
 
+    const [hasUpdatedNavigatedSection, setHasUpdatedNavigatedSection] = useState(false);
     const [doneInitialScroll, setDoneInitialScroll] = useState(false);
     const [, setDoneSidebarScroll] = useState(false);
 
+    const setNavigatedSection = useCallback((value: string) => {
+        _setNavigatedSection(value);
+        setHasUpdatedNavigatedSection(true);
+    }, []);
+
     const navElements = useRef<Record<string, HTMLLIElement>>({});
 
-    const intersectionObserver = useMemo(() => new IntersectionObserver((entries) => {
-        const entriesWithId = entries.map(({isIntersecting, target}) => ({
-            isIntersecting,
-            id: Object.entries(sectionElements.current).find(([, element]) => element === target)?.[0]
-        })).filter(entry => entry.id) as {id: string; isIntersecting: boolean}[];
+    const setupIntersectionObserver = useCallback(() => {
+        const observer = new IntersectionObserver((entries) => {
+            setIntersectingSections((sections) => {
+                const newSections = getIntersectingSections(sections, entries, sectionElements.current);
 
-        setIntersectingSections((sections) => {
-            const newlyIntersectingIds = entriesWithId.filter(entry => !sections.includes(entry.id) && entry.isIntersecting).map(entry => entry.id);
-            const unintersectingIds = entriesWithId.filter(entry => !entry.isIntersecting).map(entry => entry.id);
-
-            const newSections = sections.filter(section => !unintersectingIds.includes(section)).concat(newlyIntersectingIds);
-
-            newSections.sort((first, second) => {
-                const firstElement = sectionElements.current[first];
-                const secondElement = sectionElements.current[second];
-
-                if (!firstElement || !secondElement) {
-                    return 0;
+                if (newSections.length) {
+                    setLastIntersectedSection(newSections[0]);
                 }
 
-                return firstElement.getBoundingClientRect().top - secondElement.getBoundingClientRect().top;
+                return newSections;
             });
-
-            if (newSections.length) {
-                setLastIntersectedSection(newSections[0]);
-            }
-
-            return newSections;
+        }, {
+            rootMargin: `-${scrollMargin - 50}px 0px -40% 0px`
         });
-    }, {
-        rootMargin: `-${scrollMargin - 50}px 0px -40% 0px`
-    }), []);
+
+        Object.values(sectionElements.current).forEach(element => observer.observe(element));
+
+        return observer;
+    }, []);
 
     const updateSection = useCallback((id: string, element: HTMLDivElement) => {
         if (sectionElements.current[id] === element) {
@@ -115,11 +138,11 @@ export const ScrollSectionProvider: React.FC<{
         }
 
         if (sectionElements.current[id]) {
-            intersectionObserver.unobserve(sectionElements.current[id]);
+            intersectionObserver.current?.unobserve(sectionElements.current[id]);
         }
 
         sectionElements.current[id] = element;
-        intersectionObserver.observe(element);
+        intersectionObserver.current?.observe(element);
 
         if (!doneInitialScroll && id === navigatedSection) {
             scrollToSection(element, false);
@@ -129,6 +152,12 @@ export const ScrollSectionProvider: React.FC<{
 
     const updateNav = useCallback((id: string, element: HTMLLIElement) => {
         navElements.current[id] = element;
+    }, []);
+
+    const scrollTo = useCallback((id: string) => {
+        if (sectionElements.current[id]) {
+            scrollToSection(sectionElements.current[id], true);
+        }
     }, []);
 
     const currentSection = useMemo(() => {
@@ -144,28 +173,40 @@ export const ScrollSectionProvider: React.FC<{
     }, [intersectingSections, lastIntersectedSection, navigatedSection]);
 
     useEffect(() => {
+        if (!hasUpdatedNavigatedSection) {
+            return;
+        }
+
         if (navigatedSection && sectionElements.current[navigatedSection]) {
             setDoneInitialScroll((done) => {
                 scrollToSection(sectionElements.current[navigatedSection], done);
                 return true;
             });
+        } else {
+            // No navigated section means opening settings without a path
+            setDoneInitialScroll(true);
         }
-    }, [navigatedSection]);
+
+        // Wait for the initial scroll so that the intersecting sections are correct
+        setTimeout(() => setupIntersectionObserver());
+    }, [hasUpdatedNavigatedSection, navigatedSection, setupIntersectionObserver]);
 
     useEffect(() => {
-        if (currentSection && navElements.current[currentSection]) {
+        if (hasUpdatedNavigatedSection && currentSection && navElements.current[currentSection]) {
             setDoneSidebarScroll((done) => {
                 scrollSidebarNav(navElements.current[currentSection], done);
                 return true;
             });
         }
-    }, [currentSection]);
+    }, [hasUpdatedNavigatedSection, currentSection]);
 
     return (
         <ScrollSectionContext.Provider value={{
             updateSection,
             updateNav,
-            currentSection
+            currentSection,
+            updateNavigatedSection: setNavigatedSection,
+            scrollToSection: scrollTo
         }}>
             {children}
         </ScrollSectionContext.Provider>

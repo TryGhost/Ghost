@@ -8,6 +8,7 @@ import {DefaultHeaderTypes} from './unsplash/UnsplashTypes';
 import {FetchKoenigLexical, OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {ScrollSectionProvider} from './hooks/useScrollSection';
 import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
 import {Toaster} from 'react-hot-toast';
 import {UpgradeStatusType} from './utils/globalTypes';
@@ -51,22 +52,24 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
             <QueryClientProvider client={queryClient}>
                 <ServicesProvider fetchKoenigLexical={fetchKoenigLexical} ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} unsplashConfig={unsplashConfig} upgradeStatus={upgradeStatus} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
                     <GlobalDataProvider>
-                        <RoutingProvider externalNavigate={externalNavigate}>
-                            <GlobalDirtyStateProvider>
-                                <DesignSystemProvider>
-                                    <div className={appClassName} id="admin-x-root" style={{
-                                        height: '100vh',
-                                        width: '100%'
-                                    }}
-                                    >
-                                        <Toaster />
-                                        <NiceModal.Provider>
-                                            <MainContent />
-                                        </NiceModal.Provider>
-                                    </div>
-                                </DesignSystemProvider>
-                            </GlobalDirtyStateProvider>
-                        </RoutingProvider>
+                        <ScrollSectionProvider>
+                            <RoutingProvider externalNavigate={externalNavigate}>
+                                <GlobalDirtyStateProvider>
+                                    <DesignSystemProvider>
+                                        <div className={appClassName} id="admin-x-root" style={{
+                                            height: '100vh',
+                                            width: '100%'
+                                        }}
+                                        >
+                                            <Toaster />
+                                            <NiceModal.Provider>
+                                                <MainContent />
+                                            </NiceModal.Provider>
+                                        </div>
+                                    </DesignSystemProvider>
+                                </GlobalDirtyStateProvider>
+                            </RoutingProvider>
+                        </ScrollSectionProvider>
                     </GlobalDataProvider>
                 </ServicesProvider>
             </QueryClientProvider>
