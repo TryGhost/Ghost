@@ -55,7 +55,8 @@ const privateBlogging = {
             name: 'ghost-private',
             maxAge: constants.ONE_MONTH_MS,
             signed: false,
-            sameSite: 'none'
+            sameSite: urlUtils.isSSL(config.get('url')) ? 'none' : 'lax',
+            secure: urlUtils.isSSL(config.get('url'))
         })(req, res, next);
     },
 
