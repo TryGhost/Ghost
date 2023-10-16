@@ -36,11 +36,11 @@
                         <figure style="margin:0 0 1.5em;padding:0;width:100%;">
                           <a style="display:flex;min-height:110px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;background:#F9F9FA;border-radius:3px;border:1px solid #F9F9FA;color:#15171a;text-decoration:none" href="{{recommendation.url}}">
                             <div style="display:inline-block; width:100%; padding:20px">
-                              <div style="display:flex;color:#15212a;font-size:13px;font-weight:400">
-                                {{#if recommendation.favicon}}<img style="border:none;max-width:100%;margin-right:8px;width:20px;height:20px" src="{{recommendation.favicon}}" alt="">{{/if}}
+                              <div style="color:#15212a;font-size:13px;font-weight:400">
+                                {{#if recommendation.favicon}}<img style="border:none;max-width:100%;margin-right:8px;margin-bottom:8px;width:20px;height:20px" src="{{recommendation.favicon}}" alt="">{{/if}}
                                 <div style="color:#15212a;font-size:16px;line-height:1.3em;font-weight:600">{{recommendation.title}}</div>
                               </div>
-                              <div class="kg-bookmark-description" style="display:-webkit-box;overflow-y:hidden;margin-top:12px;max-height:40px;color:#738a94;font-size:13px;line-height:1.5em;font-weight:400;-webkit-line-clamp: 2; -webkit-box-orient: vertical;">{{recommendation.excerpt}}</div>
+                              <div class="kg-bookmark-description" style="display:-webkit-box;overflow-y:hidden;margin-top:6px;max-height:40px;color:#738a94;font-size:13px;line-height:1.5em;font-weight:400;-webkit-line-clamp: 2; -webkit-box-orient: vertical;">{{recommendation.excerpt}}</div>
                             </div>
                             {{#if recommendation.featuredImage}}
                               <div style="min-width: 140px; max-width: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; border-radius: 0 2px 2px 0;background-image: url('{{recommendation.featuredImage}}')" class="new-mention-thumbnail">

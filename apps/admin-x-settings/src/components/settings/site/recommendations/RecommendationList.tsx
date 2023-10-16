@@ -39,7 +39,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     const isGhostSite = recommendation.one_click_subscribe;
     const showSubscribers = isGhostSite && !!recommendation.count?.subscribers;
     const count = (showSubscribers ? recommendation.count?.subscribers : recommendation.count?.clicks) || 0;
-    const newMembers = count === 1 ? 'new member' : 'new members';
+    const newMembers = count === 1 ? 'signup' : 'signups';
     const clicks = count === 1 ? 'click' : 'clicks';
 
     return (
@@ -60,8 +60,8 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                 </div>)}
             </TableCell>
             <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                {(count === 0) ? (null) : (<div className='-mt-px items-end gap-1 text-left'>
-                    <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{showSubscribers ? newMembers : clicks}</span>
+                {(count === 0) ? (null) : (<div className=''>
+                    <span className='min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{showSubscribers ? newMembers : clicks}</span><span className='whitespace-nowrap text-left text-sm lowercase text-grey-700 opacity-0 transition-opacity group-hover/table-row:opacity-100'> from you</span>
                 </div>)}
             </TableCell>
         </TableRow>
