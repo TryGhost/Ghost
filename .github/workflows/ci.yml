@@ -332,7 +332,7 @@ jobs:
       if: always()
       with:
         name: browser-tests-playwright-report
-        path: ${{ github.workspace }}/ghost/core/playwright-report
+        path: ghost/core/playwright-report
         retention-days: 30
 
   job_unit-tests:
