@@ -255,4 +255,80 @@ test.describe('Paste behaviour', async () => {
             `);
         });
     });
+
+    test.describe('Invalid nesting', function () {
+        // if we have inline elements converting to block elements such as Google Docs
+        // spans converting to headings then we need to make sure we don't end up with
+        // invalid nesting in the editor
+
+        test('paragraphs containing Google Docs heading span at start', async function () {
+            const copiedHtml = `<p><span style="font-size: 26pt">Nested heading</span> Text after</p>`;
+
+            await focusEditor(page);
+            await pasteHtml(page, copiedHtml);
+
+            await assertHTML(page, html`
+                <h1 dir="ltr">
+                    <span data-lexical-text="true">Nested heading</span>
+                </h1>
+                <p dir="ltr">
+                    <span data-lexical-text="true">Text after</span>
+                </p>
+            `);
+        });
+
+        test('paragraphs containing Google Docs heading span at end', async function () {
+            const copiedHtml = `<p>Paragraph <strong>with</strong> <em>elements</em><span style="font-size: 26pt">Nested heading</span></p>`;
+
+            await focusEditor(page);
+            await pasteHtml(page, copiedHtml);
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">Paragraph</span>
+                    <strong data-lexical-text="true">with</strong>
+                    <span data-lexical-text="true"></span>
+                    <em data-lexical-text="true">elements</em>
+                </p>
+                <h1 dir="ltr">
+                    <span data-lexical-text="true">Nested heading</span>
+                </h1>
+            `);
+        });
+
+        test('paragraphs containing Google Docs heading span in middle', async function () {
+            const copiedHtml = `<p>Text before <span style="font-size: 26pt">Nested heading</span> Text after</p>`;
+
+            await focusEditor(page);
+            await pasteHtml(page, copiedHtml);
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">Text before</span>
+                </p>
+                <h1 dir="ltr">
+                    <span data-lexical-text="true">Nested heading</span>
+                </h1>
+                <p dir="ltr">
+                    <span data-lexical-text="true">Text after</span>
+                </p>
+            `);
+        });
+
+        test('headings containing Google Docs title span', async function () {
+            const copiedHtml = `<h2>Normal H2 <span style="font-size: 26pt">Nested Google heading</span></h2>`;
+
+            await focusEditor(page);
+            await pasteHtml(page, copiedHtml);
+
+            await assertHTML(page, html`
+                <h2 dir="ltr">
+                    <span data-lexical-text="true">Normal H2</span>
+                </h2>
+                <h1 dir="ltr">
+                    <span data-lexical-text="true">Nested Google heading</span>
+                </h1>
+            `);
+        });
+    });
 });
