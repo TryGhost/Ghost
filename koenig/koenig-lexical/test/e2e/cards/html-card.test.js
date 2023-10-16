@@ -46,7 +46,40 @@ test.describe('Html card', async () => {
                     </div>
                 </div>
             </div>
-        `);
+        `, {ignoreCardContents: false});
+    });
+
+    test('renders without style elements and attributes', async function () {
+        await page.evaluate(() => {
+            const serializedState = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'html',
+                        html: '<div id="fullscreen"><span style="fullscreen-inner">Loading...</span></div><style>.fullscreen {position: fixed;}</style>'
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+            const editor = window.lexicalEditor;
+            const editorState = editor.parseEditorState(serializedState);
+            editor.setEditorState(editorState);
+        });
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div><svg></svg></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="html">
+                    <div>
+                        <div><div><span>Loading...</span></div></div>
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        `, {ignoreCardContents: false, ignoreInlineStyles: false});
     });
 
     test('renders html card node from slash entry', async function () {
