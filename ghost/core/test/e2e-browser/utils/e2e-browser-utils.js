@@ -333,7 +333,7 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
     // Wait for the "Saved" button, ensures that next clicks don't trigger the unsaved work modal
     await page.getByRole('button', {name: 'Saved'}).waitFor({
         state: 'visible',
-        timeout: 1000
+        timeout: 10000
     });
     await page.locator('.gh-nav a[href="#/offers/"]').click();
 
