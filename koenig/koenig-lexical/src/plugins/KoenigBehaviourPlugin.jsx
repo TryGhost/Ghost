@@ -1066,7 +1066,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 anchor.offset === anchorNode.getChildrenSize()
                             ) || (
                                 anchor.type === 'text' &&
-                                anchor.offset === anchorNode.getTextContentSize()
+                                anchor.offset === anchorNode.getTextContentSize() &&
+                                anchor.getNode().getParent().getLastChild().is(anchor.getNode())
                             ));
 
                             if (atEndOfNode && $isDecoratorNode(nextSibling)) {

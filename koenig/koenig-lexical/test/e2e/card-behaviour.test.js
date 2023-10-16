@@ -1206,6 +1206,54 @@ test.describe('Card behaviour', async () => {
                 <p dir="ltr"><span data-lexical-text="true">First paragraphSecond paragraph</span></p>
             `);
         });
+
+        test('at start of formatted text in paragraph before card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('Before ');
+            await page.keyboard.press(`${ctrlOrCmd()}+i`);
+            await page.keyboard.type('italic');
+            await page.keyboard.press(`${ctrlOrCmd()}+i`);
+            await page.keyboard.type(' after');
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('---');
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">Before </span>
+                    <em data-lexical-text="true">italic</em>
+                    <span data-lexical-text="true"> after</span>
+                </p>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
+                    </div>
+                </div>
+                <p><br></p>
+            `, {ignoreCardContents: true});
+
+            await page.locator('em').click({position: {x: 0, y: 0}});
+
+            await assertSelection(page, {
+                anchorOffset: 7,
+                anchorPath: [0, 0, 0],
+                focusOffset: 7,
+                focusPath: [0, 0, 0]
+            });
+
+            await page.keyboard.press('Delete');
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">Before </span>
+                    <em data-lexical-text="true">talic</em>
+                    <span data-lexical-text="true"> after</span>
+                </p>
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
+                    </div>
+                </div>
+                <p><br></p>
+            `, {ignoreCardContents: true});
+        });
     });
 
     // this behaviour changes between mac and windows
