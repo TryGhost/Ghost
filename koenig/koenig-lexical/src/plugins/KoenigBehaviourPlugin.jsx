@@ -50,9 +50,10 @@ import {
     $selectDecoratorNode,
     getTopLevelNativeElement
 } from '../utils/';
-import {$isKoenigCard, ImageNode} from '@tryghost/kg-default-nodes';
+import {$isKoenigCard, ExtendedHeadingNode, ImageNode} from '@tryghost/kg-default-nodes';
 import {$isListItemNode, $isListNode, INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, ListNode} from '@lexical/list';
 import {$setBlocksType} from '@lexical/selection';
+import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin.jsx';
 import {mergeRegister} from '@lexical/utils';
 import {shouldIgnoreEvent} from '../utils/shouldIgnoreEvent';
@@ -1369,12 +1370,26 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
     // strip text-align formats that can arrive when pasting from external sources
     // we don't support text alignment in Koenig
     React.useEffect(() => {
+        function stripAlignmentStyle(node) {
+            // on element nodes format===text-align in Lexical
+            if (node.getFormatType() !== '') {
+                node.setFormat('');
+            }
+        }
+
+        function registerStripAlignmentTransform(nodeType) {
+            if (editor.hasNodes([nodeType])) {
+                return editor.registerNodeTransform(nodeType, stripAlignmentStyle);
+            }
+
+            return () => {};
+        }
+
         return mergeRegister(
-            editor.registerNodeTransform(ParagraphNode, (node) => {
-                if (node.getFormatType() !== '') {
-                    node.setFormat('');
-                }
-            })
+            registerStripAlignmentTransform(ParagraphNode),
+            registerStripAlignmentTransform(HeadingNode),
+            registerStripAlignmentTransform(ExtendedHeadingNode),
+            registerStripAlignmentTransform(QuoteNode)
         );
     }, [editor]);
 

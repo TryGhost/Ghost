@@ -147,10 +147,50 @@ test.describe('Paste behaviour', async () => {
         });
     });
 
-    test.describe('Text align', function () {
+    test.describe('Styles', function () {
         test('text alignment styles are stripped from paragraphs on paste', async function () {
             await focusEditor(page);
             await pasteHtml(page, '<p style="text-align: center">Testing</p>');
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">Testing</span>
+                </p>
+            `, {ignoreClasses: false, ignoreInlineStyles: false});
+        });
+
+        test('text alignment styles are stripped from headings on paste', async function () {
+            await focusEditor(page);
+            await pasteHtml(page, '<h1 style="text-align: center">Testing</h1>');
+
+            await assertHTML(page, html`
+                <h1 dir="ltr"><span data-lexical-text="true">Testing</span></h1>
+            `, {ignoreClasses: false, ignoreInlineStyles: false});
+        });
+
+        test('text alignment styles are stripped from quotes on paste', async function () {
+            await focusEditor(page);
+            await pasteHtml(page, '<blockquote style="text-align: center">Testing</blockquote>');
+
+            await assertHTML(page, html`
+                <blockquote dir="ltr"><span data-lexical-text="true">Testing</span></blockquote>
+            `, {ignoreClasses: false, ignoreInlineStyles: false});
+        });
+
+        test('text alignment styles are not copied over for lists on paste', async function () {
+            await focusEditor(page);
+            await pasteHtml(page, '<ul style="text-align: center"><li style="text-align: center">Testing</li></ul>');
+
+            await assertHTML(page, html`
+                <ul>
+                    <li value="1" dir="ltr"><span data-lexical-text="true">Testing</span></li>
+                </ul>
+            `, {ignoreClasses: false, ignoreInlineStyles: false});
+        });
+
+        test('text format styles are not copied over on paste', async function () {
+            await focusEditor(page);
+            await pasteHtml(page, '<p style="color: red"><span style="color: red">Testing</span></p>');
 
             await assertHTML(page, html`
                 <p dir="ltr">
