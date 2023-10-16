@@ -1,4 +1,4 @@
-import {apiUrl, useFetchApi} from '../utils/apiRequests';
+import {apiUrl, useFetchApi} from '../utils/api/hooks';
 
 export type OembedResponse = {
     metadata: {
@@ -23,10 +23,17 @@ export const useGetOembed = () => {
     return {
         async query(searchParams: OembedRequest) {
             const url = apiUrl(path, searchParams);
-            const result = await fetchApi(url, {
-                method: 'GET'
-            });
-            return result as OembedResponse;
+            try {
+                const result = await fetchApi(url, {
+                    method: 'GET',
+                    timeout: 5000
+                });
+                return result as OembedResponse;
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.error(e);
+                return null;
+            }
         }
     };
 };

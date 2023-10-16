@@ -9,6 +9,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 import {confirmIfDirty} from '../../../utils/modals';
 import {currencySelectGroups, getSymbol, validateCurrencyAmount} from '../../../utils/currency';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -75,9 +76,9 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 <Heading level={6}>Shareable link &mdash;</Heading>
                                 <button className='text-2xs font-semibold uppercase tracking-wider text-green' type="button" onClick={openPreview}>Preview</button>
                             </div>
-                            <div className='w-100 group relative -m-1 mt-0 overflow-hidden rounded p-1 hover:bg-grey-50'>
+                            <div className='w-100 group relative -m-1 mt-0 overflow-hidden rounded p-1 hover:bg-grey-50 dark:hover:bg-grey-900'>
                                 {donateUrl}
-                                <div className='invisible absolute right-0 top-[50%] flex translate-y-[-50%] gap-1 bg-white pl-1 group-hover:visible'>
+                                <div className='invisible absolute right-0 top-[50%] flex translate-y-[-50%] gap-1 bg-white pl-1 group-hover:visible dark:bg-black'>
                                     <Button color='outline' label={copied ? 'Copied' : 'Copy'} size='sm' onClick={copyDonateUrl} />
                                 </div>
                             </div>
@@ -98,10 +99,14 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 rightPlaceholder={(
                     <Select
                         border={false}
+                        containerClassName='w-14'
+                        fullWidth={false}
                         options={currencySelectGroups()}
-                        selectClassName='w-auto'
-                        selectedOption={donationsCurrency}
-                        onSelect={currency => updateSetting('donations_currency', currency)}
+                        selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === donationsCurrency)}
+                        title='Currency'
+                        hideTitle
+                        isSearchable
+                        onSelect={option => updateSetting('donations_currency', option?.value || 'USD')}
                     />
                 )}
                 title='Suggested amount'
@@ -131,4 +136,4 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default TipsOrDonations;
+export default withErrorBoundary(TipsOrDonations, 'Tips or donations');

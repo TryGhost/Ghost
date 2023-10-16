@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing TZ=UTC c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing TZ=UTC c8 --all --check-coverage --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
     "test": "yarn test:unit",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
@@ -25,7 +25,7 @@
     "@types/sinon": "10.0.16",
     "c8": "8.0.1",
     "knex": "2.4.2",
-    "luxon": "3.4.2",
+    "luxon": "3.4.3",
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "15.2.0",

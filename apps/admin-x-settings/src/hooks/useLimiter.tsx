@@ -1,9 +1,10 @@
-import LimitService from '@tryghost/limit-service';
 import useStaffUsers from './useStaffUsers';
 import {useBrowseMembers} from '../api/members';
 import {useBrowseNewsletters} from '../api/newsletters';
+import {useEffect, useMemo, useState} from 'react';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
-import {useMemo} from 'react';
+
+const limitServiceImport = import('@tryghost/limit-service');
 
 export class LimitError extends Error {
     public readonly errorType: string;
@@ -48,6 +49,11 @@ interface LimiterLimits {
 
 export const useLimiter = () => {
     const {config} = useGlobalData();
+    const [LimitService, setLimitService] = useState<typeof import('@tryghost/limit-service') | null>(null);
+
+    useEffect(() => {
+        limitServiceImport.then(exports => setLimitService(() => exports.default));
+    }, []);
 
     const {users, contributorUsers, invites, isLoading} = useStaffUsers();
     const {refetch: fetchMembers} = useBrowseMembers({
@@ -55,7 +61,7 @@ export const useLimiter = () => {
         enabled: false
     });
     const {refetch: fetchNewsletters} = useBrowseNewsletters({
-        searchParams: {filter: 'status:active', limit: 'all'},
+        searchParams: {filter: 'status:active', limit: '1'},
         enabled: false
     });
 
@@ -68,16 +74,17 @@ export const useLimiter = () => {
     }, [config.hostSettings?.billing]);
 
     return useMemo(() => {
-        const limits = config.hostSettings?.limits as LimiterLimits;
-
-        if (!limits || isLoading) {
+        if (!LimitService || !config.hostSettings?.limits || isLoading) {
             return;
         }
 
+        const limits = {...config.hostSettings.limits} as LimiterLimits;
         const limiter = new LimitService();
 
         if (limits.staff) {
             limits.staff.currentCountQuery = async () => {
+                // useStaffUsers will only return the first 100 users by default, but we can assume
+                // that either there's no limit or the limit is <100
                 const staffUsers = users.filter(u => u.status !== 'inactive' && !contributorUsers.includes(u));
                 const staffInvites = invites.filter(i => i.role !== 'Contributor');
 
@@ -94,8 +101,8 @@ export const useLimiter = () => {
 
         if (limits.newsletters) {
             limits.newsletters.currentCountQuery = async () => {
-                const {data: {newsletters} = {newsletters: []}} = await fetchNewsletters();
-                return newsletters?.length || 0;
+                const {data: {pages} = {pages: []}} = await fetchNewsletters();
+                return pages[0].meta?.pagination.total || 0;
             };
         }
 
@@ -114,5 +121,5 @@ export const useLimiter = () => {
             errorIfWouldGoOverLimit: (limitName: string, metadata: Record<string, unknown> = {}): Promise<void> => limiter.errorIfWouldGoOverLimit(limitName, metadata),
             errorIfIsOverLimit: (limitName: string): Promise<void> => limiter.errorIfIsOverLimit(limitName)
         };
-    }, [config.hostSettings?.limits, contributorUsers, fetchMembers, fetchNewsletters, helpLink, invites, isLoading, users]);
+    }, [LimitService, config.hostSettings?.limits, contributorUsers, fetchMembers, fetchNewsletters, helpLink, invites, isLoading, users]);
 };

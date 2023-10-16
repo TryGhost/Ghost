@@ -51,6 +51,18 @@ export const WithHint: Story = {
     }
 };
 
+export const Monospace: Story = {
+    render: function Component(args) {
+        const [, updateArgs] = useArgs();
+        return <TextArea {...args} onChange={e => updateArgs({value: e.target.value})} />;
+    },
+    args: {
+        title: 'Code',
+        fontStyle: 'mono',
+        value: `<html><body><h1>✨</h1></body></html>`
+    }
+};
+
 export const Resizeable: Story = {
     args: {
         title: 'Description',

@@ -1,5 +1,6 @@
-import Button from '../../../admin-x-ds/global/Button';
+import ChangePasswordForm from './users/ChangePasswordForm';
 import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
+import EmailNotifications from './users/EmailNotifications';
 import Heading from '../../../admin-x-ds/global/Heading';
 import Icon from '../../../admin-x-ds/global/Icon';
 import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
@@ -7,442 +8,50 @@ import LimitModal from '../../../admin-x-ds/global/modal/LimitModal';
 import Menu, {MenuItem} from '../../../admin-x-ds/global/Menu';
 import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import Radio from '../../../admin-x-ds/global/form/Radio';
-import React, {useEffect, useRef, useState} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/form/TextField';
-import Toggle from '../../../admin-x-ds/global/form/Toggle';
-import useFeatureFlag from '../../../hooks/useFeatureFlag';
+import ProfileBasics from './users/ProfileBasics';
+import ProfileDetails from './users/ProfileDetails';
+import React, {useCallback, useEffect, useState} from 'react';
+import StaffToken from './users/StaffToken';
+import clsx from 'clsx';
+import useHandleError from '../../../utils/api/handleError';
+import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {User, isAdminUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner, useUpdatePassword} from '../../../api/users';
+import {RoutingModalProps} from '../../providers/RoutingProvider';
+import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '../../../api/users';
 import {getImageUrl, useUploadImage} from '../../../api/images';
+import {getSettingValues} from '../../../api/settings';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
-import {useBrowseRoles} from '../../../api/roles';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 
-interface CustomHeadingProps {
-    children?: React.ReactNode;
-}
-
-interface UserDetailProps {
+export interface UserDetailProps {
     user: User;
-    setUserData?: (user: User) => void;
-    errors?: {
-        name?: string;
-        url?: string;
-        email?: string;
-    };
-    validators?: {
-        name: (name: string) => boolean,
-        email: (email: string) => boolean,
-        url: (url: string) => boolean
-    }
-}
-
-const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
-    return (
-        <Heading level={4}>{children}</Heading>
-    );
-};
-
-const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
-    const {data: {roles} = {}} = useBrowseRoles();
-
-    if (isOwnerUser(user)) {
-        return (
-            <>
-                <Heading level={6}>Role</Heading>
-                <div className='flex h-[295px] flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-20 text-center text-sm text-grey-800'>
-                    <Icon colorClass='text-grey-800' name='crown' size='lg' />
-                    This user is the owner of the site. To change their role, you need to transfer the ownership first.
-                </div>
-            </>
-        );
-    }
-
-    return (
-        <Radio
-            id='role'
-            options={[
-                {
-                    hint: 'Can create and edit their own posts, but cannot publish. An Editor needs to approve and publish for them.',
-                    label: 'Contributor',
-                    value: 'contributor'
-                },
-                {
-                    hint: 'A trusted user who can create, edit and publish their own posts, but can’t modify others.',
-                    label: 'Author',
-                    value: 'author'
-                },
-                {
-                    hint: 'Can invite and manage other Authors and Contributors, as well as edit and publish any posts on the site.',
-                    label: 'Editor',
-                    value: 'editor'
-                },
-                {
-                    hint: 'Trusted staff user who should be able to manage all content and users, as well as site settings and options.',
-                    label: 'Administrator',
-                    value: 'administrator'
-                }
-            ]}
-            selectedOption={user.roles[0].name.toLowerCase()}
-            title="Role"
-            onSelect={(value) => {
-                const role = roles?.find(r => r.name.toLowerCase() === value.toLowerCase());
-                if (role) {
-                    setUserData?.({...user, roles: [role]});
-                }
-            }}
-        />
-    );
-};
-
-const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
-    return (
-        <SettingGroupContent>
-            <TextField
-                error={!!errors?.name}
-                hint={errors?.name || 'Use real name so people can recognize you'}
-                title="Full name"
-                value={user.name}
-                onBlur={(e) => {
-                    validators?.name(e.target.value);
-                }}
-                onChange={(e) => {
-                    setUserData?.({...user, name: e.target.value});
-                }}
-            />
-            <TextField
-                error={!!errors?.email}
-                hint={errors?.email || ''}
-                title="Email"
-                value={user.email}
-                onBlur={(e) => {
-                    validators?.email(e.target.value);
-                }}
-                onChange={(e) => {
-                    setUserData?.({...user, email: e.target.value});
-                }}
-            />
-            <RoleSelector setUserData={setUserData} user={user} />
-        </SettingGroupContent>
-    );
-};
-
-const Basic: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
-    return (
-        <SettingGroup
-            border={false}
-            customHeader={<CustomHeader>Basic info</CustomHeader>}
-            title='Basic'
-        >
-            <BasicInputs errors={errors} setUserData={setUserData} user={user} validators={validators} />
-        </SettingGroup>
-    );
-};
-
-const DetailsInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
-    return (
-        <SettingGroupContent>
-            <TextField
-                hint="https://example.com/author"
-                title="Slug"
-                value={user.slug}
-                onChange={(e) => {
-                    setUserData?.({...user, slug: e.target.value});
-                }}
-            />
-            <TextField
-                title="Location"
-                value={user.location}
-                onChange={(e) => {
-                    setUserData?.({...user, location: e.target.value});
-                }}
-            />
-            <TextField
-                error={!!errors?.url}
-                hint={errors?.url || ''}
-                title="Website"
-                value={user.website}
-                onBlur={(e) => {
-                    validators?.url(e.target.value);
-                }}
-                onChange={(e) => {
-                    setUserData?.({...user, website: e.target.value});
-                }}
-            />
-            <TextField
-                title="Facebook profile"
-                value={user.facebook}
-                onChange={(e) => {
-                    setUserData?.({...user, facebook: e.target.value});
-                }}
-            />
-            <TextField
-                title="Twitter profile"
-                value={user.twitter}
-                onChange={(e) => {
-                    setUserData?.({...user, twitter: e.target.value});
-                }}
-            />
-            <TextField
-                hint="Recommended: 200 characters."
-                title="Bio"
-                value={user.bio}
-                onChange={(e) => {
-                    setUserData?.({...user, bio: e.target.value});
-                }}
-            />
-        </SettingGroupContent>
-    );
-};
-
-const Details: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
-    return (
-        <SettingGroup
-            border={false}
-            customHeader={<CustomHeader>Details</CustomHeader>}
-            title='Details'
-        >
-            <DetailsInputs errors={errors} setUserData={setUserData} user={user} validators={validators} />
-        </SettingGroup>
-    );
-};
-
-const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
-    const hasWebmentions = useFeatureFlag('webmentions');
-
-    return (
-        <SettingGroupContent>
-            <Toggle
-                checked={user.comment_notifications}
-                direction='rtl'
-                hint='Every time a member comments on one of your posts'
-                label='Comments'
-                onChange={(e) => {
-                    setUserData?.({...user, comment_notifications: e.target.checked});
-                }}
-            />
-            {hasWebmentions && <Toggle
-                checked={user.mention_notifications}
-                direction='rtl'
-                hint='Every time another site links to your work'
-                label='Mentions'
-                onChange={(e) => {
-                    setUserData?.({...user, mention_notifications: e.target.checked});
-                }}
-            />}
-            <Toggle
-                checked={user.free_member_signup_notification}
-                direction='rtl'
-                hint='Every time a new free member signs up'
-                label='New signups'
-                onChange={(e) => {
-                    setUserData?.({...user, free_member_signup_notification: e.target.checked});
-                }}
-            />
-            <Toggle
-                checked={user.paid_subscription_started_notification}
-                direction='rtl'
-                hint='Every time a member starts a new paid subscription'
-                label='New paid members'
-                onChange={(e) => {
-                    setUserData?.({...user, paid_subscription_started_notification: e.target.checked});
-                }}
-            />
-            <Toggle
-                checked={user.paid_subscription_canceled_notification}
-                direction='rtl'
-                hint='Every time a member cancels their paid subscription'
-                label='Paid member cancellations'
-                onChange={(e) => {
-                    setUserData?.({...user, paid_subscription_canceled_notification: e.target.checked});
-                }}
-            />
-            <Toggle
-                checked={user.milestone_notifications}
-                direction='rtl'
-                hint='Occasional summaries of your audience & revenue growth'
-                label='Milestones'
-                onChange={(e) => {
-                    setUserData?.({...user, milestone_notifications: e.target.checked});
-                }}
-            />
-        </SettingGroupContent>
-    );
-};
-
-const EmailNotifications: React.FC<UserDetailProps> = ({user, setUserData}) => {
-    return (
-        <SettingGroup
-            border={false}
-            customHeader={<CustomHeader>Email notifications</CustomHeader>}
-            title='Email notifications'
-
-        >
-            <EmailNotificationsInputs setUserData={setUserData} user={user} />
-        </SettingGroup>
-    );
-};
-
-function passwordValidation({password, confirmPassword}: {password: string; confirmPassword: string}) {
-    const errors: {
-        newPassword?: string;
-        confirmNewPassword?: string;
-    } = {};
-    if (password !== confirmPassword) {
-        errors.newPassword = 'Your new passwords do not match';
-        errors.confirmNewPassword = 'Your new passwords do not match';
-    }
-    if (password.length < 10) {
-        errors.newPassword = 'Password must be at least 10 characters';
-    }
-
-    //ToDo: add more validations
-
-    return errors;
-}
-
-const Password: React.FC<UserDetailProps> = ({user}) => {
-    const [editPassword, setEditPassword] = useState(false);
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmNewPassword, setConfirmNewPassword] = useState('');
-    const [saveState, setSaveState] = useState<'saving'|'saved'|'error'|''>('');
-    const [errors, setErrors] = useState<{
-        newPassword?: string;
-        confirmNewPassword?: string;
-    }>({});
-    const newPasswordRef = useRef<HTMLInputElement>(null);
-    const confirmNewPasswordRef = useRef<HTMLInputElement>(null);
-
-    const {mutateAsync: updatePassword} = useUpdatePassword();
-
-    useEffect(() => {
-        if (saveState === 'saved') {
-            setTimeout(() => {
-                setSaveState('');
-                setEditPassword(false);
-            }, 2500);
-        }
-    }, [saveState]);
-
-    const showPasswordInputs = () => {
-        setEditPassword(true);
-    };
-
-    const view = (
-        <Button
-            color='grey'
-            label='Change password'
-            onClick={showPasswordInputs}
-        />
-    );
-    let buttonLabel = 'Change password';
-    if (saveState === 'saving') {
-        buttonLabel = 'Updating...';
-    } else if (saveState === 'saved') {
-        buttonLabel = 'Updated';
-    } else if (saveState === 'error') {
-        buttonLabel = 'Retry';
-    }
-    const form = (
-        <>
-            <TextField
-                error={!!errors.newPassword}
-                hint={errors.newPassword}
-                inputRef={newPasswordRef}
-                title="New password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => {
-                    setNewPassword(e.target.value);
-                }}
-            />
-            <TextField
-                error={!!errors.confirmNewPassword}
-                hint={errors.confirmNewPassword}
-                inputRef={confirmNewPasswordRef}
-                title="Verify password"
-                type="password"
-                value={confirmNewPassword}
-                onChange={(e) => {
-                    setConfirmNewPassword(e.target.value);
-                }}
-            />
-            <Button
-                color='red'
-                label={buttonLabel}
-                onClick={async () => {
-                    setSaveState('saving');
-                    const validationErrros = passwordValidation({password: newPassword, confirmPassword: confirmNewPassword});
-                    setErrors(validationErrros);
-                    if (Object.keys(validationErrros).length > 0) {
-                        // show errors
-                        setNewPassword('');
-                        setConfirmNewPassword('');
-                        if (newPasswordRef.current) {
-                            newPasswordRef.current.value = '';
-                        }
-                        if (confirmNewPasswordRef.current) {
-                            confirmNewPasswordRef.current.value = '';
-                        }
-                        setSaveState('');
-                        return;
-                    }
-                    try {
-                        await updatePassword({
-                            newPassword,
-                            confirmNewPassword,
-                            oldPassword: '',
-                            userId: user?.id
-                        });
-                        setSaveState('saved');
-                    } catch (e) {
-                        setSaveState('error');
-                        // show errors
-                    }
-                }}
-            />
-        </>
-    );
-
-    return (
-        <SettingGroup
-            border={false}
-            customHeader={<CustomHeader>Password</CustomHeader>}
-            title='Password'
-
-        >
-            {editPassword ? form : view}
-        </SettingGroup>
-    );
-};
-
-interface UserDetailModalProps {
-    user: User;
+    setUserData: (user: User) => void;
+    errors: {[key in keyof User]?: string};
+    validators: Record<string, (user: Partial<User>) => boolean>;
+    clearError: (key: keyof User) => void;
 }
 
 const UserMenuTrigger = () => (
     <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
-        <Icon colorClass='text-white' name='ellipsis' size='md' />
         <span className='sr-only'>Actions</span>
+        <Icon colorClass='text-white' name='ellipsis' size='md' />
     </button>
 );
 
-const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
+const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {updateRoute} = useRouting();
     const {ownerUser} = useStaffUsers();
+    const {currentUser} = useGlobalData();
     const [userData, _setUserData] = useState(user);
     const [saveState, setSaveState] = useState<'' | 'unsaved' | 'saving' | 'saved'>('');
-    const [errors, setErrors] = useState<{
-        name?: string;
-        email?: string;
-        url?: string;
-    }>({});
+    const [errors, setErrors] = useState<UserDetailProps['errors']>({});
+
+    const clearError = (key: keyof User) => setErrors(errs => ({...errs, [key]: undefined}));
 
     const setUserData = (newUserData: User | ((current: User) => User)) => {
         _setUserData(newUserData);
@@ -455,15 +64,36 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
     const {mutateAsync: deleteUser} = useDeleteUser();
     const {mutateAsync: makeOwner} = useMakeOwner();
     const limiter = useLimiter();
+    const handleError = useHandleError();
+
+    // Pintura integration
+    const {settings} = useGlobalData();
+    const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
+    const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
+
+    const editor = usePinturaEditor(
+        {config: {
+            jsUrl: pinturaJsUrl || '',
+            cssUrl: pinturaCssUrl || ''
+        }}
+    );
+
+    const navigateOnClose = useCallback(() => {
+        if (canAccessSettings(currentUser)) {
+            updateRoute('staff');
+        } else {
+            updateRoute({isExternal: true, route: 'dashboard'});
+        }
+    }, [currentUser, updateRoute]);
 
     useEffect(() => {
         if (saveState === 'saved') {
             setTimeout(() => {
                 mainModal.remove();
-                updateRoute('users');
+                navigateOnClose();
             }, 300);
         }
-    }, [mainModal, saveState, updateRoute]);
+    }, [mainModal, navigateOnClose, saveState, updateRoute]);
 
     const confirmSuspend = async (_user: User) => {
         if (_user.status === 'inactive' && _user.roles[0].name !== 'Contributor') {
@@ -501,13 +131,17 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
                     ..._user,
                     status: _user.status === 'inactive' ? 'active' : 'inactive'
                 };
-                await updateUser(updatedUserData);
-                setUserData(updatedUserData);
-                modal?.remove();
-                showToast({
-                    message: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
-                    type: 'success'
-                });
+                try {
+                    await updateUser(updatedUserData);
+                    setUserData(updatedUserData);
+                    modal?.remove();
+                    showToast({
+                        message: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
+                        type: 'success'
+                    });
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -524,13 +158,17 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
             okLabel: 'Delete user',
             okColor: 'red',
             onOk: async (modal) => {
-                await deleteUser(_user?.id);
-                modal?.remove();
-                mainModal?.remove();
-                showToast({
-                    message: 'User deleted',
-                    type: 'success'
-                });
+                try {
+                    await deleteUser(_user?.id);
+                    modal?.remove();
+                    mainModal?.remove();
+                    showToast({
+                        message: 'User deleted',
+                        type: 'success'
+                    });
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -542,12 +180,16 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
             okLabel: 'Yep — I\'m sure',
             okColor: 'red',
             onOk: async (modal) => {
-                await makeOwner(user.id);
-                modal?.remove();
-                showToast({
-                    message: 'Ownership transferred',
-                    type: 'success'
-                });
+                try {
+                    await makeOwner(user.id);
+                    modal?.remove();
+                    showToast({
+                        message: 'Ownership transferred',
+                        type: 'success'
+                    });
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -568,8 +210,8 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
                 });
                 break;
             }
-        } catch (err) {
-            // TODO: handle error
+        } catch (e) {
+            handleError(e);
         }
     };
 
@@ -588,11 +230,10 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
         }
     };
 
-    let suspendUserLabel = userData?.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
-
+    const showMenu = hasAdminAccess(currentUser) || (isEditorUser(currentUser) && isAuthorOrContributor(user));
     let menuItems: MenuItem[] = [];
 
-    if (isAdminUser(userData)) {
+    if (isOwnerUser(currentUser) && isAdminUser(userData) && userData.status !== 'inactive') {
         menuItems.push({
             id: 'make-owner',
             label: 'Make owner',
@@ -600,29 +241,35 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
         });
     }
 
-    menuItems = menuItems.concat([
-        {
+    if (userData.id !== currentUser.id && (
+        (hasAdminAccess(currentUser) && !isOwnerUser(user)) ||
+        (isEditorUser(currentUser) && isAuthorOrContributor(user))
+    )) {
+        let suspendUserLabel = userData.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
+
+        menuItems.push({
             id: 'delete-user',
             label: 'Delete user',
             onClick: () => {
                 confirmDelete(user, {owner: ownerUser});
             }
-        },
-        {
+        }, {
             id: 'suspend-user',
             label: suspendUserLabel,
             onClick: () => {
                 confirmSuspend(userData);
             }
-        },
-        {
-            id: 'view-user-activity',
-            label: 'View user activity',
-            onClick: () => {
-                // TODO: show user activity
-            }
+        });
+    }
+
+    menuItems.push({
+        id: 'view-user-activity',
+        label: 'View user activity',
+        onClick: () => {
+            mainModal.remove();
+            updateRoute(`history/view/${userData.id}`);
         }
-    ]);
+    });
 
     let okLabel = saveState === 'saved' ? 'Saved' : 'Save & close';
 
@@ -632,120 +279,241 @@ const UserDetailModal:React.FC<UserDetailModalProps> = ({user}) => {
         okLabel = 'Saved';
     }
 
-    const fileUploadButtonClasses = 'absolute right-[104px] bottom-12 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition cursor-pointer font-medium z-10';
+    const coverEditButtonBaseClasses = 'bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition-all cursor-pointer font-medium nowrap';
+
+    const fileUploadButtonClasses = clsx(
+        coverEditButtonBaseClasses
+    );
+
+    const deleteButtonClasses = clsx(
+        coverEditButtonBaseClasses
+    );
+
+    const editButtonClasses = clsx(
+        coverEditButtonBaseClasses
+    );
 
     const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
 
-    const validators = {
-        name: (name: string) => {
+    const validators: Record<string, (u: Partial<User>) => boolean> = {
+        name: ({name}) => {
+            let error = '';
+
+            if (!name) {
+                error = 'Please enter a name';
+            }
+
+            if (name && name.length > 191) {
+                error = 'Name is too long';
+            }
+
             setErrors?.((_errors) => {
-                return {..._errors, name: name ? '' : 'Please enter a name'};
+                return {..._errors, name: error};
             });
-            return !!name;
+            return !error;
         },
-        email: (email: string) => {
-            const valid = validator.isEmail(email);
+        email: ({email}) => {
+            const valid = validator.isEmail(email || '');
             setErrors?.((_errors) => {
                 return {..._errors, email: valid ? '' : 'Please enter a valid email address'};
             });
             return valid;
         },
-        url: (url: string) => {
+        url: ({url}) => {
             const valid = !url || validator.isURL(url);
             setErrors?.((_errors) => {
                 return {..._errors, url: valid ? '' : 'Please enter a valid URL'};
             });
             return valid;
+        },
+        bio: ({bio}) => {
+            const valid = !bio || bio.length <= 200;
+            setErrors?.((_errors) => {
+                return {..._errors, bio: valid ? '' : 'Bio is too long'};
+            });
+            return valid;
+        },
+        location: ({location}) => {
+            const valid = !location || location.length <= 150;
+            setErrors?.((_errors) => {
+                return {..._errors, location: valid ? '' : 'Location is too long'};
+            });
+            return valid;
+        },
+        website: ({website}) => {
+            const valid = !website || (validator.isURL(website) && website.length <= 2000);
+            setErrors?.((_errors) => {
+                return {..._errors, website: valid ? '' : 'Website is not a valid url'};
+            });
+            return valid;
+        },
+        facebook: ({facebook}) => {
+            try {
+                validateFacebookUrl(facebook || '');
+                return true;
+            } catch (e) {
+                if (e instanceof Error) {
+                    const message = e.message;
+                    setErrors?.(_errors => ({..._errors, facebook: message}));
+                }
+                return false;
+            }
+        },
+        twitter: ({twitter}) => {
+            try {
+                validateTwitterUrl(twitter || '');
+                return true;
+            } catch (e) {
+                if (e instanceof Error) {
+                    const message = e.message;
+                    setErrors?.(_errors => ({..._errors, twitter: message}));
+                }
+                return false;
+            }
         }
     };
 
     return (
         <Modal
-            afterClose={() => updateRoute('users')}
+            afterClose={navigateOnClose}
+            animate={canAccessSettings(currentUser)}
+            backDrop={canAccessSettings(currentUser)}
             dirty={saveState === 'unsaved'}
             okLabel={okLabel}
-            size='lg'
+            size={canAccessSettings(currentUser) ? 'lg' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
             onOk={async () => {
                 setSaveState('saving');
-                let error = false;
-                if (!validators.name(userData.name) || !validators.email(userData.email) || !validators.url(userData.website)) {
-                    error = true;
+                let isValid = true;
+                if (Object.values(validators).map(validate => validate(userData)).includes(false)) {
+                    isValid = false;
                 }
 
-                if (error) {
+                toast.remove();
+
+                if (!isValid) {
                     showToast({
                         type: 'pageError',
-                        message: 'Can\'t save user! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                        message: 'Can\'t save user, please double check that you\'ve filled all mandatory fields.'
                     });
                     setSaveState('');
                     return;
                 }
-
-                toast.dismiss();
 
                 await updateUser?.(userData);
                 setSaveState('saved');
             }}
         >
             <div>
-                <div className={`relative -mx-12 -mt-12 rounded-t bg-gradient-to-tr from-grey-900 to-black`}>
-                    <ImageUpload
-                        deleteButtonClassName={fileUploadButtonClasses}
-                        deleteButtonContent='Delete cover image'
-                        fileUploadClassName={fileUploadButtonClasses}
-                        height={userData.cover_image ? '100%' : '32px'}
-                        id='cover-image'
-                        imageClassName='w-full h-full object-cover'
-                        imageContainerClassName='absolute inset-0 bg-cover group bg-center rounded-t overflow-hidden'
-                        imageURL={userData.cover_image || ''}
-                        unstyled={true}
-                        onDelete={() => {
-                            handleImageDelete('cover_image');
-                        }}
-                        onUpload={(file: File) => {
-                            handleImageUpload('cover_image', file);
-                        }}
-                    >Upload cover image</ImageUpload>
-                    <div className="absolute bottom-12 right-12 z-10">
-                        <Menu items={menuItems} position='left' trigger={<UserMenuTrigger />}></Menu>
-                    </div>
-                    <div className='relative flex items-center gap-4 px-12 pb-7 pt-60'>
-                        <ImageUpload
-                            deleteButtonClassName='invisible absolute -right-2 -top-2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white hover:bg-black group-hover:!visible'
-                            deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
-                            fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
-                            id='avatar'
-                            imageClassName='w-full h-full object-cover rounded-full'
-                            imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px]'
-                            imageURL={userData.profile_image}
-                            unstyled={true}
-                            width='80px'
-                            onDelete={() => {
-                                handleImageDelete('profile_image');
-                            }}
-                            onUpload={(file: File) => {
-                                handleImageUpload('profile_image', file);
-                            }}
-                        >
-                            <Icon colorClass='text-white' name='user-add' size='lg' />
-                        </ImageUpload>
-                        <div>
-                            <Heading styles='text-white'>{user.name}{suspendedText}</Heading>
-                            <span className='text-md font-semibold capitalize text-white'>{user.roles[0].name.toLowerCase()}</span>
+                <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} bg-gradient-to-tr from-grey-900 to-black`}>
+                    <div className='flex min-h-[40vmin] flex-wrap items-end justify-between bg-cover bg-center' style={{
+                        backgroundImage: `url(${userData.cover_image})`
+                    }}>
+                        <div className='flex w-full max-w-[620px] flex-col gap-5 p-8 md:max-w-[auto] md:flex-row md:items-center'>
+                            <div>
+                                <ImageUpload
+                                    deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-16 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
+                                    deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
+                                    editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:!visible z-20'
+                                    fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
+                                    id='avatar'
+                                    imageClassName='w-full h-full object-cover rounded-full shrink-0'
+                                    imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px] shrink-0'
+                                    imageURL={userData.profile_image}
+                                    pintura={
+                                        {
+                                            isEnabled: editor.isEnabled,
+                                            openEditor: async () => editor.openEditor({
+                                                image: userData.profile_image || '',
+                                                handleSave: async (file:File) => {
+                                                    handleImageUpload('profile_image', file);
+                                                }
+                                            })
+                                        }
+                                    }
+                                    unstyled={true}
+                                    width='80px'
+                                    onDelete={() => {
+                                        handleImageDelete('profile_image');
+                                    }}
+                                    onUpload={(file: File) => {
+                                        handleImageUpload('profile_image', file);
+                                    }}
+                                >
+                                    <Icon colorClass='text-white' name='user-add' size='lg' />
+                                </ImageUpload>
+                            </div>
+                            <div>
+                                <Heading styles='break-words md:break-normal text-white'>{user.name}{suspendedText}</Heading>
+                                <span className='text-md font-semibold capitalize text-white'>{user.roles[0].name.toLowerCase()}</span>
+                            </div>
+                        </div>
+                        <div className='flex flex-nowrap items-end gap-4 p-8'>
+                            <ImageUpload
+                                buttonContainerClassName='flex items-end gap-4 justify-end flex-nowrap'
+                                deleteButtonClassName={deleteButtonClasses}
+                                deleteButtonContent='Delete cover image'
+                                editButtonClassName={editButtonClasses}
+                                fileUploadClassName={fileUploadButtonClasses}
+                                id='cover-image'
+                                imageClassName='hidden'
+                                imageURL={userData.cover_image || ''}
+                                pintura={
+                                    {
+                                        isEnabled: editor.isEnabled,
+                                        openEditor: async () => editor.openEditor({
+                                            image: userData.cover_image || '',
+                                            handleSave: async (file:File) => {
+                                                handleImageUpload('cover_image', file);
+                                            }
+                                        })
+                                    }
+                                }
+                                unstyled
+                                onDelete={() => {
+                                    handleImageDelete('cover_image');
+                                }}
+                                onUpload={(file: File) => {
+                                    handleImageUpload('cover_image', file);
+                                }}
+                            >Upload cover image</ImageUpload>
+                            {showMenu && <div className="z-10">
+                                <Menu items={menuItems} position='right' trigger={<UserMenuTrigger />}></Menu>
+                            </div>}
                         </div>
                     </div>
                 </div>
-                <div className='mt-10 grid grid-cols-2 gap-x-12 gap-y-20'>
-                    <Basic errors={errors} setUserData={setUserData} user={userData} validators={validators} />
-                    <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
+                <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-4xl'} mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2`}>
+                    <ProfileBasics clearError={clearError} errors={errors} setUserData={setUserData} user={userData} validators={validators} />
+                    <div className='flex flex-col justify-between gap-10'>
+                        <ProfileDetails clearError={clearError} errors={errors} setUserData={setUserData} user={userData} validators={validators} />
+                        {user.id === currentUser.id && <StaffToken />}
+                    </div>
                     <EmailNotifications setUserData={setUserData} user={userData} />
-                    <Password user={userData} />
+                    <ChangePasswordForm user={userData} />
                 </div>
             </div>
         </Modal>
     );
+};
+
+const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {users, hasNextPage, fetchNextPage} = useStaffUsers();
+    const {currentUser} = useGlobalData();
+    const user = currentUser.slug === params?.slug ? currentUser : users.find(({slug}) => slug === params?.slug);
+
+    useEffect(() => {
+        if (!user && !hasNextPage) {
+            fetchNextPage();
+        }
+    }, [fetchNextPage, hasNextPage, user]);
+
+    if (user) {
+        return <UserDetailModalContent user={user} />;
+    } else {
+        return null;
+    }
 };
 
 export default NiceModal.create(UserDetailModal);

@@ -114,7 +114,7 @@ describe('Importer', function () {
                     return models.Settings.findOne(_.merge({key: 'active_theme'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    result.attributes.value.should.eql('casper');
+                    result.attributes.value.should.eql('source');
                 });
         });
 

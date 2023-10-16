@@ -38,7 +38,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 2
@@ -123,7 +123,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: 'Checkout current commit'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.HEAD_COMMIT }}
 
@@ -188,7 +188,7 @@ jobs:
     if: needs.job_get_metadata.outputs.changed_any_code == 'true'
     name: Lint
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 100
       - uses: actions/setup-node@v3
@@ -227,7 +227,7 @@ jobs:
       CI: true
       COVERAGE: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: "18.12.1"
@@ -237,7 +237,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn workspace ghost-admin run test
+      - run: yarn nx run ghost-admin:test
         env:
           BROWSER: Chrome
 
@@ -263,10 +263,10 @@ jobs:
     if: needs.job_get_metadata.outputs.changed_any_code == 'true'
     strategy:
       matrix:
-        node: [ '16.14.0', '18.12.1' ]
+        node: [ '18.12.1' ]
     name: Unit tests (Node ${{ matrix.node }})
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 100
       - uses: actions/setup-node@v3
@@ -301,7 +301,7 @@ jobs:
     if: needs.job_get_metadata.outputs.changed_core == 'true'
     strategy:
       matrix:
-        node: [ '16.14.0', '18.12.1' ]
+        node: [ '18.12.1' ]
         env:
           - DB: mysql8
             NODE_ENV: testing-mysql
@@ -315,7 +315,7 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Database tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -386,7 +386,7 @@ jobs:
       # Report time taken to metrics service
       # Continue on error if previous TailScale step fails
       - name: Store test duration
-        uses: tryghost/action-trigger-metric@main
+        uses: tryghost/actions/actions/trigger-metric@main
         timeout-minutes: 1
         continue-on-error: true
         if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
@@ -436,7 +436,7 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Regression tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -487,7 +487,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -515,14 +515,14 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - run: yarn workspace @tryghost/admin-x-settings run test:e2e
+      - run: yarn nx run @tryghost/admin-x-settings:test:acceptance
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: playwright-report
-          path: playwright-report
+          name: admin-x-settings-playwright-report
+          path: apps/admin-x-settings/playwright-report
           retention-days: 30
 
       - uses: tryghost/actions/actions/slack-build@main
@@ -540,7 +540,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -568,14 +568,14 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - run: yarn workspace @tryghost/comments-ui run test
+      - run: yarn nx run @tryghost/comments-ui:test
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: playwright-report
-          path: playwright-report
+          name: comments-ui-playwright-report
+          path: apps/comments-ui/playwright-report
           retention-days: 30
 
       - uses: tryghost/actions/actions/slack-build@main
@@ -593,7 +593,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         env:
           FORCE_COLOR: 0
@@ -621,14 +621,14 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - run: yarn workspace @tryghost/signup-form run test:e2e
+      - run: yarn nx run @tryghost/signup-form:test:e2e
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: playwright-report
-          path: playwright-report
+          name: signup-form-playwright-report
+          path: apps/signup-form/playwright-report
           retention-days: 30
 
       - uses: tryghost/actions/actions/slack-build@main
@@ -644,7 +644,7 @@ jobs:
     if: needs.job_get_metadata.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
@@ -709,7 +709,7 @@ jobs:
     ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')

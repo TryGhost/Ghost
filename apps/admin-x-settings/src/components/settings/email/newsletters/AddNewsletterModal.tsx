@@ -7,19 +7,19 @@ import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useForm from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {modalRoutes} from '../../../providers/RoutingProvider';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 import {useAddNewsletter} from '../../../../api/newsletters';
 import {useBrowseMembers} from '../../../../api/members';
 
-interface AddNewsletterModalProps {}
-
-const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
+const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
+    const handleError = useHandleError();
 
     const {data: members} = useBrowseMembers({
         searchParams: {filter: 'newsletters.status:active+email_disabled:0', limit: '1', page: '1', include: 'newsletters,labels'}
@@ -36,11 +36,13 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
             const response = await addNewsletter({
                 name: formState.name,
                 description: formState.description,
-                opt_in_existing: formState.optInExistingSubscribers
+                opt_in_existing: formState.optInExistingSubscribers,
+                feedback_enabled: true
             });
 
-            updateRoute({route: modalRoutes.showNewsletter, params: {id: response.newsletters[0].id}});
+            updateRoute({route: `newsletters/${response.newsletters[0].id}`});
         },
+        onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
 
@@ -84,7 +86,7 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save newsletter! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                    message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
                 });
             }
         }}

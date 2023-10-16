@@ -668,7 +668,7 @@ class EmailRenderer {
     }
 
     async renderTemplate(data) {
-        this.#handlebars = require('handlebars');
+        this.#handlebars = require('handlebars').create();
 
         // Helpers
         this.#handlebars.registerHelper('if', function (conditional, options) {

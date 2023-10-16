@@ -1,7 +1,7 @@
 import Button, {ButtonColor, ButtonProps} from '../Button';
 import ButtonGroup from '../ButtonGroup';
 import Heading from '../Heading';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import StickyFooter from '../StickyFooter';
 import clsx from 'clsx';
 import useGlobalDirtyState from '../../../hooks/useGlobalDirtyState';
@@ -16,56 +16,71 @@ export interface ModalProps {
      * Possible values are: `sm`, `md`, `lg`, `xl, `full`, `bleed`. Yu can also use any number to set an arbitrary width.
      */
     size?: ModalSize;
+    maxHeight?: number;
 
     testId?: string;
     title?: string;
     okLabel?: string;
     okColor?: ButtonColor;
+    okLoading?: boolean;
     cancelLabel?: string;
     leftButtonProps?: ButtonProps;
     buttonsDisabled?: boolean;
     footer?: boolean | React.ReactNode;
-    noPadding?: boolean;
+    header?: boolean;
+    padding?: boolean;
     onOk?: () => void;
     onCancel?: () => void;
     topRightContent?: 'close' | React.ReactNode;
+    hideXOnMobile?: boolean;
     afterClose?: () => void;
     children?: React.ReactNode;
     backDrop?: boolean;
     backDropClick?: boolean;
     stickyFooter?: boolean;
+    stickyHeader?:boolean;
     scrolling?: boolean;
     dirty?: boolean;
     animate?: boolean;
     formSheet?: boolean;
+    enableCMDS?: boolean;
 }
+
+export const topLevelBackdropClasses = 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]';
 
 const Modal: React.FC<ModalProps> = ({
     size = 'md',
+    maxHeight,
     testId,
     title,
     okLabel = 'OK',
+    okLoading = false,
     cancelLabel = 'Cancel',
     footer,
+    header,
     leftButtonProps,
     buttonsDisabled,
-    noPadding = false,
+    padding = true,
     onOk,
     okColor = 'black',
     onCancel,
     topRightContent,
+    hideXOnMobile = false,
     afterClose,
     children,
     backDrop = true,
     backDropClick = true,
     stickyFooter = false,
+    stickyHeader = false,
     scrolling = true,
     dirty = false,
     animate = true,
-    formSheet = false
+    formSheet = false,
+    enableCMDS = true
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
+    const [animationFinished, setAnimationFinished] = useState(false);
 
     useEffect(() => {
         setGlobalDirtyState(dirty);
@@ -93,7 +108,36 @@ const Modal: React.FC<ModalProps> = ({
         };
     }, [modal, dirty, afterClose, onCancel]);
 
+    // The animation classes apply a transform to the modal, which breaks anything inside using position:fixed
+    // We should remove the class as soon as the animation is finished
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setAnimationFinished(true);
+        }, 250);
+
+        return () => clearTimeout(timeout);
+    }, []);
+
+    useEffect(() => {
+        if (onOk) {
+            const handleCMDS = (e: KeyboardEvent) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                    e.preventDefault();
+                    onOk();
+                }
+            };
+            if (enableCMDS) {
+                window.addEventListener('keydown', handleCMDS);
+                return () => {
+                    window.removeEventListener('keydown', handleCMDS);
+                };
+            }
+        }
+    });
+
     let buttons: ButtonProps[] = [];
+
+    let footerClasses, contentClasses;
 
     const removeModal = () => {
         confirmIfDirty(dirty, () => {
@@ -122,16 +166,18 @@ const Modal: React.FC<ModalProps> = ({
                 color: okColor,
                 className: 'min-w-[80px]',
                 onClick: onOk,
-                disabled: buttonsDisabled
+                disabled: buttonsDisabled,
+                loading: okLoading
             });
         }
     }
 
     let modalClasses = clsx(
-        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden rounded bg-white',
+        'relative z-50 mx-auto flex max-h-[100%] w-full flex-col justify-between overflow-x-hidden bg-white dark:bg-black',
+        size !== 'bleed' && 'rounded',
         formSheet ? 'shadow-md' : 'shadow-xl',
-        (animate && !formSheet) && 'animate-modal-in',
-        formSheet && 'animate-modal-in-reverse',
+        (animate && !formSheet && !animationFinished) && 'animate-modal-in',
+        (formSheet && !animationFinished) && 'animate-modal-in-reverse',
         scrolling ? 'overflow-y-auto' : 'overflow-y-hidden'
     );
 
@@ -139,61 +185,156 @@ const Modal: React.FC<ModalProps> = ({
         'fixed inset-0 z-40 h-[100vh] w-[100vw]'
     );
 
-    let padding = '';
+    let paddingClasses = '';
+    let headerClasses = clsx(
+        (!topRightContent || topRightContent === 'close') ? '' : 'flex items-center justify-between gap-5'
+    );
+
+    if (stickyHeader) {
+        headerClasses = clsx(
+            headerClasses,
+            'sticky top-0 z-[200] -mb-4 bg-white !pb-4 dark:bg-black'
+        );
+    }
 
     switch (size) {
     case 'sm':
-        modalClasses += ' max-w-[480px] ';
-        backdropClasses += ' p-[8vmin]';
-        padding = 'p-8';
+        modalClasses = clsx(
+            modalClasses,
+            'max-w-[480px]'
+        );
+        backdropClasses = clsx(
+            backdropClasses,
+            'p-4 md:p-[8vmin]'
+        );
+        paddingClasses = 'p-8';
+        headerClasses = clsx(
+            headerClasses,
+            '-inset-x-8'
+        );
         break;
 
     case 'md':
-        modalClasses += ' max-w-[720px] ';
-        backdropClasses += ' p-[8vmin]';
-        padding = 'p-8';
+        modalClasses = clsx(
+            modalClasses,
+            'max-w-[720px]'
+        );
+        backdropClasses = clsx(
+            backdropClasses,
+            'p-4 md:p-[8vmin]'
+        );
+        paddingClasses = 'p-8';
+        headerClasses = clsx(
+            headerClasses,
+            '-inset-x-8'
+        );
         break;
 
     case 'lg':
-        modalClasses += ' max-w-[1020px] ';
-        backdropClasses += ' p-[4vmin]';
-        padding = 'p-8';
+        modalClasses = clsx(
+            modalClasses,
+            'max-w-[1020px]'
+        );
+        backdropClasses = clsx(
+            backdropClasses,
+            'p-4 md:p-[4vmin]'
+        );
+        paddingClasses = 'p-8';
+        headerClasses = clsx(
+            headerClasses,
+            '-inset-x-8'
+        );
         break;
 
     case 'xl':
-        modalClasses += ' max-w-[1240px] ';
-        backdropClasses += ' p-[3vmin]';
-        padding = 'p-10';
+        modalClasses = clsx(
+            modalClasses,
+            'max-w-[1240px]0'
+        );
+        backdropClasses = clsx(
+            backdropClasses,
+            'p-4 md:p-[3vmin]'
+        );
+        paddingClasses = 'p-10';
+        headerClasses = clsx(
+            headerClasses,
+            '-inset-x-10 -top-10'
+        );
         break;
 
     case 'full':
-        modalClasses += ' h-full ';
-        backdropClasses += ' p-[3vmin]';
-        padding = 'p-10';
+        modalClasses = clsx(
+            modalClasses,
+            'h-full'
+        );
+        backdropClasses = clsx(
+            backdropClasses,
+            'p-4 md:p-[3vmin]'
+        );
+        paddingClasses = 'p-10';
+        headerClasses = clsx(
+            headerClasses,
+            '-inset-x-10'
+        );
         break;
 
     case 'bleed':
-        modalClasses += ' h-full ';
-        padding = 'p-10';
+        modalClasses = clsx(
+            modalClasses,
+            'h-full'
+        );
+        paddingClasses = 'p-10';
+        headerClasses = clsx(
+            headerClasses,
+            '-inset-x-10'
+        );
         break;
 
     default:
-        backdropClasses += ' p-[8vmin]';
-        padding = 'p-8';
+        backdropClasses = clsx(
+            backdropClasses,
+            'p-4 md:p-[8vmin]'
+        );
+        paddingClasses = 'p-8';
+        headerClasses = clsx(
+            headerClasses,
+            '-inset-x-8'
+        );
         break;
     }
 
-    if (noPadding) {
-        padding = 'p-0';
+    if (!padding) {
+        paddingClasses = 'p-0';
     }
 
-    let footerClasses = clsx(
-        `${padding} ${stickyFooter ? 'py-6' : 'pt-0'}`,
+    modalClasses = clsx(
+        modalClasses
+    );
+
+    headerClasses = clsx(
+        headerClasses,
+        paddingClasses,
+        'pb-0'
+    );
+
+    contentClasses = clsx(
+        paddingClasses,
+        'py-0'
+    );
+
+    // Set bottom padding for backdrop when the menu is on
+    backdropClasses = clsx(
+        backdropClasses,
+        'max-[800px]:!pb-20'
+    );
+
+    footerClasses = clsx(
+        `${paddingClasses} ${stickyFooter ? 'py-6' : ''}`,
         'flex w-full items-center justify-between'
     );
 
-    let contentClasses = clsx(
-        padding,
+    contentClasses = clsx(
+        contentClasses,
         ((size === 'full' || size === 'bleed') && 'grow')
     );
 
@@ -203,9 +344,15 @@ const Modal: React.FC<ModalProps> = ({
         }
     };
 
-    const modalStyles = (typeof size === 'number') ? {
-        width: size + 'px'
-    } : {};
+    let modalStyles:{maxWidth?: string; maxHeight?: string;} = {};
+
+    if (typeof size === 'number') {
+        modalStyles.maxWidth = size + 'px';
+    }
+
+    if (maxHeight) {
+        modalStyles.maxHeight = maxHeight + 'px';
+    }
 
     let footerContent;
     if (footer) {
@@ -216,9 +363,7 @@ const Modal: React.FC<ModalProps> = ({
         footerContent = (
             <div className={footerClasses}>
                 <div>
-                    {leftButtonProps &&
-                    <Button {...leftButtonProps} />
-                    }
+                    {leftButtonProps && <Button {...leftButtonProps} />}
                 </div>
                 <div className='flex gap-3'>
                     <ButtonGroup buttons={buttons}/>
@@ -238,29 +383,27 @@ const Modal: React.FC<ModalProps> = ({
     );
 
     return (
-        <div className={backdropClasses} id='modal-backdrop' onClick={handleBackdropClick}>
+        <div className={backdropClasses} id='modal-backdrop' onMouseDown={handleBackdropClick}>
             <div className={clsx(
                 'pointer-events-none fixed inset-0 z-0',
-                (backDrop && !formSheet) && 'bg-[rgba(98,109,121,0.2)] backdrop-blur-[3px]',
-                formSheet && 'bg-[rgba(98,109,121,0.05)]'
+                (backDrop && !formSheet) && topLevelBackdropClasses,
+                formSheet && 'bg-[rgba(98,109,121,0.08)]'
             )}></div>
             <section className={modalClasses} data-testid={testId} style={modalStyles}>
+                {header === false ? '' : (!topRightContent || topRightContent === 'close' ?
+                    (<header className={headerClasses}>
+                        {title && <Heading level={3}>{title}</Heading>}
+                        <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute right-6 top-6`}>
+                            <Button className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' iconColorClass='text-black dark:text-white' size='sm' unstyled onClick={removeModal} />
+                        </div>
+                    </header>)
+                    :
+                    (<header className={headerClasses}>
+                        {title && <Heading level={3}>{title}</Heading>}
+                        {topRightContent}
+                    </header>))}
                 <div className={contentClasses}>
-                    <div className='h-full'>
-                        {topRightContent === 'close' ?
-                            (<>
-                                {title && <Heading level={3}>{title}</Heading>}
-                                <div className='absolute right-6 top-6'>
-                                    <Button className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' size='sm' unstyled onClick={removeModal} />
-                                </div>
-                            </>)
-                            :
-                            (<div className='flex items-center justify-between gap-5'>
-                                {title && <Heading level={3}>{title}</Heading>}
-                                {topRightContent}
-                            </div>)}
-                        {children}
-                    </div>
+                    {children}
                 </div>
                 {footerContent}
             </section>

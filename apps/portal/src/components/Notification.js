@@ -196,6 +196,16 @@ export default class Notification extends React.Component {
         };
     }
 
+    componentDidMount() {
+        const {showPopup} = this.context;
+        if (showPopup) {
+            // Don't show a notification if there is a popup visible on page load
+            this.setState({
+                active: false
+            });
+        }
+    }
+
     onHideNotification() {
         const type = this.state.type;
         const deleteParams = [];

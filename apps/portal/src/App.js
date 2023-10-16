@@ -11,7 +11,7 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import './App.css';
 import NotificationParser from './utils/notifications';
-import {allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, allowCompMemberUpgrade, createPopupNotification, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isComplimentaryMember, isInviteOnlySite, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {handleDataAttributes} from './data-attributes';
 
 import i18nLib from '@tryghost/i18n';
@@ -120,12 +120,12 @@ export default class App extends React.Component {
             event.preventDefault();
             const target = event.currentTarget;
             const pagePath = (target && target.dataset.portal);
-            const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
+            const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath) || {};
             if (this.state.initStatus === 'success') {
                 if (pageQuery && pageQuery !== 'free') {
                     this.handleSignupQuery({site: this.state.site, pageQuery});
                 } else {
-                    this.dispatchAction('openPopup', {page, pageQuery});
+                    this.dispatchAction('openPopup', {page, pageQuery, pageData});
                 }
             }
         };
@@ -195,6 +195,7 @@ export default class App extends React.Component {
                     });
                 }
             }
+            this.setupRecommendationButtons();
         } catch (e) {
             /* eslint-disable no-console */
             console.error(`[Portal] Failed to initialize:`, e);
@@ -210,7 +211,7 @@ export default class App extends React.Component {
     async fetchData() {
         const {site: apiSiteData, member} = await this.fetchApiData();
         const {site: devSiteData, ...restDevData} = this.fetchDevData();
-        const {site: linkSiteData, ...restLinkData} = this.fetchLinkData();
+        const {site: linkSiteData, ...restLinkData} = this.fetchLinkData(apiSiteData);
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
         const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
         let page = '';
@@ -413,7 +414,7 @@ export default class App extends React.Component {
     }
 
     /** Fetch state from Portal Links */
-    fetchLinkData() {
+    fetchLinkData(site) {
         const qParams = new URLSearchParams(window.location.search);
         if (qParams.get('uuid') && qParams.get('action') === 'unsubscribe') {
             return {
@@ -426,6 +427,18 @@ export default class App extends React.Component {
                 }
             };
         }
+
+        if (hasRecommendations({site}) && qParams.get('action') === 'signup' && qParams.get('success') === 'true') {
+            // After a successful signup, we show the recommendations if they are enabled
+            return {
+                showPopup: true,
+                page: 'recommendations',
+                pageData: {
+                    signup: true
+                }
+            };
+        }
+
         const [path, hashQueryString] = window.location.hash.substr(1).split('?');
         const hashQuery = new URLSearchParams(hashQueryString ?? '');
         const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
@@ -451,7 +464,7 @@ export default class App extends React.Component {
         }
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
-            const {page, pageQuery} = this.getPageFromLinkPath(pagePath) || {};
+            const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath, site) || {};
             const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
             const showPopup = (
                 ['monthly', 'yearly'].includes(pageQuery) ||
@@ -463,6 +476,7 @@ export default class App extends React.Component {
                 showPopup,
                 ...(page ? {page} : {}),
                 ...(pageQuery ? {pageQuery} : {}),
+                ...(pageData ? {pageData} : {}),
                 ...(lastPage ? {lastPage} : {})
             };
         }
@@ -612,6 +626,13 @@ export default class App extends React.Component {
                 }, 2000);
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error(`[Portal] Failed to dispatch action: ${action}`, error);
+
+            if (data && data.throwErrors) {
+                throw error;
+            }
+
             const popupNotification = createPopupNotification({
                 type: `${action}:failed`,
                 autoHide: true, closeable: true, status: 'error', state: this.state,
@@ -713,11 +734,12 @@ export default class App extends React.Component {
     }
 
     /**Get Portal page from Link/Data-attribute path*/
-    getPageFromLinkPath(path) {
+    getPageFromLinkPath(path, useSite) {
         const customPricesSignupRegex = /^signup\/?(?:\/(\w+?))?\/?$/;
         const customMonthlyProductSignup = /^signup\/?(?:\/(\w+?))\/monthly\/?$/;
         const customYearlyProductSignup = /^signup\/?(?:\/(\w+?))\/yearly\/?$/;
         const customOfferRegex = /^offers\/(\w+?)\/?$/;
+        const site = useSite ?? this.state.site ?? {};
 
         if (customOfferRegex.test(path)) {
             return {
@@ -792,9 +814,12 @@ export default class App extends React.Component {
             return {
                 page: 'supportError'
             };
-        } else if (path === 'recommendations') {
+        } else if (path === 'recommendations' && hasRecommendations({site})) {
             return {
-                page: 'recommendations'
+                page: 'recommendations',
+                pageData: {
+                    signup: false
+                }
             };
         }
         return {};
@@ -847,6 +872,7 @@ export default class App extends React.Component {
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
+            api: this.GhostApi,
             site,
             action,
             brandColor: this.getAccentColor(),
@@ -861,6 +887,35 @@ export default class App extends React.Component {
             t,
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
+    }
+
+    getRecommendationButtons() {
+        const customTriggerSelector = '[data-recommendation]';
+        return document.querySelectorAll(customTriggerSelector) || [];
+    }
+
+    /** Setup click tracking for recommendation buttons */
+    setupRecommendationButtons() {
+        // Handler for custom buttons
+        const clickHandler = (event) => {
+            // Send beacons for recommendation clicks
+            const recommendationId = event.currentTarget.dataset.recommendation;
+
+            if (recommendationId) {
+                this.dispatchAction('trackRecommendationClicked', {
+                    recommendationId
+                // eslint-disable-next-line no-console
+                }).catch(console.error);
+            } else {
+                // eslint-disable-next-line no-console
+                console.warn('[Portal] Invalid usage of data-recommendation attribute');
+            }
+        };
+
+        const elements = this.getRecommendationButtons();
+        for (const element of elements) {
+            element.addEventListener('click', clickHandler, {passive: true});
+        }
     }
 
     render() {

@@ -5,10 +5,10 @@ import Labs from './Labs';
 import React from 'react';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 
-const searchKeywords = {
+export const searchKeywords = {
     integrations: ['integration', 'zapier', 'slack', 'amp', 'unsplash', 'first promoter', 'firstpromoter', 'pintura', 'disqus', 'analytics', 'ulysses', 'typeform', 'buffer', 'plausible', 'github'],
     codeInjection: ['newsletter', 'enable', 'disable', 'turn on'],
-    labs: ['labs', 'alpha', 'beta', 'flag', 'import', 'export', 'migrate', 'routes', 'redirects', 'translation', 'delete'],
+    labs: ['labs', 'alpha', 'beta', 'flag', 'import', 'export', 'migrate', 'routes', 'redirect', 'translation', 'delete', 'content', 'editor', 'substack', 'migration', 'portal'],
     history: ['history', 'log', 'events', 'user events', 'staff']
 };
 

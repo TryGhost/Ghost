@@ -1,4 +1,4 @@
-import {createQuery} from '../utils/apiRequests';
+import {createQuery} from '../utils/api/hooks';
 
 export type JSONValue = string|number|boolean|null|Date|JSONObject|JSONArray;
 export interface JSONObject { [key: string]: JSONValue }
@@ -11,9 +11,18 @@ export type Config = {
         url: string
         version: string
     };
+    signupForm: {
+        url: string,
+        version: string
+    }
+    enableDeveloperExperiments: boolean;
+    database: string;
+    blogUrl: string;
     labs: Record<string, boolean>;
     stripeDirect: boolean;
+    mail: string;
     hostSettings?: {
+        siteId?: string;
         limits?: {
             // Partially typed, see https://github.com/TryGhost/SDK/tree/main/packages/limit-service
             customIntegrations?: {
@@ -35,6 +44,10 @@ export type Config = {
         billing?: {
             enabled?: boolean
             url?: string
+        },
+        pintura?: {
+            js?: string
+            css?: string
         }
     }
 

@@ -1,4 +1,4 @@
-import {Meta, createQuery} from '../utils/apiRequests';
+import {Meta, createQuery} from '../utils/api/hooks';
 
 export type UserRoleType = 'Owner' | 'Administrator' | 'Editor' | 'Author' | 'Contributor';
 

@@ -29,12 +29,14 @@ export interface FormHook<State> {
     clearError: (field: string) => void;
     isValid: boolean;
     errors: ErrorMessages;
+    setErrors: (errors: ErrorMessages) => void;
 }
 
-const useForm = <State>({initialState, onSave, onValidate}: {
+const useForm = <State>({initialState, onSave, onSaveError, onValidate}: {
     initialState: State,
-    onSave: () => void | Promise<void>
-    onValidate?: () => ErrorMessages
+    onSave: (state: State) => void | Promise<void>
+    onSaveError?: (error: unknown) => void | Promise<void>
+    onValidate?: (state: State) => ErrorMessages
 }): FormHook<State> => {
     const [formState, setFormState] = useState(initialState);
     const [saveState, setSaveState] = useState<SaveState>('');
@@ -51,36 +53,43 @@ const useForm = <State>({initialState, onSave, onValidate}: {
 
     const isValid = (errs: ErrorMessages) => Object.values(errs).filter(Boolean).length === 0;
 
-    const validate = () => {
-        if (!onValidate) {
-            return true;
-        }
+    const validate = useCallback(
+        () => {
+            if (!onValidate) {
+                return true;
+            }
 
-        const newErrors = onValidate();
-        setErrors(newErrors);
-        return isValid(newErrors);
-    };
+            const newErrors = onValidate(formState);
+            setErrors(newErrors);
+            return isValid(newErrors);
+        },
+        [formState, onValidate]
+    );
 
     // function to save the changed settings via API
-    const handleSave = async (options: {force?: boolean} = {}) => {
-        if (!validate()) {
-            return false;
-        }
+    const handleSave = useCallback(
+        async (options: {force?: boolean} = {}) => {
+            if (!validate()) {
+                return false;
+            }
 
-        if (saveState !== 'unsaved' && !options.force) {
-            return true;
-        }
+            if (saveState !== 'unsaved' && !options.force) {
+                return true;
+            }
 
-        setSaveState('saving');
-        try {
-            await onSave();
-            setSaveState('saved');
-            return true;
-        } catch (e) {
-            setSaveState('unsaved');
-            throw e;
-        }
-    };
+            setSaveState('saving');
+            try {
+                await onSave(formState);
+                setSaveState('saved');
+                return true;
+            } catch (e) {
+                await onSaveError?.(e);
+                setSaveState('unsaved');
+                throw e;
+            }
+        },
+        [formState, saveState, onSave, onSaveError, validate]
+    );
 
     const updateForm = useCallback((updater: (state: State) => State) => {
         setFormState(updater);
@@ -102,7 +111,8 @@ const useForm = <State>({initialState, onSave, onValidate}: {
         clearError: (field: string) => {
             setErrors(state => ({...state, [field]: ''}));
         },
-        errors
+        errors,
+        setErrors
     };
 };
 

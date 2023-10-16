@@ -5,6 +5,7 @@ import LabItem from './LabItem';
 import List from '../../../../admin-x-ds/global/List';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
+import useHandleError from '../../../../utils/api/handleError';
 import {downloadAllContent, useDeleteAllContent, useImportContent} from '../../../../api/db';
 import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {useQueryClient} from '@tanstack/react-query';
@@ -13,24 +14,31 @@ const ImportModalContent = () => {
     const modal = useModal();
     const {mutateAsync: importContent} = useImportContent();
     const [uploading, setUploading] = useState(false);
+    const handleError = useHandleError();
 
     return <FileUpload
         id="import-file"
         onUpload={async (file) => {
             setUploading(true);
-            await importContent(file);
-            modal.remove();
-            NiceModal.show(ConfirmationModal, {
-                title: 'Import in progress',
-                prompt: `Your import is being processed, and you'll receive a confirmation email as soon as it's complete. Usually this only takes a few minutes, but larger imports may take longer.`,
-                cancelLabel: '',
-                okLabel: 'Got it',
-                onOk: confirmModal => confirmModal?.remove(),
-                formSheet: false
-            });
+            try {
+                await importContent(file);
+                modal.remove();
+                NiceModal.show(ConfirmationModal, {
+                    title: 'Import in progress',
+                    prompt: `Your import is being processed, and you'll receive a confirmation email as soon as it's complete. Usually this only takes a few minutes, but larger imports may take longer.`,
+                    cancelLabel: '',
+                    okLabel: 'Got it',
+                    onOk: confirmModal => confirmModal?.remove(),
+                    formSheet: false
+                });
+            } catch (e) {
+                handleError(e);
+            } finally {
+                setUploading(false);
+            }
         }}
     >
-        <div className="cursor-pointer bg-grey-100 p-10 text-center">
+        <div className="cursor-pointer bg-grey-75 p-10 text-center dark:bg-grey-950">
             {uploading ? 'Uploading ...' : 'Select a JSON or zip file'}
         </div>
     </FileUpload>;
@@ -39,6 +47,7 @@ const ImportModalContent = () => {
 const MigrationOptions: React.FC = () => {
     const {mutateAsync: deleteAllContent} = useDeleteAllContent();
     const client = useQueryClient();
+    const handleError = useHandleError();
 
     const handleImportContent = () => {
         NiceModal.show(ConfirmationModal, {
@@ -55,13 +64,18 @@ const MigrationOptions: React.FC = () => {
             prompt: 'This is permanent! No backups, no restores, no magic undo button. We warned you, k?',
             okColor: 'red',
             okLabel: 'Delete',
-            onOk: async () => {
-                await deleteAllContent(null);
-                showToast({
-                    type: 'success',
-                    message: 'All content deleted from database.'
-                });
-                await client.refetchQueries();
+            onOk: async (modal) => {
+                try {
+                    await deleteAllContent(null);
+                    showToast({
+                        type: 'success',
+                        message: 'All content deleted from database.'
+                    });
+                    modal?.remove();
+                    await client.refetchQueries();
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };

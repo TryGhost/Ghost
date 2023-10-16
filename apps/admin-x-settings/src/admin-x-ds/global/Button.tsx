@@ -1,5 +1,7 @@
 import Icon from './Icon';
 import React, {HTMLProps} from 'react';
+import clsx from 'clsx';
+import {LoadingIndicator, LoadingIndicatorColor, LoadingIndicatorSize} from './LoadingIndicator';
 
 export type ButtonColor = 'clear' | 'grey' | 'black' | 'green' | 'red' | 'white' | 'outline';
 export type ButtonSize = 'sm' | 'md';
@@ -14,10 +16,14 @@ export interface ButtonProps extends Omit<HTMLProps<HTMLButtonElement>, 'label' 
     color?: ButtonColor;
     fullWidth?: boolean;
     link?: boolean;
+    linkWithPadding?: boolean;
     disabled?: boolean;
     unstyled?: boolean;
     className?: string;
     tag?: string;
+    loading?: boolean;
+    loadingIndicatorSize?: LoadingIndicatorSize;
+    loadingIndicatorColor?: LoadingIndicatorColor;
     onClick?: (e?:React.MouseEvent<HTMLElement>) => void;
 }
 
@@ -30,10 +36,13 @@ const Button: React.FC<ButtonProps> = ({
     color = 'clear',
     fullWidth,
     link,
+    linkWithPadding = false,
     disabled,
     unstyled = false,
     className = '',
     tag = 'button',
+    loading = false,
+    loadingIndicatorColor,
     onClick,
     ...props
 }) => {
@@ -41,50 +50,87 @@ const Button: React.FC<ButtonProps> = ({
         color = 'clear';
     }
 
-    let styles = '';
-
     if (!unstyled) {
-        styles += ' transition whitespace-nowrap flex items-center justify-center rounded-sm text-sm';
-        styles += ((link && color !== 'clear' && color !== 'black') || (!link && color !== 'clear')) ? ' font-bold' : ' font-semibold';
-        styles += !link ? `${size === 'sm' ? ' px-3 h-7 ' : ' px-4 h-[34px] '}` : '';
+        className = clsx(
+            'inline-flex items-center justify-center whitespace-nowrap rounded-sm text-sm transition',
+            ((link && color !== 'clear' && color !== 'black') || (!link && color !== 'clear')) ? 'font-bold' : 'font-semibold',
+            !link ? `${size === 'sm' ? ' h-7 px-3 ' : ' h-[34px] px-4 '}` : '',
+            (link && linkWithPadding) && '-m-1 p-1',
+            className
+        );
 
         switch (color) {
         case 'black':
-            styles += link ? ' text-black hover:text-grey-800' : ` bg-black text-white ${!disabled && 'hover:bg-grey-900'}`;
+            className = clsx(
+                link ? 'text-black hover:text-grey-800 dark:text-white' : `bg-black text-white dark:bg-white dark:text-black ${!disabled && 'hover:bg-grey-900'}`,
+                className
+            );
+            loadingIndicatorColor = 'light';
             break;
         case 'grey':
-            styles += link ? ' text-black hover:text-grey-800' : ` bg-grey-100 text-black ${!disabled && 'hover:!bg-grey-300'}`;
+            className = clsx(
+                link ? 'text-black hover:text-grey-800 dark:text-white' : `bg-grey-100 text-black dark:bg-grey-900 dark:text-white ${!disabled && 'hover:!bg-grey-300 dark:hover:!bg-grey-800'}`,
+                className
+            );
+            loadingIndicatorColor = 'dark';
             break;
         case 'green':
-            styles += link ? ' text-green hover:text-green-400' : ` bg-green text-white ${!disabled && 'hover:bg-green-400'}`;
+            className = clsx(
+                link ? ' text-green hover:text-green-400' : ` bg-green text-white ${!disabled && 'hover:bg-green-400'}`,
+                className
+            );
+            loadingIndicatorColor = 'light';
             break;
         case 'red':
-            styles += link ? ' text-red hover:text-red-400' : ` bg-red text-white ${!disabled && 'hover:bg-red-400'}`;
+            className = clsx(
+                link ? 'text-red hover:text-red-400' : `bg-red text-white ${!disabled && 'hover:bg-red-400'}`,
+                className
+            );
+            loadingIndicatorColor = 'light';
             break;
         case 'white':
-            styles += link ? ' text-white hover:text-white' : ` bg-white text-black`;
+            className = clsx(
+                link ? 'text-white hover:text-white dark:text-black dark:hover:text-grey-800' : `bg-white text-black dark:bg-black dark:text-white`,
+                className
+            );
+            loadingIndicatorColor = 'dark';
             break;
         case 'outline':
-            styles += link ? ' text-black hover:text-grey-800' : ` border border-grey-300 bg-transparent text-black ${!disabled && 'hover:!border-black'}`;
+            className = clsx(
+                link ? 'text-black hover:text-grey-800 dark:text-white' : `border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white ${!disabled && 'hover:!border-black dark:hover:!border-white'}`,
+                className
+            );
+            loadingIndicatorColor = 'dark';
             break;
         default:
-            styles += link ? ' text-black hover:text-grey-800' : ` text-black ${!disabled && 'hover:bg-grey-200'}`;
+            className = clsx(
+                link ? ' text-black hover:text-grey-800 dark:text-white' : ` text-black dark:text-white dark:hover:bg-grey-900 ${!disabled && 'hover:bg-grey-200'}`,
+                className
+            );
+            loadingIndicatorColor = 'dark';
             break;
         }
 
-        styles += (fullWidth && !link) ? ' w-full' : '';
-        styles += (disabled) ? ' opacity-40' : ' cursor-pointer';
+        className = clsx(
+            (fullWidth && !link) && ' w-full',
+            disabled ? 'opacity-40' : 'cursor-pointer',
+            className
+        );
     }
 
-    styles += ` ${className}`;
+    const iconClasses = label && icon && !hideLabel ? 'mr-1.5' : '';
 
-    const iconClasses = label && icon ? 'mr-1.5' : '';
+    let labelClasses = '';
+    labelClasses += (label && hideLabel) ? 'sr-only' : '';
+    labelClasses += loading ? 'invisible' : '';
 
     const buttonChildren = <>
         {icon && <Icon className={iconClasses} colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
-        {(label && hideLabel) ? <span className="sr-only">{label}</span> : label}
+        <span className={labelClasses}>{label}</span>
+        {loading && <div className='absolute flex'><LoadingIndicator color={loadingIndicatorColor} size={size}/><span className='sr-only'>Loading...</span></div>}
     </>;
-    const buttonElement = React.createElement(tag, {className: styles,
+
+    const buttonElement = React.createElement(tag, {className: className,
         disabled: disabled,
         type: 'button',
         onClick: onClick,

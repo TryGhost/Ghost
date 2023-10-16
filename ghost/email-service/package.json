@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --100 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --100 --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
     "test": "yarn test:unit",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
@@ -19,7 +19,7 @@
   ],
   "devDependencies": {
     "c8": "8.0.1",
-    "html-validate": "8.3.0",
+    "html-validate": "8.6.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "15.2.0"
@@ -27,10 +27,10 @@
   "dependencies": {
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/email-events": "0.0.0",
-    "@tryghost/errors": "1.2.24",
+    "@tryghost/errors": "1.2.26",
     "@tryghost/html-to-plaintext": "0.0.0",
-    "@tryghost/kg-default-cards": "9.1.4",
-    "@tryghost/logging": "2.4.4",
+    "@tryghost/kg-default-cards": "9.1.6",
+    "@tryghost/logging": "2.4.8",
     "@tryghost/tpl": "0.1.24",
     "@tryghost/validator": "0.2.4",
     "bson-objectid": "2.0.4",

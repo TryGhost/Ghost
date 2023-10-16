@@ -248,10 +248,12 @@ function PostListItem({post, selectedResult, setSelectedResult}) {
 function getMatchIndexes({text, highlight}) {
     let highlightRegexText = '';
     highlight?.split(' ').forEach((d, idx) => {
+        // escape regex syntax in search queries
+        const e = String(d).replace(/\W/g, '\\&');
         if (idx > 0) {
-            highlightRegexText += `|^` + d + `|\\s` + d;
+            highlightRegexText += `|^` + e + `|\\s` + e;
         } else {
-            highlightRegexText = `^` + d + `|\\s` + d;
+            highlightRegexText = `^` + e + `|\\s` + e;
         }
     });
     const matchRegex = new RegExp(`${highlightRegexText}`, 'ig');

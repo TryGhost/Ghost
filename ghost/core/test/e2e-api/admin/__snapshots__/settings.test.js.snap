@@ -98,7 +98,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",
@@ -325,6 +325,10 @@ Object {
       "value": false,
     },
     Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
       "key": "paid_members_enabled",
       "value": true,
     },
@@ -363,7 +367,7 @@ Object {
   "settings": Array [
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
   ],
 }
@@ -504,7 +508,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",
@@ -731,6 +735,10 @@ Object {
       "value": false,
     },
     Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
       "key": "paid_members_enabled",
       "value": true,
     },
@@ -750,7 +758,7 @@ exports[`Settings API Edit Can edit a setting 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4193",
+  "content-length": "4278",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -858,7 +866,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",
@@ -1083,6 +1091,10 @@ Object {
     Object {
       "key": "members_invite_only",
       "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
     },
     Object {
       "key": "paid_members_enabled",
@@ -1211,7 +1223,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",
@@ -1438,6 +1450,10 @@ Object {
       "value": false,
     },
     Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
       "key": "paid_members_enabled",
       "value": true,
     },
@@ -1569,7 +1585,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",
@@ -1794,6 +1810,10 @@ Object {
     Object {
       "key": "members_invite_only",
       "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
     },
     Object {
       "key": "paid_members_enabled",
@@ -2015,7 +2035,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",
@@ -2242,6 +2262,10 @@ Object {
       "value": false,
     },
     Object {
+      "key": "allow_self_signup",
+      "value": true,
+    },
+    Object {
       "key": "paid_members_enabled",
       "value": true,
     },
@@ -2433,7 +2457,7 @@ Object {
     },
     Object {
       "key": "active_theme",
-      "value": "casper",
+      "value": "source",
     },
     Object {
       "key": "is_private",
@@ -2658,6 +2682,10 @@ Object {
     Object {
       "key": "members_invite_only",
       "value": false,
+    },
+    Object {
+      "key": "allow_self_signup",
+      "value": true,
     },
     Object {
       "key": "paid_members_enabled",

@@ -45,7 +45,6 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -134,7 +133,6 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -197,7 +195,7 @@ exports[`Posts API Can browse 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "10602",
+  "content-length": "10706",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -262,7 +260,6 @@ Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -358,7 +355,6 @@ mctesters
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -421,7 +417,7 @@ exports[`Posts API Can browse filtering by a collection 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "11597",
+  "content-length": "11701",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -475,7 +471,6 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -534,24 +529,11 @@ Object {
 }
 `;
 
-exports[`Posts API Can browse filtering by collection using paging parameters 1: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "7639",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
 exports[`Posts API Can browse filtering by collection using paging parameters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "8750",
+  "content-length": "8802",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -608,7 +590,6 @@ Object {
       "og_image": null,
       "og_title": null,
       "plaintext": "Welcome to my invisible post!",
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -718,7 +699,6 @@ Header Level 3
  * Aliquam tincidunt mauris eu risus.
 
 #header h1 a{display: block;width: 300px;height: 80px;}",
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -781,7 +761,7 @@ exports[`Posts API Can browse with formats 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "13430",
+  "content-length": "13534",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -827,7 +807,6 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -890,7 +869,7 @@ exports[`Posts API Convert can convert a mobiledoc post to lexical 2: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4050",
+  "content-length": "4102",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -936,7 +915,6 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": null,
@@ -998,7 +976,225 @@ exports[`Posts API Copy Can copy a post 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3762",
+  "content-length": "3814",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/posts\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Posts API Create Can create a post with html (labs.lexicalEditor) 1: [body] 1`] = `
+Object {
+  "posts": Array [
+    Object {
+      "authors": Any<Array>,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": Any<String>,
+      "count": Object {
+        "clicks": 0,
+        "negative_feedback": 0,
+        "positive_feedback": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email": null,
+      "email_only": false,
+      "email_segment": "all",
+      "email_subject": null,
+      "excerpt": "Testing post creation with html",
+      "feature_image": null,
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>Testing post creation with html</p>",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "lexical": "{\\"root\\":{\\"children\\":[{\\"children\\":[{\\"detail\\":0,\\"format\\":0,\\"mode\\":\\"normal\\",\\"style\\":\\"\\",\\"text\\":\\"Testing post creation with html\\",\\"type\\":\\"extended-text\\",\\"version\\":1}],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1}],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}}",
+      "meta_description": null,
+      "meta_title": null,
+      "mobiledoc": null,
+      "newsletter": null,
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "primary_author": Any<Object>,
+      "primary_tag": Any<Object>,
+      "published_at": null,
+      "reading_time": 0,
+      "slug": "html-test-2",
+      "status": "draft",
+      "tags": Any<Array>,
+      "tiers": Array [
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": null,
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": null,
+          "monthly_price_id": null,
+          "name": "Free",
+          "slug": "free",
+          "trial_days": 0,
+          "type": "free",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": null,
+          "yearly_price": null,
+          "yearly_price_id": null,
+        },
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": "usd",
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": 500,
+          "monthly_price_id": null,
+          "name": "Default Product",
+          "slug": "default-product",
+          "trial_days": 0,
+          "type": "paid",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": null,
+          "yearly_price": 5000,
+          "yearly_price_id": null,
+        },
+      ],
+      "title": "HTML test",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": Any<String>,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+  ],
+}
+`;
+
+exports[`Posts API Create Can create a post with html (labs.lexicalEditor) 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "4126",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/posts\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Posts API Create Can create a post with html 1: [body] 1`] = `
+Object {
+  "posts": Array [
+    Object {
+      "authors": Any<Array>,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": Any<String>,
+      "count": Object {
+        "clicks": 0,
+        "negative_feedback": 0,
+        "positive_feedback": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email": null,
+      "email_only": false,
+      "email_segment": "all",
+      "email_subject": null,
+      "excerpt": "Testing post creation with html",
+      "feature_image": null,
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>Testing post creation with html</p>",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "lexical": null,
+      "meta_description": null,
+      "meta_title": null,
+      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"atoms\\":[],\\"cards\\":[],\\"markups\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"Testing post creation with html\\"]]]]}",
+      "newsletter": null,
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "primary_author": Any<Object>,
+      "primary_tag": Any<Object>,
+      "published_at": null,
+      "reading_time": 0,
+      "slug": "html-test",
+      "status": "draft",
+      "tags": Any<Array>,
+      "tiers": Array [
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": null,
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": null,
+          "monthly_price_id": null,
+          "name": "Free",
+          "slug": "free",
+          "trial_days": 0,
+          "type": "free",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": null,
+          "yearly_price": null,
+          "yearly_price_id": null,
+        },
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": "usd",
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": 500,
+          "monthly_price_id": null,
+          "name": "Default Product",
+          "slug": "default-product",
+          "trial_days": 0,
+          "type": "paid",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": null,
+          "yearly_price": 5000,
+          "yearly_price_id": null,
+        },
+      ],
+      "title": "HTML test",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": Any<String>,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+  ],
+}
+`;
+
+exports[`Posts API Create Can create a post with html 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "3902",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1045,7 +1241,6 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": null,
@@ -1108,7 +1303,7 @@ exports[`Posts API Create Can create a post with lexical 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5486",
+  "content-length": "4136",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1155,7 +1350,6 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": null,
@@ -1218,7 +1412,7 @@ exports[`Posts API Create Can create a post with mobiledoc 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3900",
+  "content-length": "3952",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1290,19 +1484,258 @@ Object {
 }
 `;
 
-exports[`Posts API Delete Can destroy a post 1: [headers] 1`] = `
+exports[`Posts API Delete Can delete posts belonging to a collection and returns empty response when filtering by that collection 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 2,
+    },
+  },
+  "posts": Array [
+    Object {
+      "authors": Any<Array>,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": Any<String>,
+      "count": Object {
+        "clicks": 0,
+        "negative_feedback": 0,
+        "positive_feedback": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email": null,
+      "email_only": false,
+      "email_segment": "all",
+      "email_subject": null,
+      "excerpt": " * Lorem
+ * Aliquam
+ * Tortor
+ * Morbi
+ * Praesent
+ * Pellentesque
+
+Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.
+
+1234abcdefghijkl
+
+Definition listConsectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim venia",
+      "feature_image": null,
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": true,
+      "frontmatter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": null,
+      "meta_title": null,
+      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[[\\"markdown\\",{\\"markdown\\":\\"<p><nav><ul><li><a href=\\\\\\"#nowhere\\\\\\" title=\\\\\\"Anchor URL\\\\\\">Lorem</a></li><li><a href=\\\\\\"http://127.0.0.1:2369/about#nowhere\\\\\\" title=\\\\\\"Relative URL\\\\\\">Aliquam</a></li><li><a href=\\\\\\"//somewhere.com/link#nowhere\\\\\\" title=\\\\\\"Protocol Relative URL\\\\\\">Tortor</a></li><li><a href=\\\\\\"http://somewhere.com/link#nowhere\\\\\\" title=\\\\\\"Absolute URL\\\\\\">Morbi</a></li><li><a href=\\\\\\"#nowhere\\\\\\" title=\\\\\\"Praesent dapibus, neque id cursus faucibus\\\\\\">Praesent</a></li><li><a href=\\\\\\"#nowhere\\\\\\" title=\\\\\\"Pellentesque fermentum dolor\\\\\\">Pellentesque</a></li></ul></nav><p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.</p><table><thead><tr><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody><tr><td>a</td><td>b</td><td>c</td><td>d</td></tr><tr><td>e</td><td>f</td><td>g</td><td>h</td></tr><tr><td>i</td><td>j</td><td>k</td><td>l</td></tr></tbody></table><dl><dt>Definition list</dt><dd>Consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</dd><dt>Lorem ipsum dolor sit amet</dt><dd>Consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</dd></dl><ul><li>Morbi in sem quis dui placerat ornare. Pellentesque odio nisi, euismod in, pharetra a, ultricies in, diam. Sed arcu. Cras consequat.</li><li>Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus.</li><li>Phasellus ultrices nulla quis nibh. Quisque a lectus. Donec consectetuer ligula vulputate sem tristique cursus. Nam nulla quam, gravida non, commodo a, sodales sit amet, nisi.</li><li>Pellentesque fermentum dolor. Aliquam quam lectus, facilisis auctor, ultrices ut, elementum vulputate, nunc.</li></ul></p>\\"}]],\\"sections\\":[[10,0]]}",
+      "newsletter": null,
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "primary_author": Any<Object>,
+      "primary_tag": Any<Object>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "reading_time": 1,
+      "slug": "not-so-short-bit-complex",
+      "status": "published",
+      "tags": Any<Array>,
+      "tiers": Array [
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": null,
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": null,
+          "monthly_price_id": null,
+          "name": "Free",
+          "slug": "free",
+          "trial_days": 0,
+          "type": "free",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": null,
+          "yearly_price": null,
+          "yearly_price_id": null,
+        },
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": "usd",
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": 500,
+          "monthly_price_id": null,
+          "name": "Default Product",
+          "slug": "default-product",
+          "trial_days": 0,
+          "type": "paid",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": null,
+          "yearly_price": 5000,
+          "yearly_price_id": null,
+        },
+      ],
+      "title": "Not so short, bit complex",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": Any<String>,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+    Object {
+      "authors": Any<Array>,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": Any<String>,
+      "count": Object {
+        "clicks": 0,
+        "negative_feedback": 0,
+        "positive_feedback": 0,
+      },
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "custom_excerpt": null,
+      "custom_template": null,
+      "email": null,
+      "email_only": false,
+      "email_segment": "all",
+      "email_subject": null,
+      "excerpt": "testing
+
+
+mctesters
+
+
+ * test
+ * line
+ * items
+",
+      "feature_image": "http://placekitten.com/500/200",
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": true,
+      "frontmatter": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "meta_description": "meta description for short and sweet",
+      "meta_title": null,
+      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[[\\"markdown\\",{\\"markdown\\":\\"## testing\\\\n\\\\nmctesters\\\\n\\\\n- test\\\\n- line\\\\n- items\\"}]],\\"sections\\":[[10,0]]}",
+      "newsletter": null,
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "primary_author": Any<Object>,
+      "primary_tag": Any<Object>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "reading_time": 0,
+      "slug": "short-and-sweet",
+      "status": "published",
+      "tags": Any<Array>,
+      "tiers": Array [
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": null,
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": null,
+          "monthly_price_id": null,
+          "name": "Free",
+          "slug": "free",
+          "trial_days": 0,
+          "type": "free",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": null,
+          "yearly_price": null,
+          "yearly_price_id": null,
+        },
+        Object {
+          "active": true,
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "currency": "usd",
+          "description": null,
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "monthly_price": 500,
+          "monthly_price_id": null,
+          "name": "Default Product",
+          "slug": "default-product",
+          "trial_days": 0,
+          "type": "paid",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "visibility": "public",
+          "welcome_page_url": null,
+          "yearly_price": 5000,
+          "yearly_price_id": null,
+        },
+      ],
+      "title": "Short and Sweet",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "url": Any<String>,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "public",
+    },
+  ],
+}
+`;
+
+exports[`Posts API Delete Can delete posts belonging to a collection and returns empty response when filtering by that collection 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "11701",
+  "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin",
-  "x-cache-invalidate": "/*",
+  "vary": "Accept-Version, Origin, Accept-Encoding",
   "x-powered-by": "Express",
 }
 `;
 
-exports[`Posts API Delete Can destroy a post 2: [headers] 1`] = `
+exports[`Posts API Delete Can delete posts belonging to a collection and returns empty response when filtering by that collection 3: [body] 1`] = `
+Object {
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 0,
+    },
+  },
+  "posts": Array [],
+}
+`;
+
+exports[`Posts API Delete Can delete posts belonging to a collection and returns empty response when filtering by that collection 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "100",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Posts API Delete Can destroy a post 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -1485,7 +1918,6 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": null,
@@ -1547,7 +1979,7 @@ exports[`Posts API Update Can add and remove collections 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3761",
+  "content-length": "3813",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1662,6 +2094,22 @@ Object {
               "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
               "sort_order": 17,
             },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 18,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 19,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 20,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 21,
+            },
           ],
           "slug": "latest",
           "title": "Latest",
@@ -1696,7 +2144,6 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": null,
@@ -1758,7 +2205,7 @@ exports[`Posts API Update Can add and remove collections 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5207",
+  "content-length": "5459",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1873,6 +2320,22 @@ Object {
               "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
               "sort_order": 17,
             },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 18,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 19,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 20,
+            },
+            Object {
+              "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+              "sort_order": 21,
+            },
           ],
           "slug": "latest",
           "title": "Latest",
@@ -1907,7 +2370,6 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": null,
@@ -1969,7 +2431,7 @@ exports[`Posts API Update Can add and remove collections 6: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5201",
+  "content-length": "5453",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2016,7 +2478,6 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": null,
@@ -2079,7 +2540,7 @@ exports[`Posts API Update Can update a post with lexical 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5423",
+  "content-length": "4087",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2126,7 +2587,6 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": null,
@@ -2189,7 +2649,7 @@ exports[`Posts API Update Can update a post with lexical 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "6805",
+  "content-length": "4084",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2236,7 +2696,6 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": null,
@@ -2299,7 +2758,7 @@ exports[`Posts API Update Can update a post with mobiledoc 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3845",
+  "content-length": "3897",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2346,7 +2805,6 @@ Object {
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Any<Array>,
       "primary_author": Any<Object>,
       "primary_tag": Any<Object>,
       "published_at": null,
@@ -2409,7 +2867,7 @@ exports[`Posts API Update Can update a post with mobiledoc 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3842",
+  "content-length": "3894",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

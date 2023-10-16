@@ -28,6 +28,7 @@ module.exports = {
     twitter_description: 'twitter_description',
     members_support_address: 'members_support_address',
     members_enabled: 'members_enabled',
+    allow_self_signup: 'allow_self_signup',
     members_invite_only: 'members_invite_only',
     paid_members_enabled: 'paid_members_enabled',
     firstpromoter_account: 'firstpromoter_account',
@@ -40,5 +41,6 @@ module.exports = {
     portal_name: 'portal_name',
     portal_button: 'portal_button',
     comments_enabled: 'comments_enabled',
-    recommendations_enabled: 'recommendations_enabled'
+    recommendations_enabled: 'recommendations_enabled',
+    outbound_link_tagging: 'outbound_link_tagging'
 };

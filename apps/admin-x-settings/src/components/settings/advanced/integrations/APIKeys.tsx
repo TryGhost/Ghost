@@ -1,8 +1,10 @@
 import Button from '../../../../admin-x-ds/global/Button';
+import Heading from '../../../../admin-x-ds/global/Heading';
 import React, {ReactNode, useState} from 'react';
+import clsx from 'clsx';
 
 export interface APIKeyFieldProps {
-    label: string;
+    label?: string;
     text?: string;
     hint?: ReactNode;
     onRegenerate?: () => void;
@@ -17,22 +19,26 @@ const APIKeyField: React.FC<APIKeyFieldProps> = ({label, text = '', hint, onRege
         setTimeout(() => setCopied(false), 2000);
     };
 
-    return <>
-        <div className='p-0 py-1 pr-4 text-sm text-grey-600'>{label}</div>
-        <div className='group relative overflow-hidden rounded p-1 text-sm hover:bg-grey-50'>
-            {text}
+    const containerClasses = clsx(
+        'group/api-keys relative -mt-1 mb-1 w-full overflow-hidden border-b border-transparent py-2 hover:border-grey-300 dark:hover:border-grey-600'
+    );
+
+    return <div className='mb-3 grid grid-cols-1'>
+        {label && <Heading level={6} grey>{label}</Heading>}
+        <div className={containerClasses}>
+            <span>{text}</span>
             {hint}
-            <div className='invisible absolute right-0 top-[50%] flex translate-y-[-50%] gap-1 bg-white pl-1 text-sm group-hover:visible'>
-                {onRegenerate && <Button color='outline' label='Regenerate' size='sm' onClick={onRegenerate} />}
-                <Button color='outline' label={copied ? 'Copied' : 'Copy'} size='sm' onClick={copyText} />
+            <div className='visible absolute right-0 top-1/2 flex translate-y-[-50%] gap-1 pl-1 text-sm group-hover/api-keys:visible dark:bg-black md:invisible'>
+                {onRegenerate && <Button className='!bg-white' color='outline' label='Regenerate' size='sm' onClick={onRegenerate} />}
+                <Button className='!bg-white' color='outline' label={copied ? 'Copied' : 'Copy'} size='sm' onClick={copyText} />
             </div>
         </div>
-    </>;
+    </div>;
 };
 
-const APIKeys: React.FC<{keys: APIKeyFieldProps[]}> = ({keys}) => {
+const APIKeys: React.FC<{hasLabel?: boolean; keys: APIKeyFieldProps[];}> = ({keys}) => {
     return (
-        <div className='grid grid-cols-[max-content_1fr]'>
+        <div data-testid='api-keys'>
             {keys.map(key => <APIKeyField key={key.label} {...key} />)}
         </div>
     );

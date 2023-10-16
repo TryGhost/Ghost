@@ -11,12 +11,12 @@ import TitleAndDescription from './TitleAndDescription';
 import Twitter from './Twitter';
 import Users from './Users';
 
-const searchKeywords = {
+export const searchKeywords = {
     titleAndDescription: ['title and description', 'site title', 'site description'],
     timeZone: ['time', 'date', 'site timezone', 'time zone'],
     publicationLanguage: ['publication language', 'locale'],
     metadata: ['metadata', 'title', 'description', 'search', 'engine', 'google'],
-    twitter: ['twitter card', 'structured data', 'rich cards'],
+    twitter: ['twitter card', 'structured data', 'rich cards', 'x'],
     facebook: ['facebook card', 'structured data', 'rich cards'],
     socialAccounts: ['social accounts', 'facebook', 'twitter', 'structured data', 'rich cards'],
     lockSite: ['private', 'password', 'lock site'],

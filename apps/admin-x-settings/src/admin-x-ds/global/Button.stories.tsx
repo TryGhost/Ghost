@@ -37,6 +37,13 @@ export const Black: Story = {
     }
 };
 
+export const Grey: Story = {
+    args: {
+        label: 'Button',
+        color: 'grey'
+    }
+};
+
 export const Green: Story = {
     args: {
         label: 'Button',
@@ -73,5 +80,13 @@ export const IconSmall: Story = {
         icon: 'ellipsis',
         color: 'green',
         iconColorClass: 'text-white'
+    }
+};
+
+export const Loading: Story = {
+    args: {
+        loading: true,
+        color: 'green',
+        label: 'Button'
     }
 };

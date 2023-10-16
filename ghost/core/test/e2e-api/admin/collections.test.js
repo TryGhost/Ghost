@@ -43,8 +43,7 @@ const matchPostShallowIncludes = {
     tiers: anyArray,
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
-    published_at: anyISODateTime,
-    post_revisions: anyArray
+    published_at: anyISODateTime
 };
 
 async function trackDb(fn, skip) {
@@ -117,7 +116,7 @@ describe('Collections API', function () {
                     });
             }, this.skip.bind(this));
             const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
-            assert(collectionRelatedQueries.length === 2);
+            assert(collectionRelatedQueries.length === 3);
         });
 
         it('Can browse Collections and include the posts count', async function () {
@@ -572,7 +571,7 @@ describe('Collections API', function () {
                 }, this.skip.bind(this));
 
                 const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
-                assert.equal(collectionRelatedQueries.length, 8);
+                assert.equal(collectionRelatedQueries.length, 7);
             }
 
             await agent
@@ -604,7 +603,7 @@ describe('Collections API', function () {
                 }, this.skip.bind(this));
 
                 const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
-                assert.equal(collectionRelatedQueries.length, 14);
+                assert.equal(collectionRelatedQueries.length, 16);
             }
 
             await agent
@@ -632,7 +631,10 @@ describe('Collections API', function () {
                     await DomainEvents.allSettled();
                 }, this.skip.bind(this));
                 const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
-                assert.equal(collectionRelatedQueries.length, 2);
+
+                // deletion is handled on the DB layer through Cascade Delete,
+                // so collections should not execute any additional queries
+                assert.equal(collectionRelatedQueries.length, 0);
             }
 
             await agent

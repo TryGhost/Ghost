@@ -163,6 +163,7 @@ module.exports = {
         paid_subscription_started_notification: {type: 'boolean', nullable: false, defaultTo: true},
         paid_subscription_canceled_notification: {type: 'boolean', nullable: false, defaultTo: false},
         mention_notifications: {type: 'boolean', nullable: false, defaultTo: true},
+        recommendation_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         milestone_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         donation_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
@@ -1075,9 +1076,21 @@ module.exports = {
         excerpt: {type: 'string', maxlength: 2000, nullable: true},
         featured_image: {type: 'string', maxlength: 2000, nullable: true},
         favicon: {type: 'string', maxlength: 2000, nullable: true},
-        reason: {type: 'string', maxlength: 2000, nullable: true},
+        description: {type: 'string', maxlength: 2000, nullable: true},
         one_click_subscribe: {type: 'boolean', nullable: false, defaultTo: false},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
+    },
+    recommendation_click_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        recommendation_id: {type: 'string', maxlength: 24, nullable: false, references: 'recommendations.id', unique: false, cascadeDelete: true},
+        member_id: {type: 'string', maxlength: 24, nullable: true, references: 'members.id', unique: false, setNullDelete: true},
+        created_at: {type: 'dateTime', nullable: false}
+    },
+    recommendation_subscribe_events: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        recommendation_id: {type: 'string', maxlength: 24, nullable: false, references: 'recommendations.id', unique: false, cascadeDelete: true},
+        member_id: {type: 'string', maxlength: 24, nullable: true, references: 'members.id', unique: false, setNullDelete: true},
+        created_at: {type: 'dateTime', nullable: false}
     }
 };
