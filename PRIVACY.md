@@ -42,9 +42,11 @@ RPC pings only happen when Ghost is running in the `production` environment.
 
 Ghost outputs basic meta tags to allow rich snippets of your content to be recognised by popular social networks. Currently there are 3 supported rich data protocols which are output in `{{ghost_head}}`:
 
-- Schema.org - http://schema.org/docs/documents.html
-- Open Graph - http://ogp.me/
-- Twitter cards - https://dev.twitter.com/cards/overview
+| Resource              | Documentation Link                               |
+|-----------------------|--------------------------------------------------|
+| Schema.org            | [http://schema.org/docs/documents.html](http://schema.org/docs/documents.html) |
+| Open Graph            | [http://ogp.me/](http://ogp.me/)                 |
+| Twitter Cards        | [https://dev.twitter.com/cards/overview](https://dev.twitter.com/cards/overview) |
 
 ### Default Theme
 
