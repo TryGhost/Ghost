@@ -4,15 +4,15 @@ const {deleteAllMembers, completeStripeSubscription} = require('../utils');
 
 test.describe('Portal', () => {
     test.describe('Tiers', () => {
-        test('Sign up for paid plan via portal - single tier', async ({page}) => {
+        test('Sign up for paid plan via portal - single tier', async ({sharedPage}) => {
             // make sure we have no members to start fresh
-            await page.goto('/ghost');
-            await deleteAllMembers(page);
+            await sharedPage.goto('/ghost');
+            await deleteAllMembers(sharedPage);
 
             // go to website and open portal
-            await page.goto('/');
-            const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
-            const portalFrame = page.frameLocator('[data-testid="portal-popup-frame"]');
+            await sharedPage.goto('/');
+            const portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
             await portalTriggerButton.click();
 
             // fill out signup form and submit
@@ -27,7 +27,7 @@ test.describe('Portal', () => {
             }
 
             // complete the stripe checkout flow
-            await completeStripeSubscription(page);
+            await completeStripeSubscription(sharedPage);
 
             // come back to the website, open portal and check member is logged in and has paid
             await portalTriggerButton.click();
