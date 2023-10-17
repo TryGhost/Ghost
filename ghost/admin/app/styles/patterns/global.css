@@ -287,6 +287,12 @@
 /* Layout
 /* ---------------------------------------------------------- */
 
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 html {
     overflow: hidden;
     width: 100%;
