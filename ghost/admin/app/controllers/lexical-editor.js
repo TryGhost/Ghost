@@ -28,8 +28,6 @@ import {mobiledocToLexical} from '@tryghost/kg-converters';
 import {inject as service} from '@ember/service';
 
 const DEFAULT_TITLE = '(Untitled)';
-// suffix that is applied to the title of a post when it has been duplicated
-const DUPLICATED_POST_TITLE_SUFFIX = '(Copy)';
 // time in ms to save after last content edit
 const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
@@ -124,6 +122,11 @@ export default class LexicalEditorController extends Controller {
      * Flag used to determine if we should return to the analytics page or to the posts/pages overview
      */
     fromAnalytics = false;
+
+    /**
+     * Flag used to determine if the user has input a custom slug manually
+     */
+    isUserCustomSlug = false;
 
     // koenig related properties
     wordCount = 0;
@@ -641,6 +644,7 @@ export default class LexicalEditorController extends Controller {
         }
 
         this.set('post.slug', serverSlug);
+        this.isUserCustomSlug = true;
 
         // If this is a new post.  Don't save the post.  Defer the save
         // to the user pressing the save button
@@ -767,15 +771,10 @@ export default class LexicalEditorController extends Controller {
         // this is necessary to force a save when the title is blank
         this.set('hasDirtyAttributes', true);
 
-        // generate slug if post
-        //  - is new and doesn't have a title yet
-        //  - still has the default title
-        //  - previously had a title that ended with the duplicated post title suffix
-        if (
-            (post.get('isNew') && !currentTitle) ||
-            (currentTitle === DEFAULT_TITLE) ||
-            currentTitle?.endsWith(DUPLICATED_POST_TITLE_SUFFIX)
-        ) {
+        // sync the post slug with the post title, except when:
+        // - the user has already typed a custom slug, which should not be overwritten
+        // - the post has been published, so that published URLs are not broken
+        if (!this.isUserCustomSlug && !this.get('post.isPublished')) {
             yield this.generateSlugTask.perform();
         }
 
