@@ -113,7 +113,7 @@ test.describe('Portal Settings', async () => {
         await page.waitForSelector('[data-testid="portal-modal"]');
 
         const modal = page.getByTestId('portal-modal');
-        
+
         // since account page occurs twice on the page, we need to grab it by ID instead.
         const accountTab = await page.$('#accountPage');
         await accountTab?.click();
