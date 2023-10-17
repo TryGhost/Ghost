@@ -109,7 +109,15 @@ describe('Cards', function () {
         const renderer = new Renderer({nodes});
         const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
 
-        const expected = `<div style="color: red"><p>Testing this</p></div>`;
+        const expected = `
+<!--kg-card-begin: html-->
+<div style="color: red">
+<!--kg-card-end: html-->
+<p>Testing this</p>
+<!--kg-card-begin: html-->
+</div>
+<!--kg-card-end: html-->
+`;
         renderedInput.should.equal(expected);
     });
 });

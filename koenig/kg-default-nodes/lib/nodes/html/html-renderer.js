@@ -12,7 +12,7 @@ export function renderHtmlNode(node, options = {}) {
     }
 
     const textarea = document.createElement('textarea');
-    textarea.innerHTML = html;
+    textarea.innerHTML = `\n<!--kg-card-begin: html-->\n${html}\n<!--kg-card-end: html-->\n`;
 
     // `type: 'value'` will render the value of the textarea element
     // @see @tryghost/kg-lexical-html-renderer package

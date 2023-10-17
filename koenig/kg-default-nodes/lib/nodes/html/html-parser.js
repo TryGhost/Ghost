@@ -1,7 +1,7 @@
 export function parseHtmlNode(HtmlNode) {
     return {
         '#comment': (nodeElem) => {
-            if (nodeElem.nodeType === 8 && nodeElem.nodeValue.trim() === 'kg-card-begin: html') {
+            if (nodeElem.nodeType === 8 && nodeElem.nodeValue.trim().match(/^kg-card-begin:\s?html$/)) {
                 return {
                     conversion(domNode) {
                         let html = [];
@@ -43,5 +43,5 @@ export function parseHtmlNode(HtmlNode) {
 }
 
 function isHtmlEndComment(node) {
-    return node && node.nodeType === 8 && node.nodeValue === 'kg-card-end: html';
+    return node && node.nodeType === 8 && node.nodeValue.trim().match(/^kg-card-end:\s?html$/);
 }

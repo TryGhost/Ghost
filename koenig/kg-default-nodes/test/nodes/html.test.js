@@ -126,15 +126,17 @@ describe('HtmlNode', function () {
             const {element, type} = htmlNode.exportDOM(exportOptions);
             type.should.equal('value');
             element.value.should.prettifyTo(html`
+                <!--kg-card-begin: html-->
                 <p>Paragraph with:</p>
                 <ul>
                     <li>list</li>
                     <li>items</li>
                 </ul>
+                <!--kg-card-end: html-->
             `);
         }));
 
-        it('renders an empty div with missing html', editorTest(function () {
+        it('renders an empty span with missing html', editorTest(function () {
             const htmlNode = $createHtmlNode();
             const {element, type} = htmlNode.exportDOM(exportOptions);
             type.should.equal('inner');
@@ -148,7 +150,7 @@ describe('HtmlNode', function () {
             type.should.equal('value');
 
             // do not prettify, it will add a closing tag to the compared string causing a false pass
-            element.value.should.equal('<div style="color:red">');
+            element.value.should.equal('\n<!--kg-card-begin: html-->\n<div style="color:red">\n<!--kg-card-end: html-->\n');
         }));
     });
 
