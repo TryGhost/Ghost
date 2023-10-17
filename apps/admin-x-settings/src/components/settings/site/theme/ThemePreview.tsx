@@ -72,7 +72,7 @@ const ThemePreview: React.FC<{
 
     if (isInstalling) {
         installButtonLabel = 'Installing...';
-    } else if (selectedTheme.ref === 'default') {
+    } else if (selectedTheme.ref === 'default' && !installedTheme?.active) {
         installButtonLabel = `Activate ${selectedTheme.name}`;
     } else if (installedTheme) {
         installButtonLabel = `Update ${selectedTheme.name}`;
