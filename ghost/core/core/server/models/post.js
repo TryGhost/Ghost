@@ -987,7 +987,7 @@ Post = ghostBookshelf.Model.extend({
         if (labs.isSet('lexicalEditor') && options.convert_to_lexical) {
             ops.push(async function convertToLexical() {
                 const mobiledoc = model.get('mobiledoc');
-                if (mobiledoc) { // only run conversion when there is a mobiledoc string
+                if (mobiledoc !== null) { // only run conversion when there is a mobiledoc string
                     const lexical = mobiledocToLexical(mobiledoc);
                     model.set('lexical', lexical);
                     model.set('mobiledoc', null);
