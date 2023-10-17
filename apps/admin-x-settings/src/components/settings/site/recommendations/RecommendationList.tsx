@@ -97,7 +97,6 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
         </Table>;
     } else {
         return <NoValueLabel>
-            <span className='mb-2 max-w-[40ch] text-center'>Get started by sharing any publication you think your audience will find valuable.</span>
             <Button color='grey' label='Add first recommendation' size='sm' onClick={() => {
                 openAddNewRecommendationModal();
             }}></Button>
