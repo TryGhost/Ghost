@@ -105,7 +105,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ];
 
     const groupDescription = (
-        <>Recommend any publication you think your audience will find valuable, and find out when others are recommending you.</>
+        <>Recommend any publication that your audience will find valuable, and find out when others are recommending you.</>
     );
 
     // Add a new recommendation

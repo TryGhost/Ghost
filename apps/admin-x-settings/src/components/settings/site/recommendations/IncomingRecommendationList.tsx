@@ -78,7 +78,7 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
                     <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{freeMembersLabel}</span>
                 </div>)}
             </TableCell>
-            {incomingRecommendation.recommending_back && <TableCell className='w-[1%] whitespace-nowrap group-hover/table-row:visible md:invisible'><div className='mt-1 whitespace-nowrap text-right text-sm text-grey-700'>Recommending back</div></TableCell>}
+            {incomingRecommendation.recommending_back && <TableCell className='w-[1%] whitespace-nowrap group-hover/table-row:visible md:invisible'><div className='mt-1 whitespace-nowrap text-right text-sm text-grey-700'>Recommending</div></TableCell>}
         </TableRow>
     );
 };
@@ -90,7 +90,7 @@ const IncomingRecommendationList: React.FC<IncomingRecommendationListProps> = ({
         </Table>;
     } else {
         return <NoValueLabel>
-            <span className='max-w-[40ch] text-center'>No one’s recommended you yet. Once they do, you’ll find them here along with how many memberships each has driven.</span>
+            <span className='max-w-[40ch] text-center'>No one&rsquo;s recommended you yet. Once they do, you&rsquo;ll find them here along with how many memberships they&rsquo;ve driven.</span>
         </NoValueLabel>;
     }
 };
