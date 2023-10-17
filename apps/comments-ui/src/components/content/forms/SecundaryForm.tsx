@@ -33,7 +33,7 @@ const SecundaryForm: React.FC<Props> = ({editor, submit, close, closeIfNotChange
 
         if (secundaryFormCount > 1) {
             closeIfNotChanged();
-        }
+        };
     }, [secundaryFormCount]);
 
     const reduced = isMobile();
