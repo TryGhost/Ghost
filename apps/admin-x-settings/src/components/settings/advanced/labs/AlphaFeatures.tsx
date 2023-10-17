@@ -47,10 +47,6 @@ const features = [{
     title: 'Tips & donations',
     description: 'Enables publishers to collect one-time payments',
     flag: 'tipsAndDonations'
-},{
-    title: 'Recommendations',
-    description: 'Enables publishers to recommend sites to their audience',
-    flag: 'recommendations'
 }];
 
 const AlphaFeatures: React.FC = () => {
