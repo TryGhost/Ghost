@@ -8,10 +8,10 @@ import {getSettingValues} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 export const searchKeywords = {
-    enableNewsletters: ['newsletter', 'enable', 'disable', 'turn on'],
-    newsletters: ['newsletter', 'email'],
-    defaultRecipients: ['newsletter', 'default recipients', 'email'],
-    mailgun: ['mailgun', 'email']
+    enableNewsletters: ['newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
+    newsletters: ['newsletters', 'emails'],
+    defaultRecipients: ['newsletters', 'default recipients', 'emails'],
+    mailgun: ['mailgun', 'emails', 'newsletters']
 };
 
 const EmailSettings: React.FC = () => {

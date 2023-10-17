@@ -5,9 +5,9 @@ import React from 'react';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 
 export const searchKeywords = {
-    design: ['design', 'branding', 'logo', 'cover', 'colors', 'fonts', 'background', 'themes', 'appearance', 'style'],
+    design: ['logo', 'cover', 'colors', 'fonts', 'background', 'themes', 'appearance', 'style', 'design & branding', 'design and branding'],
     navigation: ['navigation', 'menus', 'primary', 'secondary', 'links'],
-    announcementBar: ['announcement', 'bar', 'important', 'banner']
+    announcementBar: ['announcement bar', 'important', 'banner']
 };
 
 const SiteSettings: React.FC = () => {

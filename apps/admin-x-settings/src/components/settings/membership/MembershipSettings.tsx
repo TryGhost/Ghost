@@ -14,8 +14,8 @@ export const searchKeywords = {
     access: ['default', 'access', 'subscription', 'post', 'membership'],
     tiers: ['tiers', 'payment', 'paid', 'stripe'],
     tips: ['tip', 'donation', 'one time', 'payment'],
-    embedSignupForm: ['signup', 'form', 'embed'],
-    recommendations: ['recommendation', 'recommend', 'blogroll'],
+    embedSignupForm: ['embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
+    recommendations: ['recommendations', 'recommend', 'blogroll'],
     analytics: ['analytics', 'tracking', 'privacy', 'membership']
 };
 
