@@ -834,12 +834,26 @@ describe('Posts API', function () {
 
             const [postResponse] = body.posts;
 
-            await agent
+            const conversionResponse = await agent
                 .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
                 .body({posts: [Object.assign({}, postResponse)]})
                 .expectStatus(200)
                 .matchBodySnapshot({
                     posts: [Object.assign({}, matchPostShallowIncludes, {lexical: expectedLexical, mobiledoc: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+                
+            const convertedPost = conversionResponse.body.posts[0];
+            const expectedConvertedLexical = convertedPost.lexical;
+            await agent
+                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
+                .body({posts: [Object.assign({}, convertedPost)]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    posts: [Object.assign({}, matchPostShallowIncludes, {lexical: expectedConvertedLexical, mobiledoc: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,

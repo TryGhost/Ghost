@@ -613,6 +613,7 @@ Post = ghostBookshelf.Model.extend({
         // an exception for ?source=html which always sets both when the lexical editor is enabled.
         // That's necessary because at the input serializer layer we don't have access to the
         // actual model to check if this would result in a change of format
+
         if (this.previous('mobiledoc') && this.get('lexical')) {
             this.set('lexical', null);
         } else if (this.get('mobiledoc') && this.get('lexical')) {
@@ -986,9 +987,11 @@ Post = ghostBookshelf.Model.extend({
         if (labs.isSet('lexicalEditor') && options.convert_to_lexical) {
             ops.push(async function convertToLexical() {
                 const mobiledoc = model.get('mobiledoc');
-                const lexical = mobiledocToLexical(mobiledoc);
-                model.set('lexical', lexical);
-                model.set('mobiledoc', null);
+                if (mobiledoc !== null) { // only run conversion when there is a mobiledoc string
+                    const lexical = mobiledocToLexical(mobiledoc);
+                    model.set('lexical', lexical);
+                    model.set('mobiledoc', null);
+                }
             });
         }
 
