@@ -50,7 +50,6 @@ export const responseFixtures = {
 };
 
 let defaultLabFlags = {
-    recommendations: false,
     audienceFeedback: false,
     collections: false,
     themeErrorsNotification: false,
