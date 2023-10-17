@@ -407,12 +407,27 @@ describe('Pages API', function () {
 
             const [pageResponse] = pageBody.pages;
 
-            await agent
+            const convertedResponse = await agent
                 .put(`/pages/${pageResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
                 .body({pages: [Object.assign({}, pageResponse)]})
                 .expectStatus(200)
                 .matchBodySnapshot({
                     pages: [Object.assign({}, matchPageShallowIncludes, {lexical: expectedLexical, mobiledoc: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            // rerunning the conversion against a converted post should not change it
+            const convertedPage = convertedResponse.body.pages[0];
+            const expectedConvertedLexical = convertedPage.lexical;
+            await agent
+                .put(`/pages/${pageResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
+                .body({pages: [Object.assign({}, convertedPage)]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    pages: [Object.assign({}, matchPageShallowIncludes, {lexical: expectedConvertedLexical, mobiledoc: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
