@@ -285,7 +285,7 @@ const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, o
     path: string;
     payload?: Payload;
     searchParams?: Record<string, string>;
-    options: MutationOptions<ResponseData, Payload>
+    options: Omit<MutationOptions<ResponseData, Payload>, 'path'>
 }) => {
     const {defaultSearchParams, body, ...requestOptions} = options;
     const url = apiUrl(path, searchParams || defaultSearchParams);
@@ -304,33 +304,33 @@ const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, o
     });
 };
 
-export const createMutation = <ResponseData, Payload>(options: MutationOptions<ResponseData, Payload>) => () => {
+export const createMutation = <ResponseData, Payload>({path, searchParams, defaultSearchParams, updateQueries, invalidateQueries, ...mutateOptions}: MutationOptions<ResponseData, Payload>) => () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
     const {onUpdate, onInvalidate, onDelete} = useServices();
 
     const afterMutate = useCallback((newData: ResponseData, payload: Payload) => {
-        if (options.invalidateQueries) {
-            queryClient.invalidateQueries([options.invalidateQueries.dataType]);
-            onInvalidate(options.invalidateQueries.dataType);
+        if (invalidateQueries) {
+            queryClient.invalidateQueries([invalidateQueries.dataType]);
+            onInvalidate(invalidateQueries.dataType);
         }
 
-        if (options.updateQueries) {
-            queryClient.setQueriesData([options.updateQueries.dataType], (data: unknown) => options.updateQueries!.update(newData, data, payload));
-            if (options.updateQueries.emberUpdateType === 'createOrUpdate') {
-                onUpdate(options.updateQueries.dataType, newData);
-            } else if (options.updateQueries.emberUpdateType === 'delete') {
+        if (updateQueries) {
+            queryClient.setQueriesData([updateQueries.dataType], (data: unknown) => updateQueries!.update(newData, data, payload));
+            if (updateQueries.emberUpdateType === 'createOrUpdate') {
+                onUpdate(updateQueries.dataType, newData);
+            } else if (updateQueries.emberUpdateType === 'delete') {
                 if (typeof payload !== 'string') {
                     throw new Error('Expected delete mutation to have a string (ID) payload. Either change the payload or update the createMutation hook');
                 }
 
-                onDelete(options.updateQueries.dataType, payload);
+                onDelete(updateQueries.dataType, payload);
             }
         }
     }, [onInvalidate, onUpdate, onDelete, queryClient]);
 
     return useMutation<ResponseData, unknown, Payload>({
-        mutationFn: payload => mutate({fetchApi, path: options.path(payload), payload, searchParams: options.searchParams?.(payload) || options.defaultSearchParams, options}),
+        mutationFn: payload => mutate({fetchApi, path: path(payload), payload, searchParams: searchParams?.(payload) || defaultSearchParams, options: mutateOptions}),
         onSuccess: afterMutate
     });
 };
