@@ -12,14 +12,14 @@ import Twitter from './Twitter';
 import Users from './Users';
 
 export const searchKeywords = {
-    titleAndDescription: ['title and description', 'site title', 'site description'],
+    titleAndDescription: ['title and description', 'site title', 'site description', 'title & description'],
     timeZone: ['time', 'date', 'site timezone', 'time zone'],
     publicationLanguage: ['publication language', 'locale'],
-    metadata: ['metadata', 'title', 'description', 'search', 'engine', 'google'],
-    twitter: ['twitter card', 'structured data', 'rich cards', 'x'],
+    metadata: ['metadata', 'title', 'description', 'search', 'engine', 'google', 'meta data'],
+    twitter: ['twitter card', 'structured data', 'rich cards', 'x card'],
     facebook: ['facebook card', 'structured data', 'rich cards'],
     socialAccounts: ['social accounts', 'facebook', 'twitter', 'structured data', 'rich cards'],
-    lockSite: ['private', 'password', 'lock site'],
+    lockSite: ['password', 'lock site', 'make this site private'],
     users: ['users and permissions', 'roles', 'staff']
 };
 
