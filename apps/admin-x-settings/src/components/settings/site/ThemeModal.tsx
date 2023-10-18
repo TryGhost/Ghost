@@ -16,7 +16,7 @@ import ThemePreview from './theme/ThemePreview';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {InstalledTheme, Theme, ThemesInstallResponseType, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
+import {InstalledTheme, Theme, ThemesInstallResponseType, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme, isDefaultOrLegacyTheme} from '../../../api/themes';
 import {OfficialTheme} from '../../providers/ServiceProvider';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 
@@ -364,7 +364,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
             let prompt = <></>;
 
             // default theme can't be installed, only activated
-            if (selectedTheme.ref === 'default') {
+            if (isDefaultOrLegacyTheme(selectedTheme)) {
                 title = 'Activate theme';
                 prompt = <>By clicking below, <strong>{selectedTheme.name}</strong> will automatically be activated as the theme for your site.</>;
             } else {
