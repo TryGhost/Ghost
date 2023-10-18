@@ -8318,10 +8318,10 @@
   resolved "https://registry.yarnpkg.com/@types/cookie/-/cookie-0.4.1.tgz#bfd02c1f2224567676c1545199f87c3a861d878d"
   integrity sha512-XW/Aa8APYr6jSVVA1y/DEIZX0/GMKLEVekNG727R8cs56ahETkRAy/3DR7+fJyh7oUgGwNQaRfXCun0+KbWY7Q==
 
-"@types/cookies@0.7.8":
-  version "0.7.8"
-  resolved "https://registry.yarnpkg.com/@types/cookies/-/cookies-0.7.8.tgz#16fccd6d58513a9833c527701a90cc96d216bc18"
-  integrity sha512-y6KhF1GtsLERUpqOV+qZJrjUGzc0GE6UTa0b5Z/LZ7Nm2mKSdCXmS6Kdnl7fctPNnMSouHjxqEWI12/YqQfk5w==
+"@types/cookies@0.7.9":
+  version "0.7.9"
+  resolved "https://registry.yarnpkg.com/@types/cookies/-/cookies-0.7.9.tgz#d03e9af454b8e23718c9bf0d522649a64d5e67cf"
+  integrity sha512-SrGYvhKohd/WSOII0WpflC73RgdJhQoqpwq9q+n/qugNGiDSGYXfHy3QvB4+X+J/gYe27j2fSRnK4B+1A3nvsw==
   dependencies:
     "@types/connect" "*"
     "@types/express" "*"
