@@ -20,7 +20,8 @@ const dataType = 'InvitesResponseType';
 
 export const useBrowseInvites = createQuery<InvitesResponseType>({
     dataType,
-    path: '/invites/'
+    path: '/invites/',
+    permissions: ['Owner', 'Administrator']
 });
 
 export const useAddInvite = createMutation<InvitesResponseType, {email: string, roleId: string}>({
