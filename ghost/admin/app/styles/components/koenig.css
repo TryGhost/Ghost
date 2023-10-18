@@ -15,7 +15,7 @@
 
 /* Padded container housing title + editor canvas, scrollable content */
 .gh-koenig-editor-pane {
-    padding: 11vw 92px;
+    padding: calc(11vw - 94px) 92px 11vw 92px;
 }
 
 @media (min-width: 500px) and (max-width: 960px) {

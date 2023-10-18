@@ -120,10 +120,10 @@
 /* ---------------------------------------------------------- */
 
 .settings-menu-header {
-    position: fixed;
+    position: sticky;
+    top: 0;
     display: flex;
     width: 100%;
-    max-width: 364px;
     padding: 36px 24px 24px;
     justify-content: space-between;
     align-items: center;
@@ -207,7 +207,7 @@
 }
 
 .settings-menu-content {
-    padding: 92px 0 0;
+    padding: 8px 0 0;
 }
 
 .gh-post-settings {
@@ -216,7 +216,7 @@
 
 @media (max-width: 1024px) {
     .settings-menu-content {
-        padding-top: 72px;
+        padding-top: 5px;
     }
 }
 

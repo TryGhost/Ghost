@@ -283,6 +283,14 @@
 /* NEW editor
 /* ---------------------------------------------------------- */
 
+.gh-main {
+    height: 100dvh;
+}
+
+.gh-main > .flex-row {
+    height: 100%;
+}
+
 .gh-main > section.gh-editor-fullscreen {
     position: fixed;
     top: 0;
@@ -304,26 +312,22 @@
 }
 
 .gh-editor-header {
-    position: absolute;
+    height: auto;
+    position: sticky;
     top: 0;
     right: 0;
     left: 0;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    height: 34px;
-    padding: 0;
-    margin: 30px;
+    padding: 30px;
+    margin: 0;
     z-index: 799;
 }
 
 @media (max-width: 1024px) {
     .gh-editor-header {
-        z-index: 100;
-        height: 64px;
-        margin: 0;
-        padding: 0;
-        padding-left: 15px;
+        padding: 0 0 0 15px;
         background-color: var(--white);
         border-radius: 0;
     }
