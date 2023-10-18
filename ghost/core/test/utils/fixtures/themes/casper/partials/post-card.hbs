@@ -1,10 +1,11 @@
 {{!-- This is a partial file used to generate a post "card"
 which templates loop over to generate a list of posts. --}}
 
-<article class="post-card {{post_class}} {{#match @custom.feed_layout "!=" "Simple grid"}}{{#is "home, paged"}}{{#match @custom.feed_layout "Dynamic grid"}}{{#has index="0"}}{{#is "home"}}{{#if feature_image}}post-card-large{{/if}}{{/is}}{{/has}}{{else}}post-card-large{{/match}}{{/is}}{{/match}}">
+<article class="post-card {{post_class}}{{#match @custom.feed_layout "Classic"}}{{#is "home"}}{{#has index="0"}} post-card-large{{/has}}{{#has index="1,2"}} dynamic{{/has}}{{/is}}{{/match}}{{#match @custom.feed_layout "Grid"}} keep-ratio{{/match}}{{#match @custom.feed_layout "List"}}{{#is "home, paged"}} post-card-large{{/is}}{{/match}}{{#unless access}} post-access-{{visibility}}{{/unless}}">
 
     {{#if feature_image}}
     <a class="post-card-image-link" href="{{url}}">
+
         {{!-- This is a responsive image, it loads different sizes depending on device
         https://medium.freecodecamp.org/a-guide-to-responsive-images-with-ready-to-use-templates-c400bd65c433 --}}
         <img class="post-card-image"
@@ -17,6 +18,20 @@ which templates loop over to generate a list of posts. --}}
             alt="{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}"
             loading="lazy"
         />
+
+        {{#unless access}}
+        {{^has visibility="public"}}
+            <div class="post-card-access">
+                {{> "icons/lock"}}
+                {{#has visibility="members"}}
+                    Members only
+                {{else}}
+                    Paid-members only
+                {{/has}}
+            </div>
+        {{/has}}
+        {{/unless}}
+
     </a>
     {{/if}}
 
@@ -24,38 +39,40 @@ which templates loop over to generate a list of posts. --}}
 
         <a class="post-card-content-link" href="{{url}}">
             <header class="post-card-header">
-                {{#if primary_tag}}
+                <div class="post-card-tags">
                     {{#primary_tag}}
-                    <div class="post-card-primary-tag">{{name}}</div>
+                        <span class="post-card-primary-tag">{{name}}</span>
                     {{/primary_tag}}
-                {{/if}}
-                <h2 class="post-card-title">{{title}}</h2>
+                    {{#if featured}}
+                        <span class="post-card-featured">{{> "icons/fire"}} Featured</span>
+                    {{/if}}
+                </div>
+                <h2 class="post-card-title">
+                    {{#unless access}}
+                    {{^has visibility="public"}}
+                        {{#unless feature_image}}
+                            {{> "icons/lock"}}
+                        {{/unless}}
+                    {{/has}}
+                    {{/unless}}
+                    {{title}}
+                </h2>
             </header>
-            <div class="post-card-excerpt">
-                <p>{{excerpt}}</p>
-            </div>
+            {{#if excerpt}}
+                <div class="post-card-excerpt">{{excerpt}}</div>
+            {{/if}}
         </a>
 
         <footer class="post-card-meta">
-            <ul class="author-list">
-                {{#foreach authors}}
-                <li class="author-list-item">
-                    {{#if profile_image}}
-                    <a href="{{url}}" class="static-avatar">
-                        <img class="author-profile-image" src="{{img_url profile_image size="xs"}}" alt="{{name}}" loading="lazy" />
-                    </a>
-                    {{else}}
-                    <a href="{{url}}" class="static-avatar author-profile-image">{{> "icons/avatar"}}</a>
-                    {{/if}}
-                </li>
-                {{/foreach}}
-            </ul>
-            <div class="post-card-byline-content">
-                <span class="post-card-byline-author">{{#has author="count:>2"}}Multiple authors{{else}}{{authors}}{{/has}}</span>
-                <span class="post-card-byline-date"><time datetime="{{date format="YYYY-MM-DD"}}">{{date}}</time> <span class="bull">&bull;</span> {{reading_time}}</span>
-            </div>
+            <time class="post-card-meta-date" datetime="{{date format="YYYY-MM-DD"}}">{{date}}</time>
+            {{#if reading_time}}
+                <span class="post-card-meta-length">{{reading_time}}</span>
+            {{/if}}
+            {{#if @site.comments_enabled}}
+                {{comment_count}}
+            {{/if}}
         </footer>
 
-    </div>{{!--/.post-card-content--}}
+    </div>
 
 </article>

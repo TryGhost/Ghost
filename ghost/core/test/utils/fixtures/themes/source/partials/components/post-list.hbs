@@ -21,45 +21,35 @@
                 {{!-- Homepage --}}
                 {{#match feed "home"}}
                     {{#match @custom.header_style "Highlight"}}
-                        {{#match posts.length ">=" 7}}
-                            {{#if @custom.highlight_featured_posts}}
+                        {{#if @custom.show_featured_posts}}
+                            {{#match posts.length ">=" 4}}
                                 {{#get "posts" include="authors" limit="16"}}
                                     {{#foreach posts from="5" limit="12"}}
-                                        {{> "post-card"}}
+                                        {{> "post-card" lazyLoad=true}}
                                     {{/foreach}}
                                 {{/get}}
-                            {{else}}
+                            {{/match}}
+                        {{else}}
+                            {{#match posts.length ">=" 10}}
                                 {{#get "posts" include="authors" limit="22"}}
                                     {{#foreach posts from="11" limit="12"}}
-                                        {{> "post-card"}}
+                                        {{> "post-card" lazyLoad=true}}
                                     {{/foreach}}
                                 {{/get}}
-                            {{/if}}
-                        {{else}}
-                            {{#get "posts" include="authors" limit="12"}}
-                                {{#foreach posts}}
-                                    {{> "post-card"}}
-                                {{/foreach}}
-                            {{/get}}
-                        {{/match}}
+                            {{/match}}
+                        {{/if}}
                     {{else match @custom.header_style "Magazine"}}
                         {{#match posts.length ">=" 7}}
                             {{#get "posts" include="authors" limit="19"}}
                                 {{#foreach posts from="8" limit="12"}}
-                                    {{> "post-card"}}
-                                {{/foreach}}
-                            {{/get}}
-                        {{else}}
-                            {{#get "posts" include="authors" limit="12"}}
-                                {{#foreach posts}}
-                                    {{> "post-card"}}
+                                    {{> "post-card" lazyLoad=true}}
                                 {{/foreach}}
                             {{/get}}
                         {{/match}}
                     {{else}}
                         {{#get "posts" include="authors" limit="12"}}
                             {{#foreach posts}}
-                                {{> "post-card"}}
+                                {{> "post-card" lazyLoad=true}}
                             {{/foreach}}
                         {{/get}}
                     {{/match}}
@@ -75,24 +65,15 @@
                         {{/get}}
                     {{/match}}
                     {{#foreach posts}}
-                        {{> "post-card"}}
+                        {{> "post-card" lazyLoad=true}}
                     {{/foreach}}
                 {{/match}}
 
                 {{!-- Tag and author pages --}}
                 {{#match feed "archive"}}
                     {{#foreach posts}}
-                        {{> "post-card"}}
+                        {{> "post-card" lazyLoad=true}}
                     {{/foreach}}
-                {{/match}}
-
-                {{!-- Recent posts --}}
-                {{#match feed "recent"}}
-                    {{#get "posts" include="authors" filter="id:-{{post.id}}" limit="4" as |next|}}
-                        {{#foreach next}}
-                            {{> "post-card"}}
-                        {{/foreach}}
-                    {{/get}}
                 {{/match}}
 
             </div>
@@ -102,7 +83,7 @@
             <aside class="gh-sidebar">
                 <section class="gh-about">
                     {{#if @site.icon}}
-                        <img class="gh-about-icon" src="{{@site.icon}}" alt="{{@site.title}}">
+                        <img class="gh-about-icon" src="{{@site.icon}}" alt="{{@site.title}}" loading="lazy">
                     {{/if}}
                     <h3 class="gh-about-title is-title">{{@site.title}}</h3>
                     {{#if @site.description}}

@@ -177,7 +177,7 @@ describe('Themes API', function () {
                 tmpFolderContents.splice(i, 1);
             }
         }
-        tmpFolderContents.should.be.an.Array().with.lengthOf(11);
+        tmpFolderContents.should.be.an.Array().with.lengthOf(12);
 
         tmpFolderContents.should.eql([
             'broken-theme',
@@ -187,6 +187,7 @@ describe('Themes API', function () {
             'locale-theme',
             'members-test-theme',
             'source',
+            'source.zip',
             'test-theme',
             'test-theme-channels',
             'valid.zip',

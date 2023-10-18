@@ -1,13 +1,9 @@
 {{#match headerStyle "!=" "Off"}}
 
     {{#match headerStyle "Highlight"}}
-        {{#match posts.length ">=" 7}}
-            {{> "components/header-content"}}
-        {{/match}}
+        {{> "components/header-content"}}
     {{else match headerStyle "Magazine"}}
-        {{#match posts.length ">=" 7}}
-            {{> "components/header-content"}}
-        {{/match}}
+        {{> "components/header-content"}}
     {{else}}
         {{#match headerStyle "Landing"}}
             {{#if @site.members_enabled}}

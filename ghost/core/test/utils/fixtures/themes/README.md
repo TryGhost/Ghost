@@ -19,7 +19,7 @@ To update it:
 
 - `cd tests/utils/fixtures/themes`
 - `rm -rf casper`
-- `rsync -rv --exclude '.git*' --exclude 'assets/css*' --exclude 'assets/js*' --exclude 'gulpfile.js' --exclude 'yarn.lock' --exclude 'README.md' ../../../../content/themes/casper .`
+- `rsync -rv --exclude '.git*' --exclude 'assets/css*' --exclude 'assets/js*' --exclude 'gulpfile.js' --exclude 'yarn.lock' --exclude 'README.md' --exclude 'node_modules' ../../../../content/themes/casper .`
 
 ## Updating the Source theme fixture
 The source fixture is a partial copy of the content/themes/source folder.
@@ -38,7 +38,7 @@ To update it:
 
 - `cd tests/utils/fixtures/themes`
 - `rm -rf source`
-- `rsync -rv --exclude '.git*' --exclude 'assets/css*' --exclude 'assets/js*' --exclude 'gulpfile.js' --exclude 'yarn.lock' --exclude 'README.md' ../../../../content/themes/source .`
+- `rsync -rv --exclude '.git*' --exclude 'assets/css*' --exclude 'assets/js*' --exclude 'gulpfile.js' --exclude 'yarn.lock' --exclude 'README.md' --exclude 'node_modules' ../../../../content/themes/source .`
 
 ### Modifying theme fixtures
 When a new rule is introduced in gscan one of these fixture files might break and you'll have to update a "zip" which isn't as easy as opening a text editor... It could become that one day but for now here are some commands to help out with the edit process
