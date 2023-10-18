@@ -941,11 +941,10 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             const anchorNode = anchor.getNode();
                             const topLevelElement = anchorNode.getTopLevelElement();
                             const previousSibling = topLevelElement.getPreviousSibling();
-
+                            
                             const atStartOfElement =
                                 selection.anchor.offset === 0 &&
-                                selection.focus.offset === 0 &&
-                                !$isLineBreakNode(anchorNode.getPreviousSibling());
+                                selection.focus.offset === 0;
 
                             // convert empty top level list items to paragraphs
                             if (
@@ -979,7 +978,13 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             }
 
                             // delete any previous card keeping caret in place
-                            if (atStartOfElement && $isDecoratorNode(previousSibling)) {
+                            const anchorNodeParent = anchorNode.getParent();
+                            if (
+                                atStartOfElement &&
+                                $isDecoratorNode(previousSibling) && 
+                                anchorNodeParent === topLevelElement && // handles lists, where the parent node is not the paragraph
+                                anchorNodeParent.getFirstChild().is(anchorNode) // handles child nodes in paragraphs, e.g. LinkNode and HorizontalRule
+                            ) {
                                 event.preventDefault();
                                 previousSibling.remove();
                                 return true;
