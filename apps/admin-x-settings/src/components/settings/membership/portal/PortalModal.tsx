@@ -113,9 +113,9 @@ const PortalModal: React.FC = () => {
         if (verifyEmail) {
             checkToken({token: verifyEmail});
         }
-    }, [verifyEmail, verifyToken]);
+    }, [handleError, verifyEmail, verifyToken]);
 
-    const {formState, saveState, handleSave, updateForm} = useForm({
+    const {formState, setFormState, saveState, handleSave, updateForm} = useForm({
         initialState: {
             settings: settings as Dirtyable<Setting>[],
             tiers: tiers as Dirtyable<Tier>[]
@@ -123,8 +123,16 @@ const PortalModal: React.FC = () => {
 
         onSave: async () => {
             await Promise.all(formState.tiers.filter(({dirty}) => dirty).map(tier => editTier(tier)));
+            setFormState(state => ({...state, tiers: formState.tiers.map(tier => ({...tier, dirty: false}))}));
 
-            const {meta, settings: currentSettings} = await editSettings(formState.settings.filter(setting => setting.dirty));
+            const changedSettings = formState.settings.filter(setting => setting.dirty);
+
+            if (!changedSettings.length) {
+                return;
+            }
+
+            const {meta, settings: currentSettings} = await editSettings(changedSettings);
+            setFormState(state => ({...state, settings: formState.settings.map(setting => ({...setting, dirty: false}))}));
 
             if (meta?.sent_email_verification) {
                 const newEmail = formState.settings.find(setting => setting.key === 'members_support_address')?.value;
@@ -221,7 +229,7 @@ const PortalModal: React.FC = () => {
         title='Portal'
         onOk={async () => {
             if (!Object.values(errors).filter(Boolean).length) {
-                await handleSave();
+                await handleSave({force: true});
             }
         }}
         onSelectURL={onSelectURL}

@@ -6,6 +6,7 @@ import {UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation,
 import {getGhostPaths} from '../helpers';
 import {useCallback, useEffect, useMemo} from 'react';
 import {usePage, usePagination} from '../../hooks/usePagination';
+import {usePermission} from '../../hooks/usePermissions';
 import {useSentryDSN, useServices} from '../../components/providers/ServiceProvider';
 
 export interface Meta {
@@ -149,6 +150,7 @@ interface QueryOptions<ResponseData> {
     dataType: string
     path: string
     defaultSearchParams?: Record<string, string>;
+    permissions?: string[];
     returnData?: (originalData: unknown) => ResponseData;
 }
 
@@ -163,6 +165,7 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
     const handleError = useHandleError();
 
     const result = useQuery<ResponseData>({
+        enabled: options.permissions ? usePermission(options.permissions) : true,
         queryKey: [options.dataType, url],
         queryFn: () => fetchApi(url),
         ...query

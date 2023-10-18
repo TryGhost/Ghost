@@ -7888,10 +7888,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/koenig-lexical@0.5.5":
-  version "0.5.5"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-0.5.5.tgz#541988037e126f14f781df380280955b2a743774"
-  integrity sha512-fvVBhC6/n1bpa1Cwe/0Prq/YiqS1LSr8p0KBZiVYkE7gk1sgOvVhmHw+8+dFhlPEKRx+5WVzsGn/NSO3O0ww4Q==
+"@tryghost/koenig-lexical@0.5.8":
+  version "0.5.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-0.5.8.tgz#403205d6b93a7ce9d3bc48d7951f204f6500ca66"
+  integrity sha512-HWVmtc8maxVKzgfqbtKIvSTuOsOsZqeL/glODTa/ZoJ7kQtWhT4Nebso9cYgPi7ZGT+LlM33ysFEFvZhTCj5jA==
 
 "@tryghost/limit-service@1.2.10", "@tryghost/limit-service@^1.2.10":
   version "1.2.10"
@@ -19615,10 +19615,10 @@ i18next-parser@8.9.0:
     vinyl-fs "^4.0.0"
     vue-template-compiler "^2.6.11"
 
-i18next@23.5.1, i18next@^23.5.1:
-  version "23.5.1"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.5.1.tgz#7f7c35ffaa907618d9489f106d5006b09fbca3d3"
-  integrity sha512-JelYzcaCoFDaa+Ysbfz2JsGAKkrHiMG6S61+HLBUEIPaF40WMwW9hCPymlQGrP+wWawKxKPuSuD71WZscCsWHg==
+i18next@23.6.0, i18next@^23.5.1:
+  version "23.6.0"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.6.0.tgz#c6e996cfd3fef0bf60be3b7c581c35338dba5a71"
+  integrity sha512-z0Cxr0MGkt+kli306WS4nNNM++9cgt2b2VCMprY92j+AIab/oclgPxdwtTZVLP1zn5t5uo8M6uLsZmYrcjr3HA==
   dependencies:
     "@babel/runtime" "^7.22.5"
 

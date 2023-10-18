@@ -3,13 +3,13 @@ const test = require('../fixtures/ghost-test');
 
 test.describe('Site Settings', () => {
     test.describe('Privacy setting', () => {
-        test('A site set to private should require a password to access it', async ({page, browser}) => {
+        test('A site set to private should require a password to access it', async ({sharedPage, browser}) => {
             // set private mode in admin "on"
-            await page.goto('/ghost');
+            await sharedPage.goto('/ghost');
 
-            await page.locator('[data-test-nav="settings"]').click();
+            await sharedPage.locator('[data-test-nav="settings"]').click();
 
-            const section = page.getByTestId('locksite');
+            const section = sharedPage.getByTestId('locksite');
 
             await section.getByRole('button', {name: 'Edit'}).click();
 

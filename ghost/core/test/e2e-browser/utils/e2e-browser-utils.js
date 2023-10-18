@@ -333,7 +333,7 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
     // Wait for the "Saved" button, ensures that next clicks don't trigger the unsaved work modal
     await page.getByRole('button', {name: 'Saved'}).waitFor({
         state: 'visible',
-        timeout: 1000
+        timeout: 10000
     });
     await page.locator('.gh-nav a[href="#/offers/"]').click();
 
@@ -463,13 +463,18 @@ const openTierModal = async (page, {slug}) => {
     });
 };
 
+// Memoized function to get the Stripe account ID
+let stripeAccountId;
 const getStripeAccountId = async () => {
+    if (stripeAccountId) {
+        return stripeAccountId;
+    }
+
     if (!('STRIPE_PUBLISHABLE_KEY' in process.env) || !('STRIPE_SECRET_KEY' in process.env)) {
         throw new Error('Missing STRIPE_PUBLISHABLE_KEY or STRIPE_SECRET_KEY environment variables');
     }
 
     const parallelIndex = process.env.TEST_PARALLEL_INDEX;
-    let accountId;
     const accountEmail = `test${parallelIndex}@example.com`;
 
     const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -483,19 +488,18 @@ const getStripeAccountId = async () => {
             await stripe.accounts.del(account.id);
         }
     }
-    if (!accountId) {
-        const account = await stripe.accounts.create({
-            type: 'standard',
-            email: accountEmail,
-            business_type: 'company',
-            company: {
-                name: `Test Company ${parallelIndex}`
-            }
-        });
-        accountId = account.id;
-    }
 
-    return accountId;
+    const account = await stripe.accounts.create({
+        type: 'standard',
+        email: accountEmail,
+        business_type: 'company',
+        company: {
+            name: `Test Company ${parallelIndex}`
+        }
+    });
+    stripeAccountId = account.id;
+
+    return stripeAccountId;
 };
 
 const generateStripeIntegrationToken = async (accountId) => {

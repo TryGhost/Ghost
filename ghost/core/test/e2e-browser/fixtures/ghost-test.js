@@ -30,6 +30,15 @@ const getWebhookSecret = async () => {
 // Global promises for webhook secret / Stripe integration token
 const webhookSecretPromise = getWebhookSecret();
 
+/**
+ * @type {import('@playwright/test').TestType<
+ *      import('@playwright/test').PlaywrightTestArgs &
+ *      import('@playwright/test').PlaywrightTestOptions &
+ *      import('@playwright/test').PlaywrightWorkerArgs &
+ *      import('@playwright/test').PlaywrightWorkerOptions
+ *  >}
+ * @property {import('@playwright/test').Page} sharedPage
+ */
 module.exports = base.test.extend({
     baseURL: async ({port, baseURL}, use) => {
         // Replace the port in baseURL with the one we got from the port fixture
@@ -41,6 +50,11 @@ module.exports = base.test.extend({
     storageState: async ({ghost}, use) => {
         await use(ghost.state);
     },
+
+    sharedPage: [async ({browser}, use) => {
+        const page = await browser.newPage();
+        await use(page);
+    }, {scope: 'worker'}],
 
     // eslint-disable-next-line no-empty-pattern
     port: [async ({}, use, workerInfo) => {
