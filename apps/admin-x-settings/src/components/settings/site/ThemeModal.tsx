@@ -40,17 +40,19 @@ interface ThemeModalContentProps {
 const UploadModalContent: React.FC<{onUpload: (file: File) => void}> = ({onUpload}) => {
     const modal = useModal();
 
-    return <FileUpload
-        id="theme-upload"
-        onUpload={(file) => {
-            modal.remove();
-            onUpload(file);
-        }}
-    >
-        <div className="cursor-pointer bg-grey-75 p-10 text-center dark:bg-grey-950">
-            Select a zip file
-        </div>
-    </FileUpload>;
+    return <div className="-mb-6">
+        <FileUpload
+            id="theme-upload"
+            onUpload={(file) => {
+                modal.remove();
+                onUpload(file);
+            }}
+        >
+            <div className="cursor-pointer bg-grey-75 p-10 text-center dark:bg-grey-950">
+            Click to select or drag & drop zip file
+            </div>
+        </FileUpload>
+    </div>;
 };
 
 const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
