@@ -1,3 +1,4 @@
+import {OfficialTheme} from '../components/providers/ServiceProvider';
 import {createMutation, createQuery} from '../utils/api/hooks';
 import {customThemeSettingsDataType} from './customThemeSettings';
 
@@ -132,12 +133,16 @@ export function isActiveTheme(theme: Theme): boolean {
     return theme.active;
 }
 
-export function isDefaultTheme(theme: Theme): boolean {
-    return theme.name === 'source';
+export function isDefaultTheme(theme: Theme | OfficialTheme): boolean {
+    return theme.name.toLowerCase() === 'source';
 }
 
-export function isLegacyTheme(theme: Theme): boolean {
-    return theme.name === 'casper';
+export function isLegacyTheme(theme: Theme | OfficialTheme): boolean {
+    return theme.name.toLowerCase() === 'casper';
+}
+
+export function isDefaultOrLegacyTheme(theme: Theme | OfficialTheme): boolean {
+    return isDefaultTheme(theme) || isLegacyTheme(theme);
 }
 
 export function isDeletableTheme(theme: Theme): boolean {
