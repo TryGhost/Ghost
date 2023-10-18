@@ -24,19 +24,19 @@ const NewsletterItem: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
             <TableCell onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
                     <span className='font-medium'>{newsletter.name}</span>
-                    <span className='whitespace-nowrap text-xs text-grey-700'>{newsletter.description || 'No description'}</span>
+                    <span className='mt-0.5 text-xs leading-tight text-grey-700'>{newsletter.description || 'No description'}</span>
                 </div>
             </TableCell>
             <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
                     <span>{numberWithCommas(newsletter.count?.active_members || 0) }</span>
-                    <span className='whitespace-nowrap text-xs text-grey-700'>Subscribers</span>
+                    <span className='mt-0.5 whitespace-nowrap text-xs leading-tight text-grey-700'>Subscribers</span>
                 </div>
             </TableCell>
             <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
                     <span>{numberWithCommas(newsletter.count?.posts || 0)}</span>
-                    <span className='whitespace-nowrap text-xs text-grey-700'>Delivered</span>
+                    <span className='mt-0.5 whitespace-nowrap text-xs leading-tight text-grey-700'>Delivered</span>
                 </div>
             </TableCell>
         </TableRow>
