@@ -74,7 +74,7 @@ test.describe('Html card', async () => {
                 <div><svg></svg></div>
                 <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="html">
                     <div>
-                        <div><div><span>Loading...</span></div></div>
+                        <div><div><span style="fullscreen-inner">Loading...</span></div></div>
                         <div></div>
                     </div>
                 </div>

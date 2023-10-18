@@ -18,7 +18,6 @@ export function sanitizeHtml(html = '', options = {}) {
     return DOMPurify.sanitize(html, {
         ALLOWED_URI_REGEXP: /^https?:|^\/|blob:/,
         ADD_ATTR: ['id'],
-        FORBID_TAGS: ['style'],
-        FORBID_ATTR: ['style']
+        FORBID_TAGS: ['style']
     });
 }
