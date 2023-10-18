@@ -14,13 +14,13 @@ test.describe('Recommendations', async () => {
 
         await page.goto('/');
 
-        const section = await page.getByTestId('recommendations');
+        const section = page.getByTestId('recommendations');
         const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
 
         await section.getByRole('tab', {name: 'Your Recommendations'}).click();
 
-        const recommendation1 = await activeTab.getByTestId('recommendation-list-item').first();
-        const recommendation2 = await activeTab.getByTestId('recommendation-list-item').last();
+        const recommendation1 = activeTab.getByTestId('recommendation-list-item').first();
+        const recommendation2 = activeTab.getByTestId('recommendation-list-item').last();
 
         await expect(recommendation1).toContainText('Recommendation 1 title');
         await expect(recommendation2).toContainText('Recommendation 2 title');
@@ -117,12 +117,12 @@ test.describe('Recommendations', async () => {
         await section.getByRole('tab', {name: 'Your Recommendations'}).click();
 
         // Open edit recommendation on the first recommendation
-        const recommendation1 = await activeTab.getByTestId('recommendation-list-item').first();
+        const recommendation1 = activeTab.getByTestId('recommendation-list-item').first();
         await recommendation1.click();
 
         const modal = page.getByTestId('edit-recommendation-modal');
-        const title = await modal.getByLabel('Title');
-        const description = await modal.getByLabel('Short description');
+        const title = modal.getByLabel('Title');
+        const description = modal.getByLabel('Short description');
 
         // Validate errors
         await title.fill('');
@@ -156,12 +156,12 @@ test.describe('Recommendations', async () => {
         }});
 
         await page.goto('/');
-        const section = await page.getByTestId('recommendations');
+        const section = page.getByTestId('recommendations');
         const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
         await section.getByRole('tab', {name: 'Your Recommendations'}).click();
 
         // Open edit recommendation on the first recommendation
-        const recommendation1 = await activeTab.getByTestId('recommendation-list-item').first();
+        const recommendation1 = activeTab.getByTestId('recommendation-list-item').first();
         await recommendation1.click();
 
         // Click on delete
@@ -186,13 +186,13 @@ test.describe('Recommendations', async () => {
 
         await page.goto('/');
 
-        const section = await page.getByTestId('recommendations');
+        const section = page.getByTestId('recommendations');
         const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
 
         await section.getByRole('tab', {name: 'Recommending you'}).click();
 
-        const recommendation1 = await activeTab.getByTestId('incoming-recommendation-list-item').first();
-        const recommendation2 = await activeTab.getByTestId('incoming-recommendation-list-item').last();
+        const recommendation1 = activeTab.getByTestId('incoming-recommendation-list-item').first();
+        const recommendation2 = activeTab.getByTestId('incoming-recommendation-list-item').last();
 
         // Can recommend back
         await expect(recommendation1).toContainText('Incoming recommendation 1 title');
