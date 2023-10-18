@@ -8792,10 +8792,10 @@
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.6.tgz#250a7b16c3b91f672a24552ec64678eeb1d3a08d"
   integrity sha512-PBjIUxZHOuj0R15/xuwJYjFi+KZdNFrehocChv4g5hu6aFroHue8m0lBP0POdK2nKzbw0cgV1mws8+V/JAcEkQ==
 
-"@types/validator@13.11.3":
-  version "13.11.3"
-  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.11.3.tgz#6afba392782b44dd6cfeb390cc06c45833066ad9"
-  integrity sha512-jxjhh33aTYDHnrV1vZ3AvWQHfrGx2f5UxKjaP13l5q04fG+/hCKKm0MfodIoCqxevhbcfBb6ZjynyHuQ/jueGQ==
+"@types/validator@13.11.4":
+  version "13.11.4"
+  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.11.4.tgz#a885cd9914407e8bcf1b0bdb77e7ccfbdede30ab"
+  integrity sha512-8Xw3oGofZqJ9ekd4ObbLjb+wLQgda/1hjK5RJXlLA9sQUMUBFSzkfxiWT2tfxjWZ0A/LN4OxQHxDXquyxiWoXg==
 
 "@types/yargs-parser@*":
   version "21.0.0"
