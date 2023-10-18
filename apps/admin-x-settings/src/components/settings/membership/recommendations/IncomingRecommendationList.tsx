@@ -57,7 +57,7 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
                     />
                 </div>
             )
-        } hideActions>
+        } testId='incoming-recommendation-list-item' hideActions>
             <TableCell onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
