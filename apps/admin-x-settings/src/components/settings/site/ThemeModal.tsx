@@ -16,7 +16,7 @@ import ThemePreview from './theme/ThemePreview';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {InstalledTheme, Theme, ThemesInstallResponseType, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme, isDefaultOrLegacyTheme} from '../../../api/themes';
+import {InstalledTheme, Theme, ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
 import {OfficialTheme} from '../../providers/ServiceProvider';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 

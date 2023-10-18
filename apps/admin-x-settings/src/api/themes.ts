@@ -1,6 +1,6 @@
+import {OfficialTheme} from '../components/providers/ServiceProvider';
 import {createMutation, createQuery} from '../utils/api/hooks';
 import {customThemeSettingsDataType} from './customThemeSettings';
-import {OfficialTheme} from '../components/providers/ServiceProvider';
 
 // Types
 
