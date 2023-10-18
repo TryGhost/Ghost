@@ -10,13 +10,13 @@ import TipsOrDonations from './TipsOrDonations';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
 
 export const searchKeywords = {
-    portal: ['portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership'],
-    access: ['default', 'access', 'subscription', 'post', 'membership'],
-    tiers: ['tiers', 'payment', 'paid', 'stripe'],
-    tips: ['tip', 'donation', 'one time', 'payment'],
-    embedSignupForm: ['embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
-    recommendations: ['recommendations', 'recommend', 'blogroll'],
-    analytics: ['analytics', 'tracking', 'privacy', 'membership']
+    portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account'],
+    access: ['membership', 'default', 'access', 'subscription', 'post'],
+    tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
+    tips: ['membership', 'tip', 'donation', 'one time', 'payment'],
+    embedSignupForm: ['membership', 'embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
+    recommendations: ['membership', 'recommendations', 'recommend', 'blogroll'],
+    analytics: ['membership', 'analytics', 'tracking', 'privacy']
 };
 
 const MembershipSettings: React.FC = () => {

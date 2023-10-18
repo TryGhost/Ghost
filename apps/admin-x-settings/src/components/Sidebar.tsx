@@ -120,9 +120,10 @@ const Sidebar: React.FC = () => {
                     <SettingNavItem keywords={advancedSearchKeywords.history} navid='history' title="History" onClick={handleSectionClick} />
                 </SettingNavSection>
 
-                <Button className='mb-10 !font-normal' label='About Ghost' link onClick={() => {
+                {!filter && <Button className='mb-10 !font-normal' label='About Ghost' link onClick={() => {
                     updateRoute('about');
-                }} />
+                }} />}
+
             </div>
         </div>
     );

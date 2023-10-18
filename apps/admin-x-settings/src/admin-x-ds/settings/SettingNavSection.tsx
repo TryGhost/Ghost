@@ -19,7 +19,7 @@ const SettingNavSection: React.FC<Props> = ({title, keywords, children}) => {
         <>
             {title && <SettingSectionHeader title={title} />}
             {children &&
-                <ul className="mb-10 mt-[-8px]">
+                <ul className="-mt-1 mb-10">
                     {children}
                 </ul>
             }
