@@ -6,9 +6,9 @@ export function parseImageNode(ImageNode) {
         img: () => ({
             conversion(domNode) {
                 if (domNode.tagName === 'IMG') {
-                    const {src, width, height, alt, title} = readImageAttributesFromElement(domNode);
+                    const {src, width, height, alt, title, href} = readImageAttributesFromElement(domNode);
 
-                    const node = new ImageNode({alt, src, title, width, height});
+                    const node = new ImageNode({alt, src, title, width, height, href});
                     return {node};
                 }
 

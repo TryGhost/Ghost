@@ -435,6 +435,19 @@ describe('ImageNode', function () {
             nodes[0].src.should.equal('http://example.com/test.png');
             nodes[0].href.should.equal('https://example.com/link');
         }));
+
+        it('extracts href when img wrapped in anchor tag not within figure', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <a href="https://example.com/link">
+                    <img src="http://example.com/test.png">
+                </a>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+
+            nodes.length.should.equal(1);
+            nodes[0].src.should.equal('http://example.com/test.png');
+            nodes[0].href.should.equal('https://example.com/link');
+        }));
     });
 
     describe('exportJSON', function () {
