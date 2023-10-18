@@ -3,7 +3,7 @@ import Analytics from './Analytics';
 import EmbedSignupForm from './embedSignup/EmbedSignupForm';
 import Portal from './Portal';
 import React from 'react';
-import Recommendations from '../site/Recommendations';
+import Recommendations from './Recommendations';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 import Tiers from './Tiers';
 import TipsOrDonations from './TipsOrDonations';

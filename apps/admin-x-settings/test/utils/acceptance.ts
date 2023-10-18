@@ -33,6 +33,7 @@ const siteFixture = JSON.parse(readFileSync(`${__dirname}/responses/site.json`).
 export const responseFixtures = {
     settings: JSON.parse(readFileSync(`${__dirname}/responses/settings.json`).toString()) as SettingsResponseType,
     recommendations: JSON.parse(readFileSync(`${__dirname}/responses/recommendations.json`).toString()) as RecommendationResponseType,
+    incomingRecommendations: JSON.parse(readFileSync(`${__dirname}/responses/incoming_recommendations.json`).toString()) as RecommendationResponseType,
     config: JSON.parse(readFileSync(`${__dirname}/responses/config.json`).toString()) as ConfigResponseType,
     users: JSON.parse(readFileSync(`${__dirname}/responses/users.json`).toString()) as UsersResponseType,
     me: JSON.parse(readFileSync(`${__dirname}/responses/me.json`).toString()) as UsersResponseType,
