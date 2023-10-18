@@ -1,4 +1,3 @@
-import nql from '@tryghost/nql';
 import {Setting} from './settings';
 import {createMutation, createQuery} from '../utils/api/hooks';
 
@@ -49,11 +48,3 @@ export const useEditCustomThemeSettings = createMutation<CustomThemeSettingsResp
         update: newData => newData
     }
 });
-
-export function isCustomThemeSettingVisible(setting: CustomThemeSetting, settingsKeyValueObj: Record<string, string>) {
-    if (!setting.visibility) {
-        return true;
-    }
-
-    return nql(setting.visibility).queryJSON(settingsKeyValueObj);
-}
