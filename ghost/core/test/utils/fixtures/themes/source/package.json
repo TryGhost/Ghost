@@ -1,8 +1,8 @@
 {
     "name": "source",
     "description": "A default theme for the Ghost publishing platform",
-    "demo": "https://demo.ghost.io",
-    "version": "6.0.0",
+    "demo": "https://source.ghost.io",
+    "version": "1.0.2",
     "engines": {
         "ghost": ">=5.0.0"
     },
@@ -45,7 +45,7 @@
         "autoprefixer": "10.4.7",
         "beeper": "2.1.0",
         "cssnano": "5.1.12",
-        "gscan": "4.36.1",
+        "gscan": "4.39.4",
         "gulp": "4.0.2",
         "gulp-concat": "2.6.1",
         "gulp-livereload": "4.0.2",
@@ -63,22 +63,22 @@
     "config": {
         "posts_per_page": 16,
         "image_sizes": {
-            "xxs": {
-                "width": 30
-            },
             "xs": {
-                "width": 100
+                "width": 160
             },
             "s": {
-                "width": 300
+                "width": 320
             },
             "m": {
                 "width": 600
             },
             "l": {
-                "width": 1000
+                "width": 960
             },
             "xl": {
+                "width": 1200
+            },
+            "xxl": {
                 "width": 2000
             }
         },
@@ -100,17 +100,17 @@
             "header_and_footer_color": {
                 "type": "select",
                 "options": [
-                    "Accent color",
-                    "Background color"
+                    "Background color",
+                    "Accent color"
                 ],
-                "default": "Accent color"
+                "default": "Background color"
             },
             "title_font": {
                 "type": "select",
                 "options": [
                     "Modern sans-serif",
                     "Elegant serif",
-                    "Clean slab"
+                    "Consistent mono"
                 ],
                 "default": "Modern sans-serif"
             },
@@ -139,17 +139,24 @@
                     "Search",
                     "Off"
                 ],
-                "description": "Highlight & Magazine styles will default to Landing until 7 posts have been published",
+                "description": "Landing is recommended for all sites, Highlight & Magazine for those with more content",
                 "default": "Landing",
                 "group": "homepage"
             },
-            "use_publication_cover_as_background": {
+            "header_text": {
+                "type": "text",
+                "group": "homepage",
+                "description": "Defaults to site description when empty",
+                "visibility": "header_style:[Landing, Search]"
+            },
+            "background_image": {
                 "type": "boolean",
-                "default": false,
+                "default": true,
+                "description": "Use the publication cover set on the Brand tab as your background",
                 "group": "homepage",
                 "visibility": "header_style:[Landing, Search]"
             },
-            "highlight_featured_posts": {
+            "show_featured_posts": {
                 "type": "boolean",
                 "default": false,
                 "group": "homepage",
@@ -167,26 +174,22 @@
             "show_images_in_feed": {
                 "type": "boolean",
                 "default": true,
-                "description": "Toggles thumbnails of the post cards when the post feed style is List",
                 "group": "homepage",
                 "visibility": "post_feed_style:List"
             },
             "show_author": {
                 "type": "boolean",
                 "default": true,
-                "description": "Show the author below each post",
                 "group": "homepage"
             },
             "show_publish_date": {
                 "type": "boolean",
                 "default": true,
-                "description": "Show the date published below each post",
                 "group": "homepage"
             },
-            "show_site_in_sidebar": {
+            "show_publication_info_sidebar": {
                 "type": "boolean",
                 "default": false,
-                "description": "Include your site info on the side of the post feed",
                 "group": "homepage"
             }
         }
