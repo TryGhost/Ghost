@@ -39,7 +39,7 @@
     "mocha": "10.2.0",
     "rollup": "2.79.1",
     "should": "13.2.3",
-    "sinon": "16.1.0"
+    "sinon": "16.1.1"
   },
   "dependencies": {
     "@tryghost/kg-clean-basic-html": "^3.0.37"

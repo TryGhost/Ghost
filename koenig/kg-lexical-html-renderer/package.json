@@ -24,7 +24,7 @@
     "jsdom": "^22.1.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "16.1.0"
+    "sinon": "16.1.1"
   },
   "dependencies": {
     "@lexical/clipboard": "^0.12.2",
