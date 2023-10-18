@@ -8576,10 +8576,10 @@
     "@types/node" "*"
     form-data "^3.0.0"
 
-"@types/node-jose@1.1.11":
-  version "1.1.11"
-  resolved "https://registry.yarnpkg.com/@types/node-jose/-/node-jose-1.1.11.tgz#321d4a582401b9a6e2eb2022363f344db65ab453"
-  integrity sha512-8hEAhDB2A3k0Inhxh71qWfEp9mg970z/NvEPkzJN5KZSlIE47lEeYf3k+pNvk/W4hiSL/A0lW0AO7Fw8QMEtkA==
+"@types/node-jose@1.1.12":
+  version "1.1.12"
+  resolved "https://registry.yarnpkg.com/@types/node-jose/-/node-jose-1.1.12.tgz#a9db81f06dea3bff00f42f11e297577249b4770a"
+  integrity sha512-HtSXbirRMuONr/KSNtBgh631xCt/t3lPz0geQ4pe/FA+yu06TUrJrXEU5y8nJFHNy8KhiZrq6OVlqXD1AtT/dQ==
   dependencies:
     "@types/node" "*"
 
