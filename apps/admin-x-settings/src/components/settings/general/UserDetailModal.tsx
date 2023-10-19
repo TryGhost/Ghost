@@ -417,6 +417,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                     deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                                     editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:!visible z-20'
                                     fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
+                                    fileUploadProps={{dragIndicatorClassName: 'rounded-full'}}
                                     id='avatar'
                                     imageClassName='w-full h-full object-cover rounded-full shrink-0'
                                     imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px] shrink-0'

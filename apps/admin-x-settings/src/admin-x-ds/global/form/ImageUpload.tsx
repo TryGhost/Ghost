@@ -1,4 +1,4 @@
-import FileUpload from './FileUpload';
+import FileUpload, {FileUploadProps} from './FileUpload';
 import Icon from '../Icon';
 import React, {MouseEventHandler} from 'react';
 import clsx from 'clsx';
@@ -16,6 +16,7 @@ interface ImageUploadProps {
     imageClassName?: string;
     imageBWCheckedBg?: boolean;
     fileUploadClassName?: string;
+    fileUploadProps?: Partial<FileUploadProps>;
     deleteButtonClassName?: string;
     deleteButtonContent?: React.ReactNode;
     deleteButtonUnstyled?: boolean;
@@ -57,6 +58,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     imageContainerClassName,
     imageClassName,
     fileUploadClassName,
+    fileUploadProps,
     deleteButtonClassName,
     deleteButtonContent,
     deleteButtonUnstyled = false,
@@ -181,7 +183,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                         width: (unstyled ? '' : width),
                         height: (unstyled ? '' : height)
                     }
-                } unstyled={unstyled} onUpload={onUpload}>
+                } unstyled={unstyled} onUpload={onUpload} {...fileUploadProps}>
                     <>
                         <span className='text-center'>{children}</span>
                     </>
