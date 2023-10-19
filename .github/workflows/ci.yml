@@ -115,6 +115,7 @@ jobs:
       base_commit: ${{ env.BASE_COMMIT }}
       is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch') }}
       is_main: ${{ github.ref == 'refs/heads/main' }}
+      has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
 
   job_install_deps:
     name: Install Dependencies
@@ -256,6 +257,84 @@ jobs:
           status: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  job_browser-tests:
+    name: Browser tests
+    timeout-minutes: 60
+    runs-on:
+      labels: ubuntu-latest-4-cores
+    needs: [job_get_metadata, job_install_deps]
+    if: needs.job_get_metadata.outputs.is_main == 'true' || needs.job_get_metadata.outputs.has_browser_tests_label == 'true'
+    concurrency:
+      group: ${{ github.workflow }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+    - uses: actions/setup-node@v3
+      env:
+        FORCE_COLOR: 0
+      with:
+        node-version: '18.x'
+        cache: yarn
+
+    - name: Install Stripe-CLI
+      run: |
+        export VERSION=1.13.5
+        wget "https://github.com/stripe/stripe-cli/releases/download/v$VERSION/stripe_${VERSION}_linux_x86_64.tar.gz"
+        tar -zxvf "stripe_${VERSION}_linux_x86_64.tar.gz"
+        mv stripe /usr/local/bin
+        stripe -v
+
+    - name: Restore caches
+      uses: ./.github/actions/restore-cache
+      env:
+        DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+
+    - name: Run migrations
+      working-directory: ghost/core
+      run: yarn knex-migrator init
+
+    - name: Get Playwright version
+      id: playwright-version
+      run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
+    - uses: actions/cache@v3
+      name: Check if Playwright browser is cached
+      id: playwright-cache
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
+    - name: Install Playwright browser if not cached
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      run: npx playwright install --with-deps
+    - name: Install OS dependencies of Playwright if cache hit
+      if: steps.playwright-cache.outputs.cache-hit == 'true'
+      run: npx playwright install-deps
+
+    - name: Build Admin
+      run: yarn nx run ghost-admin:build:dev
+
+    - name: Run Playwright tests locally
+      working-directory: ghost/core
+      run: yarn test:browser
+      env:
+        CI: true
+        STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+        STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+
+    - uses: tryghost/actions/actions/slack-build@main
+      if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      with:
+        status: ${{ job.status }}
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: browser-tests-playwright-report
+        path: ghost/core/playwright-report
+        retention-days: 30
 
   job_unit-tests:
     runs-on: ubuntu-latest

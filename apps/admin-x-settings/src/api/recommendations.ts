@@ -84,7 +84,7 @@ export const useGetRecommendationByUrl = () => {
     return {
         async query(url: URL): Promise<RecommendationResponseType | null> {
             const urlFilter = `url:~'${url.host.replace('www.', '')}${url.pathname.replace(/\/$/, '')}'`;
-            const endpoint = apiUrl(path, {filter: urlFilter, limit: '1'});
+            const endpoint = apiUrl(path, {filter: urlFilter});
             try {
                 const result = await fetchApi(endpoint, {
                     method: 'GET',

@@ -7,7 +7,6 @@ import React, {useState} from 'react';
 import RecommendationIcon from './RecommendationIcon';
 import Table, {ShowMoreData} from '../../../../admin-x-ds/global/Table';
 import TableCell from '../../../../admin-x-ds/global/TableCell';
-import TableHead from '../../../../admin-x-ds/global/TableHead';
 import TableRow from '../../../../admin-x-ds/global/TableRow';
 import Tooltip from '../../../../admin-x-ds/global/Tooltip';
 import useRouting from '../../../../hooks/useRouting';
@@ -39,11 +38,11 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     const isGhostSite = recommendation.one_click_subscribe;
     const showSubscribers = isGhostSite && !!recommendation.count?.subscribers;
     const count = (showSubscribers ? recommendation.count?.subscribers : recommendation.count?.clicks) || 0;
-    const newMembers = count === 1 ? 'new member' : 'new members';
+    const newMembers = count === 1 ? 'signup' : 'signups';
     const clicks = count === 1 ? 'click' : 'clicks';
 
     return (
-        <TableRow>
+        <TableRow testId='recommendation-list-item'>
             <TableCell onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
@@ -60,8 +59,8 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                 </div>)}
             </TableCell>
             <TableCell className='hidden align-middle md:!visible md:!table-cell' onClick={showDetails}>
-                {(count === 0) ? (null) : (<div className='-mt-px items-end gap-1 text-left'>
-                    <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{showSubscribers ? newMembers : clicks}</span>
+                {(count === 0) ? (null) : (<div className=''>
+                    <span className='min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{showSubscribers ? newMembers : clicks}</span><span className='whitespace-nowrap text-left text-sm lowercase text-grey-700 opacity-0 transition-opacity group-hover/table-row:opacity-100'> from you</span>
                 </div>)}
             </TableCell>
         </TableRow>
@@ -87,11 +86,8 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const tableHeader = (<><TableHead>Site</TableHead><TableHead colSpan={2}>Conversions from you</TableHead></>);
-
     if (isLoading || recommendations.length) {
         return <Table
-            header={tableHeader}
             hint={<span className='flex items-center gap-1'>Shared with new members after signup, or anytime using <Link href={recommendationsURL} target='_blank'>this link</Link><Tooltip containerClassName='leading-none' content={copied ? 'Copied' : 'Copy link'} size='sm'><Button color='clear' hideLabel={true} icon={copied ? 'check-circle' : 'duplicate'} iconColorClass={copied ? 'text-green w-[14px] h-[14px]' : 'text-grey-600 hover:opacity-80 w-[14px] h-[14px]'} label={copied ? 'Copied' : 'Copy'} unstyled={true} onClick={copyRecommendationsUrl} /></Tooltip></span>}
             isLoading={isLoading}
             pagination={pagination}
@@ -101,7 +97,6 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
         </Table>;
     } else {
         return <NoValueLabel>
-            <span className='mb-2 max-w-[40ch] text-center'>Get started by sharing any publication you think your audience will find valuable.</span>
             <Button color='grey' label='Add first recommendation' size='sm' onClick={() => {
                 openAddNewRecommendationModal();
             }}></Button>

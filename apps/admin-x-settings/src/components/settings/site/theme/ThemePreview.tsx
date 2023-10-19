@@ -9,7 +9,7 @@ import PageHeader from '../../../../admin-x-ds/global/layout/PageHeader';
 import React, {useState} from 'react';
 import Select, {SelectOption} from '../../../../admin-x-ds/global/form/Select';
 import {OfficialTheme, ThemeVariant} from '../../../providers/ServiceProvider';
-import {Theme} from '../../../../api/themes';
+import {Theme, isDefaultOrLegacyTheme} from '../../../../api/themes';
 
 const hasVariants = (theme: OfficialTheme) => theme.variants && theme.variants.length > 0;
 
@@ -72,14 +72,14 @@ const ThemePreview: React.FC<{
 
     if (isInstalling) {
         installButtonLabel = 'Installing...';
-    } else if (selectedTheme.ref === 'default') {
+    } else if (isDefaultOrLegacyTheme(selectedTheme) && !installedTheme?.active) {
         installButtonLabel = `Activate ${selectedTheme.name}`;
     } else if (installedTheme) {
         installButtonLabel = `Update ${selectedTheme.name}`;
     }
 
     const handleInstall = () => {
-        if (installedTheme && selectedTheme.ref !== 'default') {
+        if (installedTheme && !isDefaultOrLegacyTheme(selectedTheme)) {
             NiceModal.show(ConfirmationModal, {
                 title: 'Overwrite theme',
                 prompt: (

@@ -1,6 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {createContext, useCallback, useEffect, useState} from 'react';
-import {ScrollSectionProvider} from '../../hooks/useScrollSection';
+import {useScrollSectionContext} from '../../hooks/useScrollSection';
 import type {ModalComponent, ModalName} from './routing/modals';
 
 export type RouteParams = {[key: string]: string}
@@ -124,6 +124,7 @@ type RouteProviderProps = {
 const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, children}) => {
     const [route, setRoute] = useState<string | undefined>(undefined);
     const [loadingModal, setLoadingModal] = useState(false);
+    const {updateNavigatedSection, scrollToSection} = useScrollSectionContext();
 
     useEffect(() => {
         // Preload all the modals after initial render to avoid a delay when opening them
@@ -142,12 +143,14 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
 
         const newPath = options.route;
 
-        if (newPath) {
+        if (newPath === route) {
+            scrollToSection(newPath.split('/')[0]);
+        } else if (newPath) {
             window.location.hash = `/settings/${newPath}`;
         } else {
             window.location.hash = `/settings`;
         }
-    }, [externalNavigate]);
+    }, [externalNavigate, route, scrollToSection]);
 
     useEffect(() => {
         const handleHashChange = () => {
@@ -172,6 +175,12 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
         };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+    useEffect(() => {
+        if (route !== undefined) {
+            updateNavigatedSection(route.split('/')[0]);
+        }
+    }, [route, updateNavigatedSection]);
+
     if (route === undefined) {
         return null;
     }
@@ -184,9 +193,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
                 loadingModal
             }}
         >
-            <ScrollSectionProvider navigatedSection={route.split('/')[0]}>
-                {children}
-            </ScrollSectionProvider>
+            {children}
         </RouteContext.Provider>
     );
 };

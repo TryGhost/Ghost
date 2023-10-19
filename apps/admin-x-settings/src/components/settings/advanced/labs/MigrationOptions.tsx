@@ -64,13 +64,14 @@ const MigrationOptions: React.FC = () => {
             prompt: 'This is permanent! No backups, no restores, no magic undo button. We warned you, k?',
             okColor: 'red',
             okLabel: 'Delete',
-            onOk: async () => {
+            onOk: async (modal) => {
                 try {
                     await deleteAllContent(null);
                     showToast({
                         type: 'success',
                         message: 'All content deleted from database.'
                     });
+                    modal?.remove();
                     await client.refetchQueries();
                 } catch (e) {
                     handleError(e);
