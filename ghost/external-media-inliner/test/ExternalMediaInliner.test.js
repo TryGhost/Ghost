@@ -1,4 +1,5 @@
 const assert = require('assert/strict');
+const fs = require('fs');
 const sinon = require('sinon');
 const nock = require('nock');
 const path = require('path');
@@ -7,6 +8,8 @@ const ExternalMediaInliner = require('../index');
 
 describe('ExternalMediaInliner', function () {
     let logging;
+    let ghostLogoPng;
+    let exeFile;
     let GIF1x1;
     let postModelStub;
     let postMetaModelStub;
@@ -15,6 +18,8 @@ describe('ExternalMediaInliner', function () {
 
     beforeEach(function () {
         // use a 1x1 gif in nock responses because it's really small and easy to work with
+        ghostLogoPng = fs.readFileSync(path.join(__dirname, 'fixtures', 'ghost-logo.png'));
+        exeFile = fs.readFileSync(path.join(__dirname, 'fixtures', 'fixture.exe'));
         GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
         logging = {
             info: sinon.stub(loggingLib, 'info'),
@@ -222,7 +227,7 @@ describe('ExternalMediaInliner', function () {
             const fileURL = 'https://img.stockfresh.com/files/f/inlined.exe';
             const requestMock = nock('https://img.stockfresh.com')
                 .get('/files/f/inlined.exe')
-                .reply(200, GIF1x1);
+                .reply(200, exeFile);
 
             const postModelInstanceStub = {
                 id: 'inlined-post-id',
@@ -526,4 +531,145 @@ describe('ExternalMediaInliner', function () {
             });
         });
     });
+
+    describe('Special URL & file type handling', function () {
+        it('Handles URLs with quotes', async function () {
+            const imageURL = 'https://img.stockfresh.com/files/f/ghost-logo’s-cool.png';
+            const requestMock = nock('https://img.stockfresh.com')
+                .get(encodeURI('/files/f/ghost-logo’s-cool.png'))
+                .reply(200, ghostLogoPng);
+
+            const inliner = new ExternalMediaInliner({});
+            const response = await inliner.getRemoteMedia(imageURL);
+            const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(fileData.filename, 'ghost-logos-cool.png');
+            assert.equal(fileData.extension, '.png');
+        });
+
+        it('Handles URLs with spaces', async function () {
+            const imageURL = 'https://img.stockfresh.com/files/f/ghost logo with spaces.png';
+            const requestMock = nock('https://img.stockfresh.com')
+                .get(encodeURI('/files/f/ghost logo with spaces.png'))
+                .reply(200, ghostLogoPng);
+
+            const inliner = new ExternalMediaInliner({});
+            const response = await inliner.getRemoteMedia(imageURL);
+            const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(fileData.filename, 'ghost-logo-with-spaces.png');
+            assert.equal(fileData.extension, '.png');
+        });
+
+        it('Handles URLs with no extension', async function () {
+            const imageURL = 'https://img.stockfresh.com/files/f/ghost-logo';
+            const requestMock = nock('https://img.stockfresh.com')
+                .get('/files/f/ghost-logo')
+                .reply(200, ghostLogoPng);
+
+            const inliner = new ExternalMediaInliner({});
+            const response = await inliner.getRemoteMedia(imageURL);
+            const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(fileData.filename, 'ghost-logo.png');
+            assert.equal(fileData.extension, '.png');
+        });
+
+        it('Handles URLs with unicode characters', async function () {
+            const imageURL = 'https://img.stockfresh.com/files/f/你好.png';
+            const requestMock = nock('https://img.stockfresh.com')
+                .get(encodeURI('/files/f/你好.png'))
+                .reply(200, ghostLogoPng);
+
+            const inliner = new ExternalMediaInliner({});
+            const response = await inliner.getRemoteMedia(imageURL);
+            const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(fileData.filename, 'ni-hao.png');
+            assert.equal(fileData.extension, '.png');
+        });
+
+        it('Handles URLs with no scheme', async function () {
+            const imageURL = '//img.stockfresh.com/files/f/ghost-logo.png';
+            const requestMock = nock('https://img.stockfresh.com')
+                .get('/files/f/ghost-logo.png')
+                .reply(200, ghostLogoPng);
+
+            const inliner = new ExternalMediaInliner({});
+            const response = await inliner.getRemoteMedia(imageURL);
+            const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(fileData.filename, 'ghost-logo.png');
+            assert.equal(fileData.extension, '.png');
+        });
+
+        it('Handles URLs with query params', async function () {
+            const imageURL = 'https://img.stockfresh.com/files/f/ghost-logo.png?version=1&size=large';
+            const requestMock = nock('https://img.stockfresh.com')
+                .get('/files/f/ghost-logo.png?version=1&size=large')
+                .reply(200, ghostLogoPng);
+
+            const inliner = new ExternalMediaInliner({});
+            const response = await inliner.getRemoteMedia(imageURL);
+            const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(fileData.filename, 'ghost-logo-version-1-size-large.png');
+            assert.equal(fileData.extension, '.png');
+        });
+
+        it('Handles URLs with duplicated characters', async function () {
+            const imageURL = 'https://img.stockfresh.com/files/f/ghost---logo.png';
+            const requestMock = nock('https://img.stockfresh.com')
+                .get('/files/f/ghost---logo.png')
+                .reply(200, ghostLogoPng);
+
+            const inliner = new ExternalMediaInliner({});
+            const response = await inliner.getRemoteMedia(imageURL);
+            const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(fileData.filename, 'ghost---logo.png');
+            assert.equal(fileData.extension, '.png');
+        });
+
+        it('Handles falling back to `content-type` for type', async function () {
+            const imageURL = 'https://img.stockfresh.com/files/f/photo.gif?v=1&s=2';
+            const requestMock = nock('https://img.stockfresh.com')
+                .defaultReplyHeaders({
+                    'content-type': 'image/gif'
+                })
+                .get('/files/f/photo.gif?v=1&s=2')
+                .reply(200);
+
+            const inliner = new ExternalMediaInliner({});
+            const response = await inliner.getRemoteMedia(imageURL);
+            const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(fileData.filename, 'photo-v-1-s-2.gif');
+            assert.equal(fileData.extension, '.gif');
+        });
+
+        it('Handles falling back to file path for type', async function () {
+            const imageURL = 'https://img.stockfresh.com/files/f/photo.gif?v=1&s=2';
+            const requestMock = nock('https://img.stockfresh.com')
+                .get('/files/f/photo.gif?v=1&s=2')
+                .reply(200);
+
+            const inliner = new ExternalMediaInliner({});
+            const response = await inliner.getRemoteMedia(imageURL);
+            const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(fileData.filename, 'photo-v-1-s-2.gif');
+            assert.equal(fileData.extension, '.gif');
+        });
+    });
 });
+
