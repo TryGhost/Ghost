@@ -78,6 +78,7 @@
     "@tryghost/kg-clean-basic-html": "^3.0.37",
     "@tryghost/kg-converters": "^0.0.19",
     "@tryghost/kg-default-nodes": "^0.2.3",
+    "@tryghost/kg-default-transforms": "^0.0.0",
     "@tryghost/kg-markdown-html-renderer": "^6.0.12",
     "@tryghost/kg-simplemde": "^2.0.24",
     "@types/react": "18.2.29",

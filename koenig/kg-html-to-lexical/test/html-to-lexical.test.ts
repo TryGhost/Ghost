@@ -196,6 +196,113 @@ describe('HTMLtoLexical', function () {
 
             assert.deepEqual(lexical, helloWorldDoc);
         });
+
+        it('avoids invalid nesting of image nodes', function () {
+            const lexical = converter.htmlToLexical(`
+                <p>Hello</p>
+                <p><img src="https://world.com" width="100" height="100"></p>
+            `, editorConfig);
+
+            assert.deepEqual(lexical, {
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Hello',
+                                    type: 'extended-text',
+                                    version: 1
+                                }
+                            ],
+                            direction: null,
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            type: 'image',
+                            version: 1,
+                            src: 'https://world.com/',
+                            width: 100,
+                            height: 100,
+                            title: '',
+                            alt: '',
+                            caption: '',
+                            cardWidth: 'regular',
+                            href: ''
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+        });
+
+        it('avoids invalid nesting of header nodes', function () {
+            // Google Docs uses spans for headings
+            const lexical = converter.htmlToLexical(`
+                <h1><span style="font-size: 26pt">Hello</span></h1>
+                <p><span style="font-size: 26pt">World</span></p>
+            `, editorConfig);
+
+            assert.deepEqual(lexical, {
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Hello',
+                                    type: 'extended-text',
+                                    version: 1
+                                }
+                            ],
+                            direction: null,
+                            format: '',
+                            indent: 0,
+                            tag: 'h1',
+                            type: 'extended-heading',
+                            version: 1
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'World',
+                                    type: 'extended-text',
+                                    version: 1
+                                }
+                            ],
+                            direction: null,
+                            format: '',
+                            indent: 0,
+                            tag: 'h1',
+                            type: 'extended-heading',
+                            version: 1
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+        });
     });
 
     describe('HTML nodes', function () {

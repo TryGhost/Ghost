@@ -7,6 +7,7 @@ import {ListItemNode, ListNode} from '@lexical/list';
 import {LinkNode} from '@lexical/link';
 import {DEFAULT_NODES} from '@tryghost/kg-default-nodes';
 import {JSDOM} from 'jsdom';
+import {registerDefaultTransforms} from '@tryghost/kg-default-transforms';
 
 export interface htmlToLexicalOptions {
     editorConfig: CreateEditorArgs
@@ -34,6 +35,8 @@ export function htmlToLexical(html: string, options?: htmlToLexicalOptions): Ser
 
     const dom = new JSDOM(`<body>${html?.trim()}</body>`);
     const editor = createHeadlessEditor(editorConfig);
+
+    registerDefaultTransforms(editor);
 
     editor.update(() => {
         const nodes = $generateNodesFromDOM(editor, dom.window.document);

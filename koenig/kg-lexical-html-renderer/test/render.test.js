@@ -59,3 +59,10 @@ describe('Special elements', function () {
         output: `<p>Test<br><br><a href="https://ghost.org">a link</a> some text</p>`
     }));
 });
+
+describe('Unexpected input', function () {
+    it('paragraphs with no children', shouldRender({
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Testing Before","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Testing After","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: `<p>Testing Before</p><p></p><p>Testing After</p>`
+    }));
+});
