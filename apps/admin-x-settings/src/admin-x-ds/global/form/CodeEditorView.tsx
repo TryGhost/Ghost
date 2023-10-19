@@ -3,7 +3,6 @@ import Heading from '../Heading';
 import Hint from '../Hint';
 import React, {FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
 import clsx from 'clsx';
-import {EditorView} from '@codemirror/view';
 import {Extension} from '@codemirror/state';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
 
@@ -18,15 +17,18 @@ export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'o
     onChange?: (value: string) => void;
 }
 
-const theme = EditorView.theme({
-    '& .cm-scroller': {
-        fontFamily: 'Consolas, Liberation Mono, Menlo, Courier, monospace'
-    },
-
-    '& .cm-activeLine, & .cm-activeLineGutter': {
-        backgroundColor: 'transparent'
-    }
-});
+const codeMirrorClasses = [
+    '[&_.cm-editor]:bg-transparent',
+    '[&_.cm-editor]:border-transparent',
+    '[&_.cm-scroller]:font-mono',
+    '[&_.cm-scroller]:border-transparent',
+    '[&_.cm-activeLine]:bg-transparent',
+    '[&_.cm-activeLineGutter]:bg-transparent',
+    '[&_.cm-gutters]:bg-grey-75 dark:[&_.cm-gutters]:bg-grey-950',
+    '[&_.cm-gutters]:text-grey-600 dark:[&_.cm-gutters]:text-grey-500',
+    '[&_.cm-gutters]:border-grey-500 dark:[&_.cm-gutters]:border-grey-800',
+    '[&_.cm-cursor]:border-grey-900 dark:[&_.cm-cursor]:border-grey-75'
+].join(' ');
 
 // Meant to be imported asynchronously to avoid including CodeMirror in the main bundle
 const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function CodeEditorView({
@@ -40,6 +42,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     onChange,
     onFocus,
     onBlur,
+    className,
     ...props
 }, ref) {
     const id = useId();
@@ -75,9 +78,11 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     let styles = clsx(
         'peer order-2 w-full max-w-full overflow-hidden rounded-sm border',
         clearBg ? 'bg-transparent' : 'bg-grey-75',
-        error ? 'border-red' : 'border-grey-500 hover:border-grey-700 focus:border-grey-800',
+        error ? 'border-red' : 'border-grey-500 dark:border-grey-800',
         title && 'mt-2',
-        height === 'full' && 'h-full'
+        height === 'full' && 'h-full',
+        codeMirrorClasses,
+        className
     );
 
     return <>
@@ -88,7 +93,6 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 className={styles}
                 extensions={resolvedExtensions}
                 height={height === 'full' ? '100%' : height}
-                theme={theme}
                 value={value}
                 onBlur={handleBlur}
                 onChange={onChange}
