@@ -1,7 +1,9 @@
 const mime = require('mime-types');
+const FileType = require('file-type');
 const request = require('@tryghost/request');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const string = require('@tryghost/string');
 const path = require('path');
 
 class ExternalMediaInliner {
@@ -39,14 +41,22 @@ class ExternalMediaInliner {
      * @param {string} requestURL - url of remote media
      * @returns {Promise<Object>}
      */
-    async #getRemoteMedia(requestURL) {
+    async getRemoteMedia(requestURL) {
         // @NOTE: this is the most expensive operation in the whole inlining process
         //        we should consider caching the results to improve performance
+
+        // Enforce http - http > https redirects are commonplace
+        requestURL = requestURL.replace(/^\/\//g, 'http://');
+
+        // Encode to handle special characters in URLs
+        requestURL = encodeURI(requestURL);
         try {
-            return await request(requestURL, {
+            const response = await request(requestURL, {
                 followRedirect: true,
                 responseType: 'buffer'
             });
+
+            return response;
         } catch (error) {
             // NOTE: add special case for 404s
             logging.error(`Error downloading remote media: ${requestURL}`);
@@ -63,21 +73,34 @@ class ExternalMediaInliner {
      * @param {Object} response - response from request
      * @returns {Object}
      */
-    #extractFileDataFromResponse(requestURL, response) {
-        const headers = response.headers;
-        const contentType = headers['content-type'];
+    async extractFileDataFromResponse(requestURL, response) {
+        let extension;
 
-        const filename = requestURL
-            .split('/')
-            .pop()
-            .split('#')[0]
-            .split('?')[0];
+        // Attempt to get the file extension from the file itself
+        // If that fails, or if `.ext` is undefined, get the extension from the file path in the catch
+        try {
+            const fileInfo = await FileType.fromBuffer(response.body);
+            extension = fileInfo.ext;
+        } catch {
+            const headers = response.headers;
+            const contentType = headers['content-type'];
+            const extensionFromPath = path.parse(requestURL).ext.split(/[^a-z]/i).filter(Boolean)[0];
+            extension = mime.extension(contentType) || extensionFromPath;
+        }
 
-        const extension = mime.extension(contentType) || filename.split('.').pop();
+        const removeExtRegExp = new RegExp(`.${extension}`, '');
+        const fileNameNoExt = path.parse(requestURL).base.replace(removeExtRegExp, '');
+
+        // CASE: Query strings _can_ form part of the unique image URL, so rather that strip them include the in the file name
+        // Then trim to last 248 chars (this will be more unique than the first 248), and trim leading & trailing dashes.
+        // 248 is on the lower end of limits from various OSes and file systems
+        const fileName = string.slugify(path.parse(fileNameNoExt).base, {
+            requiredChangesOnly: true
+        }).slice(-248).replace(/^-|-$/, '');
 
         return {
             fileBuffer: response.body,
-            filename: filename,
+            filename: `${fileName}.${extension}`,
             extension: `.${extension}`
         };
     }
@@ -87,7 +110,7 @@ class ExternalMediaInliner {
      * @param {Object} media - media to store locally
      * @returns {Promise<string>} - path to stored media
      */
-    async #storeMediaLocally(media) {
+    async storeMediaLocally(media) {
         const storage = this.getMediaStorage(media.extension);
 
         if (!storage) {
@@ -106,7 +129,7 @@ class ExternalMediaInliner {
         }
     }
 
-    async #inlineMibiledoc(mobiledoc, domains) {
+    async inlineMobiledoc(mobiledoc, domains) {
         for (const domain of domains) {
             // NOTE: the src could end with a quote, apostrophe or double-backslash. backlashes are added to mobiledoc
             //       as an escape character
@@ -115,15 +138,15 @@ class ExternalMediaInliner {
             const matches = mobiledoc.matchAll(regex);
 
             for (const [,src] of matches) {
-                const response = await this.#getRemoteMedia(src);
+                const response = await this.getRemoteMedia(src);
 
                 let media;
                 if (response) {
-                    media = this.#extractFileDataFromResponse(src, response);
+                    media = await this.extractFileDataFromResponse(src, response);
                 }
 
                 if (media) {
-                    const filePath = await this.#storeMediaLocally(media);
+                    const filePath = await this.storeMediaLocally(media);
 
                     if (filePath) {
                         const inlinedSrc = `__GHOST_URL__${filePath}`;
@@ -147,7 +170,7 @@ class ExternalMediaInliner {
      * @param {String[]} domains - domains to inline media from
      * @returns Promise<Object> - updated fields map with local media paths
      */
-    async #inlineFields(resourceModel, fields, domains) {
+    async inlineFields(resourceModel, fields, domains) {
         const updatedFields = {};
 
         for (const field of fields) {
@@ -155,15 +178,15 @@ class ExternalMediaInliner {
                 const src = resourceModel.get(field);
 
                 if (src && src.startsWith(domain)) {
-                    const response = await this.#getRemoteMedia(src);
+                    const response = await this.getRemoteMedia(src);
 
                     let media;
                     if (response) {
-                        media = this.#extractFileDataFromResponse(src, response);
+                        media = await this.extractFileDataFromResponse(src, response);
                     }
 
                     if (media) {
-                        const filePath = await this.#storeMediaLocally(media);
+                        const filePath = await this.storeMediaLocally(media);
 
                         if (filePath) {
                             const inlinedSrc = `__GHOST_URL__${filePath}`;
@@ -186,12 +209,12 @@ class ExternalMediaInliner {
      * @param {string[]} fields - fields to inline
      * @param {string[]} domains - domains to inline media from
      */
-    async #inlineSimpleFields(resources, model, fields, domains) {
+    async inlineSimpleFields(resources, model, fields, domains) {
         logging.info(`Starting inlining external media for ${resources?.length} resources and with ${fields.join(', ')} fields`);
 
         for (const resource of resources) {
             try {
-                const updatedFields = await this.#inlineFields(resource, fields, domains);
+                const updatedFields = await this.inlineFields(resource, fields, domains);
 
                 if (Object.keys(updatedFields).length > 0) {
                     await model.edit(updatedFields, {
@@ -227,8 +250,8 @@ class ExternalMediaInliner {
 
         for (const post of posts) {
             try {
-                const inlinedMobiledoc = await this.#inlineMibiledoc(post.get('mobiledoc'), domains);
-                const updatedFields = await this.#inlineFields(post, postsInilingFields, domains);
+                const inlinedMobiledoc = await this.inlineMobiledoc(post.get('mobiledoc'), domains);
+                const updatedFields = await this.inlineFields(post, postsInilingFields, domains);
 
                 if (inlinedMobiledoc !== post.get('mobiledoc')) {
                     updatedFields.mobiledoc = inlinedMobiledoc;
@@ -258,7 +281,7 @@ class ExternalMediaInliner {
             'twitter_image'
         ];
 
-        await this.#inlineSimpleFields(postsMetas, this.#PostMetaModel, postsMetaInilingFields, domains);
+        await this.inlineSimpleFields(postsMetas, this.#PostMetaModel, postsMetaInilingFields, domains);
 
         const {data: tags} = await this.#TagModel.findPage({
             limit: 'all'
@@ -269,7 +292,7 @@ class ExternalMediaInliner {
             'twitter_image'
         ];
 
-        await this.#inlineSimpleFields(tags, this.#TagModel, tagInliningFields, domains);
+        await this.inlineSimpleFields(tags, this.#TagModel, tagInliningFields, domains);
 
         const {data: users} = await this.#UserModel.findPage({
             limit: 'all'
@@ -279,7 +302,7 @@ class ExternalMediaInliner {
             'cover_image'
         ];
 
-        await this.#inlineSimpleFields(users, this.#UserModel, userInliningFields, domains);
+        await this.inlineSimpleFields(users, this.#UserModel, userInliningFields, domains);
 
         logging.info('Finished inlining external media for posts, tags, and users');
     }
