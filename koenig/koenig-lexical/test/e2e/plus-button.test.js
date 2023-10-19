@@ -376,6 +376,7 @@ test.describe('Plus button', async () => {
             await page.click('[data-kg-card-menu-item="Markdown"]');
             await page.waitForSelector('[data-kg-card="markdown"] .CodeMirror');
             await page.keyboard.type('# Test');
+            await page.waitForTimeout(100);
 
             const pHandle = await page.locator('[data-lexical-editor] > p').nth(0);
             await pHandle.hover();
