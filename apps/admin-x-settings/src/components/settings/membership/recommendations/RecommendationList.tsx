@@ -42,7 +42,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
     const clicks = count === 1 ? 'click' : 'clicks';
 
     return (
-        <TableRow>
+        <TableRow testId='recommendation-list-item'>
             <TableCell onClick={showDetails}>
                 <div className='group flex items-center gap-3 hover:cursor-pointer'>
                     <div className={`flex grow flex-col`}>
@@ -97,7 +97,6 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
         </Table>;
     } else {
         return <NoValueLabel>
-            <span className='mb-2 max-w-[40ch] text-center'>Get started by sharing any publication you think your audience will find valuable.</span>
             <Button color='grey' label='Add first recommendation' size='sm' onClick={() => {
                 openAddNewRecommendationModal();
             }}></Button>

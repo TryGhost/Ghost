@@ -16,7 +16,7 @@ import ThemePreview from './theme/ThemePreview';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {InstalledTheme, Theme, ThemesInstallResponseType, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
+import {InstalledTheme, Theme, ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
 import {OfficialTheme} from '../../providers/ServiceProvider';
 import {showToast} from '../../../admin-x-ds/global/Toast';
 
@@ -36,6 +36,24 @@ interface ThemeModalContentProps {
     currentTab: string;
     themes: Theme[];
 }
+
+const UploadModalContent: React.FC<{onUpload: (file: File) => void}> = ({onUpload}) => {
+    const modal = useModal();
+
+    return <div className="-mb-6">
+        <FileUpload
+            id="theme-upload"
+            onUpload={(file) => {
+                modal.remove();
+                onUpload(file);
+            }}
+        >
+            <div className="cursor-pointer bg-grey-75 p-10 text-center dark:bg-grey-950">
+            Click to select or drag & drop zip file
+            </div>
+        </FileUpload>
+    </div>;
+};
 
 const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     currentTab,
@@ -205,6 +223,22 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             onBack={onClose}
         />;
 
+    const handleUpload = () => {
+        if (uploadConfig?.enabled) {
+            NiceModal.show(ConfirmationModal, {
+                title: 'Upload theme',
+                prompt: <UploadModalContent onUpload={onThemeUpload} />,
+                okLabel: '',
+                formSheet: false
+            });
+        } else {
+            NiceModal.show(LimitModal, {
+                title: 'Upgrade to enable custom themes',
+                prompt: uploadConfig?.error || <>Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.</>
+            });
+        }
+    };
+
     const right =
         <div className='flex items-center gap-14'>
             <div className='hidden md:!visible md:!block'>
@@ -220,19 +254,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                     }} />
             </div>
             <div className='flex items-center gap-3'>
-                {uploadConfig && (
-                    uploadConfig.enabled ?
-                        <FileUpload id='theme-upload' inputRef={fileInputRef} onUpload={onThemeUpload}>
-                            <Button color='black' label='Upload theme' loading={isUploading} tag='div' />
-                        </FileUpload> :
-                        // for when user's plan does not support custom themes
-                        <Button color='black' label='Upload theme' onClick={() => {
-                            NiceModal.show(LimitModal, {
-                                title: 'Upgrade to enable custom themes',
-                                prompt: uploadConfig?.error || <>Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.</>
-                            });
-                        }} />
-                )}
+                <Button color='black' label='Upload theme' loading={isUploading} onClick={handleUpload} />
             </div>
         </div>;
 
@@ -364,7 +386,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
             let prompt = <></>;
 
             // default theme can't be installed, only activated
-            if (selectedTheme.ref === 'default') {
+            if (isDefaultOrLegacyTheme(selectedTheme)) {
                 title = 'Activate theme';
                 prompt = <>By clicking below, <strong>{selectedTheme.name}</strong> will automatically be activated as the theme for your site.</>;
             } else {

@@ -151,9 +151,11 @@ test.describe('Theme settings', async () => {
 
         const modal = page.getByTestId('theme-modal');
 
+        await modal.getByRole('button', {name: 'Upload theme'}).click();
+
         const fileChooserPromise = page.waitForEvent('filechooser');
 
-        await modal.locator('label[for=theme-upload]').click();
+        await page.getByTestId('confirmation-modal').locator('label[for=theme-upload]').click();
 
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(`${__dirname}/../../utils/responses/theme.zip`);
