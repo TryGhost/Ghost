@@ -8068,11 +8068,6 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.3.0.tgz#5b0940a370a22a0fa3bdf506850dabbc6af574fa"
-  integrity sha512-3vdaEugCY7cTOlo8TuEYTXnXJa1CeNKJ34EU9uJPxWfUsd0BwaSN0hNcXLHhKxnPQnnJkSjradkXSvTfUsYZiA==
-
 "@tryghost/timezone-data@0.3.8":
   version "0.3.8"
   resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.3.8.tgz#413f8c7efa972bbdb186d95f4eab8d2799704010"
