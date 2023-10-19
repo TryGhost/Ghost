@@ -86,7 +86,7 @@ test.describe('Email card', async () => {
                     </div>
                     <div>
                         Only visible when delivered by email, this card will not be published on your site.
-                        <a href="https://ghost.org/help/email-newsletters/#email-cards" rel="noopener noreferrer" target="_blank">
+                        <a href="https://ghost.org/help/cards/#email-content" rel="noopener noreferrer" target="_blank">
                             <svg></svg>
                         </a>
                     </div>
@@ -221,7 +221,7 @@ test.describe('Email card', async () => {
                         </div>
                         <div>
                             Only visible when delivered by email, this card will not be published on your site.
-                            <a href="https://ghost.org/help/email-newsletters/#email-cards" rel="noopener noreferrer" target="_blank">
+                            <a href="https://ghost.org/help/cards/#email-content" rel="noopener noreferrer" target="_blank">
                                 <svg></svg>
                             </a>
                         </div>
@@ -258,7 +258,7 @@ test.describe('Email card', async () => {
                         </div>
                         <div>
                             Only visible when delivered by email, this card will not be published on your site.
-                            <a href="https://ghost.org/help/email-newsletters/#email-cards" rel="noopener noreferrer" target="_blank">
+                            <a href="https://ghost.org/help/cards/#email-content" rel="noopener noreferrer" target="_blank">
                                 <svg></svg>
                             </a>
                         </div>
