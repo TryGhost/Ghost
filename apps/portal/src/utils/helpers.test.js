@@ -1,4 +1,4 @@
-import {getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry} from './helpers';
+import {getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast} from './helpers';
 import * as Fixtures from './fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from '../utils/test-fixtures';
 import {isComplimentaryMember} from '../utils/helpers';
@@ -446,6 +446,19 @@ describe('Helpers - ', () => {
             delete member.subscriptions[0].tier.expiry_at;
 
             expect(getCompExpiry({member})).toEqual('');
+        });
+    });
+
+    describe('isInThePast', () => {
+        it('returns a boolean indicating if the provided date is in the past', () => {
+            const pastDate = new Date();
+            pastDate.setDate(pastDate.getDate() - 1);
+
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 1);
+
+            expect(isInThePast(pastDate)).toEqual(true);
+            expect(isInThePast(futureDate)).toEqual(false);
         });
     });
 });

@@ -759,4 +759,16 @@ module.exports = class StripeAPI {
             default_payment_method: paymentMethod
         });
     }
+
+    /**
+     * @param {string} id - The ID of the subscription to cancel the trial for
+     *
+     * @returns {Promise<import('stripe').Stripe.Subscription>}
+     */
+    async cancelSubscriptionTrial(id) {
+        await this._rateLimitBucket.throttle();
+        return this._stripe.subscriptions.update(id, {
+            trial_end: 'now'
+        });
+    }
 };
