@@ -11,6 +11,9 @@ import {currencySelectGroups, getSymbol, validateCurrencyAmount} from '../../../
 import {getSettingValues} from '../../../api/settings';
 import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
+// Stripe doesn't allow amounts over 10,000 as a preset amount
+const MAX_AMOUNT = 10_000;
+
 const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
@@ -28,7 +31,7 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     } = useSettingGroup({
         onValidate: () => {
             return {
-                donationsSuggestedAmount: validateCurrencyAmount(suggestedAmountInCents, donationsCurrency)
+                donationsSuggestedAmount: validateCurrencyAmount(suggestedAmountInCents, donationsCurrency, {maxAmount: MAX_AMOUNT})
             };
         }
     });
