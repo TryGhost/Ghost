@@ -5,7 +5,7 @@ export function parseBookmarkNode(BookmarkNode) {
             if (nodeElem.tagName === 'FIGURE' && isKgBookmarkCard) {
                 return {
                     conversion(domNode) {
-                        const url = domNode?.querySelector('.kg-bookmark-container')?.href;
+                        const url = domNode?.querySelector('.kg-bookmark-container')?.getAttribute('href');
                         const icon = domNode?.querySelector('.kg-bookmark-icon')?.src;
                         const title = domNode?.querySelector('.kg-bookmark-title')?.textContent;
                         const description = domNode?.querySelector('.kg-bookmark-description')?.textContent;
@@ -47,7 +47,7 @@ export function parseBookmarkNode(BookmarkNode) {
                         domNode.querySelector('br').remove();
 
                         // Grab individual values from the elements
-                        const url = anchorElement.href;
+                        const url = anchorElement.getAttribute('href');
                         let title = '';
                         let description = '';
                         let thumbnail = '';

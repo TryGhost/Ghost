@@ -216,6 +216,19 @@ describe('ButtonNode', function () {
             nodes[0].buttonText.should.equal('click me');
             nodes[0].alignment.should.equal('center');
         }));
+
+        it('preserves relative urls in content', editorTest(function () {
+            const dom = (new JSDOM(html`
+                <div class="kg-card kg-button-card kg-align-center">
+                    <a href="#/portal/signup" class="kg-btn kg-btn-accent">Subscribe 1</a>
+                </div>
+            `)).window.document;
+            const nodes = $generateNodesFromDOM(editor, dom);
+            nodes.length.should.equal(1);
+            nodes[0].buttonUrl.should.equal('#/portal/signup');
+            nodes[0].buttonText.should.equal('Subscribe 1');
+            nodes[0].alignment.should.equal('center');
+        }));
     });
 
     describe('getTextContent', function () {

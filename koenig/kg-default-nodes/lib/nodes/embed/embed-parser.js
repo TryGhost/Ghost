@@ -32,7 +32,7 @@ export function parseEmbedNode(EmbedNode) {
                                 return null;
                             }
 
-                            let url = link.href;
+                            let url = link.getAttribute('href');
 
                             // If we don't have a url, or it's not an absolute URL, we can't handle this
                             if (!url || !url.match(/^https?:\/\//i)) {

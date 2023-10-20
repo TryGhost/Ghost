@@ -39,7 +39,7 @@ export function parseProductNode(ProductNode) {
                         const button = domNode.querySelector('a');
 
                         if (button) {
-                            const buttonUrl = button.href;
+                            const buttonUrl = button.getAttribute('href');
                             const buttonText = getButtonText(button);
 
                             if (buttonUrl && buttonText) {
