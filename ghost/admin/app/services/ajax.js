@@ -178,6 +178,22 @@ export function isEmailError(errorOrStatus, payload) {
     }
 }
 
+/* Gateway timeout error */
+
+export class GatewayTimeoutError extends AjaxError {
+    constructor(payload) {
+        super(payload, 'Server is currently unavailable, please wait a moment then retry.', 504);
+    }
+}
+
+export function isGatewayTimeoutError(errorOrStatus) {
+    if (isAjaxError(errorOrStatus)) {
+        return errorOrStatus instanceof GatewayTimeoutError;
+    } else {
+        return errorOrStatus === 504;
+    }
+}
+
 /* end: custom error types */
 
 export class AcceptedResponse {
@@ -326,6 +342,8 @@ class ajaxService extends AjaxService {
             return new EmailError(payload);
         } else if (this.isAcceptedResponse(status)) {
             return new AcceptedResponse(payload);
+        } else if (this.isGatewayTimeoutError(status)) {
+            return new GatewayTimeoutError(payload);
         }
 
         let isGhostRequest = GHOST_REQUEST.test(request.url);
@@ -402,6 +420,10 @@ class ajaxService extends AjaxService {
 
     isEmailError(status, headers, payload) {
         return isEmailError(status, payload);
+    }
+
+    isGatewayTimeoutError(status) {
+        return isGatewayTimeoutError(status);
     }
 
     isAcceptedResponse(status) {

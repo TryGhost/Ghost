@@ -103,7 +103,7 @@ describe('Acceptance: Error Handling', function () {
 
             expect(findAll('.gh-alert').length).to.equal(1);
             expect(find('.gh-alert').textContent).to.not.match(/html>/);
-            expect(find('.gh-alert').textContent).to.match(/Request was rejected due to server error/);
+            expect(find('.gh-alert').textContent).to.match(/Server is currently unavailable, please wait a moment then retry./);
         });
 
         it('handles ember-ajax HTML response', async function () {
@@ -118,7 +118,7 @@ describe('Acceptance: Error Handling', function () {
 
             expect(findAll('.gh-alert').length).to.equal(1);
             expect(find('.gh-alert').textContent).to.not.match(/html>/);
-            expect(find('.gh-alert').textContent).to.match(/Request was rejected due to server error/);
+            expect(find('.gh-alert').textContent).to.match(/Server is currently unavailable, please wait a moment then retry./);
         });
     });
 });
