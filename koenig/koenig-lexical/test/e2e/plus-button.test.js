@@ -372,21 +372,21 @@ test.describe('Plus button', async () => {
 
         test('exits a card\'s edit mode when plus button is clicked', async function () {
             await focusEditor(page);
-            await page.keyboard.type('/');
-            await page.click('[data-kg-card-menu-item="Markdown"]');
-            await page.waitForSelector('[data-kg-card="markdown"] .CodeMirror');
+            await page.keyboard.press('Enter');
+            await page.keyboard.press('ArrowUp');
+            await page.keyboard.type('``` ');
+            await page.waitForSelector('[data-kg-card="codeblock"] .cm-editor');
             await page.keyboard.type('# Test');
 
             const pHandle = await page.locator('[data-lexical-editor] > p').nth(0);
             await pHandle.hover();
             await page.click('[data-kg-plus-button]');
             await page.waitForTimeout(200);
-            await expect(page.locator('[data-kg-card="markdown"]')).toBeVisible();
+            await expect(page.locator('[data-kg-card="codeblock"]')).toBeVisible();
 
             await assertHTML(page, html`
                 <div data-lexical-decorator="true" contenteditable="false">
-                    <div><svg></svg></div>
-                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="markdown">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="codeblock">
                     </div>
                 </div>
                 <p><br /></p>
