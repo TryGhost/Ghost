@@ -1,7 +1,8 @@
 /* eslint-disable ghost/filenames/match-exported-class */
-import {$createParagraphNode, $getRoot, CreateEditorArgs, type SerializedEditorState} from 'lexical';
+import {$createParagraphNode, $getRoot, $getSelection, CreateEditorArgs, type SerializedEditorState} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
+import {$insertGeneratedNodes} from '@lexical/clipboard';
 import {HeadingNode, QuoteNode} from '@lexical/rich-text';
 import {ListItemNode, ListNode} from '@lexical/list';
 import {LinkNode} from '@lexical/link';
@@ -12,8 +13,6 @@ import {registerDefaultTransforms} from '@tryghost/kg-default-transforms';
 export interface htmlToLexicalOptions {
     editorConfig: CreateEditorArgs
 }
-
-const TEXT_NODE_TYPES = ['text', 'extended-text'];
 
 const defaultNodes = [
     // basic HTML nodes
@@ -39,23 +38,18 @@ export function htmlToLexical(html: string, options?: htmlToLexicalOptions): Ser
     registerDefaultTransforms(editor);
 
     editor.update(() => {
+        // add a paragraph to avoid insertNodes throwing errors
+        const paragraph = $createParagraphNode();
+        $getRoot().append(paragraph);
+
         const nodes = $generateNodesFromDOM(editor, dom.window.document);
 
-        // $generateNodesFromDOM returns top-level text nodes for any unknown elements
-        // which will break `rootNode.append()` so we need to wrap them in a paragraph
-        // so contents don't get lost when converting
-        const normalizedNodes = nodes.map((node) => {
-            if (TEXT_NODE_TYPES.includes(node.getType())) {
-                const p = $createParagraphNode();
-                p.append(node);
-                return p;
-            } else {
-                return node;
-            }
-        });
+        // use @lexical/clipboard as it has additional logic for normalizing nodes
+        const selection = $getRoot().select();
+        $insertGeneratedNodes(editor, nodes, selection);
 
-        $getRoot().clear();
-        $getRoot().append(...normalizedNodes);
+        // clean up the original empty paragraph
+        paragraph.remove();
     }, {discrete: true});
 
     const editorState = editor.getEditorState();

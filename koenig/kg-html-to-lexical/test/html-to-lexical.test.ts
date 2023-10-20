@@ -322,10 +322,12 @@ describe('HTMLtoLexical', function () {
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
-            assert.equal(lexical.root.children[0].type, 'link');
-            assert.equal(lexical.root.children[0].url, 'https://example.com');
+            assert.equal(lexical.root.children[0].type, 'paragraph');
             assert.equal(lexical.root.children[0].children.length, 1);
-            assert.equal(lexical.root.children[0].children[0].text, 'Hello World');
+            assert.equal(lexical.root.children[0].children[0].type, 'link');
+            assert.equal(lexical.root.children[0].children[0].url, 'https://example.com');
+            assert.equal(lexical.root.children[0].children[0].children.length, 1);
+            assert.equal(lexical.root.children[0].children[0].children[0].text, 'Hello World');
         });
 
         it('can convert lists', function () {
@@ -397,6 +399,15 @@ describe('HTMLtoLexical', function () {
             assert.equal(lexical.root.children[1].type, 'paragraph');
             assert.equal(lexical.root.children[1].children.length, 1);
             assert.equal(lexical.root.children[1].children[0].text, 'Hello World');
+        });
+
+        it('can convert <img> into card', function () {
+            const lexical = converter.htmlToLexical('<img src="https://example.com">', editorConfig);
+
+            assert.ok(lexical.root);
+            assert.equal(lexical.root.children.length, 1);
+            assert.equal(lexical.root.children[0].type, 'image');
+            assert.equal(lexical.root.children[0].src, 'https://example.com/');
         });
 
         it('can convert alternative quote styles', function () {
@@ -975,6 +986,130 @@ describe('HTMLtoLexical', function () {
                 'header',
                 'signup'
             ]);
+        });
+    });
+
+    describe('BRs', function () {
+        it('inside top-level text', function () {
+            const html = `Before <br> After`;
+
+            const lexical = converter.htmlToLexical(html, editorConfig);
+            assert.deepEqual(lexical, {
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Before',
+                                    type: 'extended-text',
+                                    version: 1
+                                },
+                                {
+                                    type: 'linebreak',
+                                    version: 1
+                                },
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'After',
+                                    type: 'extended-text',
+                                    version: 1
+                                }
+                            ],
+                            direction: null,
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+        });
+
+        it('after div', function () {
+            const html = `<p>Before <div></div> test <br> After break</p>`;
+
+            const lexical = converter.htmlToLexical(html, editorConfig);
+            assert.deepEqual(lexical, {
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Before',
+                                    type: 'extended-text',
+                                    version: 1
+                                }
+                            ],
+                            direction: null,
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'test',
+                                    type: 'extended-text',
+                                    version: 1
+                                },
+                                {
+                                    type: 'linebreak',
+                                    version: 1
+                                },
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'After break',
+                                    type: 'extended-text',
+                                    version: 1
+                                }
+                            ],
+                            direction: null,
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        },
+                        {
+                            children: [],
+                            direction: null,
+                            format: '',
+                            indent: 0,
+                            type: 'paragraph',
+                            version: 1
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
         });
     });
 });

@@ -36,6 +36,7 @@
     "typescript": "5.2.2"
   },
   "dependencies": {
+    "@lexical/clipboard": "^0.12.2",
     "@lexical/headless": "^0.12.2",
     "@lexical/html": "^0.12.2",
     "@lexical/link": "^0.12.2",
