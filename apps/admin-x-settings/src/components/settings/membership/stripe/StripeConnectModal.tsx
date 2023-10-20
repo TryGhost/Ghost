@@ -198,7 +198,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
                     <img alt='Stripe Logo' className='absolute right-10 h-16 w-16 rounded-2xl shadow-[-1.5px_0_0_1.5px_#fff] dark:shadow-[-1.5px_0_0_1.5px_black]' src={StripeLogo} />
                 </div>
                 <Heading className='text-center' level={3}>You are connected with Stripe!{stripeConnectLivemode ? null : ' (Test mode)'}</Heading>
-                <div className='mt-1'>Connected to <strong>Dummy</strong></div>
+                <div className='mt-1'>Connected to <strong>{stripeConnectAccountName ? stripeConnectAccountName : 'Test mode'}</strong></div>
             </div>
             <div className='flex flex-col items-center'>
                 <Heading level={6}>Read next</Heading>
