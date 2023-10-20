@@ -71,8 +71,17 @@ const SignupOptions: React.FC<{
                     label: 'Free',
                     value: 'free',
                     onChange: (checked) => {
+                        if (portalPlans.includes('free') && !checked) {
+                            portalPlans.splice(portalPlans.indexOf('free'), 1);
+                        }
+
+                        if (!portalPlans.includes('free') && checked) {
+                            portalPlans.push('free');
+                        }
+
+                        updateSetting('portal_plans', JSON.stringify(portalPlans));
+
                         updateTier({...tier, visibility: checked ? 'public' : 'none'});
-                        togglePlan('free');
                     }
                 });
             }
