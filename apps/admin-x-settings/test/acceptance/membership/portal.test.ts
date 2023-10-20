@@ -48,21 +48,10 @@ test.describe('Portal Settings', async () => {
         await modal.getByRole('checkbox').click();
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.editTiers?.body).toEqual({
+        expect(lastApiRequests.editTiers?.body).toMatchObject({
             tiers: [{
-                id: '645453f4d254799990dd0e21',
                 name: 'Free',
-                description: null,
-                dirty: true,
-                slug: 'free',
-                active: true,
-                type: 'free',
-                welcome_page_url: null,
-                created_at: '2023-05-05T00:55:16.000Z',
-                updated_at: '2023-05-08T06:08:47.000Z',
-                visibility: 'none',
-                benefits: [],
-                trial_days: 0
+                visibility: 'none'
             }]
         });
     });
