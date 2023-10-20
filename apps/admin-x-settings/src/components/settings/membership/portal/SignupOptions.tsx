@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo} from 'react';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import {CheckboxProps} from '../../../../admin-x-ds/global/form/Checkbox';
 import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '../../../../api/settings';
-import {Tier} from '../../../../api/tiers';
+import {Tier, getPaidActiveTiers} from '../../../../api/tiers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const SignupOptions: React.FC<{
@@ -60,20 +60,29 @@ const SignupOptions: React.FC<{
 
     const isStripeEnabled = checkStripeEnabled(localSettings, config!);
 
-    let tiersCheckboxes: CheckboxProps[] = [
-        {
-            checked: (portalPlans.includes('free')),
-            disabled: isDisabled,
-            label: 'Free',
-            value: 'free',
-            onChange: () => {
-                togglePlan('free');
-            }
-        }
-    ];
+    let tiersCheckboxes: CheckboxProps[] = [];
 
-    if (isStripeEnabled) {
+    if (localTiers) {
         localTiers.forEach((tier) => {
+            if (tier.name === 'Free') {
+                tiersCheckboxes.push({
+                    checked: tier.visibility === 'public',
+                    disabled: isDisabled,
+                    label: 'Free',
+                    value: 'free',
+                    onChange: (checked) => {
+                        updateTier({...tier, visibility: checked ? 'public' : 'none'});
+                        togglePlan('free');
+                    }
+                });
+            }
+        });
+    }
+
+    const paidActiveTiersResult = getPaidActiveTiers(localTiers) || [];
+
+    if (paidActiveTiersResult.length > 0 && isStripeEnabled) {
+        paidActiveTiersResult.forEach((tier) => {
             tiersCheckboxes.push({
                 checked: (tier.visibility === 'public'),
                 label: tier.name,
