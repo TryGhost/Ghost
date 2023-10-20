@@ -559,4 +559,83 @@ test.describe('Updating post access', () => {
         await expect(frontendPage.locator('.gh-post-upgrade-cta-content')).not.toBeVisible();
         await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('Only gold members can see this');
     });
+
+    test('publish time in timezone', async ({page}) => {
+        await page.goto('/ghost');
+
+        await createPostDraft(page, {title: 'Published in timezones', body: 'Published in timezones'});
+        await openPostSettingsMenu(page);
+
+        // saves the post with the new date
+        await expect(page.locator('[data-test-date-time-picker-timezone]')).toHaveText('UTC');
+        await page.locator('[data-test-date-time-picker-datepicker]').click();
+        await page.locator('.ember-power-calendar-nav-control--previous').click();
+        await page.locator('.ember-power-calendar-day', {hasText: '15'}).click();
+        await page.locator('[data-test-date-time-picker-time-input]').fill('12:00');
+
+        await publishPost(page);
+        await closePublishFlow(page);
+
+        // go to settings and change the timezone
+        await page.locator('[data-test-link="posts"]').click();
+        await page.locator('[data-test-nav="settings"]').click();
+        await expect(page.getByTestId('timezone')).toContainText('UTC');
+
+        await page.getByTestId('timezone').getByRole('button', {name: 'Edit'}).click();
+        await page.getByTestId('timezone-select').click();
+        await page.locator('[data-testid="select-option"]', {hasText: 'Kamchatka'}).click();
+
+        await page.getByTestId('timezone').getByRole('button', {name: 'Save'}).click();
+        await expect(page.getByTestId('timezone-select')).toBeHidden();
+        await expect(page.getByTestId('timezone')).toContainText('Pacific/Fiji');
+
+        await page.getByTestId('exit-settings').click();
+        await page.locator('[data-test-nav="posts"]').click();
+        await page.locator('[data-test-post-id]', {hasText: /Published in timezones/}).click();
+
+        await openPostSettingsMenu(page);
+
+        await expect(page.locator('[data-test-date-time-picker-timezone]')).toHaveText('+12');
+        await expect(page.locator('[data-test-date-time-picker-time-input]')).toHaveValue('00:00');
+        await expect(page.locator('[data-test-date-time-picker-date-input]')).toHaveValue(/-16$/);
+    });
+
+    test('default recipient settings - usually nobody', async ({page}) => {
+        // switch to "usually nobody" setting
+        await page.goto('/ghost/settings/newsletters');
+        await page.getByTestId('default-recipients').getByRole('button', {name: 'Edit'}).click();
+        await page.getByTestId('default-recipients-select').click();
+        await page.locator('[data-testid="select-option"]', {hasText: /Usually nobody/}).click();
+        await page.getByTestId('default-recipients').getByRole('button', {name: 'Save'}).click();
+
+        await expect(page.getByTestId('default-recipients-select')).toBeHidden();
+        await expect(page.getByTestId('default-recipients')).toContainText('Usually nobody');
+
+        await page.goto('/ghost');
+
+        await createMember(page, {
+            name: 'Test Member Recipient',
+            email: 'test@recipient.com'
+        });
+
+        // go to publish a post
+        await createPostDraft(page, {title: 'Published in timezones', body: 'Published in timezones'});
+        await page.locator('[data-test-button="publish-flow"]').click();
+
+        await expect(page.locator('[data-test-setting="publish-type"] [data-test-setting-title]')).toContainText('Publish');
+
+        await expect(page.locator('[data-test-setting="email-recipients"] [data-test-setting-title]')).toContainText('Not sent as newsletter');
+
+        await page.locator('[data-test-setting="publish-type"] [data-test-setting-title]').click();
+
+        // email-related options are enabled
+        await expect(page.locator('[data-test-publish-type="publish+send"]')).not.toBeDisabled();
+        await expect(page.locator('[data-test-publish-type="send"]')).not.toBeDisabled();
+
+        await page.locator('label[for="publish-type-publish+send"]').click();
+
+        await expect(
+            page.locator('[data-test-setting="email-recipients"] [data-test-setting-title]')
+        ).toContainText(/\d+\s* subscriber/m);
+    });
 });
