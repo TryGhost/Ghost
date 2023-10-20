@@ -12,7 +12,7 @@ import useQueryParams from '../../../../hooks/useQueryParams';
 import useRouting from '../../../../hooks/useRouting';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
 import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../../api/settings';
-import {Tier, getPaidActiveTiers, useBrowseTiers, useEditTier} from '../../../../api/tiers';
+import {Tier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
 import {fullEmailAddress} from '../../../../api/site';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {verifyEmailToken} from '../../../../api/emailVerification';
@@ -72,7 +72,7 @@ const PortalModal: React.FC = () => {
     const {settings, siteData} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
-    const tiers = getPaidActiveTiers(allTiers || []);
+    // const tiers = getPaidActiveTiers(allTiers || []);
 
     const {mutateAsync: editTier} = useEditTier();
     const {mutateAsync: verifyToken} = verifyEmailToken();
@@ -118,7 +118,7 @@ const PortalModal: React.FC = () => {
     const {formState, setFormState, saveState, handleSave, updateForm} = useForm({
         initialState: {
             settings: settings as Dirtyable<Setting>[],
-            tiers: tiers as Dirtyable<Tier>[]
+            tiers: allTiers as Dirtyable<Tier>[]
         },
 
         onSave: async () => {
