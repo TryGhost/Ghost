@@ -48,7 +48,7 @@
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/limit-service": "^1.2.10",
     "@tryghost/nql": "0.11.0",
-    "@tryghost/timezone-data": "0.3.0",
+    "@tryghost/timezone-data": "0.3.8",
     "@uiw/react-codemirror": "^4.21.9",
     "clsx": "2.0.0",
     "react": "18.2.0",
