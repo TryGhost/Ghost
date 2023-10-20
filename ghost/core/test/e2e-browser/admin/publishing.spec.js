@@ -587,7 +587,7 @@ test.describe('Updating post access', () => {
 
         await page.getByTestId('timezone').getByRole('button', {name: 'Save'}).click();
         await expect(page.getByTestId('timezone-select')).toBeHidden();
-        await expect(page.getByTestId('timezone')).toContainText('Pacific/Fiji');
+        await expect(page.getByTestId('timezone')).toContainText('(GMT +12:00) Fiji, Kamchatka, Marshall Is.');
 
         await page.getByTestId('exit-settings').click();
         await page.locator('[data-test-nav="posts"]').click();
