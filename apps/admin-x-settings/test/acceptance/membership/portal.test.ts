@@ -25,7 +25,9 @@ test.describe('Portal Settings', async () => {
     test('can toggle portal signup options', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            editSettings: {method: 'PUT', path: '/settings/', response: responseFixtures.settings}
+            tiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
+            // the tiers id is from the responseFixtures.tiers, free tier id
+            editTiers: {method: 'PUT', path: '/tiers/645453f4d254799990dd0e21/', response: responseFixtures.tiers}
         }});
 
         await mockSitePreview({
@@ -43,17 +45,14 @@ test.describe('Portal Settings', async () => {
         const modal = await page.getByTestId('portal-modal');
 
         await modal.getByRole('switch').click();
-
-        // get input checkbox
         await modal.getByRole('checkbox').click();
-
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.editSettings?.body).toEqual({
-            settings: [
-                {key: 'portal_name', value: false},
-                {key: 'portal_plans', value: '["monthly","yearly"]'}
-            ]
+        expect(lastApiRequests.editTiers?.body).toMatchObject({
+            tiers: [{
+                name: 'Free',
+                visibility: 'none'
+            }]
         });
     });
 
