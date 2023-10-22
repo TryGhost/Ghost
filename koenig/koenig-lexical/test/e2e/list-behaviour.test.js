@@ -1,5 +1,5 @@
 import {assertHTML, assertSelection, focusEditor, html, initialize} from '../utils/e2e';
-import {test} from '@playwright/test';
+import {expect, test} from '@playwright/test';
 
 test.describe('List behaviour', async () => {
     let page;
@@ -211,6 +211,62 @@ test.describe('List behaviour', async () => {
                 </ul>
                 <p><br /></p>
             `);
+        });
+    });
+
+    test.describe('TAB', function () {
+        test('indents on tab', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('*');
+            await page.keyboard.press('Space');
+            await page.keyboard.type('list item');
+            await page.keyboard.press('Tab');
+
+            await assertHTML(page, html`
+                <ul data-koenig-dnd-droppable="true">
+                    <li value="1" class="!list-none">
+                        <ul>
+                            <li value="1" dir="ltr">
+                                <span data-lexical-text="true">list item</span>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            `);
+        });
+
+        test('dedents on shift+tab as long as indent is > 0', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('*');
+            await page.keyboard.press('Space');
+            await page.keyboard.type('list item');
+            await page.keyboard.press('Tab');
+            await page.keyboard.press('Tab');
+            await page.keyboard.press('Shift+Tab');
+
+            await assertHTML(page, html`
+                <ul data-koenig-dnd-droppable="true">
+                    <li value="1" class="!list-none">
+                        <ul>
+                            <li value="1" dir="ltr">
+                                <span data-lexical-text="true">list item</span>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            `);
+        });
+
+        test('shift+tab moves to header if indent is 0', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('*');
+            await page.keyboard.press('Space');
+            await page.keyboard.type('list item');
+            await page.keyboard.press('Shift+Tab');
+
+            const title = page.getByTestId('post-title');
+            let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+            expect(titleHasFocus).toEqual(true);
         });
     });
 

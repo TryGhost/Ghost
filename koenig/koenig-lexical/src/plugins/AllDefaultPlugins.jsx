@@ -22,7 +22,7 @@ import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import {PaywallPlugin} from '../plugins/PaywallPlugin';
 import {ProductPlugin} from '../plugins/ProductPlugin';
 import {SignupPlugin} from '../plugins/SignupPlugin';
-import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
+// import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
 import {TogglePlugin} from '../plugins/TogglePlugin';
 import {VideoPlugin} from '../plugins/VideoPlugin';
 
@@ -31,7 +31,7 @@ export const AllDefaultPlugins = () => {
         <>
             {/* Lexical Plugins */}
             <ListPlugin /> {/* adds indent/outdent/remove etc support */}
-            <TabIndentationPlugin /> {/* tab/shift+tab triggers indent/outdent */}
+            {/* <TabIndentationPlugin /> tab/shift+tab triggers indent/outdent */}
 
             {/* Koenig Plugins */}
             <CardMenuPlugin />

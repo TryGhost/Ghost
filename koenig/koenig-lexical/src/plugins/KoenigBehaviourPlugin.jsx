@@ -1140,6 +1140,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         return true;
                     }
 
+                    // exit the editor if we're shift tabbing on an element that isn't tabbed
                     if (event.shiftKey && cursorDidExitAtTop) {
                         const selection = $getSelection();
 
@@ -1161,10 +1162,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         const hasIndentedNode = nodes.some((node) => {
                             return node.getIndent && node.getIndent() > 0;
                         });
-
-                        if (hasIndentedNode) {
-                            return false;
-                        } else {
+                        
+                        if (!hasIndentedNode) {
                             event.preventDefault();
                             cursorDidExitAtTop();
                             return true;
@@ -1190,6 +1189,25 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 return true;
                             }
                         }
+
+                        // handle indent behavior
+                        if ($isListItemNode(currentNode) || ($isTextNode(currentNode) && $isListItemNode(currentNode.getParent()))) {
+                            event.preventDefault();
+                            let node = $isTextNode(currentNode) ? currentNode.getParent() : currentNode;
+                            const indent = node.getIndent();
+                            if (event.shiftKey) {
+                                if (indent > 0) {
+                                    node.setIndent(indent - 1);
+                                }
+                            } else {
+                                node.setIndent(indent + 1);
+                            }
+                            return true;
+                        }
+
+                        // generally prevent tabs from leaving the editor/interacting with the browser
+                        event.preventDefault();
+                        return true;
                     }
                 },
                 COMMAND_PRIORITY_LOW
