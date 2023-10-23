@@ -221,7 +221,7 @@ Object {
       "custom_template": null,
       "feature_image": null,
       "featured": false,
-      "html": "",
+      "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "mobiledoc": null,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,

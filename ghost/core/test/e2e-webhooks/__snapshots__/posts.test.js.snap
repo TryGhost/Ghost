@@ -223,7 +223,7 @@ Object {
       "custom_template": null,
       "feature_image": null,
       "featured": false,
-      "html": "",
+      "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "mobiledoc": null,
       "published_at": null,
