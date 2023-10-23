@@ -6,7 +6,7 @@ test.describe('Stripe settings', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
             editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
-                {key: 'stripe_connect_account_name', value: 'Dummy'},
+                {key: 'stripe_connect_display_name', value: 'Dummy'},
                 {key: 'stripe_connect_livemode', value: false},
                 {key: 'stripe_connect_account_id', value: 'acct_123'},
                 {key: 'stripe_connect_publishable_key', value: 'pk_test_123'},
