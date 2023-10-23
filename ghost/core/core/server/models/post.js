@@ -392,6 +392,11 @@ Post = ghostBookshelf.Model.extend({
             const html = await lexicalLib.render(model.get('lexical'));
             const plaintext = htmlToPlaintext.excerpt(html);
 
+            // avoid a DB query if we have no html - knex will set it to an empty string rather than NULL
+            if (!html && !model.get('plaintext')) {
+                return model;
+            }
+
             // set model attributes so they are available immediately in code that uses the returned model
             model.set('html', html);
             model.set('plaintext', plaintext);

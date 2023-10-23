@@ -102,7 +102,7 @@ describe('Importer 1.0', function () {
                 });
         });
 
-        it('mobiledoc and html is null', function () {
+        it('mobiledoc, lexical, and html is null', function () {
             const exportData = exportedBodyV1().db[0];
 
             exportData.data.posts[0] = testUtils.DataGenerator.forKnex.createPost({
@@ -110,9 +110,10 @@ describe('Importer 1.0', function () {
             });
 
             exportData.data.posts[0].mobiledoc = null;
+            exportData.data.posts[0].lexical = null;
             exportData.data.posts[0].html = null;
 
-            const options = Object.assign({formats: 'mobiledoc,html'}, testUtils.context.internal);
+            const options = Object.assign({formats: 'mobiledoc,lexical,html'}, testUtils.context.internal);
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function () {
@@ -124,7 +125,8 @@ describe('Importer 1.0', function () {
 
                     posts.length.should.eql(1);
                     should(posts[0].html).eql(null);
-                    posts[0].mobiledoc.should.eql('{"version":"0.3.1","ghostVersion":"4.0","markups":[],"atoms":[],"cards":[],"sections":[[1,"p",[[0,[],0,""]]]]}');
+                    should(posts[0].mobiledoc).eql(null);
+                    posts[0].lexical.should.eql('{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
                 });
         });
 
