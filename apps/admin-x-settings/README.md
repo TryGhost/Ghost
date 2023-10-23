@@ -12,6 +12,10 @@ Ghost Admin Settings in React
 
 Run `yarn dev` to start the development server to test/develop the settings standalone. This will generate a demo site from the `index.html` file which renders the app and makes it available on http://localhost:5173
 
+### Running inside Admin
+
+Run `yarn dev` (like you would run Ghost dev normally) from the top-level repo. AdminX will automatically rebuild when you make changes.
+
 ## Develop
 
 This is a monorepo package.
