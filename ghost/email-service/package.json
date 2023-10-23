@@ -29,7 +29,7 @@
     "@tryghost/email-events": "0.0.0",
     "@tryghost/errors": "1.2.26",
     "@tryghost/html-to-plaintext": "0.0.0",
-    "@tryghost/kg-default-cards": "9.1.7",
+    "@tryghost/kg-default-cards": "9.1.8",
     "@tryghost/logging": "2.4.8",
     "@tryghost/tpl": "0.1.24",
     "@tryghost/validator": "0.2.4",
