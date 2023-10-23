@@ -153,7 +153,7 @@ const Connect: React.FC = () => {
 
 const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     const {settings} = useGlobalData();
-    const [stripeConnectAccountName, stripeConnectLivemode] = getSettingValues(settings, ['stripe_connect_account_name', 'stripe_connect_livemode']);
+    const [stripeConnectAccountName, stripeConnectLivemode] = getSettingValues(settings, ['stripe_connect_display_name', 'stripe_connect_livemode']);
 
     const {refetch: fetchMembers, isFetching: isFetchingMembers} = useBrowseMembers({
         searchParams: {filter: 'status:paid', limit: '0'},
