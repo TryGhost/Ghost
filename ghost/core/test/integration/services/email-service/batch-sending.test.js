@@ -136,7 +136,7 @@ describe('Batch sending tests', function () {
         // Prepare a post and email model
         const {emailModel} = await sendEmail(agent);
 
-        assert.equal(emailModel.get('source_type'), 'mobiledoc');
+        assert.equal(emailModel.get('source_type'), 'lexical');
         assert(emailModel.get('subject'));
         assert(emailModel.get('from'));
         assert.equal(emailModel.get('email_count'), 4);

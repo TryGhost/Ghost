@@ -16,6 +16,28 @@ function populateNodes() {
 }
 
 module.exports = {
+    get blankDocument() {
+        return {
+            root: {
+                children: [
+                    {
+                        children: [],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'paragraph',
+                        version: 1
+                    }
+                ],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        };
+    },
+
     get lexicalHtmlRenderer() {
         if (!lexicalHtmlRenderer) {
             if (!nodes) {

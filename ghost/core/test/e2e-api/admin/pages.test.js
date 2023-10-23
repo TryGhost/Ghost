@@ -80,30 +80,6 @@ describe('Pages API', function () {
 
     describe('Create', function () {
         it('Can create a page with html', async function () {
-            mockManager.mockLabsDisabled('lexicalEditor');
-
-            const page = {
-                title: 'HTML test',
-                html: '<p>Testing page creation with html</p>'
-            };
-
-            await agent
-                .post('/pages/?source=html&formats=mobiledoc,lexical,html')
-                .body({pages: [page]})
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    pages: [Object.assign({}, matchPageShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('pages')
-                });
-        });
-
-        it('Can create a page with html (labs.lexicalEditor)', async function () {
-            mockManager.mockLabsEnabled('lexicalEditor');
-
             const page = {
                 title: 'HTML test',
                 html: '<p>Testing page creation with html</p>'

@@ -6,6 +6,7 @@ const {
     matchers
 } = require('../utils/e2e-framework');
 const {
+    anyArray,
     anyGhostAgent,
     anyUuid,
     anyLocalURL,
@@ -57,7 +58,8 @@ const buildPageSnapshotWithTiers = ({
         primary_author: buildAuthorSnapshot(roles),
         authors: new Array(1).fill(buildAuthorSnapshot(roles)),
         primary_tag: tags ? tagSnapshot : null,
-        tags: tags ? new Array(1).fill(tagSnapshot) : []
+        tags: tags ? new Array(1).fill(tagSnapshot) : [],
+        post_revisions: anyArray
     };
 };
 
@@ -395,7 +397,7 @@ describe('page.* events', function () {
                 'content-length': anyNumber,
                 'user-agent': anyGhostAgent
             })
-            .matchBodySnapshot({               
+            .matchBodySnapshot({
                 page: {
                     current: buildPageSnapshotWithTiers({
                         published: true,
@@ -575,7 +577,7 @@ describe('page.* events', function () {
                 }
             });
     });
-    
+
     it('page.rescheduled event is triggered', async function () {
         const webhookURL = 'https://test-webhook-receiver.com/page-rescheduled/';
         await webhookMockReceiver.mock(webhookURL);

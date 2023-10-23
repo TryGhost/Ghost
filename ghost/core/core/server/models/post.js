@@ -392,6 +392,11 @@ Post = ghostBookshelf.Model.extend({
             const html = await lexicalLib.render(model.get('lexical'));
             const plaintext = htmlToPlaintext.excerpt(html);
 
+            // avoid a DB query if we have no html - knex will set it to an empty string rather than NULL
+            if (!html && !model.get('plaintext')) {
+                return model;
+            }
+
             // set model attributes so they are available immediately in code that uses the returned model
             model.set('html', html);
             model.set('plaintext', plaintext);
@@ -716,7 +721,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (!this.get('mobiledoc') && !this.get('lexical')) {
-            this.set('mobiledoc', JSON.stringify(mobiledocLib.blankDocument));
+            this.set('lexical', JSON.stringify(lexicalLib.blankDocument));
         }
 
         // If we're force re-rendering we want to make sure that all image cards
@@ -984,7 +989,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // CASE: Convert post to lexical on the fly
-        if (labs.isSet('lexicalEditor') && options.convert_to_lexical) {
+        if (options.convert_to_lexical) {
             ops.push(async function convertToLexical() {
                 const mobiledoc = model.get('mobiledoc');
                 if (mobiledoc !== null) { // only run conversion when there is a mobiledoc string

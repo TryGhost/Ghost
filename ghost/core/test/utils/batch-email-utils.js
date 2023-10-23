@@ -31,7 +31,7 @@ async function createPublishedPostEmail(agent, settings = {}, email_recipient_fi
     const res = await agent.post('posts/')
         .body({posts: [post]})
         .expectStatus(201);
-        
+
     const id = res.body.posts[0].id;
 
     // Make sure all posts are published in the samre order, with minimum 1s difference (to have consistent ordering when including latests posts)
@@ -73,7 +73,7 @@ async function sendEmail(agent, settings, email_recipient_filter) {
 
     assert.ok(emailModel.get('subject'));
     assert.ok(emailModel.get('from'));
-    assert.equal(emailModel.get('source_type'), settings && settings.lexical ? 'lexical' : 'mobiledoc');
+    assert.equal(emailModel.get('source_type'), settings && settings.mobiledoc ? 'mobiledoc' : 'lexical');
 
     // Await sending job
     await completedPromise;
@@ -98,7 +98,7 @@ async function sendFailedEmail(agent, settings, email_recipient_filter) {
 
     assert.ok(emailModel.get('subject'));
     assert.ok(emailModel.get('from'));
-    assert.equal(emailModel.get('source_type'), settings && settings.lexical ? 'lexical' : 'mobiledoc');
+    assert.equal(emailModel.get('source_type'), settings && settings.mobiledoc ? 'mobiledoc' : 'lexical');
 
     // Await sending job
     await completedPromise;

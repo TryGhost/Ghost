@@ -6,7 +6,6 @@ const localUtils = require('../../index');
 const mobiledoc = require('../../../../../lib/mobiledoc');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const clean = require('./utils/clean');
-const labs = require('../../../../../../shared/labs');
 const lexical = require('../../../../../lib/lexical');
 
 function removeSourceFormats(frame) {
@@ -74,7 +73,7 @@ function defaultFormat(frame) {
         return;
     }
 
-    frame.options.formats = 'mobiledoc';
+    frame.options.formats = 'mobiledoc,lexical';
 }
 
 function handlePostsMeta(frame) {
@@ -172,9 +171,7 @@ module.exports = {
 
                 // normally we don't allow both mobiledoc+lexical but the model layer will remove lexical
                 // if mobiledoc is already present to avoid migrating formats outside of an explicit conversion
-                if (labs.isSet('lexicalEditor')) {
-                    frame.data.posts[0].lexical = JSON.stringify(lexical.htmlToLexicalConverter(html));
-                }
+                frame.data.posts[0].lexical = JSON.stringify(lexical.htmlToLexicalConverter(html));
             }
         }
 
