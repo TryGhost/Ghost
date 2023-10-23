@@ -30,6 +30,7 @@ const expectedProperties = {
         'title',
         'slug',
         'mobiledoc',
+        'lexical',
         'comment_id',
         'feature_image',
         'feature_image_alt',
