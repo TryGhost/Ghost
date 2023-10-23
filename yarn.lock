@@ -19581,10 +19581,10 @@ human-interval@^2.0.0:
   dependencies:
     numbered "^1.1.0"
 
-human-number@2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.3.tgz#a46eded1149b637bb386a04cee6a2a199f7c0ee7"
-  integrity sha512-vEoxBaU6VYvS/i8KgMnAxBhNfwXp5olFCFILBeB5m4RNbPMz5MvzjmFy97+NeoOd64GYGTQGpauIWC2Cd72wHQ==
+human-number@2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.4.tgz#345b1f5bc34a3559c04da06af5eb5588b42f2732"
+  integrity sha512-OENvA941poJU1VGR6s5Nf/GpYNPE+81lmHkIVLO9FgiyHxB+BSlVOJV3lnItk5tfHzcEbZv3kTQrzpZK0+ExRA==
   dependencies:
     round-to "~5.0.0"
 
