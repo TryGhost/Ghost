@@ -1,21 +1,16 @@
 # Admin X Settings
 
-Experimental re-write of Ghost Admin Settings in React
+Ghost Admin Settings in React
 
 ## Development
 
 ### Pre-requisites
 
 - Run `yarn` in Ghost monorepo root
-- Run `yarn` in this directory
 
 ### Running the development version
 
 Run `yarn dev` to start the development server to test/develop the settings standalone. This will generate a demo site from the `index.html` file which renders the app and makes it available on http://localhost:5173
-
-### Running inside Admin
-
-Run `yarn dev` from the top-level repo with `--adminX`
 
 ## Develop
 
@@ -30,4 +25,7 @@ Follow the instructions for the top-level repo.
 ## Test
 
 - `yarn lint` run just eslint
-- `yarn test` run lint and tests
+- `yarn test:acceptance` runs acceptance tests
+- `yarn test:unit` runs unit tests
+- `yarn test:acceptance path/to/test` runs a specific test
+- `yarn test:acceptance:slowmo` runs acceptance tests in slow motion and headed mode, useful for debugging and developing tests
