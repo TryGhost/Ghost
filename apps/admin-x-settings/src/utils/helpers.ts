@@ -25,7 +25,8 @@ export function resolveAsset(assetPath: string, relativeTo: string) {
 export function getLocalTime(timeZone: string) {
     const date = new Date();
     const options = {timeZone: timeZone};
-    const localTime = date.toLocaleString('en-US', options);
+    const userLocale = navigator.language.startsWith('en') ? navigator.language : 'en-US';
+    const localTime = date.toLocaleString(userLocale, options);
     return localTime;
 }
 
