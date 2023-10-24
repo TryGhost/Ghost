@@ -75,14 +75,16 @@ describe('Email renderer', function () {
         let emailRenderer;
         let newsletter;
         let member;
+        let labsEnabled = false;
 
         beforeEach(function () {
+            labsEnabled = false;
             emailRenderer = new EmailRenderer({
                 urlUtils: {
                     urlFor: () => 'http://example.com/subdirectory/'
                 },
                 labs: {
-                    isSet: () => true
+                    isSet: () => labsEnabled
                 },
                 settingsCache: {
                     get: (key) => {
@@ -145,6 +147,16 @@ describe('Email renderer', function () {
             assert.equal(replacements[0].token.toString(), '/%%\\{unsubscribe_url\\}%%/g');
             assert.equal(replacements[0].id, 'unsubscribe_url');
             assert.equal(replacements[0].getValue(member), `http://example.com/subdirectory/unsubscribe/?uuid=myuuid&newsletter=newsletteruuid`);
+        });
+
+        it('returns correct list-unsubscribe value', function () {
+            labsEnabled = true;
+            const html = 'Hello';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{list_unsubscribe\\}%%/g');
+            assert.equal(replacements[0].id, 'list_unsubscribe');
+            assert.equal(replacements[0].getValue(member)[0], `<`);
         });
 
         it('returns correct name', function () {
@@ -316,7 +328,7 @@ describe('Email renderer', function () {
                     urlFor: () => 'http://example.com/subdirectory/'
                 },
                 labs: {
-                    isSet: () => true
+                    isSet: () => false
                 },
                 settingsCache: {
                     get: (key) => {
@@ -419,7 +431,7 @@ describe('Email renderer', function () {
                     urlFor: () => 'http://example.com/subdirectory/'
                 },
                 labs: {
-                    isSet: () => true
+                    isSet: () => false
                 },
                 settingsCache: {
                     get: (key) => {
@@ -623,7 +635,7 @@ describe('Email renderer', function () {
                 urlFor: () => 'http://example.com'
             },
             labs: {
-                isSet: () => true
+                isSet: () => false
             }
         });
 
@@ -668,7 +680,7 @@ describe('Email renderer', function () {
                 }
             },
             labs: {
-                isSet: () => true
+                isSet: () => false
             }
         });
 
@@ -728,7 +740,7 @@ describe('Email renderer', function () {
                 }
             },
             labs: {
-                isSet: () => true
+                isSet: () => false
             }
         });
 
@@ -771,7 +783,7 @@ describe('Email renderer', function () {
                 return 'http://example.com/post-id';
             },
             labs: {
-                isSet: () => true
+                isSet: () => false
             }
         });
 
@@ -810,7 +822,7 @@ describe('Email renderer', function () {
                     return 'http://example.com/post-id';
                 },
                 labs: {
-                    isSet: () => true
+                    isSet: () => false
                 }
             });
 
@@ -838,7 +850,7 @@ describe('Email renderer', function () {
                     return 'http://example.com/post-id';
                 },
                 labs: {
-                    isSet: () => true
+                    isSet: () => false
                 }
             });
 
@@ -1011,7 +1023,7 @@ describe('Email renderer', function () {
             // Unsubscribe button included
             response.plaintext.should.containEql('Unsubscribe [%%{unsubscribe_url}%%]');
             response.html.should.containEql('Unsubscribe');
-            response.replacements.length.should.eql(2);
+            response.replacements.length.should.eql(3);
             response.replacements.should.match([
                 {
                     id: 'uuid'
@@ -1019,6 +1031,9 @@ describe('Email renderer', function () {
                 {
                     id: 'unsubscribe_url',
                     token: /%%\{unsubscribe_url\}%%/g
+                },
+                {
+                    id: 'list_unsubscribe'
                 }
             ]);
 
@@ -1371,11 +1386,12 @@ describe('Email renderer', function () {
             ]);
 
             // Check uuid in replacements
-            response.replacements.length.should.eql(2);
+            response.replacements.length.should.eql(3);
             response.replacements[0].id.should.eql('uuid');
             response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
             response.replacements[1].id.should.eql('unsubscribe_url');
             response.replacements[1].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+            response.replacements[2].id.should.eql('list_unsubscribe');
         });
 
         it('replaces all relative links if click tracking is disabled', async function () {
@@ -1480,11 +1496,12 @@ describe('Email renderer', function () {
             ]);
 
             // Check uuid in replacements
-            response.replacements.length.should.eql(2);
+            response.replacements.length.should.eql(3);
             response.replacements[0].id.should.eql('uuid');
             response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
             response.replacements[1].id.should.eql('unsubscribe_url');
             response.replacements[1].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+            response.replacements[2].id.should.eql('list_unsubscribe');
         });
 
         it('removes data-gh-segment and renders paywall', async function () {
@@ -1561,7 +1578,7 @@ describe('Email renderer', function () {
 
             response.html.should.containEql('Unsubscribe');
             response.html.should.containEql('http://example.com');
-            response.replacements.length.should.eql(2);
+            response.replacements.length.should.eql(3);
             response.replacements.should.match([
                 {
                     id: 'uuid'
@@ -1569,6 +1586,9 @@ describe('Email renderer', function () {
                 {
                     id: 'unsubscribe_url',
                     token: /%%\{unsubscribe_url\}%%/g
+                },
+                {
+                    id: 'list_unsubscribe'
                 }
             ]);
             response.html.should.not.containEql('members only section');
