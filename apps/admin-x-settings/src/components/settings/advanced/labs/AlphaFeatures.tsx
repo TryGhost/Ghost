@@ -17,7 +17,7 @@ const features = [{
     flag: 'webmentions'
 },{
     title: 'Websockets',
-    description: 'Test out Websockets functionality at <code>/ghost/#/websockets</code>.',
+    description: <>Test out Websockets functionality at <code>/ghost/#/websockets</code>.</>,
     flag: 'websockets'
 },{
     title: 'Stripe Automatic Tax',
@@ -55,6 +55,10 @@ const features = [{
     title: 'List-Unsubscribe header',
     description: 'Set the List-Unsubscribe header in emails',
     flag: 'listUnsubscribeHeader'
+},{
+    title: 'Editor emoji picker',
+    description: <>Trigger an emoji picker when typing <code>{':{search}'}</code> in the editor</>,
+    flag: 'editorEmojiPicker'
 }];
 
 const AlphaFeatures: React.FC = () => {

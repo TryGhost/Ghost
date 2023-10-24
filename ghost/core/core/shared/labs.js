@@ -42,7 +42,8 @@ const ALPHA_FEATURES = [
     'importMemberTier',
     'recommendations',
     'lexicalIndicators',
-    'listUnsubscribeHeader'
+    'listUnsubscribeHeader',
+    'editorEmojiPicker'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
