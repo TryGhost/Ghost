@@ -13,7 +13,7 @@ const SettingSection: React.FC<Props> = ({title, keywords = [], children}) => {
     const {checkVisible} = useSearch();
 
     const containerClassNames = clsx(
-        'mb-[20vh]',
+        'mb-[16vh]',
         checkVisible(keywords) ? '' : 'hidden'
     );
 
