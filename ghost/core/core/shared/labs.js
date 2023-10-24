@@ -42,7 +42,8 @@ const ALPHA_FEATURES = [
     'tipsAndDonations',
     'importMemberTier',
     'recommendations',
-    'lexicalIndicators'
+    'lexicalIndicators',
+    'listUnsubscribeHeader'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
