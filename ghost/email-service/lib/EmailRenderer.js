@@ -650,7 +650,7 @@ class EmailRenderer {
                 {
                     id: 'list_unsubscribe',
                     getValue: (member) => {
-                        return '<' + this.createPostUnsubscribeUrl(member.uuid, {newsletterUuid}) + '>';
+                        return '<' + this.createPostUnsubscribeUrl(member.uuid, {newsletterUuid}) + '>, <mailto:unsubscribe-' + member.uuid + '@ghost.org>';
                     },
                     required: true // Used in email headers
                 }
