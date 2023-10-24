@@ -19,7 +19,11 @@ const Link: React.FC<LinkProps> = ({href, color, className, children, ...props})
         color = 'green';
     }
 
-    let styles = (color === 'black') ? `transition text-black hover:text-black-700 ${className}` : `text-${color} hover:text-${color}-400 ${className}`;
+    let styles = (color === 'black') ? `transition text-black hover:text-black-700` : `text-${color} hover:text-${color}-400`;
+
+    if (className) {
+        styles = `${styles} ${className}`;
+    }
 
     return <a className={styles} href={href} {...props}>{children}</a>;
 };
