@@ -58,7 +58,6 @@ let defaultLabFlags = {
     outboundLinkTagging: false,
     announcementBar: false,
     signupForm: false,
-    lexicalEditor: false,
     members: false
 };
 
