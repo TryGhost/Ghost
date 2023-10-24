@@ -66,15 +66,15 @@ const Sidebar: React.FC = () => {
 
     return (
         <div data-testid="sidebar">
-            <div className='relative md:pt-4 tablet:h-[64px] tablet:pt-[32px]'>
-                <Icon className='absolute top-2 md:top-6 tablet:top-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
-                <TextField autoComplete="off" className='border-b border-grey-500 bg-transparent px-3 py-1.5 pl-[24px] text-sm dark:text-white' inputRef={searchInputRef} placeholder="Search" title="Search" value={filter} hideTitle unstyled onChange={updateSearch} />
-                {filter ? <Button className='absolute -right-1 top-1 p-1 tablet:top-9' icon='close' iconColorClass='text-grey-700 !w-3  !h-3' size='sm' unstyled onClick={() => {
+            <div className='relative flex content-stretch items-end tablet:h-[36px]'>
+                <Icon className='absolute top-2 md:top-6 tablet:left-2 tablet:top-[10px]' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
+                <TextField autoComplete="off" className='w-100 flex h-9 items-center rounded-md border border-transparent bg-grey-150 px-2 py-1.5 pl-[29px] text-sm transition-all hover:bg-grey-100 focus:border-grey-800 focus:bg-white dark:text-white' containerClassName='w-100' inputRef={searchInputRef} placeholder="Search" title="Search" value={filter} hideTitle unstyled onChange={updateSearch} />
+                {filter ? <Button className='absolute -right-1 top-1 p-1 tablet:right-2 tablet:top-[10px]' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
                     setFilter('');
-                }} /> : <div className='absolute right-0 top-[22px] hidden rounded-sm bg-grey-200 px-1 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:top-[38px] tablet:!block'>/</div>}
+                }} /> : <div className='absolute right-0 top-[20px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:right-2 tablet:top-[7px] tablet:!block'>/</div>}
             </div>
-            <div className="no-scrollbar hidden pt-10 tablet:!visible tablet:!block tablet:h-[calc(100vh-5vmin-84px-64px)] tablet:w-[240px] tablet:overflow-y-auto" id='admin-x-settings-sidebar'>
-                <SettingNavSection keywords={Object.values(generalSearchKeywords).flat()} title="General">
+            <div className="no-scrollbar hidden pt-10 tablet:!visible tablet:!block tablet:h-[calc(100vh-8vmin-36px)] tablet:overflow-y-auto" id='admin-x-settings-sidebar'>
+                <SettingNavSection keywords={Object.values(generalSearchKeywords).flat()} title="General settings">
                     <SettingNavItem keywords={generalSearchKeywords.titleAndDescription} navid='general' title="Title & description" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />
                     <SettingNavItem keywords={generalSearchKeywords.publicationLanguage} navid='publication-language' title="Publication language" onClick={handleSectionClick} />
@@ -120,9 +120,11 @@ const Sidebar: React.FC = () => {
                     <SettingNavItem keywords={advancedSearchKeywords.history} navid='history' title="History" onClick={handleSectionClick} />
                 </SettingNavSection>
 
-                <Button className='mb-10 !font-normal' label='About Ghost' link onClick={() => {
+                {!filter &&
+                <Button className='mb-10 ml-1 !font-normal' label='About Ghost' link onClick={() => {
                     updateRoute('about');
                 }} />
+                }
             </div>
         </div>
     );

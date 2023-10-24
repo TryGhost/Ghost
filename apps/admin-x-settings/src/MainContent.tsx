@@ -58,14 +58,11 @@ const MainContent: React.FC = () => {
 
             {/* Sidebar */}
             <div className="sticky top-[-47px] z-30 min-w-[260px] grow-0 md:top-[-52px] tablet:fixed tablet:top-[8vmin] tablet:basis-[260px]">
-                <div className='-mx-6 h-[84px] bg-white px-6 dark:bg-black tablet:m-0 tablet:bg-transparent tablet:p-0'>
-                    <Heading>Settings</Heading>
-                </div>
-                <div className="relative mt-[-32px] w-full overflow-x-hidden bg-white dark:bg-black">
+                <div className="relative w-full bg-white dark:bg-black">
                     <Sidebar />
                 </div>
             </div>
-            <div className="relative flex-auto pt-[10vmin] tablet:ml-[300px] tablet:pt-[94px]">
+            <div className="relative flex-auto pt-[10vmin] tablet:ml-[330px] tablet:pt-0">
                 <Settings />
             </div>
         </Page>

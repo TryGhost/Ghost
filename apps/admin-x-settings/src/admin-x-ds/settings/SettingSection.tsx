@@ -13,9 +13,9 @@ const SettingSection: React.FC<Props> = ({title, keywords = [], children}) => {
 
     return (
         <div className={checkVisible(keywords) ? '' : 'hidden'}>
-            {title && <SettingSectionHeader sticky={true} title={title} />}
+            {title && <SettingSectionHeader title={title} sticky />}
             {children &&
-                <div className="mb-[100px] flex flex-col gap-9">
+                <div className="mb-[100px] flex flex-col gap-10">
                     {children}
                 </div>
             }
