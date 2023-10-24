@@ -51,6 +51,10 @@ const features = [{
     title: 'Recommendations',
     description: 'Enables publishers to recommend sites to their audience',
     flag: 'recommendations'
+},{
+    title: 'List-Unsubscribe header',
+    description: 'Set the List-Unsubscribe header in emails',
+    flag: 'listUnsubscribeHeader'
 }];
 
 const AlphaFeatures: React.FC = () => {
