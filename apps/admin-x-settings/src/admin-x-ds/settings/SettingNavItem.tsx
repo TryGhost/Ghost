@@ -31,7 +31,7 @@ const SettingNavItem: React.FC<Props> = ({
 
     return (
         <li ref={ref} {...props}><button className={classNames} name={navid} type='button' onClick={onClick}>
-            <Icon className='mr-[7px]' name='book-open' size='sm' />
+            {icon && <Icon className='mr-[7px]' name={icon} size='sm' />}
             {title}
         </button></li>
     );
