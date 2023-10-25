@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/announcement-bar",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -36,28 +36,28 @@
   },
   "eslintConfig": {
     "env": {
-        "browser": true,
-        "jest": true
-      },
-      "parserOptions": {
-        "sourceType": "module",
-        "ecmaVersion": 2022
-      },
-      "extends": [
-        "plugin:ghost/browser",
-        "plugin:react/recommended"
-      ],
-      "plugins": [
-        "ghost"
-      ],
-      "rules": {
-        "react/prop-types": "off"
-      },
-      "settings": {
-        "react": {
-          "version": "detect"
-        }
+      "browser": true,
+      "jest": true
+    },
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 2022
+    },
+    "extends": [
+      "plugin:ghost/browser",
+      "plugin:react/recommended"
+    ],
+    "plugins": [
+      "ghost"
+    ],
+    "rules": {
+      "react/prop-types": "off"
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
       }
+    }
   },
   "browserslist": {
     "production": [
