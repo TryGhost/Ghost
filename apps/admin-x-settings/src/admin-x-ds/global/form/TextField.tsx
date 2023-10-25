@@ -69,9 +69,9 @@ const TextField: React.FC<TextFieldProps> = ({
     );
 
     const bgClasses = clsx(
-        'absolute inset-0 rounded-md border text-grey-300 transition-all peer-hover:bg-grey-100 peer-focus:border-green peer-focus:bg-white peer-focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] dark:peer-hover:bg-grey-950 dark:peer-focus:bg-grey-950',
-        error ? `border-red bg-white dark:bg-grey-950` : 'border-transparent bg-grey-150 dark:bg-grey-900',
-        disabled && 'bg-grey-100 dark:bg-grey-950'
+        'absolute inset-0 rounded-md border text-grey-300 transition-all peer-hover:bg-grey-100 peer-focus:border-green peer-focus:bg-white peer-focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] dark:peer-hover:bg-grey-925 dark:peer-focus:bg-grey-925',
+        error ? `border-red bg-white dark:bg-grey-925` : 'border-transparent bg-grey-150 dark:bg-grey-900',
+        disabled && 'bg-grey-100 dark:bg-grey-925'
     );
 
     const textFieldClasses = !unstyled && clsx(

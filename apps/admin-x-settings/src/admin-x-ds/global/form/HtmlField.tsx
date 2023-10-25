@@ -36,7 +36,7 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
     const textFieldClasses = unstyled ? '' : clsx(
         'flex min-h-[32px] items-center rounded-md border border-transparent py-1.5 md:min-h-[36px]',
         clearBg ? 'bg-transparent' : 'bg-grey-150 px-3 dark:bg-grey-900',
-        error ? `border-red` : `dark:bg-dark-950 hover:bg-grey-100 focus:border-green focus:shadow-[0_0_0_1px_rgba(48,207,67,1)]`,
+        error ? `border-red` : `dark:bg-dark-925 hover:bg-grey-100 focus:border-green focus:shadow-[0_0_0_1px_rgba(48,207,67,1)]`,
         (title && !hideTitle && !clearBg) && `mt-2`,
         className
     );
