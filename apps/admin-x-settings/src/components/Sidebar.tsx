@@ -67,9 +67,9 @@ const Sidebar: React.FC = () => {
     return (
         <div data-testid="sidebar">
             <div className='relative flex content-stretch items-end tablet:h-[36px]'>
-                <Icon className='absolute top-2 md:top-6 tablet:left-2 tablet:top-[10px]' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
-                <TextField autoComplete="off" className='w-100 flex h-9 items-center rounded-md border border-transparent bg-grey-150 px-2 py-1.5 pl-[29px] text-sm transition-all hover:bg-grey-100 focus:border-grey-800 focus:bg-white dark:text-white' containerClassName='w-100' inputRef={searchInputRef} placeholder="Search" title="Search" value={filter} hideTitle unstyled onChange={updateSearch} />
-                {filter ? <Button className='absolute -right-1 top-1 p-1 tablet:right-2 tablet:top-[10px]' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
+                <Icon className='absolute left-2 top-[10px]' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
+                <TextField autoComplete="off" className='w-100 flex h-9 items-center rounded-md border border-transparent bg-grey-150 px-2 py-1.5 pl-[29px] text-sm transition-all hover:bg-grey-100 focus:border-grey-800 focus:bg-white dark:text-white' containerClassName='w-100' inputRef={searchInputRef} placeholder="Search settings" title="Search" value={filter} hideTitle unstyled onChange={updateSearch} />
+                {filter ? <Button className='absolute right-2 top-[10px] p-1' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
                     setFilter('');
                 }} /> : <div className='absolute right-0 top-[20px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:right-2 tablet:top-[7px] tablet:!block'>/</div>}
             </div>
