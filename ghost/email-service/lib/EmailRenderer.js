@@ -450,29 +450,6 @@ class EmailRenderer {
     }
 
     /**
-     * This is identical to createUnsubscribeUrl, but used in the List-Unsubscribe header, and uses the POST method
-     * to unsubscribe automatically
-     */
-    createPostUnsubscribeUrl(uuid, options = {}) {
-        const siteUrl = this.#urlUtils.urlFor('home', true);
-        const unsubscribeUrl = new URL(siteUrl);
-        unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
-        if (uuid) {
-            unsubscribeUrl.searchParams.set('uuid', uuid);
-        } //else {
-        //  unsubscribeUrl.searchParams.set('preview', '1');
-        //}
-        if (options.newsletterUuid) {
-            unsubscribeUrl.searchParams.set('newsletter', options.newsletterUuid);
-        }
-        // if (options.comments) {
-        //     unsubscribeUrl.searchParams.set('comments', '1');
-        // }
-
-        return unsubscribeUrl.href;
-    }
-
-    /**
      * createManageAccountUrl
      *
      * @param {string} [uuid] member uuid
@@ -650,7 +627,8 @@ class EmailRenderer {
                 {
                     id: 'list_unsubscribe',
                     getValue: (member) => {
-                        return this.createPostUnsubscribeUrl(member.uuid, {newsletterUuid});
+                        // Same URL
+                        return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
                     },
                     required: true // Used in email headers
                 }
