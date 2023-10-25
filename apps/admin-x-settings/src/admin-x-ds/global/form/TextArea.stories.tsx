@@ -46,6 +46,7 @@ export const WithTitle: Story = {
 
 export const WithHint: Story = {
     args: {
+        title: 'Description',
         placeholder: 'Enter description',
         hint: 'Here\'s some hint'
     }

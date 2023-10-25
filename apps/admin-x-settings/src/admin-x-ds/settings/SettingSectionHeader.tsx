@@ -1,4 +1,5 @@
 import React from 'react';
+import clsx from 'clsx';
 
 interface Props {
     title: string;
@@ -6,12 +7,13 @@ interface Props {
 }
 
 const SettingSectionHeader: React.FC<Props> = ({title, sticky = false}) => {
-    let styles = 'pb-[9px] mb-px text-2xs font-semibold uppercase tracking-wider text-grey-700 z-20 ';
-    if (sticky) {
-        styles += ' sticky top-0 -mt-4 pt-4 bg-white dark:bg-black';
-    }
+    const classNames = clsx(
+        'z-20 mb-px pb-10 text-4xl font-bold tracking-tighter',
+        (sticky ? 'sticky top-0 mt-[calc(-8vmin-4px)] bg-gradient-to-t from-transparent via-white via-20% to-white pt-[calc(8vmin-4px)] dark:bg-black' : 'mt-[-5px]')
+    );
+
     return (
-        <h2 className={styles}>{title}</h2>
+        <h2 className={classNames}>{title}</h2>
     );
 };
 

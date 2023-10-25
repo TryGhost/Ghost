@@ -53,7 +53,7 @@
     "prepack": "monobundle"
   },
   "engines": {
-    "node": "^16.14.0 || ^18.12.1",
+    "node": "^18.12.1",
     "cli": "^1.25.0"
   },
   "dependencies": {

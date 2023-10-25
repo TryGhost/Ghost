@@ -19,13 +19,13 @@ export const searchKeywords = {
     twitter: ['twitter card', 'structured data', 'rich cards', 'x card'],
     facebook: ['facebook card', 'structured data', 'rich cards'],
     socialAccounts: ['social accounts', 'facebook', 'twitter', 'structured data', 'rich cards'],
-    lockSite: ['password', 'lock site', 'make this site private'],
-    users: ['users and permissions', 'roles', 'staff']
+    lockSite: ['password protection', 'lock site', 'make this site private'],
+    users: ['users and permissions', 'roles', 'staff', 'invite people', 'contributors', 'editors', 'authors', 'administrators']
 };
 
 const GeneralSettings: React.FC = () => {
     return (
-        <SettingSection keywords={Object.values(searchKeywords).flat()} title="General">
+        <SettingSection keywords={Object.values(searchKeywords).flat()} title="General settings">
             <TitleAndDescription keywords={searchKeywords.titleAndDescription} />
             <TimeZone keywords={searchKeywords.timeZone} />
             <PublicationLanguage keywords={searchKeywords.publicationLanguage} />

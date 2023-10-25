@@ -16,7 +16,7 @@ const SettingGroupHeader: React.FC<Props> = ({title, description, children}) => 
             {(title || description) &&
                 <div>
                     <Heading level={5}>{highlightKeywords(title || '')}</Heading>
-                    {description && <p className="mt-0.5 hidden max-w-lg text-sm group-[.is-not-editing]/setting-group:!visible group-[.is-not-editing]/setting-group:!block md:!visible md:!block">{highlightKeywords(description)}</p>}
+                    {description && <p className="mt-1 hidden max-w-lg group-[.is-not-editing]/setting-group:!visible group-[.is-not-editing]/setting-group:!block md:!visible md:!block">{highlightKeywords(description)}</p>}
                 </div>
             }
             <div className='-mt-0.5'>
