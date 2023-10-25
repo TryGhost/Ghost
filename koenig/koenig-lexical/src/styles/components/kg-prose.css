@@ -535,11 +535,13 @@
             a
         ):not(.dark a):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
             color: var(--kg-accent-color, #ff0095);
+            text-decoration: underline;
         }
-
+        
         :where(
-            a
+            .dark a
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            font-weight: 600;
             text-decoration: underline;
         }
 
