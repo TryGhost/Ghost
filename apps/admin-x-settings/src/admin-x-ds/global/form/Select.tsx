@@ -138,7 +138,7 @@ const Select: React.FC<SelectProps> = ({
             size === 'xs' ? 'py-0 pr-2 text-xs' : 'py-1 pr-4',
             clearBg ? '' : 'bg-grey-150 px-3 dark:bg-grey-900',
             error ? 'border-red' : `border-transparent ${!clearBg && 'hover:bg-grey-100 dark:hover:bg-grey-950'}`,
-            (title && !clearBg) && 'mt-2'
+            (title && !clearBg) && 'mt-1.5'
         ),
         valueContainer: clsx('gap-1', controlClasses?.valueContainer),
         placeHolder: clsx('text-grey-700 dark:text-grey-800', controlClasses?.placeHolder),
