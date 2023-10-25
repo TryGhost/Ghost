@@ -3668,10 +3668,10 @@
     "@glimmer/interfaces" "^0.42.2"
     "@glimmer/util" "^0.42.2"
 
-"@grpc/grpc-js@^1.8.10":
-  version "1.9.1"
-  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.9.1.tgz#d6df7943cd2875a4feaf725f85ff605c08ac245d"
-  integrity sha512-AvDEPQT4teS+J8++cTE5tku4rYCwpPwPguESJUummLs/Ug/O5Bouofnc1mxaDORmwA9QkrJ+PfRQ1Qs7adQgJg==
+"@grpc/grpc-js@^1.9.4":
+  version "1.9.7"
+  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.9.7.tgz#7d0e29bc162287bee2523901c9bc9320d8402397"
+  integrity sha512-yMaA/cIsRhGzW3ymCNpdlPcInXcovztlgu/rirThj2b87u3RzWUszliOqZ/pldy7yhmJPS8uwog+kZSTa4A0PQ==
   dependencies:
     "@grpc/proto-loader" "^0.7.8"
     "@types/node" ">=12.12.47"
@@ -4220,15 +4220,15 @@
     pump "^3.0.0"
     tar-fs "^2.1.1"
 
-"@newrelic/aws-sdk@^7.0.0":
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/@newrelic/aws-sdk/-/aws-sdk-7.0.0.tgz#b9584ed133b6a0a6e0cae2a50ae72c6a7eeaa27e"
-  integrity sha512-/14Y9qYomDEzFrdXogqms2CGMI9hEJECzNBSqBLT53FY/uZh6SdI4Tr5u0sEOghjCdNyF2rseW7u63bAn09Pxw==
+"@newrelic/aws-sdk@^7.0.2":
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/@newrelic/aws-sdk/-/aws-sdk-7.0.2.tgz#e93f1796c89be8323a75f3d7ec45b1bdd5a29292"
+  integrity sha512-nT19hzId0MbjR3v1ks5YetvNfrwIEgMfeai+T2pQkuWkjCsYm3z+OybLOYMCN66gueqOOqGTq60qhM4dFu5s5w==
 
-"@newrelic/koa@^8.0.0":
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/@newrelic/koa/-/koa-8.0.0.tgz#ef940e332f563b0f1d37c056d9d6f5d1182cf142"
-  integrity sha512-aaqEVLnRk12DzChCGbWthVQR4PxomqeNVVxnBF3txfHCMhDL2rkOjjcu8VYVoLkhVXrNtY0M226sYN/uqzQ+bQ==
+"@newrelic/koa@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@newrelic/koa/-/koa-8.0.1.tgz#26c1c6a69b15ad4b64a148b6be537ec2ca734206"
+  integrity sha512-GyeZGKPllpUu6gWXRwVP/FlvE9+tU2lOprRiTdoXNM8jdVGL02IfHnvAzrIANoZoUdf3+Vev8NNeCup2Eojcvg==
 
 "@newrelic/native-metrics@^10.0.0":
   version "10.0.0"
@@ -4267,10 +4267,10 @@
     uuid "^9.0.0"
     ws "^7.5.9"
 
-"@newrelic/superagent@^7.0.0":
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/@newrelic/superagent/-/superagent-7.0.0.tgz#e289336aebd23a3e6930290f59d9c1721aac623a"
-  integrity sha512-fNB4NC+pJYYrFZRLcXaTb4Z7XFEfHi7fVQ3O9Qh10m/9CBM2W+Qc/6yyK9M1liRfgUGo5NOILRdjA23SS7720A==
+"@newrelic/superagent@^7.0.1":
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/@newrelic/superagent/-/superagent-7.0.1.tgz#8d5bb92579cf0b291e1298f480c4939a3d70ec09"
+  integrity sha512-QZlW0VxHSVOXcMAtlkg+Mth0Nz3vFku8rfzTEmoI/pXcckHXGEYuiVUhhboCTD3xTKVgnZRUp9BWF6SOggGUSw==
 
 "@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1":
   version "5.1.1-v1"
@@ -23870,17 +23870,17 @@ neo-async@^2.5.0, neo-async@^2.6.1, neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-newrelic@11.3.0:
-  version "11.3.0"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-11.3.0.tgz#e1074af4cab72dc97ac111b2f3a6764e01dfa830"
-  integrity sha512-7DG+iqo1LqQyGxleikHO0a2TaNZzxCje2NlQyRVo474p0WT6w8CGyeEnlxLsFiV1+OqnGGF3tFfUUkWfHzAyNg==
+newrelic@11.4.0:
+  version "11.4.0"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-11.4.0.tgz#ba51494ce996734396f6677a1487144331d35bc2"
+  integrity sha512-mBN7QZdj1quxu7qORIMx3pK5I4XWB8dMTVrLtBjlDvR10JO1ynaHEWx2Q0TkevVQp7YjGCtBTjTnZle3FpAPGA==
   dependencies:
-    "@grpc/grpc-js" "^1.8.10"
+    "@grpc/grpc-js" "^1.9.4"
     "@grpc/proto-loader" "^0.7.5"
-    "@newrelic/aws-sdk" "^7.0.0"
-    "@newrelic/koa" "^8.0.0"
+    "@newrelic/aws-sdk" "^7.0.2"
+    "@newrelic/koa" "^8.0.1"
     "@newrelic/security-agent" "0.3.0"
-    "@newrelic/superagent" "^7.0.0"
+    "@newrelic/superagent" "^7.0.1"
     "@tyriar/fibonacci-heap" "^2.0.7"
     concat-stream "^2.0.0"
     https-proxy-agent "^7.0.1"
