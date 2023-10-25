@@ -26,7 +26,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     });
 
     const {mutateAsync: addNewsletter} = useAddNewsletter();
-    const {formState, updateForm, handleSave, errors, validate, clearError} = useForm({
+    const {formState, updateForm, handleSave, errors, clearError} = useForm({
         initialState: {
             name: '',
             description: '',
