@@ -5,6 +5,7 @@
     "{{amount}} hours ago": "{{amount}} horas atrás",
     "{{amount}} minutes ago": "{{amount}} minutos atrás",
     "{{amount}} months ago": "{{amount}} meses atrás",
+    "{{amount}} more": "",
     "{{amount}} seconds ago": "{{amount}} segundos atrás",
     "{{amount}} weeks ago": "{{amount}} semanas atrás",
     "{{amount}} years ago": "{{amount}} años atrás",

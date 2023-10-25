@@ -243,6 +243,7 @@
     "{{amount}} hours ago": "Time a comment was placed",
     "{{amount}} minutes ago": "Time a comment was placed",
     "{{amount}} months ago": "Time a comment was placed",
+    "{{amount}} more": "",
     "{{amount}} off": "A label for an offer, explaining how much the discount is for",
     "{{amount}} off for first {{number}} months.": "A label for an offer, explaining how many months are discounted",
     "{{amount}} off for first {{period}}.": "A label for an offer, explaining how long the discount is for (either first month or year)",
