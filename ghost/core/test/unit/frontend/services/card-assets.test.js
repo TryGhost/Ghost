@@ -25,7 +25,7 @@ describe('Card Asset Service', function () {
     });
 
     after(async function () {
-        await fs.rmdir(testDir, {recursive: true});
+        await fs.rm(testDir, {recursive: true});
     });
 
     it('can load nothing', async function () {
