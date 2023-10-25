@@ -96,6 +96,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             marginTop
         >
             <TextField
+                autoFocus={true}
                 error={Boolean(errors.name)}
                 hint={errors.name}
                 placeholder='Weekly roundup'
