@@ -16,14 +16,15 @@ const EmojiMenuItem = function ({index, isSelected, onClick, onMouseEnter, emoji
         <li
             key={emoji.id}
             aria-selected={isSelected}
-            className={`whitespace-nowrap ${isSelected ? 'bg-grey-300' : ''}`}
+            className={`flex cursor-pointer items-center gap-2 whitespace-nowrap rounded px-2 py-1 font-sans text-sm tracking-wide text-grey-800 ${isSelected ? 'bg-grey-100 text-grey-900' : ''}`}
             id={'emoji-option-' + index}
             role="option"
             tabIndex={-1}
             onClick={onClick}
             onMouseEnter={onMouseEnter}
         >
-            {emoji.skins[0].native} {emoji.skins[0].shortcodes}
+            <span className="text-lg">{emoji.skins[0].native}</span>
+            <span className="truncate">{emoji.skins[0].shortcodes}</span>
         </li>
     );
 };
@@ -79,7 +80,7 @@ export function EmojiPickerPlugin() {
 
                 return (
                     <Portal to={anchorElementRef.current}>
-                        <ul className="absolute top-[25px] max-h-[200px] w-[200px] list-none overflow-y-auto bg-white">
+                        <ul className="absolute top-[25px] max-h-[196px] w-[240px] list-none overflow-y-auto bg-white p-1 shadow">
                             {searchResults.map((emoji, index) => (
                                 <div key={emoji.id}>
                                     <EmojiMenuItem
