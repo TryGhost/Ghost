@@ -108,9 +108,9 @@ const ColorPicker: React.FC<{
         <div className={containerClassName} onMouseDown={stopPropagation} onTouchStart={stopPropagation}>
             <HexColorPicker className='w-full' color={hexValue || '#ffffff'} onChange={onChange} onMouseDown={startUsingColorPicker} onTouchStart={startUsingColorPicker} />
             <div className="mt-3 flex gap-2">
-                <div ref={inputWrapperRef} className='peer relative order-2 flex h-10 w-full items-center border-b border-grey-500 py-2 hover:border-grey-700 focus:border-black' onClick={focusHexInputOnClick}>
-                    <span className='ml-1 mr-2 text-grey-700'>#</span>
-                    <HexColorInput aria-label="Color value" className='z-50 w-full bg-transparent' color={hexValue} onChange={onChange} />
+                <div ref={inputWrapperRef} className='peer relative order-2 flex h-10 w-full items-center' onClick={focusHexInputOnClick}>
+                    <span className='absolute left-2 top-[9px] z-10 ml-1 mr-2 text-grey-700'>#</span>
+                    <HexColorInput aria-label="Color value" className='z-[1] w-full rounded-md border border-transparent bg-grey-150 p-2 pl-6 transition-all hover:bg-grey-100 focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)]' color={hexValue} onChange={onChange} />
                     {eyedropper && !!window.EyeDropper && (
                         <button
                             className="absolute inset-y-0 right-3 z-50 my-auto h-4 w-4 p-[1px]"
