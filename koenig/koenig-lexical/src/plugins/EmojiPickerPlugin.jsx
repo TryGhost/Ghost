@@ -1,7 +1,7 @@
-import EmojiPickerPortal from '../components/ui/EmojiPickerPortal';
+import Portal from '../components/ui/Portal';
 import React from 'react';
 import emojiData from '@emoji-mart/data';
-import {$getSelection, $isRangeSelection} from 'lexical';
+import {$createTextNode, $getSelection, $isRangeSelection} from 'lexical';
 import {
     LexicalTypeaheadMenuPlugin,
     useBasicTypeaheadTriggerMatch
@@ -11,95 +11,99 @@ import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 init({data: emojiData});
 
+const EmojiMenuItem = function ({index, isSelected, onClick, onMouseEnter, emoji}) {
+    return (
+        <li
+            key={emoji.id}
+            aria-selected={isSelected}
+            className={`whitespace-nowrap ${isSelected ? 'bg-grey-300' : ''}`}
+            id={'emoji-option-' + index}
+            role="option"
+            tabIndex={-1}
+            onClick={onClick}
+            onMouseEnter={onMouseEnter}
+        >
+            {emoji.skins[0].native} {emoji.skins[0].shortcodes}
+        </li>
+    );
+};
+
 export function EmojiPickerPlugin() {
     const [editor] = useLexicalComposerContext();
     const [queryString, setQueryString] = React.useState(null);
     const [searchResults, setSearchResults] = React.useState(null);
-    const pickerInstance = React.useRef(null);
 
     const checkForTriggerMatch = useBasicTypeaheadTriggerMatch(':', {minLength: 1});
 
     React.useEffect(() => {
         if (!queryString) {
-            pickerInstance.current?.component.setState({searchResults: null, pos: [-1, -1]});
+            setSearchResults(null);
             return;
         }
 
         async function searchEmojis() {
             const filteredEmojis = await SearchIndex.search(queryString);
-
-            const grid = [];
-            grid.setsize = filteredEmojis.length;
-            let row = null;
-
-            for (const emoji of filteredEmojis) {
-                // 9 = EmojiPickerPortal default perLine
-                if (!grid.length || row.length === 9) {
-                    row = [];
-                    row.__categoryId = 'search';
-                    row.__index = grid.length;
-                    grid.push(row);
-                }
-
-                row.push(emoji);
-            }
-
-            pickerInstance.current?.component.setState({searchResults: grid, pos: [0, 0]});
-            setSearchResults(grid);
+            setSearchResults(filteredEmojis);
         }
 
         searchEmojis();
     }, [queryString]);
 
-    const onEmojiSelect = React.useCallback((emoji, event) => {
+    const onEmojiSelect = React.useCallback((selectedOption, nodeToRemove, closeMenu) => {
         editor.update(() => {
             const selection = $getSelection();
 
-            if (!$isRangeSelection(selection) || emoji === null) {
+            if (!$isRangeSelection(selection) || selectedOption === null) {
                 return;
             }
 
-            // replace the text with the emoji
-            const node = selection.anchor.getNode();
-            const nodeText = node.getTextContent();
-            const cursorPosition = selection.anchor.offset;
-            const startPosition = nodeText.lastIndexOf(':', cursorPosition);
-            node.spliceText(startPosition, cursorPosition - startPosition, emoji.native, true);
+            if (nodeToRemove) {
+                nodeToRemove.remove();
+            }
 
-            // reset the emoji picker
-            pickerInstance.current?.component.setState({searchResults: null, pos: [-1, -1]});
-            setSearchResults(null); // closes the emoji picker
+            selection.insertNodes([$createTextNode(selectedOption.skins[0].native)]);
+
+            closeMenu();
         });
     }, [editor]);
-
-    const setPickerInstance = function (instance) {
-        pickerInstance.current = instance;
-    };
 
     return (
         <LexicalTypeaheadMenuPlugin
             menuRenderFn={(
-                anchorElementRef
+                anchorElementRef,
+                {selectedIndex, selectOptionAndCleanUp, setHighlightedIndex}
             ) => {
                 if (anchorElementRef.current === null || searchResults === null || searchResults.length === 0) {
                     return null;
                 }
 
                 return (
-                    <EmojiPickerPortal
-                        navPosition='none' // hide the category tabs, they're disabled when searching
-                        positionRef={anchorElementRef}
-                        searchPosition='none'
-                        setInstanceRef={setPickerInstance}
-                        onEmojiClick={onEmojiSelect}
-                    />
+                    <Portal to={anchorElementRef.current}>
+                        <ul className="absolute top-[25px] max-h-[200px] w-[200px] list-none overflow-y-auto bg-white">
+                            {searchResults.map((emoji, index) => (
+                                <div key={emoji.id}>
+                                    <EmojiMenuItem
+                                        emoji={emoji}
+                                        index={index}
+                                        isSelected={selectedIndex === index}
+                                        onClick={() => {
+                                            setHighlightedIndex(index);
+                                            selectOptionAndCleanUp(emoji);
+                                        }}
+                                        onMouseEnter={() => {
+                                            setHighlightedIndex(index);
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                        </ul>
+                    </Portal>
                 );
             }}
             options={searchResults}
             triggerFn={checkForTriggerMatch}
             onQueryChange={setQueryString}
-            // TODO: add a way to close the emoji picker when the user presses escape
-            // TODO: select the emoji on enter
+            onSelectOption={onEmojiSelect}
         />
     );
 }
