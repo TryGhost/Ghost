@@ -287,7 +287,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest-4-cores
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.is_main == 'true' || needs.job_get_metadata.outputs.has_browser_tests_label == 'true'
+    if: needs.job_get_metadata.outputs.changed_any_code == 'true' && (needs.job_get_metadata.outputs.is_main == 'true' || needs.job_get_metadata.outputs.has_browser_tests_label == 'true')
     concurrency:
       group: ${{ github.workflow }}
     steps:
