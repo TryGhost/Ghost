@@ -67,11 +67,13 @@ describe('{{#recommendations}} helper', function () {
 
         response.should.be.an.Object().with.property('string');
 
-        const expected = trimSpaces(html`
+        const expected = html`
         <ul class="recommendations">
             <li class="recommendation">
                 <a href="https://recommendations1.com" data-recommendation="1" target="_blank" rel="noopener">
-                    <img class="recommendation-favicon" src="https://recommendations1.com/favicon.ico" alt="Recommendation 1" loading="lazy">
+                    <div class="recommendation-favicon">
+                        <img src="https://recommendations1.com/favicon.ico" alt="Recommendation 1" loading="lazy" onerror="this.style.display='none';">
+                    </div>
                     <h5 class="recommendation-title">Recommendation 1</h5>
                     <span class="recommendation-url">recommendations1.com</span>
                     <p class="recommendation-description">Description 1</p>
@@ -79,17 +81,25 @@ describe('{{#recommendations}} helper', function () {
             </li>
             <li class="recommendation">
                 <a href="https://recommendations2.com" data-recommendation="2" target="_blank" rel="noopener">
-                    <img class="recommendation-favicon" src="https://recommendations2.com/favicon.ico" alt="Recommendation 2" loading="lazy">
+                    <div class="recommendation-favicon">
+                        <img src="https://recommendations2.com/favicon.ico" alt="Recommendation 2" loading="lazy" onerror="this.style.display='none';">
+                    </div>
                     <h5 class="recommendation-title">Recommendation 2</h5>
                     <span class="recommendation-url">recommendations2.com</span>
                     <p class="recommendation-description">Description 2</p>
                 </a>
             </li>
         </ul>
-        `);
-        const actual = trimSpaces(response.string);
+        `;
+        const actual = response.string;
 
-        actual.should.equal(expected);
+        // Uncomment to debug
+        // console.log('Expected:');
+        // console.log(expected);
+        // console.log('Actual:');
+        // console.log(actual);
+
+        trimSpaces(actual).should.equal(trimSpaces(expected));
     });
 
     describe('when there are no recommendations', function () {
