@@ -1,5 +1,7 @@
 // FocusContext.tsx
+import NiceModal from '@ebay/nice-modal-react';
 import React, {createContext, useContext, useState} from 'react';
+import {Toaster} from 'react-hot-toast';
 
 interface DesignSystemContextType {
     isAnyTextFieldFocused: boolean;
@@ -29,7 +31,10 @@ const DesignSystemProvider: React.FC<DesignSystemProviderProps> = ({children}) =
 
     return (
         <DesignSystemContext.Provider value={{isAnyTextFieldFocused, setFocusState}}>
-            {children}
+            <Toaster />
+            <NiceModal.Provider>
+                {children}
+            </NiceModal.Provider>
         </DesignSystemContext.Provider>
     );
 };

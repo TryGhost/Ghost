@@ -70,7 +70,7 @@ const Popover: React.FC<PopoverProps> = ({
     let className = '';
 
     className = clsx(
-        'fixed z-50 mt-2 origin-top-right rounded bg-white shadow-md ring-1 ring-[rgba(0,0,0,0.01)] focus:outline-none dark:bg-grey-900 dark:text-white',
+        'dark:bg-grey-900 fixed z-50 mt-2 origin-top-right rounded bg-white shadow-md ring-1 ring-[rgba(0,0,0,0.01)] focus:outline-none dark:text-white',
         className
     );
 
@@ -89,7 +89,7 @@ const Popover: React.FC<PopoverProps> = ({
                 <div className={className} data-testid='popover-content' style={style}>
                     {children}
                 </div>
-            </div>, triggerRef.current?.closest('.admin-x-settings') || document.body)}
+            </div>, triggerRef.current?.closest('.admin-x-base') || document.body)}
         </>
     );
 };

@@ -1,11 +1,11 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+import {Config} from 'tailwindcss';
+
+export default (selector: string): Partial<Config> => ({
     corePlugins: {
         preflight: false // we're providing our own scoped CSS reset
     },
     darkMode: 'class',
-    important: '.admin-x-settings',
-    content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+    important: selector,
     theme: {
         screens: {
             sm: '480px',
@@ -291,5 +291,4 @@ module.exports = {
             }
         }
     }
-    // plugins: [require('@tailwindcss/forms')],
-};
+});

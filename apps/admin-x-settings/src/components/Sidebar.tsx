@@ -65,7 +65,7 @@ const Sidebar: React.FC = () => {
         setFilter(e.target.value);
 
         if (e.target.value) {
-            document.getElementById('admin-x-root')?.scrollTo({top: 0, left: 0});
+            document.getElementById('admin-x-settings')?.scrollTo({top: 0, left: 0});
         }
     };
 
