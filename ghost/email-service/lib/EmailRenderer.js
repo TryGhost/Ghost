@@ -454,7 +454,7 @@ class EmailRenderer {
      * to unsubscribe automatically
      */
     createPostUnsubscribeUrl(uuid, options = {}) {
-        const siteUrl = 'https://ghost.org';
+        const siteUrl = this.#urlUtils.urlFor('home', true);
         const unsubscribeUrl = new URL(siteUrl);
         unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
         if (uuid) {
@@ -650,7 +650,7 @@ class EmailRenderer {
                 {
                     id: 'list_unsubscribe',
                     getValue: (member) => {
-                        return '<' + this.createPostUnsubscribeUrl(member.uuid, {newsletterUuid}) + '>, <mailto:unsubscribe-' + member.uuid + '@ghost.org>';
+                        return this.createPostUnsubscribeUrl(member.uuid, {newsletterUuid});
                     },
                     required: true // Used in email headers
                 }
