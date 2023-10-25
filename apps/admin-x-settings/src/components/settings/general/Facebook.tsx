@@ -105,7 +105,6 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     </ImageUpload>
                     <div className="flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
                         <TextField
-                            clearBg={true}
                             inputRef={focusRef}
                             placeholder={siteTitle}
                             title="Facebook title"
@@ -113,7 +112,6 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             onChange={handleTitleChange}
                         />
                         <TextField
-                            clearBg={true}
                             placeholder={siteDescription}
                             title="Facebook description"
                             value={facebookDescription}

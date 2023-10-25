@@ -17,7 +17,7 @@ const SettingValue: React.FC<SettingValueProps> = ({heading, value, hint, hideEm
 
     return (
         <div className='flex flex-col' {...props}>
-            {heading && <Heading grey={true} level={6}>{heading}</Heading>}
+            {heading && <Heading grey={false} level={6}>{heading}</Heading>}
             <div className={`flex items-center ${heading && `mt-1`}`}>{value}</div>
             {hint && <p className='mt-1 text-xs'>{hint}</p>}
         </div>

@@ -17,7 +17,7 @@
             @apply font-sans text-black text-base leading-normal;
         }
 
-        h1, h2, h3, h4, h5, h6 {
+        h1, h2, h3, h4, h5 {
             @apply font-bold tracking-tight leading-tighter;
         }
 
@@ -57,6 +57,17 @@
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
     letter-spacing: unset;
+
+    height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+@media (max-width: 860px) {
+    .admin-x-base {
+        height: calc(100vh - 55px);
+    }
 }
 
 .admin-x-base.dark {

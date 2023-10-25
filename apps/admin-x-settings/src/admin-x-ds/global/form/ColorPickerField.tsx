@@ -100,7 +100,7 @@ const ColorPickerField = ({testId, title, direction, value, hint, error, eyedrop
 
     if (title) {
         content = (
-            <div className={clsx('flex w-full cursor-pointer items-start first:mt-0', direction === 'rtl' && 'flex-row-reverse')}>
+            <div className={clsx('flex w-full cursor-pointer items-start first:mt-0 dark:text-white', direction === 'rtl' && 'flex-row-reverse')}>
                 <div className="shrink-0">
                     {content}
                 </div>

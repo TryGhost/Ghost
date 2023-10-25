@@ -25,13 +25,6 @@ export const Default: Story = {
     }
 };
 
-export const WithBackground: Story = {
-    args: {
-        options: options,
-        clearBg: false
-    }
-};
-
 export const Black: Story = {
     args: {
         options: options,

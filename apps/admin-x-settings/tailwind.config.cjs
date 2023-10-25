@@ -24,6 +24,7 @@ module.exports = {
                 50: '#FAFAFB',
                 75: '#F9FAFB',
                 100: '#F4F5F6',
+                150: '#F1F3F4',
                 200: '#EBEEF0',
                 300: '#DDE1E5',
                 400: '#CED4D9',
@@ -32,6 +33,7 @@ module.exports = {
                 700: '#7C8B9A',
                 800: '#626D79',
                 900: '#394047',
+                925: '#2E3338',
                 950: '#222427'
             },
             green: {
@@ -265,10 +267,10 @@ module.exports = {
             },
             fontSize: {
                 '2xs': '1.0rem',
-                base: '1.5rem',
+                base: '1.45rem',
                 xs: '1.2rem',
                 sm: '1.35rem',
-                md: '1.5rem',
+                md: '1.45rem',
                 lg: '1.75rem',
                 xl: '2rem',
                 '2xl': '2.4rem',

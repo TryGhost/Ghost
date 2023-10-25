@@ -25,7 +25,7 @@ export const searchKeywords = {
 
 const GeneralSettings: React.FC = () => {
     return (
-        <SettingSection keywords={Object.values(searchKeywords).flat()} title="General">
+        <SettingSection keywords={Object.values(searchKeywords).flat()} title="General settings">
             <TitleAndDescription keywords={searchKeywords.titleAndDescription} />
             <TimeZone keywords={searchKeywords.timeZone} />
             <PublicationLanguage keywords={searchKeywords.publicationLanguage} />

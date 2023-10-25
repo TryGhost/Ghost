@@ -1,5 +1,6 @@
 import React from 'react';
 import SettingSectionHeader from './SettingSectionHeader';
+import clsx from 'clsx';
 import {useSearch} from '../../components/providers/ServiceProvider';
 
 interface Props {
@@ -11,11 +12,16 @@ interface Props {
 const SettingSection: React.FC<Props> = ({title, keywords = [], children}) => {
     const {checkVisible} = useSearch();
 
+    const containerClassNames = clsx(
+        'mb-[16vh]',
+        checkVisible(keywords) ? '' : 'hidden'
+    );
+
     return (
-        <div className={checkVisible(keywords) ? '' : 'hidden'}>
-            {title && <SettingSectionHeader sticky={true} title={title} />}
+        <div className={containerClassNames}>
+            {title && <SettingSectionHeader title={title} />}
             {children &&
-                <div className="mb-[100px] flex flex-col gap-9">
+                <div className="mb-[100px] flex flex-col gap-12">
                     {children}
                 </div>
             }

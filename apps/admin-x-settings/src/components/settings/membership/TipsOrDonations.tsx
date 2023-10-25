@@ -77,7 +77,7 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <div className='w-100'>
                             <div className='flex items-center gap-2'>
                                 <Heading level={6}>Shareable link &mdash;</Heading>
-                                <button className='text-2xs font-semibold uppercase tracking-wider text-green' type="button" onClick={openPreview}>Preview</button>
+                                <button className='text-xs tracking-wide text-green' type="button" onClick={openPreview}>Preview</button>
                             </div>
                             <div className='w-100 group relative -m-1 mt-0 overflow-hidden rounded p-1 hover:bg-grey-50 dark:hover:bg-grey-900'>
                                 {donateUrl}

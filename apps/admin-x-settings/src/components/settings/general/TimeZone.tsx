@@ -68,7 +68,7 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 key: 'site-timezone',
                 value: <div className='flex flex-col'>
                     {publicationTimezoneData?.label || publicationTimezone}
-                    <span className='text-sm'><Hint timezone={publicationTimezone} /></span>
+                    <span className='text-xs'><Hint timezone={publicationTimezone} /></span>
                 </div>
             }
         ]} />

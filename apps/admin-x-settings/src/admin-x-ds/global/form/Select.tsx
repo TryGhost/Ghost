@@ -69,7 +69,7 @@ export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
 
 const DropdownIndicator: React.FC<DropdownIndicatorProps<SelectOption, false> & {clearBg: boolean}> = ({clearBg, ...props}) => (
     <components.DropdownIndicator {...props}>
-        <div className={`absolute top-[14px] block h-2 w-2 rotate-45 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-0' : 'right-4'} `}></div>
+        <div className={`absolute top-[11px] block h-2 w-2 rotate-45 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-2' : 'right-[14px]'} `}></div>
     </components.DropdownIndicator>
 );
 
@@ -98,8 +98,7 @@ const Select: React.FC<SelectProps> = ({
     onSelect,
     error,
     hint,
-    clearBg = true,
-    border = true,
+    clearBg = false,
     fullWidth = true,
     isSearchable = false,
     containerClassName,
@@ -135,15 +134,14 @@ const Select: React.FC<SelectProps> = ({
     const customClasses = {
         control: clsx(
             controlClasses?.control,
-            'min-h-[40px] w-full cursor-pointer appearance-none outline-none dark:text-white',
-            size === 'xs' ? 'py-0 pr-2 text-xs' : 'py-2 pr-4',
-            border && 'border-b',
-            !clearBg && 'bg-grey-75 px-[10px] dark:bg-grey-950',
-            error ? 'border-red' : 'border-grey-500 hover:border-grey-700 dark:border-grey-800 dark:hover:border-grey-700',
-            (title && !clearBg) && 'mt-2'
+            'h-9 min-h-[36px] w-full cursor-pointer appearance-none rounded-md border outline-none dark:text-white',
+            size === 'xs' ? 'py-0 pr-2 text-xs' : 'py-1 pr-4',
+            clearBg ? '' : 'bg-grey-150 px-3 dark:bg-grey-900',
+            error ? 'border-red' : `border-transparent ${!clearBg && 'hover:bg-grey-100 dark:hover:bg-grey-925'}`,
+            (title && !clearBg) && 'mt-1.5'
         ),
-        valueContainer: clsx('gap-1', controlClasses?.valueContainer),
-        placeHolder: clsx('text-grey-500 dark:text-grey-800', controlClasses?.placeHolder),
+        valueContainer: clsx('mr-1.5 gap-1', controlClasses?.valueContainer),
+        placeHolder: clsx('text-grey-700 dark:text-grey-800', controlClasses?.placeHolder),
         menu: clsx(
             'z-[300] rounded-b bg-white shadow dark:border dark:border-grey-900 dark:bg-black',
             size === 'xs' && 'text-xs',

@@ -220,14 +220,15 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             <div className='basis-1/2'>
                                 <div className='mb-1 flex h-6 items-center justify-between'>
                                     <Heading level={6}>Prices</Heading>
-                                    <div className='w-10'>
+                                    <div className='-mr-2 w-[50px]'>
                                         <Select
                                             border={false}
                                             containerClassName='font-medium'
-                                            controlClasses={{menu: 'w-14'}}
+                                            controlClasses={{menu: 'w-18'}}
                                             options={currencySelectGroups()}
                                             selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === formState.currency)}
                                             size='xs'
+                                            clearBg
                                             isSearchable
                                             onSelect={option => updateForm(state => ({...state, currency: option?.value}))}
                                         />
@@ -297,17 +298,16 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             renderItem={({id, item}) => <div className='relative flex w-full items-center gap-5'>
                                 <div className='absolute left-[-32px] top-[7px] flex h-6 w-6 items-center justify-center bg-white group-hover:hidden'><Icon name='check' size='sm' /></div>
                                 <TextField
-                                    className='grow border-b border-grey-500 py-2 focus:border-grey-800 group-hover:border-grey-600'
+                                    // className='grow border-b border-grey-500 py-2 focus:border-grey-800 group-hover:border-grey-600'
                                     value={item}
-                                    unstyled
                                     onChange={e => benefits.updateItem(id, e.target.value)}
                                 />
-                                <Button className='absolute right-0 top-1' icon='trash' iconColorClass='opacity-0 group-hover:opacity-100' size='sm' onClick={() => benefits.removeItem(id)} />
+                                <Button className='absolute right-1 top-1 z-10' icon='trash' iconColorClass='opacity-0 group-hover:opacity-100' size='sm' onClick={() => benefits.removeItem(id)} />
                             </div>}
                             onMove={benefits.moveItem}
                         />
                     </div>
-                    <div className="relative mt-0.5 flex items-center gap-3">
+                    <div className="relative mt-1 flex items-center gap-3">
                         <Icon className='dark:text-white' name='check' size='sm' />
                         <TextField
                             className='grow'
@@ -324,7 +324,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             }}
                         />
                         <Button
-                            className='absolute right-0 top-1'
+                            className='absolute right-1 top-1 z-10'
                             color='green'
                             icon='add'
                             iconColorClass='text-white'

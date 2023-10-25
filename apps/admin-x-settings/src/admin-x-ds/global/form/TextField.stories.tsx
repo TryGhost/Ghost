@@ -43,13 +43,6 @@ export const Disabled: Story = {
     }
 };
 
-export const ClearBackground: Story = {
-    args: {
-        placeholder: 'Enter something',
-        clearBg: true
-    }
-};
-
 export const WithValue: Story = {
     render: function Component(args) {
         const [, updateArgs] = useArgs();
@@ -85,15 +78,6 @@ export const WithRightPlaceholder: Story = {
     }
 };
 
-export const WithoutBorder: Story = {
-    args: {
-        title: 'Title',
-        placeholder: 'Enter something',
-        hint: 'Here\'s some hint',
-        border: false
-    }
-};
-
 export const WithDropdown: Story = {
     args: {
         title: 'Monthly price',
@@ -101,6 +85,7 @@ export const WithDropdown: Story = {
         rightPlaceholder: (
             <Select
                 border={false}
+                clearBg={true}
                 containerClassName='w-14'
                 fullWidth={false}
                 options={[
@@ -119,7 +104,7 @@ export const WithButton: Story = {
         value: 'https://ghost.org',
         containerClassName: 'group',
         rightPlaceholder: (
-            <Button className='invisible mt-2 group-hover:visible' color='white' label='Copy' size='sm' />
+            <Button className='invisible mt-1 rounded-md group-hover:visible' color='white' label='Copy' size='sm' />
         )
     }
 };
