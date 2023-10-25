@@ -23,7 +23,7 @@ const Sidebar: React.FC = () => {
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const {isAnyTextFieldFocused} = useFocusContext();
 
-    // Focus in on search field when pressing CMD+K/CTRL+K
+    // Focus in on search field when pressing "/"
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
             if (e.key === '/' && !isAnyTextFieldFocused) {
@@ -49,10 +49,9 @@ const Sidebar: React.FC = () => {
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
-    const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleSectionClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         setFilter('');
-        updateRoute(e.currentTarget.name);
-        setIsSearchFocused(false);
+        updateRoute(e.currentTarget.id);
     };
 
     const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
