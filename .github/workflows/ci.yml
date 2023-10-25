@@ -773,6 +773,22 @@ jobs:
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
 
+      - name: Install latest v4
+        run: |
+          DIR=$(mktemp -d)
+          echo "V4_DIR=$DIR" >> $GITHUB_ENV
+          ghost install v4 --local -d $DIR
+
+      - uses: actions/setup-node@v3
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: '18.12.1'
+
+      - name: Update from v4
+        run: |
+          ghost update -f -d $V4_DIR --archive $(pwd)/ghost/core/ghost.tgz
+
       - name: Clean Install
         run: |
           DIR=$(mktemp -d)
@@ -783,12 +799,6 @@ jobs:
           DIR=$(mktemp -d)
           ghost install local -d $DIR
           ghost update -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
-
-      - name: Update from latest v4
-        run: |
-          DIR=$(mktemp -d)
-          ghost install v4 --local -d $DIR
-          ghost update -f -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
 
       - name: Print debug logs
         if: failure()
