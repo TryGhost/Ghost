@@ -156,7 +156,7 @@ describe('Email renderer', function () {
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{list_unsubscribe\\}%%/g');
             assert.equal(replacements[0].id, 'list_unsubscribe');
-            assert.equal(replacements[0].getValue(member)[0], `<`);
+            assert.equal(replacements[0].getValue(member), `http://example.com/subdirectory/unsubscribe/?uuid=myuuid&newsletter=newsletteruuid`);
         });
 
         it('returns correct name', function () {
