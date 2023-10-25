@@ -126,6 +126,7 @@ const ThemePreview: React.FC<{
                         fullWidth={false}
                         options={variantOptions}
                         selectedOption={selectedVariant}
+                        clearBg
                         onSelect={(option) => {
                             setSelectedVariant(option || undefined);
                         }}

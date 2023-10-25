@@ -140,7 +140,7 @@ const Select: React.FC<SelectProps> = ({
             error ? 'border-red' : `border-transparent ${!clearBg && 'hover:bg-grey-100 dark:hover:bg-grey-925'}`,
             (title && !clearBg) && 'mt-1.5'
         ),
-        valueContainer: clsx('gap-1', controlClasses?.valueContainer),
+        valueContainer: clsx('mr-1.5 gap-1', controlClasses?.valueContainer),
         placeHolder: clsx('text-grey-700 dark:text-grey-800', controlClasses?.placeHolder),
         menu: clsx(
             'z-[300] rounded-b bg-white shadow dark:border dark:border-grey-900 dark:bg-black',
