@@ -189,7 +189,6 @@ const InviteUserModal = NiceModal.create(() => {
                     Send an invitation for a new person to create a staff account on your site, and select a role that matches what you’d like them to be able to do.
                 </p>
                 <TextField
-                    clearBg={true}
                     error={!!errors.email}
                     hint={errors.email}
                     inputRef={focusRef}
