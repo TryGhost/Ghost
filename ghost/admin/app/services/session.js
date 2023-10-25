@@ -60,7 +60,7 @@ export default class SessionService extends ESASessionService {
                         resolve({
                             ...event,
                             release: `ghost@${this.config.version}`,
-                            user:  {
+                            user: {
                                 role: this.user.role.name
                             }
                         });
