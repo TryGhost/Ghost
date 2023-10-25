@@ -41,6 +41,10 @@ const queryClient = new QueryClient({
     }
 });
 
+const setSentryScope = (scope: any) => {
+    scope.setTag('adminx', true);
+}
+
 function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, fetchKoenigLexical, sentryDSN, onUpdate, onInvalidate, onDelete, upgradeStatus}: AppProps) {
     const appClassName = clsx(
         'admin-x-settings admin-x-base',
@@ -49,7 +53,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
     );
 
     return (
-        <SentryErrorBoundary>
+        <SentryErrorBoundary beforeCapture={setSentryScope}>
             <QueryClientProvider client={queryClient}>
                 <ServicesProvider fetchKoenigLexical={fetchKoenigLexical} ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} unsplashConfig={unsplashConfig} upgradeStatus={upgradeStatus} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
                     <GlobalDataProvider>
