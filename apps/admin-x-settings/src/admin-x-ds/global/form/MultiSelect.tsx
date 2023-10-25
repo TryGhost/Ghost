@@ -79,7 +79,7 @@ const Option: React.FC<OptionProps<MultiSelectOption, true>> = ({children, ...op
 
 const MultiSelect: React.FC<MultiSelectProps> = ({
     title = '',
-    clearBg = true,
+    clearBg = false,
     error = false,
     placeholder,
     color = 'grey',
@@ -99,12 +99,12 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     const id = useId();
 
     const controlClasses = clsx(
+        'w-full cursor-pointer appearance-none rounded-md border border-transparent transition-all dark:text-white',
         size === 'sm' ? 'min-h-[36px] py-1 text-sm' : 'min-h-[40px] py-2',
-        'w-full cursor-pointer appearance-none border-b dark:text-white',
         fieldStyle === 'dropdown' ? 'cursor-pointer' : 'cursor-text',
-        !clearBg && 'bg-grey-75 px-[10px] dark:bg-grey-950',
+        !clearBg && 'bg-grey-150 px-[10px] dark:bg-grey-900',
         'outline-none',
-        error ? 'border-red' : 'border-grey-500 hover:border-grey-700 dark:border-grey-800 dark:hover:border-grey-700',
+        error ? 'border-red' : 'hover:bg-grey-100 dark:hover:bg-grey-950',
         (title && !clearBg) && 'mt-2'
     );
 
