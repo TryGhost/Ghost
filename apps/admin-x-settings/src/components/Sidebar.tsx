@@ -1,4 +1,5 @@
 import Button from '../admin-x-ds/global/Button';
+import GhostLogo from '../assets/images/orb-pink.png';
 import Icon from '../admin-x-ds/global/Icon';
 import React, {useEffect, useRef} from 'react';
 import SettingNavItem from '../admin-x-ds/settings/SettingNavItem';
@@ -75,10 +76,10 @@ const Sidebar: React.FC = () => {
         <div data-testid="sidebar">
             <div className='relative flex content-stretch items-end tablet:h-[36px]'>
                 <Icon className='absolute left-2 top-[10px] z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
-                <TextField autoComplete="off" className='-mx-1 flex h-9 w-[calc(100%+8px)] items-center rounded-full border border-transparent bg-grey-150 px-2 py-1.5 pl-[33px] text-sm transition-all hover:bg-grey-100 focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:bg-grey-900 dark:text-white dark:focus:bg-black' containerClassName='w-100' inputRef={searchInputRef} placeholder="Search settings" title="Search" value={filter} clearBg hideTitle unstyled onChange={updateSearch} />
+                <TextField autoComplete="off" className='-mx-1 flex h-9 w-[calc(100%+8px)] items-center rounded-full border border-transparent bg-grey-150 px-[33px] py-1.5 text-sm transition-all hover:bg-grey-100 focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:bg-grey-900 dark:text-white dark:focus:bg-black' containerClassName='w-100' inputRef={searchInputRef} placeholder="Search settings" title="Search" value={filter} clearBg hideTitle unstyled onChange={updateSearch} />
                 {filter ? <Button className='absolute right-3 top-[10px] p-1' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
                     setFilter('');
-                }} /> : <div className='absolute right-0 top-[20px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:right-4 tablet:top-[7px] tablet:!block'>/</div>}
+                }} /> : <div className='absolute right-0 top-[20px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:right-3 tablet:top-[7px] tablet:!block'>/</div>}
             </div>
             <div className={navClasses} id='admin-x-settings-sidebar'>
                 <SettingNavSection keywords={Object.values(generalSearchKeywords).flat()} title="General settings">
@@ -128,9 +129,12 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 {!filter &&
-                <Button className='mb-10 ml-1 !font-normal' label='About Ghost' link onClick={() => {
+                <a className='mb-10 ml-1 flex cursor-pointer items-center gap-1.5 pl-1 text-sm !font-normal' onClick={() => {
                     updateRoute('about');
-                }} />
+                }}>
+                    <img alt='Ghost Logo' className='h-[18px] w-[18px]' src={GhostLogo} />
+                    About Ghost
+                </a>
                 }
             </div>
         </div>
