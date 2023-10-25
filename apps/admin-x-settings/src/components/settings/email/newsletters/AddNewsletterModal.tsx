@@ -102,7 +102,6 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 placeholder='Weekly roundup'
                 title='Name'
                 value={formState.name}
-                onBlur={validate}
                 onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                 onKeyDown={() => clearError('name')}
             />
