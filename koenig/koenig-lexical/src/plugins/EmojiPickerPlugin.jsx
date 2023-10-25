@@ -24,7 +24,7 @@ const EmojiMenuItem = function ({index, isSelected, onClick, onMouseEnter, emoji
             onMouseEnter={onMouseEnter}
         >
             <span className="text-lg">{emoji.skins[0].native}</span>
-            <span className="truncate">{emoji.skins[0].shortcodes}</span>
+            <span className="truncate">{emoji.id}</span>
         </li>
     );
 };
