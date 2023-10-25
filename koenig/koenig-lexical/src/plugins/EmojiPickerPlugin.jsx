@@ -1,11 +1,9 @@
 import Portal from '../components/ui/Portal';
 import React from 'react';
 import emojiData from '@emoji-mart/data';
+import useTypeaheadTriggerMatch from '../hooks/useTypeaheadTriggerMatch';
 import {$createTextNode, $getSelection, $isRangeSelection} from 'lexical';
-import {
-    LexicalTypeaheadMenuPlugin,
-    useBasicTypeaheadTriggerMatch
-} from '@lexical/react/LexicalTypeaheadMenuPlugin';
+import {LexicalTypeaheadMenuPlugin} from '@lexical/react/LexicalTypeaheadMenuPlugin';
 import {SearchIndex, init} from 'emoji-mart';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -34,7 +32,7 @@ export function EmojiPickerPlugin() {
     const [queryString, setQueryString] = React.useState(null);
     const [searchResults, setSearchResults] = React.useState(null);
 
-    const checkForTriggerMatch = useBasicTypeaheadTriggerMatch(':', {minLength: 1});
+    const checkForTriggerMatch = useTypeaheadTriggerMatch(':', {minLength: 1});
 
     React.useEffect(() => {
         if (!queryString) {
