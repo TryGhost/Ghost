@@ -63,6 +63,7 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
                 marginTop={false}
             >
                 <TextField
+                    autoFocus={true}
                     error={!!errors.name}
                     hint={errors.name}
                     placeholder='Custom integration'

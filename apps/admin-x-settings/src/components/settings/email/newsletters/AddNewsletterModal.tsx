@@ -26,7 +26,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     });
 
     const {mutateAsync: addNewsletter} = useAddNewsletter();
-    const {formState, updateForm, handleSave, errors, validate, clearError} = useForm({
+    const {formState, updateForm, handleSave, errors, clearError} = useForm({
         initialState: {
             name: '',
             description: '',
@@ -96,12 +96,12 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             marginTop
         >
             <TextField
+                autoFocus={true}
                 error={Boolean(errors.name)}
                 hint={errors.name}
                 placeholder='Weekly roundup'
                 title='Name'
                 value={formState.name}
-                onBlur={validate}
                 onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                 onKeyDown={() => clearError('name')}
             />
