@@ -4,6 +4,7 @@ import React, {useEffect, useRef} from 'react';
 import SettingNavItem from '../admin-x-ds/settings/SettingNavItem';
 import SettingNavSection from '../admin-x-ds/settings/SettingNavSection';
 import TextField from '../admin-x-ds/global/form/TextField';
+import clsx from 'clsx';
 import useFeatureFlag from '../hooks/useFeatureFlag';
 import useRouting from '../hooks/useRouting';
 import {searchKeywords as advancedSearchKeywords} from './settings/advanced/AdvancedSettings';
@@ -51,6 +52,7 @@ const Sidebar: React.FC = () => {
     const handleSectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         setFilter('');
         updateRoute(e.currentTarget.name);
+        setIsSearchFocused(false);
     };
 
     const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
@@ -64,6 +66,10 @@ const Sidebar: React.FC = () => {
         }
     };
 
+    const navClasses = clsx(
+        'no-scrollbar hidden pt-10 tablet:!visible tablet:!block tablet:h-[calc(100vh-8vmin-36px)] tablet:overflow-y-auto'
+    );
+
     return (
         <div data-testid="sidebar">
             <div className='relative flex content-stretch items-end tablet:h-[36px]'>
@@ -73,7 +79,7 @@ const Sidebar: React.FC = () => {
                     setFilter('');
                 }} /> : <div className='absolute right-0 top-[20px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:right-2 tablet:top-[7px] tablet:!block'>/</div>}
             </div>
-            <div className="no-scrollbar hidden pt-10 tablet:!visible tablet:!block tablet:h-[calc(100vh-8vmin-36px)] tablet:overflow-y-auto" id='admin-x-settings-sidebar'>
+            <div className={navClasses} id='admin-x-settings-sidebar'>
                 <SettingNavSection keywords={Object.values(generalSearchKeywords).flat()} title="General settings">
                     <SettingNavItem icon='textfield' keywords={generalSearchKeywords.titleAndDescription} navid='general' title="Title & description" onClick={handleSectionClick} />
                     <SettingNavItem icon='world-clock' keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />

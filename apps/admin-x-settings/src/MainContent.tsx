@@ -54,7 +54,7 @@ const MainContent: React.FC = () => {
 
     return (
         <Page>
-            {loadingModal && <div className={`fixed inset-0 z-40 h-[100vh] w-[100vw] ${topLevelBackdropClasses}`} />}
+            {loadingModal && <div className={`fixed inset-0 z-40 h-[calc(100vh-55px)] w-[100vw] tablet:h-[100vh] ${topLevelBackdropClasses}`} />}
 
             {/* Sidebar */}
             <div className="sticky top-0 z-20 mt-[-55px] min-w-[260px] grow-0 bg-white pt-[52px] dark:bg-black tablet:fixed tablet:top-[8vmin] tablet:mt-0 tablet:basis-[260px] tablet:pt-0">
