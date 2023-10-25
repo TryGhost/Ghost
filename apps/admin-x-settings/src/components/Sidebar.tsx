@@ -49,9 +49,11 @@ const Sidebar: React.FC = () => {
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
-    const handleSectionClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        setFilter('');
-        updateRoute(e.currentTarget.id);
+    const handleSectionClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
+        if (e) {
+            setFilter('');
+            updateRoute(e.currentTarget.id);
+        }
     };
 
     const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');

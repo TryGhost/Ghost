@@ -9,7 +9,7 @@ interface Props {
     navid?: string;
     icon?: string;
     keywords?: string[];
-    onClick: (e:React.MouseEvent<HTMLAnchorElement>) => void;
+    onClick?: (e:React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 const SettingNavItem: React.FC<Props> = ({
@@ -17,7 +17,7 @@ const SettingNavItem: React.FC<Props> = ({
     navid = '',
     icon,
     keywords,
-    onClick = () => {}
+    onClick
 }) => {
     const {ref, props} = useScrollSectionNav(navid);
     const {currentSection} = useScrollSectionContext();
@@ -30,7 +30,7 @@ const SettingNavItem: React.FC<Props> = ({
     );
 
     return (
-        <li ref={ref} {...props}><a className={classNames} id={navid} type='button' onClick={onClick}>
+        <li ref={ref} {...props}><a className={classNames} id={navid} onClick={onClick}>
             {icon && <Icon className='mr-[7px]' name={icon} size='sm' />}
             {title}
         </a></li>
