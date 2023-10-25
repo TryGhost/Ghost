@@ -16,7 +16,7 @@ const SettingNavSection: React.FC<Props> = ({title, keywords, children}) => {
 
     return (
         <>
-            {title && <h2 className='mb-4 ml-2 text-md tracking-tight'>{title}</h2>}
+            {title && <h2 className='mb-4 ml-2 text-[16px] tracking-tight'>{title}</h2>}
             {children &&
                 <ul className="mb-14 mt-[-8px]">
                     {children}
