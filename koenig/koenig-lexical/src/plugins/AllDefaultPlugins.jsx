@@ -23,10 +23,14 @@ import {PaywallPlugin} from '../plugins/PaywallPlugin';
 import {ProductPlugin} from '../plugins/ProductPlugin';
 import {SignupPlugin} from '../plugins/SignupPlugin';
 // import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
+import KoenigComposerContext from '../context/KoenigComposerContext';
+import {EmojiPickerPlugin} from './EmojiPickerPlugin';
 import {TogglePlugin} from '../plugins/TogglePlugin';
 import {VideoPlugin} from '../plugins/VideoPlugin';
 
 export const AllDefaultPlugins = () => {
+    const {cardConfig} = React.useContext(KoenigComposerContext);
+
     return (
         <>
             {/* Lexical Plugins */}
@@ -35,6 +39,7 @@ export const AllDefaultPlugins = () => {
 
             {/* Koenig Plugins */}
             <CardMenuPlugin />
+            {cardConfig.feature?.emojiPicker ? <EmojiPickerPlugin /> : null}
 
             {/* Card Plugins */}
             <AudioPlugin />

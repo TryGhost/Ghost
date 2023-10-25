@@ -1,18 +1,18 @@
 import KoenigComposerContext from '../../context/KoenigComposerContext';
-import Picker from '@emoji-mart/react';
+import Picker from './EmojiPicker';
 import Portal from './Portal';
 import PropTypes from 'prop-types';
 import React from 'react';
-import data from '@emoji-mart/data';
+import defaultData from '@emoji-mart/data';
 
-const EmojiPickerPortal = ({onEmojiClick, buttonRef, ...props}) => {
+const EmojiPickerPortal = ({onEmojiClick, positionRef, data = defaultData, ...props}) => {
     const [position, setPosition] = React.useState(null);
     const {darkMode} = React.useContext(KoenigComposerContext);
 
     const shiftPixels = 35; // how many pixels we want to move it up when it's at the bottom of the screen
     const handleScroll = React.useCallback(() => {
-        if (buttonRef.current) {
-            const rect = buttonRef.current.getBoundingClientRect();
+        if (positionRef.current) {
+            const rect = positionRef.current.getBoundingClientRect();
             const scrollX = document.documentElement.scrollLeft;
             const scrollY = document.documentElement.scrollTop;
             const windowHeight = window.innerHeight;
@@ -26,7 +26,7 @@ const EmojiPickerPortal = ({onEmojiClick, buttonRef, ...props}) => {
 
             setPosition({x: (rect.left + scrollX) / 1.5, y: adjustedTop});
         }
-    }, [buttonRef]);
+    }, [positionRef]);
 
     React.useEffect(() => {
         handleScroll();
@@ -83,7 +83,8 @@ export default EmojiPickerPortal;
 
 EmojiPickerPortal.propTypes = {
     onEmojiClick: PropTypes.func.isRequired,
-    buttonRef: PropTypes.object,
+    positionRef: PropTypes.object,
+    data: PropTypes.array,
     autoFocus: PropTypes.bool,
     dynamicWidth: PropTypes.bool,
     emojiButtonColors: PropTypes.arrayOf(PropTypes.string),
@@ -103,6 +104,7 @@ EmojiPickerPortal.propTypes = {
     previewPosition: PropTypes.oneOf(['top', 'bottom', 'none']),
     searchPosition: PropTypes.oneOf(['sticky', 'static', 'none']),
     set: PropTypes.oneOf(['native', 'apple', 'facebook', 'google', 'twitter']),
+    setInstanceRef: PropTypes.func,
     skin: PropTypes.oneOf([1, 2, 3, 4, 5, 6]),
     skinTonePosition: PropTypes.oneOf(['preview', 'search', 'none']),
     theme: PropTypes.oneOf(['auto', 'light', 'dark'])
