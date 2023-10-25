@@ -24,8 +24,8 @@ const SettingNavItem: React.FC<Props> = ({
     const {checkVisible} = useSearch();
 
     const classNames = clsx(
-        'w-100 flex h-8 items-center rounded-md px-2 py-1 text-left text-sm transition-all hover:bg-grey-100 dark:text-white',
-        (currentSection === navid) && 'bg-grey-200',
+        'w-100 flex h-8 items-center rounded-md px-2 py-1 text-left text-sm transition-all hover:bg-grey-100 focus:bg-grey-100 dark:text-grey-300 dark:hover:bg-grey-950 dark:focus:bg-grey-900',
+        (currentSection === navid) && 'bg-grey-200 dark:bg-grey-900',
         !checkVisible(keywords || []) && 'hidden'
     );
 
