@@ -5,7 +5,7 @@ import Route from '@ember/routing/route';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
-import {InitSentryForEmber} from '@sentry/ember';
+import {InitSentryForEmber, Replay} from '@sentry/ember';
 import {importSettings} from '../components/admin-x/settings';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
@@ -173,6 +173,8 @@ export default Route.extend(ShortcutsRoute, {
                 dsn: this.config.sentry_dsn,
                 environment: this.config.sentry_env,
                 release: `ghost@${this.config.version}`,
+                integrations: [new Replay()],
+                replaysOnErrorSampleRate: 1.0,
                 beforeSend(event) {
                     event.tags = event.tags || {};
                     event.tags.shown_to_user = event.tags.shown_to_user || false;
