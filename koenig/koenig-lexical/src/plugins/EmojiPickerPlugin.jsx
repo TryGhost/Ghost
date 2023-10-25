@@ -68,6 +68,17 @@ export function EmojiPickerPlugin() {
         });
     }, [editor]);
 
+    // close menu on escape
+    React.useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setSearchResults(null);
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    });
+
     return (
         <LexicalTypeaheadMenuPlugin
             menuRenderFn={(
