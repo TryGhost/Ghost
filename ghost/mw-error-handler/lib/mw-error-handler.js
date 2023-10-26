@@ -87,6 +87,15 @@ module.exports.prepareError = (err, req, res, next) => {
                 message: err.message,
                 statusCode: err.statusCode
             });
+        // Catch database errors and create a generic 500 error with the context set to the errno & code from the db
+        } else if (err.sql && err.errno && err.code) {
+            err = new errors.InternalServerError({
+                err: err,
+                message: tpl(messages.genericError),
+                context: `SQL Error ${err.errno}: ${err.code}`,
+                statusCode: err.statusCode,
+                code: 'UNEXPECTED_ERROR'
+            });
         // For everything else, create a generic 500 error, with context set to the original error message
         } else {
             err = new errors.InternalServerError({

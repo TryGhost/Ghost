@@ -104,6 +104,24 @@ describe('Prepare Error', function () {
             done();
         });
     });
+
+    it('Correctly prepares a SQL error', function (done) {
+        let error = new Error('select * from posts where published_at > \'23424234234234\'');
+
+        error.sql = 'select * from posts where published_at > \'23424234234234\'';
+        error.errno = 1525
+        error.code = 'ER_WRONG_VALUE';
+
+        prepareError(error, {}, {
+            set: () => {}
+        }, (err) => {
+            err.statusCode.should.eql(500);
+            err.name.should.eql('InternalServerError');
+            err.message.should.eql('An unexpected error occurred, please try again.');
+            err.context.should.eql('SQL Error 1525: ER_WRONG_VALUE');
+            done();
+        });
+    });
 });
 
 describe('Prepare Stack', function () {
