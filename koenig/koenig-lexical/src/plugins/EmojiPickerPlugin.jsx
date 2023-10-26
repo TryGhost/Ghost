@@ -15,6 +15,7 @@ const EmojiMenuItem = function ({index, isSelected, onClick, onMouseEnter, emoji
             key={emoji.id}
             aria-selected={isSelected}
             className={`flex cursor-pointer items-center gap-2 whitespace-nowrap rounded px-2 py-1 font-sans text-sm tracking-wide text-grey-800 ${isSelected ? 'bg-grey-100 text-grey-900' : ''}`}
+            data-testid={'emoji-option-' + index}
             id={'emoji-option-' + index}
             role="option"
             tabIndex={-1}
@@ -89,7 +90,7 @@ export function EmojiPickerPlugin() {
 
                 return (
                     <Portal to={anchorElementRef.current}>
-                        <ul className="absolute top-[25px] max-h-[196px] w-[240px] list-none overflow-y-auto bg-white p-1 shadow">
+                        <ul className="absolute top-[25px] max-h-[196px] w-[240px] list-none overflow-y-auto bg-white p-1 shadow" data-testid="emoji-menu">
                             {searchResults.map((emoji, index) => (
                                 <div key={emoji.id}>
                                     <EmojiMenuItem
