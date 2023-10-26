@@ -14,7 +14,7 @@ const EmojiMenuItem = function ({index, isSelected, onClick, onMouseEnter, emoji
         <li
             key={emoji.id}
             aria-selected={isSelected}
-            className={`flex cursor-pointer items-center gap-2 whitespace-nowrap rounded px-2 py-1 font-sans text-sm tracking-wide text-grey-800 ${isSelected ? 'bg-grey-100 text-grey-900' : ''}`}
+            className={`mb-0 flex cursor-pointer items-center gap-2 whitespace-nowrap rounded px-2 py-1 font-sans text-sm leading-[1.65] tracking-wide text-grey-800 ${isSelected ? 'bg-grey-100 text-grey-900' : ''}`}
             data-testid={'emoji-option-' + index}
             id={'emoji-option-' + index}
             role="option"
