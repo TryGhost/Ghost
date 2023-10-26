@@ -117,6 +117,7 @@ function getHomeSchema(metaData) {
     const schema = {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
+        name: metaData.site.title,
         publisher: schemaPublisherObject(metaData),
         url: metaData.url,
         image: schemaImageObject(metaData.coverImage),
