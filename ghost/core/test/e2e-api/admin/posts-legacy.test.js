@@ -85,7 +85,7 @@ describe('Posts API', function () {
     });
 
     it('Can retrieve multiple post formats', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('posts/?formats=plaintext,mobiledoc&limit=3&order=title%20ASC'))
+        const res = await request.get(localUtils.API.getApiQuery('posts/?formats=plaintext,mobiledoc,lexical&limit=3&order=title%20ASC'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)

@@ -84,7 +84,7 @@ export default class KoenigLexicalEditorInput extends Component {
                                 onFocus={props.onFocus}
                                 isSnippetsEnabled={false}
                                 singleParagraph={true}
-                                className="koenig-lexical-editor-input"
+                                className={`koenig-lexical-editor-input ${this.feature.nightShift ? 'dark' : ''}`}
                                 placeholderText={props.placeholderText}
                                 placeholderClassName="koenig-lexical-editor-input-placeholder"
                             >

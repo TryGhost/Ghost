@@ -51,7 +51,6 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
             <SettingGroupContent>
                 <TextField
                     key='site-description'
-                    clearBg={true}
                     hint='Used in your theme, meta data and search results'
                     title='Site description'
                     value={siteDescription}

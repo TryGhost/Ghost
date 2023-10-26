@@ -51,14 +51,12 @@ export const responseFixtures = {
 };
 
 let defaultLabFlags = {
-    recommendations: false,
     audienceFeedback: false,
     collections: false,
     themeErrorsNotification: false,
     outboundLinkTagging: false,
     announcementBar: false,
     signupForm: false,
-    lexicalEditor: false,
     members: false
 };
 
@@ -241,6 +239,6 @@ export async function testUrlValidation(input: Locator, textToEnter: string, exp
     expect(input).toHaveValue(expectedResult);
 
     if (expectedError) {
-        await expect(input.locator('xpath=..')).toContainText(expectedError);
+        await expect(input.locator('xpath=../..')).toContainText(expectedError);
     }
 };

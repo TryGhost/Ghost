@@ -217,6 +217,29 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  job_i18n:
+    runs-on: ubuntu-latest
+    needs: [job_get_metadata, job_install_deps]
+    name: i18n
+    if: |
+        needs.job_get_metadata.outputs.changed_comments_ui == 'true'
+        || needs.job_get_metadata.outputs.changed_signup_form == 'true'
+        || needs.job_get_metadata.outputs.changed_portal == 'true'
+        || needs.job_get_metadata.outputs.changed_core == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18.12.1"
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+
+      - name: Run i18n tests
+        run: yarn nx run @tryghost/i18n:test
+
   job_admin-tests:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
@@ -264,7 +287,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest-4-cores
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.is_main == 'true' || needs.job_get_metadata.outputs.has_browser_tests_label == 'true'
+    if: needs.job_get_metadata.outputs.changed_any_code == 'true' && (needs.job_get_metadata.outputs.is_main == 'true' || needs.job_get_metadata.outputs.has_browser_tests_label == 'true')
     concurrency:
       group: ${{ github.workflow }}
     steps:
@@ -750,6 +773,22 @@ jobs:
       - run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
 
+      - name: Install latest v4
+        run: |
+          DIR=$(mktemp -d)
+          echo "V4_DIR=$DIR" >> $GITHUB_ENV
+          ghost install v4 --local -d $DIR
+
+      - uses: actions/setup-node@v3
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: '18.12.1'
+
+      - name: Update from v4
+        run: |
+          ghost update -f -d $V4_DIR --archive $(pwd)/ghost/core/ghost.tgz
+
       - name: Clean Install
         run: |
           DIR=$(mktemp -d)
@@ -760,12 +799,6 @@ jobs:
           DIR=$(mktemp -d)
           ghost install local -d $DIR
           ghost update -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
-
-      - name: Update from latest v4
-        run: |
-          DIR=$(mktemp -d)
-          ghost install v4 --local -d $DIR
-          ghost update -f -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
 
       - name: Print debug logs
         if: failure()
@@ -832,11 +865,13 @@ jobs:
         job_get_metadata,
         job_install_deps,
         job_lint,
+        job_i18n,
         job_ghost-cli,
         job_admin-tests,
         job_unit-tests,
         job_database-tests,
         job_regression-tests,
+        job_browser-tests,
         job_admin_x_settings,
         job_comments_ui,
         job_signup_form,
