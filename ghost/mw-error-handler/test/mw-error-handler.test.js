@@ -109,7 +109,7 @@ describe('Prepare Error', function () {
         let error = new Error('select * from posts where published_at > \'23424234234234\'');
 
         error.sql = 'select * from posts where published_at > \'23424234234234\'';
-        error.errno = 1525
+        error.errno = 1525;
         error.code = 'ER_WRONG_VALUE';
 
         prepareError(error, {}, {
