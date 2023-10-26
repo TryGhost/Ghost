@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 const should = require('should');
-const LimitService = require('../lib/limit-service');
+const LimitService = require('../lib/LimitService');
 const {MaxLimit, MaxPeriodicLimit, FlagLimit} = require('../lib/limit');
 const sinon = require('sinon');
 

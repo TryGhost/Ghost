@@ -4,8 +4,8 @@
   "repository": "https://github.com/TryGhost/SDK/tree/main/packages/limit-service",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "main": "./lib/limit-service.js",
-  "exports": "./lib/limit-service.js",
+  "main": "index.js",
+  "exports": "./index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
