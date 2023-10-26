@@ -40,7 +40,6 @@
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@sentry/ember": "7.70.0",
-    "@sentry/integrations": "7.75.1",
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.77",

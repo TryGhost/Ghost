@@ -3,11 +3,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Route from '@ember/routing/route';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
-import appConfig from 'ghost-admin/config/environment';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {InitSentryForEmber} from '@sentry/ember';
-import {RewriteFrames} from '@sentry/integrations';
 import {importSettings} from '../components/admin-x/settings';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
@@ -181,20 +179,6 @@ export default Route.extend(ShortcutsRoute, {
                     event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
                     return event;
                 },
-                integrations: [
-                    new RewriteFrames({
-                        iteratee: (frame) => {
-                            if (this.config.sentry_env === 'production') {
-                                // Remove duplicate `assets/` from CDN file paths (unsure why this occurs though)
-                                if (frame.filename?.startsWith(appConfig.cdnUrl) && frame.filename?.includes('assets/')) {
-                                    frame.filename = frame.filename.replace('assets/', '');
-                                }
-                            }
-
-                            return frame;
-                        }
-                    })
-                ],
                 // TransitionAborted errors surface from normal application behaviour
                 // - https://github.com/emberjs/ember.js/issues/12505
                 ignoreErrors: [/^TransitionAborted$/]
