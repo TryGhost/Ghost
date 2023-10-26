@@ -184,6 +184,8 @@ export default Route.extend(ShortcutsRoute, {
                 integrations: [
                     new RewriteFrames({
                         iteratee: (frame) => {
+                            console.log('frame: ', frame); // eslint-disable-line no-console
+                            console.log('cdnUrl: ', appConfig.cdnUrl); // eslint-disable-line no-console
                             // Remove duplicate `assets/` from CDN file paths (unsure why this occurs though)
                             if (frame.filename?.startsWith(appConfig.cdnUrl) && frame.filename?.includes('assets/assets/')) {
                                 frame.filename = frame.filename.replace('assets/assets/', 'assets/');
