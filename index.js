@@ -1,1 +1,1 @@
-module.exports = require('./lib/adapter-base-cache');
+module.exports = require('./lib/BaseCacheAdapter');
