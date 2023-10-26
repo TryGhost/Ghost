@@ -304,22 +304,6 @@ export default class AdminXSettings extends Component {
 
     @tracked display = 'none';
 
-    @action
-    onError(error) {
-        // ensure we're still showing errors in development
-        console.error(error); // eslint-disable-line
-
-        if (this.config.sentry_dsn) {
-            Sentry.captureException(error, {
-                tags: {
-                    adminx: true
-                }
-            });
-        }
-
-        // don't rethrow, app should attempt to gracefully recover
-    }
-
     onUpdate = (dataType, response) => {
         if (!emberDataTypeMapping[dataType]) {
             throw new Error(`A mutation updating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
@@ -437,7 +421,7 @@ export default class AdminXSettings extends Component {
                             externalNavigate={this.externalNavigate}
                             darkMode={this.feature.nightShift}
                             unsplashConfig={defaultUnsplashHeaders}
-                            sentry={this.config.sentry_dsn ? Sentry : undefined}
+                            sentryDSN={this.config.sentry_dsn ?? null}
                             fetchKoenigLexical={fetchKoenigLexical}
                             onUpdate={this.onUpdate}
                             onInvalidate={this.onInvalidate}
