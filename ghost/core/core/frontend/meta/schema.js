@@ -88,6 +88,7 @@ function getPostSchema(metaData, data) {
     schema = {
         '@context': 'https://schema.org',
         '@type': 'Article',
+        name: metaData.site.title,
         publisher: schemaPublisherObject(metaData),
         author: {
             '@type': 'Person',
