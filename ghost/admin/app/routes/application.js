@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/ember';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -6,7 +7,6 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Debug} from '@sentry/integrations';
-import {InitSentryForEmber} from '@sentry/ember';
 import {importSettings} from '../components/admin-x/settings';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
@@ -19,6 +19,7 @@ import {
     isMaintenanceError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
+import {later} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 function K() {
@@ -87,6 +88,12 @@ export default Route.extend(ShortcutsRoute, {
         didTransition() {
             this.session.appLoadTransition = null;
             this.send('closeMenus');
+
+            // Need a tiny delay here to allow the router to update to the current route
+            later(() => {
+                Sentry.setTag('route', this.router.currentRouteName);
+                Sentry.setTag('path', this.router.currentURL);
+            }, 2);
         },
 
         authorizationFailed() {
@@ -187,7 +194,7 @@ export default Route.extend(ShortcutsRoute, {
             if (this.config.sentry_env === 'development') {
                 sentryConfig.integrations = [new Debug()];
             }
-            InitSentryForEmber(sentryConfig);
+            Sentry.init(sentryConfig);
         }
 
         if (this.session.isAuthenticated) {
