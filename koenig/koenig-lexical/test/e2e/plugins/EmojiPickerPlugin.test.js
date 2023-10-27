@@ -1,4 +1,4 @@
-import {assertHTML, focusEditor, initialize} from '../../utils/e2e';
+import {assertHTML, ctrlOrCmd, focusEditor, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Emoji Picker Plugin', async function () {
@@ -112,15 +112,146 @@ test.describe('Emoji Picker Plugin', async function () {
         await assertHTML(page, '<p dir="ltr"><span data-lexical-text="true">🦖</span></p>');
     });
 
-    // TODO: see why this doesn't work with node 16
-    test.skip('can put emojis back to back without spaces', async function () {
+    test('can put emojis back to back without spaces', async function () {
         await focusEditor(page);
 
-        await page.keyboard.type(':tac',{delay: 100});
+        await page.keyboard.type(':tac', {delay: 10});
         await page.keyboard.press('Enter');
-        await page.keyboard.type(':tac',{delay: 100});
+        await page.keyboard.type(':tac', {delay: 10});
         await page.keyboard.press('Enter');
+        await page.keyboard.type('s for all', {delay: 10});
 
-        await assertHTML(page, '<p dir="ltr"><span data-lexical-text="true">🌮🌮</span></p>');
+        await assertHTML(page, '<p dir="ltr"><span data-lexical-text="true">🌮🌮s for all</span></p>');
+    });
+
+    test(`can use emojis in nested editors`, async function () {
+        await focusEditor(page);
+
+        await insertCard(page, {cardName: 'callout'});
+
+        await page.keyboard.type(':tac', {delay: 10});
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('s for all', {delay: 10});
+
+        await page.keyboard.press(`${ctrlOrCmd()}+Enter`); // exit edit mode
+
+        await assertHTML(page, `
+        <div data-lexical-decorator="true" contenteditable="false">
+          <div
+            data-kg-card-editing="false"
+            data-kg-card-selected="true"
+            data-kg-card="callout">
+            <div>
+              <div><button type="button">💡</button></div>
+              <div>
+                <div data-kg="editor">
+                  <div
+                    contenteditable="false"
+                    role="textbox"
+                    spellcheck="true"
+                    data-lexical-editor="true"
+                    aria-autocomplete="none"
+                    aria-readonly="true">
+                    <p dir="ltr"><span data-lexical-text="true">🌮s for all</span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div></div>
+            <div data-kg-card-toolbar="callout">
+              <ul>
+                <li>
+                  <button
+                    aria-label="Edit"
+                    data-kg-active="false"
+                    title="Edit"
+                    type="button">
+                    <svg></svg>
+                  </button>
+                </li>
+                <li></li>
+                <li>
+                  <button
+                    aria-label="Create snippet"
+                    data-kg-active="false"
+                    title="Create snippet"
+                    type="button">
+                    <svg></svg>
+                  </button>
+                </li>
+                <li></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <p><br /></p>
+        `);
+    });
+
+    // TODO: figure out why this test is flaky; likes to inject a :
+    test.skip('can use emojis in captions', async function () {
+        await focusEditor(page);
+
+        await page.keyboard.type('```js ', {delay: 10});
+        await page.keyboard.type(`sample code`, {delay: 10});
+        await page.keyboard.press(`${ctrlOrCmd()}+Enter`);
+        await page.keyboard.type('enjoy :tac', {delay: 10});
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('s for all', {delay: 10});
+
+        await assertHTML(page, `
+        <div data-lexical-decorator="true" contenteditable="false">
+            <div
+                data-kg-card-editing="false"
+                data-kg-card-selected="true"
+                data-kg-card="codeblock">
+                <div>
+                <pre><code>sample code</code></pre>
+                <div><span>js</span></div>
+                </div>
+                <figcaption>
+                <div data-kg-allow-clickthrough="true">
+                    <div>
+                    <div data-kg="editor">
+                        <div
+                        contenteditable="true"
+                        role="textbox"
+                        spellcheck="true"
+                        data-lexical-editor="true">
+                        <p dir="ltr">
+                            <span data-lexical-text="true">enjoy 🌮s for all</span>
+                        </p>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                </figcaption>
+                <div data-kg-card-toolbar="button">
+                <ul>
+                    <li>
+                    <button
+                        aria-label="Edit"
+                        data-kg-active="false"
+                        title="Edit"
+                        type="button">
+                        <svg></svg>
+                    </button>
+                    </li>
+                    <li></li>
+                    <li>
+                    <button
+                        aria-label="Create snippet"
+                        data-kg-active="false"
+                        title="Create snippet"
+                        type="button">
+                        <svg></svg>
+                    </button>
+                    </li>
+                    <li></li>
+                </ul>
+                </div>
+            </div>
+        </div>
+        `);
     });
 });

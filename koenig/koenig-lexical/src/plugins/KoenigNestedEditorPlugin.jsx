@@ -57,6 +57,12 @@ function KoenigNestedEditorPlugin({
             editor.registerCommand(
                 KEY_ENTER_COMMAND,
                 (event) => {
+                    // TODO: find a more elegant way to handle this
+                    // intercept enter commands when interacting with the typeahead menu (same command priority)
+                    if (document.querySelector(`#typeahead-menu`)) {
+                        return false;
+                    }
+
                     // let the parent editor handle the edit mode product
                     if (event.metaKey || event.ctrlKey) {
                         event._fromNested = true;
@@ -88,7 +94,6 @@ function KoenigNestedEditorPlugin({
                         // prevent normal/KoenigBehaviourPlugin enter key behaviour
                         return true;
                     }
-
                     return false;
                 },
                 COMMAND_PRIORITY_LOW

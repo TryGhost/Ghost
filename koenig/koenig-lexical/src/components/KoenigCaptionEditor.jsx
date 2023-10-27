@@ -1,6 +1,7 @@
 import CardContext from '../context/CardContext.jsx';
 import React, {useCallback, useContext} from 'react';
 import {BLUR_COMMAND, COMMAND_PRIORITY_HIGH, COMMAND_PRIORITY_LOW, FOCUS_COMMAND, KEY_ARROW_DOWN_COMMAND, KEY_ARROW_UP_COMMAND, KEY_ENTER_COMMAND} from 'lexical';
+import {EmojiPickerPlugin} from '../plugins/EmojiPickerPlugin.jsx';
 import {KoenigComposableEditor, KoenigNestedComposer, MINIMAL_NODES, MINIMAL_TRANSFORMERS, RestrictContentPlugin} from '../index.js';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -65,6 +66,12 @@ function CaptionPlugin({parentEditor}) {
                 editor.registerCommand(
                     KEY_ENTER_COMMAND,
                     (event) => {
+                        // TODO: find a more elegant way to handle this
+                        // intercept enter commands when interacting with the typeahead menu (same command priority)
+                        if (document.querySelector(`#typeahead-menu`)) {
+                            return false;
+                        }
+                        
                         // allow shift+enter to create a line break
                         if (event.shiftKey) {
                             return false;
@@ -124,6 +131,7 @@ const KoenigCaptionEditor = ({paragraphs = 1, captionEditor, captionEditorInitia
             >
                 <CaptionPlugin parentEditor={parentEditor} />
                 <RestrictContentPlugin paragraphs={paragraphs} />
+                <EmojiPickerPlugin />
             </KoenigComposableEditor>
         </KoenigNestedComposer>
     );
