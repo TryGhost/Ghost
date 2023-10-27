@@ -5,8 +5,8 @@ import Route from '@ember/routing/route';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
-import {InitSentryForEmber} from '@sentry/ember';
 import {Debug} from '@sentry/integrations';
+import {InitSentryForEmber} from '@sentry/ember';
 import {importSettings} from '../components/admin-x/settings';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
@@ -183,7 +183,7 @@ export default Route.extend(ShortcutsRoute, {
                 // TransitionAborted errors surface from normal application behaviour
                 // - https://github.com/emberjs/ember.js/issues/12505
                 ignoreErrors: [/^TransitionAborted$/]
-            }
+            };
             if (this.config.sentry_env === 'development') {
                 sentryConfig.integrations = [new Debug()];
             }
