@@ -168,6 +168,7 @@
     "*.js": "eslint"
   },
   "dependencies": {
+    "@sentry/integrations": "^7.75.1",
     "jose": "4.15.4",
     "path-browserify": "1.0.1",
     "webpack": "5.89.0"
