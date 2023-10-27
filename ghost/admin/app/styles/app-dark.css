@@ -74,8 +74,8 @@
 
 :root {
     /* Primary colours */
-    --black: #fafafb;
-    --white: #15171A;
+    --black: #15171A;
+    --white: #fafafb;
     --lime: #B5FF18;
 
     --darkgrey: #E3E6E8;
@@ -254,7 +254,7 @@ input:focus,
 
 .gh-btn-primary,
 .gh-btn-black {
-    color: var(--white);
+    color: var(--black);
 }
 
 .gh-btn-black:not(.gh-btn-green):not(.gh-btn-blue):not(.gh-btn-red):hover,
