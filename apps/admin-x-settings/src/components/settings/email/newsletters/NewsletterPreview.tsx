@@ -84,9 +84,9 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
 
     const colors = hasEmailCustomization ? {
         backgroundColor: backgroundColor(),
-        borderColor: borderColor(),
+        borderColor: borderColor() || undefined,
         secondaryBorderColor,
-        titleColor: titleColor(),
+        titleColor: titleColor() || undefined,
         textColor,
         secondaryTextColor
     } : {};
