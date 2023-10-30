@@ -427,12 +427,14 @@
                                             <span class="gh-key" data-tooltip="Return">&#8617;</span>
                                         </div>
                                     </div>
-                                    <div class="gh-shortcut">
-                                        <div>Emoji</div>
-                                        <div class="gh-keys">
-                                            <span class="gh-key mono">:emoji_name:</span>
+                                    {{#if (feature "editorEmojiPicker")}}
+                                        <div class="gh-shortcut">
+                                            <div>Emoji</div>
+                                            <div class="gh-keys">
+                                                <span class="gh-key mono">:emoji_name:</span>
+                                            </div>
                                         </div>
-                                    </div>
+                                    {{/if}}
                                     <div class="gh-shortcut">
                                         <div>Image</div>
                                         <div class="gh-keys">
