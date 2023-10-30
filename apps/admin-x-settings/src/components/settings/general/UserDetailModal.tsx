@@ -162,6 +162,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     await deleteUser(_user?.id);
                     modal?.remove();
                     mainModal?.remove();
+                    navigateOnClose();
                     showToast({
                         message: 'User deleted',
                         type: 'success'
@@ -505,7 +506,7 @@ const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     const user = currentUser.slug === params?.slug ? currentUser : users.find(({slug}) => slug === params?.slug);
 
     useEffect(() => {
-        if (!user && !hasNextPage) {
+        if (!user && hasNextPage) {
             fetchNextPage();
         }
     }, [fetchNextPage, hasNextPage, user]);
