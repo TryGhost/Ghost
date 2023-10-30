@@ -1,5 +1,5 @@
 import IframeBuffering from '../../../../utils/IframeBuffering';
-import React, {memo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 
 const getPreviewData = (announcementBackgroundColor?: string, announcementContent?: string, visibility?: string[]) => {
     const params = new URLSearchParams();
@@ -19,7 +19,10 @@ type AnnouncementBarSettings = {
 };
 
 const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcementBackgroundColor, announcementContent, url, visibility}) => {
-    const injectContentIntoIframe = (iframe: HTMLIFrameElement) => {
+    // Avoid re-rendering iframe if an equivalent array is initialised each render
+    const visibilityMemo = useMemo(() => visibility, [visibility?.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const injectContentIntoIframe = useCallback((iframe: HTMLIFrameElement) => {
         if (!url) {
             return;
         }
@@ -31,7 +34,7 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
                 'x-ghost-preview': getPreviewData(
                     announcementBackgroundColor,
                     announcementContent,
-                    visibility
+                    visibilityMemo
                 ),
                 Accept: 'text/plain',
                 mode: 'cors',
@@ -63,60 +66,19 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
             .catch(() => {
                 // handle error in fetching data
             });
-    };
+    }, [announcementBackgroundColor, announcementContent, url, visibilityMemo]);
 
     return (
-        <div className='h-screen w-screen overflow-hidden'>
-            <IframeBuffering
-                addDelay={true}
-                className="absolute left-0 top-0 h-full w-full"
-                generateContent={injectContentIntoIframe}
-                height='100%'
-                parentClassName="relative h-full w-full"
-                testId='announcement-bar-preview-iframe'
-                width='100%'
-            />
-        </div>
+        <IframeBuffering
+            addDelay={true}
+            className="absolute h-[110%] w-[110%] origin-top-left scale-[.90909] max-[1600px]:h-[130%] max-[1600px]:w-[130%] max-[1600px]:scale-[.76923]"
+            generateContent={injectContentIntoIframe}
+            height='100%'
+            parentClassName="relative h-full w-full"
+            testId='announcement-bar-preview-iframe'
+            width='100%'
+        />
     );
 };
 
-function arraysAreEqual(arr1: string[], arr2: string[]) {
-    if (!arr1 || !arr2) {
-        return arr1 === arr2;
-    } // handles null or undefined values
-    if (arr1.length !== arr2.length) {
-        return false;
-    }
-    for (let i = 0; i < arr1.length; i++) {
-        if (arr1[i] !== arr2[i]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-export default memo(AnnouncementBarPreview, (prevProps, nextProps) => {
-    // Check if announcementBackgroundColor changed
-    if (prevProps.announcementBackgroundColor !== nextProps.announcementBackgroundColor) {
-        return false;
-    }
-    
-    // Check if announcementContent changed
-    if (prevProps.announcementContent !== nextProps.announcementContent) {
-        return false;
-    }
-
-    // Check if url changed
-    if (prevProps.url !== nextProps.url) {
-        return false;
-    }
-
-    // Check if visibility array changed in size or content
-    if (!arraysAreEqual(prevProps.visibility || [], nextProps.visibility || [])) {
-        return false;
-    }
-
-    // If we've reached this point, all props are the same
-    return true;
-});
-
+export default AnnouncementBarPreview;

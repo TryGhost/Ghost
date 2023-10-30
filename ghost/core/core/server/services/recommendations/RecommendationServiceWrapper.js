@@ -1,3 +1,7 @@
+const DomainEvents = require('@tryghost/domain-events');
+const {MentionCreatedEvent} = require('@tryghost/webmentions');
+const logging = require('@tryghost/logging');
+
 class RecommendationServiceWrapper {
     /**
      * @type {import('@tryghost/recommendations').RecommendationRepository}
@@ -24,11 +28,22 @@ class RecommendationServiceWrapper {
      */
     service;
 
+    /**
+     * @type {import('@tryghost/recommendations').IncomingRecommendationController}
+     */
+    incomingRecommendationController;
+
+    /**
+     * @type {import('@tryghost/recommendations').IncomingRecommendationService}
+     */
+    incomingRecommendationService;
+
     init() {
         if (this.repository) {
             return;
         }
 
+        const labs = require('../../../shared/labs');
         const config = require('../../../shared/config');
         const urlUtils = require('../../../shared/url-utils');
         const models = require('../../models');
@@ -40,12 +55,15 @@ class RecommendationServiceWrapper {
             RecommendationService,
             RecommendationController,
             WellknownService,
-            BookshelfClickEventRepository
+            BookshelfClickEventRepository,
+            IncomingRecommendationController,
+            IncomingRecommendationService,
+            IncomingRecommendationEmailRenderer
         } = require('@tryghost/recommendations');
 
         const mentions = require('../mentions');
 
-        if (!mentions.sendingService) {
+        if (!mentions.sendingService || !mentions.api) {
             // eslint-disable-next-line ghost/ghost-custom/no-native-error
             throw new Error('MentionSendingService not intialized, but this is a dependency of RecommendationServiceWrapper. Check boot order.');
         }
@@ -77,21 +95,75 @@ class RecommendationServiceWrapper {
             clickEventRepository: this.clickEventRepository,
             subscribeEventRepository: this.subscribeEventRepository
         });
+
+        const mail = require('../mail');
+        const mailer = new mail.GhostMailer();
+        const emailService = {
+            async send(to, subject, html, text) {
+                return mailer.send({
+                    to,
+                    subject,
+                    html,
+                    text
+                });
+            }
+        };
+
+        this.incomingRecommendationService = new IncomingRecommendationService({
+            mentionsApi: mentions.api,
+            recommendationService: this.service,
+            emailService,
+            async getEmailRecipients() {
+                const users = await models.User.getEmailAlertUsers('recommendation-received');
+                return users.map((model) => {
+                    return {
+                        email: model.email,
+                        slug: model.slug
+                    };
+                });
+            },
+            emailRenderer: new IncomingRecommendationEmailRenderer({
+                staffService: require('../staff')
+            })
+        });
+
         this.controller = new RecommendationController({
             service: this.service
         });
 
-        // eslint-disable-next-line no-console
-        this.service.init().catch(console.error);
+        this.incomingRecommendationController = new IncomingRecommendationController({
+            service: this.incomingRecommendationService
+        });
+
+        if (labs.isSet('recommendations')) {
+            this.service.init().catch(logging.error);
+            this.incomingRecommendationService.init().catch(logging.error);
+        }
+
+        const PATH_SUFFIX = '/.well-known/recommendations.json';
+
+        function isRecommendationUrl(url) {
+            return url.pathname.endsWith(PATH_SUFFIX);
+        }
 
         // Add mapper to WebmentionMetadata
         mentions.metadata.addMapper((url) => {
-            const p = '/.well-known/recommendations.json';
-            if (url.pathname.endsWith(p)) {
+            if (isRecommendationUrl(url)) {
                 // Strip p
                 const newUrl = new URL(url.toString());
-                newUrl.pathname = newUrl.pathname.slice(0, -p.length);
+                newUrl.pathname = newUrl.pathname.slice(0, -PATH_SUFFIX.length);
                 return newUrl;
+            }
+        });
+
+        // Listen for incoming webmentions
+        DomainEvents.subscribe(MentionCreatedEvent, async (event) => {
+            if (labs.isSet('recommendations')) {
+                // Check if this is a recommendation
+                if (event.data.mention.verified && isRecommendationUrl(event.data.mention.source)) {
+                    logging.info('[INCOMING RECOMMENDATION] Received recommendation from ' + event.data.mention.source);
+                    await this.incomingRecommendationService.sendRecommendationEmail(event.data.mention);
+                }
             }
         });
     }

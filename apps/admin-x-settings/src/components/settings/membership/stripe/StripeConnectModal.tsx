@@ -13,6 +13,7 @@ import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {JSONError} from '../../../../utils/errors';
@@ -55,6 +56,7 @@ const Connect: React.FC = () => {
     });
     const {mutateAsync: editTier} = useEditTier();
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     const onTokenChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setToken(event.target.value);
@@ -63,7 +65,7 @@ const Connect: React.FC = () => {
 
     const saveTier = async () => {
         const {data} = await fetchActiveTiers();
-        const tier = data?.tiers[0];
+        const tier = data?.pages[0].tiers[0];
 
         if (tier) {
             tier.monthly_price = 500;
@@ -86,7 +88,8 @@ const Connect: React.FC = () => {
                         // no-op: will try saving again as stripe is not ready
                         continue;
                     } else {
-                        throw e;
+                        handleError(e);
+                        return;
                     }
                 }
             }
@@ -111,8 +114,10 @@ const Connect: React.FC = () => {
                 if (e instanceof JSONError && e.data?.errors) {
                     setError('Invalid secure key');
                     return;
+                } else {
+                    handleError(e);
+                    return;
                 }
-                throw error;
             }
         } else {
             setError('Please enter a secure key');
@@ -148,7 +153,7 @@ const Connect: React.FC = () => {
 
 const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     const {settings} = useGlobalData();
-    const [stripeConnectAccountName, stripeConnectLivemode] = getSettingValues(settings, ['stripe_connect_account_name', 'stripe_connect_livemode']);
+    const [stripeConnectAccountName, stripeConnectLivemode] = getSettingValues(settings, ['stripe_connect_display_name', 'stripe_connect_livemode']);
 
     const {refetch: fetchMembers, isFetching: isFetchingMembers} = useBrowseMembers({
         searchParams: {filter: 'status:paid', limit: '0'},
@@ -156,6 +161,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
     });
 
     const {mutateAsync: deleteStripeSettings} = useDeleteStripeSettings();
+    const handleError = useHandleError();
 
     const openDisconnectStripeModal = async () => {
         const {data} = await fetchMembers();
@@ -164,20 +170,18 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
         // const hasActiveStripeSubscriptions = false; //...
         // this.ghostPaths.url.api('/members/') + '?filter=status:paid&limit=0';
         NiceModal.show(ConfirmationModal, {
-            title: 'Are you sure you want to disconnect?',
-            prompt: <>
-                {hasActiveStripeSubscriptions && <p className="text-red">
-                    Cannot disconnect while there are members with active Stripe subscriptions.
-                </p>}
-
-                You&lsquo;re about to disconnect your Stripe account {stripeConnectAccountName}
-                from this site. This will automatically turn off paid memberships on this site.
-            </>,
+            title: 'Disconnect Stripe',
+            prompt: (hasActiveStripeSubscriptions ? 'Cannot disconnect while there are members with active Stripe subscriptions.' : <>You&lsquo;re about to disconnect your Stripe account {stripeConnectAccountName}
+                from this site. This will automatically turn off paid memberships on this site.</>),
             okLabel: hasActiveStripeSubscriptions ? '' : 'Disconnect',
             onOk: async (modal) => {
-                await deleteStripeSettings(null);
-                modal?.remove();
-                onClose?.();
+                try {
+                    await deleteStripeSettings(null);
+                    modal?.remove();
+                    onClose?.();
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -194,7 +198,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
                     <img alt='Stripe Logo' className='absolute right-10 h-16 w-16 rounded-2xl shadow-[-1.5px_0_0_1.5px_#fff] dark:shadow-[-1.5px_0_0_1.5px_black]' src={StripeLogo} />
                 </div>
                 <Heading className='text-center' level={3}>You are connected with Stripe!{stripeConnectLivemode ? null : ' (Test mode)'}</Heading>
-                <div className='mt-1'>Connected to <strong>Dummy</strong></div>
+                <div className='mt-1'>Connected to <strong>{stripeConnectAccountName ? stripeConnectAccountName : 'Test mode'}</strong></div>
             </div>
             <div className='flex flex-col items-center'>
                 <Heading level={6}>Read next</Heading>
@@ -288,7 +292,7 @@ const StripeConnectModal: React.FC = () => {
             updateRoute('tiers');
         }}
         cancelLabel=''
-        footer={<></>}
+        footer={<div className='mt-8'></div>}
         size={stripeConnectAccountId ? 740 : 520}
         testId='stripe-modal'
         title=''

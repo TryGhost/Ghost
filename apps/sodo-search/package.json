@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -84,10 +84,10 @@
   "devDependencies": {
     "@testing-library/jest-dom": "5.16.5",
     "@testing-library/react": "12.1.5",
-    "@vitejs/plugin-react": "4.0.4",
+    "@vitejs/plugin-react": "4.1.0",
     "nock": "13.3.3",
-    "vite": "4.4.9",
-    "vite-plugin-svgr": "3.2.0",
+    "vite": "4.5.0",
+    "vite-plugin-svgr": "3.3.0",
     "vitest": "0.34.3"
   }
 }

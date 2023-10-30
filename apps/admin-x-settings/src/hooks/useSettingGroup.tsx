@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import useForm, {ErrorMessages, SaveState} from './useForm';
 import useGlobalDirtyState from './useGlobalDirtyState';
+import useHandleError from '../utils/api/handleError';
 import {Setting, SettingValue, useEditSettings} from '../api/settings';
 import {SiteData} from '../api/site';
 import {showToast} from '../admin-x-ds/global/Toast';
@@ -32,6 +33,7 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}):
 
     const {siteData, settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     const [isEditing, setEditing] = useState(false);
 
@@ -40,6 +42,7 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}):
         onSave: async () => {
             await editSettings?.(changedSettings());
         },
+        onSaveError: handleError,
         onValidate
     });
 
@@ -86,9 +89,15 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}):
 
     // function to update the local state
     const updateSetting = (key: string, value: SettingValue) => {
-        updateForm(state => state.map(setting => (
-            setting.key === key ? {...setting, value, dirty: true} : setting
-        )));
+        updateForm((state) => {
+            if (state.some(setting => setting.key === key)) {
+                return state.map(setting => (
+                    setting.key === key ? {...setting, value, dirty: true} : setting
+                ));
+            } else {
+                return [...state, {key, value, dirty: true}];
+            }
+        });
     };
 
     return {

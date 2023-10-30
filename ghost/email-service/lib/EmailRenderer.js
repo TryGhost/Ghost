@@ -622,6 +622,19 @@ class EmailRenderer {
             }
         ];
 
+        if (this.#labs.isSet('listUnsubscribeHeader')) {
+            baseDefinitions.push(
+                {
+                    id: 'list_unsubscribe',
+                    getValue: (member) => {
+                        // Same URL
+                        return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
+                    },
+                    required: true // Used in email headers
+                }
+            );
+        }
+
         // Now loop through all the definenitions to see which ones are actually used + to add fallbacks if needed
         const EMAIL_REPLACEMENT_REGEX = /%%\{(.*?)\}%%/g;
         const REPLACEMENT_STRING_REGEX = /^(?<recipientProperty>\w+?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?$/;
@@ -654,6 +667,18 @@ class EmailRenderer {
             }
         }
 
+        // Add all required replacements
+        for (const definition of baseDefinitions) {
+            if (definition.required && !replacements.find(r => r.id === definition.id)) {
+                replacements.push({
+                    id: definition.id,
+                    originalId: definition.id,
+                    token: new RegExp(`%%\\{${definition.id}\\}%%`, 'g'),
+                    getValue: definition.getValue
+                });
+            }
+        }
+
         // Now loop any replacements with possible invalid characters and replace them with a clean id
         let counter = 1;
         for (const replacement of replacements) {
@@ -668,7 +693,7 @@ class EmailRenderer {
     }
 
     async renderTemplate(data) {
-        this.#handlebars = require('handlebars');
+        this.#handlebars = require('handlebars').create();
 
         // Helpers
         this.#handlebars.registerHelper('if', function (conditional, options) {

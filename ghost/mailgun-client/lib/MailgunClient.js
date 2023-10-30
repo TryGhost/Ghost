@@ -26,8 +26,8 @@ module.exports = class MailgunClient {
      * {
      *     'test@example.com': {
      *         name: 'Test User',
-     *         unique_id: '12345abcde',
-     *         unsubscribe_url: 'https://example.com/unsub/me'
+     *         unsubscribe_url: 'https://example.com/unsub/me',
+     *         list_unsubscribe: 'https://example.com/unsub/me'
      *     }
      * }
      */
@@ -69,6 +69,13 @@ module.exports = class MailgunClient {
                 text: messageContent.plaintext,
                 'recipient-variables': JSON.stringify(recipientData)
             };
+
+            // Do we have a custom List-Unsubscribe header set?
+            // (we need a variable for this, as this is a per-email setting)
+            if (Object.keys(recipientData)[0] && recipientData[Object.keys(recipientData)[0]].list_unsubscribe) {
+                messageData['h:List-Unsubscribe'] = '<%unsubscribe_email%>, <%recipient.list_unsubscribe%>';
+                messageData['h:List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+            }
 
             // add a reference to the original email record for easier mapping of mailgun event -> email
             if (message.id) {
@@ -311,7 +318,7 @@ module.exports = class MailgunClient {
      * Returns configured batch size
      *
      * @returns {number}
-     */ 
+     */
     getBatchSize() {
         return this.#config.get('bulkEmail')?.batchSize ?? this.DEFAULT_BATCH_SIZE;
     }

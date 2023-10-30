@@ -38,8 +38,11 @@ type HeadingLabelProps = {
     level?: never,
     grey?: boolean } & HeadingBaseProps & React.LabelHTMLAttributes<HTMLLabelElement>
 
-export const Heading6Styles = 'text-2xs font-semibold uppercase tracking-wider';
-export const Heading6StylesGrey = 'text-2xs font-semibold uppercase tracking-wider text-grey-800 dark:text-grey-500';
+export const Heading6Styles = clsx('text-xs font-semibold tracking-normal');
+export const Heading6StylesGrey = clsx(
+    Heading6Styles,
+    'text-grey-900 dark:text-grey-500'
+);
 
 const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = ({
     level = 1,
@@ -57,7 +60,7 @@ const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = 
     if (!useLabelTag) {
         switch (level) {
         case 1:
-            styles += ' md:text-5xl leading-tight';
+            styles += ' md:text-5xl leading-tighter';
             break;
         case 2:
             styles += ' md:text-3xl';

@@ -1,16 +1,32 @@
 .kg-collection-card {
     width: 100%;
+    margin-top: 6vmin;
+}
+
+.kg-collection-card + * { 
+    margin-top: 6vmin; 
 }
 
 .kg-collection-card-title {
-    padding: .8rem 0 1.6rem 0;
+    margin: .8rem 0 1.6rem 0;
     font-size: 1.5rem;
+    font-weight: 700;
     text-transform: uppercase;
 }
 
+a.kg-collection-card-post-wrapper {
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+a.kg-collection-card-post-wrapper:hover {
+    opacity: 1;
+}
+
+
 .kg-collection-card-post {
     display: flex;
-    gap: 2rem;
+    gap: 3.2rem;
 }
 
 .kg-collection-card-img {
@@ -26,14 +42,20 @@
     object-fit: cover;
 }
 
+a.kg-collection-card-post-wrapper:hover img {
+    opacity: .92;
+    transition: all .2s ease;
+}
+
 .kg-collection-card-content {
     display: flex;
     flex-direction: column;
-    font-size: 1.45rem;
+    font-size: 1.6rem;
 }
 
 h2.kg-collection-card-post-title {
-    font-size: 1.9rem;
+    margin: 0;
+    font-size: 2.4rem;
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -41,7 +63,7 @@ h2.kg-collection-card-post-title {
 }
 
 p.kg-collection-card-post-excerpt {
-    margin-top: .8rem;
+    margin-top: 1.2rem;
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -52,7 +74,9 @@ p.kg-collection-card-post-excerpt {
 .kg-collection-card-post-meta {
     display: flex;
     opacity: .5;
-    margin-top: .8rem;
+    margin-top: 1.2rem;
+    font-size: 1.3rem;
+    font-weight: 500;
 }
 
 /* List layout */
@@ -60,7 +84,7 @@ p.kg-collection-card-post-excerpt {
 .kg-collection-card-list {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 3.2rem;
 }
 
 @media (max-width: 767px) {
@@ -153,6 +177,10 @@ p.kg-collection-card-post-excerpt {
     font-size: 1.7rem;
 }
 
+.kg-collection-card-grid .kg-collection-card-post-meta {
+    font-size: 1.25rem;
+}
+
 @media (min-width: 640px) {
     .kg-collection-card-grid h2.kg-collection-card-post-title {
         font-size: 1.9rem;
@@ -161,13 +189,11 @@ p.kg-collection-card-post-excerpt {
     .kg-collection-card-grid.columns-1 h2.kg-collection-card-post-title {
         font-size: 2.4rem;
     }
-}
 
-/* @media (min-width: 768px) {
-    .kg-collection-card-grid.columns-1 h2.kg-collection-card-post-title {
-        font-size: 2.4rem;
+    .kg-collection-card-grid:not(.columns-3):not(.columns-4) .kg-collection-card-post-meta {
+        font-size: 1.3rem;
     }
-} */
+}
 
 @media (min-width: 1024px) {
     .kg-collection-card-grid.columns-1 h2.kg-collection-card-post-title {
@@ -176,6 +202,10 @@ p.kg-collection-card-post-excerpt {
 
     .kg-collection-card-grid.columns-2 h2.kg-collection-card-post-title {
         font-size: 2.4rem;
+    }
+
+    .kg-collection-card-grid.columns-1 .kg-collection-card-post-meta {
+        font-size: 1.4rem;
     }
 }
 

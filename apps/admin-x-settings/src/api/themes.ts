@@ -1,4 +1,5 @@
-import {createMutation, createQuery} from '../utils/apiRequests';
+import {OfficialTheme} from '../components/providers/ServiceProvider';
+import {createMutation, createQuery} from '../utils/api/hooks';
 import {customThemeSettingsDataType} from './customThemeSettings';
 
 // Types
@@ -15,7 +16,7 @@ export type Theme = {
 }
 
 export type InstalledTheme = Theme & {
-    errors?: ThemeProblem<'error'>[];
+    gscan_errors?: ThemeProblem<'error'>[];
     warnings?: ThemeProblem<'warning'>[];
 }
 
@@ -54,6 +55,7 @@ export const useActivateTheme = createMutation<ThemesResponseType, string>({
     path: name => `/themes/${name}/activate/`,
     updateQueries: {
         dataType,
+        emberUpdateType: 'createOrUpdate',
         update: (newData: ThemesResponseType, currentData: unknown) => ({
             ...(currentData as ThemesResponseType),
             themes: (currentData as ThemesResponseType).themes.map((theme) => {
@@ -77,6 +79,7 @@ export const useDeleteTheme = createMutation<unknown, string>({
     path: name => `/themes/${name}/`,
     updateQueries: {
         dataType,
+        emberUpdateType: 'delete',
         update: (_, currentData, name) => ({
             ...(currentData as ThemesResponseType),
             themes: (currentData as ThemesResponseType).themes.filter(theme => theme.name !== name)
@@ -90,6 +93,7 @@ export const useInstallTheme = createMutation<ThemesInstallResponseType, string>
     searchParams: repo => ({source: 'github', ref: repo}),
     updateQueries: {
         dataType,
+        emberUpdateType: 'createOrUpdate',
         // Assume that all invite queries should include this new one
         update: (newData, currentData) => (currentData && {
             ...(currentData as ThemesResponseType),
@@ -111,6 +115,7 @@ export const useUploadTheme = createMutation<ThemesInstallResponseType, {file: F
     },
     updateQueries: {
         dataType,
+        emberUpdateType: 'createOrUpdate',
         // Assume that all invite queries should include this new one
         update: (newData, currentData) => (currentData && {
             ...(currentData as ThemesResponseType),
@@ -128,10 +133,18 @@ export function isActiveTheme(theme: Theme): boolean {
     return theme.active;
 }
 
-export function isDefaultTheme(theme: Theme): boolean {
-    return theme.name === 'casper';
+export function isDefaultTheme(theme: Theme | OfficialTheme): boolean {
+    return theme.name.toLowerCase() === 'source';
+}
+
+export function isLegacyTheme(theme: Theme | OfficialTheme): boolean {
+    return theme.name.toLowerCase() === 'casper';
+}
+
+export function isDefaultOrLegacyTheme(theme: Theme | OfficialTheme): boolean {
+    return isDefaultTheme(theme) || isLegacyTheme(theme);
 }
 
 export function isDeletableTheme(theme: Theme): boolean {
-    return !isDefaultTheme(theme) && !isActiveTheme(theme);
+    return !isDefaultTheme(theme) && !isLegacyTheme(theme) && !isActiveTheme(theme);
 }

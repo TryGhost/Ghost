@@ -1,4 +1,4 @@
-import {getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed} from './helpers';
+import {getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast} from './helpers';
 import * as Fixtures from './fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from '../utils/test-fixtures';
 import {isComplimentaryMember} from '../utils/helpers';
@@ -402,6 +402,63 @@ describe('Helpers - ', () => {
             });
 
             expect(actual.length).toBe(0);
+        });
+    });
+
+    describe('getCompExpiry', () => {
+        let member = {};
+
+        beforeEach(() => {
+            member = {
+                paid: true,
+                subscriptions: [
+                    {
+                        status: 'active',
+                        price: {
+                            amount: 0
+                        },
+                        tier: {
+                            expiry_at: '2023-10-13T00:00:00.000Z'
+                        }
+                    }
+                ]
+            };
+        });
+
+        it('returns the expiry date of a comped subscription', () => {
+            expect(getCompExpiry({member})).toEqual('13 Oct 2023');
+        });
+
+        it('returns the expiry date of a comped subscription if the member has multiple subscriptions', () => {
+            member.subscriptions.push({
+                status: 'cancelled',
+                price: {
+                    amount: 1234
+                },
+                tier: {
+                    expiry_at: '2023-10-14T00:00:00.000Z'
+                }
+            });
+            expect(getCompExpiry({member})).toEqual('13 Oct 2023');
+        });
+
+        it('returns an empty string if the subscription has no expiry date', () => {
+            delete member.subscriptions[0].tier.expiry_at;
+
+            expect(getCompExpiry({member})).toEqual('');
+        });
+    });
+
+    describe('isInThePast', () => {
+        it('returns a boolean indicating if the provided date is in the past', () => {
+            const pastDate = new Date();
+            pastDate.setDate(pastDate.getDate() - 1);
+
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 1);
+
+            expect(isInThePast(pastDate)).toEqual(true);
+            expect(isInThePast(futureDate)).toEqual(false);
         });
     });
 });

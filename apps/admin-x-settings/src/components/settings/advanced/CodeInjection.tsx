@@ -8,6 +8,7 @@ import TabView from '../../../admin-x-ds/global/TabView';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -47,12 +48,12 @@ const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'header',
             title: 'Site header',
-            contents: (<CodeEditor {...headerProps} ref={headerEditorRef} data-testid='header-code' autoFocus />)
+            contents: (<CodeEditor {...headerProps} ref={headerEditorRef} className='mt-2' data-testid='header-code' autoFocus />)
         },
         {
             id: 'footer',
             title: 'Site footer',
-            contents: (<CodeEditor {...footerProps} ref={footerEditorRef} data-testid='footer-code' />)
+            contents: (<CodeEditor {...footerProps} ref={footerEditorRef} className='mt-2' data-testid='footer-code' />)
         }
     ] as const;
 
@@ -93,4 +94,4 @@ const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default CodeInjection;
+export default withErrorBoundary(CodeInjection, 'Code injection');

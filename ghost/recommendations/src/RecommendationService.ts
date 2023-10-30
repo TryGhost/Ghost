@@ -1,14 +1,13 @@
-import {BookshelfRepository, OrderOption} from '@tryghost/bookshelf-repository';
-import {AddRecommendation, Recommendation} from './Recommendation';
-import {RecommendationRepository} from './RecommendationRepository';
-import {WellknownService} from './WellknownService';
+import {IncludeOption, OrderOption} from '@tryghost/bookshelf-repository';
 import errors from '@tryghost/errors';
+import {InMemoryRepository} from '@tryghost/in-memory-repository';
+import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
 import {ClickEvent} from './ClickEvent';
+import {AddRecommendation, Recommendation, RecommendationPlain} from './Recommendation';
+import {RecommendationRepository} from './RecommendationRepository';
 import {SubscribeEvent} from './SubscribeEvent';
-import {EntityWithIncludes} from './EntityWithIncludes';
-
-export type RecommendationInclude = 'count.clicks'|'count.subscribers';
+import {WellknownService} from './WellknownService';
 
 type MentionSendingService = {
     sendAll(options: {url: URL, links: URL[]}): Promise<void>
@@ -25,8 +24,8 @@ const messages = {
 
 export class RecommendationService {
     repository: RecommendationRepository;
-    clickEventRepository: BookshelfRepository<string, ClickEvent>;
-    subscribeEventRepository: BookshelfRepository<string, SubscribeEvent>;
+    clickEventRepository: InMemoryRepository<string, ClickEvent>;
+    subscribeEventRepository: InMemoryRepository<string, SubscribeEvent>;
 
     wellknownService: WellknownService;
     mentionSendingService: MentionSendingService;
@@ -34,11 +33,11 @@ export class RecommendationService {
 
     constructor(deps: {
         repository: RecommendationRepository,
-        clickEventRepository: BookshelfRepository<string, ClickEvent>,
-        subscribeEventRepository: BookshelfRepository<string, SubscribeEvent>,
+        clickEventRepository: InMemoryRepository<string, ClickEvent>,
+        subscribeEventRepository: InMemoryRepository<string, SubscribeEvent>,
         wellknownService: WellknownService,
         mentionSendingService: MentionSendingService,
-        recommendationEnablerService: RecommendationEnablerService,
+        recommendationEnablerService: RecommendationEnablerService
     }) {
         this.repository = deps.repository;
         this.wellknownService = deps.wellknownService;
@@ -49,7 +48,7 @@ export class RecommendationService {
     }
 
     async init() {
-        const recommendations = (await this.listRecommendations()).map(r => r.entity);
+        const recommendations = await this.#listRecommendations();
         await this.updateWellknown(recommendations);
     }
 
@@ -74,10 +73,24 @@ export class RecommendationService {
             links: [
                 recommendation.url
             ]
-        }).catch(console.error); // eslint-disable-line no-console
+        }).catch((err) => {
+            logging.error('Failed to send mention to recommendation', err);
+        });
     }
 
-    async addRecommendation(addRecommendation: AddRecommendation) {
+    async readRecommendation(id: string): Promise<RecommendationPlain> {
+        const recommendation = await this.repository.getById(id);
+
+        if (!recommendation) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.notFound, {id})
+            });
+        }
+
+        return recommendation.plain;
+    }
+
+    async addRecommendation(addRecommendation: AddRecommendation): Promise<RecommendationPlain> {
         const recommendation = Recommendation.create(addRecommendation);
 
         // If a recommendation with this URL already exists, throw an error
@@ -90,16 +103,16 @@ export class RecommendationService {
 
         await this.repository.save(recommendation);
 
-        const recommendations = (await this.listRecommendations()).map(r => r.entity);
+        const recommendations = await this.#listRecommendations();
         await this.updateWellknown(recommendations);
         await this.updateRecommendationsEnabledSetting(recommendations);
 
         // Only send an update for the mentioned URL
         this.sendMentionToRecommendation(recommendation);
-        return EntityWithIncludes.create<Recommendation, RecommendationInclude>(recommendation);
+        return recommendation.plain;
     }
 
-    async editRecommendation(id: string, recommendationEdit: Partial<Recommendation>) {
+    async editRecommendation(id: string, recommendationEdit: Partial<Recommendation>): Promise<RecommendationPlain> {
         // Check if it exists
         const existing = await this.repository.getById(id);
         if (!existing) {
@@ -111,11 +124,11 @@ export class RecommendationService {
         existing.edit(recommendationEdit);
         await this.repository.save(existing);
 
-        const recommendations = (await this.listRecommendations()).map(r => r.entity);
+        const recommendations = await this.#listRecommendations();
         await this.updateWellknown(recommendations);
 
         this.sendMentionToRecommendation(existing);
-        return EntityWithIncludes.create<Recommendation, RecommendationInclude>(existing);
+        return existing.plain;
     }
 
     async deleteRecommendation(id: string) {
@@ -129,7 +142,7 @@ export class RecommendationService {
         existing.delete();
         await this.repository.save(existing);
 
-        const recommendations = (await this.listRecommendations()).map(r => r.entity);
+        const recommendations = await this.#listRecommendations();
         await this.updateWellknown(recommendations);
         await this.updateRecommendationsEnabledSetting(recommendations);
 
@@ -137,71 +150,25 @@ export class RecommendationService {
         this.sendMentionToRecommendation(existing);
     }
 
-    async listRecommendations({page, limit, filter, order, include}: { page: number; limit: number | 'all', filter?: string, order?: OrderOption<Recommendation>, include?: RecommendationInclude[] } = {page: 1, limit: 'all'}): Promise<EntityWithIncludes<Recommendation, RecommendationInclude>[]> {
-        let list: Recommendation[];
-        if (limit === 'all') {
-            list = await this.repository.getAll({filter, order});
-        } else {
-            list = await this.repository.getPage({page, limit, filter, order});
+    /**
+     * Sames as listRecommendations, but returns Entities instead of plain objects (Entities are only used internally)
+     */
+    async #listRecommendations(options: { filter?: string; order?: OrderOption<Recommendation>; page?: number; limit?: number|'all', include?: IncludeOption<Recommendation> } = {page: 1, limit: 'all'}): Promise<Recommendation[]> {
+        if (options.limit === 'all') {
+            return await this.repository.getAll({
+                ...options
+            });
         }
-
-        // Transform to includes
-        const entities = list.map(entity => EntityWithIncludes.create<Recommendation, RecommendationInclude>(entity));
-        await this.loadRelations(entities, include);
-        return entities;
+        return await this.repository.getPage({
+            ...options,
+            page: options.page || 1,
+            limit: options.limit || 15
+        });
     }
 
-    async loadRelations(list: EntityWithIncludes<Recommendation, RecommendationInclude>[], include?: RecommendationInclude[]) {
-        if (!include || !include.length) {
-            return;
-        }
-
-        if (list.length === 0) {
-            // Avoid doing queries with broken filters
-            return;
-        }
-
-        for (const relation of include) {
-            switch (relation) {
-            case 'count.clicks':
-                const clickCounts = await this.clickEventRepository.getGroupedCount({groupBy: 'recommendationId', filter: `recommendationId:[${list.map(entity => entity.entity.id).join(',')}]`});
-
-                // Set all to zero by default
-                for (const entity of list) {
-                    entity.setInclude(relation, 0);
-                }
-
-                for (const r of clickCounts) {
-                    const entity = list.find(e => e.entity.id === r.recommendationId);
-                    if (entity) {
-                        entity.setInclude(relation, r.count);
-                    }
-                }
-
-                break;
-
-            case 'count.subscribers':
-                const subscribersCounts = await this.subscribeEventRepository.getGroupedCount({groupBy: 'recommendationId', filter: `recommendationId:[${list.map(entity => entity.entity.id).join(',')}]`});
-
-                // Set all to zero by default
-                for (const entity of list) {
-                    entity.setInclude(relation, 0);
-                }
-
-                for (const r of subscribersCounts) {
-                    const entity = list.find(e => e.entity.id === r.recommendationId);
-                    if (entity) {
-                        entity.setInclude(relation, r.count);
-                    }
-                }
-
-                break;
-            default:
-                // Should create a Type compile error in case we didn't catch all relations
-                const r: never = relation;
-                console.error(`Unknown relation ${r}`); // eslint-disable-line no-console
-            }
-        }
+    async listRecommendations(options: { filter?: string; order?: OrderOption<Recommendation>; page?: number; limit?: number|'all', include?: IncludeOption<Recommendation> } = {page: 1, limit: 'all', include: []}): Promise<RecommendationPlain[]> {
+        const list = await this.#listRecommendations(options);
+        return list.map(e => e.plain);
     }
 
     async countRecommendations({filter}: { filter?: string }) {
@@ -216,5 +183,14 @@ export class RecommendationService {
     async trackSubscribed({id, memberId}: { id: string, memberId: string }) {
         const subscribeEvent = SubscribeEvent.create({recommendationId: id, memberId});
         await this.subscribeEventRepository.save(subscribeEvent);
+    }
+
+    async readRecommendationByUrl(url: URL): Promise<RecommendationPlain|null> {
+        const recommendation = await this.repository.getByUrl(url);
+
+        if (!recommendation) {
+            return null;
+        }
+        return recommendation.plain;
     }
 }

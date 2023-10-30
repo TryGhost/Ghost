@@ -9,6 +9,10 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 import {confirmIfDirty} from '../../../utils/modals';
 import {currencySelectGroups, getSymbol, validateCurrencyAmount} from '../../../utils/currency';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+
+// Stripe doesn't allow amounts over 10,000 as a preset amount
+const MAX_AMOUNT = 10_000;
 
 const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -27,7 +31,7 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     } = useSettingGroup({
         onValidate: () => {
             return {
-                donationsSuggestedAmount: validateCurrencyAmount(suggestedAmountInCents, donationsCurrency)
+                donationsSuggestedAmount: validateCurrencyAmount(suggestedAmountInCents, donationsCurrency, {maxAmount: MAX_AMOUNT})
             };
         }
     });
@@ -73,7 +77,7 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <div className='w-100'>
                             <div className='flex items-center gap-2'>
                                 <Heading level={6}>Shareable link &mdash;</Heading>
-                                <button className='text-2xs font-semibold uppercase tracking-wider text-green' type="button" onClick={openPreview}>Preview</button>
+                                <button className='text-xs tracking-wide text-green' type="button" onClick={openPreview}>Preview</button>
                             </div>
                             <div className='w-100 group relative -m-1 mt-0 overflow-hidden rounded p-1 hover:bg-grey-50 dark:hover:bg-grey-900'>
                                 {donateUrl}
@@ -98,10 +102,14 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 rightPlaceholder={(
                     <Select
                         border={false}
+                        containerClassName='w-14'
+                        fullWidth={false}
                         options={currencySelectGroups()}
-                        selectClassName='w-auto'
-                        selectedOption={donationsCurrency}
-                        onSelect={currency => updateSetting('donations_currency', currency)}
+                        selectedOption={currencySelectGroups().flatMap(group => group.options).find(option => option.value === donationsCurrency)}
+                        title='Currency'
+                        hideTitle
+                        isSearchable
+                        onSelect={option => updateSetting('donations_currency', option?.value || 'USD')}
                     />
                 )}
                 title='Suggested amount'
@@ -131,4 +139,4 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default TipsOrDonations;
+export default withErrorBoundary(TipsOrDonations, 'Tips or donations');

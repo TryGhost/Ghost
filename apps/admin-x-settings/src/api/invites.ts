@@ -1,4 +1,4 @@
-import {Meta, createMutation, createQuery} from '../utils/apiRequests';
+import {Meta, createMutation, createQuery} from '../utils/api/hooks';
 
 export interface UserInvite {
     created_at: string;
@@ -20,7 +20,8 @@ const dataType = 'InvitesResponseType';
 
 export const useBrowseInvites = createQuery<InvitesResponseType>({
     dataType,
-    path: '/invites/'
+    path: '/invites/',
+    permissions: ['Owner', 'Administrator']
 });
 
 export const useAddInvite = createMutation<InvitesResponseType, {email: string, roleId: string}>({
@@ -37,6 +38,7 @@ export const useAddInvite = createMutation<InvitesResponseType, {email: string, 
     }),
     updateQueries: {
         dataType,
+        emberUpdateType: 'createOrUpdate',
         // Assume that all invite queries should include this new one
         update: (newData, currentData) => (currentData && {
             ...(currentData as InvitesResponseType),
@@ -53,6 +55,7 @@ export const useDeleteInvite = createMutation<unknown, string>({
     method: 'DELETE',
     updateQueries: {
         dataType,
+        emberUpdateType: 'delete',
         update: (_, currentData, id) => ({
             ...(currentData as InvitesResponseType),
             invites: (currentData as InvitesResponseType).invites.filter(invite => invite.id !== id)

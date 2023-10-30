@@ -91,8 +91,9 @@ export function allowCompMemberUpgrade({member}) {
 }
 
 export function getCompExpiry({member}) {
-    if (member?.subscriptions?.[0]?.tier?.expiry_at) {
-        return getDateString(member.subscriptions[0].tier.expiry_at);
+    const subscription = getMemberSubscription({member});
+    if (subscription?.tier?.expiry_at) {
+        return getDateString(subscription.tier.expiry_at);
     }
     return '';
 }
@@ -555,15 +556,7 @@ export function subscriptionHasFreeTrial({sub} = {}) {
 }
 
 export function isInThePast(date) {
-    const today = new Date();
-
-    // 👇️ OPTIONAL!
-    // This line sets the hour of the current date to midnight
-    // so the comparison only returns `true` if the passed in date
-    // is at least yesterday
-    today.setHours(0, 0, 0, 0);
-
-    return date < today;
+    return date < new Date();
 }
 
 export function getProductFromPrice({site, priceId}) {

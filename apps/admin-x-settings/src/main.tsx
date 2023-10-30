@@ -2,13 +2,35 @@ import './styles/demo.css';
 import App from './App.tsx';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import {DefaultHeaderTypes} from './unsplash/UnsplashTypes.ts';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
         <App
             externalNavigate={() => {}}
+            fetchKoenigLexical={() => {
+                return Promise.resolve();
+            }}
             ghostVersion='5.x'
             officialThemes={[{
+                name: 'Source',
+                category: 'News',
+                previewUrl: 'https://source.ghost.io/',
+                ref: 'default',
+                image: 'assets/img/themes/Source.png',
+                variants: [
+                    {
+                        category: 'Magazine',
+                        previewUrl: 'https://source-magazine.ghost.io/',
+                        image: 'assets/img/themes/Source-Magazine.png'
+                    },
+                    {
+                        category: 'Newsletter',
+                        previewUrl: 'https://source-newsletter.ghost.io/',
+                        image: 'assets/img/themes/Source-Newsletter.png'
+                    }
+                ]
+            }, {
                 name: 'Casper',
                 category: 'Blog',
                 previewUrl: 'https://demo.ghost.io/',
@@ -29,7 +51,12 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 ref: 'TryGhost/Edition',
                 image: 'assets/img/themes/Edition.png'
             }]}
+            sentryDSN={null}
+            unsplashConfig={{} as DefaultHeaderTypes}
             zapierTemplates={[]}
+            onDelete={() => {}}
+            onInvalidate={() => {}}
+            onUpdate={() => {}}
         />
     </React.StrictMode>
 );

@@ -131,17 +131,19 @@ class OEmbedService {
 
     /**
      * @param {string} url
+     * @param {Object} options
      *
      * @returns {Promise<{url: string, body: string, contentType: string|undefined}>}
      */
-    async fetchPageHtml(url) {
+    async fetchPageHtml(url, options = {}) {
         // Fetch url and get response as binary buffer to
         // avoid implicit cast
         let {headers, body, url: responseUrl} = await this.fetchPage(
             url,
             {
                 encoding: 'binary',
-                responseType: 'buffer'
+                responseType: 'buffer',
+                ...options
             });
 
         try {
@@ -230,7 +232,12 @@ class OEmbedService {
         let scraperResponse;
 
         try {
-            scraperResponse = await metascraper({html, url});
+            scraperResponse = await metascraper({
+                html,
+                url,
+                // In development, allow non-standard tlds
+                validateUrl: this.config.get('env') !== 'development'
+            });
         } catch (err) {
             // Log to avoid being blind to errors happenning in metascraper
             logging.error(err);
@@ -328,10 +335,12 @@ class OEmbedService {
     /**
      * @param {string} url - oembed URL
      * @param {string} type - card type
+     * @param {Object} [options] Specific fetch options
+     * @param {number} [options.timeout] Change the default timeout for fetching html
      *
      * @returns {Promise<Object>}
      */
-    async fetchOembedDataFromUrl(url, type) {
+    async fetchOembedDataFromUrl(url, type, options = {}) {
         try {
             const urlObject = new URL(url);
 
@@ -358,7 +367,7 @@ class OEmbedService {
             }
 
             // Not in the list, we need to fetch the content
-            const {url: pageUrl, body, contentType} = await this.fetchPageHtml(url);
+            const {url: pageUrl, body, contentType} = await this.fetchPageHtml(url, options);
 
             // fetch only bookmark when explicitly requested
             if (type === 'bookmark') {

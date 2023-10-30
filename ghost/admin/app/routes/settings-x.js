@@ -3,16 +3,9 @@ import {inject as service} from '@ember/service';
 
 export default class SettingsXRoute extends AuthenticatedRoute {
     @service session;
+    @service feature;
     @service ui;
     @service modals;
-
-    beforeModel() {
-        super.beforeModel(...arguments);
-
-        if (!this.config.adminX?.url) {
-            return this.router.transitionTo('settings');
-        }
-    }
 
     activate() {
         super.activate(...arguments);

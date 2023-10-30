@@ -1,90 +1,31 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {EntityWithIncludes} from './EntityWithIncludes';
-import {AddRecommendation, EditRecommendation, Recommendation} from './Recommendation';
-import {RecommendationInclude, RecommendationService} from './RecommendationService';
 import errors from '@tryghost/errors';
+import {AddRecommendation, Recommendation, RecommendationPlain} from './Recommendation';
+import {RecommendationService} from './RecommendationService';
+import {UnsafeData} from './UnsafeData';
+import {OrderOption} from '@tryghost/bookshelf-repository';
 
 type Frame = {
-    data: any,
-    options: any,
-    user: any,
-    member: any,
+    data: unknown,
+    options: unknown,
+    user: unknown,
 };
 
-function validateString(object: any, key: string, {required = true, nullable = false} = {}): string|undefined|null {
-    if (typeof object !== 'object' || object === null) {
-        throw new errors.BadRequestError({message: `${key} must be an object`});
-    }
+const RecommendationIncludesMap = {
+    'count.clicks': 'clickCount' as const,
+    'count.subscribers': 'subscriberCount' as const
+};
 
-    if (nullable && object[key] === null) {
-        return null;
-    }
-
-    if (object[key] !== undefined && object[key] !== null) {
-        if (typeof object[key] !== 'string') {
-            throw new errors.BadRequestError({message: `${key} must be a string`});
-        }
-        return object[key];
-    } else if (required) {
-        throw new errors.BadRequestError({message: `${key} is required`});
-    }
-}
-
-function validateBoolean(object: any, key: string, {required = true} = {}): boolean|undefined {
-    if (typeof object !== 'object' || object === null) {
-        throw new errors.BadRequestError({message: `${key} must be an object`});
-    }
-    if (object[key] !== undefined) {
-        if (typeof object[key] !== 'boolean') {
-            throw new errors.BadRequestError({message: `${key} must be a boolean`});
-        }
-        return object[key];
-    } else if (required) {
-        throw new errors.BadRequestError({message: `${key} is required`});
-    }
-}
-
-function validateURL(object: any, key: string, {required = true, nullable = false} = {}): URL|undefined|null {
-    const string = validateString(object, key, {required, nullable});
-    if (string === null) {
-        return null;
-    }
-    if (string !== undefined) {
-        try {
-            return new URL(string);
-        } catch (e) {
-            throw new errors.BadRequestError({message: `${key} must be a valid URL`});
-        }
-    }
-}
-
-function validateInteger(object: any, key: string, {required = true, nullable = false} = {}): number|undefined|null {
-    if (typeof object !== 'object' || object === null) {
-        throw new errors.BadRequestError({message: `${key} must be an object`});
-    }
-
-    if (nullable && object[key] === null) {
-        return null;
-    }
-
-    if (object[key] !== undefined && object[key] !== null) {
-        if (typeof object[key] === 'string') {
-            // Try to cast to a number
-            const parsed = parseInt(object[key]);
-            if (isNaN(parsed) || !isFinite(parsed)) {
-                throw new errors.BadRequestError({message: `${key} must be a number`});
-            }
-            return parsed;
-        }
-
-        if (typeof object[key] !== 'number') {
-            throw new errors.BadRequestError({message: `${key} must be a number`});
-        }
-        return object[key];
-    } else if (required) {
-        throw new errors.BadRequestError({message: `${key} is required`});
-    }
-}
+const RecommendationOrderMap = {
+    title: 'title' as const,
+    description: 'description' as const,
+    excerpt: 'excerpt' as const,
+    one_click_subscribe: 'oneClickSubscribe' as const,
+    created_at: 'createdAt' as const,
+    updated_at: 'updatedAt' as const,
+    'count.clicks': 'clickCount' as const,
+    'count.subscribers': 'subscriberCount' as const
+};
 
 export class RecommendationController {
     service: RecommendationService;
@@ -93,158 +34,192 @@ export class RecommendationController {
         this.service = deps.service;
     }
 
-    #getFrameId(frame: Frame): string {
-        if (!frame.options) {
-            throw new errors.BadRequestError();
-        }
+    async read(frame: Frame) {
+        const options = new UnsafeData(frame.options);
+        const id = options.key('id').string;
 
-        const id = frame.options.id;
-        if (!id) {
-            throw new errors.BadRequestError();
-        }
+        const recommendation = await this.service.readRecommendation(id);
 
-        return id;
+        return this.#serialize(
+            [recommendation]
+        );
     }
 
-    #getFrameInclude(frame: Frame, allowedIncludes: RecommendationInclude[]): RecommendationInclude[] {
-        if (!frame.options || !frame.options.withRelated) {
-            return [];
+    async add(frame: Frame) {
+        const data = new UnsafeData(frame.data);
+        const recommendation = data.key('recommendations').index(0);
+        const plain: AddRecommendation = {
+            title: recommendation.key('title').string,
+            url: recommendation.key('url').url,
+
+            // Optional fields
+            oneClickSubscribe: recommendation.optionalKey('one_click_subscribe')?.boolean ?? false,
+            description: recommendation.optionalKey('description')?.nullable.string ?? null,
+            excerpt: recommendation.optionalKey('excerpt')?.nullable.string ?? null,
+            featuredImage: recommendation.optionalKey('featured_image')?.nullable.url ?? null,
+            favicon: recommendation.optionalKey('favicon')?.nullable.url ?? null
+        };
+
+        return this.#serialize(
+            [await this.service.addRecommendation(plain)]
+        );
+    }
+
+    async edit(frame: Frame) {
+        const options = new UnsafeData(frame.options);
+        const data = new UnsafeData(frame.data);
+        const recommendation = data.key('recommendations').index(0);
+
+        const id = options.key('id').string;
+        const plain: Partial<RecommendationPlain> = {
+            title: recommendation.optionalKey('title')?.string,
+            url: recommendation.optionalKey('url')?.url,
+            oneClickSubscribe: recommendation.optionalKey('one_click_subscribe')?.boolean,
+            description: recommendation.optionalKey('description')?.nullable.string,
+            excerpt: recommendation.optionalKey('excerpt')?.nullable.string,
+            featuredImage: recommendation.optionalKey('featured_image')?.nullable.url,
+            favicon: recommendation.optionalKey('favicon')?.nullable.url
+        };
+
+        return this.#serialize(
+            [await this.service.editRecommendation(id, plain)]
+        );
+    }
+
+    async destroy(frame: Frame) {
+        const options = new UnsafeData(frame.options);
+        const id = options.key('id').string;
+        await this.service.deleteRecommendation(id);
+    }
+
+    #stringToOrder(str?: string) {
+        if (!str) {
+            // Default order
+            return [
+                {
+                    field: 'createdAt' as const,
+                    direction: 'desc' as const
+                }
+            ];
         }
 
-        const includes = frame.options.withRelated;
+        const parts = str.split(',');
+        const order: OrderOption<Recommendation> = [];
+        for (const [index, part] of parts.entries()) {
+            const trimmed = part.trim();
+            const fieldData = new UnsafeData(trimmed.split(' ')[0].trim(), {field: ['order', index.toString(), 'field']});
+            const directionData = new UnsafeData(trimmed.split(' ')[1]?.trim() ?? 'desc', {field: ['order', index.toString(), 'direction']});
 
-        // Check if all includes are allowed
-        const invalidIncludes = includes.filter((i: unknown) => {
-            if (typeof i !== 'string') {
-                return true;
-            }
-            return !allowedIncludes.includes(i as RecommendationInclude);
-        });
+            const validatedField = fieldData.enum(
+                Object.keys(RecommendationOrderMap) as (keyof typeof RecommendationOrderMap)[]
+            );
+            const direction = directionData.enum(['asc' as const, 'desc' as const]);
 
-        if (invalidIncludes.length) {
-            throw new errors.BadRequestError({
-                message: `Invalid include: ${invalidIncludes.join(',')}`
+            // Convert 'count.' and camelCase to snake_case
+            const field = RecommendationOrderMap[validatedField];
+            order.push({
+                field,
+                direction
             });
         }
-        return includes as RecommendationInclude[];
+
+        return order;
     }
 
-    #getFramePage(frame: Frame): number {
-        const page = validateInteger(frame.options, 'page', {required: false, nullable: true}) ?? 1;
-        if (page < 1) {
-            throw new errors.BadRequestError({message: 'page must be greater or equal to 1'});
-        }
+    async browse(frame: Frame) {
+        const options = new UnsafeData(frame.options);
 
-        return page;
+        const page = options.optionalKey('page')?.integer ?? 1;
+        const limit = options.optionalKey('limit')?.integer ?? 5;
+        const include = options.optionalKey('withRelated')?.array.map((item) => {
+            return RecommendationIncludesMap[item.enum(
+                Object.keys(RecommendationIncludesMap) as (keyof typeof RecommendationIncludesMap)[]
+            )];
+        }) ?? [];
+        const filter = options.optionalKey('filter')?.string;
+
+        const orderOption = options.optionalKey('order')?.string;
+        const order = this.#stringToOrder(orderOption);
+
+        const count = await this.service.countRecommendations({});
+        const recommendations = (await this.service.listRecommendations({page, limit, filter, include, order}));
+
+        return this.#serialize(
+            recommendations,
+            {
+                pagination: this.#serializePagination({page, limit, count})
+            }
+        );
     }
 
-    #getFrameLimit(frame: Frame, defaultLimit = 15): number {
-        const limit = validateInteger(frame.options, 'limit', {required: false, nullable: true}) ?? defaultLimit;
-        if (limit < 1) {
-            throw new errors.BadRequestError({message: 'limit must be greater or equal to 1'});
-        }
-        return limit;
+    async trackClicked(frame: Frame) {
+        const member = this.#optionalAuthMember(frame);
+        const options = new UnsafeData(frame.options);
+        const id = options.key('id').string;
+
+        await this.service.trackClicked({
+            id,
+            memberId: member?.id
+        });
+    }
+    async trackSubscribed(frame: Frame) {
+        const member = this.#authMember(frame);
+        const options = new UnsafeData(frame.options);
+        const id = options.key('id').string;
+
+        await this.service.trackSubscribed({
+            id,
+            memberId: member.id
+        });
     }
 
-    #getFrameMemberId(frame: Frame): string {
-        if (!frame.options?.context?.member?.id) {
+    #authMember(frame: Frame): {id: string} {
+        const options = new UnsafeData(frame.options);
+        const memberId = options.key('context').optionalKey('member')?.nullable.key('id').string;
+        if (!memberId) {
             // This is an internal server error because authentication should happen outside this service.
             throw new errors.UnauthorizedError({
                 message: 'Member not found'
             });
         }
-        return frame.options.context.member.id;
-    }
-
-    #getFrameRecommendation(frame: Frame): AddRecommendation {
-        if (!frame.data || !frame.data.recommendations || !frame.data.recommendations[0]) {
-            throw new errors.BadRequestError();
-        }
-
-        const recommendation = frame.data.recommendations[0];
-
-        const cleanedRecommendation: AddRecommendation = {
-            title: validateString(recommendation, 'title') ?? '',
-            url: validateURL(recommendation, 'url')!,
-
-            // Optional fields
-            oneClickSubscribe: validateBoolean(recommendation, 'one_click_subscribe', {required: false}) ?? false,
-            reason: validateString(recommendation, 'reason', {required: false, nullable: true}) ?? null,
-            excerpt: validateString(recommendation, 'excerpt', {required: false, nullable: true}) ?? null,
-            featuredImage: validateURL(recommendation, 'featured_image', {required: false, nullable: true}) ?? null,
-            favicon: validateURL(recommendation, 'favicon', {required: false, nullable: true}) ?? null
-        };
-
-        // Create a new recommendation
-        return cleanedRecommendation;
-    }
-
-    #getFrameRecommendationEdit(frame: Frame): Partial<EditRecommendation> {
-        if (!frame.data || !frame.data.recommendations || !frame.data.recommendations[0]) {
-            throw new errors.BadRequestError();
-        }
-
-        const recommendation = frame.data.recommendations[0];
-        const cleanedRecommendation: EditRecommendation = {
-            title: validateString(recommendation, 'title', {required: false}) ?? undefined,
-            url: validateURL(recommendation, 'url', {required: false}) ?? undefined,
-            oneClickSubscribe: validateBoolean(recommendation, 'one_click_subscribe', {required: false}),
-            reason: validateString(recommendation, 'reason', {required: false, nullable: true}),
-            excerpt: validateString(recommendation, 'excerpt', {required: false, nullable: true}),
-            featuredImage: validateURL(recommendation, 'featured_image', {required: false, nullable: true}),
-            favicon: validateURL(recommendation, 'favicon', {required: false, nullable: true})
-        };
-
-        // Create a new recommendation
-        return cleanedRecommendation;
-    }
-
-    #returnRecommendations(recommendations: EntityWithIncludes<Recommendation, RecommendationInclude>[], meta?: any) {
         return {
-            data: recommendations.map(({entity, includes}) => {
+            id: memberId
+        };
+    }
+
+    #optionalAuthMember(frame: Frame): {id: string}|null {
+        try {
+            const member = this.#authMember(frame);
+            return member;
+        } catch (e) {
+            if (e instanceof errors.UnauthorizedError) {
+                // This is fine, this is not required
+            } else {
+                throw e;
+            }
+        }
+        return null;
+    }
+
+    #serialize(recommendations: RecommendationPlain[], meta?: any) {
+        return {
+            data: recommendations.map((entity) => {
                 const d = {
                     id: entity.id,
                     title: entity.title,
-                    reason: entity.reason,
+                    description: entity.description,
                     excerpt: entity.excerpt,
                     featured_image: entity.featuredImage?.toString() ?? null,
                     favicon: entity.favicon?.toString() ?? null,
                     url: entity.url.toString(),
                     one_click_subscribe: entity.oneClickSubscribe,
-                    created_at: entity.createdAt,
-                    updated_at: entity.updatedAt,
-                    count: undefined as undefined|{clicks?: number, subscribers?: number}
+                    created_at: entity.createdAt.toISOString(),
+                    updated_at: entity.updatedAt?.toISOString() ?? null,
+                    count: entity.clickCount !== undefined || entity.subscriberCount !== undefined ? {
+                        clicks: entity.clickCount,
+                        subscribers: entity.subscriberCount
+                    } : undefined
                 };
-
-                for (const [key, value] of includes) {
-                    if (key === 'count.clicks') {
-                        if (typeof value !== 'number') {
-                            continue;
-                        }
-                        d.count = {
-                            ...(d.count ?? {}),
-                            clicks: value
-                        };
-                        continue;
-                    }
-
-                    if (key === 'count.subscribers') {
-                        if (typeof value !== 'number') {
-                            continue;
-                        }
-                        d.count = {
-                            ...(d.count ?? {}),
-                            subscribers: value
-                        };
-                        continue;
-                    }
-
-                    // This should never happen (if you get a compile error: check if you added all includes above)
-                    const n: never = key;
-                    throw new errors.BadRequestError({
-                        message: `Unsupported include: ${n}`
-                    });
-                }
 
                 return d;
             }),
@@ -252,7 +227,7 @@ export class RecommendationController {
         };
     }
 
-    #buildPagination({page, limit, count}: {page: number, limit: number, count: number}) {
+    #serializePagination({page, limit, count}: {page: number, limit: number, count: number}) {
         const pages = Math.ceil(count / limit);
 
         return {
@@ -263,78 +238,5 @@ export class RecommendationController {
             prev: page > 1 ? page - 1 : null,
             next: page < pages ? page + 1 : null
         };
-    }
-
-    async addRecommendation(frame: Frame) {
-        const recommendation = this.#getFrameRecommendation(frame);
-        return this.#returnRecommendations(
-            [await this.service.addRecommendation(recommendation)]
-        );
-    }
-
-    async editRecommendation(frame: Frame) {
-        const id = this.#getFrameId(frame);
-        const recommendationEdit = this.#getFrameRecommendationEdit(frame);
-
-        return this.#returnRecommendations(
-            [await this.service.editRecommendation(id, recommendationEdit)]
-        );
-    }
-
-    async deleteRecommendation(frame: Frame) {
-        const id = this.#getFrameId(frame);
-        await this.service.deleteRecommendation(id);
-    }
-
-    async listRecommendations(frame: Frame) {
-        const page = this.#getFramePage(frame);
-        const limit = this.#getFrameLimit(frame, 5);
-        const include = this.#getFrameInclude(frame, ['count.clicks', 'count.subscribers']);
-        const order = [
-            {
-                field: 'createdAt' as const,
-                direction: 'desc' as const
-            }
-        ];
-
-        const count = await this.service.countRecommendations({});
-        const data = (await this.service.listRecommendations({page, limit, order, include}));
-
-        return this.#returnRecommendations(
-            data,
-            {
-                pagination: this.#buildPagination({page, limit, count})
-            }
-        );
-    }
-
-    async trackClicked(frame: Frame) {
-        // First get the ID of the recommendation that was clicked
-        const id = this.#getFrameId(frame);
-        // Check type of event
-        let memberId: string | undefined;
-        try {
-            memberId = this.#getFrameMemberId(frame);
-        } catch (e) {
-            if (e instanceof errors.UnauthorizedError) {
-                // This is fine, this is not required
-            } else {
-                throw e;
-            }
-        }
-
-        await this.service.trackClicked({
-            id,
-            memberId
-        });
-    }
-    async trackSubscribed(frame: Frame) {
-        // First get the ID of the recommendation that was clicked
-        const id = this.#getFrameId(frame);
-        const memberId = this.#getFrameMemberId(frame);
-        await this.service.trackSubscribed({
-            id,
-            memberId
-        });
     }
 }

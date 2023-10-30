@@ -7,23 +7,27 @@ import Select from '../../../../admin-x-ds/global/form/Select';
 import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
 import TextField from '../../../../admin-x-ds/global/form/TextField';
 import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import useHandleError from '../../../../utils/api/handleError';
 import {CustomThemeSetting} from '../../../../api/customThemeSettings';
-import {debounce} from '../../../../utils/debounce';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {humanizeSettingKey} from '../../../../api/settings';
+import {isCustomThemeSettingVisible} from '../../../../utils/isCustomThemeSettingsVisible';
 
 const ThemeSetting: React.FC<{
     setting: CustomThemeSetting,
     setSetting: <Setting extends CustomThemeSetting>(value: Setting['value']) => void
 }> = ({setting, setSetting}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
+    const handleError = useHandleError();
 
     const handleImageUpload = async (file: File) => {
-        const imageUrl = getImageUrl(await uploadImage({file}));
-        setSetting(imageUrl);
+        try {
+            const imageUrl = getImageUrl(await uploadImage({file}));
+            setSetting(imageUrl);
+        } catch (e) {
+            handleError(e);
+        }
     };
-
-    const updateSettingDebounced = debounce(setSetting, 500);
 
     switch (setting.type) {
     case 'text':
@@ -50,19 +54,21 @@ const ThemeSetting: React.FC<{
             <Select
                 hint={setting.description}
                 options={setting.options.map(option => ({label: option, value: option}))}
-                selectedOption={setting.value}
+                selectedOption={{label: setting.value, value: setting.value}}
+                testId={`setting-select-${setting.key}`}
                 title={humanizeSettingKey(setting.key)}
-                onSelect={value => setSetting(value)}
+                onSelect={option => setSetting(option?.value || null)}
             />
         );
     case 'color':
         return (
             <ColorPickerField
+                debounceMs={200}
                 direction='rtl'
                 hint={setting.description}
                 title={humanizeSettingKey(setting.key)}
                 value={setting.value || ''}
-                onChange={value => updateSettingDebounced(value)}
+                onChange={value => setSetting(value)}
             />
         );
     case 'image':
@@ -70,7 +76,7 @@ const ThemeSetting: React.FC<{
             <Heading useLabelTag>{humanizeSettingKey(setting.key)}</Heading>
             <ImageUpload
                 height={setting.value ? '100px' : '32px'}
-                id='cover-image'
+                id={`custom-${setting.key}`}
                 imageURL={setting.value || ''}
                 onDelete={() => setSetting(null)}
                 onUpload={file => handleImageUpload(file)}
@@ -81,9 +87,13 @@ const ThemeSetting: React.FC<{
 };
 
 const ThemeSettings: React.FC<{ settings: CustomThemeSetting[], updateSetting: (setting: CustomThemeSetting) => void }> = ({settings, updateSetting}) => {
+    // Filter out custom theme settings that should not be visible
+    const settingsKeyValueObj = settings.reduce((obj, {key, value}) => ({...obj, [key]: value}), {});
+    const filteredSettings = settings.filter(setting => isCustomThemeSettingVisible(setting, settingsKeyValueObj));
+
     return (
         <SettingGroupContent className='mt-7'>
-            {settings.map(setting => <ThemeSetting key={setting.key} setSetting={value => updateSetting({...setting, value} as CustomThemeSetting)} setting={setting} />)}
+            {filteredSettings.map(setting => <ThemeSetting key={setting.key} setSetting={value => updateSetting({...setting, value} as CustomThemeSetting)} setting={setting} />)}
         </SettingGroupContent>
     );
 };

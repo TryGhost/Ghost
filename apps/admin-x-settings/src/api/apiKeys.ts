@@ -1,5 +1,5 @@
 import {IntegrationsResponseType, integrationsDataType} from './integrations';
-import {createMutation} from '../utils/apiRequests';
+import {createMutation} from '../utils/api/hooks';
 
 // Types
 
@@ -23,6 +23,7 @@ export const useRefreshAPIKey = createMutation<IntegrationsResponseType, {integr
     path: ({integrationId, apiKeyId}) => `/integrations/${integrationId}/api_key/${apiKeyId}/refresh/`,
     body: ({integrationId}) => ({integrations: [{id: integrationId}]}),
     updateQueries: {
+        emberUpdateType: 'createOrUpdate',
         dataType: integrationsDataType,
         update: (newData, currentData) => (currentData && {
             ...(currentData as IntegrationsResponseType),

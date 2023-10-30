@@ -1,4 +1,5 @@
-const {expect, test} = require('@playwright/test');
+const {expect} = require('@playwright/test');
+const test = require('../fixtures/ghost-test');
 const {DateTime} = require('luxon');
 const {slugify} = require('@tryghost/string');
 const {createTier, createMember, createPostDraft, impersonateMember} = require('../utils');
@@ -55,7 +56,7 @@ const checkPostPublished = async (page, {slug, title, body}) => {
     expect(response.status()).toBe(200);
 
     // Check if the title and body are present on this page
-    await expect(page.locator('.gh-canvas .article-title')).toHaveText(title);
+    await expect(page.locator('.gh-article-title')).toHaveText(title);
     await expect(page.locator('.gh-content.gh-canvas > p')).toHaveText(body);
 };
 
@@ -75,6 +76,9 @@ const createPage = async (page, {title = 'Hello world', body = 'This is my post 
     // Fill in the post title
     await page.locator('[data-test-editor-title-input]').click();
     await page.locator('[data-test-editor-title-input]').fill(title);
+
+    // wait for editor to be ready
+    await expect(page.locator('[data-lexical-editor="true"]')).toBeVisible();
 
     // Continue to the body by pressing enter
     await page.keyboard.press('Enter');
@@ -131,7 +135,7 @@ const publishPost = async (page, {type = 'publish', time, date} = {}) => {
 
     // set the publish type
     if (type) {
-        // Type is nullable because Pages don't have a publish type button
+        // Type is nullable because pages don't have a publish type button
         await page.locator('[data-test-setting="publish-type"] > button').click();
         await page.locator(`[data-test-publish-type="${type}"] + label`).click({timeout: 1000}); // If this times out, it is likely that there are no members (running a single test).
     }
@@ -181,108 +185,109 @@ const openPublishedPostBookmark = async (page) => {
 test.describe('Publishing', () => {
     test.describe('Publish post', () => {
         // Post should be available on web and sent as a newsletter
-        test('Publish and Email', async ({page}) => {
+        test('Publish and Email', async ({sharedPage}) => {
             const postData = {
                 title: 'Publish and email post',
                 body: 'This is my post body.'
             };
 
             // Create a member to send and email to
-            await createMember(page, {email: 'example@example.com', name: 'Publishing member'});
+            await createMember(sharedPage, {email: 'test+recipient1@example.com', name: 'Publishing member'});
 
-            await page.goto('/ghost');
-            await createPostDraft(page, postData);
-            await publishPost(page, {type: 'publish+send'});
-            await closePublishFlow(page);
+            await sharedPage.goto('/ghost');
+            await createPostDraft(sharedPage, postData);
+            await publishPost(sharedPage, {type: 'publish+send'});
+            await closePublishFlow(sharedPage);
 
-            await checkPostStatus(page, 'Published');
-            await checkPostPublished(page, postData);
+            await checkPostStatus(sharedPage, 'Published');
+            await checkPostPublished(sharedPage, postData);
         });
 
         // Post should only be available on web
-        test('Publish only', async ({page}) => {
+        test('Publish only', async ({sharedPage}) => {
             const postData = {
                 title: 'Publish post only',
                 body: 'This is my post body.'
             };
 
-            await page.goto('/ghost');
-            await createPostDraft(page, postData);
-            await publishPost(page);
-            await closePublishFlow(page);
+            await sharedPage.goto('/ghost');
+            await createPostDraft(sharedPage, postData);
+            await publishPost(sharedPage);
+            await closePublishFlow(sharedPage);
 
-            await checkPostStatus(page, 'Published');
-            await checkPostPublished(page, postData);
+            await checkPostStatus(sharedPage, 'Published');
+            await checkPostPublished(sharedPage, postData);
         });
 
         // Post should be available on web and sent as a newsletter
-        test('Email only', async ({page}) => {
-            // Note: this currently depends on 'Publish and Email' to create a member!
+        test('Email only', async ({sharedPage}) => {
             const postData = {
                 title: 'Email only post',
                 body: 'This is my post body.'
             };
 
-            await page.goto('/ghost');
-            await createPostDraft(page, postData);
-            await publishPost(page, {type: 'send'});
-            await closePublishFlow(page);
-            await checkPostStatus(page, 'Sent to '); // can't test for 1 member for now, because depends on test ordering :( (sometimes 2 members are created)
+            await createMember(sharedPage, {email: 'test+recipient2@example.com', name: 'Publishing member'});
 
-            await checkPostNotPublished(page, postData);
+            await sharedPage.goto('/ghost');
+            await createPostDraft(sharedPage, postData);
+            await publishPost(sharedPage, {type: 'send'});
+            await closePublishFlow(sharedPage);
+            await checkPostStatus(sharedPage, 'Sent to '); // can't test for 1 member for now, because depends on test ordering :( (sometimes 2 members are created)
+
+            await checkPostNotPublished(sharedPage, postData);
         });
     });
 
     test.describe('Publish page', () => {
         // A page can be published and become visible on web
-        test('Immediately', async ({page}) => {
+        test('Immediately', async ({sharedPage}) => {
             const pageData = {
                 // Title should be unique to avoid slug duplicates
                 title: 'Published page test',
                 body: 'This is my scheduled page body.'
             };
 
-            await page.goto('/ghost');
-            await createPage(page, pageData);
-            await publishPost(page, {type: null});
-            await closePublishFlow(page);
-            await checkPostStatus(page, 'Published');
+            await sharedPage.goto('/ghost');
+            await createPage(sharedPage, pageData);
+            await publishPost(sharedPage, {type: null});
+            await closePublishFlow(sharedPage);
+            await checkPostStatus(sharedPage, 'Published');
 
             // Check published
-            await checkPostPublished(page, pageData);
+            await checkPostPublished(sharedPage, pageData);
         });
 
-        // Page should be published at the scheduled time
-        test('At the scheduled time', async ({page}) => {
+        // page should be published at the scheduled time
+        test('At the scheduled time', async ({sharedPage}) => {
             const pageData = {
                 // Title should be unique to avoid slug duplicates
-                title: 'Scheduled page test',
-                body: 'This is my scheduled page body.'
+                title: 'Scheduled sharedPage test',
+                body: 'This is my scheduled sharedPage body.'
             };
 
-            await page.goto('/ghost');
-            await createPage(page, pageData);
+            await sharedPage.goto('/ghost');
+            await createPage(sharedPage, pageData);
 
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(page, {time: '00:00', type: null});
-            await closePublishFlow(page);
-            await checkPostStatus(page, 'Scheduled', 'Scheduled to be published in a few seconds');
+            await publishPost(sharedPage, {time: '00:00', type: null});
+            await closePublishFlow(sharedPage);
+            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published in a few seconds');
 
             // Go to the page and check if the status code is 404
-            await checkPostNotPublished(page, pageData);
+            await checkPostNotPublished(sharedPage, pageData);
 
             // Now wait for 5 seconds
-            await page.waitForTimeout(5000);
+            await sharedPage.waitForTimeout(5000);
 
             // Check again, now it should have been added to the page
-            await checkPostPublished(page, pageData);
+            await checkPostPublished(sharedPage, pageData);
         });
     });
 
     test.describe('Update post', () => {
         test.describe.configure({retries: 1});
-        
-        test('Can update a published post', async ({page: adminPage}) => {
+
+        test('Can update a published post', async ({sharedPage: adminPage}) => {
             await adminPage.goto('/ghost');
 
             const date = DateTime.now();
@@ -323,145 +328,148 @@ test.describe('Publishing', () => {
 
     test.describe('Schedule post', () => {
         // Post should be published to web and sent as a newsletter at the scheduled time
-        test('Publish and Email', async ({page}) => {
-            // Note: this currently depends on the first 'Publish and Email' to create a member!
+        test('Publish and Email', async ({sharedPage}) => {
             const postData = {
                 // This title should be unique
                 title: 'Scheduled post publish+email test',
                 body: 'This is my scheduled post body.'
             };
 
-            await page.goto('/ghost');
-            await createPostDraft(page, postData);
+            await createMember(sharedPage, {email: 'test+recipient3@example.com', name: 'Publishing member'});
+
+            await sharedPage.goto('/ghost');
+            await createPostDraft(sharedPage, postData);
 
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(page, {time: '00:00', type: 'publish+send'});
-            await closePublishFlow(page);
-            await checkPostStatus(page, 'Scheduled', 'Scheduled to be published and sent'); // Member count can differ, hence not included here
-            await checkPostStatus(page, 'Scheduled', 'in a few seconds'); // Extra test for suffix on hover
-            const editorUrl = await page.url();
+            await publishPost(sharedPage, {time: '00:00', type: 'publish+send'});
+            await closePublishFlow(sharedPage);
+            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published and sent'); // Member count can differ, hence not included here
+            await checkPostStatus(sharedPage, 'Scheduled', 'in a few seconds'); // Extra test for suffix on hover
+            const editorUrl = await sharedPage.url();
 
             // Go to the homepage and check if the post is not yet visible there
-            await checkPostNotPublished(page, postData);
+            await checkPostNotPublished(sharedPage, postData);
 
             // Now wait 5 seconds for the scheduled post to be published
-            await page.waitForTimeout(5000);
+            await sharedPage.waitForTimeout(5000);
 
             // Check again, now it should have been added to the page
-            await checkPostPublished(page, postData);
+            await checkPostPublished(sharedPage, postData);
 
             // Check status
-            await page.goto(editorUrl);
-            await checkPostStatus(page, 'Published');
+            await sharedPage.goto(editorUrl);
+            await checkPostStatus(sharedPage, 'Published');
         });
 
         // Post should be published to web only at the scheduled time
-        test('Publish only', async ({page}) => {
+        test('Publish only', async ({sharedPage}) => {
             const postData = {
                 title: 'Scheduled post test',
                 body: 'This is my scheduled post body.'
             };
 
-            await page.goto('/ghost');
-            await createPostDraft(page, postData);
+            await sharedPage.goto('/ghost');
+            await createPostDraft(sharedPage, postData);
 
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(page, {time: '00:00'});
-            await closePublishFlow(page);
-            await checkPostStatus(page, 'Scheduled', 'Scheduled to be published in a few seconds');
-            const editorUrl = await page.url();
+            await publishPost(sharedPage, {time: '00:00'});
+            await closePublishFlow(sharedPage);
+            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published in a few seconds');
+            const editorUrl = await sharedPage.url();
 
             // Check not published yet
-            await checkPostNotPublished(page, postData);
+            await checkPostNotPublished(sharedPage, postData);
 
             // Now wait 5 seconds for the scheduled post to be published
-            await page.waitForTimeout(5000);
+            await sharedPage.waitForTimeout(5000);
 
             // Check published
-            await checkPostPublished(page, postData);
+            await checkPostPublished(sharedPage, postData);
 
             // Check status
-            await page.goto(editorUrl);
-            await checkPostStatus(page, 'Published');
+            await sharedPage.goto(editorUrl);
+            await checkPostStatus(sharedPage, 'Published');
         });
 
         // Post should be published to web only at the scheduled time
-        test('Email only', async ({page}) => {
+        test('Email only', async ({sharedPage}) => {
             const postData = {
                 title: 'Scheduled email only test',
                 body: 'This is my scheduled post body.'
             };
 
-            await page.goto('/ghost');
-            await createPostDraft(page, postData);
+            await createMember(sharedPage, {email: 'test+recipient4@example.com', name: 'Publishing member'});
+
+            await sharedPage.goto('/ghost');
+            await createPostDraft(sharedPage, postData);
 
             // Schedule the post to publish asap (by setting it to 00:00, it will get auto corrected to the minimum time possible - 5 seconds in the future)
-            await publishPost(page, {type: 'send', time: '00:00'});
-            await closePublishFlow(page);
-            await checkPostStatus(page, 'Scheduled', 'Scheduled to be sent to');
-            const editorUrl = await page.url();
+            await publishPost(sharedPage, {type: 'send', time: '00:00'});
+            await closePublishFlow(sharedPage);
+            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be sent to');
+            const editorUrl = await sharedPage.url();
 
             // Check not published yet
-            await checkPostNotPublished(page, postData);
+            await checkPostNotPublished(sharedPage, postData);
 
             // Now wait 5 seconds for the scheduled post to be published
-            await page.waitForTimeout(5000);
+            await sharedPage.waitForTimeout(5000);
 
             // Check status
-            await page.goto(editorUrl);
-            await checkPostStatus(page, 'Sent', 'Sent to');
+            await sharedPage.goto(editorUrl);
+            await checkPostStatus(sharedPage, 'Sent', 'Sent to');
 
             // Stil not published yet (email only)
-            await checkPostNotPublished(page, postData);
+            await checkPostNotPublished(sharedPage, postData);
         });
 
         // A previously scheduled post can be unscheduled, which resets it to a draft
-        test('A scheduled post should be able to be unscheduled', async ({page, context}) => {
+        test('A scheduled post should be able to be unscheduled', async ({sharedPage, context}) => {
             const postData = {
                 title: 'Unschedule post test',
                 body: 'This is my unscheduled post body.'
             };
 
-            await page.goto('/ghost');
-            await createPostDraft(page, postData);
+            await sharedPage.goto('/ghost');
+            await createPostDraft(sharedPage, postData);
 
             // Schedule far in the future
-            await publishPost(page, {date: '2050-01-01', time: '10:09'});
-            await closePublishFlow(page);
+            await publishPost(sharedPage, {date: '2050-01-01', time: '10:09'});
+            await closePublishFlow(sharedPage);
 
             // Check status
-            await checkPostStatus(page, 'Scheduled', 'Scheduled to be published at 10:09 (UTC) on 01 Jan 2050');
+            await checkPostStatus(sharedPage, 'Scheduled', 'Scheduled to be published at 10:09 (UTC) on 01 Jan 2050');
 
             // Check not published
-            const testPage = await context.newPage();
+            const testsharedPage = await context.newPage();
 
             // Check not published
-            await checkPostNotPublished(testPage, postData);
+            await checkPostNotPublished(testsharedPage, postData);
 
             // Now unschedule this post
-            await page.locator('[data-test-button="update-flow"]').click();
-            await page.locator('[data-test-button="revert-to-draft"]').click();
+            await sharedPage.locator('[data-test-button="update-flow"]').click();
+            await sharedPage.locator('[data-test-button="revert-to-draft"]').click();
 
             // Check status
-            await checkPostStatus(page, 'Draft - Saved');
+            await checkPostStatus(sharedPage, 'Draft - Saved');
 
             // Check not published
-            await checkPostNotPublished(testPage, postData);
+            await checkPostNotPublished(testsharedPage, postData);
         });
     });
 });
 
 test.describe('Updating post access', () => {
     test.describe('Change post visibility to members-only', () => {
-        test('Only logged-in members (free or paid) can see', async ({page}) => {
-            await page.goto('/ghost');
+        test('Only logged-in members (free or paid) can see', async ({sharedPage}) => {
+            await sharedPage.goto('/ghost');
 
-            await createPostDraft(page);
-            await openPostSettingsMenu(page);
-            await setPostVisibility(page, 'members');
+            await createPostDraft(sharedPage);
+            await openPostSettingsMenu(sharedPage);
+            await setPostVisibility(sharedPage, 'members');
 
-            await publishPost(page);
-            const frontendPage = await openPublishedPostBookmark(page);
+            await publishPost(sharedPage);
+            const frontendPage = await openPublishedPostBookmark(sharedPage);
 
             // Check if content gate for members is present on front-end
             await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toHaveText('This post is for subscribers only');
@@ -469,15 +477,15 @@ test.describe('Updating post access', () => {
     });
 
     test.describe('Change post visibility to paid-members-only', () => {
-        test('Only logged-in, paid members can see', async ({page}) => {
-            await page.goto('/ghost');
+        test('Only logged-in, paid members can see', async ({sharedPage}) => {
+            await sharedPage.goto('/ghost');
 
-            await createPostDraft(page);
-            await openPostSettingsMenu(page);
-            await setPostVisibility(page, 'paid');
+            await createPostDraft(sharedPage);
+            await openPostSettingsMenu(sharedPage);
+            await setPostVisibility(sharedPage, 'paid');
 
-            await publishPost(page);
-            const frontendPage = await openPublishedPostBookmark(page);
+            await publishPost(sharedPage);
+            const frontendPage = await openPublishedPostBookmark(sharedPage);
 
             // Check if content gate for paid members is present on front-end
             await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toHaveText('This post is for paying subscribers only');
@@ -485,70 +493,149 @@ test.describe('Updating post access', () => {
     });
 
     test.describe('Change post visibility to public', () => {
-        test('Everyone can see', async ({page}) => {
-            await page.goto('/ghost');
+        test('Everyone can see', async ({sharedPage}) => {
+            await sharedPage.goto('/ghost');
 
-            await createPostDraft(page);
-            await openPostSettingsMenu(page);
-            await setPostVisibility(page, 'public');
+            await createPostDraft(sharedPage);
+            await openPostSettingsMenu(sharedPage);
+            await setPostVisibility(sharedPage, 'public');
 
-            await publishPost(page);
-            const frontendPage = await openPublishedPostBookmark(page);
+            await publishPost(sharedPage);
+            const frontendPage = await openPublishedPostBookmark(sharedPage);
 
             // Check if post content is publicly visible on front-end
             await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('This is my post body.');
         });
     });
 
-    test('specific tiers', async ({page}) => {
-        await page.goto('/ghost');
+    test('specific tiers', async ({sharedPage}) => {
+        await sharedPage.goto('/ghost');
 
         // tiers and members are needed to test the access levels
-        await createTier(page, {name: 'Silver', monthlyPrice: 5, yearlyPrice: 50});
-        await createTier(page, {name: 'Gold', monthlyPrice: 10, yearlyPrice: 100});
-        await createMember(page, {email: 'silver@example.com', compedPlan: 'Silver'});
-        const silverMember = await page.url();
-        await createMember(page, {email: 'gold@example.com', compedPlan: 'Gold'});
-        const goldMember = await page.url();
+        await createTier(sharedPage, {name: 'Silver', monthlyPrice: 5, yearlyPrice: 50});
+        await createTier(sharedPage, {name: 'Gold', monthlyPrice: 10, yearlyPrice: 100});
+        await createMember(sharedPage, {email: 'silver@example.com', compedPlan: 'Silver'});
+        const silverMember = await sharedPage.url();
+        await createMember(sharedPage, {email: 'gold@example.com', compedPlan: 'Gold'});
+        const goldMember = await sharedPage.url();
 
-        await createPostDraft(page, {body: 'Only gold members can see this'});
+        await createPostDraft(sharedPage, {body: 'Only gold members can see this'});
 
-        await openPostSettingsMenu(page);
-        await setPostVisibility(page, 'tiers');
+        await openPostSettingsMenu(sharedPage);
+        await setPostVisibility(sharedPage, 'tiers');
 
         // backspace removes existing tiers
-        await expect(page.locator('[data-test-visibility-segment-select] [data-test-selected-token]')).toHaveCount(3);
-        await page.locator('[data-test-visibility-segment-select] input').click();
-        await page.keyboard.press('Backspace');
-        await page.waitForTimeout(50);
-        await page.keyboard.press('Backspace');
-        await page.waitForTimeout(50);
-        await page.keyboard.press('Backspace');
-        await expect(page.locator('[data-test-visibility-segment-select] [data-test-selected-token]')).toHaveCount(0);
+        await expect(sharedPage.locator('[data-test-visibility-segment-select] [data-test-selected-token]')).toHaveCount(3);
+        await sharedPage.locator('[data-test-visibility-segment-select] input').click();
+        await sharedPage.keyboard.press('Backspace');
+        await sharedPage.waitForTimeout(50);
+        await sharedPage.keyboard.press('Backspace');
+        await sharedPage.waitForTimeout(50);
+        await sharedPage.keyboard.press('Backspace');
+        await expect(sharedPage.locator('[data-test-visibility-segment-select] [data-test-selected-token]')).toHaveCount(0);
 
         // specific tier can be added back on
-        await page.keyboard.type('Go');
-        const goldOption = page.locator('[data-test-visibility-segment-option="Gold"]');
+        await sharedPage.keyboard.type('Go');
+        const goldOption = sharedPage.locator('[data-test-visibility-segment-option="Gold"]');
         await goldOption.click();
 
         // publish
-        await publishPost(page);
-        const frontendPage = await openPublishedPostBookmark(page);
+        await publishPost(sharedPage);
+        const frontendPage = await openPublishedPostBookmark(sharedPage);
 
         // non-member doesn't have access
         await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toContainText('on the Gold tier only');
 
         // member on wrong tier doesn't have access
-        await page.goto(silverMember);
-        await impersonateMember(page);
+        await sharedPage.goto(silverMember);
+        await impersonateMember(sharedPage);
         await frontendPage.reload();
         await expect(frontendPage.locator('.gh-post-upgrade-cta-content h2')).toContainText('on the Gold tier only');
 
         // member on selected tier has access
-        await page.goto(goldMember);
-        await impersonateMember(page);
+        await sharedPage.goto(goldMember);
+        await impersonateMember(sharedPage);
         await frontendPage.reload();
         await expect(frontendPage.locator('.gh-post-upgrade-cta-content')).not.toBeVisible();
         await expect(frontendPage.locator('.gh-content.gh-canvas > p')).toHaveText('Only gold members can see this');
+    });
+
+    test('publish time in timezone', async ({page}) => {
+        await page.goto('/ghost');
+
+        await createPostDraft(page, {title: 'Published in timezones', body: 'Published in timezones'});
+        await openPostSettingsMenu(page);
+
+        // saves the post with the new date
+        await expect(page.locator('[data-test-date-time-picker-timezone]')).toHaveText('UTC');
+        await page.locator('[data-test-date-time-picker-datepicker]').click();
+        await page.locator('.ember-power-calendar-nav-control--previous').click();
+        await page.locator('.ember-power-calendar-day', {hasText: '15'}).click();
+        await page.locator('[data-test-date-time-picker-time-input]').fill('12:00');
+
+        await publishPost(page);
+        await closePublishFlow(page);
+
+        // go to settings and change the timezone
+        await page.locator('[data-test-link="posts"]').click();
+        await page.locator('[data-test-nav="settings"]').click();
+        await expect(page.getByTestId('timezone')).toContainText('UTC');
+
+        await page.getByTestId('timezone').getByRole('button', {name: 'Edit'}).click();
+        await page.getByTestId('timezone-select').click();
+        await page.locator('[data-testid="select-option"]', {hasText: 'Kamchatka'}).click();
+
+        await page.getByTestId('timezone').getByRole('button', {name: 'Save'}).click();
+        await expect(page.getByTestId('timezone-select')).toBeHidden();
+        await expect(page.getByTestId('timezone')).toContainText('(GMT +12:00) Fiji, Kamchatka, Marshall Is.');
+
+        await page.getByTestId('exit-settings').click();
+        await page.locator('[data-test-nav="posts"]').click();
+        await page.locator('[data-test-post-id]', {hasText: /Published in timezones/}).click();
+
+        await openPostSettingsMenu(page);
+
+        await expect(page.locator('[data-test-date-time-picker-timezone]')).toHaveText('+12');
+        await expect(page.locator('[data-test-date-time-picker-time-input]')).toHaveValue('00:00');
+        await expect(page.locator('[data-test-date-time-picker-date-input]')).toHaveValue(/-16$/);
+    });
+
+    test('default recipient settings - usually nobody', async ({page}) => {
+        // switch to "usually nobody" setting
+        await page.goto('/ghost/settings/newsletters');
+        await page.getByTestId('default-recipients').getByRole('button', {name: 'Edit'}).click();
+        await page.getByTestId('default-recipients-select').click();
+        await page.locator('[data-testid="select-option"]', {hasText: /Usually nobody/}).click();
+        await page.getByTestId('default-recipients').getByRole('button', {name: 'Save'}).click();
+
+        await expect(page.getByTestId('default-recipients-select')).toBeHidden();
+        await expect(page.getByTestId('default-recipients')).toContainText('Usually nobody');
+
+        await page.goto('/ghost');
+
+        await createMember(page, {
+            name: 'Test Member Recipient',
+            email: 'test@recipient.com'
+        });
+
+        // go to publish a post
+        await createPostDraft(page, {title: 'Published in timezones', body: 'Published in timezones'});
+        await page.locator('[data-test-button="publish-flow"]').click();
+
+        await expect(page.locator('[data-test-setting="publish-type"] [data-test-setting-title]')).toContainText('Publish');
+
+        await expect(page.locator('[data-test-setting="email-recipients"] [data-test-setting-title]')).toContainText('Not sent as newsletter');
+
+        await page.locator('[data-test-setting="publish-type"] [data-test-setting-title]').click();
+
+        // email-related options are enabled
+        await expect(page.locator('[data-test-publish-type="publish+send"]')).not.toBeDisabled();
+        await expect(page.locator('[data-test-publish-type="send"]')).not.toBeDisabled();
+
+        await page.locator('label[for="publish-type-publish+send"]').click();
+
+        await expect(
+            page.locator('[data-test-setting="email-recipients"] [data-test-setting-title]')
+        ).toContainText(/\d+\s* subscriber/m);
     });
 });

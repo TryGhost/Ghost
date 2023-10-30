@@ -7,13 +7,13 @@ import React, {useEffect, useState} from 'react';
 import SignupOptions from './SignupOptions';
 import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
 import useForm, {Dirtyable} from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useQueryParams from '../../../../hooks/useQueryParams';
 import useRouting from '../../../../hooks/useRouting';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
-import {Setting, SettingValue, useEditSettings} from '../../../../api/settings';
-import {Tier, getPaidActiveTiers, useBrowseTiers, useEditTier} from '../../../../api/tiers';
+import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../../api/settings';
+import {Tier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
 import {fullEmailAddress} from '../../../../api/site';
-import {getSettingValues} from '../../../../api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {verifyEmailToken} from '../../../../api/emailVerification';
 
@@ -68,10 +68,11 @@ const PortalModal: React.FC = () => {
 
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
 
+    const handleError = useHandleError();
     const {settings, siteData} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
-    const tiers = getPaidActiveTiers(allTiers || []);
+    // const tiers = getPaidActiveTiers(allTiers || []);
 
     const {mutateAsync: editTier} = useEditTier();
     const {mutateAsync: verifyToken} = verifyEmailToken();
@@ -106,23 +107,32 @@ const PortalModal: React.FC = () => {
                     cancelLabel: '',
                     onOk: confirmModal => confirmModal?.remove()
                 });
+                handleError(e, {withToast: false});
             }
         };
         if (verifyEmail) {
             checkToken({token: verifyEmail});
         }
-    }, [verifyEmail, verifyToken]);
+    }, [handleError, verifyEmail, verifyToken]);
 
-    const {formState, saveState, handleSave, updateForm} = useForm({
+    const {formState, setFormState, saveState, handleSave, updateForm} = useForm({
         initialState: {
             settings: settings as Dirtyable<Setting>[],
-            tiers: tiers as Dirtyable<Tier>[]
+            tiers: allTiers as Dirtyable<Tier>[] || []
         },
 
         onSave: async () => {
             await Promise.all(formState.tiers.filter(({dirty}) => dirty).map(tier => editTier(tier)));
+            setFormState(state => ({...state, tiers: formState.tiers.map(tier => ({...tier, dirty: false}))}));
 
-            const {meta, settings: currentSettings} = await editSettings(formState.settings.filter(setting => setting.dirty));
+            const changedSettings = formState.settings.filter(setting => setting.dirty);
+
+            if (!changedSettings.length) {
+                return;
+            }
+
+            const {meta, settings: currentSettings} = await editSettings(changedSettings);
+            setFormState(state => ({...state, settings: formState.settings.map(setting => ({...setting, dirty: false}))}));
 
             if (meta?.sent_email_verification) {
                 const newEmail = formState.settings.find(setting => setting.key === 'members_support_address')?.value;
@@ -139,7 +149,9 @@ const PortalModal: React.FC = () => {
                     onOk: confirmModal => confirmModal?.remove()
                 });
             }
-        }
+        },
+
+        onSaveError: handleError
     });
 
     const [errors, setErrors] = useState<Record<string, string | undefined>>({});
@@ -206,6 +218,7 @@ const PortalModal: React.FC = () => {
         cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
+        okColor={saveState === 'saved' ? 'green' : 'black'}
         okLabel={okLabel}
         preview={preview}
         previewBgColor={selectedPreviewTab === 'links' ? 'white' : 'greygradient'}
@@ -216,7 +229,7 @@ const PortalModal: React.FC = () => {
         title='Portal'
         onOk={async () => {
             if (!Object.values(errors).filter(Boolean).length) {
-                await handleSave();
+                await handleSave({force: true});
             }
         }}
         onSelectURL={onSelectURL}

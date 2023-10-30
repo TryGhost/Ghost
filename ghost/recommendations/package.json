@@ -11,7 +11,7 @@
     "build": "tsc",
     "build:ts": "yarn build",
     "prepare": "tsc",
-    "test:unit": "NODE_ENV=testing c8 --src src --all --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
+    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura -- mocha --reporter dot -r ts-node/register './test/**/*.test.ts'",
     "test": "yarn test:types && yarn test:unit",
     "test:types": "tsc --noEmit",
     "lint:code": "eslint src/ --ext .ts --cache",
@@ -31,9 +31,9 @@
   },
   "dependencies": {
     "@tryghost/tpl": "0.1.25",
-    "@tryghost/errors": "1.2.25",
+    "@tryghost/errors": "1.2.26",
     "@tryghost/in-memory-repository": "0.0.0",
     "@tryghost/bookshelf-repository": "0.0.0",
-    "@tryghost/logging": "2.4.5"
+    "@tryghost/logging": "2.4.8"
   }
 }

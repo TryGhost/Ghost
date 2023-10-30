@@ -4,6 +4,7 @@ import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupConten
 import TextField from '../../../admin-x-ds/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../api/settings';
+import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -69,7 +70,7 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
             description='The details used to identify your publication around the web'
             isEditing={isEditing}
             keywords={keywords}
-            navid='title-and-description'
+            navid='general'
             saveState={saveState}
             testId='title-and-description'
             title='Title & description'
@@ -82,4 +83,4 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default TitleAndDescription;
+export default withErrorBoundary(TitleAndDescription, 'Title & description');

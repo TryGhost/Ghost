@@ -18,6 +18,7 @@ interface SettingGroupProps {
     saveState?: SaveState;
     customHeader?: React.ReactNode;
     customButtons?: React.ReactNode;
+    beta?: boolean;
     children?: React.ReactNode;
     hideEditButton?: boolean;
     alwaysShowSaveButton?: boolean;
@@ -39,6 +40,7 @@ interface SettingGroupProps {
     onEditingChange?: (isEditing: boolean) => void
     onSave?: () => void
     onCancel?: () => void
+    enableCMDS?: boolean
 }
 
 const SettingGroup: React.FC<SettingGroupProps> = ({
@@ -51,6 +53,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     saveState,
     customHeader,
     customButtons,
+    beta = false,
     children,
     hideEditButton,
     alwaysShowSaveButton = true,
@@ -59,7 +62,8 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     styles,
     onEditingChange,
     onSave,
-    onCancel
+    onCancel,
+    enableCMDS = true
 }) => {
     const {checkVisible} = useSearch();
     const {route} = useRouting();
@@ -82,9 +86,9 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     if (saveState === 'unsaved') {
         styles += ' border-green';
     } else if (isEditing){
-        styles += ' border-grey-300 dark:border-grey-800';
+        styles += ' border-grey-700 dark:border-grey-600';
     } else {
-        styles += ' border-grey-200 dark:border-grey-900';
+        styles += ' border-grey-300 dark:border-grey-800 hover:border-grey-500';
     }
 
     let viewButtons: ButtonProps[] = [];
@@ -148,8 +152,23 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         }
     }, [highlight]);
 
+    useEffect(() => {
+        const handleCMDS = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault();
+                handleSave();
+            }
+        };
+        if (enableCMDS) {
+            window.addEventListener('keydown', handleCMDS);
+            return () => {
+                window.removeEventListener('keydown', handleCMDS);
+            };
+        }
+    });
+
     const containerClasses = clsx(
-        'relative flex-col gap-6 rounded',
+        'relative flex-col gap-6 rounded-lg transition-all',
         border && 'border p-5 md:p-7',
         !checkVisible(keywords) ? 'hidden' : 'flex',
         (highlight && highlightOnModalClose) && 'before:pointer-events-none before:absolute before:inset-[1px] before:animate-setting-highlight-fade-out before:rounded before:shadow-[0_0_0_3px_rgba(48,207,67,0.45)]',
@@ -161,7 +180,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         <div className={containerClasses} data-testid={testId}>
             <div ref={ref} className='absolute' id={navid && navid}></div>
             {customHeader ? customHeader :
-                <SettingGroupHeader description={description} title={title!}>
+                <SettingGroupHeader beta={beta} description={description} title={title!}>
                     {customButtons ? customButtons :
                         (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link linkWithPadding />)}
                 </SettingGroupHeader>

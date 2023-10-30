@@ -10,7 +10,11 @@ const meta = {
     title: 'Global / Form / Textfield',
     component: TextField,
     tags: ['autodocs'],
-    decorators: [(_story: () => ReactNode) => (<div style={{maxWidth: '400px'}}>{_story()}</div>)],
+    decorators: [(_story: () => ReactNode) => (
+        <div style={{maxWidth: '400px'}}>
+            {_story()}
+        </div>
+    )],
     argTypes: {
         hint: {
             control: 'text'
@@ -36,13 +40,6 @@ export const Disabled: Story = {
         value: 'Hello disabled field',
         title: 'Disabled',
         disabled: true
-    }
-};
-
-export const ClearBackground: Story = {
-    args: {
-        placeholder: 'Enter something',
-        clearBg: true
     }
 };
 
@@ -81,15 +78,6 @@ export const WithRightPlaceholder: Story = {
     }
 };
 
-export const WithoutBorder: Story = {
-    args: {
-        title: 'Title',
-        placeholder: 'Enter something',
-        hint: 'Here\'s some hint',
-        border: false
-    }
-};
-
 export const WithDropdown: Story = {
     args: {
         title: 'Monthly price',
@@ -97,11 +85,13 @@ export const WithDropdown: Story = {
         rightPlaceholder: (
             <Select
                 border={false}
+                clearBg={true}
+                containerClassName='w-14'
+                fullWidth={false}
                 options={[
                     {label: 'USD', value: 'usd'},
                     {label: 'EUR', value: 'eur'}
                 ]}
-                selectClassName='w-auto'
                 onSelect={() => {}}
             />
         )
@@ -114,7 +104,7 @@ export const WithButton: Story = {
         value: 'https://ghost.org',
         containerClassName: 'group',
         rightPlaceholder: (
-            <Button className='invisible mt-2 group-hover:visible' color='white' label='Copy' size='sm' />
+            <Button className='invisible mt-1 rounded-md group-hover:visible' color='white' label='Copy' size='sm' />
         )
     }
 };

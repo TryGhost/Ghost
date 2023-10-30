@@ -4,13 +4,7 @@ import HtmlEditor, {HtmlEditorProps} from './HtmlEditor';
 import React from 'react';
 import clsx from 'clsx';
 
-export type EditorConfig = { editor: { url: string; version: string; } }
-
 export type HtmlFieldProps = HtmlEditorProps & {
-    /**
-     * Should be passed the Ghost instance config to get the editor JS URL
-     */
-    config: EditorConfig;
     title?: string;
     hideTitle?: boolean;
     error?: boolean;
@@ -32,7 +26,7 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
     error,
     hint,
     value,
-    clearBg = true,
+    clearBg = false,
     className = '',
     containerClassName = '',
     hintClassName = '',
@@ -40,9 +34,9 @@ const HtmlField: React.FC<HtmlFieldProps> = ({
     ...props
 }) => {
     const textFieldClasses = unstyled ? '' : clsx(
-        'min-h-10 border-b py-2',
-        clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
-        error ? `border-red` : `border-grey-500 hover:border-grey-700 focus:border-black`,
+        'flex min-h-[32px] items-center rounded-md border border-transparent py-1.5 md:min-h-[36px]',
+        clearBg ? 'bg-transparent' : 'bg-grey-150 px-3 dark:bg-grey-900',
+        error ? `border-red` : `dark:bg-dark-925 hover:bg-grey-100 focus:border-green focus:shadow-[0_0_0_1px_rgba(48,207,67,1)]`,
         (title && !hideTitle && !clearBg) && `mt-2`,
         className
     );

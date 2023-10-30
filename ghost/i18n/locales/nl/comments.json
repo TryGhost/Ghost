@@ -5,6 +5,7 @@
     "{{amount}} hours ago": "{{amount}} uur geleden",
     "{{amount}} minutes ago": "{{amount}} minuten geleden",
     "{{amount}} months ago": "{{amount}} maanden geleden",
+    "{{amount}} more": "",
     "{{amount}} seconds ago": "{{amount}} seconden geleden",
     "{{amount}} weeks ago": "{{amount}} weken geleden",
     "{{amount}} years ago": "{{amount}} jaar geleden",

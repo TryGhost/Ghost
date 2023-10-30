@@ -2,25 +2,39 @@ import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import config from 'ghost-admin/config/environment';
+import fetchKoenigLexical from 'ghost-admin/utils/fetch-koenig-lexical';
+import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
+import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 // TODO: Long term move asset management directly in AdminX
 const officialThemes = [{
+    name: 'Source',
+    category: 'News',
+    previewUrl: 'https://source.ghost.io/',
+    ref: 'default',
+    image: 'assets/img/themes/Source.png',
+    variants: [
+        {
+            category: 'Magazine',
+            previewUrl: 'https://source-magazine.ghost.io/',
+            image: 'assets/img/themes/Source-Magazine.png'
+        },
+        {
+            category: 'Newsletter',
+            previewUrl: 'https://source-newsletter.ghost.io/',
+            image: 'assets/img/themes/Source-Newsletter.png'
+        }
+    ]
+}, {
     name: 'Casper',
     category: 'Blog',
     previewUrl: 'https://demo.ghost.io/',
-    ref: 'default',
+    ref: 'TryGhost/Casper',
     image: 'assets/img/themes/Casper.png'
-}, {
-    name: 'Headline',
-    category: 'News',
-    url: 'https://github.com/TryGhost/Headline',
-    previewUrl: 'https://headline.ghost.io',
-    ref: 'TryGhost/Headline',
-    image: 'assets/img/themes/Headline.png'
 }, {
     name: 'Edition',
     category: 'Newsletter',
@@ -106,6 +120,13 @@ const officialThemes = [{
     ref: 'TryGhost/Ease',
     image: 'assets/img/themes/Ease.png'
 }, {
+    name: 'Headline',
+    category: 'News',
+    url: 'https://github.com/TryGhost/Headline',
+    previewUrl: 'https://headline.ghost.io',
+    ref: 'TryGhost/Headline',
+    image: 'assets/img/themes/Headline.png'
+}, {
     name: 'Ruby',
     category: 'Magazine',
     url: 'https://github.com/TryGhost/Ruby',
@@ -175,6 +196,14 @@ const zapierTemplates = [{
     url: 'https://zapier.com/webintent/create-zap?template=359342'
 }];
 
+export const defaultUnsplashHeaders = {
+    Authorization: `Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980`,
+    'Accept-Version': 'v1',
+    'Content-Type': 'application/json',
+    'App-Pragma': 'no-cache',
+    'X-Unsplash-Cache': true
+};
+
 class ErrorHandler extends React.Component {
     state = {
         hasError: false
@@ -187,7 +216,13 @@ class ErrorHandler extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <p className="admin-x-settings-container-error">Loading has failed. Try refreshing the browser!</p>
+                <div className="admin-x-settings-container-error">
+                    <div className="admin-x-settings-error">
+                        <h1>Loading interrupted</h1>
+                        <p>They say life is a series of trials and tribulations. This moment right here? It's a tribulation. Our app was supposed to load, and yet here we are. Loadless. Click back to the dashboard to try again.</p>
+                        <a href={ghostPaths().adminRoot}>&larr; Back to the dashboard</a>
+                    </div>
+                </div>
             );
         }
 
@@ -200,19 +235,13 @@ export const importSettings = async () => {
         return window['@tryghost/admin-x-settings'];
     }
 
-    // the manual specification of the protocol in the import template string is
-    // required to work around ember-auto-import complaining about an unknown dynamic import
-    // during the build step
-    const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-    const urlTemplate = GhostAdmin.__container__.lookup('config:main').adminX?.url;
-    const urlVersion = GhostAdmin.__container__.lookup('config:main').adminX?.version;
-
-    const url = new URL(urlTemplate.replace('{version}', urlVersion));
+    const baseUrl = (config.cdnUrl ? `${config.cdnUrl}assets/` : ghostPaths().assetRootWithHost);
+    const url = new URL(`${baseUrl}admin-x-settings/${config.adminXSettingsFilename}?v=${config.adminXSettingsHash}`);
 
     if (url.protocol === 'http:') {
-        window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}`);
+        window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}${url.search}`);
     } else {
-        window['@tryghost/admin-x-settings'] = await import(`https://${url.host}${url.pathname}`);
+        window['@tryghost/admin-x-settings'] = await import(`https://${url.host}${url.pathname}${url.search}`);
     }
 
     return window['@tryghost/admin-x-settings'];
@@ -247,6 +276,18 @@ const fetchSettings = function () {
     return {read};
 };
 
+const emberDataTypeMapping = {
+    IntegrationsResponseType: {type: 'integration'},
+    InvitesResponseType: {type: 'invite'},
+    NewslettersResponseType: {type: 'newsletter'},
+    RecommendationResponseType: {type: 'recommendation'},
+    SettingsResponseType: {type: 'setting', singleton: true},
+    ThemesResponseType: {type: 'theme'},
+    TiersResponseType: {type: 'tier'},
+    UsersResponseType: {type: 'user'},
+    CustomThemeSettingsResponseType: {type: 'custom-theme-setting'}
+};
+
 export default class AdminXSettings extends Component {
     @service ajax;
     @service feature;
@@ -255,6 +296,9 @@ export default class AdminXSettings extends Component {
     @service store;
     @service settings;
     @service router;
+    @service membersUtils;
+    @service themeManagement;
+    @service upgradeStatus;
 
     @inject config;
 
@@ -275,6 +319,82 @@ export default class AdminXSettings extends Component {
 
         // don't rethrow, app should attempt to gracefully recover
     }
+
+    onUpdate = (dataType, response) => {
+        if (!emberDataTypeMapping[dataType]) {
+            throw new Error(`A mutation updating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+        }
+
+        const {type, singleton} = emberDataTypeMapping[dataType];
+
+        if (singleton) {
+            // Special singleton objects like settings don't work with pushPayload, we need to add the ID explicitly
+            this.store.push(this.store.serializerFor(type).normalizeSingleResponse(
+                this.store,
+                this.store.modelFor(type),
+                response,
+                null,
+                'queryRecord'
+            ));
+        } else {
+            this.store.pushPayload(type, response);
+        }
+
+        if (dataType === 'SettingsResponseType') {
+            // Blog title is based on settings, but the one stored in config is used instead in various places
+            this.config.blogTitle = response.settings.find(setting => setting.key === 'title').value;
+
+            this.settings.reload();
+        }
+
+        if (dataType === 'TiersResponseType') {
+            // membersUtils has local state which needs to be updated
+            this.membersUtils.reload();
+        }
+
+        if (dataType === 'ThemesResponseType') {
+            const activated = response.themes.find(theme => theme.active);
+
+            if (activated) {
+                this.themeManagement.activeTheme = this.store.peekAll('theme').filterBy('name', activated.name).firstObject;
+            }
+        }
+    };
+
+    onInvalidate = (dataType) => {
+        if (!emberDataTypeMapping[dataType]) {
+            throw new Error(`A mutation invalidating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+        }
+
+        const {type, singleton} = emberDataTypeMapping[dataType];
+
+        if (singleton) {
+            // eslint-disable-next-line no-console
+            console.warn(`An AdminX mutation invalidated ${dataType}, but this is is marked as a singleton and cannot be reloaded in Ember. You probably wanted to use updateQueries instead of invalidateQueries`);
+            return;
+        }
+
+        run(() => this.store.unloadAll(type));
+
+        if (dataType === 'TiersResponseType') {
+            // membersUtils has local state which needs to be updated
+            this.membersUtils.reload();
+        }
+    };
+
+    onDelete = (dataType, id) => {
+        if (!emberDataTypeMapping[dataType]) {
+            throw new Error(`A mutation deleting ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+        }
+
+        const {type} = emberDataTypeMapping[dataType];
+
+        const record = this.store.peekRecord(type, id);
+
+        if (record) {
+            record.unloadRecord();
+        }
+    };
 
     externalNavigate = ({route, models = []}) => {
         this.router.transitionTo(route, ...models);
@@ -316,6 +436,13 @@ export default class AdminXSettings extends Component {
                             zapierTemplates={zapierTemplates}
                             externalNavigate={this.externalNavigate}
                             darkMode={this.feature.nightShift}
+                            unsplashConfig={defaultUnsplashHeaders}
+                            sentry={this.config.sentry_dsn ? Sentry : undefined}
+                            fetchKoenigLexical={fetchKoenigLexical}
+                            onUpdate={this.onUpdate}
+                            onInvalidate={this.onInvalidate}
+                            onDelete={this.onDelete}
+                            upgradeStatus={this.upgradeStatus}
                         />
                     </Suspense>
                 </ErrorHandler>

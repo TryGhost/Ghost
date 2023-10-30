@@ -32,7 +32,7 @@ export function arePathsEqual(urlStr1: string, urlStr2: string) {
     }
 
     return (
-        url1.hostname.replace('www.', '') === url2.hostname.replace('www.', '') && 
+        url1.hostname.replace('www.', '') === url2.hostname.replace('www.', '') &&
         url1.pathname === url2.pathname
     );
 }

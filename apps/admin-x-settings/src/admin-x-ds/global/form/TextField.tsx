@@ -1,7 +1,8 @@
 import Heading from '../Heading';
 import Hint from '../Hint';
-import React, {useId} from 'react';
+import React, {FocusEventHandler, useId} from 'react';
 import clsx from 'clsx';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 
 export type TextFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     inputRef?: React.RefObject<HTMLInputElement>;
@@ -37,33 +38,54 @@ const TextField: React.FC<TextFieldProps> = ({
     placeholder,
     rightPlaceholder,
     hint,
-    clearBg = true,
     onChange,
+    onFocus,
     onBlur,
+    clearBg = false,
     className = '',
     maxLength,
     containerClassName = '',
     hintClassName = '',
     unstyled = false,
     disabled,
-    border = true,
     ...props
 }) => {
     const id = useId();
+    const {setFocusState} = useFocusContext();
 
-    const disabledBorderClasses = border && 'border-grey-300 dark:border-grey-900';
-    const enabledBorderClasses = border && 'border-grey-500 hover:border-grey-700 focus:border-black dark:border-grey-800 dark:hover:border-grey-700 dark:focus:border-grey-500';
+    const handleFocus: FocusEventHandler<HTMLInputElement> = (e) => {
+        onFocus?.(e);
+        setFocusState(true);
+    };
+
+    const handleBlur: FocusEventHandler<HTMLInputElement> = (e) => {
+        onBlur?.(e);
+        setFocusState(false);
+    };
+
+    const fieldContainerClasses = clsx(
+        'relative order-2 flex w-full items-center',
+        (title && !hideTitle) && `mt-1.5`
+    );
+
+    const bgClasses = clsx(
+        'absolute inset-0 rounded-md border text-grey-300 transition-all peer-hover:bg-grey-100 peer-focus:border-green peer-focus:bg-white peer-focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] dark:peer-hover:bg-grey-925 dark:peer-focus:bg-grey-925',
+        error ? `border-red bg-white dark:bg-grey-925` : 'border-transparent bg-grey-150 dark:bg-grey-900',
+        disabled && 'bg-grey-100 dark:bg-grey-925'
+    );
 
     const textFieldClasses = !unstyled && clsx(
-        'peer order-2 h-8 w-full py-1 text-sm placeholder:text-grey-500 dark:text-white dark:placeholder:text-grey-800 md:h-10 md:py-2 md:text-base',
-        border && 'border-b',
-        !border && '-mb-1.5',
-        clearBg ? 'bg-transparent' : 'bg-grey-75 px-[10px]',
-        error && border ? `border-red` : `${disabled ? disabledBorderClasses : enabledBorderClasses}`,
-        (title && !hideTitle && !clearBg) && `mt-2`,
-        (disabled ? 'cursor-not-allowed text-grey-700 opacity-60 dark:text-grey-800' : ''),
-        rightPlaceholder && 'w-0 grow',
+        'peer z-[1] order-2 h-8 w-full bg-transparent px-3 py-1 text-sm placeholder:text-grey-500 dark:placeholder:text-grey-700 md:h-9 md:py-2 md:text-md',
+        disabled ? 'cursor-not-allowed text-grey-700 opacity-60 dark:text-grey-700' : 'dark:text-white',
+        rightPlaceholder ? 'w-0 grow rounded-l-md' : 'rounded-md',
         className
+    );
+
+    const rightPlaceholderClasses = !unstyled && clsx(
+        'z-[1] order-3 rounded-r-lg',
+        (rightPlaceholder ?
+            ((typeof (rightPlaceholder) === 'string') ? 'flex h-8 items-center py-1 pr-3 text-right text-sm text-grey-500 md:h-9 md:text-base' : 'h-9 pr-1')
+            : 'pr-2')
     );
 
     let field = <></>;
@@ -77,29 +99,18 @@ const TextField: React.FC<TextFieldProps> = ({
         placeholder={placeholder}
         type={type}
         value={value}
-        onBlur={onBlur}
+        onBlur={handleBlur}
         onChange={onChange}
+        onFocus={handleFocus}
         {...props} />;
 
-    if (rightPlaceholder) {
-        const rightPHEnabledBorderClasses = 'border-grey-500 dark:border-grey-800 peer-hover:border-grey-700 peer-focus:border-black dark:peer-focus:border-grey-500';
-        const rightPHClasses = !unstyled && clsx(
-            'order-3',
-            border && 'border-b',
-            !border && '-mb-1.5',
-            (typeof (rightPlaceholder) === 'string') ? 'h-8 py-1 text-right text-sm text-grey-500 md:h-10 md:py-2 md:text-base' : 'h-10',
-            error && border ? `border-red` : `${disabled ? disabledBorderClasses : rightPHEnabledBorderClasses}`
-        );
-
-        field = (
-            <div className='order-2 flex w-full items-center'>
-                {inputField}
-                <span className={rightPHClasses || ''}>{rightPlaceholder}</span>
-            </div>
-        );
-    } else {
-        field = inputField;
-    }
+    field = (
+        <div className={fieldContainerClasses}>
+            {inputField}
+            {!clearBg && <div className={bgClasses}></div>}
+            {rightPlaceholder && <span className={rightPlaceholderClasses || ''}>{rightPlaceholder}</span>}
+        </div>
+    );
 
     hintClassName = clsx(
         'order-3',
@@ -115,12 +126,12 @@ const TextField: React.FC<TextFieldProps> = ({
         return (
             <div className={containerClassName}>
                 {field}
-                {title && <Heading className={hideTitle ? 'sr-only' : 'order-1 !text-grey-700 peer-focus:!text-black dark:!text-grey-300 dark:peer-focus:!text-white'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+                {title && <Heading className={hideTitle ? 'sr-only' : 'order-1 peer-focus:!text-black dark:!text-grey-300 dark:peer-focus:!text-white'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
                 {hint && <Hint className={hintClassName} color={error ? 'red' : 'default'}>{hint}</Hint>}
             </div>
         );
     } else {
-        return field;
+        return (field);
     }
 };
 

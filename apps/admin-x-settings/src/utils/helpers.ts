@@ -25,7 +25,8 @@ export function resolveAsset(assetPath: string, relativeTo: string) {
 export function getLocalTime(timeZone: string) {
     const date = new Date();
     const options = {timeZone: timeZone};
-    const localTime = date.toLocaleString('en-US', options);
+    const userLocale = navigator.language.startsWith('en') ? navigator.language : 'en-US';
+    const localTime = date.toLocaleString(userLocale, options);
     return localTime;
 }
 
@@ -77,4 +78,8 @@ export function downloadFromEndpoint(path: string) {
 
 export function numberWithCommas(x: number) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+export function isObjectId(value: string) {
+    return /^[a-z0-9]{24}$/.test(value);
 }

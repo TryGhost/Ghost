@@ -27,7 +27,7 @@ export const TrialDaysLabel: React.FC<{size?: 'sm' | 'md'; trialDays: number;}> 
     return (
         <span className={containerClassName}>
             <span className="absolute inset-0 block rounded-full bg-pink opacity-20"></span>
-            {trialDays} days free
+            <span className='dark:text-pink'>{trialDays} days free</span>
         </span>
     );
 };
@@ -89,7 +89,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
         : 0;
 
     return (
-        <div>
+        <div data-testid="tier-preview">
             <div className="flex items-baseline justify-between">
                 <Heading className="pb-2" level={6} grey>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Heading>
                 {!isFreeTier && <div className="flex gap-1">

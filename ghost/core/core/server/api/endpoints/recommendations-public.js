@@ -10,12 +10,13 @@ module.exports = {
         options: [
             'limit',
             'order',
-            'page'
+            'page',
+            'filter'
         ],
         permissions: true,
         validation: {},
         async query(frame) {
-            return await recommendations.controller.listRecommendations(frame);
+            return await recommendations.controller.browse(frame);
         }
     },
 

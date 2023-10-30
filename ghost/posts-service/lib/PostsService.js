@@ -56,7 +56,7 @@ class PostsService {
                 });
             }
 
-            const postIds = collection.posts;
+            const postIds = collection.posts.map(post => post.id);
 
             if (postIds.length !== 0) {
                 options.filter = `id:[${postIds.join(',')}]+type:post`;
@@ -366,7 +366,7 @@ class PostsService {
     async #bulkDestroy(options) {
         if (!options.transacting) {
             return await this.models.Post.transaction(async (transacting) => {
-                return await this.bulkDestroy({
+                return await this.#bulkDestroy({
                     ...options,
                     transacting
                 });
