@@ -1,3 +1,4 @@
+import {ButtonColor} from '../admin-x-ds/global/Button';
 import {useCallback, useEffect, useState} from 'react';
 
 export type Dirtyable<Data> = Data & {
@@ -7,6 +8,12 @@ export type Dirtyable<Data> = Data & {
 export type SaveState = 'unsaved' | 'saving' | 'saved' | 'error' | '';
 
 export type ErrorMessages = Record<string, string | undefined>
+
+interface OkProps {
+    disabled: boolean;
+    color: ButtonColor;
+    label?: string;
+}
 
 export interface FormHook<State> {
     formState: State;
@@ -30,26 +37,32 @@ export interface FormHook<State> {
     isValid: boolean;
     errors: ErrorMessages;
     setErrors: (errors: ErrorMessages) => void;
+
+    okProps: OkProps;
 }
 
-const useForm = <State>({initialState, onSave, onSaveError, onValidate}: {
-    initialState: State,
-    onSave: (state: State) => void | Promise<void>
-    onSaveError?: (error: unknown) => void | Promise<void>
-    onValidate?: (state: State) => ErrorMessages
+const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, onSaveError, onSaveCompleted, onValidate}: {
+    initialState: State;
+    savingDelay?: number;
+    savedDelay?: number;
+    onSave: (state: State) => void | Promise<void>;
+    onSaveError?: (error: unknown) => void | Promise<void>;
+    onSaveCompleted?: () => void;
+    onValidate?: (state: State) => ErrorMessages;
 }): FormHook<State> => {
     const [formState, setFormState] = useState(initialState);
     const [saveState, setSaveState] = useState<SaveState>('');
     const [errors, setErrors] = useState<ErrorMessages>({});
 
-    // Reset saved state after 2 seconds
+    // Reset saved state after a delay
     useEffect(() => {
         if (saveState === 'saved') {
             setTimeout(() => {
+                onSaveCompleted?.();
                 setSaveState(state => (state === 'saved' ? '' : state));
-            }, 2000);
+            }, savedDelay);
         }
-    }, [saveState]);
+    }, [saveState, savedDelay, onSaveCompleted]);
 
     const isValid = (errs: ErrorMessages) => Object.values(errs).filter(Boolean).length === 0;
 
@@ -77,10 +90,21 @@ const useForm = <State>({initialState, onSave, onSaveError, onValidate}: {
                 return true;
             }
 
+            const timeBefore = Date.now();
+
             setSaveState('saving');
             try {
                 await onSave(formState);
+
+                const duration = Date.now() - timeBefore;
+                if (savingDelay && duration < savingDelay) {
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, savingDelay - duration);
+                    });
+                }
+
                 setSaveState('saved');
+
                 return true;
             } catch (e) {
                 await onSaveError?.(e);
@@ -88,13 +112,19 @@ const useForm = <State>({initialState, onSave, onSaveError, onValidate}: {
                 throw e;
             }
         },
-        [formState, saveState, onSave, onSaveError, validate]
+        [formState, saveState, savingDelay, onSave, onSaveError, validate]
     );
 
     const updateForm = useCallback((updater: (state: State) => State) => {
         setFormState(updater);
         setSaveState('unsaved');
     }, []);
+
+    const okProps: OkProps = {
+        disabled: saveState === 'saving',
+        color: saveState === 'saved' ? 'green' : 'black',
+        label: saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : undefined)
+    };
 
     return {
         formState,
@@ -112,7 +142,8 @@ const useForm = <State>({initialState, onSave, onSaveError, onValidate}: {
             setErrors(state => ({...state, [field]: ''}));
         },
         errors,
-        setErrors
+        setErrors,
+        okProps
     };
 };
 
