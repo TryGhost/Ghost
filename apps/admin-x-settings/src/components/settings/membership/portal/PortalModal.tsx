@@ -211,6 +211,7 @@ const PortalModal: React.FC = () => {
         afterClose={() => {
             updateRoute('portal');
         }}
+        buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}

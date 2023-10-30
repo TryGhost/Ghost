@@ -9,11 +9,13 @@ export type SaveState = 'unsaved' | 'saving' | 'saved' | 'error' | '';
 
 export type ErrorMessages = Record<string, string | undefined>
 
-interface OkProps {
+export interface OkProps {
     disabled: boolean;
     color: ButtonColor;
     label?: string;
 }
+
+export type SaveHandler = (options?: {force?: boolean; fakeWhenUnchanged?: boolean}) => Promise<boolean>
 
 export interface FormHook<State> {
     formState: State;
@@ -21,7 +23,7 @@ export interface FormHook<State> {
     /**
      * Validate and save the state. Use the `force` option to save even when there are no changes made (e.g., initial state should be saveable)
      */
-    handleSave: (options?: {force?: boolean; fakeWhenUnchanged?: boolean}) => Promise<boolean>;
+    handleSave: SaveHandler;
     /**
      * Update the form state and mark the form as dirty. Should be used in input events
      */
@@ -41,13 +43,13 @@ export interface FormHook<State> {
     okProps: OkProps;
 }
 
-const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, onSaveError, onSaveCompleted, onValidate}: {
+const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, onSaveError, onSavedStateReset: onSaveCompleted, onValidate}: {
     initialState: State;
     savingDelay?: number;
     savedDelay?: number;
     onSave: (state: State) => void | Promise<void>;
     onSaveError?: (error: unknown) => void | Promise<void>;
-    onSaveCompleted?: () => void;
+    onSavedStateReset?: () => void;
     onValidate?: (state: State) => ErrorMessages;
 }): FormHook<State> => {
     const [formState, setFormState] = useState(initialState);
@@ -55,6 +57,7 @@ const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, o
     const [errors, setErrors] = useState<ErrorMessages>({});
 
     // Reset saved state after a delay
+    // To prevent infinite renders, uses the value of onSaveCompleted from when the form was saved
     useEffect(() => {
         if (saveState === 'saved') {
             setTimeout(() => {
@@ -62,7 +65,7 @@ const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, o
                 setSaveState(state => (state === 'saved' ? '' : state));
             }, savedDelay);
         }
-    }, [saveState, savedDelay, onSaveCompleted]);
+    }, [saveState, savedDelay]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const isValid = (errs: ErrorMessages) => Object.values(errs).filter(Boolean).length === 0;
 
@@ -80,42 +83,39 @@ const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, o
     );
 
     // function to save the changed settings via API
-    const handleSave = useCallback(
-        async (options: {force?: boolean; fakeWhenUnchanged?: boolean} = {}) => {
-            if (!validate()) {
-                return false;
+    const handleSave = useCallback<SaveHandler>(async (options = {}) => {
+        if (!validate()) {
+            return false;
+        }
+
+        if (saveState !== 'unsaved' && !options.force && !options.fakeWhenUnchanged) {
+            return true;
+        }
+
+        const timeBefore = Date.now();
+
+        setSaveState('saving');
+        try {
+            if (saveState === 'unsaved' || options.force) {
+                await onSave(formState);
             }
 
-            if (saveState !== 'unsaved' && !options.force && !options.fakeWhenUnchanged) {
-                return true;
+            const duration = Date.now() - timeBefore;
+            if (savingDelay && duration < savingDelay) {
+                await new Promise((resolve) => {
+                    setTimeout(resolve, savingDelay - duration);
+                });
             }
 
-            const timeBefore = Date.now();
+            setSaveState('saved');
 
-            setSaveState('saving');
-            try {
-                if (saveState === 'unsaved' || options.force) {
-                    await onSave(formState);
-                }
-
-                const duration = Date.now() - timeBefore;
-                if (savingDelay && duration < savingDelay) {
-                    await new Promise((resolve) => {
-                        setTimeout(resolve, savingDelay - duration);
-                    });
-                }
-
-                setSaveState('saved');
-
-                return true;
-            } catch (e) {
-                await onSaveError?.(e);
-                setSaveState('unsaved');
-                throw e;
-            }
-        },
-        [formState, saveState, savingDelay, onSave, onSaveError, validate]
-    );
+            return true;
+        } catch (e) {
+            await onSaveError?.(e);
+            setSaveState('unsaved');
+            throw e;
+        }
+    }, [formState, saveState, savingDelay, onSave, onSaveError, validate]);
 
     const updateForm = useCallback((updater: (state: State) => State) => {
         setFormState(updater);

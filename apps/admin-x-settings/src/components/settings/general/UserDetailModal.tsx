@@ -110,6 +110,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {formState, setFormState, saveState, handleSave, updateForm, errors, setErrors, clearError, okProps} = useForm({
         initialState: user,
         savingDelay: 500,
+        savedDelay: 500,
         onValidate: (values) => {
             return Object.entries(validators).reduce<ErrorMessages>((newErrors, [key, validate]) => {
                 const error = validate(values);
@@ -121,6 +122,10 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         },
         onSave: async (values) => {
             await updateUser?.(values);
+        },
+        onSavedStateReset: () => {
+            mainModal.remove();
+            navigateOnClose();
         },
         onSaveError: handleError
     });
@@ -162,15 +167,6 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             updateRoute({isExternal: true, route: 'dashboard'});
         }
     }, [currentUser, updateRoute]);
-
-    useEffect(() => {
-        if (saveState === 'saved') {
-            setTimeout(() => {
-                mainModal.remove();
-                navigateOnClose();
-            }, 500);
-        }
-    }, [mainModal, navigateOnClose, saveState, updateRoute]);
 
     const confirmSuspend = async (_user: User) => {
         if (_user.status === 'inactive' && _user.roles[0].name !== 'Contributor') {
@@ -370,6 +366,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             afterClose={navigateOnClose}
             animate={canAccessSettings(currentUser)}
             backDrop={canAccessSettings(currentUser)}
+            buttonsDisabled={okProps.disabled}
             dirty={saveState === 'unsaved'}
             okColor={okProps.color}
             okLabel={okProps.label || 'Save & close'}

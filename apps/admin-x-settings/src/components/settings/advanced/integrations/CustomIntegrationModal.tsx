@@ -27,10 +27,16 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
     const {mutateAsync: uploadImage} = useUploadImage();
     const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, saveState, errors, clearError, validate} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors, clearError, validate, okProps} = useForm({
         initialState: integration,
+        savingDelay: 500,
+        savedDelay: 500,
         onSave: async () => {
             await editIntegration(formState);
+        },
+        onSavedStateReset: () => {
+            modal.remove();
+            updateRoute('integrations');
         },
         onSaveError: handleError,
         onValidate: () => {
@@ -82,19 +88,17 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
         afterClose={() => {
             updateRoute('integrations');
         }}
+        buttonsDisabled={okProps.disabled}
         dirty={saveState === 'unsaved'}
-        okColor='black'
-        okLabel='Save & close'
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save & close'}
         size='md'
         testId='custom-integration-modal'
         title={formState.name}
         stickyFooter
         onOk={async () => {
             toast.remove();
-            if (await handleSave()) {
-                modal.remove();
-                updateRoute('integrations');
-            } else {
+            if (!(await handleSave())) {
                 showToast({
                     type: 'pageError',
                     message: 'Can\'t save integration, please double check that you\'ve filled all mandatory fields.'

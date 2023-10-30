@@ -1,6 +1,4 @@
 import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
-// import Button from '../../../admin-x-ds/global/Button';
-// import ChangeThemeModal from './ThemeModal';
 import Icon from '../../../admin-x-ds/global/Icon';
 import React, {useEffect, useState} from 'react';
 import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
@@ -102,12 +100,14 @@ const DesignModal: React.FC = () => {
         saveState,
         handleSave,
         updateForm,
-        setFormState
+        setFormState,
+        okProps
     } = useForm({
         initialState: {
             settings: settings as Array<Setting & { dirty?: boolean }>,
             themeSettings: themeSettings ? (themeSettings.custom_theme_settings as Array<CustomThemeSetting & { dirty?: boolean }>) : undefined
         },
+        savingDelay: 500,
         onSave: async () => {
             if (formState.themeSettings?.some(setting => setting.dirty)) {
                 const response = await editThemeSettings(formState.themeSettings);
@@ -215,12 +215,12 @@ const DesignModal: React.FC = () => {
         afterClose={() => {
             updateRoute('design');
         }}
-        buttonsDisabled={saveState === 'saving'}
+        buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         defaultTab='homepage'
         dirty={saveState === 'unsaved'}
-        okColor={saveState === 'saved' ? 'green' : 'black'}
-        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save')}
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save'}
         preview={previewContent}
         previewToolbarTabs={previewTabs}
         selectedURL={selectedPreviewTab}
@@ -231,7 +231,7 @@ const DesignModal: React.FC = () => {
         testId='design-modal'
         title='Design'
         onOk={async () => {
-            await handleSave();
+            await handleSave({fakeWhenUnchanged: true});
         }}
         onSelectURL={onSelectURL}
     />;
