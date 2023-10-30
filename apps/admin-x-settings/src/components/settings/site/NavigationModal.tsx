@@ -45,6 +45,7 @@ const NavigationModal = NiceModal.create(() => {
             }}
             buttonsDisabled={saveState === 'saving'}
             dirty={localSettings.some(setting => setting.dirty)}
+            okLabel={saveState === 'saving' ? 'Saving...' : 'OK'}
             scrolling={true}
             size='lg'
             stickyFooter={true}

@@ -438,8 +438,9 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
 
-    const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError} = useForm({
+    const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError, okProps} = useForm({
         initialState: newsletter,
+        savingDelay: 500,
         onSave: async () => {
             const {newsletters, meta} = await editNewsletter(formState);
             if (meta?.sent_email_verification) {
@@ -489,12 +490,12 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
 
     return <PreviewModalContent
         afterClose={() => updateRoute('newsletters')}
-        buttonsDisabled={saveState === 'saving'}
+        buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
-        okColor={saveState === 'saved' ? 'green' : 'black'}
-        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save')}
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save'}
         preview={preview}
         previewBgColor={'grey'}
         previewToolbar={false}
@@ -503,7 +504,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         testId='newsletter-modal'
         title='Newsletter'
         onOk={async () => {
-            if (!(await handleSave())) {
+            if (!(await handleSave({fakeWhenUnchanged: true}))) {
                 showToast({
                     type: 'pageError',
                     message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
