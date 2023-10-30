@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import useForm, {ErrorMessages, SaveState} from './useForm';
+import useForm, {ErrorMessages, OkProps, SaveHandler, SaveState} from './useForm';
 import useGlobalDirtyState from './useGlobalDirtyState';
 import useHandleError from '../utils/api/handleError';
 import {Setting, SettingValue, useEditSettings} from '../api/settings';
@@ -18,16 +18,17 @@ export interface SettingGroupHook {
     saveState: SaveState;
     siteData: SiteData | null;
     focusRef: React.RefObject<HTMLInputElement>;
-    handleSave: () => Promise<boolean>;
+    handleSave: SaveHandler;
     handleCancel: () => void;
     updateSetting: (key: string, value: SettingValue) => void;
     handleEditingChange: (newState: boolean) => void;
     validate: () => boolean;
     errors: ErrorMessages;
     clearError: (key: string) => void;
+    okProps: OkProps;
 }
 
-const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}): SettingGroupHook => {
+const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onValidate?: () => ErrorMessages} = {}): SettingGroupHook => {
     // create a ref to focus the input field
     const focusRef = useRef<HTMLInputElement>(null);
 
@@ -37,8 +38,9 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}):
 
     const [isEditing, setEditing] = useState(false);
 
-    const {formState: localSettings, saveState, handleSave, updateForm, reset, validate, errors, clearError} = useForm<LocalSetting[]>({
+    const {formState: localSettings, saveState, handleSave, updateForm, setFormState, reset, validate, errors, clearError, okProps} = useForm<LocalSetting[]>({
         initialState: settings || [],
+        savingDelay,
         onSave: async () => {
             await editSettings?.(changedSettings());
         },
@@ -61,7 +63,7 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}):
     // reset the local state when there's a new settings API response, unless currently editing
     useEffect(() => {
         if (!isEditing || saveState === 'saving') {
-            reset();
+            setFormState(() => settings);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [settings]);
@@ -124,7 +126,8 @@ const useSettingGroup = ({onValidate}: {onValidate?: () => ErrorMessages} = {}):
         handleEditingChange,
         validate,
         errors,
-        clearError
+        clearError,
+        okProps
     };
 };
 

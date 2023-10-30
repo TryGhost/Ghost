@@ -22,12 +22,16 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
     const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
     const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, saveState, errors, clearError, setErrors} = useForm({
+    const {formState, updateForm, handleSave, errors, clearError, setErrors, okProps} = useForm({
         initialState: {
             ...recommendation
         },
+        savingDelay: 500,
+        savedDelay: 500,
         onSave: async (state) => {
             await editRecommendation(state);
+        },
+        onSavedStateReset: () => {
             modal.remove();
             updateRoute('recommendations');
         },
@@ -45,14 +49,6 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
             return newErrors;
         }
     });
-
-    let okLabel = 'Save';
-
-    if (saveState === 'saving') {
-        okLabel = 'Saving...';
-    } else if (saveState === 'saved') {
-        okLabel = 'Saved';
-    }
 
     let leftButtonProps = {
         label: 'Delete',
@@ -94,20 +90,16 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         }}
         animate={animate ?? true}
         backDropClick={false}
+        buttonsDisabled={okProps.disabled}
         cancelLabel={'Cancel'}
         leftButtonProps={leftButtonProps}
-        okColor='black'
-        okLabel={okLabel}
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save & close'}
         size='sm'
         testId='edit-recommendation-modal'
         title={'Edit recommendation'}
         stickyFooter
         onOk={async () => {
-            if (saveState === 'saving') {
-                // Already saving
-                return;
-            }
-
             dismissAllToasts();
             try {
                 await handleSave({force: true});

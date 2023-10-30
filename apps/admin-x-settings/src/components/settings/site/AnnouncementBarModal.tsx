@@ -115,7 +115,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 const AnnouncementBarModal: React.FC = () => {
     const {siteData} = useGlobalData();
-    const {localSettings, updateSetting, handleSave} = useSettingGroup();
+    const {localSettings, updateSetting, handleSave, okProps} = useSettingGroup({savingDelay: 500});
     const [announcementContent] = getSettingValues<string>(localSettings, ['announcement_content']);
     const [accentColor] = getSettingValues<string>(localSettings, ['accent_color']);
     const [announcementBackgroundColor] = getSettingValues<string>(localSettings, ['announcement_background']);
@@ -208,10 +208,12 @@ const AnnouncementBarModal: React.FC = () => {
         afterClose={() => {
             updateRoute('announcement-bar');
         }}
+        buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         deviceSelector={true}
         dirty={false}
-        okLabel='Save'
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save'}
         preview={preview}
         previewBgColor='greygradient'
         previewToolbarTabs={previewTabs}
@@ -221,8 +223,7 @@ const AnnouncementBarModal: React.FC = () => {
         title='Announcement'
         titleHeadingLevel={5}
         onOk={async () => {
-            if (!(await handleSave())) {
-                updateRoute('announcement-bar');
+            if (!(await handleSave({fakeWhenUnchanged: true}))) {
                 showToast({
                     type: 'pageError',
                     message: 'An error occurred while saving your changes. Please try again.'
