@@ -21,7 +21,7 @@ export interface FormHook<State> {
     /**
      * Validate and save the state. Use the `force` option to save even when there are no changes made (e.g., initial state should be saveable)
      */
-    handleSave: (options?: {force?: boolean}) => Promise<boolean>;
+    handleSave: (options?: {force?: boolean; fakeWhenUnchanged?: boolean}) => Promise<boolean>;
     /**
      * Update the form state and mark the form as dirty. Should be used in input events
      */
@@ -81,12 +81,12 @@ const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, o
 
     // function to save the changed settings via API
     const handleSave = useCallback(
-        async (options: {force?: boolean} = {}) => {
+        async (options: {force?: boolean; fakeWhenUnchanged?: boolean} = {}) => {
             if (!validate()) {
                 return false;
             }
 
-            if (saveState !== 'unsaved' && !options.force) {
+            if (saveState !== 'unsaved' && !options.force && !options.fakeWhenUnchanged) {
                 return true;
             }
 
@@ -94,7 +94,9 @@ const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, o
 
             setSaveState('saving');
             try {
-                await onSave(formState);
+                if (saveState === 'unsaved' || options.force) {
+                    await onSave(formState);
+                }
 
                 const duration = Date.now() - timeBefore;
                 if (savingDelay && duration < savingDelay) {

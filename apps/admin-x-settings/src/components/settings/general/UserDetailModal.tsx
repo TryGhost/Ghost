@@ -10,9 +10,10 @@ import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ProfileBasics from './users/ProfileBasics';
 import ProfileDetails from './users/ProfileDetails';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import StaffToken from './users/StaffToken';
 import clsx from 'clsx';
+import useForm, {ErrorMessages} from '../../../hooks/useForm';
 import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
@@ -28,11 +29,69 @@ import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 
+const validators: Record<string, (u: Partial<User>) => string> = {
+    name: ({name}) => {
+        let error = '';
+
+        if (!name) {
+            error = 'Please enter a name';
+        }
+
+        if (name && name.length > 191) {
+            error = 'Name is too long';
+        }
+
+        return error;
+    },
+    email: ({email}) => {
+        const valid = validator.isEmail(email || '');
+        return valid ? '' : 'Please enter a valid email address';
+    },
+    url: ({url}) => {
+        const valid = !url || validator.isURL(url);
+        return valid ? '' : 'Please enter a valid URL';
+    },
+    bio: ({bio}) => {
+        const valid = !bio || bio.length <= 200;
+        return valid ? '' : 'Bio is too long';
+    },
+    location: ({location}) => {
+        const valid = !location || location.length <= 150;
+        return valid ? '' : 'Location is too long';
+    },
+    website: ({website}) => {
+        const valid = !website || (validator.isURL(website) && website.length <= 2000);
+        return valid ? '' : 'Website is not a valid url';
+    },
+    facebook: ({facebook}) => {
+        try {
+            validateFacebookUrl(facebook || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    },
+    twitter: ({twitter}) => {
+        try {
+            validateTwitterUrl(twitter || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    }
+};
+
 export interface UserDetailProps {
     user: User;
     setUserData: (user: User) => void;
     errors: {[key in keyof User]?: string};
-    validators: Record<string, (user: Partial<User>) => boolean>;
+    validateField: <K extends keyof User>(key: K, value: User[K]) => boolean;
     clearError: (key: keyof User) => void;
 }
 
@@ -47,15 +106,34 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {updateRoute} = useRouting();
     const {ownerUser} = useStaffUsers();
     const {currentUser} = useGlobalData();
-    const [userData, _setUserData] = useState(user);
-    const [saveState, setSaveState] = useState<'' | 'unsaved' | 'saving' | 'saved'>('');
-    const [errors, setErrors] = useState<UserDetailProps['errors']>({});
-
-    const clearError = (key: keyof User) => setErrors(errs => ({...errs, [key]: undefined}));
-
-    const setUserData = (newUserData: User | ((current: User) => User)) => {
-        _setUserData(newUserData);
-        setSaveState('unsaved');
+    const handleError = useHandleError();
+    const {formState, setFormState, saveState, handleSave, updateForm, errors, setErrors, clearError, okProps} = useForm({
+        initialState: user,
+        savingDelay: 500,
+        onValidate: (values) => {
+            return Object.entries(validators).reduce<ErrorMessages>((newErrors, [key, validate]) => {
+                const error = validate(values);
+                if (error) {
+                    newErrors[key] = error;
+                }
+                return newErrors;
+            }, {});
+        },
+        onSave: async (values) => {
+            await updateUser?.(values);
+        },
+        onSaveError: handleError
+    });
+    const setUserData = (newData: User) => updateForm(() => newData);
+    const validateField = <K extends keyof User>(key: K, value: User[K]) => {
+        const error = validators[key]?.({[key]: value});
+        if (error) {
+            setErrors({...errors, [key]: error});
+            return false;
+        } else {
+            clearError(key);
+            return true;
+        }
     };
 
     const mainModal = useModal();
@@ -64,7 +142,6 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {mutateAsync: deleteUser} = useDeleteUser();
     const {mutateAsync: makeOwner} = useMakeOwner();
     const limiter = useLimiter();
-    const handleError = useHandleError();
 
     // Pintura integration
     const {settings} = useGlobalData();
@@ -91,7 +168,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             setTimeout(() => {
                 mainModal.remove();
                 navigateOnClose();
-            }, 300);
+            }, 500);
         }
     }, [mainModal, navigateOnClose, saveState, updateRoute]);
 
@@ -133,7 +210,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 };
                 try {
                     await updateUser(updatedUserData);
-                    setUserData(updatedUserData);
+                    setFormState(() => updatedUserData);
                     modal?.remove();
                     showToast({
                         message: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
@@ -201,12 +278,12 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 
             switch (image) {
             case 'cover_image':
-                setUserData?.((_user) => {
+                updateForm((_user) => {
                     return {..._user, cover_image: imageUrl};
                 });
                 break;
             case 'profile_image':
-                setUserData?.((_user) => {
+                updateForm((_user) => {
                     return {..._user, profile_image: imageUrl};
                 });
                 break;
@@ -219,12 +296,12 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const handleImageDelete = (image: string) => {
         switch (image) {
         case 'cover_image':
-            setUserData?.((_user) => {
+            updateForm((_user) => {
                 return {..._user, cover_image: ''};
             });
             break;
         case 'profile_image':
-            setUserData?.((_user) => {
+            updateForm((_user) => {
                 return {..._user, profile_image: ''};
             });
             break;
@@ -234,7 +311,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const showMenu = hasAdminAccess(currentUser) || (isEditorUser(currentUser) && isAuthorOrContributor(user));
     let menuItems: MenuItem[] = [];
 
-    if (isOwnerUser(currentUser) && isAdminUser(userData) && userData.status !== 'inactive') {
+    if (isOwnerUser(currentUser) && isAdminUser(formState) && formState.status !== 'inactive') {
         menuItems.push({
             id: 'make-owner',
             label: 'Make owner',
@@ -242,11 +319,11 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         });
     }
 
-    if (userData.id !== currentUser.id && (
+    if (formState.id !== currentUser.id && (
         (hasAdminAccess(currentUser) && !isOwnerUser(user)) ||
         (isEditorUser(currentUser) && isAuthorOrContributor(user))
     )) {
-        let suspendUserLabel = userData.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
+        let suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
         menuItems.push({
             id: 'delete-user',
@@ -258,7 +335,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             id: 'suspend-user',
             label: suspendUserLabel,
             onClick: () => {
-                confirmSuspend(userData);
+                confirmSuspend(formState);
             }
         });
     }
@@ -268,17 +345,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         label: 'View user activity',
         onClick: () => {
             mainModal.remove();
-            updateRoute(`history/view/${userData.id}`);
+            updateRoute(`history/view/${formState.id}`);
         }
     });
-
-    let okLabel = saveState === 'saved' ? 'Saved' : 'Save & close';
-
-    if (saveState === 'saving') {
-        okLabel = 'Saving...';
-    } else if (saveState === 'saved') {
-        okLabel = 'Saved';
-    }
 
     const coverEditButtonBaseClasses = 'bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition-all cursor-pointer font-medium nowrap';
 
@@ -294,85 +363,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         coverEditButtonBaseClasses
     );
 
-    const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
-
-    const validators: Record<string, (u: Partial<User>) => boolean> = {
-        name: ({name}) => {
-            let error = '';
-
-            if (!name) {
-                error = 'Please enter a name';
-            }
-
-            if (name && name.length > 191) {
-                error = 'Name is too long';
-            }
-
-            setErrors?.((_errors) => {
-                return {..._errors, name: error};
-            });
-            return !error;
-        },
-        email: ({email}) => {
-            const valid = validator.isEmail(email || '');
-            setErrors?.((_errors) => {
-                return {..._errors, email: valid ? '' : 'Please enter a valid email address'};
-            });
-            return valid;
-        },
-        url: ({url}) => {
-            const valid = !url || validator.isURL(url);
-            setErrors?.((_errors) => {
-                return {..._errors, url: valid ? '' : 'Please enter a valid URL'};
-            });
-            return valid;
-        },
-        bio: ({bio}) => {
-            const valid = !bio || bio.length <= 200;
-            setErrors?.((_errors) => {
-                return {..._errors, bio: valid ? '' : 'Bio is too long'};
-            });
-            return valid;
-        },
-        location: ({location}) => {
-            const valid = !location || location.length <= 150;
-            setErrors?.((_errors) => {
-                return {..._errors, location: valid ? '' : 'Location is too long'};
-            });
-            return valid;
-        },
-        website: ({website}) => {
-            const valid = !website || (validator.isURL(website) && website.length <= 2000);
-            setErrors?.((_errors) => {
-                return {..._errors, website: valid ? '' : 'Website is not a valid url'};
-            });
-            return valid;
-        },
-        facebook: ({facebook}) => {
-            try {
-                validateFacebookUrl(facebook || '');
-                return true;
-            } catch (e) {
-                if (e instanceof Error) {
-                    const message = e.message;
-                    setErrors?.(_errors => ({..._errors, facebook: message}));
-                }
-                return false;
-            }
-        },
-        twitter: ({twitter}) => {
-            try {
-                validateTwitterUrl(twitter || '');
-                return true;
-            } catch (e) {
-                if (e instanceof Error) {
-                    const message = e.message;
-                    setErrors?.(_errors => ({..._errors, twitter: message}));
-                }
-                return false;
-            }
-        }
-    };
+    const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 
     return (
         <Modal
@@ -380,36 +371,26 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             animate={canAccessSettings(currentUser)}
             backDrop={canAccessSettings(currentUser)}
             dirty={saveState === 'unsaved'}
-            okLabel={okLabel}
+            okColor={okProps.color}
+            okLabel={okProps.label || 'Save & close'}
             size={canAccessSettings(currentUser) ? 'lg' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
             onOk={async () => {
-                setSaveState('saving');
-                let isValid = true;
-                if (Object.values(validators).map(validate => validate(userData)).includes(false)) {
-                    isValid = false;
-                }
-
                 toast.remove();
 
-                if (!isValid) {
+                if (!(await handleSave({fakeWhenUnchanged: true}))) {
                     showToast({
                         type: 'pageError',
                         message: 'Can\'t save user, please double check that you\'ve filled all mandatory fields.'
                     });
-                    setSaveState('');
-                    return;
                 }
-
-                await updateUser?.(userData);
-                setSaveState('saved');
             }}
         >
             <div>
                 <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} bg-gradient-to-tr from-grey-900 to-black`}>
                     <div className='flex min-h-[40vmin] flex-wrap items-end justify-between bg-cover bg-center' style={{
-                        backgroundImage: `url(${userData.cover_image})`
+                        backgroundImage: `url(${formState.cover_image})`
                     }}>
                         <div className='flex w-full max-w-[620px] flex-col gap-5 p-8 md:max-w-[auto] md:flex-row md:items-center'>
                             <div>
@@ -422,12 +403,12 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                     id='avatar'
                                     imageClassName='w-full h-full object-cover rounded-full shrink-0'
                                     imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px] shrink-0'
-                                    imageURL={userData.profile_image}
+                                    imageURL={formState.profile_image}
                                     pintura={
                                         {
                                             isEnabled: editor.isEnabled,
                                             openEditor: async () => editor.openEditor({
-                                                image: userData.profile_image || '',
+                                                image: formState.profile_image || '',
                                                 handleSave: async (file:File) => {
                                                     handleImageUpload('profile_image', file);
                                                 }
@@ -460,12 +441,12 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 fileUploadClassName={fileUploadButtonClasses}
                                 id='cover-image'
                                 imageClassName='hidden'
-                                imageURL={userData.cover_image || ''}
+                                imageURL={formState.cover_image || ''}
                                 pintura={
                                     {
                                         isEnabled: editor.isEnabled,
                                         openEditor: async () => editor.openEditor({
-                                            image: userData.cover_image || '',
+                                            image: formState.cover_image || '',
                                             handleSave: async (file:File) => {
                                                 handleImageUpload('cover_image', file);
                                             }
@@ -487,13 +468,13 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     </div>
                 </div>
                 <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-4xl'} mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2`}>
-                    <ProfileBasics clearError={clearError} errors={errors} setUserData={setUserData} user={userData} validators={validators} />
+                    <ProfileBasics clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
                     <div className='flex flex-col justify-between gap-10'>
-                        <ProfileDetails clearError={clearError} errors={errors} setUserData={setUserData} user={userData} validators={validators} />
+                        <ProfileDetails clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
                         {user.id === currentUser.id && <StaffToken />}
                     </div>
-                    <EmailNotifications setUserData={setUserData} user={userData} />
-                    <ChangePasswordForm user={userData} />
+                    <EmailNotifications setUserData={setUserData} user={formState} />
+                    <ChangePasswordForm user={formState} />
                 </div>
             </div>
         </Modal>
