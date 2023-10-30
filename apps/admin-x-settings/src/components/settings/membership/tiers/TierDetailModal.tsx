@@ -82,8 +82,6 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             } else {
                 await createTier(values);
             }
-
-            modal.remove();
         },
         onSavedStateReset: () => {
             modal.remove();

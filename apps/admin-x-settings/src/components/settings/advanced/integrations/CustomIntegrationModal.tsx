@@ -98,7 +98,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
         stickyFooter
         onOk={async () => {
             toast.remove();
-            if (!(await handleSave())) {
+            if (!(await handleSave({fakeWhenUnchanged: true}))) {
                 showToast({
                     type: 'pageError',
                     message: 'Can\'t save integration, please double check that you\'ve filled all mandatory fields.'

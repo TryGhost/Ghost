@@ -111,12 +111,12 @@ const DesignModal: React.FC = () => {
         onSave: async () => {
             if (formState.themeSettings?.some(setting => setting.dirty)) {
                 const response = await editThemeSettings(formState.themeSettings);
-                updateForm(state => ({...state, themeSettings: response.custom_theme_settings}));
+                setFormState(state => ({...state, themeSettings: response.custom_theme_settings}));
             }
 
             if (formState.settings.some(setting => setting.dirty)) {
                 const {settings: newSettings} = await editSettings(formState.settings.filter(setting => setting.dirty));
-                updateForm(state => ({...state, settings: newSettings}));
+                setFormState(state => ({...state, settings: newSettings}));
             }
         },
         onSaveError: handleError

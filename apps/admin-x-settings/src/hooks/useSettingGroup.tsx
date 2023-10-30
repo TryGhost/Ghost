@@ -38,7 +38,7 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
 
     const [isEditing, setEditing] = useState(false);
 
-    const {formState: localSettings, saveState, handleSave, updateForm, reset, validate, errors, clearError, okProps} = useForm<LocalSetting[]>({
+    const {formState: localSettings, saveState, handleSave, updateForm, setFormState, reset, validate, errors, clearError, okProps} = useForm<LocalSetting[]>({
         initialState: settings || [],
         savingDelay,
         onSave: async () => {
@@ -63,7 +63,7 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
     // reset the local state when there's a new settings API response, unless currently editing
     useEffect(() => {
         if (!isEditing || saveState === 'saving') {
-            reset();
+            setFormState(() => settings);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [settings]);
