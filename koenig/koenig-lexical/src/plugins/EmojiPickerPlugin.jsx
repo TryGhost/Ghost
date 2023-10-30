@@ -22,7 +22,7 @@ const EmojiMenuItem = function ({index, isSelected, onClick, onMouseEnter, emoji
             onClick={onClick}
             onMouseEnter={onMouseEnter}
         >
-            <span className="text-lg">{emoji.skins[0].native}</span>
+            <span className="font-serif text-lg">{emoji.skins[0].native}</span>
             <span className="truncate">{emoji.id}</span>
         </li>
     );
@@ -90,7 +90,7 @@ export function EmojiPickerPlugin() {
 
                 return (
                     <Portal to={anchorElementRef.current}>
-                        <ul className="absolute top-[25px] z-10 max-h-[196px] w-[240px] list-none overflow-y-auto bg-white p-1 shadow" data-testid="emoji-menu">
+                        <ul className="absolute top-[25px] z-10 max-h-[214px] w-[240px] list-none overflow-y-auto bg-white p-1 shadow" data-testid="emoji-menu">
                             {searchResults.map((emoji, index) => (
                                 <div key={emoji.id}>
                                     <EmojiMenuItem
