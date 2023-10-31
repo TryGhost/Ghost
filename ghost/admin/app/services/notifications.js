@@ -34,6 +34,8 @@ const GENERIC_ERROR_NAMES = [
     'SyntaxError',
     'TypeError',
     'URIError',
+    // ember-ajax errors - https://github.com/ember-cli/ember-ajax/blob/master/addon/errors.ts
+    'AjaxError',
     'ServerError'
 ];
 
