@@ -98,6 +98,22 @@ function createSetNullableMigration(table, column, options = {}) {
 
 /**
  * @param {string} table
+ * @param {string[]|string} columns One or multiple columns (in case the index should be for multiple columns)
+ * @returns {Migration}
+ */
+function createAddIndexMigration(table, columns) {
+    return createTransactionalMigration(
+        async function up(knex) {
+            await commands.addIndex(table, columns, knex);
+        },
+        async function down(knex) {
+            await commands.dropIndex(table, columns, knex);
+        }
+    );
+}
+
+/**
+ * @param {string} table
  * @param {string} from
  * @param {string} to
  *
@@ -163,7 +179,8 @@ module.exports = {
     createDropColumnMigration,
     createSetNullableMigration,
     createDropNullableMigration,
-    createRenameColumnMigration
+    createRenameColumnMigration,
+    createAddIndexMigration
 };
 
 /**
