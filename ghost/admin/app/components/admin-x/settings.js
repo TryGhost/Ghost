@@ -310,11 +310,7 @@ export default class AdminXSettings extends Component {
         console.error(error); // eslint-disable-line
 
         if (this.config.sentry_dsn) {
-            Sentry.captureException(error, {
-                tags: {
-                    adminx: true
-                }
-            });
+            Sentry.captureException(error);
         }
 
         // don't rethrow, app should attempt to gracefully recover

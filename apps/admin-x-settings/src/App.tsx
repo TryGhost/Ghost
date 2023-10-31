@@ -49,11 +49,7 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
     );
 
     return (
-        <SentryErrorBoundary
-            beforeCapture={(scope) => {
-                scope.setTag('adminx', true);
-            }}
-        >
+        <SentryErrorBoundary>
             <QueryClientProvider client={queryClient}>
                 <ServicesProvider fetchKoenigLexical={fetchKoenigLexical} ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} unsplashConfig={unsplashConfig} upgradeStatus={upgradeStatus} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
                     <GlobalDataProvider>
