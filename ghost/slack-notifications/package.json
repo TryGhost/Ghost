@@ -24,8 +24,8 @@
   },
   "dependencies": {
     "@tryghost/errors": "1.2.26",
-    "@tryghost/validator": "0.2.4",
-    "@tryghost/version": "0.1.22",
+    "@tryghost/validator": "0.2.6",
+    "@tryghost/version": "0.1.24",
     "got": "9.6.0"
   }
 }
