@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/ember';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -5,7 +6,7 @@ import Route from '@ember/routing/route';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
-import {InitSentryForEmber} from '@sentry/ember';
+import {Debug} from '@sentry/integrations';
 import {importSettings} from '../components/admin-x/settings';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
@@ -18,6 +19,7 @@ import {
     isMaintenanceError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
+import {later} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 function K() {
@@ -86,6 +88,12 @@ export default Route.extend(ShortcutsRoute, {
         didTransition() {
             this.session.appLoadTransition = null;
             this.send('closeMenus');
+
+            // Need a tiny delay here to allow the router to update to the current route
+            later(() => {
+                Sentry.setTag('route', this.router.currentRouteName);
+                Sentry.setTag('path', this.router.currentURL);
+            }, 2);
         },
 
         authorizationFailed() {
@@ -169,7 +177,7 @@ export default Route.extend(ShortcutsRoute, {
         // init Sentry here rather than app.js so that we can use API-supplied
         // sentry_dsn and sentry_env rather than building it into release assets
         if (this.config.sentry_dsn) {
-            InitSentryForEmber({
+            const sentryConfig = {
                 dsn: this.config.sentry_dsn,
                 environment: this.config.sentry_env,
                 release: `ghost@${this.config.version}`,
@@ -177,12 +185,22 @@ export default Route.extend(ShortcutsRoute, {
                     event.tags = event.tags || {};
                     event.tags.shown_to_user = event.tags.shown_to_user || false;
                     event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
+
+                    // Do not report "handled" errors to Sentry
+                    if (event.tags.shown_to_user === true) {
+                        return null;
+                    }
+
                     return event;
                 },
                 // TransitionAborted errors surface from normal application behaviour
                 // - https://github.com/emberjs/ember.js/issues/12505
                 ignoreErrors: [/^TransitionAborted$/]
-            });
+            };
+            if (this.config.sentry_env === 'development') {
+                sentryConfig.integrations = [new Debug()];
+            }
+            Sentry.init(sentryConfig);
         }
 
         if (this.session.isAuthenticated) {

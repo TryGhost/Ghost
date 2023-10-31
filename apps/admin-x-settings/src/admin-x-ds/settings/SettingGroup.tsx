@@ -18,6 +18,7 @@ interface SettingGroupProps {
     saveState?: SaveState;
     customHeader?: React.ReactNode;
     customButtons?: React.ReactNode;
+    beta?: boolean;
     children?: React.ReactNode;
     hideEditButton?: boolean;
     alwaysShowSaveButton?: boolean;
@@ -52,6 +53,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
     saveState,
     customHeader,
     customButtons,
+    beta = false,
     children,
     hideEditButton,
     alwaysShowSaveButton = true,
@@ -178,7 +180,7 @@ const SettingGroup: React.FC<SettingGroupProps> = ({
         <div className={containerClasses} data-testid={testId}>
             <div ref={ref} className='absolute' id={navid && navid}></div>
             {customHeader ? customHeader :
-                <SettingGroupHeader description={description} title={title!}>
+                <SettingGroupHeader beta={beta} description={description} title={title!}>
                     {customButtons ? customButtons :
                         (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link linkWithPadding />)}
                 </SettingGroupHeader>
