@@ -523,7 +523,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         created_at: {type: 'dateTime', nullable: false},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
-        attribution_id: {type: 'string', maxlength: 24, nullable: true},
+        attribution_id: {type: 'string', maxlength: 24, nullable: true, index: true},
         attribution_type: {
             type: 'string', maxlength: 50, nullable: true, validations: {
                 isIn: [['url', 'post', 'page', 'author', 'tag']]
@@ -538,10 +538,7 @@ module.exports = {
                 isIn: [['member', 'import', 'system', 'api', 'admin']]
             }
         },
-        batch_id: {type: 'string', maxlength: 24, nullable: true},
-        '@@INDEXES@@': [
-            ['attribution_id']
-        ]
+        batch_id: {type: 'string', maxlength: 24, nullable: true}
     },
     members_cancel_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -712,7 +709,7 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         subscription_id: {type: 'string', maxlength: 24, nullable: false, references: 'members_stripe_customers_subscriptions.id', cascadeDelete: true},
-        attribution_id: {type: 'string', maxlength: 24, nullable: true},
+        attribution_id: {type: 'string', maxlength: 24, nullable: true, index: true},
         attribution_type: {
             type: 'string', maxlength: 50, nullable: true, validations: {
                 isIn: [['url', 'post', 'page', 'author', 'tag']]
@@ -722,10 +719,7 @@ module.exports = {
         referrer_source: {type: 'string', maxlength: 191, nullable: true},
         referrer_medium: {type: 'string', maxlength: 191, nullable: true},
         referrer_url: {type: 'string', maxlength: 2000, nullable: true},
-        batch_id: {type: 'string', maxlength: 24, nullable: true},
-        '@@INDEXES@@': [
-            ['attribution_id']
-        ]
+        batch_id: {type: 'string', maxlength: 24, nullable: true}
     },
     offer_redemptions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
