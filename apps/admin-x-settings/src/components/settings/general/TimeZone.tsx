@@ -56,6 +56,8 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
         };
     });
 
+    const publicationTimezoneData = timezoneOptions.find(option => option.value === publicationTimezone);
+
     const handleTimezoneChange = (value?: string) => {
         updateSetting('timezone', value || null);
     };
@@ -65,8 +67,8 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             {
                 key: 'site-timezone',
                 value: <div className='flex flex-col'>
-                    {publicationTimezone}
-                    <span className='text-sm'><Hint timezone={publicationTimezone} /></span>
+                    {publicationTimezoneData?.label || publicationTimezone}
+                    <span className='text-xs'><Hint timezone={publicationTimezone} /></span>
                 </div>
             }
         ]} />

@@ -12,7 +12,7 @@ import useQueryParams from '../../../../hooks/useQueryParams';
 import useRouting from '../../../../hooks/useRouting';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
 import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../../api/settings';
-import {Tier, getPaidActiveTiers, useBrowseTiers, useEditTier} from '../../../../api/tiers';
+import {Tier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
 import {fullEmailAddress} from '../../../../api/site';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {verifyEmailToken} from '../../../../api/emailVerification';
@@ -72,7 +72,7 @@ const PortalModal: React.FC = () => {
     const {settings, siteData} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
-    const tiers = getPaidActiveTiers(allTiers || []);
+    // const tiers = getPaidActiveTiers(allTiers || []);
 
     const {mutateAsync: editTier} = useEditTier();
     const {mutateAsync: verifyToken} = verifyEmailToken();
@@ -115,11 +115,13 @@ const PortalModal: React.FC = () => {
         }
     }, [handleError, verifyEmail, verifyToken]);
 
-    const {formState, setFormState, saveState, handleSave, updateForm} = useForm({
+    const {formState, setFormState, saveState, handleSave, updateForm, okProps} = useForm({
         initialState: {
             settings: settings as Dirtyable<Setting>[],
-            tiers: tiers as Dirtyable<Tier>[]
+            tiers: allTiers as Dirtyable<Tier>[] || []
         },
+
+        savingDelay: 500,
 
         onSave: async () => {
             await Promise.all(formState.tiers.filter(({dirty}) => dirty).map(tier => editTier(tier)));
@@ -204,22 +206,17 @@ const PortalModal: React.FC = () => {
         {id: 'account', title: 'Account page'},
         {id: 'links', title: 'Links'}
     ];
-    let okLabel = 'Save';
-    if (saveState === 'saving') {
-        okLabel = 'Saving...';
-    } else if (saveState === 'saved') {
-        okLabel = 'Saved';
-    }
 
     return <PreviewModalContent
         afterClose={() => {
             updateRoute('portal');
         }}
+        buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
-        okColor={saveState === 'saved' ? 'green' : 'black'}
-        okLabel={okLabel}
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save'}
         preview={preview}
         previewBgColor={selectedPreviewTab === 'links' ? 'white' : 'greygradient'}
         previewToolbarTabs={previewTabs}

@@ -20,7 +20,7 @@ const GA_FEATURES = [
     'outboundLinkTagging',
     'announcementBar',
     'signupForm',
-    'lexicalEditor'
+    'recommendations'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -41,8 +41,9 @@ const ALPHA_FEATURES = [
     'collectionsCard',
     'tipsAndDonations',
     'importMemberTier',
-    'recommendations',
-    'lexicalIndicators'
+    'lexicalIndicators',
+    'listUnsubscribeHeader',
+    'editorEmojiPicker'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

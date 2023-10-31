@@ -122,6 +122,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <SettingGroup
+            beta={true}
             customButtons={buttons}
             description={groupDescription}
             keywords={keywords}

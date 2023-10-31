@@ -34,7 +34,6 @@ const TextArea: React.FC<TextAreaProps> = ({
     error,
     placeholder,
     hint,
-    clearBg = true,
     fontStyle = 'sans',
     className,
     onChange,
@@ -56,10 +55,9 @@ const TextArea: React.FC<TextAreaProps> = ({
     };
 
     let styles = clsx(
-        'peer order-2 rounded-sm border px-3 py-2 dark:text-white',
-        clearBg ? 'bg-transparent' : 'bg-grey-75 dark:bg-grey-950',
-        error ? 'border-red' : 'border-grey-500 placeholder:text-grey-500 hover:border-grey-700 focus:border-grey-800 dark:border-grey-800 dark:placeholder:text-grey-800 dark:hover:border-grey-700 dark:focus:border-grey-500',
-        title && 'mt-2',
+        'order-2 rounded-md border bg-grey-150 px-3 py-2 transition-all dark:bg-grey-900 dark:text-white',
+        error ? 'border-red bg-white' : 'border-transparent placeholder:text-grey-500 hover:bg-grey-100 focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] dark:placeholder:text-grey-800 dark:hover:bg-grey-925 dark:focus:bg-grey-925',
+        title && 'mt-1.5',
         fontStyle === 'mono' && 'font-mono text-sm',
         className
     );
@@ -97,7 +95,7 @@ const TextArea: React.FC<TextAreaProps> = ({
                 onFocus={handleFocus}
                 {...props}>
             </textarea>
-            {title && <Heading className={'order-1 !text-grey-700 peer-focus:!text-black dark:!text-grey-300 dark:peer-focus:!text-white'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+            {title && <Heading className={'order-1 dark:!text-grey-300'} grey={false} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             {hint && <Hint className='order-3' color={error ? 'red' : ''}>{hint}</Hint>}
             {maxLength && <Hint>Max length is {maxLength}</Hint>}
         </div>

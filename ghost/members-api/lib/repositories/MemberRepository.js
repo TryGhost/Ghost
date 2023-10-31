@@ -21,6 +21,8 @@ const messages = {
     invalidEmail: 'Invalid Email'
 };
 
+const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
+
 /**
  * @typedef {object} ITokenService
  * @prop {(token: string) => Promise<import('jsonwebtoken').JwtPayload>} decodeToken
@@ -1367,6 +1369,10 @@ module.exports = class MemberRepository {
                     data.subscription.price
                 );
                 updatedSubscription = await this._stripeAPIService.removeCouponFromSubscription(subscription.id);
+
+                if (subscriptionModel.get('status') === SUBSCRIPTION_STATUS_TRIALING) {
+                    updatedSubscription = await this._stripeAPIService.cancelSubscriptionTrial(subscription.id);
+                }
             }
         }
 

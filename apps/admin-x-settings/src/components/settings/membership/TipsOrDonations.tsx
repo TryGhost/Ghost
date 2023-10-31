@@ -11,6 +11,9 @@ import {currencySelectGroups, getSymbol, validateCurrencyAmount} from '../../../
 import {getSettingValues} from '../../../api/settings';
 import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
+// Stripe doesn't allow amounts over 10,000 as a preset amount
+const MAX_AMOUNT = 10_000;
+
 const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
         localSettings,
@@ -28,7 +31,7 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     } = useSettingGroup({
         onValidate: () => {
             return {
-                donationsSuggestedAmount: validateCurrencyAmount(suggestedAmountInCents, donationsCurrency)
+                donationsSuggestedAmount: validateCurrencyAmount(suggestedAmountInCents, donationsCurrency, {maxAmount: MAX_AMOUNT})
             };
         }
     });
@@ -74,7 +77,7 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <div className='w-100'>
                             <div className='flex items-center gap-2'>
                                 <Heading level={6}>Shareable link &mdash;</Heading>
-                                <button className='text-2xs font-semibold uppercase tracking-wider text-green' type="button" onClick={openPreview}>Preview</button>
+                                <button className='text-xs tracking-wide text-green' type="button" onClick={openPreview}>Preview</button>
                             </div>
                             <div className='w-100 group relative -m-1 mt-0 overflow-hidden rounded p-1 hover:bg-grey-50 dark:hover:bg-grey-900'>
                                 {donateUrl}

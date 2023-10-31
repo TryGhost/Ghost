@@ -76,7 +76,7 @@ const ThemeSetting: React.FC<{
             <Heading useLabelTag>{humanizeSettingKey(setting.key)}</Heading>
             <ImageUpload
                 height={setting.value ? '100px' : '32px'}
-                id='cover-image'
+                id={`custom-${setting.key}`}
                 imageURL={setting.value || ''}
                 onDelete={() => setSetting(null)}
                 onUpload={file => handleImageUpload(file)}

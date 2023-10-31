@@ -5,6 +5,7 @@
     "{{amount}} hours ago": "{{amount}}시간 전",
     "{{amount}} minutes ago": "{{amount}}분 전",
     "{{amount}} months ago": "{{amount}}개월 전",
+    "{{amount}} more": "",
     "{{amount}} seconds ago": "{{amount}}초 전",
     "{{amount}} weeks ago": "{{amount}}주 전",
     "{{amount}} years ago": "{{amount}}년 전",

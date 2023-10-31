@@ -11,7 +11,7 @@ import useFeatureFlag from '../../../hooks/useFeatureFlag';
 
 export const searchKeywords = {
     portal: ['portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership'],
-    access: ['default', 'access', 'subscription', 'post', 'membership'],
+    access: ['default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting'],
     tiers: ['tiers', 'payment', 'paid', 'stripe'],
     tips: ['tip', 'donation', 'one time', 'payment'],
     embedSignupForm: ['embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],

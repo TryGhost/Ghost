@@ -43,8 +43,9 @@ const queryClient = new QueryClient({
 
 function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, fetchKoenigLexical, sentryDSN, onUpdate, onInvalidate, onDelete, upgradeStatus}: AppProps) {
     const appClassName = clsx(
-        'admin-x-settings admin-x-base h-[100vh] w-full overflow-y-auto overflow-x-hidden',
+        'admin-x-settings admin-x-base',
         darkMode && 'dark'
+        //'!h-[calc(100vh-55px)] w-full overflow-y-auto overflow-x-hidden tablet:!h-[100vh]'
     );
 
     return (
@@ -57,8 +58,8 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
                                 <GlobalDirtyStateProvider>
                                     <DesignSystemProvider>
                                         <div className={appClassName} id="admin-x-root" style={{
-                                            height: '100vh',
-                                            width: '100%'
+                                            // height: '100vh',
+                                            // width: '100%'
                                         }}
                                         >
                                             <Toaster />

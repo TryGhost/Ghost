@@ -5,6 +5,7 @@
     "{{amount}} hours ago": "Prije {{amount}} sati",
     "{{amount}} minutes ago": "Prije {{amount}} minuta",
     "{{amount}} months ago": "Prije {{amount}} mjeseci",
+    "{{amount}} more": "",
     "{{amount}} seconds ago": "Prije {{amount}} sekundi",
     "{{amount}} weeks ago": "Prije {{amount}} tjedana",
     "{{amount}} years ago": "Prije {{amount}} godine",

@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.69.3",
+  "version": "5.71.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -26,7 +26,7 @@
     "lint": "yarn lint:js && yarn lint:hbs"
   },
   "engines": {
-    "node": "^16.14.0 || ^18.12.1"
+    "node": "^18.12.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.22.15",
@@ -43,9 +43,9 @@
     "@tryghost/color-utils": "0.1.24",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.77",
-    "@tryghost/kg-clean-basic-html": "3.0.36",
-    "@tryghost/kg-converters": "0.0.19",
-    "@tryghost/koenig-lexical": "0.5.8",
+    "@tryghost/kg-clean-basic-html": "3.0.39",
+    "@tryghost/kg-converters": "0.0.21",
+    "@tryghost/koenig-lexical": "0.5.12",
     "@tryghost/limit-service": "1.2.10",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/nql": "0.11.0",
@@ -112,7 +112,7 @@
     "ember-simple-auth": "5.0.0",
     "ember-sinon": "5.0.0",
     "ember-source": "3.24.0",
-    "ember-svg-jar": "2.4.6",
+    "ember-svg-jar": "2.4.7",
     "ember-template-lint": "5.11.0",
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.6.0",
@@ -168,6 +168,7 @@
     "*.js": "eslint"
   },
   "dependencies": {
+    "@sentry/integrations": "^7.75.1",
     "jose": "4.15.4",
     "path-browserify": "1.0.1",
     "webpack": "5.89.0"

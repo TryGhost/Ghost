@@ -45,6 +45,7 @@ const NavigationModal = NiceModal.create(() => {
             }}
             buttonsDisabled={saveState === 'saving'}
             dirty={localSettings.some(setting => setting.dirty)}
+            okLabel={saveState === 'saving' ? 'Saving...' : 'OK'}
             scrolling={true}
             size='lg'
             stickyFooter={true}
@@ -58,7 +59,7 @@ const NavigationModal = NiceModal.create(() => {
                 }
             }}
         >
-            <div className='mt-6'>
+            <div className='mb-1 mt-6'>
                 <TabView
                     selectedTab={selectedTab}
                     tabs={[
