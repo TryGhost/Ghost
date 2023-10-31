@@ -235,7 +235,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('shows author token input and allows changing of authors in PSM', async function () {
-            let adminRole = this.server.create('role', {name: 'Adminstrator'});
+            let adminRole = this.server.create('role', {name: 'Administrator'});
             let authorRole = this.server.create('role', {name: 'Author'});
             let user1 = this.server.create('user', {name: 'Primary', roles: [adminRole]});
             this.server.create('user', {name: 'Waldo', roles: [authorRole]});

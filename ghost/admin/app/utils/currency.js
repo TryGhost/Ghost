@@ -168,7 +168,7 @@ export function getCurrencyOptions() {
 * based on Stripe's requirements. Values here are double the Stripe limits, to take conversions to the settlement currency into account.
 * @see https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts
 * @param {String} currency — Currency in the 3-letter ISO format (e.g. "USD", "EUR")
-* @retuns {Number} — Minimum amount
+* @returns {Number} — Minimum amount
 */
 export function minimumAmountForCurrency(currency) {
     const isoCurrency = currency?.toUpperCase();

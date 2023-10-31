@@ -220,7 +220,7 @@ export default class ParseMemberEventHelper extends Helper {
      *   object: 'My blog post'
      * When both words need to get appended, we'll add 'on'
      *  -> do this by returning 'on' in getJoin()
-     * This string is not added when action and object are in a separete table column, or when the getObject/getURL is empty
+     * This string is not added when action and object are in a separate table column, or when the getObject/getURL is empty
      */
     getJoin() {
         return '–';
