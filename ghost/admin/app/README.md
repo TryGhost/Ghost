@@ -25,6 +25,6 @@ All of these separate files are subsequently imported and compiled in `app.css`.
 * Always a space after a property's colon (.e.g, display: block; and not display:block;).
 * End all lines with a semi-colon.
 * For multiple, comma-separated selectors, place each selector on its own line.
-* Use js- prefixed classes for JavaScript hooks into the DOM, and never use these in CSS as per [Slightly Obtrusive JavaSript](http://ozmm.org/posts/slightly_obtrusive_javascript.html)
+* Use js- prefixed classes for JavaScript hooks into the DOM, and never use these in CSS as per [Slightly Obtrusive JavaScript](http://ozmm.org/posts/slightly_obtrusive_javascript.html)
 * Avoid over-nesting CSS. Never nest more than 3 levels deep.
 * Use comments to explain "why" not "what" (Good: This requires a z-index in order to appear above mobile navigation. Bad: This is a thing which is always on top!)

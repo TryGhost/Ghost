@@ -174,7 +174,7 @@
 //             expect(navSetting.value).to.equal('[{"label":"About","url":"/about"},{"label":"New","url":"/new/"}]');
 //         });
 
-//         it('can also add and remove items from seconday nav', async function () {
+//         it('can also add and remove items from secondray nav', async function () {
 //             await visit('/settings/navigation');
 //             await click('#secondary-navigation .gh-blognav-add');
 
