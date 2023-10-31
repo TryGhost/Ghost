@@ -185,6 +185,12 @@ export default Route.extend(ShortcutsRoute, {
                     event.tags = event.tags || {};
                     event.tags.shown_to_user = event.tags.shown_to_user || false;
                     event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
+
+                    // Do not report "handled" errors to Sentry
+                    if (event.tags.shown_to_user === true) {
+                        return null;
+                    }
+
                     return event;
                 },
                 // TransitionAborted errors surface from normal application behaviour

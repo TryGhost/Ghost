@@ -7655,6 +7655,14 @@
   dependencies:
     color "^3.2.1"
 
+"@tryghost/color-utils@0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.2.0.tgz#c8a2cf06ec9fb8a7b4ed9bcfc2a96b1237b58eda"
+  integrity sha512-wvv/JwZYV/sy8hoNcXo0xRezUqOV/YLki1OqKUbJGPhqhv9PXsyauezXOyB+lSbhccPvZCuGQRE571VNf1JCfQ==
+  dependencies:
+    "@types/color" "3.0.2"
+    color "^3.2.1"
+
 "@tryghost/config-url-helpers@1.0.6":
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/@tryghost/config-url-helpers/-/config-url-helpers-1.0.6.tgz#0f5193b26305fda48236094be69f0b4b44ee2b92"
@@ -8115,6 +8123,11 @@
   resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.3.8.tgz#413f8c7efa972bbdb186d95f4eab8d2799704010"
   integrity sha512-0CkCR6uRwANHvP8BJ/3EPPw4Z55u+WCBFM/+KR2KGCogGQwx8npIDA0zWUyWzKk+Y2Z9IqoHs+IlaA1v3t+Jdw==
 
+"@tryghost/timezone-data@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.4.1.tgz#67f648f8aeb7da565df7c96bf91bac66de0a7af2"
+  integrity sha512-jIUlJG1Yvv013HORnxOm5ucY+a0EPQ7YLudXUOpmUGU+ctVsubctzHd0Sn+ZIHm8x3wFJKjBSiu9ThtirEZM8g==
+
 "@tryghost/tpl@0.1.24":
   version "0.1.24"
   resolved "https://registry.yarnpkg.com/@tryghost/tpl/-/tpl-0.1.24.tgz#fcf585be02531baf651f2f7605466a3df744d0bc"
@@ -8325,6 +8338,25 @@
   version "4.3.5"
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.3.5.tgz#ae69bcbb1bebb68c4ac0b11e9d8ed04526b3562b"
   integrity sha512-mEo1sAde+UCE6b2hxn332f1g1E8WfYRu6p5SvTKr2ZKC1f7gFJXk4h5PyGP9Dt6gCaG8y8XhwnXWC6Iy2cmBng==
+
+"@types/color-convert@*":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@types/color-convert/-/color-convert-2.0.2.tgz#a5fa5da9b866732f8bf86b01964869011e2a2356"
+  integrity sha512-KGRIgCxwcgazts4MXRCikPbIMzBpjfdgEZSy8TRHU/gtg+f9sOfHdtK8unPfxIoBtyd2aTTwINVLSNENlC8U8A==
+  dependencies:
+    "@types/color-name" "*"
+
+"@types/color-name@*":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@types/color-name/-/color-name-1.1.2.tgz#bdeeb6fdcb78969033767951ab0cb26c7514a658"
+  integrity sha512-JWO/ZyxTKk0bLuOhAavGjnwLR73rUE7qzACnU7gMeyA/gdrSHm2xJwqNPipw2MtaZUaqQ2UG/q7pP6AQiZ8mqw==
+
+"@types/color@3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@types/color/-/color-3.0.2.tgz#3779043e782f562aa9157b5fc6bd07e14fd8e7f3"
+  integrity sha512-INiJl6sfNn8iyC5paxVzqiVUEj2boIlFki02uRTAkKwAj++7aAF+ZfEv/XrIeBa0XI/fTZuDHW8rEEcEVnON+Q==
+  dependencies:
+    "@types/color-convert" "*"
 
 "@types/common-tags@1.8.2":
   version "1.8.2"
@@ -29948,10 +29980,10 @@ terser-webpack-plugin@^5.3.7:
     serialize-javascript "^6.0.1"
     terser "^5.16.8"
 
-terser@5.22.0, terser@^5.16.8, terser@^5.3.0:
-  version "5.22.0"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.22.0.tgz#4f18103f84c5c9437aafb7a14918273310a8a49d"
-  integrity sha512-hHZVLgRA2z4NWcN6aS5rQDc+7Dcy58HOf2zbYwmFcQ+ua3h6eEFf5lIDKTzbWwlazPyOZsFQO8V80/IjVNExEw==
+terser@5.23.0, terser@^5.16.8, terser@^5.3.0:
+  version "5.23.0"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.23.0.tgz#a9c02bc3087d0f5b1cc63bbfb4fe0f7e5dbbde82"
+  integrity sha512-Iyy83LN0uX9ZZLCX4Qbu5JiHiWjOCTwrmM9InWOzVeM++KNWEsqV4YgN9U9E8AlohQ6Gs42ztczlWOG/lwDAMA==
   dependencies:
     "@jridgewell/source-map" "^0.3.3"
     acorn "^8.8.2"
