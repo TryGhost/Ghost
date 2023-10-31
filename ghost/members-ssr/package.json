@@ -18,7 +18,7 @@
     "lib"
   ],
   "devDependencies": {
-    "@types/cookies": "0.7.8",
+    "@types/cookies": "0.7.9",
     "c8": "8.0.1",
     "keypair": "1.0.4",
     "mocha": "10.2.0",
