@@ -27,6 +27,20 @@ describe('Adapter Cache Redis', function () {
         assert.ok(cache);
     });
 
+    it('can initialize with storeConfig', async function () {
+        const cache = new RedisCache({
+            username: 'myusername',
+            storeConfig: {
+                retryStrategy: false,
+                lazyConnect: true
+            },
+            reuseConnection: false
+        });
+        assert.ok(cache);
+        assert.equal(cache.redisClient.options.username, 'myusername');
+        assert.equal(cache.redisClient.options.retryStrategy, false);
+    });
+
     describe('get', function () {
         it('can get a value from the cache', async function () {
             const redisCacheInstanceStub = {
