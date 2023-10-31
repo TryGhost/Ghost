@@ -30,6 +30,7 @@ const SUPPORTED_LOCALES = [
     'ro', // Romanian
     'ru', // Russian
     'si', // Sinhala
+    'sk', // Slovak
     'sl', // Slovenian
     'sq', // Albanian
     'sr', // Serbian
