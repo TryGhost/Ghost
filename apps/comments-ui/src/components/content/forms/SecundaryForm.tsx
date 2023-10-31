@@ -19,7 +19,6 @@ const SecundaryForm: React.FC<Props> = ({editor, submit, close, closeIfNotChange
     // Keep track of the amount of open forms
     useEffect(() => {
         dispatchAction('increaseSecundaryFormCount', {});
-        
         return () => {
             dispatchAction('decreaseSecundaryFormCount', {});
         };
