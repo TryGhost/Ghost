@@ -254,4 +254,20 @@ test.describe('Emoji Picker Plugin', async function () {
         </div>
         `);
     });
+
+    test.describe('Completion matching', async function () {
+        test('can insert emojis by providing the whole :shortcode:', async function () {
+            await focusEditor(page);
+
+            await page.keyboard.type(':taco:');
+            await assertHTML(page, '<p dir="ltr"><span data-lexical-text="true">🌮</span></p>');
+        });
+
+        test('a whole :shortcode: with no emojis matches inserts nothing', async function () {
+            await focusEditor(page);
+
+            await page.keyboard.type(':tac:');
+            await assertHTML(page, '<p dir="ltr"><span data-lexical-text="true">:tac:</span></p>');
+        });
+    });
 });

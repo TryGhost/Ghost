@@ -2,9 +2,10 @@ import Portal from '../components/ui/Portal';
 import React from 'react';
 import emojiData from '@emoji-mart/data';
 import useTypeaheadTriggerMatch from '../hooks/useTypeaheadTriggerMatch';
-import {$createTextNode, $getSelection, $isRangeSelection} from 'lexical';
+import {$createTextNode, $getSelection, $isRangeSelection, COMMAND_PRIORITY_HIGH, KEY_DOWN_COMMAND} from 'lexical';
 import {LexicalTypeaheadMenuPlugin} from '@lexical/react/LexicalTypeaheadMenuPlugin';
 import {SearchIndex, init} from 'emoji-mart';
+import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 init({data: emojiData});
@@ -38,6 +39,51 @@ export function EmojiPickerPlugin() {
     const [searchResults, setSearchResults] = React.useState(null);
 
     const checkForTriggerMatch = useTypeaheadTriggerMatch(':', {minLength: 1});
+
+    // handle exact match typed like :emoji:
+    //  the typeahead menu does not account for exact matches/closing characters
+    React.useEffect(() => {
+        return mergeRegister(
+            editor.registerCommand(
+                KEY_DOWN_COMMAND,
+                async (event) => {
+                    if (!queryString) {
+                        return false;
+                    }
+                    if (event.key === ':') {
+                        const emojis = await SearchIndex.search(queryString);
+                        if (emojis.length === 0) {
+                            return;
+                        }
+                        const emojiMatch = emojis?.[0].id === queryString; // only look for exact match
+                        if (emojiMatch) {
+                            handleCompletionInsertion(emojis[0]);
+                            event.preventDefault();
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                COMMAND_PRIORITY_HIGH
+            ),
+        );
+    });
+
+    const handleCompletionInsertion = React.useCallback((emoji) => {
+        editor.update(() => {
+            const selection = $getSelection();
+
+            if (!$isRangeSelection(selection) || emoji === null) {
+                return;
+            }
+
+            const currentNode = selection.anchor.getNode();
+
+            // need to replace the last text matching the :test: pattern with a single emoji
+            const shortcodeLength = emoji.id.length + 1; // +1 for the end colon
+            currentNode.spliceText(selection.anchor.offset - shortcodeLength, shortcodeLength, emoji.skins[0].native, true);
+        });
+    }, [editor]);
 
     React.useEffect(() => {
         if (!queryString) {
