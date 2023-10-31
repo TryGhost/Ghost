@@ -43,7 +43,7 @@ export function isVersionMismatchError(errorOrStatus, payload) {
 
 export class DataImportError extends AjaxError {
     constructor(payload) {
-        super(payload, 'he server encountered an error whilst importing data.');
+        super(payload, 'The server encountered an error whilst importing data.');
     }
 }
 
