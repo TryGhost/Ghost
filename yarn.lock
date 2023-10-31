@@ -11989,21 +11989,21 @@ broccoli-templater@^2.0.1:
     rimraf "^2.6.2"
     walk-sync "^0.3.3"
 
-broccoli-terser-sourcemap@4.1.0, broccoli-terser-sourcemap@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/broccoli-terser-sourcemap/-/broccoli-terser-sourcemap-4.1.0.tgz#5f37441b64a3b6bfb0c67e9af232259c9576f115"
-  integrity sha512-zkNnjsAbP+M5rG2aMM1EE4BmXPUSxFKmtLUkUs2D1DLTOJQoF1xlOjGWjjKYCFy5tw8t4+tgGJ+HVa2ucJZ8sw==
+broccoli-terser-sourcemap@4.1.1, broccoli-terser-sourcemap@^4.1.0:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/broccoli-terser-sourcemap/-/broccoli-terser-sourcemap-4.1.1.tgz#4c26696e07a822e1fc91fb48c5b6d6c70d5ca9b2"
+  integrity sha512-8sbpRf0/+XeszBJQM7vph2UNj4Kal0lCI/yubcrBIzb2NvYj5gjTHJABXOdxx5mKNmlCMu2hx2kvOtMpQsxrfg==
   dependencies:
     async-promise-queue "^1.0.5"
-    broccoli-plugin "^4.0.3"
-    debug "^4.1.0"
+    broccoli-plugin "^4.0.7"
+    convert-source-map "^2.0.0"
+    debug "^4.3.1"
     lodash.defaultsdeep "^4.6.1"
     matcher-collection "^2.0.1"
-    source-map-url "^0.4.0"
     symlink-or-copy "^1.3.1"
-    terser "^5.3.0"
+    terser "^5.7.0"
     walk-sync "^2.2.0"
-    workerpool "^6.0.0"
+    workerpool "^6.1.5"
 
 broccoli@^3.5.0:
   version "3.5.2"
@@ -29957,7 +29957,7 @@ terser-webpack-plugin@^5.3.7:
     serialize-javascript "^6.0.1"
     terser "^5.16.8"
 
-terser@5.24.0, terser@^5.16.8, terser@^5.3.0:
+terser@5.24.0, terser@^5.16.8, terser@^5.7.0:
   version "5.24.0"
   resolved "https://registry.yarnpkg.com/terser/-/terser-5.24.0.tgz#4ae50302977bca4831ccc7b4fef63a3c04228364"
   integrity sha512-ZpGR4Hy3+wBEzVEnHvstMvqpD/nABNelQn/z2r0fjVWGQsN3bpOLzQlqDxmb4CDZnXq5lpjnQ+mHQLAOpfM5iw==
@@ -31835,10 +31835,10 @@ workerpool@^3.1.1:
     object-assign "4.1.1"
     rsvp "^4.8.4"
 
-workerpool@^6.0.0, workerpool@^6.0.2, workerpool@^6.0.3, workerpool@^6.4.0:
-  version "6.4.1"
-  resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-6.4.1.tgz#1398eb5f8f44fb2d21ed9225cf34bb0131504c1d"
-  integrity sha512-zIK7qRgM1Mk+ySxOJl7ZpjX6SlKt5gugxzl8eXHPdbpXX8iDAaVIxYJz4Apn6JdDxP2buY/Ekqg0bOLNSf0u0g==
+workerpool@^6.0.2, workerpool@^6.0.3, workerpool@^6.1.5, workerpool@^6.4.0:
+  version "6.5.1"
+  resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-6.5.1.tgz#060f73b39d0caf97c6db64da004cd01b4c099544"
+  integrity sha512-Fs4dNYcsdpYSAfVxhnl1L5zTksjvOJxtC5hzMNl+1t9B8hTJTdKDyZ5ju7ztgPy+ft9tBFXoOlDNiOT9WUXZlA==
 
 "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
   version "7.0.0"

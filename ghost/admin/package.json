@@ -60,7 +60,7 @@
     "broccoli-concat": "4.2.5",
     "broccoli-funnel": "3.0.8",
     "broccoli-merge-trees": "4.2.0",
-    "broccoli-terser-sourcemap": "4.1.0",
+    "broccoli-terser-sourcemap": "4.1.1",
     "chai": "4.3.8",
     "chai-dom": "1.11.0",
     "codemirror": "5.48.2",
