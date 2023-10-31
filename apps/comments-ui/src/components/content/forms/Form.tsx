@@ -46,7 +46,7 @@ const FormEditor: React.FC<FormEditorProps> = ({submit, progress, setProgress, c
 
         try {
             await submit({
-                html: editor.getHTML();
+                html: editor.getHTML()
             });
         } catch (e) {
             setProgress('error');
