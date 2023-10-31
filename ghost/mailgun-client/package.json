@@ -24,9 +24,9 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.24",
+    "@tryghost/debug": "0.1.26",
     "@tryghost/logging": "2.4.8",
-    "@tryghost/metrics": "1.0.24",
+    "@tryghost/metrics": "1.0.27",
     "form-data": "4.0.0",
     "lodash": "4.17.21",
     "mailgun.js": "9.3.0"
