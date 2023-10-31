@@ -538,7 +538,10 @@ module.exports = {
                 isIn: [['member', 'import', 'system', 'api', 'admin']]
             }
         },
-        batch_id: {type: 'string', maxlength: 24, nullable: true}
+        batch_id: {type: 'string', maxlength: 24, nullable: true},
+        '@@INDEXES@@': [
+            ['attribution_id']
+        ]
     },
     members_cancel_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -719,7 +722,10 @@ module.exports = {
         referrer_source: {type: 'string', maxlength: 191, nullable: true},
         referrer_medium: {type: 'string', maxlength: 191, nullable: true},
         referrer_url: {type: 'string', maxlength: 2000, nullable: true},
-        batch_id: {type: 'string', maxlength: 24, nullable: true}
+        batch_id: {type: 'string', maxlength: 24, nullable: true},
+        '@@INDEXES@@': [
+            ['attribution_id']
+        ]
     },
     offer_redemptions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
