@@ -62,6 +62,9 @@ const modalPaths: {[key: string]: ModalName} = {
     'recommendations/edit': 'EditRecommendationModal',
     'announcement-bar/edit': 'AnnouncementBarModal',
     'embed-signup-form/show': 'EmbedSignupFormModal',
+    'offers/edit': 'OffersModal',
+    'offers/new': 'AddOfferModal',
+    'offers/:id': 'EditOfferModal',
     about: 'AboutModal'
 };
 
