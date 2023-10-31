@@ -221,7 +221,8 @@ export default function usePinturaEditor({
                 });
 
                 editor.on('loaderror', () => {
-                    // TODO: log error message
+                    // TODO: log error message on Sentry
+                    Sentry.captureMessage('Pintura editor failed to load');
                 });
 
                 editor.on('process', (result) => {
@@ -236,6 +237,11 @@ export default function usePinturaEditor({
 
     // Only allow closing the modal if the close button was clicked
     useEffect(() => {
+        const handleEscapePress = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                event.stopPropagation();
+            }
+        };
         if (!isOpen) {
             return;
         }
@@ -247,9 +253,11 @@ export default function usePinturaEditor({
         };
 
         window.addEventListener('click', handleCloseClick, {capture: true});
+        window.addEventListener('keydown', handleEscapePress, {capture: true});
 
         return () => {
             window.removeEventListener('click', handleCloseClick, {capture: true});
+            window.removeEventListener('keydown', handleEscapePress, {capture: true});
         };
     }, [isOpen]);
 
