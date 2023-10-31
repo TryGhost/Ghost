@@ -419,11 +419,6 @@ class StaffServiceEmails {
         return this.settingsHelpers.getDefaultEmailDomain();
     }
 
-    get membersAddress() {
-        // TODO: get from address of default newsletter?
-        return `noreply@${this.defaultEmailDomain}`;
-    }
-
     get fromEmailAddress() {
         return `ghost@${this.defaultEmailDomain}`;
     }
