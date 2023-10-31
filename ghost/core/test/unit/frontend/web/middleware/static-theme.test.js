@@ -157,6 +157,23 @@ describe('staticTheme', function () {
         });
     });
 
+    it('should NOT skip if file is allowed even if nested', function (done) {
+        req.path = '/.well-known/assetlinks.json';
+
+        staticTheme()(req, res, function next() {
+            // Specifically gets called twice
+            activeThemeStub.calledTwice.should.be.true();
+            expressStaticStub.called.should.be.true();
+
+            // Check that express static gets called with the theme path + maxAge
+            should.exist(expressStaticStub.firstCall.args);
+            expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+            expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+
+            done();
+        });
+    });
+
     it('should NOT skip if file is in assets', function (done) {
         req.path = '/assets/whatever.json';
 
