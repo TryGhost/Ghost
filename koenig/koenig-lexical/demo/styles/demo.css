@@ -27,6 +27,12 @@ body,
     overflow-x: hidden;
 }
 
+.dark {
+    &:not(.kg-inherit-styles) {
+        background-color: var(--black);
+    }
+}
+
 .koenig-lexical.top {
     display: flex;
 }

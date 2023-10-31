@@ -44,16 +44,9 @@
             color: var(--grey-300);
         }
     }
-}
 
-.dark ::selection {
-    background: var(--grey-900);
-}
-
-/* Background fix for Koenig demo */
-.koenig-demo > .dark, .koenig-demo.dark, .dark .koenig-demo {
-    &:not(.kg-inherit-styles) {
-        background-color: var(--black);
+    ::selection {
+        background: var(--grey-900);
     }
 }
 
