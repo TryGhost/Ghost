@@ -1,6 +1,7 @@
 import Access from './Access';
 import Analytics from './Analytics';
 import EmbedSignupForm from './embedSignup/EmbedSignupForm';
+import Offers from './Offers';
 import Portal from './Portal';
 import React from 'react';
 import Recommendations from './Recommendations';
@@ -16,12 +17,14 @@ export const searchKeywords = {
     tips: ['tip', 'donation', 'one time', 'payment'],
     embedSignupForm: ['embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
     recommendations: ['recommendations', 'recommend', 'blogroll'],
-    analytics: ['analytics', 'tracking', 'privacy', 'membership']
+    analytics: ['analytics', 'tracking', 'privacy', 'membership'],
+    offers: ['offers', 'discounts', 'coupons', 'promotions']
 };
 
 const MembershipSettings: React.FC = () => {
     const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
     const hasRecommendations = useFeatureFlag('recommendations');
+    const hasOffers = useFeatureFlag('adminXOffers');
 
     return (
         <SettingSection keywords={Object.values(searchKeywords).flat()} title='Membership'>
@@ -32,6 +35,7 @@ const MembershipSettings: React.FC = () => {
             <EmbedSignupForm keywords={searchKeywords.embedSignupForm} />
             {hasRecommendations && <Recommendations keywords={searchKeywords.recommendations} />}
             <Analytics keywords={searchKeywords.analytics} />
+            {hasOffers && <Offers keywords={searchKeywords.offers} />}
         </SettingSection>
     );
 };
