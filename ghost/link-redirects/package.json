@@ -18,7 +18,7 @@
     "lib"
   ],
   "devDependencies": {
-    "@types/express": "4.17.19",
+    "@types/express": "4.17.20",
     "c8": "8.0.1",
     "mocha": "10.2.0",
     "should": "13.2.3",

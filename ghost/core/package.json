@@ -233,7 +233,7 @@
     "@playwright/test": "1.38.1",
     "@tryghost/express-test": "0.13.7",
     "@tryghost/webhook-mock-receiver": "0.2.6",
-    "@types/common-tags": "1.8.2",
+    "@types/common-tags": "1.8.3",
     "c8": "8.0.1",
     "cli-progress": "3.12.0",
     "cssnano": "6.0.1",
