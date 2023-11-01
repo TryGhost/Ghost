@@ -274,7 +274,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -884,7 +885,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
