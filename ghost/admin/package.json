@@ -150,8 +150,9 @@
   "ember-addon": {
     "paths": [
       "lib/asset-delivery",
+      "lib/ember-power-calendar-moment",
       "lib/ember-power-calendar-utils",
-      "lib/ember-power-calendar-moment"
+      "lib/sourcemap-postprocess"
     ]
   },
   "resolutions": {
