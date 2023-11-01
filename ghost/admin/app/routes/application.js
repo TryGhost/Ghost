@@ -193,11 +193,18 @@ export default Route.extend(ShortcutsRoute, {
                     }
 
                     // ajax errors — improve logging and add context for debugging
-                    if (exception && exception.payload && isEmberArray(exception.payload.errors) && exception.payload.errors.length > 0) {
+                    if (isAjaxError(exception)) {
                         const error = exception.payload.errors[0];
                         event.exception.values[0].type = `${error.type}: ${error.context}`;
                         event.exception.values[0].value = error.message;
                         event.exception.values[0].context = error.context;
+                        event.tags.isAjaxError = true;
+                    } else {
+                        event.tags.isAjaxError = false;
+                        delete event.contexts.ajax;
+                        delete event.tags.ajaxStatus;
+                        delete event.tags.ajaxMethod;
+                        delete event.tags.ajaxUrl;
                     }
 
                     return event;
