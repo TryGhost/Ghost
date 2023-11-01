@@ -305,9 +305,9 @@ class ajaxService extends AjaxService {
             method: request.method,
             status
         });
-        Sentry.setTag('ajax.status', status);
-        Sentry.setTag('ajax.url', request.url);
-        Sentry.setTag('ajax.method', request.method);
+        Sentry.setTag('ajaxStatus', status);
+        Sentry.setTag('ajaxUrl', request.url);
+        Sentry.setTag('ajaxMethod', request.method);
 
         if (headers['content-version']) {
             const contentVersion = semverCoerce(headers['content-version']);
