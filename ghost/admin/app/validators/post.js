@@ -183,7 +183,7 @@ export default BaseValidator.create({
 
         // don't validate the date if the time format is incorrect
         if (isEmpty(model.errors.errorsFor('publishedAtBlogTime'))) {
-            let status = model.statusScratch || model.status;
+            let status = model.status;
             let now = moment();
             let publishedAtBlogTZ = model.publishedAtBlogTZ;
             let isInFuture = publishedAtBlogTZ.isSameOrAfter(now);

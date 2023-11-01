@@ -136,10 +136,6 @@ export default Model.extend(Comparable, ValidationEngine, {
     lexicalScratch: null,
     titleScratch: null,
 
-    // HACK: used for validation so that date/time can be validated based on
-    // eventual status rather than current status
-    statusScratch: null,
-
     // For use by date/time pickers - will be validated then converted to UTC
     // on save. Updated by an observer whenever publishedAtUTC changes.
     // Everything that revolves around publishedAtUTC only cares about the saved

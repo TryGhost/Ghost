@@ -475,8 +475,6 @@ export default class LexicalEditorController extends Controller {
         try {
             let post = yield this._savePostTask.perform({...options, adapterOptions});
 
-            post.set('statusScratch', null);
-
             // Clear any error notification (if any)
             this.notifications.clearAll();
 
