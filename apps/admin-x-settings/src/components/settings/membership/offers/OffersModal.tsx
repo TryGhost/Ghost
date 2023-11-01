@@ -7,14 +7,14 @@ import useRouting from '../../../../hooks/useRouting';
 import {useEffect} from 'react';
 
 const Offer: React.FC<{name: string}> = ({name}) => {
-    return <div className='flex flex-col gap-6 items-center text-center border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800'>
+    return <div className='flex flex-col items-center gap-6 border border-transparent bg-grey-100 p-5 text-center transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800'>
         <h2 className='text-[1.6rem]'>{name}</h2>
         <div className=''>
-            <div className='flex gap-3 uppercase text-sm leading-none'>
-                <span className='text-pink font-semibold'>10% off</span>
+            <div className='flex gap-3 text-sm uppercase leading-none'>
+                <span className='font-semibold text-pink'>10% off</span>
                 <span className='text-grey-700 line-through'>$5</span>
             </div>
-            <span className='font-bold text-3xl'>$4</span>
+            <span className='text-3xl font-bold'>$4</span>
         </div>
         <div className='flex flex-col items-center text-xs'>
             <span className='font-medium'>Bronze monthly — First payment</span>
