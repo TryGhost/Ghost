@@ -20,7 +20,10 @@ module.exports = {
         mapFiles.forEach((file) => {
             const mapFilePath = path.join(results.directory, 'assets', file);
             const mapFile = JSON.parse(fs.readFileSync(mapFilePath, 'utf8'));
-            mapFile.sourceRoot = '../';
+            const sources = mapFile.sources;
+            for (let i = 0; i < sources.length; i++) {
+                sources[i] = sources[i].replace('assets/', '');
+            }
             fs.writeFileSync(mapFilePath, JSON.stringify(mapFile));
         });
     }
