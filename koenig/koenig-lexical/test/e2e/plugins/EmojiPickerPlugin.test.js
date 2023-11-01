@@ -128,6 +128,7 @@ test.describe('Emoji Picker Plugin', async function () {
         await focusEditor(page);
         await page.keyboard.press('Control+Alt+H');
         await page.keyboard.type('Test :heart', {delay: 10});
+        await expect(page.getByTestId('emoji-menu')).toBeVisible();
         await page.keyboard.press('Enter');
 
         await assertHTML(page, '<p dir="ltr"><mark data-lexical-text="true"><span>Test ❤️</span></mark></p>');
@@ -136,7 +137,9 @@ test.describe('Emoji Picker Plugin', async function () {
     test('emojis retain text formatting on : completion', async function () {
         await focusEditor(page);
         await page.keyboard.press('Control+Alt+H');
-        await page.keyboard.type('Test :heart:', {delay: 10});
+        await page.keyboard.type('Test :heart', {delay: 10});
+        await expect(page.getByTestId('emoji-menu')).toBeVisible();
+        await page.keyboard.type(':', {delay: 10});
 
         await assertHTML(page, '<p dir="ltr"><mark data-lexical-text="true"><span>Test ❤️</span></mark></p>');
     });
