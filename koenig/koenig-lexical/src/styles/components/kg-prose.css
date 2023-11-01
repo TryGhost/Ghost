@@ -712,7 +712,10 @@
         :where(
             hr
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+            display: block;
             margin: 1.6rem 0;
+            border: 0;
+            border-top: 1px solid var(--grey-300);
         }
 
         /* Code
