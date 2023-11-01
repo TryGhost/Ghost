@@ -77,6 +77,7 @@ const Sidebar: React.FC = () => {
                             options={tierCadenceOptions}
                             selectedOption={tierCadenceOptions[0]}
                             title='Tier — Cadence'
+                            onSelect={() => {}}
                         />
                         <div className='relative'>
                             <TextField title='Amount off' type='number' />
@@ -86,6 +87,7 @@ const Sidebar: React.FC = () => {
                                     controlClasses={{menu: 'w-20 right-0'}}
                                     options={amountOptions}
                                     selectedOption={amountOptions[0]}
+                                    onSelect={() => {}}
                                 />
                             </div>
                         </div>
@@ -93,6 +95,7 @@ const Sidebar: React.FC = () => {
                             options={durationOptions}
                             selectedOption={durationOptions[0]}
                             title='Duration'
+                            onSelect={() => {}}
                         />
                     </div>
                 </section>
