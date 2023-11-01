@@ -225,7 +225,7 @@
     "yjs": "13.6.8"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "2.0.40",
+    "@tryghost/html-to-mobiledoc": "2.0.41",
     "sqlite3": "5.1.6"
   },
   "devDependencies": {

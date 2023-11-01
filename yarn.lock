@@ -7726,12 +7726,12 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@2.0.40":
-  version "2.0.40"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-2.0.40.tgz#5ec7117dd34bea856d22080050cbf0d94ef6b1a9"
-  integrity sha512-z2dfhBmgMDxIhPIPSmQYrlI8LAnuJkINFHpy628yLvtEl1skPO3zK9/pejK+PjgRiJTwMkRb9HOtcH0d2j4qOQ==
+"@tryghost/html-to-mobiledoc@2.0.41":
+  version "2.0.41"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-2.0.41.tgz#d1860f26b26934e729e1aa99a640eb56a36d17f6"
+  integrity sha512-Gnae7igk9bYp4CpxL8ePa2heB/cnPCTimEO0466XTzkg9jFSjFg5zLC+fOHscu66ICEI3YvYdnqbsPtmdHfRyg==
   dependencies:
-    "@tryghost/kg-parser-plugins" "^3.0.40"
+    "@tryghost/kg-parser-plugins" "^3.0.41"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
     jsdom "^22.0.0"
 
@@ -7773,10 +7773,15 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-4.0.14.tgz#4fdbd7e45926f26c1b96c9f6315e9294e576cb4c"
   integrity sha512-riIhtlHJhspvwf+9JATawIayNqzIdaZE3DEXoRwQF4Cbdyk3ksuNJ+w4iBo7cvSbQg6s30TZpjFHQ21W1AROzg==
 
-"@tryghost/kg-clean-basic-html@3.0.39", "@tryghost/kg-clean-basic-html@^3.0.39":
+"@tryghost/kg-clean-basic-html@3.0.39":
   version "3.0.39"
   resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.39.tgz#aedfa732e8ad85846d673352f0b8e4b519ab9638"
   integrity sha512-47n/D1PrWoJgRP3R62fnJeVP7YEojnlm9Sf7vGKXG2wXIsxgwhBBI6r7D7euB/t3OsRrTp5t1LMksNwoyQoO0g==
+
+"@tryghost/kg-clean-basic-html@^3.0.39", "@tryghost/kg-clean-basic-html@^3.0.40":
+  version "3.0.40"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.40.tgz#ff9fbcae37f659136673d38347a08ab8f39c13c0"
+  integrity sha512-K8Q1Slg7E9oJHZ41Aqwqfxkaly0uJ0ygfdCFWVPCVCLMyAkzR0E04DoWXO+T7sZRuTOk80yi1TyyMIKN1Ylfag==
 
 "@tryghost/kg-converters@0.0.21":
   version "0.0.21"
@@ -7884,12 +7889,12 @@
     mobiledoc-dom-renderer "^0.7.0"
     simple-dom "^1.4.0"
 
-"@tryghost/kg-parser-plugins@^3.0.40":
-  version "3.0.40"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-3.0.40.tgz#0c3ac1c8911fbc53905f2a9d418b885986927605"
-  integrity sha512-OlFm8+jqV1YvlPTXRY21luqyCna0ZwMjFK+e8i0Kku9/wIydPyMqHC7osggfeGW6Z657F7ixMFSn97EGnM7Ymw==
+"@tryghost/kg-parser-plugins@^3.0.41":
+  version "3.0.41"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-3.0.41.tgz#1537df18116548fe18c7b36c22cf9960b88427f7"
+  integrity sha512-h90pIf0islXYw8acXGc/5D6/wV6vGQ4TxhNMrAcpmj6Wq02c9wyvzfl82H3N7JG0yxUWco4u8zSg1/4fGiZpfA==
   dependencies:
-    "@tryghost/kg-clean-basic-html" "^3.0.39"
+    "@tryghost/kg-clean-basic-html" "^3.0.40"
 
 "@tryghost/kg-utils@^1.0.22":
   version "1.0.22"
