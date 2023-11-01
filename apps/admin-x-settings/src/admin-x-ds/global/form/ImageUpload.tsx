@@ -123,7 +123,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
     deleteButtonContent = deleteButtonContent || <Icon colorClass='text-white' name='trash' size='sm' />;
     editButtonContent = editButtonContent || <Icon colorClass='text-white' name='pen' size='sm' />;
-    unsplashButtonContent = unsplashButtonContent || <Icon colorClass='text-black' name='unsplash-logo' size='sm' />;
+    unsplashButtonContent = unsplashButtonContent || <Icon className='z-50' colorClass='text-black' name='unsplash-logo' size='sm' />;
 
     if (imageURL) {
         let image = (
