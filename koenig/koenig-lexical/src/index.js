@@ -13,6 +13,7 @@ import CardMenuPlugin from './plugins/CardMenuPlugin';
 import CollectionPlugin from './plugins/CollectionPlugin';
 import DragDropPastePlugin from './plugins/DragDropPastePlugin';
 import DragDropReorderPlugin from './plugins/DragDropReorderPlugin';
+import EmojiPickerPlugin from './plugins/EmojiPickerPlugin';
 import ExternalControlPlugin from './plugins/ExternalControlPlugin';
 import FilePlugin from './plugins/FilePlugin';
 import FloatingToolbarPlugin from './plugins/FloatingToolbarPlugin';
@@ -67,6 +68,7 @@ export {
     CardMenuPlugin,
     DragDropPastePlugin,
     DragDropReorderPlugin,
+    EmojiPickerPlugin,
     ExternalControlPlugin,
     FilePlugin,
     FloatingToolbarPlugin,
