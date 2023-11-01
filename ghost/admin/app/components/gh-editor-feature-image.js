@@ -36,7 +36,7 @@ export default class GhEditorFeatureImageComponent extends Component {
     @action
     setCaption(html) {
         const cleanedHtml = cleanBasicHtml(html || '', {firstChildInnerContent: true});
-        this.args.updateCaption(cleanedHtml);
+        this.args.updateCaption(cleanedHtml, this.captionInputFocused);
     }
 
     @action

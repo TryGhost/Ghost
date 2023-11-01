@@ -345,10 +345,10 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    setFeatureImageCaption(html) {
+    setFeatureImageCaption(html, captionHasFocus) {
         this.post.set('featureImageCaption', html);
 
-        if (this.post.isDraft) {
+        if (this.post.isDraft && !captionHasFocus) {
             this.autosaveTask.perform();
         }
     }
