@@ -174,8 +174,8 @@ export function GalleryCard({
     const isDragging = filesDraggedOver || reorderDraggedOver;
 
     return (
-        <figure className="not-kg-prose">
-            <div ref={filesDropper.setRef} className="relative" data-testid="gallery-container">
+        <figure>
+            <div ref={filesDropper.setRef} className="not-kg-prose relative" data-testid="gallery-container">
                 {images.length
                     ? <PopulatedGalleryCard deleteImage={deleteImage} images={images} isDragging={isDragging} reorderHandler={reorderHandler} />
                     : <EmptyGalleryCard isDraggedOver={isDragging} openFilePicker={openFilePicker} reorderHandler={reorderHandler} />
