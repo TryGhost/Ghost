@@ -2097,6 +2097,67 @@ describe('Members API', function () {
             });
     });
 
+    it('Updates the email_disabled field when a member email is updated', async function () {
+        const suppressedEmail = 'suppressed@email.com';
+        const okEmail = 'ok@email.com';
+
+        const existingMember = {
+            name: 'Existing Member',
+            email: suppressedEmail
+        };
+
+        // Create member
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [existingMember]})
+            .expectStatus(201);
+        const createdMember = body.members[0];
+
+        // add member's email to the suppression list
+        await models.Suppression.add({
+            email: suppressedEmail,
+            reason: 'bounce'
+        });
+
+        // Set email disabled to true
+        const member = await models.Member.findOne({id: createdMember.id}, {require: true});
+        await member.save({email_disabled: true});
+
+        // Now update the email address of that member to a non-suppressed email
+        await agent
+            .put(`/members/${member.id}/`)
+            .body({members: [{email: okEmail}]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        // email_disabled should be false
+        await member.refresh();
+        should(member.get('email_disabled')).be.false();
+
+        // Now update the email address of that member back to the suppressed email
+        await agent
+            .put(`/members/${member.id}/`)
+            .body({members: [{email: suppressedEmail}]})
+            .expectStatus(200)
+            .matchBodySnapshot({
+                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 2))
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        // email_disabled should be true
+        await member.refresh();
+        should(member.get('email_disabled')).be.true();
+    });
+
     // Delete a member
 
     it('Can destroy', async function () {

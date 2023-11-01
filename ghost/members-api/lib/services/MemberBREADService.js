@@ -325,6 +325,10 @@ module.exports = class MemberBREADService {
         let model;
 
         try {
+            const suppressionData = await this.emailSuppressionList.getSuppressionData(data.email);
+            if (suppressionData && suppressionData.suppressed) {
+                data.suppressed = true;
+            }
             model = await this.memberRepository.update(data, options);
         } catch (error) {
             if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
