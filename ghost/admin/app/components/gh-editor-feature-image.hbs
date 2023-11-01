@@ -75,7 +75,7 @@
                         @onChangeHtml={{this.setCaption}}
                         @placeholderText={{if this.captionInputFocused "" "Add a caption to the feature image"}}
                         @onFocus={{fn (mut this.captionInputFocused) true}}
-                        @onBlur={{fn (mut this.captionInputFocused) false}}
+                        @onBlur={{this.handleCaptionBlur}}
                     />
                 {{/if}}
                 <button

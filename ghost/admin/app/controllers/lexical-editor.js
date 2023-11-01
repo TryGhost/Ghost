@@ -347,7 +347,10 @@ export default class LexicalEditorController extends Controller {
     @action
     setFeatureImageCaption(html) {
         this.post.set('featureImageCaption', html);
+    }
 
+    @action
+    handleFeatureImageCaptionBlur() {
         if (this.post.isDraft) {
             this.autosaveTask.perform();
         }

@@ -40,6 +40,12 @@ export default class GhEditorFeatureImageComponent extends Component {
     }
 
     @action
+    handleCaptionBlur() {
+        this.captionInputFocused = false;
+        this.args.handleCaptionBlur();
+    }
+
+    @action
     setUploadedImage(results) {
         if (results[0]) {
             this.args.updateImage(results[0].url);
