@@ -8,7 +8,7 @@ import {useEffect} from 'react';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
-const Offer: React.FC<{name: string, type: OfferType}> = ({name, type}) => {
+const OfferCard: React.FC<{name: string, type: OfferType}> = ({name, type}) => {
     let discountColor = '';
 
     switch (type) {
@@ -74,9 +74,9 @@ const OffersModal = () => {
                 <h1 className='mt-12 border-b border-b-grey-300 pb-2.5 text-3xl'>Active offers</h1>
             </header>
             <div className='mt-8 grid grid-cols-3 gap-6'>
-                <Offer name='Black friday' type='percent' />
-                <Offer name='Buy this right now' type='fixed' />
-                <Offer name='Desperate Sale!' type='trial' />
+                <OfferCard name='Black friday' type='percent' />
+                <OfferCard name='Buy this right now' type='fixed' />
+                <OfferCard name='Desperate Sale!' type='trial' />
             </div>
             <a className='absolute bottom-10 text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
         </div>
