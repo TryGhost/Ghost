@@ -6,10 +6,10 @@ import React from 'react';
 import SettingSection from '../../../admin-x-ds/settings/SettingSection';
 
 export const searchKeywords = {
-    integrations: ['integrations', 'zapier', 'slack', 'amp', 'unsplash', 'first promoter', 'firstpromoter', 'pintura', 'disqus', 'analytics', 'ulysses', 'typeform', 'buffer', 'plausible', 'github'],
-    codeInjection: ['code injection', 'head', 'footer'],
-    labs: ['labs', 'alpha', 'beta', 'flag', 'import', 'export', 'migrate', 'routes', 'redirect', 'translation', 'delete', 'content', 'editor', 'substack', 'migration', 'portal'],
-    history: ['history', 'log', 'events', 'user events', 'staff']
+    integrations: ['advanced', 'integrations', 'zapier', 'slack', 'amp', 'unsplash', 'first promoter', 'firstpromoter', 'pintura', 'disqus', 'analytics', 'ulysses', 'typeform', 'buffer', 'plausible', 'github'],
+    codeInjection: ['advanced', 'code injection', 'head', 'footer'],
+    labs: ['advanced', 'labs', 'alpha', 'beta', 'flag', 'import', 'export', 'migrate', 'routes', 'redirect', 'translation', 'delete', 'content', 'editor', 'substack', 'migration', 'portal'],
+    history: ['advanced', 'history', 'log', 'events', 'user events', 'staff']
 };
 
 const AdvancedSettings: React.FC = () => {

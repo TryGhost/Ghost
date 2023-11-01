@@ -11,14 +11,14 @@ import TipsOrDonations from './TipsOrDonations';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
 
 export const searchKeywords = {
-    portal: ['portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership'],
-    access: ['default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting'],
-    tiers: ['tiers', 'payment', 'paid', 'stripe'],
-    tips: ['tip', 'donation', 'one time', 'payment'],
-    embedSignupForm: ['embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
-    recommendations: ['recommendations', 'recommend', 'blogroll'],
-    analytics: ['analytics', 'tracking', 'privacy', 'membership'],
-    offers: ['offers', 'discounts', 'coupons', 'promotions']
+    portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership'],
+    access: ['membership', 'default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting'],
+    tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
+    tips: ['membership', 'tip', 'donation', 'one time', 'payment'],
+    embedSignupForm: ['membership', 'embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
+    recommendations: ['membership', 'recommendations', 'recommend', 'blogroll'],
+    analytics: ['membership', 'analytics', 'tracking', 'privacy', 'membership'],
+    offers: ['membership', 'offers', 'discounts', 'coupons', 'promotions']
 };
 
 const MembershipSettings: React.FC = () => {
