@@ -22,7 +22,7 @@
     "c8": "8.0.1",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "17.0.0"
+    "sinon": "17.0.1"
   },
   "dependencies": {
     "semver": "^7.3.5"
