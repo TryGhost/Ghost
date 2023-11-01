@@ -181,7 +181,8 @@ export default Route.extend(ShortcutsRoute, {
                 dsn: this.config.sentry_dsn,
                 environment: this.config.sentry_env,
                 release: `ghost@${this.config.version}`,
-                beforeSend(event) {
+                beforeSend(event, hint) {
+                    const exception = hint.originalException;
                     event.tags = event.tags || {};
                     event.tags.shown_to_user = event.tags.shown_to_user || false;
                     event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
@@ -189,6 +190,14 @@ export default Route.extend(ShortcutsRoute, {
                     // Do not report "handled" errors to Sentry
                     if (event.tags.shown_to_user === true) {
                         return null;
+                    }
+
+                    // ajax errors — improve logging and add context for debugging
+                    if (exception && exception.payload && isEmberArray(exception.payload.errors) && exception.payload.errors.length > 0) {
+                        const error = exception.payload.errors[0];
+                        event.exception.values[0].type = `${error.type}: ${error.context}`;
+                        event.exception.values[0].value = error.message;
+                        event.exception.values[0].context = error.context;
                     }
 
                     return event;
