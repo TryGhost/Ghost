@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.71.0",
+  "version": "5.71.1",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -150,8 +150,9 @@
   "ember-addon": {
     "paths": [
       "lib/asset-delivery",
+      "lib/ember-power-calendar-moment",
       "lib/ember-power-calendar-utils",
-      "lib/ember-power-calendar-moment"
+      "lib/sourcemap-postprocess"
     ]
   },
   "resolutions": {
