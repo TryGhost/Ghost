@@ -26,15 +26,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const {mutateAsync: uploadImage} = useUploadImage();
 
-    const [pinturaJsUrl] = getSettingValues<string>(localSettings, ['pintura_js_url']);
-    const [pinturaCssUrl] = getSettingValues<string>(localSettings, ['pintura_css_url']);
-
-    const editor = usePinturaEditor(
-        {config: {
-            jsUrl: pinturaJsUrl || '',
-            cssUrl: pinturaCssUrl || ''
-        }}
-    );
+    const editor = usePinturaEditor();
 
     const [
         twitterTitle, twitterDescription, twitterImage, siteTitle, siteDescription

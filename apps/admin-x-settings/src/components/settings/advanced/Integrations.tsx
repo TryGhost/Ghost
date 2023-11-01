@@ -9,6 +9,7 @@ import React, {useState} from 'react';
 import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
 import TabView from '../../../admin-x-ds/global/TabView';
 import useHandleError from '../../../utils/api/handleError';
+import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
 import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
@@ -85,8 +86,10 @@ const BuiltInIntegrations: React.FC = () => {
 
     const zapierDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
 
+    const pinturaEditor = usePinturaEditor();
+
     const {settings} = useGlobalData();
-    const [ampEnabled, unsplashEnabled, pinturaEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, ['amp', 'unsplash', 'pintura', 'firstpromoter', 'slack_url', 'slack_username']);
+    const [ampEnabled, unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, ['amp', 'unsplash', 'pintura', 'firstpromoter', 'slack_url', 'slack_username']);
 
     return (
         <List titleSeparator={false}>
@@ -140,7 +143,7 @@ const BuiltInIntegrations: React.FC = () => {
                 action={() => {
                     openModal('integrations/pintura');
                 }}
-                active={pinturaEnabled}
+                active={pinturaEditor.isEnabled}
                 detail='Advanced image editing' icon=
                     {<PinturaIcon className='h-8 w-8' />} title
                     ='Pintura' />
