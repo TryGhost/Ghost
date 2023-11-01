@@ -2,7 +2,7 @@ import Portal from '../components/ui/Portal';
 import React from 'react';
 import emojiData from '@emoji-mart/data';
 import useTypeaheadTriggerMatch from '../hooks/useTypeaheadTriggerMatch';
-import {$createTextNode, $getSelection, $isRangeSelection, COMMAND_PRIORITY_HIGH, KEY_DOWN_COMMAND} from 'lexical';
+import {$createTextNode, $getSelection, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_HIGH, KEY_DOWN_COMMAND} from 'lexical';
 import {LexicalTypeaheadMenuPlugin} from '@lexical/react/LexicalTypeaheadMenuPlugin';
 import {SearchIndex, init} from 'emoji-mart';
 import {mergeRegister} from '@lexical/utils';
@@ -40,6 +40,17 @@ export function EmojiPickerPlugin() {
 
     const checkForTriggerMatch = useTypeaheadTriggerMatch(':', {minLength: 1});
 
+    const cursorInInlineCodeBlock = () => {
+        return editor.getEditorState().read(() => {
+            const selection = $getSelection();
+            const node = selection.anchor.getNode();
+            if (node && $isTextNode(node) && node.hasFormat('code')) {
+                return true;
+            }
+            return false;
+        });
+    };
+
     // handle exact match typed like :emoji:
     //  the typeahead menu does not account for exact matches/closing characters
     React.useEffect(() => {
@@ -51,6 +62,9 @@ export function EmojiPickerPlugin() {
                         return false;
                     }
                     if (event.key === ':') {
+                        if (cursorInInlineCodeBlock() === true) {
+                            return false;
+                        }
                         const emojis = await SearchIndex.search(queryString);
                         if (emojis.length === 0) {
                             return;
