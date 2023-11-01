@@ -8,7 +8,7 @@ import {getSettingValues} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 export const searchKeywords = {
-    enableNewsletters: ['newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
+    enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
     newsletters: ['newsletters', 'emails'],
     defaultRecipients: ['newsletters', 'default recipients', 'emails'],
     mailgun: ['mailgun', 'emails', 'newsletters']
