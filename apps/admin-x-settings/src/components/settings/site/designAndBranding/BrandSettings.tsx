@@ -27,8 +27,6 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
     const [siteDescription, setSiteDescription] = useState(values.description);
     const {settings} = useGlobalData();
     const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
-    const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
-    const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
     const [showUnsplash, setShowUnsplash] = useState<boolean>(false);
     const {unsplashConfig} = useServices();
     const handleError = useHandleError();
@@ -39,12 +37,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
         }, 500)
     );
 
-    const editor = usePinturaEditor(
-        {config: {
-            jsUrl: pinturaJsUrl || '',
-            cssUrl: pinturaCssUrl || ''
-        }}
-    );
+    const editor = usePinturaEditor();
 
     return (
         <div className='mt-7'>

@@ -25,17 +25,10 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const {mutateAsync: uploadImage} = useUploadImage();
     // const [unsplashEnabled] = getSettingValues<boolean>(localSettings, ['unsplash']);
-    const [pinturaJsUrl] = getSettingValues<string>(localSettings, ['pintura_js_url']);
-    const [pinturaCssUrl] = getSettingValues<string>(localSettings, ['pintura_css_url']);
     // const [showUnsplash, setShowUnsplash] = useState<boolean>(false);
     const handleError = useHandleError();
 
-    const editor = usePinturaEditor(
-        {config: {
-            jsUrl: pinturaJsUrl || '',
-            cssUrl: pinturaCssUrl || ''
-        }}
-    );
+    const editor = usePinturaEditor();
 
     const [
         facebookTitle, facebookDescription, facebookImage, siteTitle, siteDescription
