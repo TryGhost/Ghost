@@ -78,10 +78,10 @@ export function EmojiPickerPlugin() {
             }
 
             const currentNode = selection.anchor.getNode();
-
             // need to replace the last text matching the :test: pattern with a single emoji
             const shortcodeLength = emoji.id.length + 1; // +1 for the end colon
-            currentNode.spliceText(selection.anchor.offset - shortcodeLength, shortcodeLength, emoji.skins[0].native, true);
+            const textNode = currentNode.spliceText(selection.anchor.offset - shortcodeLength, shortcodeLength, emoji.skins[0].native, true);
+            textNode.setFormat(selection.format);
         });
     }, [editor]);
 
@@ -118,7 +118,10 @@ export function EmojiPickerPlugin() {
                 nodeToRemove.remove();
             }
 
-            selection.insertNodes([$createTextNode(selectedOption.skins[0].native)]);
+            const emojiNode = $createTextNode(selectedOption.skins[0].native);
+            emojiNode.setFormat(selection.format);
+
+            selection.insertNodes([emojiNode]);
 
             closeMenu();
         });

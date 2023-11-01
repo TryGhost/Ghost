@@ -89,7 +89,7 @@ test.describe('Emoji Picker Plugin', async function () {
         await page.keyboard.press('Enter');
         await assertHTML(page, '<p dir="ltr"><span data-lexical-text="true">🌮</span></p>');
     });
-    
+
     test('can use the mouse to select an emoji', async function () {
         await focusEditor(page);
 
@@ -101,7 +101,7 @@ test.describe('Emoji Picker Plugin', async function () {
         await expect(page.getByTestId('emoji-menu')).not.toBeVisible();
         await assertHTML(page, '<p dir="ltr"><span data-lexical-text="true">🌮</span></p>');
     });
-    
+
     test('can use punctuation', async function () {
         await focusEditor(page);
 
@@ -122,6 +122,23 @@ test.describe('Emoji Picker Plugin', async function () {
         await page.keyboard.type('s for all', {delay: 10});
 
         await assertHTML(page, '<p dir="ltr"><span data-lexical-text="true">🌮🌮s for all</span></p>');
+    });
+
+    test('emojis retain text formatting on menu insert', async function () {
+        await focusEditor(page);
+        await page.keyboard.press('Control+Alt+H');
+        await page.keyboard.type('Test :heart', {delay: 10});
+        await page.keyboard.press('Enter');
+
+        await assertHTML(page, '<p dir="ltr"><mark data-lexical-text="true"><span>Test ❤️</span></mark></p>');
+    });
+
+    test('emojis retain text formatting on : completion', async function () {
+        await focusEditor(page);
+        await page.keyboard.press('Control+Alt+H');
+        await page.keyboard.type('Test :heart:', {delay: 10});
+
+        await assertHTML(page, '<p dir="ltr"><mark data-lexical-text="true"><span>Test ❤️</span></mark></p>');
     });
 
     test(`can use emojis in nested editors`, async function () {
