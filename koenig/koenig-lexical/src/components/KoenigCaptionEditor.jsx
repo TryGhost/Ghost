@@ -91,6 +91,10 @@ function CaptionPlugin({parentEditor}) {
                 editor.registerCommand(
                     KEY_ARROW_DOWN_COMMAND,
                     (event) => {
+                        // TODO: wait for new lexical version, see https://github.com/facebook/lexical/commit/df2a50bc88e0778af26e109502cfcfb9cbe245d5
+                        if (document.querySelector(`#typeahead-menu`)) {
+                            return false;
+                        }
                         // handle moving focus at the parent editor level (select next card)
                         event._fromCaptionEditor = true;
                         editor._parentEditor.dispatchCommand(KEY_ARROW_DOWN_COMMAND, event);
@@ -101,6 +105,10 @@ function CaptionPlugin({parentEditor}) {
                 editor.registerCommand(
                     KEY_ARROW_UP_COMMAND,
                     (event) => {
+                        // TODO: wait for new lexical version, see https://github.com/facebook/lexical/commit/df2a50bc88e0778af26e109502cfcfb9cbe245d5
+                        if (document.querySelector(`#typeahead-menu`)) {
+                            return false;
+                        }
                         // handle moving focus at the parent editor level (select next card)
                         event._fromCaptionEditor = true;
                         editor._parentEditor.dispatchCommand(KEY_ARROW_UP_COMMAND, event);

@@ -57,8 +57,7 @@ function KoenigNestedEditorPlugin({
             editor.registerCommand(
                 KEY_ENTER_COMMAND,
                 (event) => {
-                    // TODO: find a more elegant way to handle this
-                    // intercept enter commands when interacting with the typeahead menu (same command priority)
+                    // TODO: wait for new lexical version, see https://github.com/facebook/lexical/commit/df2a50bc88e0778af26e109502cfcfb9cbe245d5
                     if (document.querySelector(`#typeahead-menu`)) {
                         return false;
                     }

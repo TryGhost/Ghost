@@ -205,15 +205,18 @@ test.describe('Emoji Picker Plugin', async function () {
         `);
     });
 
-    // TODO: figure out why this test is flaky; likes to inject a :
+    // not sure why this test is flaky on CI...
     test.skip('can use emojis in captions', async function () {
         await focusEditor(page);
 
         await page.keyboard.type('```js ', {delay: 10});
         await page.keyboard.type(`sample code`, {delay: 10});
         await page.keyboard.press(`${ctrlOrCmd()}+Enter`);
-        await page.keyboard.type('enjoy :tac', {delay: 10});
-        await page.keyboard.press('Enter');
+        await page.keyboard.type('enjoy :ta', {delay: 10});
+        await page.keyboard.press('ArrowDown'); // make sure we test arrow key use
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('ArrowUp');
+        await page.keyboard.press('Enter'); // make sure we test enter key use
         await page.keyboard.type('s for all', {delay: 10});
 
         await assertHTML(page, `
