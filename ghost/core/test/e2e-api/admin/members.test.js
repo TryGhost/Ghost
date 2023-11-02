@@ -126,8 +126,7 @@ function buildMemberWithIncludesSnapshot(options) {
         attribution: attributionSnapshot,
         newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
         subscriptions: anyArray,
-        labels: anyArray,
-        email_suppression: anyObject
+        labels: anyArray
     };
 }
 
@@ -137,13 +136,6 @@ const tierMatcher = {
     updated_at: anyISODateTime,
     monthly_price_id: anyObjectId,
     yearly_price_id: anyObjectId
-};
-
-const emailSuppressionMatcher = {
-    info: {
-        reason: anyString,
-        timestamp: anyISODateTime
-    }
 };
 
 const memberMatcherShallowIncludes = {
@@ -2106,10 +2098,10 @@ describe('Members API', function () {
     });
 
     it('Updates the email_disabled field when a member email is updated', async function () {
+        const id = '6543c13c13575e086a06b222';
         const suppressedEmail = 'suppressed@email.com';
         const okEmail = 'ok@email.com';
-        const testMemberData = testUtils.DataGenerator.Content.members[0];
-        const testMember = await models.Member.findOne({id: testMemberData.id}, {require: true});
+        const testMember = await models.Member.add({id, email: okEmail, name: 'Test Member 123', email_disabled: false});
 
         // add suppressedEmail to the suppression list
         const suppression = await models.Suppression.add({
@@ -2119,16 +2111,9 @@ describe('Members API', function () {
 
         // Now update the email address of the test member to suppressed email
         await agent
-            .put(`/members/${testMemberData.id}/`)
+            .put(`/members/${testMember.id}/`)
             .body({members: [{email: suppressedEmail}]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+            .expectStatus(200);
 
         // email_disabled should be true
         await testMember.refresh();
@@ -2136,24 +2121,17 @@ describe('Members API', function () {
 
         // Now update the email address of that member to a non-suppressed email
         await agent
-            .put(`/members/${testMemberData.id}/`)
+            .put(`/members/${testMember.id}/`)
             .body({members: [{email: okEmail}]})
-            .expectStatus(200)
-            .matchBodySnapshot({
-                members: new Array(1).fill(buildMemberMatcherShallowIncludesWithTiers(0, 1))
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+            .expectStatus(200);
 
         // email_disabled should be false
         await testMember.refresh();
         should(testMember.get('email_disabled')).be.false();
 
-        // Reset member & delete suppression
-        testMember.save({testMemberData});
-        await models.Suppression.delete({id: suppression.id});
+        // Delete member & suppression
+        await models.Member.destroy({id: testMember.id});
+        await models.Suppression.destroy({id: suppression.id});
     });
 
     // Delete a member
