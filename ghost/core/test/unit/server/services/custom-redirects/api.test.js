@@ -116,7 +116,20 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
                 should.fail('setFromFilePath did not throw');
             } catch (err) {
                 should.exist(err);
-                err.message.should.eql('YAML input cannot be a plain string. Check the format of your YAML file.');
+                err.message.should.eql('YAML input is invalid. Check the contents of your YAML file.');
+            }
+        });
+
+        it('throws a syntax error when setting invalid (empty) YAML redirects file', async function () {
+            const invalidFilePath = path.join(__dirname, '/invalid/redirects/yaml.json');
+            fs.readFile.withArgs(invalidFilePath, 'utf-8').resolves('');
+
+            try {
+                await customRedirectsAPI.setFromFilePath(invalidFilePath, '.yaml');
+                should.fail('setFromFilePath did not throw');
+            } catch (err) {
+                should.exist(err);
+                err.message.should.eql('YAML input is invalid. Check the contents of your YAML file.');
             }
         });
 
