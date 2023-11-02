@@ -95,9 +95,6 @@ module.exports = function (defaults) {
         'ember-promise-modals': {
             excludeCSS: true
         },
-        'ember-cli-terser': {
-            enabled: true,
-        },
         outputPaths: {
             app: {
                 js: 'assets/ghost.js',
