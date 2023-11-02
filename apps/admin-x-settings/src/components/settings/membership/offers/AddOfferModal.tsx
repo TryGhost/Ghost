@@ -133,9 +133,14 @@ const AddOfferModal = () => {
         }
     }, [hasOffers, modal, updateRoute]);
 
+    const cancelAddOffer = () => {
+        modal.remove();
+        updateRoute('offers/edit');
+    };
+
     const sidebar = <Sidebar />;
 
-    return <PreviewModalContent deviceSelector={false} okLabel='Publish' sidebar={sidebar} size='full' title='Offer' />;
+    return <PreviewModalContent cancelLabel='Cancel' deviceSelector={false} okLabel='Publish' sidebar={sidebar} size='full' title='Offer' onCancel={cancelAddOffer} />;
 };
 
 export default NiceModal.create(AddOfferModal);
