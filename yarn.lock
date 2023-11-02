@@ -19003,10 +19003,10 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha512-+xGQY0YyAWCnqy7Cd++hc2JqMYzlm0dG30Jd0beaA64sROr8C4nt8Yc9V5Ro3avlSUDTN0ulqP/VBKi1/lLygw==
 
-gscan@4.39.4:
-  version "4.39.4"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.39.4.tgz#af73181874b761414c04a1498a2b62b2119dfb9b"
-  integrity sha512-jb6vnclLhHa10Z+RCcmfovy78eeE3EknASEsH5YS1OPGn66CG1Tja8IJffLUJk4mFnqZECjn7YrWKJNkgYpK4A==
+gscan@4.40.0:
+  version "4.40.0"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.40.0.tgz#68c440c77dc74d99d36442f283b431b08249b53b"
+  integrity sha512-+rrVRI3t9ZE1wRYn+cYZ3RpItS8eTQ9Vq09+T4IHpCmrUZ0WWCGYzzHdXoIJtC5YnwUoQDO3hpd20+O4+GT46w==
   dependencies:
     "@sentry/node" "^7.73.0"
     "@tryghost/config" "^0.2.18"
