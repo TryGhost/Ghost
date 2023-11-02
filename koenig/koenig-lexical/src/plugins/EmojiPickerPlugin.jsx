@@ -170,7 +170,6 @@ export function EmojiPickerPlugin() {
                 if (anchorElementRef.current === null || searchResults === null || searchResults.length === 0) {
                     return null;
                 }
-
                 return (
                     <Portal className="w-[240px]" to={anchorElementRef.current}>
                         <ul className="relative z-10 max-h-[214px] list-none overflow-y-auto bg-white p-1 shadow dark:bg-grey-950" data-testid="emoji-menu" style={getPositionStyles()}>
@@ -180,9 +179,11 @@ export function EmojiPickerPlugin() {
                                         emoji={emoji}
                                         index={index}
                                         isSelected={selectedIndex === index}
-                                        onClick={() => {
+                                        onClick={(event) => {
                                             setHighlightedIndex(index);
                                             selectOptionAndCleanUp(emoji);
+                                            event.stopPropagation();
+                                            event.preventDefault();
                                         }}
                                         onMouseEnter={() => {
                                             setHighlightedIndex(index);
