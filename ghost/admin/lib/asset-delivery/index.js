@@ -68,11 +68,12 @@ module.exports = {
             ignore: ['icons']
         });
 
-        // loop over any sourcemaps and add a "sourceRoot" key to each one before copying
+        // loop over any sourcemaps and remove `assets/` key from each one
         assets.filter((file) => file.endsWith('.map')).forEach((file) => {
             const mapFilePath = `${results.directory}/assets/${file}`;
             const mapFile = JSON.parse(fs.readFileSync(mapFilePath, 'utf8'));
-            mapFile.sourceRoot = '../';
+            // loop over the sources and remove `assets/` from each one
+            mapFile.sources = mapFile.sources.map((source) => source.replace('assets/', ''));
             fs.writeFileSync(mapFilePath, JSON.stringify(mapFile));
         });
 
