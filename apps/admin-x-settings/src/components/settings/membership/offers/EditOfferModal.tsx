@@ -66,7 +66,10 @@ const EditOfferModal = () => {
 
     const sidebar = <Sidebar />;
 
-    return <PreviewModalContent deviceSelector={false} okLabel='Update' sidebar={sidebar} size='full' title='Offer' />;
+    return <PreviewModalContent deviceSelector={false} okLabel='Update' sidebar={sidebar} size='full' title='Offer' onCancel={() => {
+        modal.remove();
+        updateRoute('offers/edit');
+    }} />;
 };
 
 export default NiceModal.create(EditOfferModal);
