@@ -12,7 +12,7 @@ export const CardMenuSection = ({label, children, ...props}) => {
     }
 
     return (
-        <li className="flex shrink-0 flex-col justify-center border-t border-grey-200 text-[1.1rem] font-semibold tracking-wide text-grey-600 first-of-type:border-t-0 dark:text-grey-800" role="separator" {...props}>
+        <li className="flex shrink-0 flex-col justify-center border-t border-grey-200 text-[1.1rem] font-semibold tracking-wide text-grey-600 first-of-type:border-t-0 dark:border-grey-900 dark:text-grey-600" role="separator" {...props}>
             <span
                 className="flex items-center justify-between px-5 pb-2 pt-3 uppercase"
                 data-card-menu-section="label"
@@ -57,7 +57,7 @@ export const CardMenuItem = ({label, shortcut, desc, isSelected, onClick, Icon, 
                 onMouseDown={preventMouseDown}
                 {...props}
             >
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-white text-grey-900">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-white text-grey-900 dark:bg-transparent dark:text-grey-500">
                     <Icon className="h-[1.8rem] w-[1.8rem]" />
                 </div>
                 <div className="flex w-full justify-between">
@@ -99,7 +99,7 @@ export const CardSnippetItem = ({label, isSelected, Icon, onRemove, closeMenu, .
                 onMouseDown={handleMouseDown}
                 {...props}
             >
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-white text-grey-900">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-white text-grey-900 dark:bg-transparent dark:text-grey-500">
                     <Icon className="h-[1.8rem] w-[1.8rem]" />
                 </div>
                 <div className="m-0 ml-4 truncate text-[1.35rem] font-medium leading-snug tracking-[.02rem] text-grey-900 dark:text-grey-200">{label}</div>
