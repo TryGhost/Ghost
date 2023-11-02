@@ -58,7 +58,10 @@ const OffersModal = () => {
         {id: 'archived', title: 'Archived'}
     ];
 
-    return <Modal cancelLabel='' header={false} size='lg'>
+    return <Modal cancelLabel='' header={false} size='lg' onOk={() => {
+        modal.remove();
+        updateRoute('offers');
+    }}>
         <div className='pt-6'>
             <header>
                 <div className='flex items-center justify-between'>
@@ -69,7 +72,7 @@ const OffersModal = () => {
                         width='wide'
                         onTabChange={() => {}}
                     />
-                    <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' />
+                    <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
                 </div>
                 <h1 className='mt-12 border-b border-b-grey-300 pb-2.5 text-3xl'>Active offers</h1>
             </header>
