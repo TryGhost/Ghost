@@ -9,7 +9,8 @@ export interface HtmlEditorProps {
     onChange?: (html: string) => void
     onBlur?: () => void
     placeholder?: string
-    nodes?: 'DEFAULT_NODES' | 'BASIC_NODES' | 'MINIMAL_NODES';
+    nodes?: 'DEFAULT_NODES' | 'BASIC_NODES' | 'MINIMAL_NODES'
+    emojiPicker?: boolean;
 }
 
 declare global {
@@ -57,7 +58,8 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
     onChange,
     onBlur,
     placeholder,
-    nodes
+    nodes,
+    emojiPicker = true
 }) => {
     const onError = useCallback((error: unknown) => {
         try {
@@ -139,6 +141,7 @@ const KoenigWrapper: React.FC<HtmlEditorProps & { editor: EditorResource }> = ({
                 onFocus={handleFocus}
             >
                 <koenig.HtmlOutputPlugin html={value} setHtml={handleSetHtml} />
+                {emojiPicker ? <koenig.EmojiPickerPlugin /> : null}
             </koenig.KoenigComposableEditor>
         </koenig.KoenigComposer>
     );
