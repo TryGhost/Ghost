@@ -205,6 +205,7 @@ module.exports = function (defaults) {
         autoImport: {
             publicAssetURL,
             webpack: {
+                devtool: 'source-map',
                 resolve: {
                     fallback: {
                         util: require.resolve('util'),
