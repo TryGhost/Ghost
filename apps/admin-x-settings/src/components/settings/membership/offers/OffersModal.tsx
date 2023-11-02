@@ -8,7 +8,7 @@ import {useEffect} from 'react';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
-const OfferCard: React.FC<{name: string, type: OfferType}> = ({name, type}) => {
+const OfferCard: React.FC<{name: string, type: OfferType, onClick: ()=>void}> = ({name, type, onClick}) => {
     let discountColor = '';
 
     switch (type) {
@@ -26,7 +26,7 @@ const OfferCard: React.FC<{name: string, type: OfferType}> = ({name, type}) => {
     }
 
     return <div className='flex flex-col items-center gap-6 border border-transparent bg-grey-100 p-5 text-center transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800'>
-        <h2 className='text-[1.6rem]'>{name}</h2>
+        <h2 className='cursor-pointer text-[1.6rem]' onClick={onClick}>{name}</h2>
         <div className=''>
             <div className='flex gap-3 text-sm uppercase leading-none'>
                 <span className={`font-semibold ${discountColor}`}>10% off</span>
@@ -58,7 +58,16 @@ const OffersModal = () => {
         {id: 'archived', title: 'Archived'}
     ];
 
-    return <Modal cancelLabel='' header={false} size='lg'>
+    const handleOfferEdit = (id:string) => {
+        // TODO: implement
+        modal.remove();
+        updateRoute(`offers/${id}`);
+    };
+
+    return <Modal cancelLabel='' header={false} size='lg' onOk={() => {
+        modal.remove();
+        updateRoute('offers');
+    }}>
         <div className='pt-6'>
             <header>
                 <div className='flex items-center justify-between'>
@@ -69,14 +78,14 @@ const OffersModal = () => {
                         width='wide'
                         onTabChange={() => {}}
                     />
-                    <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' />
+                    <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
                 </div>
                 <h1 className='mt-12 border-b border-b-grey-300 pb-2.5 text-3xl'>Active offers</h1>
             </header>
             <div className='mt-8 grid grid-cols-3 gap-6'>
-                <OfferCard name='Black friday' type='percent' />
-                <OfferCard name='Buy this right now' type='fixed' />
-                <OfferCard name='Desperate Sale!' type='trial' />
+                <OfferCard name='Black friday' type='percent' onClick={() => handleOfferEdit('123')} />
+                <OfferCard name='Buy this right now' type='fixed' onClick={() => handleOfferEdit('123')} />
+                <OfferCard name='Desperate Sale!' type='trial' onClick={() => handleOfferEdit('123')} />
             </div>
             <a className='absolute bottom-10 text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
         </div>
