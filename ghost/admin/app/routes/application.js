@@ -92,7 +92,6 @@ export default Route.extend(ShortcutsRoute, {
             // Need a tiny delay here to allow the router to update to the current route
             later(() => {
                 Sentry.setTag('route', this.router.currentRouteName);
-                Sentry.setTag('path', this.router.currentURL);
             }, 2);
         },
 
