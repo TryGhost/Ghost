@@ -130,6 +130,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     }
 
     const buttonProps: ButtonProps = {
+        iconColorClass: 'text-base',
         size: 'sm'
     };
 
