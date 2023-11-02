@@ -152,6 +152,15 @@ export function EmojiPickerPlugin() {
         return () => document.removeEventListener('keydown', handleKeyDown);
     });
 
+    function getPositionStyles() {
+        const selectedRange = window.getSelection().getRangeAt(0);
+        const rangeRect = selectedRange.getBoundingClientRect();
+
+        return {
+            top: `${rangeRect.height}px`
+        };
+    }
+
     return (
         <LexicalTypeaheadMenuPlugin
             menuRenderFn={(
@@ -164,7 +173,7 @@ export function EmojiPickerPlugin() {
 
                 return (
                     <Portal to={anchorElementRef.current}>
-                        <ul className="absolute top-[25px] z-10 max-h-[214px] w-[240px] list-none overflow-y-auto bg-white p-1 shadow" data-testid="emoji-menu">
+                        <ul className="absolute z-10 max-h-[214px] w-[240px] list-none overflow-y-auto bg-white p-1 shadow" data-testid="emoji-menu" style={getPositionStyles()}>
                             {searchResults.map((emoji, index) => (
                                 <div key={emoji.id}>
                                     <EmojiMenuItem
