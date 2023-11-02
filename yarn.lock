@@ -15611,6 +15611,17 @@ ember-compatibility-helpers@^1.1.1, ember-compatibility-helpers@^1.1.2, ember-co
     fs-extra "^9.1.0"
     semver "^5.4.1"
 
+ember-compatibility-helpers@^1.2.4:
+  version "1.2.7"
+  resolved "https://registry.yarnpkg.com/ember-compatibility-helpers/-/ember-compatibility-helpers-1.2.7.tgz#b4f138bba844f8f38f0b8f4d7e928841cd5e6591"
+  integrity sha512-BtkjulweiXo9c3yVWrtexw2dTmBrvavD/xixNC6TKOBdrixUwU+6nuOO9dufDWsMxoid7MvtmDpzc9+mE8PdaA==
+  dependencies:
+    babel-plugin-debug-macros "^0.2.0"
+    ember-cli-version-checker "^5.1.1"
+    find-up "^5.0.0"
+    fs-extra "^9.1.0"
+    semver "^5.4.1"
+
 ember-composable-helpers@5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/ember-composable-helpers/-/ember-composable-helpers-5.0.0.tgz#055bab3a3e234ab2917499b1465e968c253ca885"
