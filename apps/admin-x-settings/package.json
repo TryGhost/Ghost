@@ -71,7 +71,7 @@
     "@types/react": "18.2.34",
     "@types/react-dom": "18.2.14",
     "@types/validator": "13.11.5",
-    "@vitejs/plugin-react": "4.1.0",
+    "@vitejs/plugin-react": "4.1.1",
     "autoprefixer": "10.4.16",
     "concurrently": "8.2.2",
     "eslint-plugin-react-hooks": "4.6.0",
