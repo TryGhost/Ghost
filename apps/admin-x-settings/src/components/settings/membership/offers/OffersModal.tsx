@@ -4,7 +4,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {useBrowseOffers} from '../../../../api/offers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {numberWithCommas} from '../../../../utils/helpers';
@@ -63,7 +63,6 @@ const OffersModal = () => {
             limit: 'all',
         }
     });
-
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     const paidActiveTiers = getPaidActiveTiers(allTiers || []);
 
@@ -78,40 +77,50 @@ const OffersModal = () => {
         {id: 'active', title: 'Active'},
         {id: 'archived', title: 'Archived'}
     ];
+    const [selectedTab, setSelectedTab] = useState('active');
 
-    return <Modal cancelLabel='' header={false} size='lg'>
+    return <Modal 
+        afterClose={() => {
+            updateRoute('offers');
+        }}
+        onOk={() => {
+            modal.remove();
+            updateRoute('offers');
+        }}
+        cancelLabel='' header={false}
+        size='lg'>
         <div className='pt-6'>
             <header>
                 <div className='flex items-center justify-between'>
                     <TabView
                         border={false}
-                        selectedTab='active'
+                        selectedTab={selectedTab}
                         tabs={offersTabs}
                         width='wide'
-                        onTabChange={() => {}}
+                        onTabChange={setSelectedTab}
                     />
                     <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' />
                 </div>
                 <h1 className='mt-12 border-b border-b-grey-300 pb-2.5 text-3xl'>Active offers</h1>
             </header>
             <div className='mt-8 grid grid-cols-3 gap-6'>
-            {offers.map((offer) => {
-                const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
+                {offers.filter(offer => offer.status === selectedTab).map((offer) => {
+                    const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
 
-                return (
-                <OfferCard
-                    key={offer?.id}
-                    name={offer?.name}
-                    type={offer?.type as OfferType}
-                    redemption_count={offer?.redemption_count}
-                    amount={offer?.amount}
-                    currency={offer?.currency || 'USD'}
-                    cadence={offer?.cadence}
-                    offerTier={offerTier}
-                    duration={offer?.duration}
-                />
-                );
-            })}
+                    return (
+                    <OfferCard
+                        key={offer?.id}
+                        name={offer?.name}
+                        type={offer?.type as OfferType}
+                        redemption_count={offer?.redemption_count}
+                        amount={offer?.amount}
+                        currency={offer?.currency || 'USD'}
+                        cadence={offer?.cadence}
+                        offerTier={offerTier}
+                        duration={offer?.duration}
+                    />
+                    );
+                })}
             </div>
             <a className='absolute bottom-10 text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
         </div>
