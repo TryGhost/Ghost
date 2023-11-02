@@ -157,7 +157,7 @@ export function EmojiPickerPlugin() {
         const rangeRect = selectedRange.getBoundingClientRect();
 
         return {
-            top: `${rangeRect.height}px`
+            marginTop: `${rangeRect.height}px`
         };
     }
 
@@ -172,8 +172,8 @@ export function EmojiPickerPlugin() {
                 }
 
                 return (
-                    <Portal to={anchorElementRef.current}>
-                        <ul className="absolute z-10 max-h-[214px] w-[240px] list-none overflow-y-auto bg-white p-1 shadow" data-testid="emoji-menu" style={getPositionStyles()}>
+                    <Portal className="w-[240px]" to={anchorElementRef.current}>
+                        <ul className="relative z-10 max-h-[214px] list-none overflow-y-auto bg-white p-1 shadow" data-testid="emoji-menu" style={getPositionStyles()}>
                             {searchResults.map((emoji, index) => (
                                 <div key={emoji.id}>
                                     <EmojiMenuItem
