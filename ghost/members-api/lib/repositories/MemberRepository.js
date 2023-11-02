@@ -466,9 +466,6 @@ module.exports = class MemberRepository {
             });
         }
 
-        // Update email_disabled based on whether the new email is suppressed
-        memberData.email_disabled = !!data.suppressed;
-
         const memberStatusData = {};
 
         let productsToAdd = [];
