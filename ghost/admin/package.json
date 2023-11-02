@@ -151,8 +151,7 @@
     "paths": [
       "lib/asset-delivery",
       "lib/ember-power-calendar-moment",
-      "lib/ember-power-calendar-utils",
-      "lib/sourcemap-postprocess"
+      "lib/ember-power-calendar-utils"
     ]
   },
   "resolutions": {
