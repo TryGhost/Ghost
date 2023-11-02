@@ -172,7 +172,7 @@ export function EmojiPickerPlugin() {
                 }
                 return (
                     <Portal className="w-[240px]" to={anchorElementRef.current}>
-                        <ul className="relative z-10 max-h-[214px] list-none overflow-y-auto bg-white p-1 shadow dark:bg-grey-950" data-testid="emoji-menu" style={getPositionStyles()}>
+                        <ul className="relative z-10 max-h-[214px] select-none list-none overflow-y-auto bg-white p-1 shadow dark:bg-grey-950" data-testid="emoji-menu" style={getPositionStyles()}>
                             {searchResults.map((emoji, index) => (
                                 <div key={emoji.id}>
                                     <EmojiMenuItem
