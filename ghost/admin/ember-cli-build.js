@@ -83,8 +83,7 @@ module.exports = function (defaults) {
         babel: {
             plugins: [
                 require.resolve('babel-plugin-transform-react-jsx')
-            ],
-            sourceMaps: true
+            ]
         },
         'ember-cli-babel': {
             optional: ['es6.spec.symbols'],
