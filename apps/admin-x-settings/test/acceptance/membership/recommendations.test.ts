@@ -29,7 +29,7 @@ test.describe('Recommendations', async () => {
     test('can add a recommendation', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            getRecommendationByUrl: {method: 'GET', path: '/recommendations/?filter=url%3A%7E%27example.com%2Fa-cool-website%27', response: {recommendations: [], meta: {}}},
+            checkRecommendation: {method: 'POST', path: '/recommendations/check/', response: {recommendations: [{url: '', one_click_subscribe: true}], meta: {}}},
             addRecommendation: {method: 'POST', path: '/recommendations/', response: {}}
         }});
 
@@ -74,7 +74,7 @@ test.describe('Recommendations', async () => {
                 {excerpt: null,
                     favicon: null,
                     featured_image: null,
-                    one_click_subscribe: false,
+                    one_click_subscribe: true,
                     description: 'This is a description',
                     title: 'This is a title',
                     url: 'https://example.com/a-cool-website'}
@@ -85,7 +85,7 @@ test.describe('Recommendations', async () => {
     test('errors when adding an existing URL', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
-            getRecommendationByUrl: {method: 'GET', path: '/recommendations/?filter=url%3A%7E%27recommendation1.com%27', response: responseFixtures.recommendations}
+            checkRecommendation: {method: 'POST', path: '/recommendations/check/', response: {recommendations: [{url: 'https://recommendation1.com', one_click_subscribe: true, id: 'exists'}], meta: {}}}
         }});
 
         await page.goto('/');
