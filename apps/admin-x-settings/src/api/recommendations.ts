@@ -77,28 +77,11 @@ export const useAddRecommendation = createMutation<RecommendationResponseType, P
     }
 });
 
-export const useGetRecommendationByUrl = () => {
-    const fetchApi = useFetchApi();
-    const path = '/recommendations/';
-
-    return {
-        async query(url: URL): Promise<RecommendationResponseType | null> {
-            const urlFilter = `url:~'${url.host.replace('www.', '')}${url.pathname.replace(/\/$/, '')}'`;
-            const endpoint = apiUrl(path, {filter: urlFilter});
-            try {
-                const result = await fetchApi(endpoint, {
-                    method: 'GET',
-                    timeout: 5000
-                });
-                return result as RecommendationResponseType;
-            } catch (e) {
-                // eslint-disable-next-line no-console
-                console.error(e);
-                return null;
-            }
-        }
-    };
-};
+export const useCheckRecommendation = createMutation<RecommendationResponseType, URL>({
+    method: 'POST',
+    path: () => '/recommendations/check/',
+    body: url => ({recommendations: [{url: url.toString()}]})
+});
 
 export type IncomingRecommendation = {
     id: string
