@@ -3,6 +3,7 @@ const models = require('../../../core/server/models');
 const assert = require('assert/strict');
 require('should');
 const sinon = require('sinon');
+const members = require('../../../core/server/services/members');
 
 let membersAgent, membersService;
 
@@ -88,6 +89,32 @@ describe('Members Signin', function () {
             .expectStatus(302)
             .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
             .expectHeader('Set-Cookie', /members-ssr.*/);
+    });
+
+    it('Will redirect to an external welcome page for subscribe', async function () {
+        // Alter the product welcome page to an external URL
+        const freeProduct = await members.api.productRepository.get({slug: 'free'});
+        await members.api.productRepository.update({
+            id: freeProduct.id,
+            welcome_page_url: 'https://externalsite.ghost/welcome/'
+        });
+
+        try {
+            const magicLink = await membersService.api.getMagicLink('member1@test.com', 'signup');
+            const magicLinkUrl = new URL(magicLink);
+            const token = magicLinkUrl.searchParams.get('token');
+
+            await membersAgent.get(`/?token=${token}&action=subscribe`)
+                .expectStatus(302)
+                .expectHeader('Location', 'https://externalsite.ghost/welcome/') // no query params added
+                .expectHeader('Set-Cookie', /members-ssr.*/);
+        } finally {
+            // Change it back
+            await members.api.productRepository.update({
+                id: freeProduct.id,
+                welcome_page_url: freeProduct.get('welcome_page_url')
+            });
+        }
     });
 
     it('Will create a new member on signup', async function () {
