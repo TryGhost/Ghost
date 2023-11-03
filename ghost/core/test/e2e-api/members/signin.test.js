@@ -64,7 +64,7 @@ describe('Members Signin', function () {
 
         await membersAgent.get(`/?token=${token}&action=signup`)
             .expectStatus(302)
-            .expectHeader('Location', /\/welcome-free\/$/)
+            .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
             .expectHeader('Set-Cookie', /members-ssr.*/);
     });
 
@@ -75,7 +75,7 @@ describe('Members Signin', function () {
 
         await membersAgent.get(`/?token=${token}&action=signup-paid`)
             .expectStatus(302)
-            .expectHeader('Location', /\/welcome-paid\/$/)
+            .expectHeader('Location', /\/welcome-paid\/\?success=true&action=signup$/)
             .expectHeader('Set-Cookie', /members-ssr.*/);
     });
 
@@ -86,7 +86,7 @@ describe('Members Signin', function () {
 
         await membersAgent.get(`/?token=${token}&action=subscribe`)
             .expectStatus(302)
-            .expectHeader('Location', /\/welcome-free\/$/)
+            .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
             .expectHeader('Set-Cookie', /members-ssr.*/);
     });
 
@@ -98,7 +98,7 @@ describe('Members Signin', function () {
 
         await membersAgent.get(`/?token=${token}&action=signup`)
             .expectStatus(302)
-            .expectHeader('Location', /\/welcome-free\/$/)
+            .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
             .expectHeader('Set-Cookie', /members-ssr.*/);
 
         const member = await getMemberByEmail(email);
@@ -129,7 +129,7 @@ describe('Members Signin', function () {
 
         await membersAgent.get(`/?token=${token}&action=signup`)
             .expectStatus(302)
-            .expectHeader('Location', /\/welcome-free\/$/)
+            .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
             .expectHeader('Set-Cookie', /members-ssr.*/);
     });
 
@@ -173,7 +173,7 @@ describe('Members Signin', function () {
             // Use a first time
             await membersAgent.get(`/?token=${token}&action=signup`)
                 .expectStatus(302)
-                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
                 .expectHeader('Set-Cookie', /members-ssr.*/);
 
             // Fetch token in the database
@@ -189,7 +189,7 @@ describe('Members Signin', function () {
 
             await membersAgent.get(`/?token=${token}&action=signup`)
                 .expectStatus(302)
-                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
                 .expectHeader('Set-Cookie', /members-ssr.*/);
 
             await model.refresh();
@@ -226,17 +226,17 @@ describe('Members Signin', function () {
             // Use a first time
             await membersAgent.get(`/?token=${token}&action=signup`)
                 .expectStatus(302)
-                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
                 .expectHeader('Set-Cookie', /members-ssr.*/);
 
             await membersAgent.get(`/?token=${token}&action=signup`)
                 .expectStatus(302)
-                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
                 .expectHeader('Set-Cookie', /members-ssr.*/);
 
             await membersAgent.get(`/?token=${token}&action=signup`)
                 .expectStatus(302)
-                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
                 .expectHeader('Set-Cookie', /members-ssr.*/);
 
             // Fetch token in the database
@@ -534,7 +534,7 @@ describe('Members Signin', function () {
 
             await membersAgent.get(`/?token=${token}&action=signup`)
                 .expectStatus(302)
-                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
                 .expectHeader('Set-Cookie', /members-ssr.*/);
 
             const member = await getMemberByEmail(email);
