@@ -8,6 +8,7 @@ import {AddRecommendation, Recommendation, RecommendationPlain} from './Recommen
 import {RecommendationRepository} from './RecommendationRepository';
 import {SubscribeEvent} from './SubscribeEvent';
 import {WellknownService} from './WellknownService';
+import {RecommendationMetadataService} from './RecommendationMetadataService';
 
 type MentionSendingService = {
     sendAll(options: {url: URL, links: URL[]}): Promise<void>
@@ -30,6 +31,7 @@ export class RecommendationService {
     wellknownService: WellknownService;
     mentionSendingService: MentionSendingService;
     recommendationEnablerService: RecommendationEnablerService;
+    recommendationMetadataService: RecommendationMetadataService;
 
     constructor(deps: {
         repository: RecommendationRepository,
@@ -37,7 +39,8 @@ export class RecommendationService {
         subscribeEventRepository: InMemoryRepository<string, SubscribeEvent>,
         wellknownService: WellknownService,
         mentionSendingService: MentionSendingService,
-        recommendationEnablerService: RecommendationEnablerService
+        recommendationEnablerService: RecommendationEnablerService,
+        recommendationMetadataService: RecommendationMetadataService
     }) {
         this.repository = deps.repository;
         this.wellknownService = deps.wellknownService;
@@ -45,11 +48,37 @@ export class RecommendationService {
         this.recommendationEnablerService = deps.recommendationEnablerService;
         this.clickEventRepository = deps.clickEventRepository;
         this.subscribeEventRepository = deps.subscribeEventRepository;
+        this.recommendationMetadataService = deps.recommendationMetadataService;
     }
 
     async init() {
         const recommendations = await this.#listRecommendations();
         await this.updateWellknown(recommendations);
+
+        // Do a slow update of all the recommendation metadata (keeping logo up to date, one-click-subscribe, etc.)
+        // We better move this to a job in the future
+        if (!process.env.NODE_ENV?.startsWith('test')) {
+            setTimeout(async () => {
+                try {
+                    await this.updateAllRecommendationsMetadata();
+                } catch (e) {
+                    logging.error('[Recommendations] Failed to update all recommendations metadata on boot', e);
+                }
+            }, 2 * 60 * 1000 + Math.random() * 5 * 60 * 1000);
+        }
+    }
+
+    async updateAllRecommendationsMetadata() {
+        const recommendations = await this.#listRecommendations();
+        logging.info('[Recommendations] Updating recommendations metadata');
+        for (const recommendation of recommendations) {
+            try {
+                await this._updateRecommendationMetadata(recommendation);
+                await this.repository.save(recommendation);
+            } catch (e) {
+                logging.error('[Recommendations] Failed to save updated metadata for recommendation ' + recommendation.url.toString(), e);
+            }
+        }
     }
 
     async updateWellknown(recommendations: Recommendation[]) {
@@ -112,6 +141,45 @@ export class RecommendationService {
         return recommendation.plain;
     }
 
+    async checkRecommendation(url: URL): Promise<Partial<RecommendationPlain>> {
+        // If a recommendation with this URL already exists, return it, but with updated metadata
+        const existing = await this.repository.getByUrl(url);
+        if (existing) {
+            this._updateRecommendationMetadata(existing);
+            await this.repository.save(existing);
+            return existing.plain;
+        }
+
+        const metadata = await this.recommendationMetadataService.fetch(url);
+        return {
+            url: url,
+            title: metadata.title ?? undefined,
+            excerpt: metadata.excerpt ?? undefined,
+            featuredImage: metadata.featuredImage ?? undefined,
+            favicon: metadata.favicon ?? undefined,
+            oneClickSubscribe: !!metadata.oneClickSubscribe
+        };
+    }
+
+    async _updateRecommendationMetadata(recommendation: Recommendation) {
+        // Fetch data
+        try {
+            const metadata = await this.recommendationMetadataService.fetch(recommendation.url);
+
+            // Set null values to undefined so we don't trigger an update
+            recommendation.edit({
+                // Don't set title if it's already set on the recommendation
+                title: recommendation.title ? undefined : (metadata.title ?? undefined),
+                excerpt: metadata.excerpt ?? undefined,
+                featuredImage: metadata.featuredImage ?? undefined,
+                favicon: metadata.favicon ?? undefined,
+                oneClickSubscribe: !!metadata.oneClickSubscribe
+            });
+        } catch (e) {
+            logging.error('[Recommendations] Failed to update metadata for recommendation ' + recommendation.url.toString(), e);
+        }
+    }
+
     async editRecommendation(id: string, recommendationEdit: Partial<Recommendation>): Promise<RecommendationPlain> {
         // Check if it exists
         const existing = await this.repository.getById(id);
@@ -122,6 +190,7 @@ export class RecommendationService {
         }
 
         existing.edit(recommendationEdit);
+        await this._updateRecommendationMetadata(existing);
         await this.repository.save(existing);
 
         const recommendations = await this.#listRecommendations();

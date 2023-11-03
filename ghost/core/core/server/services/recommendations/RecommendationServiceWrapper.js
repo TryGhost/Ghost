@@ -50,6 +50,7 @@ class RecommendationServiceWrapper {
         const sentry = require('../../../shared/sentry');
         const settings = require('../settings');
         const RecommendationEnablerService = require('./RecommendationEnablerService');
+
         const {
             BookshelfRecommendationRepository,
             RecommendationService,
@@ -58,7 +59,8 @@ class RecommendationServiceWrapper {
             BookshelfClickEventRepository,
             IncomingRecommendationController,
             IncomingRecommendationService,
-            IncomingRecommendationEmailRenderer
+            IncomingRecommendationEmailRenderer,
+            RecommendationMetadataService
         } = require('@tryghost/recommendations');
 
         const mentions = require('../mentions');
@@ -87,13 +89,22 @@ class RecommendationServiceWrapper {
             sentry
         });
 
+        const oembedService = require('../oembed');
+        const externalRequest = require('../../../server/lib/request-external.js');
+
+        const recommendationMetadataService = new RecommendationMetadataService({
+            oembedService,
+            externalRequest
+        });
+
         this.service = new RecommendationService({
             repository: this.repository,
             recommendationEnablerService,
             wellknownService,
             mentionSendingService: mentions.sendingService,
             clickEventRepository: this.clickEventRepository,
-            subscribeEventRepository: this.subscribeEventRepository
+            subscribeEventRepository: this.subscribeEventRepository,
+            recommendationMetadataService
         });
 
         const mail = require('../mail');

@@ -351,6 +351,7 @@ module.exports = function apiRoutes() {
     router.get('/recommendations', mw.authAdminApi, http(api.recommendations.browse));
     router.get('/recommendations/:id', mw.authAdminApi, http(api.recommendations.read));
     router.post('/recommendations', mw.authAdminApi, http(api.recommendations.add));
+    router.post('/recommendations/check', mw.authAdminApi, http(api.recommendations.check));
     router.put('/recommendations/:id', mw.authAdminApi, http(api.recommendations.edit));
     router.del('/recommendations/:id', mw.authAdminApi, http(api.recommendations.destroy));
 
