@@ -8,7 +8,7 @@ import {AddRecommendation, Recommendation, RecommendationPlain} from './Recommen
 import {RecommendationRepository} from './RecommendationRepository';
 import {SubscribeEvent} from './SubscribeEvent';
 import {WellknownService} from './WellknownService';
-import {RecommendationMetadataService, RecommendationMetadata} from './RecommendationMetadataService';
+import {RecommendationMetadataService} from './RecommendationMetadataService';
 
 type MentionSendingService = {
     sendAll(options: {url: URL, links: URL[]}): Promise<void>
