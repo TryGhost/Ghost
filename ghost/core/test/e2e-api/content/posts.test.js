@@ -84,6 +84,15 @@ describe('Posts Content API', function () {
             });
     });
 
+    it('Cannot request mobiledoc or lexical fields', async function () {
+        await agent
+            .get(`posts/?fields=mobiledoc,lexical,published_at,created_at,updated_at,uuid`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                posts: new Array(11).fill(postMatcher)
+            });
+    });
+
     it('Can filter posts by tag', async function () {
         const res = await agent.get('posts/?filter=tag:kitchen-sink,featured:true&include=tags')
             .expectStatus(200)

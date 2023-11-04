@@ -3,6 +3,7 @@ const {anyObjectId, anyErrorId, anyISODateTime, anyContentVersion, anyLocationFo
 const assert = require('assert/strict');
 const recommendationsService = require('../../../core/server/services/recommendations');
 const {Recommendation, ClickEvent, SubscribeEvent} = require('@tryghost/recommendations');
+const nock = require('nock');
 
 async function addDummyRecommendation(i = 0) {
     const recommendation = Recommendation.create({
@@ -663,6 +664,44 @@ describe('Recommendations Admin API', function () {
                         }
                     ]
                 });
+        });
+    });
+
+    describe('check', function () {
+        it('Can check a recommendation url', async function () {
+            nock('https://dogpictures.com')
+                .get('/members/api/site')
+                .reply(200, {
+                    site: {
+                        title: 'Dog Pictures',
+                        description: 'Because dogs are cute',
+                        cover_image: 'https://dogpictures.com/dog.jpg',
+                        icon: 'https://dogpictures.com/favicon.ico',
+                        allow_external_signup: true
+                    }
+                });
+
+            const {body} = await agent.post('recommendations/check/')
+                .body({
+                    recommendations: [{
+                        url: 'https://dogpictures.com'
+                    }]
+                })
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({});
+
+            // Check everything is set correctly
+            assert.equal(body.recommendations[0].title, 'Dog Pictures');
+            assert.equal(body.recommendations[0].url, 'https://dogpictures.com/');
+            assert.equal(body.recommendations[0].description, null);
+            assert.equal(body.recommendations[0].excerpt, 'Because dogs are cute');
+            assert.equal(body.recommendations[0].featured_image, 'https://dogpictures.com/dog.jpg');
+            assert.equal(body.recommendations[0].favicon, 'https://dogpictures.com/favicon.ico');
+            assert.equal(body.recommendations[0].one_click_subscribe, true);
         });
     });
 

@@ -265,7 +265,15 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
                 const ensureEndsWith = (string, endsWith) => (string.endsWith(endsWith) ? string : string + endsWith);
                 const removeLeadingSlash = string => string.replace(/^\//, '');
 
+                // Add query parameters so the frontend can detect that the signup went fine
+
                 const redirectUrl = new URL(removeLeadingSlash(ensureEndsWith(customRedirect, '/')), ensureEndsWith(baseUrl, '/'));
+
+                if (urlUtils.isSiteUrl(redirectUrl)) {
+                    // Add only for non-external URLs
+                    redirectUrl.searchParams.set('success', 'true');
+                    redirectUrl.searchParams.set('action', 'signup');
+                }
 
                 return res.redirect(redirectUrl.href);
             }
