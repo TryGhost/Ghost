@@ -4,7 +4,7 @@
   "description": "The professional publishing platform",
   "private": true,
   "repository": "https://github.com/TryGhost/Ghost",
-  "author": "Ghost Foundation",
+  "author": "Ghost Foundation-Cristhian A",
   "license": "MIT",
   "workspaces": [
     "apps/*",
