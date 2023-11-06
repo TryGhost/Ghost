@@ -74,10 +74,14 @@ const SPECIAL_MARKUPS = {
     strikethrough: '~~'
 };
 
-function $selectCard(nodeKey) {
+function $selectCard(editor, nodeKey) {
     const selection = $createNodeSelection();
     selection.add(nodeKey);
     $setSelection(selection);
+    // selecting a decorator node does not change the
+    // window selection (there's no caret) so we need
+    // to manually move focus to the editor element
+    editor.getRootElement().focus();
 }
 
 // remove empty cards when they are deselected
@@ -279,7 +283,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         $deselectCard(editor, selectedCardKey);
                     }
 
-                    $selectCard(cardKey);
+                    $selectCard(editor, cardKey);
 
                     setSelectedCardKey(cardKey);
                     setIsEditingCard(false);
@@ -292,7 +296,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     if (selectedCardKey && selectedCardKey !== cardKey) {
                         $deselectCard(editor, selectedCardKey);
                     }
-                    $selectCard(cardKey);
+                    $selectCard(editor, cardKey);
 
                     setSelectedCardKey(cardKey);
 
@@ -393,7 +397,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                         paragraph.select();
                                     } else {
                                         // reselect card to ensure we have a selection for the next steps
-                                        $selectCard(selectedCardKey);
+                                        $selectCard(editor, selectedCardKey);
 
                                         // select the next paragraph or card
                                         editor.dispatchCommand(KEY_ARROW_DOWN_COMMAND);
@@ -403,7 +407,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 } else {
                                     // re-create the node selection because the focus will place the cursor at
                                     // the beginning of the doc
-                                    $selectCard(selectedCardKey);
+                                    $selectCard(editor, selectedCardKey);
                                 }
 
                                 setIsEditingCard(false);
@@ -504,7 +508,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     // if we're in a nested editor, we need to move selection back to the parent editor
                     if (event?._fromCaptionEditor) {
-                        $selectCard(selectedCardKey);
+                        $selectCard(editor, selectedCardKey);
                     }
 
                     // avoid processing card behaviours when an inner element has focus (e.g. nested editors)
@@ -626,7 +630,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     // if we're in a nested editor, we need to move selection back to the parent editor
                     if (event?._fromCaptionEditor) {
-                        $selectCard(selectedCardKey);
+                        $selectCard(editor, selectedCardKey);
                     }
 
                     // avoid processing card behaviours when an inner element has focus (e.g. nested editors)
@@ -1324,7 +1328,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         //   cards have their own click handlers
                         event.preventDefault();
                         const cardNode = $getNearestNodeFromDOMNode(event.target);
-                        $selectCard(cardNode.getKey());
+                        $selectCard(editor, cardNode.getKey());
                         return true;
                     }
 

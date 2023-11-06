@@ -144,6 +144,22 @@ test.describe('Card behaviour', async () => {
             expect(await page.locator('[data-kg-card-editing="false"]'));
         });
 
+        test('clicking outside the editor and then on a card focuses the editor', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('```javascript ');
+            await page.keyboard.type('import React from "react"');
+
+            const title = page.getByTestId('post-title');
+            await title.click();
+            let titleHasFocus = await title.evaluate(node => document.activeElement === node);
+            expect(titleHasFocus).toEqual(true);
+
+            await page.click('div[data-kg-card="codeblock"]');
+            const editor = await page.locator('div.kg-prose').first();
+            let editorHasFocus = await editor.evaluate(node => document.activeElement === node);
+            expect(editorHasFocus).toEqual(true);
+        });
+
         test('clicking outside the empty edit mode card removes the card', async function () {
             await focusEditor(page);
             await page.keyboard.type('```javascript ');
