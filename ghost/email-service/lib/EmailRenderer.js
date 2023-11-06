@@ -368,14 +368,36 @@ class EmailRenderer {
             }, {base});
         }
 
+        // Record the original image width and height attributes before inlining the styles with juice
+        // If any images have `width: auto` or `height: auto` set via CSS, juice will explicitly set the width/height to `auto` on the <img /> tag
+        // This is not supported by Outlook, so we need to reset the width/height attributes to the original values
+        // Other clients will ignore the width/height attributes and use the inlined CSS instead
+        $ = cheerio.load(html);
+        const originalImageSizes = $('img').get().map((image) => {
+            const src = image.attribs.src;
+            const width = image.attribs.width;
+            const height = image.attribs.height;
+            return {src, width, height};
+        });
+
         // Juice HTML (inline CSS)
         const juice = require('juice');
-        juice.heightElements = ['TABLE', 'TD', 'TH', 'IMG'];
-        juice.widthElements = ['TABLE', 'TD', 'TH', 'IMG'];
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
         $ = cheerio.load(html);
+
+        // Reset any `height="auto"` or `width="auto"` attributes to their original values before inlining CSS
+        const imageTags = $('img').get();
+        for (let i = 0; i < imageTags.length; i += 1) {
+            // if the newImage width or height is set to 'auto', reset to its original value
+            if (imageTags[i].attribs.width === 'auto' && originalImageSizes[i].width) {
+                imageTags[i].attribs.width = originalImageSizes[i].width;
+            }
+            if (imageTags[i].attribs.height === 'auto' && originalImageSizes[i].height) {
+                imageTags[i].attribs.height = originalImageSizes[i].height;
+            }
+        }
 
         // force all links to open in new tab
         $('a').attr('target', '_blank');
