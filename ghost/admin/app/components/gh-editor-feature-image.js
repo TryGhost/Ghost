@@ -15,14 +15,9 @@ export default class GhEditorFeatureImageComponent extends Component {
     @service settings;
 
     @tracked isEditingAlt = false;
-    @tracked isHovered = false;
     @tracked captionInputFocused = false;
     @tracked showUnsplashSelector = false;
     @tracked canDrop = false;
-
-    get hideButton() {
-        return !this.canDrop && !this.isHovered && !this.args.forceButtonDisplay;
-    }
 
     get caption() {
         const content = this.args.caption;
