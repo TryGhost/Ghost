@@ -23,7 +23,7 @@ export const LimitModalContent: React.FC<LimitModalProps> = ({
             formSheet={formSheet}
             okColor='green'
             okLabel={okLabel}
-            size={540}
+            width={540}
             testId='limit-modal'
             title={title}
             onOk={() => updateRoute({isExternal: true, route: 'pro'})}
