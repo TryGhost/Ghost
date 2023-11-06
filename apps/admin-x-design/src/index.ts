@@ -58,8 +58,6 @@ export type {ModalPageProps} from './global/modal/ModalPage';
 export {default as PreviewModal} from './global/modal/PreviewModal';
 export type {PreviewModalProps} from './global/modal/PreviewModal';
 
-export {default as DesignSystemApp} from './DesignSystemApp';
-export type {DesignSystemAppProps} from './DesignSystemApp';
 export {default as Avatar} from './global/Avatar';
 export type {AvatarProps} from './global/Avatar';
 export {default as Banner} from './global/Banner';
@@ -147,4 +145,8 @@ export {usePagination} from './hooks/usePagination';
 export type {PaginationData} from './hooks/usePagination';
 
 export {debounce} from './utils/debounce';
+
+export {default as DesignSystemApp} from './DesignSystemApp';
+export type {DesignSystemAppProps} from './DesignSystemApp';
+export {useFocusContext} from './providers/DesignSystemProvider';
 

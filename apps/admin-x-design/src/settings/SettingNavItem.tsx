@@ -2,9 +2,7 @@ import clsx from 'clsx';
 import React, {forwardRef} from 'react';
 import Icon from '../global/Icon';
 
-// TODO: Wrap with removed logic in admin-x-settings
-
-export interface SettingNavItemProps extends Omit<React.HTMLProps<HTMLLIElement>, 'title' | 'onClick'> {
+export interface SettingNavItemProps extends Omit<React.HTMLProps<HTMLLIElement>, 'ref' | 'title' | 'onClick'> {
     title: React.ReactNode;
     navid?: string;
     icon?: string;
