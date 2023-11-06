@@ -5,8 +5,8 @@
   "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/admin-x-design",
   "author": "Ghost Foundation",
   "private": true,
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "main": "es/index.js",
+  "types": "types/index.d.ts",
   "scripts": {
     "build": "yarn build:esm && yarn build:types",
     "build:esm": "esbuild $(find src \\( -name '*.ts' -o -name '*.tsx' \\) -not -name '*.stories.tsx') --target=es2020 --outdir=es --format=esm",
@@ -20,7 +20,10 @@
     "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache"
   },
   "files": [
-    "build"
+    "es",
+    "types",
+    "tailwind.cjs",
+    "tailwind.config.cjs"
   ],
   "devDependencies": {
     "c8": "8.0.1",
