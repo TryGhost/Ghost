@@ -1,6 +1,7 @@
 import React from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as GoogleLogo, Heading, ReactComponent as MagnifyingGlass, SettingGroup, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Heading, Icon, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getSettingValues} from '../../../api/settings';
 
 interface SearchEnginePreviewProps {
@@ -24,11 +25,11 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
             <Heading grey={true} level={6}>Search engine result preview</Heading>
             <div className='mt-3 flex items-center'>
                 <div className='basis-'>
-                    <GoogleLogo className='mr-7 h-7' />
+                    <Icon className='mr-7 h-7' name='google-logo' size='custom' />
                 </div>
                 <div className='grow'>
                     <div className='flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow dark:bg-grey-900'>
-                        <MagnifyingGlass className='h-4 w-4 text-blue-600' style={{strokeWidth: '2px'}} />
+                        <Icon className='stroke-[2px] text-blue-600' name='magnifying-glass' size='sm' />
                     </div>
                 </div>
             </div>
@@ -94,7 +95,7 @@ const Metadata: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Extra content for search engines'
             isEditing={isEditing}
             keywords={keywords}
@@ -117,7 +118,7 @@ const Metadata: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 {inputFields}
             </>
             }
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

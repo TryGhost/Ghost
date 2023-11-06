@@ -1,6 +1,7 @@
 import React from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useRouting from '../../../hooks/useRouting';
-import {Button, SettingGroup, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getSettingValues} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
@@ -14,7 +15,7 @@ const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={<Button color='green' disabled={membersSignupAccess === 'none'} label='Customize' link linkWithPadding onClick={openPreviewModal}/>}
             description="Customize members modal signup flow"
             keywords={keywords}

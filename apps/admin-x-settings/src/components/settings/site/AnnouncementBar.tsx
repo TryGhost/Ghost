@@ -1,6 +1,7 @@
 import React from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useRouting from '../../../hooks/useRouting';
-import {Button, SettingGroup, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, withErrorBoundary} from '@tryghost/admin-x-design';
 
 const AnnouncementBar: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
@@ -9,7 +10,7 @@ const AnnouncementBar: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={<Button color='green' label='Customize' link linkWithPadding onClick={openModal}/>}
             description="Highlight important updates or offers"
             keywords={keywords}

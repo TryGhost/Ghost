@@ -3,7 +3,8 @@ import BetaFeatures from './labs/BetaFeatures';
 import LabsBubbles from '../../../assets/images/labs-bg.svg';
 import MigrationOptions from './labs/MigrationOptions';
 import React, {useState} from 'react';
-import TabView, {Button, SettingGroup, SettingGroupHeader, Tab, withErrorBoundary} from '@tryghost/admin-x-design';
+import TopLevelGroup from '../../TopLevelGroup';
+import {Button, SettingGroupHeader, Tab, TabView, withErrorBoundary} from '@tryghost/admin-x-design';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 type LabsTab = 'labs-migration-options' | 'labs-alpha-features' | 'labs-beta-features';
@@ -32,7 +33,7 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ].filter(Boolean) as Tab<LabsTab>[];
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customHeader={
                 <div className='z-10 flex items-start justify-between'>
                     <SettingGroupHeader description='This is a testing ground for new or experimental features. They may change, break or inexplicably disappear at any time.' title='Labs' />
@@ -59,7 +60,7 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <img className='absolute -right-6 -top-6 dark:opacity-10' src={LabsBubbles} />
                 </div>
             }
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

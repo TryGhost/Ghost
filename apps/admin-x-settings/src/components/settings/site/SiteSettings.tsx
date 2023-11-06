@@ -2,7 +2,7 @@ import AnnouncementBar from './AnnouncementBar';
 import DesignSetting from './DesignSetting';
 import Navigation from './Navigation';
 import React from 'react';
-import {SettingSection} from '@tryghost/admin-x-design';
+import SearchableSection from '../../SearchableSection';
 
 export const searchKeywords = {
     design: ['site', 'logo', 'cover', 'colors', 'fonts', 'background', 'themes', 'appearance', 'style', 'design & branding', 'design and branding'],
@@ -13,11 +13,11 @@ export const searchKeywords = {
 const SiteSettings: React.FC = () => {
     return (
         <>
-            <SettingSection keywords={Object.values(searchKeywords).flat()} title="Site">
+            <SearchableSection keywords={Object.values(searchKeywords).flat()} title="Site">
                 <DesignSetting keywords={searchKeywords.design} />
                 <Navigation keywords={searchKeywords.navigation} />
                 <AnnouncementBar keywords={searchKeywords.announcementBar} />
-            </SettingSection>
+            </SearchableSection>
         </>
     );
 };

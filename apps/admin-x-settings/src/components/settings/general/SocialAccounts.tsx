@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {SettingGroup, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
+import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
 import {facebookHandleToUrl, facebookUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 import {getSettingValues} from '../../../api/settings';
 
@@ -100,7 +101,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Link your social accounts for full structured data and rich card support'
             isEditing={isEditing}
             keywords={keywords}
@@ -138,7 +139,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
             }}
         >
             {isEditing ? inputs : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

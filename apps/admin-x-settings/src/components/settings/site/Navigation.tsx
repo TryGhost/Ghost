@@ -1,6 +1,7 @@
 import React from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useRouting from '../../../hooks/useRouting';
-import {Button, SettingGroup, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, withErrorBoundary} from '@tryghost/admin-x-design';
 
 const Navigation: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
@@ -9,7 +10,7 @@ const Navigation: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={<Button color='green' label='Customize' link linkWithPadding onClick={openPreviewModal}/>}
             description="Set up primary and secondary menus"
             keywords={keywords}

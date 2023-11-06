@@ -1,8 +1,9 @@
 import React from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ImageUpload, SettingGroup, SettingGroupContent, TextField, ReactComponent as TwitterLogo, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Icon, ImageUpload, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
 
@@ -55,7 +56,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const inputFields = (
         <div className="flex flex-col gap-3 md:flex-row">
             <div className="pt-1">
-                <TwitterLogo className='-mb-1 h-10 w-10' />
+                <Icon className='-mb-1' name='twitter-x' size='xl' />
             </div>
             <div className="w-full md:mr-[52px]">
                 <div className="mb-2">
@@ -108,7 +109,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Customize structured data of your site for X (formerly Twitter)'
             isEditing={isEditing}
             keywords={keywords}
@@ -122,7 +123,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             {values}
             {isEditing ? inputFields : null}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

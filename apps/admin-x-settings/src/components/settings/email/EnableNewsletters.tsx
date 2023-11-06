@@ -1,7 +1,8 @@
 import React from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
-import {Banner, Icon, SettingGroup, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Banner, Icon, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design';
 import {Setting, getSettingValues, useEditSettings} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
@@ -41,7 +42,7 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         </>
     );
 
-    return (<SettingGroup
+    return (<TopLevelGroup
         customButtons={enableToggle}
         description='Newsletter features are active, posts can be sent by email'
         keywords={keywords}
@@ -74,7 +75,7 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 }
             ]}
         />
-    </SettingGroup>);
+    </TopLevelGroup>);
 };
 
 export default withErrorBoundary(EnableNewsletters, 'Newsletter sending');

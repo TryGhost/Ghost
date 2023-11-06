@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import clsx from 'clsx';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
-import {Avatar, Button, List, ListItem, NoValueLabel, SettingGroup, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Avatar, Button, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design';
 import {User, hasAdminAccess, isContributorUser, isEditorUser} from '../../../api/users';
 import {UserInvite, useAddInvite, useDeleteInvite} from '../../../api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
@@ -253,7 +254,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
     ];
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={buttons}
             highlightOnModalClose={highlight}
             keywords={keywords}
@@ -268,7 +269,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
                 link
                 onClick={() => fetchNextPage()}
             />}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

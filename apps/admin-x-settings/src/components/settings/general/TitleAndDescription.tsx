@@ -1,6 +1,7 @@
 import React from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {SettingGroup, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
+import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getSettingValues} from '../../../api/settings';
 
 const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -63,7 +64,7 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='The details used to identify your publication around the web'
             isEditing={isEditing}
             keywords={keywords}
@@ -76,7 +77,7 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? inputFields : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

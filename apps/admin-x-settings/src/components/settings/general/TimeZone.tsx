@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import timezoneData from '@tryghost/timezone-data';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Select, SettingGroup, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getLocalTime} from '../../../utils/helpers';
 import {getSettingValues} from '../../../api/settings';
 
@@ -85,7 +86,7 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Set the time and date of your publication, used for all published posts'
             isEditing={isEditing}
             keywords={keywords}
@@ -98,7 +99,7 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? inputFields : viewContent}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

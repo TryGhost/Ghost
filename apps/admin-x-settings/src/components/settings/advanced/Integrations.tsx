@@ -1,10 +1,11 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
 import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
-import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, SettingGroup, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
 import {Integration, useBrowseIntegrations, useDeleteIntegration} from '../../../api/integrations';
 import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
@@ -218,7 +219,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={buttons}
             description="Make Ghost work with apps and tools"
             keywords={keywords}
@@ -233,7 +234,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 }} />
             </div>
             <TabView<'built-in' | 'custom'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

@@ -1,7 +1,8 @@
-import MultiSelect, {MultiSelectOption, Select, SettingGroup, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design';
 import React, {useState} from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useDefaultRecipientsOptions from './useDefaultRecipientsOptions';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {MultiSelect, MultiSelectOption, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design';
 import {MultiValue} from 'react-select';
 import {getOptionLabel} from '../../../utils/helpers';
 import {getSettingValues} from '../../../api/settings';
@@ -150,7 +151,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='When you publish new content, who do you usually want to send it to?'
             isEditing={isEditing}
             keywords={keywords}
@@ -163,7 +164,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? form : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

@@ -1,7 +1,8 @@
-import MultiSelect, {MultiSelectOption, Select, SettingGroup, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design';
 import React from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
+import {MultiSelect, MultiSelectOption, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getOptionLabel} from '../../../utils/helpers';
 import {getSettingValues} from '../../../api/settings';
 import {useBrowseTiers} from '../../../api/tiers';
@@ -174,7 +175,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Set up default access options for subscription and posts'
             isEditing={isEditing}
             keywords={keywords}
@@ -187,7 +188,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? form : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

@@ -1,7 +1,8 @@
 import React from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useHandleError from '../../../utils/api/handleError';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {IconLabel, Link, Select, SettingGroup, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
+import {IconLabel, Link, Select, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getSettingValues, useEditSettings} from '../../../api/settings';
 
 const MAILGUN_REGIONS = [
@@ -93,7 +94,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description={groupDescription}
             isEditing={isEditing}
             keywords={keywords}
@@ -120,7 +121,7 @@ const MailGun: React.FC<{ keywords: string[] }> = ({keywords}) => {
             }}
         >
             {isEditing ? inputs : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

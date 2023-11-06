@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Button, CurrencyField, Heading, Select, SettingGroup, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, CurrencyField, Heading, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design';
 import {confirmIfDirty} from '../../../utils/modals';
 import {currencySelectGroups, getSymbol, validateCurrencyAmount} from '../../../utils/currency';
 import {getSettingValues} from '../../../api/settings';
@@ -116,7 +117,7 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description="Give your audience a one-time way to support your work, no membership required."
             isEditing={isEditing}
             keywords={keywords}
@@ -129,7 +130,7 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? inputFields : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

@@ -4,8 +4,6 @@ import {ButtonProps} from '../global/Button';
 import ButtonGroup from '../global/ButtonGroup';
 import SettingGroupHeader from './SettingGroupHeader';
 
-// TODO: Wrap with removed logic in admin-x-settings
-
 export interface SettingGroupProps {
     navid?:string;
     testId?: string;
@@ -16,6 +14,7 @@ export interface SettingGroupProps {
     saveState?: 'unsaved' | 'saved' | 'saving' | string;
     customHeader?: React.ReactNode;
     customButtons?: React.ReactNode;
+    beta?: boolean;
     children?: React.ReactNode;
     hideEditButton?: boolean;
     alwaysShowSaveButton?: boolean;
@@ -51,6 +50,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
     saveState,
     customHeader,
     customButtons,
+    beta = false,
     children,
     hideEditButton,
     alwaysShowSaveButton = true,
@@ -161,7 +161,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         <div className={containerClasses} data-testid={testId}>
             <div ref={ref} className='absolute' id={navid && navid}></div>
             {customHeader ? customHeader :
-                <SettingGroupHeader description={description} title={title!}>
+                <SettingGroupHeader beta={beta} description={description} title={title!}>
                     {customButtons ? customButtons :
                         (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link linkWithPadding />)}
                 </SettingGroupHeader>

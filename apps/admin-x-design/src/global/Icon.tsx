@@ -3,7 +3,7 @@ import React from 'react';
 
 const icons: Record<string, {ReactComponent: React.FC<React.SVGProps<SVGSVGElement>>}> = import.meta.glob('../assets/icons/*.svg', {eager: true});
 
-export type IconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
+export type IconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'custom' | number;
 
 export interface IconProps {
     name: string;
@@ -34,6 +34,8 @@ const Icon: React.FC<IconProps> = ({name, size = 'md', colorClass = '', classNam
 
     if (!styles) {
         switch (size) {
+        case 'custom':
+            break;
         case 'xs':
             styles = 'w-3 h-3';
             break;

@@ -1,9 +1,10 @@
 import IncomingRecommendationList from './recommendations/IncomingRecommendationList';
 import React, {useState} from 'react';
 import RecommendationList from './recommendations/RecommendationList';
+import TopLevelGroup from '../../TopLevelGroup';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Button, SettingGroup, ShowMoreData, TabView, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, ShowMoreData, TabView, withErrorBoundary} from '@tryghost/admin-x-design';
 import {useBrowseIncomingRecommendations, useBrowseRecommendations} from '../../../api/recommendations';
 import {useReferrerHistory} from '../../../api/referrers';
 
@@ -117,7 +118,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             beta={true}
             customButtons={buttons}
             description={groupDescription}
@@ -134,7 +135,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 }} />
             </div>
             <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

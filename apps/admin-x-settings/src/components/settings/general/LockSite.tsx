@@ -1,6 +1,7 @@
 import React from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Icon, Link, SettingGroup, SettingGroupContent, TextField, Toggle, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Icon, Link, SettingGroupContent, TextField, Toggle, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getSettingValues} from '../../../api/settings';
 
 const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -86,7 +87,7 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Enable protection with a simple shared password.'
             isEditing={isEditing}
             keywords={keywords}
@@ -99,7 +100,7 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? inputs : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

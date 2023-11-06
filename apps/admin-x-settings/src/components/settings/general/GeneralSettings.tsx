@@ -4,12 +4,12 @@ import Facebook from './Facebook';
 import LockSite from './LockSite';
 import Metadata from './Metadata';
 import PublicationLanguage from './PublicationLanguage';
+import SearchableSection from '../../SearchableSection';
 import SocialAccounts from './SocialAccounts';
 import TimeZone from './TimeZone';
 import TitleAndDescription from './TitleAndDescription';
 import Twitter from './Twitter';
 import Users from './Users';
-import {SettingSection} from '@tryghost/admin-x-design';
 
 export const searchKeywords = {
     titleAndDescription: ['general', 'title and description', 'site title', 'site description', 'title & description'],
@@ -25,7 +25,7 @@ export const searchKeywords = {
 
 const GeneralSettings: React.FC = () => {
     return (
-        <SettingSection keywords={Object.values(searchKeywords).flat()} title="General settings">
+        <SearchableSection keywords={Object.values(searchKeywords).flat()} title="General settings">
             <TitleAndDescription keywords={searchKeywords.titleAndDescription} />
             <TimeZone keywords={searchKeywords.timeZone} />
             <PublicationLanguage keywords={searchKeywords.publicationLanguage} />
@@ -35,7 +35,7 @@ const GeneralSettings: React.FC = () => {
             <SocialAccounts keywords={searchKeywords.socialAccounts} />
             <LockSite keywords={searchKeywords.lockSite} />
             <Users keywords={searchKeywords.users} />
-        </SettingSection>
+        </SearchableSection>
     );
 };
 
