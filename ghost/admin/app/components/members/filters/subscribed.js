@@ -78,12 +78,6 @@ export const SUBSCRIBED_FILTER = ({newsletters, feature, group}) => {
                     };
                 }
 
-                if (member.emailSuppression && member.emailSuppression.suppressed) {
-                    return {
-                        text: 'Email disabled'
-                    };
-                }
-
                 return {
                     text: (relation === 'is' && value === 'subscribed') || (relation === 'is-not' && value === 'unsubscribed')
                         ? 'Subscribed'
@@ -149,7 +143,7 @@ export const SUBSCRIBED_FILTER = ({newsletters, feature, group}) => {
     };
 };
 
-export const NEWSLETTERS_FILTERS = ({newsletters, group}) => {
+export const NEWSLETTERS_FILTERS = ({newsletters, group, feature}) => {
     return newsletters.map((newsletter) => {
         return {
             label: newsletter.name,
@@ -204,14 +198,16 @@ export const NEWSLETTERS_FILTERS = ({newsletters, group}) => {
                 const relation = flt.relation;
                 const value = flt.value;
 
-                if (member.emailSuppression && member.emailSuppression.suppressed) {
-                    return {
-                        text: 'Email disabled'
-                    };
+                if (feature.filterEmailDisabled) {
+                    if (member.emailSuppression && member.emailSuppression.suppressed) {
+                        return {
+                            text: 'Email disabled'
+                        };
+                    }
                 }
 
                 return {
-                    text: (relation === 'is' && value === 'subscribed') || (relation === 'is-not' && value === 'unsubscribed')
+                    text: (relation === 'is' && value === 'true') || (relation === 'is-not' && value === 'false')
                         ? 'Subscribed'
                         : 'Unsubscribed'
                 };
