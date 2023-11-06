@@ -8,7 +8,7 @@ import useGlobalDirtyState from '../../../hooks/useGlobalDirtyState';
 import {confirmIfDirty} from '../../../utils/modals';
 import {useModal} from '@ebay/nice-modal-react';
 
-export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed' | number;
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed';
 
 export interface ModalProps {
 
@@ -16,7 +16,8 @@ export interface ModalProps {
      * Possible values are: `sm`, `md`, `lg`, `xl, `full`, `bleed`. Yu can also use any number to set an arbitrary width.
      */
     size?: ModalSize;
-    maxHeight?: number;
+    width?: 'full' | number;
+    height?: 'full' | number;
 
     testId?: string;
     title?: string;
@@ -50,7 +51,8 @@ export const topLevelBackdropClasses = 'bg-[rgba(98,109,121,0.2)] backdrop-blur-
 
 const Modal: React.FC<ModalProps> = ({
     size = 'md',
-    maxHeight,
+    width,
+    height,
     testId,
     title,
     okLabel = 'OK',
@@ -354,12 +356,22 @@ const Modal: React.FC<ModalProps> = ({
 
     let modalStyles:{maxWidth?: string; maxHeight?: string;} = {};
 
-    if (typeof size === 'number') {
-        modalStyles.maxWidth = size + 'px';
+    if (typeof width === 'number') {
+        modalStyles.maxWidth = width + 'px';
+    } else if (width === 'full') {
+        modalClasses = clsx(
+            modalClasses,
+            'w-full'
+        );
     }
 
-    if (maxHeight) {
-        modalStyles.maxHeight = maxHeight + 'px';
+    if (typeof height === 'number') {
+        modalStyles.maxHeight = height + 'px';
+    } else if (height === 'full') {
+        modalClasses = clsx(
+            modalClasses,
+            'h-full'
+        );
     }
 
     let footerContent;
