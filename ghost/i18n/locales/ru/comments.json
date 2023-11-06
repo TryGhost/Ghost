@@ -5,7 +5,7 @@
     "{{amount}} hours ago": "{{amount}} часа(ов) назад",
     "{{amount}} minutes ago": "{{amount}} минут(ы) назад",
     "{{amount}} months ago": "{{amount}} месяца(ев) назад",
-    "{{amount}} more": "{{amount}} более",
+    "{{amount}} more": "еще {{amount}}",
     "{{amount}} seconds ago": "{{amount}} секунд(ы) назад",
     "{{amount}} weeks ago": "{{amount}} неделю(и) назад",
     "{{amount}} years ago": "{{amount}} года(лет) назад",
