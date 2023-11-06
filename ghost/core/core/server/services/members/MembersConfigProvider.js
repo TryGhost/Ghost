@@ -35,10 +35,6 @@ class MembersConfigProvider {
         return this._settingsHelpers.getMembersSupportAddress();
     }
 
-    getAuthEmailFromAddress() {
-        return this.getEmailSupportAddress();
-    }
-
     /**
      * @deprecated Use settingsHelpers.isStripeConnected instead
      */

@@ -23,6 +23,7 @@ const Sidebar: React.FC = () => {
     const {updateRoute} = useRouting();
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const {isAnyTextFieldFocused} = useFocusContext();
+    const hasOffers = useFeatureFlag('adminXOffers');
 
     // Focus in on search field when pressing "/"
     useEffect(() => {
@@ -108,6 +109,7 @@ const Sidebar: React.FC = () => {
                     <SettingNavItem icon='emailfield' keywords={membershipSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Embeddable signup form" onClick={handleSectionClick} />
                     {hasRecommendations && <SettingNavItem icon='heart' keywords={membershipSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />}
                     <SettingNavItem icon='baseline-chart' keywords={membershipSearchKeywords.analytics} navid='analytics' title="Analytics" onClick={handleSectionClick} />
+                    {hasOffers && <SettingNavItem icon='discount' keywords={membershipSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
                 </SettingNavSection>
 
                 <SettingNavSection keywords={Object.values(emailSearchKeywords).flat()} title="Email newsletter">

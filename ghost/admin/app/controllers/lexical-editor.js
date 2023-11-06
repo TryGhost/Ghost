@@ -131,6 +131,7 @@ export default class LexicalEditorController extends Controller {
     /* private properties ----------------------------------------------------*/
 
     _leaveConfirmed = false;
+    _saveOnLeavePerformed = false;
     _previousTagNames = null; // set by setPost and _postSaved, used in hasDirtyAttributes
 
     /* computed properties ---------------------------------------------------*/
@@ -346,7 +347,10 @@ export default class LexicalEditorController extends Controller {
     @action
     setFeatureImageCaption(html) {
         this.post.set('featureImageCaption', html);
+    }
 
+    @action
+    handleFeatureImageCaptionBlur() {
         if (this.post.isDraft) {
             this.autosaveTask.perform();
         }
@@ -431,9 +435,12 @@ export default class LexicalEditorController extends Controller {
     // _xSave tasks  that will also cancel the autosave task
     @task({group: 'saveTasks'})
     *saveTask(options = {}) {
+        if (this.post.isDestroyed || this.post.isDestroying) {
+            return;
+        }
+
         let prevStatus = this.get('post.status');
         let isNew = this.get('post.isNew');
-        let status;
         const adapterOptions = {};
 
         this.cancelAutosave();
@@ -442,28 +449,39 @@ export default class LexicalEditorController extends Controller {
             return;
         }
 
-        if (options.backgroundSave) {
-            // do not allow a post's status to be set to published by a background save
-            status = 'draft';
+        // leaving the editor should never result in a status change, we only save on editor
+        // leave to trigger a revision save
+        if (options.leavingEditor) {
+            // ensure we always have a status present otherwise we'll error when saving
+            if (!this.post.status) {
+                this.post.status = 'draft';
+            }
         } else {
-            if (this.get('post.pastScheduledTime')) {
-                status = (!this.willSchedule && !this.willPublish) ? 'draft' : 'published';
+            let status;
+
+            if (options.backgroundSave) {
+                // do not allow a post's status to be set to published by a background save
+                status = 'draft';
             } else {
-                if (this.willPublish && !this.get('post.isScheduled')) {
-                    status = 'published';
-                } else if (this.willSchedule && !this.get('post.isPublished')) {
-                    status = 'scheduled';
-                } else if (this.get('post.isSent')) {
-                    status = 'sent';
+                if (this.get('post.pastScheduledTime')) {
+                    status = (!this.willSchedule && !this.willPublish) ? 'draft' : 'published';
                 } else {
-                    status = 'draft';
+                    if (this.willPublish && !this.get('post.isScheduled')) {
+                        status = 'published';
+                    } else if (this.willSchedule && !this.get('post.isPublished')) {
+                        status = 'scheduled';
+                    } else if (this.get('post.isSent')) {
+                        status = 'sent';
+                    } else {
+                        status = 'draft';
+                    }
                 }
             }
-        }
 
-        // set manually here instead of in beforeSaveTask because the
-        // new publishing flow sets the post status manually on publish
-        this.set('post.status', status);
+            // set manually here instead of in beforeSaveTask because the
+            // new publishing flow sets the post status manually on publish
+            this.set('post.status', status);
+        }
 
         const explicitSave = !options.backgroundSave;
         const leavingEditor = options.leavingEditor;
@@ -474,8 +492,6 @@ export default class LexicalEditorController extends Controller {
 
         try {
             let post = yield this._savePostTask.perform({...options, adapterOptions});
-
-            post.set('statusScratch', null);
 
             // Clear any error notification (if any)
             this.notifications.clearAll();
@@ -498,8 +514,7 @@ export default class LexicalEditorController extends Controller {
                 yield this.modals.open(ReAuthenticateModal);
 
                 if (this.session.isAuthenticated) {
-                    this.saveTask.perform(options);
-                    return;
+                    return this.saveTask.perform(options);
                 }
             }
 
@@ -938,21 +953,6 @@ export default class LexicalEditorController extends Controller {
             return;
         }
 
-        // wait for any save to finish before continuing to avoid any issues
-        // with attempting a new save whilst another has requests in-flight
-        if (this.saveTask.isRunning) {
-            transition.abort();
-            await this.saveTask.last;
-            return transition.retry();
-        }
-        // extra handling for PSM-triggered save tasks that aren't captured above
-        // NOTE: we don't wait on `_savePostTask` as it's only used as a child task
-        if (this.savePostTask.isRunning) {
-            transition.abort();
-            await this.savePostTask.last;
-            return transition.retry();
-        }
-
         // user can enter the slug name and then leave the post page,
         // in such case we should wait until the slug would be saved on backend
         if (this.updateSlugTask.isRunning) {
@@ -960,6 +960,10 @@ export default class LexicalEditorController extends Controller {
             await this.updateSlugTask.last;
             return transition.retry();
         }
+
+        const fromNewToEdit = this.router.currentRouteName === 'lexical-editor.new'
+            && transition.targetName === 'lexical-editor.edit'
+            && transition.intent.contexts?.[0]?.id === post.id;
 
         // clean up blank cards when leaving the editor if we have a draft post
         // - blank cards could be left around due to autosave triggering whilst
@@ -970,31 +974,30 @@ export default class LexicalEditorController extends Controller {
         //     this._koenig.cleanup();
         // }
 
+        // if we need to save when leaving the editor, abort the transition, save,
+        // then retry. If a previous transition already performed a save, skip to
+        // avoid potential infinite transition+save loops
+
         let hasDirtyAttributes = this.hasDirtyAttributes;
         let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
 
         // Check if anything has changed since the last revision
         let postRevisions = post.get('postRevisions').toArray();
         let latestRevision = postRevisions[postRevisions.length - 1];
-        let hasChangedSinceLastRevision = !post.isNew && post.lexical.replaceAll(this.config.blogUrl, '') !== latestRevision.lexical.replaceAll(this.config.blogUrl, '');
-
-        let fromNewToEdit = this.router.currentRouteName === 'lexical-editor.new'
-            && transition.targetName === 'lexical-editor.edit'
-            && transition.intent.contexts
-            && transition.intent.contexts[0]
-            && transition.intent.contexts[0].id === post.id;
+        let hasChangedSinceLastRevision = !latestRevision || (!post.isNew && post.lexical.replaceAll(this.config.blogUrl, '') !== latestRevision.lexical.replaceAll(this.config.blogUrl, ''));
 
         let deletedWithoutChanges = state.isDeleted
-            && (state.isSaving || !state.hasDirtyAttributes);
+                && (state.isSaving || !state.hasDirtyAttributes);
 
         // If leaving the editor and the post has changed since we last saved a revision, always save a new revision
-        if (hasChangedSinceLastRevision) {
+        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes) {
             transition.abort();
             if (this._autosaveRunning) {
                 this.cancelAutosave();
                 this.autosaveTask.cancelAll();
             }
             await this.autosaveTask.perform({leavingEditor: true, backgroundSave: false});
+            this._saveOnLeavePerformed = true;
             return transition.retry();
         }
 
@@ -1015,7 +1018,10 @@ export default class LexicalEditorController extends Controller {
                 this.autosaveTask.cancelAll();
 
                 // If leaving the editor, always save a revision
-                await this.autosaveTask.perform({leavingEditor: true});
+                if (!this._saveOnLeavePerformed) {
+                    await this.autosaveTask.perform({leavingEditor: true});
+                    this._saveOnLeavePerformed = true;
+                }
                 return transition.retry();
             }
 
@@ -1065,6 +1071,7 @@ export default class LexicalEditorController extends Controller {
 
         this._previousTagNames = [];
         this._leaveConfirmed = false;
+        this._saveOnLeavePerformed = false;
 
         this.set('post', null);
         this.set('hasDirtyAttributes', false);
