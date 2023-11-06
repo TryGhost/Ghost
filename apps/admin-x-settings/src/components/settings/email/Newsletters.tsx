@@ -1,16 +1,12 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import ConfirmationModal from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
 import NewslettersList from './newsletters/NewslettersList';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {ReactNode, useEffect, useState} from 'react';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import TabView from '@tryghost/admin-x-design/global/TabView';
 import useHandleError from '../../../utils/api/handleError';
 import useQueryParams from '../../../hooks/useQueryParams';
 import useRouting from '../../../hooks/useRouting';
 import {APIError} from '../../../utils/errors';
+import {Button, ConfirmationModal, SettingGroup, TabView, withErrorBoundary} from '@tryghost/admin-x-design';
 import {useBrowseNewsletters, useVerifyNewsletterEmail} from '../../../api/newsletters';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 const NavigateToNewsletter = ({id, children}: {id: string; children: ReactNode}) => {
     const modal = useModal();

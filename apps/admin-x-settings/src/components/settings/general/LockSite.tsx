@@ -1,13 +1,7 @@
-import Icon from '@tryghost/admin-x-design/global/Icon';
-import Link from '@tryghost/admin-x-design/global/Link';
 import React from 'react';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
-import TextField from '@tryghost/admin-x-design/global/form/TextField';
-import Toggle from '@tryghost/admin-x-design/global/form/Toggle';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {Icon, Link, SettingGroup, SettingGroupContent, TextField, Toggle, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

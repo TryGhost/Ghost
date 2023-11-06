@@ -1,15 +1,9 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import CurrencyField from '@tryghost/admin-x-design/global/form/CurrencyField';
-import Heading from '@tryghost/admin-x-design/global/Heading';
 import React, {useEffect, useState} from 'react';
-import Select from '@tryghost/admin-x-design/global/form/Select';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {Button, CurrencyField, Heading, Select, SettingGroup, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design';
 import {confirmIfDirty} from '../../../utils/modals';
 import {currencySelectGroups, getSymbol, validateCurrencyAmount} from '../../../utils/currency';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 // Stripe doesn't allow amounts over 10,000 as a preset amount
 const MAX_AMOUNT = 10_000;

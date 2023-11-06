@@ -1,14 +1,11 @@
-import Button from '@tryghost/admin-x-design/global/Button';
 import FeatureToggle from './FeatureToggle';
-import FileUpload from '@tryghost/admin-x-design/global/form/FileUpload';
 import LabItem from './LabItem';
-import List from '@tryghost/admin-x-design/global/List';
 import React, {useState} from 'react';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
+import {Button, FileUpload, List, showToast} from '@tryghost/admin-x-design';
 import {downloadRedirects, useUploadRedirects} from '../../../../api/redirects';
 import {downloadRoutes, useUploadRoutes} from '../../../../api/routes';
-import {showToast} from '@tryghost/admin-x-design/global/Toast';
 
 const BetaFeatures: React.FC = () => {
     const {updateRoute} = useRouting();

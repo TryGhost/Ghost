@@ -1,14 +1,10 @@
-import MultiSelect, {MultiSelectOption} from '@tryghost/admin-x-design/global/form/MultiSelect';
+import MultiSelect, {MultiSelectOption, Select, SettingGroup, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design';
 import React, {useState} from 'react';
-import Select from '@tryghost/admin-x-design/global/form/Select';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
 import useDefaultRecipientsOptions from './useDefaultRecipientsOptions';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {MultiValue} from 'react-select';
 import {getOptionLabel} from '../../../utils/helpers';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 type RefipientValueArgs = {
     defaultEmailRecipients: string;

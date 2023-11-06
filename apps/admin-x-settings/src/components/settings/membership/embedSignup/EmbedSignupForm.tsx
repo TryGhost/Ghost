@@ -1,7 +1,6 @@
-import Button from '@tryghost/admin-x-design/global/Button';
 import React from 'react';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
 import useRouting from '../../../../hooks/useRouting';
+import {Button, SettingGroup} from '@tryghost/admin-x-design';
 
 const EmbedSignupForm: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();

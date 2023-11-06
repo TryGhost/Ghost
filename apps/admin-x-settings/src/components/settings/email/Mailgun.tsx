@@ -1,14 +1,8 @@
-import IconLabel from '@tryghost/admin-x-design/global/IconLabel';
-import Link from '@tryghost/admin-x-design/global/Link';
 import React from 'react';
-import Select from '@tryghost/admin-x-design/global/form/Select';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
-import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import useHandleError from '../../../utils/api/handleError';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {IconLabel, Link, Select, SettingGroup, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getSettingValues, useEditSettings} from '../../../api/settings';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 const MAILGUN_REGIONS = [
     {label: '🇺🇸 US', value: 'https://api.mailgun.net/v3'},

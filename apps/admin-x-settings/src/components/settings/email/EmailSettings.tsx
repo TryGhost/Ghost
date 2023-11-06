@@ -3,7 +3,7 @@ import EnableNewsletters from './EnableNewsletters';
 import MailGun from './Mailgun';
 import Newsletters from './Newsletters';
 import React from 'react';
-import SettingSection from '@tryghost/admin-x-design/settings/SettingSection';
+import {SettingSection} from '@tryghost/admin-x-design';
 import {getSettingValues} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 

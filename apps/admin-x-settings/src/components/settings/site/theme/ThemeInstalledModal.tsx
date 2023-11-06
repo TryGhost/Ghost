@@ -1,13 +1,8 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import Heading from '@tryghost/admin-x-design/global/Heading';
-import List from '@tryghost/admin-x-design/global/List';
-import ListItem from '@tryghost/admin-x-design/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {ReactNode, useState} from 'react';
 import useHandleError from '../../../../utils/api/handleError';
-import {ConfirmationModalContent} from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
+import {Button, ConfirmationModalContent, Heading, List, ListItem, showToast} from '@tryghost/admin-x-design';
 import {InstalledTheme, ThemeProblem, useActivateTheme} from '../../../../api/themes';
-import {showToast} from '@tryghost/admin-x-design/global/Toast';
 
 export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);

@@ -5,10 +5,10 @@ import Offers from './Offers';
 import Portal from './Portal';
 import React from 'react';
 import Recommendations from './Recommendations';
-import SettingSection from '@tryghost/admin-x-design/settings/SettingSection';
 import Tiers from './Tiers';
 import TipsOrDonations from './TipsOrDonations';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
+import {SettingSection} from '@tryghost/admin-x-design';
 
 export const searchKeywords = {
     portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership'],

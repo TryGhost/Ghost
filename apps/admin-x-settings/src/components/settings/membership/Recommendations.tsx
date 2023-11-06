@@ -1,15 +1,11 @@
-import Button from '@tryghost/admin-x-design/global/Button';
 import IncomingRecommendationList from './recommendations/IncomingRecommendationList';
 import React, {useState} from 'react';
 import RecommendationList from './recommendations/RecommendationList';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import TabView from '@tryghost/admin-x-design/global/TabView';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ShowMoreData} from '@tryghost/admin-x-design/global/Table';
+import {Button, SettingGroup, ShowMoreData, TabView, withErrorBoundary} from '@tryghost/admin-x-design';
 import {useBrowseIncomingRecommendations, useBrowseRecommendations} from '../../../api/recommendations';
 import {useReferrerHistory} from '../../../api/referrers';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

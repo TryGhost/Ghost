@@ -1,14 +1,12 @@
-import ConfirmationModal from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
-import Modal from '@tryghost/admin-x-design/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './RecommendationDescriptionForm';
 import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
+import {ConfirmationModal, Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design';
 import {Recommendation, useDeleteRecommendation, useEditRecommendation} from '../../../../api/recommendations';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {dismissAllToasts, showToast} from '@tryghost/admin-x-design/global/Toast';
 
 interface EditRecommendationModalProps {
     recommendation: Recommendation,

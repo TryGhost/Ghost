@@ -1,13 +1,9 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import ConfirmationModal from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
-import FileUpload from '@tryghost/admin-x-design/global/form/FileUpload';
 import LabItem from './LabItem';
-import List from '@tryghost/admin-x-design/global/List';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import useHandleError from '../../../../utils/api/handleError';
+import {Button, ConfirmationModal, FileUpload, List, showToast} from '@tryghost/admin-x-design';
 import {downloadAllContent, useDeleteAllContent, useImportContent} from '../../../../api/db';
-import {showToast} from '@tryghost/admin-x-design/global/Toast';
 import {useQueryClient} from '@tanstack/react-query';
 
 const ImportModalContent = () => {

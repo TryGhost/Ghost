@@ -1,13 +1,6 @@
-import ColorPickerField from '@tryghost/admin-x-design/global/form/ColorPickerField';
-import Heading from '@tryghost/admin-x-design/global/Heading';
-import Hint from '@tryghost/admin-x-design/global/Hint';
-import ImageUpload from '@tryghost/admin-x-design/global/form/ImageUpload';
 import React from 'react';
-import Select from '@tryghost/admin-x-design/global/form/Select';
-import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
-import TextField from '@tryghost/admin-x-design/global/form/TextField';
-import Toggle from '@tryghost/admin-x-design/global/form/Toggle';
 import useHandleError from '../../../../utils/api/handleError';
+import {ColorPickerField, Heading, Hint, ImageUpload, Select, SettingGroupContent, TextField, Toggle} from '@tryghost/admin-x-design';
 import {CustomThemeSetting} from '../../../../api/customThemeSettings';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {humanizeSettingKey} from '../../../../api/settings';

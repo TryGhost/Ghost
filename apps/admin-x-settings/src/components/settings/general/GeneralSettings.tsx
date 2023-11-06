@@ -4,12 +4,12 @@ import Facebook from './Facebook';
 import LockSite from './LockSite';
 import Metadata from './Metadata';
 import PublicationLanguage from './PublicationLanguage';
-import SettingSection from '@tryghost/admin-x-design/settings/SettingSection';
 import SocialAccounts from './SocialAccounts';
 import TimeZone from './TimeZone';
 import TitleAndDescription from './TitleAndDescription';
 import Twitter from './Twitter';
 import Users from './Users';
+import {SettingSection} from '@tryghost/admin-x-design';
 
 export const searchKeywords = {
     titleAndDescription: ['general', 'title and description', 'site title', 'site description', 'title & description'],

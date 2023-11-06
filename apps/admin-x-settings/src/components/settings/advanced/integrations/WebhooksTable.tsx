@@ -1,15 +1,9 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import ConfirmationModal from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
 import NiceModal from '@ebay/nice-modal-react';
-import Table from '@tryghost/admin-x-design/global/Table';
-import TableCell from '@tryghost/admin-x-design/global/TableCell';
-import TableHead from '@tryghost/admin-x-design/global/TableHead';
-import TableRow from '@tryghost/admin-x-design/global/TableRow';
 import WebhookModal from './WebhookModal';
 import useHandleError from '../../../../utils/api/handleError';
+import {Button, ConfirmationModal, Table, TableCell, TableHead, TableRow, showToast} from '@tryghost/admin-x-design';
 import {Integration} from '../../../../api/integrations';
 import {getWebhookEventLabel} from './webhookEventOptions';
-import {showToast} from '@tryghost/admin-x-design/global/Toast';
 import {useDeleteWebhook} from '../../../../api/webhooks';
 
 const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {

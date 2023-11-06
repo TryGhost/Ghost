@@ -1,14 +1,9 @@
 import APIKeys from './APIKeys';
-import Button from '@tryghost/admin-x-design/global/Button';
-import ConfirmationModal from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
 import IntegrationHeader from './IntegrationHeader';
-import List from '@tryghost/admin-x-design/global/List';
-import ListItem from '@tryghost/admin-x-design/global/ListItem';
-import Modal from '@tryghost/admin-x-design/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
-import {ReactComponent as ArrowRightIcon} from '@tryghost/admin-x-design/assets/icons/arrow-right.svg';
+import {ReactComponent as ArrowRightIcon, Button, ConfirmationModal, List, ListItem, Modal} from '@tryghost/admin-x-design';
 import {ReactComponent as Icon} from '../../../../assets/icons/zapier.svg';
 import {ReactComponent as Logo} from '../../../../assets/images/zapier-logo.svg';
 import {getGhostPaths, resolveAsset} from '../../../../utils/helpers';

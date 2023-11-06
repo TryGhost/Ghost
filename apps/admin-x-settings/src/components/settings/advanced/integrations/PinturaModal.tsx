@@ -1,15 +1,11 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import Form from '@tryghost/admin-x-design/global/form/Form';
 import IntegrationHeader from './IntegrationHeader';
-import Modal from '@tryghost/admin-x-design/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import Toggle from '@tryghost/admin-x-design/global/form/Toggle';
 import pinturaScreenshot from '../../../../assets/images/pintura-screenshot.png';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
+import {Button, Form, Modal, Toggle, showToast} from '@tryghost/admin-x-design';
 import {ReactComponent as Icon} from '../../../../assets/icons/pintura.svg';
 import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
-import {showToast} from '@tryghost/admin-x-design/global/Toast';
 import {useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useUploadFile} from '../../../../api/files';

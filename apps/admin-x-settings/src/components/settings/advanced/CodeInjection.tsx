@@ -1,14 +1,10 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import CodeEditor from '@tryghost/admin-x-design/global/form/CodeEditor';
 import CodeModal from './code/CodeModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useMemo, useRef, useState} from 'react';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import TabView from '@tryghost/admin-x-design/global/TabView';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {Button, CodeEditor, SettingGroup, TabView, withErrorBoundary} from '@tryghost/admin-x-design';
 import {ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

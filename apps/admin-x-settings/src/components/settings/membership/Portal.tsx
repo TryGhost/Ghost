@@ -1,10 +1,8 @@
-import Button from '@tryghost/admin-x-design/global/Button';
 import React from 'react';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
 import useRouting from '../../../hooks/useRouting';
+import {Button, SettingGroup, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getSettingValues} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();

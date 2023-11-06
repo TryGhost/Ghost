@@ -1,17 +1,10 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import ConfirmationModal from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
-import Icon from '@tryghost/admin-x-design/global/Icon';
-import List from '@tryghost/admin-x-design/global/List';
-import ListItem from '@tryghost/admin-x-design/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
-import NoValueLabel from '@tryghost/admin-x-design/global/NoValueLabel';
 import React, {useState} from 'react';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import TabView from '@tryghost/admin-x-design/global/TabView';
 import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
 import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
+import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, SettingGroup, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
 import {Integration, useBrowseIntegrations, useDeleteIntegration} from '../../../api/integrations';
 import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
@@ -19,9 +12,7 @@ import {ReactComponent as SlackIcon} from '../../../assets/icons/slack.svg';
 import {ReactComponent as UnsplashIcon} from '../../../assets/icons/unsplash.svg';
 import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
 import {getSettingValues} from '../../../api/settings';
-import {showToast} from '@tryghost/admin-x-design/global/Toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 interface IntegrationItemProps {
     icon?: React.ReactNode,

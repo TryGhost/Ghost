@@ -1,10 +1,8 @@
-import Form from '@tryghost/admin-x-design/global/form/Form';
 import IntegrationHeader from './IntegrationHeader';
-import Modal from '@tryghost/admin-x-design/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import Toggle from '@tryghost/admin-x-design/global/form/Toggle';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
+import {Form, Modal, Toggle} from '@tryghost/admin-x-design';
 import {ReactComponent as Icon} from '../../../../assets/icons/unsplash.svg';
 import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';

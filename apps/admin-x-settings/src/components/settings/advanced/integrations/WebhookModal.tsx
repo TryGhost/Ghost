@@ -1,16 +1,12 @@
-import Form from '@tryghost/admin-x-design/global/form/Form';
-import Modal from '@tryghost/admin-x-design/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import Select from '@tryghost/admin-x-design/global/form/Select';
-import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import toast from 'react-hot-toast';
 import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import validator from 'validator';
 import webhookEventOptions from './webhookEventOptions';
+import {Form, Modal, Select, TextField, showToast} from '@tryghost/admin-x-design';
 import {Webhook, useCreateWebhook, useEditWebhook} from '../../../../api/webhooks';
-import {showToast} from '@tryghost/admin-x-design/global/Toast';
 
 interface WebhookModalProps {
     webhook?: Webhook;

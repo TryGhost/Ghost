@@ -1,8 +1,5 @@
 import CustomHeader from './CustomHeader';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
-import TextArea from '@tryghost/admin-x-design/global/form/TextArea';
-import TextField from '@tryghost/admin-x-design/global/form/TextField';
+import {SettingGroup, SettingGroupContent, TextArea, TextField} from '@tryghost/admin-x-design';
 import {UserDetailProps} from '../UserDetailModal';
 import {facebookHandleToUrl, facebookUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateTwitterUrl} from '../../../../utils/socialUrls';
 import {useState} from 'react';

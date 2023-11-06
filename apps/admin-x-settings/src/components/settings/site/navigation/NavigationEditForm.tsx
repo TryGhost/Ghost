@@ -1,8 +1,6 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import Icon from '@tryghost/admin-x-design/global/Icon';
 import NavigationItemEditor from './NavigationItemEditor';
 import React from 'react';
-import SortableList from '@tryghost/admin-x-design/global/SortableList';
+import {Button, Icon, SortableList} from '@tryghost/admin-x-design';
 import {NavigationEditor} from '../../../../hooks/site/useNavigationEditor';
 
 const NavigationEditForm: React.FC<{

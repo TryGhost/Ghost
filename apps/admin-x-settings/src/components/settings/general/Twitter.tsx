@@ -1,15 +1,10 @@
-import ImageUpload from '@tryghost/admin-x-design/global/form/ImageUpload';
 import React from 'react';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
-import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as TwitterLogo} from '@tryghost/admin-x-design/assets/images/x-logo.svg';
+import {ImageUpload, SettingGroup, SettingGroupContent, TextField, ReactComponent as TwitterLogo, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

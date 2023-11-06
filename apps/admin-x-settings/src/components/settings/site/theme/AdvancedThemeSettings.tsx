@@ -1,9 +1,4 @@
-import Button, {ButtonProps} from '@tryghost/admin-x-design/global/Button';
-import ConfirmationModal from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
-import List from '@tryghost/admin-x-design/global/List';
-import ListItem from '@tryghost/admin-x-design/global/ListItem';
-import Menu from '@tryghost/admin-x-design/global/Menu';
-import ModalPage from '@tryghost/admin-x-design/global/modal/ModalPage';
+import Button, {ButtonProps, ConfirmationModal, List, ListItem, Menu, ModalPage} from '@tryghost/admin-x-design';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useHandleError from '../../../../utils/api/handleError';

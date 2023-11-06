@@ -1,10 +1,5 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import List from '@tryghost/admin-x-design/global/List';
-import ListItem from '@tryghost/admin-x-design/global/ListItem';
-import ModalPage from '@tryghost/admin-x-design/global/modal/ModalPage';
 import React, {useEffect, useId, useState} from 'react';
-import Select from '@tryghost/admin-x-design/global/form/Select';
-import TextField from '@tryghost/admin-x-design/global/form/TextField';
+import {Button, List, ListItem, ModalPage, Select, TextField} from '@tryghost/admin-x-design';
 import {getHomepageUrl} from '../../../../api/site';
 import {getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';

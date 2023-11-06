@@ -1,8 +1,7 @@
-import Icon from '@tryghost/admin-x-design/global/Icon';
-import NoValueLabel from '@tryghost/admin-x-design/global/NoValueLabel';
 import React from 'react';
 import clsx from 'clsx';
 import useRouting from '../../../../hooks/useRouting';
+import {Icon, NoValueLabel} from '@tryghost/admin-x-design';
 import {Tier} from '../../../../api/tiers';
 import {TrialDaysLabel} from './TierDetailPreview';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';

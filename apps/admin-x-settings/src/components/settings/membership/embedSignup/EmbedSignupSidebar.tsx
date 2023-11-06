@@ -1,13 +1,5 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import ColorIndicator from '@tryghost/admin-x-design/global/form/ColorIndicator';
-import ColorPicker from '@tryghost/admin-x-design/global/form/ColorPicker';
-import Form from '@tryghost/admin-x-design/global/form/Form';
-import Heading from '@tryghost/admin-x-design/global/Heading';
-import MultiSelect, {LoadOptions, MultiSelectOption} from '@tryghost/admin-x-design/global/form/MultiSelect';
-import Radio from '@tryghost/admin-x-design/global/form/Radio';
+import MultiSelect, {Button, ColorIndicator, ColorPicker, Form, Heading, LoadOptions, MultiSelectOption, Radio, StickyFooter, TextArea} from '@tryghost/admin-x-design';
 import React from 'react';
-import StickyFooter from '@tryghost/admin-x-design/global/StickyFooter';
-import TextArea from '@tryghost/admin-x-design/global/form/TextArea';
 import useFilterableApi from '../../../../hooks/useFilterableApi';
 import {Label} from '../../../../api/labels';
 import {MultiValue} from 'react-select';

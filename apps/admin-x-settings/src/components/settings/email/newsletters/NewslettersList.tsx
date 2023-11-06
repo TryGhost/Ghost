@@ -1,10 +1,6 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import NoValueLabel from '@tryghost/admin-x-design/global/NoValueLabel';
 import React from 'react';
-import Table from '@tryghost/admin-x-design/global/Table';
-import TableCell from '@tryghost/admin-x-design/global/TableCell';
-import TableRow from '@tryghost/admin-x-design/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
+import {Button, NoValueLabel, Table, TableCell, TableRow} from '@tryghost/admin-x-design';
 import {Newsletter} from '../../../../api/newsletters';
 import {numberWithCommas} from '../../../../utils/helpers';
 

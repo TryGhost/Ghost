@@ -1,14 +1,10 @@
-import MultiSelect, {MultiSelectOption} from '@tryghost/admin-x-design/global/form/MultiSelect';
+import MultiSelect, {MultiSelectOption, Select, SettingGroup, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design';
 import React from 'react';
-import Select from '@tryghost/admin-x-design/global/form/Select';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
 import {getOptionLabel} from '../../../utils/helpers';
 import {getSettingValues} from '../../../api/settings';
 import {useBrowseTiers} from '../../../api/tiers';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
     {

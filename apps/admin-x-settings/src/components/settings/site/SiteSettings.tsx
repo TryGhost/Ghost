@@ -2,7 +2,7 @@ import AnnouncementBar from './AnnouncementBar';
 import DesignSetting from './DesignSetting';
 import Navigation from './Navigation';
 import React from 'react';
-import SettingSection from '@tryghost/admin-x-design/settings/SettingSection';
+import {SettingSection} from '@tryghost/admin-x-design';
 
 export const searchKeywords = {
     design: ['site', 'logo', 'cover', 'colors', 'fonts', 'background', 'themes', 'appearance', 'style', 'design & branding', 'design and branding'],

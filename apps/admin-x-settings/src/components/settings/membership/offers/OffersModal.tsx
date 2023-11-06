@@ -1,7 +1,5 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import Modal from '@tryghost/admin-x-design/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import TabView, {Tab} from '@tryghost/admin-x-design/global/TabView';
+import TabView, {Button, Modal, Tab} from '@tryghost/admin-x-design';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
 import {useEffect} from 'react';

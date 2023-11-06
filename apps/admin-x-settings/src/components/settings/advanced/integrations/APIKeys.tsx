@@ -1,7 +1,6 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import Heading from '@tryghost/admin-x-design/global/Heading';
 import React, {ReactNode, useState} from 'react';
 import clsx from 'clsx';
+import {Button, Heading} from '@tryghost/admin-x-design';
 
 export interface APIKeyFieldProps {
     label?: string;

@@ -1,14 +1,8 @@
-import Button from '@tryghost/admin-x-design/global/Button';
 import EditRecommendationModal from './EditRecommendationModal';
-import Link from '@tryghost/admin-x-design/global/Link';
 import NiceModal from '@ebay/nice-modal-react';
-import NoValueLabel from '@tryghost/admin-x-design/global/NoValueLabel';
 import React, {useState} from 'react';
 import RecommendationIcon from './RecommendationIcon';
-import Table, {ShowMoreData} from '@tryghost/admin-x-design/global/Table';
-import TableCell from '@tryghost/admin-x-design/global/TableCell';
-import TableRow from '@tryghost/admin-x-design/global/TableRow';
-import Tooltip from '@tryghost/admin-x-design/global/Tooltip';
+import Table, {Button, Link, NoValueLabel, ShowMoreData, TableCell, TableRow, Tooltip} from '@tryghost/admin-x-design';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {PaginationData} from '../../../../hooks/usePagination';

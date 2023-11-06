@@ -1,18 +1,7 @@
-import Button, {ButtonProps} from '@tryghost/admin-x-design/global/Button';
-import ConfirmationModal from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
-import CurrencyField from '@tryghost/admin-x-design/global/form/CurrencyField';
-import Form from '@tryghost/admin-x-design/global/form/Form';
-import Heading from '@tryghost/admin-x-design/global/Heading';
-import Icon from '@tryghost/admin-x-design/global/Icon';
-import Modal from '@tryghost/admin-x-design/global/modal/Modal';
+import Button, {ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast} from '@tryghost/admin-x-design';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
-import Select from '@tryghost/admin-x-design/global/form/Select';
-import SortableList from '@tryghost/admin-x-design/global/SortableList';
-import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import TierDetailPreview from './TierDetailPreview';
-import Toggle from '@tryghost/admin-x-design/global/form/Toggle';
-import URLTextField from '@tryghost/admin-x-design/global/form/URLTextField';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
@@ -22,7 +11,6 @@ import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {Tier, useAddTier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
 import {getSettingValues} from '../../../../api/settings';
-import {showToast} from '@tryghost/admin-x-design/global/Toast';
 import {toast} from 'react-hot-toast';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {

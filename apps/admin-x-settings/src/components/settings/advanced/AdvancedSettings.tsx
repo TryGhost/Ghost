@@ -3,7 +3,7 @@ import History from './History';
 import Integrations from './Integrations';
 import Labs from './Labs';
 import React from 'react';
-import SettingSection from '@tryghost/admin-x-design/settings/SettingSection';
+import {SettingSection} from '@tryghost/admin-x-design';
 
 export const searchKeywords = {
     integrations: ['advanced', 'integrations', 'zapier', 'slack', 'amp', 'unsplash', 'first promoter', 'firstpromoter', 'pintura', 'disqus', 'analytics', 'ulysses', 'typeform', 'buffer', 'plausible', 'github'],

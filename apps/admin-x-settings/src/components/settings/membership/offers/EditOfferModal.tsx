@@ -1,11 +1,7 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import Form from '@tryghost/admin-x-design/global/form/Form';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import TextArea from '@tryghost/admin-x-design/global/form/TextArea';
-import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
-import {PreviewModalContent} from '@tryghost/admin-x-design/global/modal/PreviewModal';
+import {Button, Form, PreviewModalContent, TextArea, TextField} from '@tryghost/admin-x-design';
 import {useEffect} from 'react';
 
 const Sidebar: React.FC = () => {

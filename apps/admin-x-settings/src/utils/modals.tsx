@@ -1,4 +1,4 @@
-import ConfirmationModal, {ConfirmationModalProps} from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
+import ConfirmationModal, {ConfirmationModalProps} from '@tryghost/admin-x-design';
 import NiceModal from '@ebay/nice-modal-react';
 
 export function confirmIfDirty(dirty: boolean, action: () => void, options: Partial<ConfirmationModalProps> = {}) {

@@ -1,21 +1,13 @@
-import Avatar from '@tryghost/admin-x-design/global/Avatar';
-import Button from '@tryghost/admin-x-design/global/Button';
-import List from '@tryghost/admin-x-design/global/List';
-import ListItem from '@tryghost/admin-x-design/global/ListItem';
-import NoValueLabel from '@tryghost/admin-x-design/global/NoValueLabel';
 import React, {useState} from 'react';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import TabView from '@tryghost/admin-x-design/global/TabView';
 import clsx from 'clsx';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
+import {Avatar, Button, List, ListItem, NoValueLabel, SettingGroup, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design';
 import {User, hasAdminAccess, isContributorUser, isEditorUser} from '../../../api/users';
 import {UserInvite, useAddInvite, useDeleteInvite} from '../../../api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
-import {showToast} from '@tryghost/admin-x-design/global/Toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 interface OwnerProps {
     user: User;

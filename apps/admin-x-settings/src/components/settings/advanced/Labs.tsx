@@ -1,14 +1,10 @@
 import AlphaFeatures from './labs/AlphaFeatures';
 import BetaFeatures from './labs/BetaFeatures';
-import Button from '@tryghost/admin-x-design/global/Button';
 import LabsBubbles from '../../../assets/images/labs-bg.svg';
 import MigrationOptions from './labs/MigrationOptions';
 import React, {useState} from 'react';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import SettingGroupHeader from '@tryghost/admin-x-design/settings/SettingGroupHeader';
-import TabView, {Tab} from '@tryghost/admin-x-design/global/TabView';
+import TabView, {Button, SettingGroup, SettingGroupHeader, Tab, withErrorBoundary} from '@tryghost/admin-x-design';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 type LabsTab = 'labs-migration-options' | 'labs-alpha-features' | 'labs-beta-features';
 

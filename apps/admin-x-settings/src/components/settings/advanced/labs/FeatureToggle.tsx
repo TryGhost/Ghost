@@ -1,7 +1,7 @@
 import React from 'react';
-import Toggle from '@tryghost/admin-x-design/global/form/Toggle';
 import useHandleError from '../../../../utils/api/handleError';
 import {ConfigResponseType, configDataType} from '../../../../api/config';
+import {Toggle} from '@tryghost/admin-x-design';
 import {getSettingValue, useEditSettings} from '../../../../api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useQueryClient} from '@tanstack/react-query';

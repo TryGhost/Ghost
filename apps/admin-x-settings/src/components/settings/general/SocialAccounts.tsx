@@ -1,11 +1,8 @@
 import React, {useState} from 'react';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
-import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {SettingGroup, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
 import {facebookHandleToUrl, facebookUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

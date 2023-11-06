@@ -1,8 +1,6 @@
-import Button from '@tryghost/admin-x-design/global/Button';
 import React from 'react';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
 import useRouting from '../../../hooks/useRouting';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
+import {Button, SettingGroup, withErrorBoundary} from '@tryghost/admin-x-design';
 
 const History: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();

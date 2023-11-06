@@ -1,9 +1,7 @@
-import Button from '@tryghost/admin-x-design/global/Button';
-import Heading from '@tryghost/admin-x-design/global/Heading';
-import Icon from '@tryghost/admin-x-design/global/Icon';
 import React, {useState} from 'react';
 import clsx from 'clsx';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
+import {Button, Heading, Icon} from '@tryghost/admin-x-design';
 import {TierFormState} from './TierDetailModal';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getSettingValues} from '../../../../api/settings';

@@ -1,13 +1,7 @@
-import Heading from '@tryghost/admin-x-design/global/Heading';
 import React from 'react';
-import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
-import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
-import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as GoogleLogo} from '@tryghost/admin-x-design/assets/images/google-logo.svg';
-import {ReactComponent as MagnifyingGlass} from '@tryghost/admin-x-design/assets/icons/magnifying-glass.svg';
+import {ReactComponent as GoogleLogo, Heading, ReactComponent as MagnifyingGlass, SettingGroup, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 interface SearchEnginePreviewProps {
     title: string;

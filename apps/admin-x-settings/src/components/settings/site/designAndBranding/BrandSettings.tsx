@@ -1,13 +1,8 @@
-import ColorPickerField from '@tryghost/admin-x-design/global/form/ColorPickerField';
-import Heading from '@tryghost/admin-x-design/global/Heading';
-import Hint from '@tryghost/admin-x-design/global/Hint';
-import ImageUpload from '@tryghost/admin-x-design/global/form/ImageUpload';
 import React, {useRef, useState} from 'react';
-import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
-import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import UnsplashSearchModal from '../../../../unsplash/UnsplashSearchModal';
 import useHandleError from '../../../../utils/api/handleError';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
+import {ColorPickerField, Heading, Hint, ImageUpload, SettingGroupContent, TextField} from '@tryghost/admin-x-design';
 import {SettingValue, getSettingValues} from '../../../../api/settings';
 import {debounce} from '../../../../utils/debounce';
 import {getImageUrl, useUploadImage} from '../../../../api/images';

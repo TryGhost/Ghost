@@ -1,8 +1,7 @@
-import Heading from '@tryghost/admin-x-design/global/Heading';
 import MarketplaceBgImage from '../../../../assets/images/footer-marketplace-bg.png';
-import ModalPage from '@tryghost/admin-x-design/global/modal/ModalPage';
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
+import {Heading, ModalPage} from '@tryghost/admin-x-design';
 import {OfficialTheme, ThemeVariant, useOfficialThemes} from '../../../providers/ServiceProvider';
 import {getGhostPaths, resolveAsset} from '../../../../utils/helpers';
 
