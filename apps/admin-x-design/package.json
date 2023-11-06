@@ -1,0 +1,41 @@
+{
+  "name": "@tryghost/admin-x-design",
+  "type": "module",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/admin-x-design",
+  "author": "Ghost Foundation",
+  "private": true,
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "build": "yarn build:esm && yarn build:types",
+    "build:esm": "esbuild $(find src \\( -name '*.ts' -o -name '*.tsx' \\) -not -name '*.stories.tsx') --target=es2020 --outdir=es --format=esm",
+    "build:types": "tsc -p tsconfig.declaration.json",
+    "prepare": "yarn build",
+    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
+    "test": "yarn test:types && yarn test:unit",
+    "test:types": "tsc --noEmit",
+    "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache"
+  },
+  "files": [
+    "build"
+  ],
+  "devDependencies": {
+    "c8": "8.0.1",
+    "esbuild": "^0.19.5",
+    "mocha": "10.2.0",
+    "rollup-plugin-node-externals": "^6.1.2",
+    "sinon": "17.0.0",
+    "ts-node": "10.9.1",
+    "typescript": "5.2.2",
+    "vite": "^4.5.0"
+  },
+  "dependencies": {
+    "clsx": "^2.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
+  }
+}
