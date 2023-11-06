@@ -18,6 +18,8 @@ const OfferCard: React.FC<{name: string, type: OfferType, redemption_count: numb
     const originalPrice = cadence === 'month' ? offerTier?.monthly_price ?? 0 : offerTier?.yearly_price ?? 0;
     let updatedPrice = originalPrice;
     let tierName = offerTier?.name + ' ' + (cadence === 'month' ? 'Monthly' : 'Yearly') + ' - ' + (duration === 'once' ? 'First payment' : duration === 'repeating' ? 'Repeating' : 'Forever');
+    let originalPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(originalPrice));
+    const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(updatedPrice));
 
     switch (type) {
     case 'percent':
@@ -33,6 +35,7 @@ const OfferCard: React.FC<{name: string, type: OfferType, redemption_count: numb
     case 'trial':
         discountColor = 'text-pink';
         discountOffer = amount + ' DAYS FREE';
+        originalPriceWithCurrency = '';
         break;
     default:
         break;
@@ -43,9 +46,9 @@ const OfferCard: React.FC<{name: string, type: OfferType, redemption_count: numb
         <div className=''>
             <div className='flex gap-3 text-sm uppercase leading-none'>
                 <span className={`font-semibold ${discountColor}`}>{discountOffer}</span>
-                <span className='text-grey-700 line-through'>{getSymbol(currency) + numberWithCommas(currencyToDecimal(originalPrice))}</span>
+                <span className='text-grey-700 line-through'>{originalPriceWithCurrency}</span>
             </div>
-            <span className='text-3xl font-bold'>{getSymbol(currency) + numberWithCommas(currencyToDecimal(updatedPrice))}</span>
+            <span className='text-3xl font-bold'>{updatedPriceWithCurrency}</span>
         </div>
         <div className='flex flex-col items-center text-xs'>
             <span className='font-medium'>{tierName}</span>
@@ -101,7 +104,7 @@ const OffersModal = () => {
                     />
                     <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' />
                 </div>
-                <h1 className='mt-12 border-b border-b-grey-300 pb-2.5 text-3xl'>Active offers</h1>
+                <h1 className='mt-12 border-b border-b-grey-300 pb-2.5 text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
             </header>
             <div className='mt-8 grid grid-cols-3 gap-6'>
                 {offers.filter(offer => offer.status === selectedTab).map((offer) => {
