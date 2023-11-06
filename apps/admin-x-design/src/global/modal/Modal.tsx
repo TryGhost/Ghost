@@ -145,7 +145,7 @@ const Modal: React.FC<ModalProps> = ({
 
     const buttons: ButtonProps[] = [];
 
-    let footerClasses, contentClasses;
+    let contentClasses;
 
     const removeModal = () => {
         confirmIfDirty(dirty, () => {
@@ -336,7 +336,7 @@ const Modal: React.FC<ModalProps> = ({
         'max-[800px]:!pb-20'
     );
 
-    footerClasses = clsx(
+    const footerClasses = clsx(
         `${paddingClasses} ${stickyFooter ? 'py-6' : ''}`,
         'flex w-full items-center justify-between'
     );

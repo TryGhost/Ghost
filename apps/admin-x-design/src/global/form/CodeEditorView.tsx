@@ -1,10 +1,10 @@
+import {Extension} from '@codemirror/state';
 import CodeMirror, {ReactCodeMirrorProps, ReactCodeMirrorRef} from '@uiw/react-codemirror';
+import clsx from 'clsx';
+import React, {FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 import Heading from '../Heading';
 import Hint from '../Hint';
-import React, {FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
-import clsx from 'clsx';
-import {Extension} from '@codemirror/state';
-import {useFocusContext} from '../../providers/DesignSystemProvider';
 
 export interface CodeEditorProps extends Omit<ReactCodeMirrorProps, 'value' | 'onChange' | 'extensions'> {
     title?: string;
@@ -75,7 +75,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
         return () => resizeObserver.disconnect();
     }, []);
 
-    let styles = clsx(
+    const styles = clsx(
         'peer order-2 w-full max-w-full overflow-hidden rounded-sm border',
         clearBg ? 'bg-transparent' : 'bg-grey-75',
         error ? 'border-red' : 'border-grey-500 dark:border-grey-800',

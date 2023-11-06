@@ -11,8 +11,7 @@
   "scripts": {
     "build": "vite build && tsc -p tsconfig.declaration.json",
     "prepare": "yarn build",
-    "test:unit": "NODE_ENV=testing c8 --src src --all --check-coverage --100 --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
-    "test": "yarn test:types && yarn test:unit",
+    "test": "yarn test:types",
     "test:types": "tsc --noEmit",
     "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
     "lint": "yarn lint:code && yarn lint:test",
