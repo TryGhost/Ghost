@@ -1,9 +1,8 @@
-import MultiSelect, {Button, ColorIndicator, ColorPicker, Form, Heading, LoadOptions, MultiSelectOption, Radio, StickyFooter, TextArea} from '@tryghost/admin-x-design';
 import React from 'react';
 import useFilterableApi from '../../../../hooks/useFilterableApi';
+import {Button, ColorIndicator, ColorPicker, Form, Heading, LoadMultiSelectOptions, MultiSelect, MultiSelectOption, Radio, StickyFooter, TextArea, debounce} from '@tryghost/admin-x-design';
 import {Label} from '../../../../api/labels';
 import {MultiValue} from 'react-select';
-import {debounce} from '../../../../utils/debounce';
 
 export type SelectedLabelTypes = {
     label: string;
@@ -39,7 +38,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
     isCopied}) => {
     const {loadData} = useFilterableApi<Label>({path: '/labels/', filterKey: 'name', responseKey: 'labels'});
 
-    const loadOptions: LoadOptions = async (input, callback) => {
+    const loadOptions: LoadMultiSelectOptions = async (input, callback) => {
         const labels = await loadData(input);
         callback(labels.map(label => ({label: label.name, value: label.name})));
     };

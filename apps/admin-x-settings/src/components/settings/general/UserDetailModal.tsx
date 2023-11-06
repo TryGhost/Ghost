@@ -1,6 +1,5 @@
 import ChangePasswordForm from './users/ChangePasswordForm';
 import EmailNotifications from './users/EmailNotifications';
-import Menu, {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, MenuItem, Modal, showToast} from '@tryghost/admin-x-design';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ProfileBasics from './users/ProfileBasics';
 import ProfileDetails from './users/ProfileDetails';
@@ -13,6 +12,7 @@ import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
+import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, showToast} from '@tryghost/admin-x-design';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps} from '../../providers/RoutingProvider';
 import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '../../../api/users';

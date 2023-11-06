@@ -3,7 +3,7 @@ import TopLevelGroup from '../../TopLevelGroup';
 import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Icon, ImageUpload, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
+import {FacebookLogo, ImageUpload, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
 
@@ -59,7 +59,7 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
         <div className="md:mx-[52px]">
             <div className="mb-4 flex items-center gap-2">
                 <div>
-                    <Icon name='facebook' size='xl' />
+                    <FacebookLogo className='h-10 w-10' />
                 </div>
                 <div>
                     <div className="mb-1 font-semibold leading-none text-grey-900 dark:text-grey-300">{siteTitle}</div>

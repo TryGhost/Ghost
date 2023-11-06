@@ -1,10 +1,9 @@
 import useFilterableApi from '../../../hooks/useFilterableApi';
 import {GroupBase, MultiValue} from 'react-select';
 import {Label} from '../../../api/labels';
-import {LoadOptions, MultiSelectOption} from '@tryghost/admin-x-design';
+import {LoadMultiSelectOptions, MultiSelectOption, debounce} from '@tryghost/admin-x-design';
 import {Offer} from '../../../api/offers';
 import {Tier} from '../../../api/tiers';
-import {debounce} from '../../../utils/debounce';
 import {isObjectId} from '../../../utils/helpers';
 import {useEffect, useState} from 'react';
 
@@ -29,7 +28,7 @@ const useDefaultRecipientsOptions = (selectedOption: string, defaultEmailRecipie
     const labelOption = (label: Label): MultiSelectOption => ({value: `label:${label.slug}`, label: label.name, color: 'grey'});
     const offerOption = (offer: Offer): MultiSelectOption => ({value: `offer_redemptions:${offer.id}`, label: offer.name, color: 'black'});
 
-    const loadOptions: LoadOptions = async (input, callback) => {
+    const loadOptions: LoadMultiSelectOptions = async (input, callback) => {
         const [tiersData, labelsData, offersData] = await Promise.all([tiers.loadData(input), labels.loadData(input), offers.loadData(input)]);
 
         const segmentOptionGroups: GroupBase<MultiSelectOption>[] = [

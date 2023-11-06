@@ -16,12 +16,12 @@ export type MultiSelectOption = {
     color?: MultiSelectColor;
 }
 
-export type LoadOptions = (inputValue: string, callback: (options: OptionsOrGroups<MultiSelectOption, GroupBase<MultiSelectOption>>) => void) => void
+export type LoadMultiSelectOptions = (inputValue: string, callback: (options: OptionsOrGroups<MultiSelectOption, GroupBase<MultiSelectOption>>) => void) => void
 
 type MultiSelectOptionProps = {
     async: true;
     defaultOptions: boolean | OptionsOrGroups<MultiSelectOption, GroupBase<MultiSelectOption>>;
-    loadOptions: LoadOptions;
+    loadOptions: LoadMultiSelectOptions;
     options?: never;
 } | {
     async?: false;

@@ -1,4 +1,3 @@
-import Button, {ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast} from '@tryghost/admin-x-design';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './TierDetailPreview';
@@ -7,6 +6,7 @@ import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
+import {Button, ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast} from '@tryghost/admin-x-design';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {Tier, useAddTier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';

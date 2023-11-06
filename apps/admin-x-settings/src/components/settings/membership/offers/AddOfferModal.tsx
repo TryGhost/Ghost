@@ -1,7 +1,7 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
-import {ReactComponent as CheckIcon, Form, PreviewModalContent, Select, TextArea, TextField} from '@tryghost/admin-x-design';
+import {Form, Icon, PreviewModalContent, Select, TextArea, TextField} from '@tryghost/admin-x-design';
 import {useEffect} from 'react';
 
 interface OfferType {
@@ -16,7 +16,7 @@ const ButtonSelect: React.FC<{type: OfferType, checked: boolean}> = ({type, chec
         <button className='text-left' type='button'>
             <div className='flex gap-3'>
                 <div className={`mt-0.5 flex h-4 w-4 items-center justify-center rounded-full ${checkboxClass}`}>
-                    {checked ? <CheckIcon className='w-2 stroke-[4]' /> : null}
+                    {checked ? <Icon className='w-2 stroke-[4]' name='check' size='custom' /> : null}
                 </div>
                 <div className='flex flex-col'>
                     <span>{type.title}</span>

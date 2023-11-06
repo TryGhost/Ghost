@@ -1,11 +1,11 @@
+import clsx from 'clsx';
+import React, {useId, useMemo} from 'react';
+import ReactSelect, {ClearIndicatorProps, DropdownIndicatorProps, GroupBase, OptionProps, OptionsOrGroups, Props, components} from 'react-select';
 import AsyncSelect from 'react-select/async';
+import {useFocusContext} from '../../providers/DesignSystemProvider';
 import Heading from '../Heading';
 import Hint from '../Hint';
 import Icon from '../Icon';
-import React, {useId, useMemo} from 'react';
-import ReactSelect, {ClearIndicatorProps, DropdownIndicatorProps, GroupBase, OptionProps, OptionsOrGroups, Props, components} from 'react-select';
-import clsx from 'clsx';
-import {useFocusContext} from '../../providers/DesignSystemProvider';
 
 export interface SelectOption {
     value: string;
@@ -32,12 +32,12 @@ export interface SelectControlClasses {
     clearIndicator?: string;
 }
 
-export type LoadOptions = (inputValue: string, callback: (options: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>) => void) => void
+export type LoadSelectOptions = (inputValue: string, callback: (options: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>) => void) => void
 
 type SelectOptionProps = {
     async: true;
     defaultOptions: boolean | OptionsOrGroups<SelectOption, GroupBase<SelectOption>>;
-    loadOptions: LoadOptions;
+    loadOptions: LoadSelectOptions;
     options?: never;
 } | {
     async?: false;

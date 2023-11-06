@@ -2,10 +2,9 @@ import EditRecommendationModal from './EditRecommendationModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import RecommendationIcon from './RecommendationIcon';
-import Table, {Button, Link, NoValueLabel, ShowMoreData, TableCell, TableRow, Tooltip} from '@tryghost/admin-x-design';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {PaginationData} from '../../../../hooks/usePagination';
+import {Button, Link, NoValueLabel, PaginationData, ShowMoreData, Table, TableCell, TableRow, Tooltip} from '@tryghost/admin-x-design';
 import {Recommendation} from '../../../../api/recommendations';
 import {numberWithCommas} from '../../../../utils/helpers';
 

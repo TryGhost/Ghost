@@ -1,6 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import Select, {Breadcrumbs, Button, ButtonGroup, ConfirmationModal, DesktopChrome, MobileChrome, PageHeader, SelectOption} from '@tryghost/admin-x-design';
+import {Breadcrumbs, Button, ButtonGroup, ConfirmationModal, DesktopChrome, MobileChrome, PageHeader, Select, SelectOption} from '@tryghost/admin-x-design';
 import {OfficialTheme, ThemeVariant} from '../../../providers/ServiceProvider';
 import {Theme, isDefaultOrLegacyTheme} from '../../../../api/themes';
 

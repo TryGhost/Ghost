@@ -1,11 +1,10 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import Select, {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, LoadOptions, Modal, NoValueLabel, Popover, SelectOption, Toggle, ToggleGroup} from '@tryghost/admin-x-design';
 import useFilterableApi from '../../../hooks/useFilterableApi';
 import useRouting from '../../../hooks/useRouting';
 import {Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '../../../api/actions';
+import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, LoadSelectOptions, Modal, NoValueLabel, Popover, Select, SelectOption, Toggle, ToggleGroup, debounce} from '@tryghost/admin-x-design';
 import {RoutingModalProps} from '../../providers/RoutingProvider';
 import {User} from '../../../api/users';
-import {debounce} from '../../../utils/debounce';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {useCallback, useState} from 'react';
 
@@ -66,7 +65,7 @@ const HistoryFilter: React.FC<{
     const {updateRoute} = useRouting();
     const usersApi = useFilterableApi<User, 'users', 'name'>({path: '/users/', filterKey: 'name', responseKey: 'users'});
 
-    const loadOptions: LoadOptions = async (input, callback) => {
+    const loadOptions: LoadSelectOptions = async (input, callback) => {
         const users = await usersApi.loadData(input);
         callback(users.map(user => ({label: user.name, value: user.id})));
     };

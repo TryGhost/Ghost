@@ -3,7 +3,7 @@ import LatestPosts1 from '../../../../assets/images/latest-posts-1.png';
 import LatestPosts2 from '../../../../assets/images/latest-posts-2.png';
 import LatestPosts3 from '../../../../assets/images/latest-posts-3.png';
 import clsx from 'clsx';
-import {ReactComponent as GhostOrb, Icon} from '@tryghost/admin-x-design';
+import {GhostOrb, Icon} from '@tryghost/admin-x-design';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 
 const NewsletterPreviewContent: React.FC<{

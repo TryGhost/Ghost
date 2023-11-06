@@ -1,7 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Heading, Icon, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
+import {GoogleLogo, Heading, Icon, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getSettingValues} from '../../../api/settings';
 
 interface SearchEnginePreviewProps {
@@ -25,7 +25,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
             <Heading grey={true} level={6}>Search engine result preview</Heading>
             <div className='mt-3 flex items-center'>
                 <div className='basis-'>
-                    <Icon className='mr-7 h-7' name='google-logo' size='custom' />
+                    <GoogleLogo className='mr-7 h-7' />
                 </div>
                 <div className='grow'>
                     <div className='flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow dark:bg-grey-900'>

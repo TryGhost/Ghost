@@ -4,7 +4,6 @@ import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvi
 import {DefaultHeaderTypes} from './unsplash/UnsplashTypes';
 import {DesignSystemApp} from '@tryghost/admin-x-design';
 import {FetchKoenigLexical, OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
-import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ScrollSectionProvider} from './hooks/useScrollSection';
 import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
@@ -46,14 +45,12 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
                     <GlobalDataProvider>
                         <ScrollSectionProvider>
                             <RoutingProvider externalNavigate={externalNavigate}>
-                                <GlobalDirtyStateProvider>
-                                    <DesignSystemApp className='admin-x-settings' darkMode={darkMode} id="admin-x-settings" style={{
-                                        // height: '100vh',
-                                        // width: '100%'
-                                    }}>
-                                        <MainContent />
-                                    </DesignSystemApp>
-                                </GlobalDirtyStateProvider>
+                                <DesignSystemApp className='admin-x-settings' darkMode={darkMode} fetchKoenigLexical={fetchKoenigLexical} id="admin-x-settings" style={{
+                                    // height: '100vh',
+                                    // width: '100%'
+                                }}>
+                                    <MainContent />
+                                </DesignSystemApp>
                             </RoutingProvider>
                         </ScrollSectionProvider>
                     </GlobalDataProvider>

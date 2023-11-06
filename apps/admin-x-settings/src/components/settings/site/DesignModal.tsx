@@ -1,12 +1,12 @@
 import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
 import React, {useEffect, useState} from 'react';
-import TabView, {Icon, PreviewModalContent, StickyFooter, Tab} from '@tryghost/admin-x-design';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../api/customThemeSettings';
+import {Icon, PreviewModalContent, StickyFooter, Tab, TabView} from '@tryghost/admin-x-design';
 import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../api/settings';
 import {getHomepageUrl} from '../../../api/site';
 import {useBrowsePosts} from '../../../api/posts';
