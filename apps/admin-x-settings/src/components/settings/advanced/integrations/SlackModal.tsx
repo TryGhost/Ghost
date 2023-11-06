@@ -1,16 +1,16 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import Form from '../../../../admin-x-ds/global/form/Form';
+import Button from '@tryghost/admin-x-design/global/Button';
+import Form from '@tryghost/admin-x-design/global/form/Form';
 import IntegrationHeader from './IntegrationHeader';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
+import Modal from '@tryghost/admin-x-design/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
+import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import toast from 'react-hot-toast';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
 import {ReactComponent as Icon} from '../../../../assets/icons/slack.svg';
 import {getSettingValues} from '../../../../api/settings';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {showToast} from '@tryghost/admin-x-design/global/Toast';
 import {useTestSlack} from '../../../../api/slack';
 
 const SlackModal = NiceModal.create(() => {

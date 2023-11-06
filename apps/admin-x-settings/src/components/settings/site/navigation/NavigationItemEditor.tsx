@@ -1,6 +1,6 @@
 import React, {ReactNode} from 'react';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
+import TextField from '@tryghost/admin-x-design/global/form/TextField';
+import URLTextField from '@tryghost/admin-x-design/global/form/URLTextField';
 import clsx from 'clsx';
 import {EditableItem, NavigationItem, NavigationItemErrors} from '../../../../hooks/site/useNavigationEditor';
 

@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react';
 import toast from 'react-hot-toast';
 import {APIError, JSONError, ValidationError} from '../errors';
-import {showToast} from '../../admin-x-ds/global/Toast';
+import {showToast} from '@tryghost/admin-x-design/global/Toast';
 import {useCallback} from 'react';
 import {useSentryDSN} from '../../components/providers/ServiceProvider';
 
@@ -18,9 +18,9 @@ const useHandleError = () => {
      * @param options.withToast Show a toast with the error message (default: true).
      *  In general we should validate on the client side before sending the request to avoid errors,
      *  so this toast is intended as a worst-case fallback message when we don't know what else to do.
-     * 
+     *
      */
-    type HandleErrorReturnType = void | any; 
+    type HandleErrorReturnType = void | any;
     const handleError = useCallback((error: unknown, {withToast = true}: {withToast?: boolean} = {}) : HandleErrorReturnType => {
         // eslint-disable-next-line no-console
         console.error(error);

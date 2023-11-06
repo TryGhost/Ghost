@@ -1,4 +1,4 @@
-import DesignSystemApp from './admin-x-ds/global/DesignSystemApp';
+import DesignSystemApp from '@tryghost/admin-x-design/global/DesignSystemApp';
 import GlobalDataProvider from './components/providers/GlobalDataProvider';
 import MainContent from './MainContent';
 import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';

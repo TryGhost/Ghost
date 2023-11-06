@@ -1,10 +1,10 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
+import Button from '@tryghost/admin-x-design/global/Button';
+import NoValueLabel from '@tryghost/admin-x-design/global/NoValueLabel';
 import React, {useMemo} from 'react';
 import RecommendationIcon from './RecommendationIcon';
-import Table, {ShowMoreData} from '../../../../admin-x-ds/global/Table';
-import TableCell from '../../../../admin-x-ds/global/TableCell';
-import TableRow from '../../../../admin-x-ds/global/TableRow';
+import Table, {ShowMoreData} from '@tryghost/admin-x-design/global/Table';
+import TableCell from '@tryghost/admin-x-design/global/TableCell';
+import TableRow from '@tryghost/admin-x-design/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
 import {IncomingRecommendation} from '../../../../api/recommendations';
 import {PaginationData} from '../../../../hooks/usePagination';

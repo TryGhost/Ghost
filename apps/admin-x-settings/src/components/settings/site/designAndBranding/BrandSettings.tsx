@@ -1,10 +1,10 @@
-import ColorPickerField from '../../../../admin-x-ds/global/form/ColorPickerField';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Hint from '../../../../admin-x-ds/global/Hint';
-import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
+import ColorPickerField from '@tryghost/admin-x-design/global/form/ColorPickerField';
+import Heading from '@tryghost/admin-x-design/global/Heading';
+import Hint from '@tryghost/admin-x-design/global/Hint';
+import ImageUpload from '@tryghost/admin-x-design/global/form/ImageUpload';
 import React, {useRef, useState} from 'react';
-import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
+import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
+import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import UnsplashSearchModal from '../../../../unsplash/UnsplashSearchModal';
 import useHandleError from '../../../../utils/api/handleError';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';

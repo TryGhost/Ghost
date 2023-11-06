@@ -1,5 +1,5 @@
 import React from 'react';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import Toggle from '@tryghost/admin-x-design/global/form/Toggle';
 import useHandleError from '../../../../utils/api/handleError';
 import {ConfigResponseType, configDataType} from '../../../../api/config';
 import {getSettingValue, useEditSettings} from '../../../../api/settings';

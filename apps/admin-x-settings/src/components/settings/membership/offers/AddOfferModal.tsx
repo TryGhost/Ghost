@@ -1,12 +1,12 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
+import Form from '@tryghost/admin-x-design/global/form/Form';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import Select from '../../../../admin-x-ds/global/form/Select';
-import TextArea from '../../../../admin-x-ds/global/form/TextArea';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
+import Select from '@tryghost/admin-x-design/global/form/Select';
+import TextArea from '@tryghost/admin-x-design/global/form/TextArea';
+import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
-import {ReactComponent as CheckIcon} from '../../../../admin-x-ds/assets/icons/check.svg';
-import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
+import {ReactComponent as CheckIcon} from '@tryghost/admin-x-design/assets/icons/check.svg';
+import {PreviewModalContent} from '@tryghost/admin-x-design/global/modal/PreviewModal';
 import {useEffect} from 'react';
 
 interface OfferType {

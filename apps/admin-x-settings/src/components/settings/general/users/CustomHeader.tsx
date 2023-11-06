@@ -1,4 +1,4 @@
-import Heading from '../../../../admin-x-ds/global/Heading';
+import Heading from '@tryghost/admin-x-design/global/Heading';
 
 const CustomHeader: React.FC<{
     children?: React.ReactNode;

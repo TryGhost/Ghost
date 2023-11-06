@@ -1,6 +1,6 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Icon from '../../../../admin-x-ds/global/Icon';
+import Button from '@tryghost/admin-x-design/global/Button';
+import Heading from '@tryghost/admin-x-design/global/Heading';
+import Icon from '@tryghost/admin-x-design/global/Icon';
 import React, {useState} from 'react';
 import clsx from 'clsx';
 import useSettingGroup from '../../../../hooks/useSettingGroup';

@@ -5,7 +5,7 @@ import Offers from './Offers';
 import Portal from './Portal';
 import React from 'react';
 import Recommendations from './Recommendations';
-import SettingSection from '../../../admin-x-ds/settings/SettingSection';
+import SettingSection from '@tryghost/admin-x-design/settings/SettingSection';
 import Tiers from './Tiers';
 import TipsOrDonations from './TipsOrDonations';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';

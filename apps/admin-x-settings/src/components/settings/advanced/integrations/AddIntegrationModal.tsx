@@ -1,9 +1,9 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
-import LimitModal from '../../../../admin-x-ds/global/modal/LimitModal';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
+import Form from '@tryghost/admin-x-design/global/form/Form';
+import LimitModal from '@tryghost/admin-x-design/global/modal/LimitModal';
+import Modal from '@tryghost/admin-x-design/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
+import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';

@@ -1,9 +1,9 @@
-import CheckboxGroup from '../../../../admin-x-ds/global/form/CheckboxGroup';
-import Form from '../../../../admin-x-ds/global/form/Form';
-import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
+import CheckboxGroup from '@tryghost/admin-x-design/global/form/CheckboxGroup';
+import Form from '@tryghost/admin-x-design/global/form/Form';
+import HtmlField from '@tryghost/admin-x-design/global/form/HtmlField';
 import React, {useCallback, useEffect, useMemo} from 'react';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import {CheckboxProps} from '../../../../admin-x-ds/global/form/Checkbox';
+import Toggle from '@tryghost/admin-x-design/global/form/Toggle';
+import {CheckboxProps} from '@tryghost/admin-x-design/global/form/Checkbox';
 import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '../../../../api/settings';
 import {Tier, getPaidActiveTiers} from '../../../../api/tiers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';

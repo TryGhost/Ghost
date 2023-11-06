@@ -1,13 +1,13 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import FileUpload from '../../../../admin-x-ds/global/form/FileUpload';
+import Button from '@tryghost/admin-x-design/global/Button';
+import ConfirmationModal from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
+import FileUpload from '@tryghost/admin-x-design/global/form/FileUpload';
 import LabItem from './LabItem';
-import List from '../../../../admin-x-ds/global/List';
+import List from '@tryghost/admin-x-design/global/List';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import useHandleError from '../../../../utils/api/handleError';
 import {downloadAllContent, useDeleteAllContent, useImportContent} from '../../../../api/db';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {showToast} from '@tryghost/admin-x-design/global/Toast';
 import {useQueryClient} from '@tanstack/react-query';
 
 const ImportModalContent = () => {

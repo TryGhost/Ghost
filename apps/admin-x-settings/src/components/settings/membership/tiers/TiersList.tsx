@@ -1,5 +1,5 @@
-import Icon from '../../../../admin-x-ds/global/Icon';
-import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
+import Icon from '@tryghost/admin-x-design/global/Icon';
+import NoValueLabel from '@tryghost/admin-x-design/global/NoValueLabel';
 import React from 'react';
 import clsx from 'clsx';
 import useRouting from '../../../../hooks/useRouting';

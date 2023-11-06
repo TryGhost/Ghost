@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import Select from '../../../admin-x-ds/global/form/Select';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import Select from '@tryghost/admin-x-design/global/form/Select';
+import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
+import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
 import timezoneData from '@tryghost/timezone-data';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getLocalTime} from '../../../utils/helpers';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 interface TimezoneDataDropdownOption {
     name: string;

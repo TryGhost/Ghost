@@ -1,15 +1,15 @@
-import Button from '../../../admin-x-ds/global/Button';
-import CurrencyField from '../../../admin-x-ds/global/form/CurrencyField';
-import Heading from '../../../admin-x-ds/global/Heading';
+import Button from '@tryghost/admin-x-design/global/Button';
+import CurrencyField from '@tryghost/admin-x-design/global/form/CurrencyField';
+import Heading from '@tryghost/admin-x-design/global/Heading';
 import React, {useEffect, useState} from 'react';
-import Select from '../../../admin-x-ds/global/form/Select';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import Select from '@tryghost/admin-x-design/global/form/Select';
+import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
+import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {confirmIfDirty} from '../../../utils/modals';
 import {currencySelectGroups, getSymbol, validateCurrencyAmount} from '../../../utils/currency';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 // Stripe doesn't allow amounts over 10,000 as a preset amount
 const MAX_AMOUNT = 10_000;

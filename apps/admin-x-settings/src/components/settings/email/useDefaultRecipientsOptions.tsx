@@ -1,7 +1,7 @@
 import useFilterableApi from '../../../hooks/useFilterableApi';
 import {GroupBase, MultiValue} from 'react-select';
 import {Label} from '../../../api/labels';
-import {LoadOptions, MultiSelectOption} from '../../../admin-x-ds/global/form/MultiSelect';
+import {LoadOptions, MultiSelectOption} from '@tryghost/admin-x-design/global/form/MultiSelect';
 import {Offer} from '../../../api/offers';
 import {Tier} from '../../../api/tiers';
 import {debounce} from '../../../utils/debounce';

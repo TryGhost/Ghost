@@ -1,11 +1,11 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
+import Button from '@tryghost/admin-x-design/global/Button';
+import Heading from '@tryghost/admin-x-design/global/Heading';
+import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
+import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import useHandleError from '../../../../utils/api/handleError';
 import {User, useUpdatePassword} from '../../../../api/users';
 import {ValidationError} from '../../../../utils/errors';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {showToast} from '@tryghost/admin-x-design/global/Toast';
 import {useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 

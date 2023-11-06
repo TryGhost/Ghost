@@ -1,10 +1,10 @@
-import Button from '../admin-x-ds/global/Button';
+import Button from '@tryghost/admin-x-design/global/Button';
 import GhostLogo from '../assets/images/orb-pink.png';
-import Icon from '../admin-x-ds/global/Icon';
+import Icon from '@tryghost/admin-x-design/global/Icon';
 import React, {useEffect, useRef} from 'react';
-import SettingNavItem from '../admin-x-ds/settings/SettingNavItem';
-import SettingNavSection from '../admin-x-ds/settings/SettingNavSection';
-import TextField from '../admin-x-ds/global/form/TextField';
+import SettingNavItem from '@tryghost/admin-x-design/settings/SettingNavItem';
+import SettingNavSection from '@tryghost/admin-x-design/settings/SettingNavSection';
+import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import clsx from 'clsx';
 import useFeatureFlag from '../hooks/useFeatureFlag';
 import useRouting from '../hooks/useRouting';
@@ -14,7 +14,7 @@ import {searchKeywords as generalSearchKeywords} from './settings/general/Genera
 import {getSettingValues} from '../api/settings';
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/MembershipSettings';
 import {searchKeywords as siteSearchKeywords} from './settings/site/SiteSettings';
-import {useFocusContext} from '../admin-x-ds/providers/DesignSystemProvider';
+import {useFocusContext} from '@tryghost/admin-x-design/providers/DesignSystemProvider';
 import {useGlobalData} from './providers/GlobalDataProvider';
 import {useSearch} from './providers/ServiceProvider';
 

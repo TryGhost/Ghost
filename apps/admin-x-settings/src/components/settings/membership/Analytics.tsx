@@ -1,12 +1,12 @@
-import Button from '../../../admin-x-ds/global/Button';
+import Button from '@tryghost/admin-x-design/global/Button';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
+import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
+import Toggle from '@tryghost/admin-x-design/global/form/Toggle';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {getSettingValues} from '../../../api/settings';
 import {usePostsExports} from '../../../api/posts';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

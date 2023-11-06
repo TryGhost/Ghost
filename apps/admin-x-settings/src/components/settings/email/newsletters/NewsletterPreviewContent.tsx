@@ -1,10 +1,10 @@
 import CoverImage from '../../../../assets/images/user-cover.png';
-import Icon from '../../../../admin-x-ds/global/Icon';
+import Icon from '@tryghost/admin-x-design/global/Icon';
 import LatestPosts1 from '../../../../assets/images/latest-posts-1.png';
 import LatestPosts2 from '../../../../assets/images/latest-posts-2.png';
 import LatestPosts3 from '../../../../assets/images/latest-posts-3.png';
 import clsx from 'clsx';
-import {ReactComponent as GhostOrb} from '../../../../admin-x-ds/assets/images/ghost-orb.svg';
+import {ReactComponent as GhostOrb} from '@tryghost/admin-x-design/assets/images/ghost-orb.svg';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 
 const NewsletterPreviewContent: React.FC<{

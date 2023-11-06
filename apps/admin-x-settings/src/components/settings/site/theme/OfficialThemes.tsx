@@ -1,6 +1,6 @@
-import Heading from '../../../../admin-x-ds/global/Heading';
+import Heading from '@tryghost/admin-x-design/global/Heading';
 import MarketplaceBgImage from '../../../../assets/images/footer-marketplace-bg.png';
-import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
+import ModalPage from '@tryghost/admin-x-design/global/modal/ModalPage';
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
 import {OfficialTheme, ThemeVariant, useOfficialThemes} from '../../../providers/ServiceProvider';

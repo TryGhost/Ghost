@@ -1,16 +1,16 @@
-import Button from '../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
+import Button from '@tryghost/admin-x-design/global/Button';
+import ConfirmationModal from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
 import NewslettersList from './newsletters/NewslettersList';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {ReactNode, useEffect, useState} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import TabView from '../../../admin-x-ds/global/TabView';
+import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
+import TabView from '@tryghost/admin-x-design/global/TabView';
 import useHandleError from '../../../utils/api/handleError';
 import useQueryParams from '../../../hooks/useQueryParams';
 import useRouting from '../../../hooks/useRouting';
 import {APIError} from '../../../utils/errors';
 import {useBrowseNewsletters, useVerifyNewsletterEmail} from '../../../api/newsletters';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 const NavigateToNewsletter = ({id, children}: {id: string; children: ReactNode}) => {
     const modal = useModal();

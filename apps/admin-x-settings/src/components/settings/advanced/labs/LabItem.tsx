@@ -1,4 +1,4 @@
-import ListItem from '../../../../admin-x-ds/global/ListItem';
+import ListItem from '@tryghost/admin-x-design/global/ListItem';
 import React from 'react';
 
 const LabItem: React.FC<{

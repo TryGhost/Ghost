@@ -4,7 +4,7 @@ import Facebook from './Facebook';
 import LockSite from './LockSite';
 import Metadata from './Metadata';
 import PublicationLanguage from './PublicationLanguage';
-import SettingSection from '../../../admin-x-ds/settings/SettingSection';
+import SettingSection from '@tryghost/admin-x-design/settings/SettingSection';
 import SocialAccounts from './SocialAccounts';
 import TimeZone from './TimeZone';
 import TitleAndDescription from './TitleAndDescription';

@@ -1,13 +1,13 @@
-import Heading from '../../../admin-x-ds/global/Heading';
+import Heading from '@tryghost/admin-x-design/global/Heading';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/form/TextField';
+import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
+import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
+import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as GoogleLogo} from '../../../admin-x-ds/assets/images/google-logo.svg';
-import {ReactComponent as MagnifyingGlass} from '../../../admin-x-ds/assets/icons/magnifying-glass.svg';
+import {ReactComponent as GoogleLogo} from '@tryghost/admin-x-design/assets/images/google-logo.svg';
+import {ReactComponent as MagnifyingGlass} from '@tryghost/admin-x-design/assets/icons/magnifying-glass.svg';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 interface SearchEnginePreviewProps {
     title: string;

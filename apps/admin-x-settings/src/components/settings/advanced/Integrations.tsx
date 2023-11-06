@@ -1,13 +1,13 @@
-import Button from '../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
-import Icon from '../../../admin-x-ds/global/Icon';
-import List from '../../../admin-x-ds/global/List';
-import ListItem from '../../../admin-x-ds/global/ListItem';
+import Button from '@tryghost/admin-x-design/global/Button';
+import ConfirmationModal from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
+import Icon from '@tryghost/admin-x-design/global/Icon';
+import List from '@tryghost/admin-x-design/global/List';
+import ListItem from '@tryghost/admin-x-design/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
-import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
+import NoValueLabel from '@tryghost/admin-x-design/global/NoValueLabel';
 import React, {useState} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import TabView from '../../../admin-x-ds/global/TabView';
+import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
+import TabView from '@tryghost/admin-x-design/global/TabView';
 import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
@@ -19,9 +19,9 @@ import {ReactComponent as SlackIcon} from '../../../assets/icons/slack.svg';
 import {ReactComponent as UnsplashIcon} from '../../../assets/icons/unsplash.svg';
 import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
 import {getSettingValues} from '../../../api/settings';
-import {showToast} from '../../../admin-x-ds/global/Toast';
+import {showToast} from '@tryghost/admin-x-design/global/Toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 interface IntegrationItemProps {
     icon?: React.ReactNode,

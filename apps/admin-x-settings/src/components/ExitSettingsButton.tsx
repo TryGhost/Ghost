@@ -1,4 +1,4 @@
-import Button from '../admin-x-ds/global/Button';
+import Button from '@tryghost/admin-x-design/global/Button';
 import React from 'react';
 import useGlobalDirtyState from '../hooks/useGlobalDirtyState';
 import {confirmIfDirty} from '../utils/modals';

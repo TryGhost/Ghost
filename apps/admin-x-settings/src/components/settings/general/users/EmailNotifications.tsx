@@ -1,7 +1,7 @@
 import CustomHeader from './CustomHeader';
-import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
+import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
+import Toggle from '@tryghost/admin-x-design/global/form/Toggle';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {User, hasAdminAccess} from '../../../../api/users';
 

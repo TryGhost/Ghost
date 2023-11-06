@@ -1,6 +1,6 @@
 import FeatureToggle from './FeatureToggle';
 import LabItem from './LabItem';
-import List from '../../../../admin-x-ds/global/List';
+import List from '@tryghost/admin-x-design/global/List';
 import React from 'react';
 
 const features = [{

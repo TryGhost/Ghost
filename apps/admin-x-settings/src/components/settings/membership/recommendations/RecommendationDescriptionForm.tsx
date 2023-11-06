@@ -1,11 +1,11 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Hint from '../../../../admin-x-ds/global/Hint';
+import Form from '@tryghost/admin-x-design/global/form/Form';
+import Heading from '@tryghost/admin-x-design/global/Heading';
+import Hint from '@tryghost/admin-x-design/global/Hint';
 import React from 'react';
 import RecommendationIcon from './RecommendationIcon';
-import TextArea from '../../../../admin-x-ds/global/form/TextArea';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
+import TextArea from '@tryghost/admin-x-design/global/form/TextArea';
+import TextField from '@tryghost/admin-x-design/global/form/TextField';
+import URLTextField from '@tryghost/admin-x-design/global/form/URLTextField';
 import {EditOrAddRecommendation, Recommendation} from '../../../../api/recommendations';
 import {ErrorMessages} from '../../../../hooks/useForm';
 

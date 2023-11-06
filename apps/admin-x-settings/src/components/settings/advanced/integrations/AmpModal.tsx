@@ -1,9 +1,9 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
+import Form from '@tryghost/admin-x-design/global/form/Form';
 import IntegrationHeader from './IntegrationHeader';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
+import Modal from '@tryghost/admin-x-design/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
+import TextField from '@tryghost/admin-x-design/global/form/TextField';
+import Toggle from '@tryghost/admin-x-design/global/form/Toggle';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as Icon} from '../../../../assets/icons/amp.svg';

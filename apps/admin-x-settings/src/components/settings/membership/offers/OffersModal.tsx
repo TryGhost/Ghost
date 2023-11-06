@@ -1,7 +1,7 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
+import Button from '@tryghost/admin-x-design/global/Button';
+import Modal from '@tryghost/admin-x-design/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
+import TabView, {Tab} from '@tryghost/admin-x-design/global/TabView';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
 import {useEffect} from 'react';

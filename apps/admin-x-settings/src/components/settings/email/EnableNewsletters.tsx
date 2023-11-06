@@ -1,14 +1,14 @@
-import Banner from '../../../admin-x-ds/global/Banner';
-import Icon from '../../../admin-x-ds/global/Icon';
+import Banner from '@tryghost/admin-x-design/global/Banner';
+import Icon from '@tryghost/admin-x-design/global/Icon';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import SettingGroup from '@tryghost/admin-x-design/settings/SettingGroup';
+import SettingGroupContent from '@tryghost/admin-x-design/settings/SettingGroupContent';
+import Toggle from '@tryghost/admin-x-design/global/form/Toggle';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {Setting, getSettingValues, useEditSettings} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {withErrorBoundary} from '@tryghost/admin-x-design/global/ErrorBoundary';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();

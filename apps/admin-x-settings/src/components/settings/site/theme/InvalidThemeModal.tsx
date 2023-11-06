@@ -1,10 +1,10 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import List from '../../../../admin-x-ds/global/List';
-import ListItem from '../../../../admin-x-ds/global/ListItem';
+import Button from '@tryghost/admin-x-design/global/Button';
+import Heading from '@tryghost/admin-x-design/global/Heading';
+import List from '@tryghost/admin-x-design/global/List';
+import ListItem from '@tryghost/admin-x-design/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {ReactNode, useState} from 'react';
-import {ConfirmationModalContent} from '../../../../admin-x-ds/global/modal/ConfirmationModal';
+import {ConfirmationModalContent} from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
 import {ThemeProblem} from '../../../../api/themes';
 
 type FatalError = {

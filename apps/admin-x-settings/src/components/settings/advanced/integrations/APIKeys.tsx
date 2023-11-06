@@ -1,5 +1,5 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import Heading from '../../../../admin-x-ds/global/Heading';
+import Button from '@tryghost/admin-x-design/global/Button';
+import Heading from '@tryghost/admin-x-design/global/Heading';
 import React, {ReactNode, useState} from 'react';
 import clsx from 'clsx';
 

@@ -1,16 +1,16 @@
 import AdvancedThemeSettings from './theme/AdvancedThemeSettings';
-import Breadcrumbs from '../../../admin-x-ds/global/Breadcrumbs';
-import Button from '../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
-import FileUpload from '../../../admin-x-ds/global/form/FileUpload';
+import Breadcrumbs from '@tryghost/admin-x-design/global/Breadcrumbs';
+import Button from '@tryghost/admin-x-design/global/Button';
+import ConfirmationModal from '@tryghost/admin-x-design/global/modal/ConfirmationModal';
+import FileUpload from '@tryghost/admin-x-design/global/form/FileUpload';
 import InvalidThemeModal from './theme/InvalidThemeModal';
-import LimitModal from '../../../admin-x-ds/global/modal/LimitModal';
-import Modal from '../../../admin-x-ds/global/modal/Modal';
+import LimitModal from '@tryghost/admin-x-design/global/modal/LimitModal';
+import Modal from '@tryghost/admin-x-design/global/modal/Modal';
 import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
-import PageHeader from '../../../admin-x-ds/global/layout/PageHeader';
+import PageHeader from '@tryghost/admin-x-design/global/layout/PageHeader';
 import React, {useEffect, useRef, useState} from 'react';
-import TabView from '../../../admin-x-ds/global/TabView';
+import TabView from '@tryghost/admin-x-design/global/TabView';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
 import useHandleError from '../../../utils/api/handleError';
@@ -18,7 +18,7 @@ import useRouting from '../../../hooks/useRouting';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {InstalledTheme, Theme, ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
 import {OfficialTheme} from '../../providers/ServiceProvider';
-import {showToast} from '../../../admin-x-ds/global/Toast';
+import {showToast} from '@tryghost/admin-x-design/global/Toast';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;

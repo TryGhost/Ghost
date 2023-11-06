@@ -1,11 +1,11 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import Form from '../../../../admin-x-ds/global/form/Form';
+import Button from '@tryghost/admin-x-design/global/Button';
+import Form from '@tryghost/admin-x-design/global/form/Form';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import TextArea from '../../../../admin-x-ds/global/form/TextArea';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
+import TextArea from '@tryghost/admin-x-design/global/form/TextArea';
+import TextField from '@tryghost/admin-x-design/global/form/TextField';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
-import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
+import {PreviewModalContent} from '@tryghost/admin-x-design/global/modal/PreviewModal';
 import {useEffect} from 'react';
 
 const Sidebar: React.FC = () => {

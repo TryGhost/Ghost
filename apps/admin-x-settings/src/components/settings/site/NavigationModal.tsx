@@ -1,7 +1,7 @@
-import Modal from '../../../admin-x-ds/global/modal/Modal';
+import Modal from '@tryghost/admin-x-design/global/modal/Modal';
 import NavigationEditForm from './navigation/NavigationEditForm';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import TabView from '../../../admin-x-ds/global/TabView';
+import TabView from '@tryghost/admin-x-design/global/TabView';
 import useNavigationEditor, {NavigationItem} from '../../../hooks/site/useNavigationEditor';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
