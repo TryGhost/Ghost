@@ -5,7 +5,7 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 function cardTemplate(nodeData) {
     const cardClasses = getCardClasses(nodeData).join(' ');
 
-    const backgroundAccent = nodeData.backgroundColor === 'accent' ? 'kg-style-accent' : '';
+    const backgroundAccent = nodeData.backgroundColor === 'accent' && !nodeData.backgroundImageSrc ? 'kg-style-accent' : ''; // don't apply accent style if there's a background image
     const buttonAccent = nodeData.buttonColor === 'accent' ? 'kg-style-accent' : '';
     const buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : ``;
     const alignment = nodeData.alignment === 'center' ? 'kg-align-center' : '';
