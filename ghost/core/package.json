@@ -197,7 +197,7 @@
     "json-stable-stringify": "1.0.2",
     "jsonpath": "1.1.1",
     "jsonwebtoken": "8.5.1",
-    "juice": "9.1.0",
+    "juice": "cmraible/juice#fix-auto-attributes",
     "keypair": "1.0.4",
     "knex": "2.4.2",
     "knex-migrator": "5.1.5",
