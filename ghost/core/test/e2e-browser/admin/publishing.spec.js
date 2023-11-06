@@ -583,11 +583,11 @@ test.describe('Updating post access', () => {
 
         await page.getByTestId('timezone').getByRole('button', {name: 'Edit'}).click();
         await page.getByTestId('timezone-select').click();
-        await page.locator('[data-testid="select-option"]', {hasText: 'Kamchatka'}).click();
+        await page.locator('[data-testid="select-option"]', {hasText: 'Tokyo'}).click();
 
         await page.getByTestId('timezone').getByRole('button', {name: 'Save'}).click();
         await expect(page.getByTestId('timezone-select')).toBeHidden();
-        await expect(page.getByTestId('timezone')).toContainText('(GMT +12:00) Fiji, Kamchatka, Marshall Is.');
+        await expect(page.getByTestId('timezone')).toContainText('(GMT +9:00) Osaka, Sapporo, Tokyo');
 
         await page.getByTestId('exit-settings').click();
         await page.locator('[data-test-nav="posts"]').click();
@@ -595,9 +595,9 @@ test.describe('Updating post access', () => {
 
         await openPostSettingsMenu(page);
 
-        await expect(page.locator('[data-test-date-time-picker-timezone]')).toHaveText('+12');
-        await expect(page.locator('[data-test-date-time-picker-time-input]')).toHaveValue('00:00');
-        await expect(page.locator('[data-test-date-time-picker-date-input]')).toHaveValue(/-16$/);
+        await expect(page.locator('[data-test-date-time-picker-timezone]')).toHaveText('JST');
+        await expect(page.locator('[data-test-date-time-picker-time-input]')).toHaveValue('21:00');
+        await expect(page.locator('[data-test-date-time-picker-date-input]')).toHaveValue(/-15$/);
     });
 
     test('default recipient settings - usually nobody', async ({page}) => {
