@@ -52,10 +52,6 @@ const features = [{
     description: 'Set the List-Unsubscribe header in emails',
     flag: 'listUnsubscribeHeader'
 },{
-    title: 'Editor emoji picker',
-    description: <>Trigger an emoji picker when typing <code>{':{search}'}</code> in the editor</>,
-    flag: 'editorEmojiPicker'
-},{
     title: 'AdminX Offers',
     description: 'Enables the new offers UI in AdminX settings',
     flag: 'adminXOffers'
