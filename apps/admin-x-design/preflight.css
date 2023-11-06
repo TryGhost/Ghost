@@ -328,7 +328,7 @@
     input::placeholder,
     textarea::placeholder {
         opacity: 1; /* 1 */
-        @apply text-gray-500; /* 2 */
+        @apply text-grey-500; /* 2 */
     }
 
     button:focus-visible,
