@@ -593,6 +593,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 1em;
     height: 1em;
     margin-left: 24px;
+    margin-bottom: 2px;
     line-height: 1.2;
 }
 
