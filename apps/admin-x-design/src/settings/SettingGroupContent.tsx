@@ -1,9 +1,8 @@
 import React from 'react';
 
-import SettingValue from './SettingValue';
-import {SettingValueProps} from './SettingValue';
+import SettingValue, {SettingValueProps} from './SettingValue';
 
-interface ISettingGroupContent {
+export interface SettingGroupContentProps {
     columns?: 1 | 2;
 
     /**
@@ -14,7 +13,7 @@ interface ISettingGroupContent {
     className?: string;
 }
 
-const SettingGroupContent: React.FC<ISettingGroupContent> = ({columns, values, children, className}) => {
+const SettingGroupContent: React.FC<SettingGroupContentProps> = ({columns, values, children, className}) => {
     let styles = 'flex flex-col gap-x-5 gap-y-7';
     if (columns === 2) {
         styles = 'grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6';

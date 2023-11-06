@@ -1,5 +1,5 @@
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
 
 export type Tab<ID = string> = {
     id: ID;
@@ -12,7 +12,7 @@ export type Tab<ID = string> = {
     contents?: React.ReactNode;
 }
 
-interface TabViewProps<ID = string> {
+export interface TabViewProps<ID = string> {
     tabs: readonly Tab<ID>[];
     onTabChange: (id: ID) => void;
     selectedTab?: ID;

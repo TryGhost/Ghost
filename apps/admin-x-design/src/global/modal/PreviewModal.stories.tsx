@@ -1,11 +1,19 @@
-import {ReactNode} from 'react';
 import type {Meta, StoryContext, StoryObj} from '@storybook/react';
+import {ReactNode} from 'react';
 
-import Heading from '../Heading';
 import NiceModal from '@ebay/nice-modal-react';
-import PreviewModal from './PreviewModal';
-import PreviewModalContainer from './PreviewModalContainer';
+import Button from '../Button';
+import Heading from '../Heading';
 import {Tab} from '../TabView';
+import PreviewModal, {PreviewModalProps} from './PreviewModal';
+
+const PreviewModalContainer: React.FC<PreviewModalProps> = ({...props}) => {
+    return (
+        <Button color='black' label='Open preview modal' onClick={() => {
+            NiceModal.show(PreviewModal, {...props});
+        }} />
+    );
+};
 
 const meta = {
     title: 'Global / Modal / Preview Modal',

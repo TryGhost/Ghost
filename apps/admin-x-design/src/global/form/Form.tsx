@@ -1,8 +1,8 @@
-import Heading from '../Heading';
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
+import Heading from '../Heading';
 
-interface FormProps {
+export interface FormProps {
     title?: string;
     grouped?: boolean;
     gap?: 'none' | 'sm' | 'md' | 'lg';
@@ -62,7 +62,7 @@ const Form: React.FC<FormProps> = ({
         );
     }
 
-    let titleClasses = clsx(
+    const titleClasses = clsx(
         grouped ? 'mb-3' : 'mb-4'
     );
 

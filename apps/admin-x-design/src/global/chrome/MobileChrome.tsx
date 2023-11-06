@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface MobileChromeProps {
+export interface MobileChromeProps {
     children?: React.ReactNode;
 }
 

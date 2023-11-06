@@ -1,6 +1,6 @@
+import React from 'react';
 import Button, {ButtonProps, ButtonSize} from './Button';
 import Popover, {PopoverPosition} from './Popover';
-import React from 'react';
 
 export type MenuItem = {
     id: string,
@@ -8,7 +8,7 @@ export type MenuItem = {
     onClick?: () => void
 }
 
-interface MenuProps {
+export interface MenuProps {
     trigger?: React.ReactNode;
     triggerButtonProps?: ButtonProps;
     triggerSize?: ButtonSize;

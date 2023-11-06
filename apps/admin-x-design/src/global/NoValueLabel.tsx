@@ -1,7 +1,7 @@
-import Icon from './Icon';
 import React from 'react';
+import Icon from './Icon';
 
-interface NoValueLabelProps {
+export interface NoValueLabelProps {
     icon?: string;
     children: React.ReactNode;
 }

@@ -1,11 +1,11 @@
-import AsyncCreatableSelect from 'react-select/async-creatable';
+import clsx from 'clsx';
+import React, {useId, useMemo} from 'react';
+import {DropdownIndicatorProps, GroupBase, MultiValue, OptionProps, OptionsOrGroups, Props, default as ReactSelect, components} from 'react-select';
 import AsyncSelect from 'react-select/async';
+import AsyncCreatableSelect from 'react-select/async-creatable';
 import CreatableSelect from 'react-select/creatable';
 import Heading from '../Heading';
 import Hint from '../Hint';
-import React, {useId, useMemo} from 'react';
-import clsx from 'clsx';
-import {DropdownIndicatorProps, GroupBase, MultiValue, OptionProps, OptionsOrGroups, Props, default as ReactSelect, components} from 'react-select';
 
 export type MultiSelectColor = 'grey' | 'black' | 'green' | 'pink';
 type FieldStyles = 'text' | 'dropdown';
@@ -30,7 +30,7 @@ type MultiSelectOptionProps = {
     loadOptions?: never;
 }
 
-type MultiSelectProps = MultiSelectOptionProps & {
+export type MultiSelectProps = MultiSelectOptionProps & {
     values: MultiValue<MultiSelectOption>;
     title?: string;
     clearBg?: boolean;

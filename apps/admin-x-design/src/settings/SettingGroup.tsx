@@ -6,7 +6,7 @@ import SettingGroupHeader from './SettingGroupHeader';
 
 // TODO: Wrap with removed logic in admin-x-settings
 
-interface SettingGroupProps {
+export interface SettingGroupProps {
     navid?:string;
     testId?: string;
     title?: string;

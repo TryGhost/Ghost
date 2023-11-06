@@ -13,7 +13,7 @@ export interface ShowMoreData {
     loadMore: () => void;
 }
 
-interface TableProps {
+export interface TableProps {
     /**
      * If the table is the primary content on a page (e.g. Members table) then you can set a pagetitle to be consistent
      */

@@ -1,7 +1,7 @@
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
 
-interface HintProps {
+export interface HintProps {
     children?: React.ReactNode;
     color?: 'red' | 'green' | 'default' | '';
     className?: string;

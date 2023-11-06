@@ -1,6 +1,6 @@
+import React from 'react';
 import Heading from '../Heading';
 import Hint from '../Hint';
-import React from 'react';
 import Separator from '../Separator';
 
 export interface RadioOption {
@@ -9,7 +9,7 @@ export interface RadioOption {
     hint?: React.ReactNode;
 }
 
-interface RadioProps {
+export interface RadioProps {
     id: string;
     title?: string;
     selectedOption?: string;

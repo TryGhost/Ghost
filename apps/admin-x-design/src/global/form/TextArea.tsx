@@ -1,14 +1,14 @@
 import React, {FocusEventHandler, HTMLProps, useId} from 'react';
 
-import Heading from '../Heading';
-import Hint from '../Hint';
 import clsx from 'clsx';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
+import Heading from '../Heading';
+import Hint from '../Hint';
 
 type ResizeOptions = 'both' | 'vertical' | 'horizontal' | 'none';
 type FontStyles = 'sans' | 'mono';
 
-interface TextAreaProps extends HTMLProps<HTMLTextAreaElement> {
+export interface TextAreaProps extends HTMLProps<HTMLTextAreaElement> {
     inputRef?: React.RefObject<HTMLTextAreaElement>;
     title?: string;
     value?: string;

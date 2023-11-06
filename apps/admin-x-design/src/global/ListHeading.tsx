@@ -1,10 +1,10 @@
-import Heading from './Heading';
 import React from 'react';
+import Heading from './Heading';
 import Separator from './Separator';
 
 export type ListHeadingSize = 'sm' | 'lg';
 
-interface ListHeadingProps {
+export interface ListHeadingProps {
     title?: React.ReactNode;
     titleSize?: ListHeadingSize,
     actions?: React.ReactNode;

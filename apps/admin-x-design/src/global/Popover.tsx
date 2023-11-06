@@ -1,10 +1,10 @@
-import React, {useRef, useState} from 'react';
 import clsx from 'clsx';
+import React, {useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 
 export type PopoverPosition = 'left' | 'right';
 
-interface PopoverProps {
+export interface PopoverProps {
     trigger: React.ReactNode;
     children: React.ReactNode;
     position?: PopoverPosition;
@@ -32,14 +32,14 @@ const Popover: React.FC<PopoverProps> = ({
     const handleTriggerClick = () => {
         if (!open && triggerRef.current) {
             const parentRect = getOffsetPosition(triggerRef.current);
-            let {x, y, width, height} = triggerRef.current.getBoundingClientRect();
-            x -= parentRect.x;
-            y -= parentRect.y;
+            const {x, y, width, height} = triggerRef.current.getBoundingClientRect();
+            const relativeX = x - parentRect.x;
+            const relativeY = y - parentRect.y;
 
-            const finalX = (position === 'left') ? x : window.innerWidth - (x + width);
+            const finalX = (position === 'left') ? relativeX : window.innerWidth - (relativeX + width);
             setOpen(true);
             setPositionX(finalX);
-            setPositionY(y + height);
+            setPositionY(relativeY + height);
         } else {
             setOpen(false);
         }
@@ -70,7 +70,7 @@ const Popover: React.FC<PopoverProps> = ({
     let className = '';
 
     className = clsx(
-        'dark:bg-grey-900 fixed z-50 mt-2 origin-top-right rounded bg-white shadow-md ring-1 ring-[rgba(0,0,0,0.01)] focus:outline-none dark:text-white',
+        'fixed z-50 mt-2 origin-top-right rounded bg-white shadow-md ring-1 ring-[rgba(0,0,0,0.01)] focus:outline-none dark:bg-grey-900 dark:text-white',
         className
     );
 

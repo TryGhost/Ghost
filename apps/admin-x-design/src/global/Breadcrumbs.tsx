@@ -1,13 +1,13 @@
-import Button from './Button';
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
+import Button from './Button';
 
 export type BreadcrumbItem = {
     label: React.ReactNode;
     onClick?: () => void;
 }
 
-interface BreadcrumbsProps {
+export interface BreadcrumbsProps {
     items: BreadcrumbItem[];
     backIcon?: boolean;
     onBack?: () => void;

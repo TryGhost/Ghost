@@ -1,9 +1,17 @@
-import {ReactNode} from 'react';
 import type {Meta, StoryContext, StoryObj} from '@storybook/react';
+import {ReactNode} from 'react';
 
-import ConfirmationModal from './ConfirmationModal';
-import ConfirmationModalContainer from './ConfirmationModalContainer';
 import NiceModal from '@ebay/nice-modal-react';
+import Button from '../Button';
+import ConfirmationModal, {ConfirmationModalProps} from './ConfirmationModal';
+
+const ConfirmationModalContainer: React.FC<ConfirmationModalProps> = ({...props}) => {
+    return (
+        <Button color='black' label='Open confirmation modal' onClick={() => {
+            NiceModal.show(ConfirmationModal, {...props});
+        }} />
+    );
+};
 
 const meta = {
     title: 'Global / Modal / Confirmation Modal',

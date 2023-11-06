@@ -3,7 +3,7 @@ import {ReactComponent as UserIcon} from '../assets/icons/single-user-fill.svg';
 
 type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
 
-interface AvatarProps {
+export interface AvatarProps {
     image?: string;
     label?: string;
 

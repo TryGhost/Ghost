@@ -1,9 +1,9 @@
-import Checkbox, {CheckboxProps} from './Checkbox';
+import React from 'react';
 import Heading from '../Heading';
 import Hint from '../Hint';
-import React from 'react';
+import Checkbox, {CheckboxProps} from './Checkbox';
 
-interface CheckboxGroupProps {
+export interface CheckboxGroupProps {
     title?: string;
     checkboxes?: CheckboxProps[];
     hint?: string;

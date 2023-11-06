@@ -3,7 +3,7 @@ import React from 'react';
 export type LoadingIndicatorSize = 'sm' | 'md' | 'lg';
 export type LoadingIndicatorColor = 'light' | 'dark';
 
-type LoadingIndicatorProps = {
+export interface LoadingIndicatorProps {
     size?: LoadingIndicatorSize;
     color?: LoadingIndicatorColor;
     delay?: number;

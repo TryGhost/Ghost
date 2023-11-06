@@ -1,9 +1,9 @@
-import Button from './Button';
 import React from 'react';
+import Button from './Button';
 
 import {ButtonProps} from './Button';
 
-interface ButtonGroupProps {
+export interface ButtonGroupProps {
     buttons: Array<ButtonProps>;
     link?: boolean;
     linkWithPadding?: boolean;

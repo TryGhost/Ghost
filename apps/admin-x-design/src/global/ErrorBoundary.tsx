@@ -1,12 +1,17 @@
 import * as Sentry from '@sentry/react';
-import Banner from './Banner';
 import React, {ComponentType, ErrorInfo, ReactNode} from 'react';
+import Banner from './Banner';
+
+export interface ErrorBoundaryProps {
+    children: ReactNode;
+    name: ReactNode;
+}
 
 /**
  * Catches errors in child components and displays a banner. Useful to prevent errors in one
  * section from crashing the entire page
  */
-class ErrorBoundary extends React.Component<{children: ReactNode, name: ReactNode}> {
+class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
     state = {hasError: false};
 
     constructor(props: {children: ReactNode, name: ReactNode}) {

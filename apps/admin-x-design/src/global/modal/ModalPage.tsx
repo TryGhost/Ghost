@@ -1,8 +1,8 @@
-import Heading from '../Heading';
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
+import Heading from '../Heading';
 
-interface ModalPageProps {
+export interface ModalPageProps {
     heading?: string;
     children?: React.ReactNode;
     className?: string;

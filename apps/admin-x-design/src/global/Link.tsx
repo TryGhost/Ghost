@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface LinkProps extends React.ComponentPropsWithoutRef<'a'> {
+export interface LinkProps extends React.ComponentPropsWithoutRef<'a'> {
     href: string;
 
     /**

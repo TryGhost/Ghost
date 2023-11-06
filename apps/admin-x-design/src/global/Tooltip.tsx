@@ -1,7 +1,7 @@
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
 
-interface TooltipProps {
+export interface TooltipProps {
     content?: React.ReactNode;
     size?: 'sm' | 'md';
     children?: React.ReactNode;

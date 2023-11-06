@@ -1,7 +1,7 @@
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
 
-interface ToggleGroupProps {
+export interface ToggleGroupProps {
     children?: React.ReactNode;
     gap?: 'sm' | 'md' | 'lg';
     className?: string;

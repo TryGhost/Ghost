@@ -2,7 +2,7 @@ import React from 'react';
 
 export type DesktopChromeHeaderSize = 'sm' | 'md' | 'lg';
 
-interface DesktopChromeHeaderProps {
+export interface DesktopChromeHeaderProps {
     size?: DesktopChromeHeaderSize;
     toolbarLeft?: React.ReactNode;
     toolbarCenter?: React.ReactNode;

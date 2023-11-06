@@ -1,8 +1,8 @@
-import Button from '../Button';
 import clsx from 'clsx';
-import {ReactComponent as EyedropperIcon} from '../../assets/icons/eyedropper.svg';
-import {HexColorInput, HexColorPicker} from 'react-colorful';
 import {MouseEvent, UIEvent, useCallback, useEffect, useRef} from 'react';
+import {HexColorInput, HexColorPicker} from 'react-colorful';
+import {ReactComponent as EyedropperIcon} from '../../assets/icons/eyedropper.svg';
+import Button from '../Button';
 
 declare global {
     interface Window {
@@ -15,14 +15,16 @@ declare global {
     }
 }
 
-/** Should usually be used via [ColorPickerField](?path=/docs/global-form-color-picker-field--docs) */
-const ColorPicker: React.FC<{
+export interface ColorPickerProps {
     hexValue?: string;
     eyedropper?: boolean;
     clearButtonValue?: string | null;
     containerClassName?: string;
     onChange?: (newValue: string | null) => void;
-}> = ({hexValue, eyedropper, clearButtonValue, containerClassName, onChange}) => {
+}
+
+/** Should usually be used via [ColorPickerField](?path=/docs/global-form-color-picker-field--docs) */
+const ColorPicker: React.FC<ColorPickerProps> = ({hexValue, eyedropper, clearButtonValue, containerClassName, onChange}) => {
     // HexColorInput doesn't support adding a ref on the input itself
     const inputWrapperRef = useRef<HTMLDivElement>(null);
 

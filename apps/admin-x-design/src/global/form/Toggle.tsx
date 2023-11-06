@@ -1,12 +1,12 @@
-import React, {useId} from 'react';
-import Separator from '../Separator';
 import clsx from 'clsx';
+import React, {useId} from 'react';
 import {Heading6StylesGrey} from '../Heading';
+import Separator from '../Separator';
 
 type ToggleSizes = 'sm' | 'md' | 'lg';
 export type ToggleDirections = 'ltr' | 'rtl';
 
-interface ToggleProps {
+export interface ToggleProps {
     checked?: boolean;
     disabled?: boolean;
     error?: boolean;

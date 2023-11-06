@@ -1,8 +1,19 @@
-import {ReactNode} from 'react';
 import type {Meta, StoryObj} from '@storybook/react';
+import {ReactNode} from 'react';
 
-import ToastContainer from './ToastContainer';
 import {Toaster} from 'react-hot-toast';
+import Button from './Button';
+import {ShowToastProps, showToast} from './Toast';
+
+const ToastContainer: React.FC<ShowToastProps> = ({...props}) => {
+    return (
+        <>
+            <Button color='black' label='Toast me!' onClick={() => {
+                showToast({...props});
+            }} />
+        </>
+    );
+};
 
 const meta = {
     title: 'Global / Toast',

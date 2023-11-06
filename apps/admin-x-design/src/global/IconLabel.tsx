@@ -1,7 +1,7 @@
-import Icon from './Icon';
 import React from 'react';
+import Icon from './Icon';
 
-interface IconLabelProps {
+export interface IconLabelProps {
     icon: string;
     iconColorClass?: string;
     children?: React.ReactNode;

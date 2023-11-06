@@ -1,7 +1,7 @@
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
 
-interface BannerProps {
+export interface BannerProps {
     color?: 'grey' | 'blue' | 'green' | 'yellow' | 'red';
     children?: React.ReactNode;
     className?: string;

@@ -1,6 +1,6 @@
-import Heading from '../Heading';
 import clsx from 'clsx';
 import {Fragment, MouseEvent, useRef} from 'react';
+import Heading from '../Heading';
 
 type SwatchSizes = 'md' | 'lg';
 
@@ -58,8 +58,7 @@ export type SwatchOption = {
     customContent?: JSX.Element;
 }
 
-/** Should usually be used via [ColorPickerField](?path=/docs/global-form-color-picker-field--docs) */
-const ColorIndicator: React.FC<{
+export interface ColorIndicatorProps {
     title?: string;
     value?: string | null;
     swatches: SwatchOption[];
@@ -69,8 +68,10 @@ const ColorIndicator: React.FC<{
     isExpanded: boolean;
     picker?: boolean;
     containerClassName?: string;
+}
 
-}> = ({title, value, swatches, swatchSize = 'md',onSwatchChange, onTogglePicker, isExpanded, picker = true, containerClassName}) => {
+/** Should usually be used via [ColorPickerField](?path=/docs/global-form-color-picker-field--docs) */
+const ColorIndicator: React.FC<ColorIndicatorProps> = ({title, value, swatches, swatchSize = 'md',onSwatchChange, onTogglePicker, isExpanded, picker = true, containerClassName}) => {
     let selectedSwatch = swatches.find(swatch => swatch.value === value || swatch.hex === value);
 
     if (isExpanded) {

@@ -1,7 +1,7 @@
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
 
-interface TableRowProps {
+export interface TableRowProps {
     id?: string;
     action?: React.ReactNode;
     hideActions?: boolean;

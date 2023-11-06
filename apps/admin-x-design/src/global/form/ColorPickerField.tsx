@@ -17,7 +17,7 @@ const to6DigitHex = (hex: string) => {
     }
 };
 
-const ColorPickerField = ({testId, title, direction, value, hint, error, eyedropper, clearButtonValue, onChange, swatches = [], alwaysOpen = false, debounceMs}: {
+export interface ColorPickerFieldProps {
     testId?: string;
     title?: ReactNode;
     direction?: ToggleDirections;
@@ -30,7 +30,9 @@ const ColorPickerField = ({testId, title, direction, value, hint, error, eyedrop
     swatches?: SwatchOption[];
     alwaysOpen?: boolean;
     debounceMs?: number;
-}) => {
+}
+
+const ColorPickerField: React.FC<ColorPickerFieldProps> = ({testId, title, direction, value, hint, error, eyedropper, clearButtonValue, onChange, swatches = [], alwaysOpen = false, debounceMs}) => {
     const [isExpanded, setExpanded] = useState(false);
     const [localValue, setLocalValue] = useState(value);
     const context = useContext(ColorPickerContext);

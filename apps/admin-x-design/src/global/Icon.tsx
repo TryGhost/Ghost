@@ -1,11 +1,11 @@
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
 
 const icons: Record<string, {ReactComponent: React.FC<React.SVGProps<SVGSVGElement>>}> = import.meta.glob('../assets/icons/*.svg', {eager: true});
 
 export type IconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
 
-interface IconProps {
+export interface IconProps {
     name: string;
 
     /**

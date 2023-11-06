@@ -1,11 +1,11 @@
+import clsx from 'clsx';
+import React from 'react';
 import Heading from './Heading';
 import Hint from './Hint';
 import ListHeading, {ListHeadingSize} from './ListHeading';
-import React from 'react';
 import Separator from './Separator';
-import clsx from 'clsx';
 
-interface ListProps {
+export interface ListProps {
     /**
      * If the list is the primary content on a page (e.g. Members list) then you can set a pagetitle to be consistent
      */

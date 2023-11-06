@@ -1,10 +1,29 @@
-import {ReactNode} from 'react';
 import type {Meta, StoryContext, StoryObj} from '@storybook/react';
+import {ReactNode} from 'react';
 
-import Modal from './Modal';
-import ModalContainer from './ModalContainer';
-import ModalPage from './ModalPage';
 import NiceModal from '@ebay/nice-modal-react';
+import Button from '../Button';
+import Modal, {ModalProps} from './Modal';
+import ModalPage from './ModalPage';
+
+const ModalContainer: React.FC<ModalProps> = ({children, ...props}) => {
+    const modal = NiceModal.create<ModalProps>(() => {
+        return (
+            <Modal {...props}>
+                <div className='py-4'>
+                    {children}
+                </div>
+            </Modal>
+        );
+    });
+    return (
+        <div>
+            <Button color='black' label='Open modal' onClick={() => {
+                NiceModal.show(modal);
+            }} />
+        </div>
+    );
+};
 
 const meta = {
     title: 'Global / Modal',

@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import TextField, {TextFieldProps} from './TextField';
 import validator from 'validator';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
+import TextField, {TextFieldProps} from './TextField';
 
 export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) => {
     if (nullable && !value) {
@@ -93,6 +93,14 @@ export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) =
     return {save: url, display: new URL(url, baseUrl).toString()};
 };
 
+export interface URLTextFieldProps extends Omit<TextFieldProps, 'value' | 'onChange'> {
+    baseUrl?: string;
+    transformPathWithoutSlash?: boolean;
+    nullable?: boolean;
+    value: string | null;
+    onChange: (value: string | null) => void;
+}
+
 /**
  * A text field that displays and saves relative URLs as absolute relative to a given base URL (probably the site URL).
  *
@@ -102,13 +110,7 @@ export const formatUrl = (value: string, baseUrl?: string, nullable?: boolean) =
  * - Anchor links are displayed and saved as-is (e.g. `#test`)
  * - Values that don't look like URLs are displayed and saved as-is (e.g. `test`)
  */
-const URLTextField: React.FC<Omit<TextFieldProps, 'value' | 'onChange'> & {
-    baseUrl?: string;
-    transformPathWithoutSlash?: boolean;
-    nullable?: boolean;
-    value: string | null;
-    onChange: (value: string | null) => void;
-}> = ({baseUrl, value, transformPathWithoutSlash, nullable, onChange, ...props}) => {
+const URLTextField: React.FC<URLTextFieldProps> = ({baseUrl, value, transformPathWithoutSlash, nullable, onChange, ...props}) => {
     const [displayedUrl, setDisplayedUrl] = useState('');
     const {setFocusState} = useFocusContext();
 

@@ -1,6 +1,6 @@
+import clsx from 'clsx';
 import React from 'react';
 import Separator from './Separator';
-import clsx from 'clsx';
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -44,7 +44,9 @@ export const Heading6StylesGrey = clsx(
     'text-grey-900 dark:text-grey-500'
 );
 
-const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = ({
+export type HeadingProps = Heading1to5Props | Heading6Props | HeadingLabelProps
+
+const Heading: React.FC<HeadingProps> = ({
     level = 1,
     children,
     styles = '',
@@ -88,8 +90,8 @@ const Heading: React.FC<Heading1to5Props | Heading6Props | HeadingLabelProps> = 
     const Element = React.createElement(newElement, {className: className, key: 'heading-elem', ...props}, children);
 
     if (separator) {
-        let gap = (!level || level === 1) ? 2 : 1;
-        let bottomMargin = (level === 6) ? 2 : 3;
+        const gap = (!level || level === 1) ? 2 : 1;
+        const bottomMargin = (level === 6) ? 2 : 3;
         return (
             <div className={`gap-${gap} mb-${bottomMargin} flex flex-col`}>
                 {Element}

@@ -1,14 +1,14 @@
 import React from 'react';
 import Heading from '../global/Heading';
 
-interface Props {
+export interface SettingGroupHeaderProps {
     title?: React.ReactNode;
     description?: React.ReactNode;
     beta?: boolean;
     children?: React.ReactNode;
 }
 
-const SettingGroupHeader: React.FC<Props> = ({title, description, children, beta = false}) => {
+const SettingGroupHeader: React.FC<SettingGroupHeaderProps> = ({title, description, children, beta = false}) => {
     return (
         <div className="flex items-start justify-between gap-4">
             {(title || description) &&

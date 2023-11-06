@@ -1,7 +1,7 @@
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
 
-interface ListItemProps {
+export interface ListItemProps {
     id?: string;
     title?: React.ReactNode;
     detail?: React.ReactNode;

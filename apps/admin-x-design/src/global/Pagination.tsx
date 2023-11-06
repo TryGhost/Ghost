@@ -2,7 +2,7 @@ import React from 'react';
 import {PaginationData} from '../hooks/usePagination';
 import Icon from './Icon';
 
-type PaginationProps = PaginationData
+export type PaginationProps = PaginationData
 
 const Pagination: React.FC<PaginationProps> = ({page, limit, total, prevPage, nextPage}) => {
     // Detect loading state

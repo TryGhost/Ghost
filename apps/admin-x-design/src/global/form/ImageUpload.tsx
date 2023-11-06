@@ -1,11 +1,11 @@
-import FileUpload, {FileUploadProps} from './FileUpload';
-import Icon from '../Icon';
-import React, {MouseEventHandler} from 'react';
 import clsx from 'clsx';
+import React, {MouseEventHandler} from 'react';
+import Icon from '../Icon';
+import FileUpload, {FileUploadProps} from './FileUpload';
 
 type ImageFit = 'cover' | 'contain' | 'fill' | 'scale-down' | 'none';
 
-interface ImageUploadProps {
+export interface ImageUploadProps {
     id: string;
     children?: React.ReactNode;
     width?: string;

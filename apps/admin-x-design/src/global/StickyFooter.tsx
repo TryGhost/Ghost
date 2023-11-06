@@ -1,7 +1,7 @@
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
 
-interface StickyFooterProps {
+export interface StickyFooterProps {
     shiftY?: string;
     footerBgColorClass?: string;
     contentBgColorClass?: string;

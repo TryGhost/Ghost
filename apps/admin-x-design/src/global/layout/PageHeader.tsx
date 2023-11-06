@@ -1,7 +1,7 @@
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
 
-interface PageHeaderProps {
+export interface PageHeaderProps {
 
     /**
      * Use these to specifically place elements on the left | center | right of the header.

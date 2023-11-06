@@ -1,7 +1,7 @@
-import React, {HTMLProps} from 'react';
 import clsx from 'clsx';
+import React, {HTMLProps} from 'react';
 
-interface TableCellProps extends HTMLProps<HTMLTableCellElement> {
+export interface TableCellProps extends HTMLProps<HTMLTableCellElement> {
     padding?: boolean;
 }
 
