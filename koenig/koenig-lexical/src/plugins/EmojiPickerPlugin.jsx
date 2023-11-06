@@ -1,6 +1,7 @@
 import Portal from '../components/ui/Portal';
 import React from 'react';
 import emojiData from '@emoji-mart/data';
+import trackEvent from '../utils/analytics';
 import useTypeaheadTriggerMatch from '../hooks/useTypeaheadTriggerMatch';
 import {$createTextNode, $getSelection, $isRangeSelection, $isTextNode, COMMAND_PRIORITY_HIGH, KEY_DOWN_COMMAND} from 'lexical';
 import {LexicalTypeaheadMenuPlugin} from '@lexical/react/LexicalTypeaheadMenuPlugin';
@@ -96,6 +97,8 @@ export function EmojiPickerPlugin() {
             const shortcodeLength = emoji.id.length + 1; // +1 for the end colon
             const textNode = currentNode.spliceText(selection.anchor.offset - shortcodeLength, shortcodeLength, emoji.skins[0].native, true);
             textNode.setFormat(selection.format);
+
+            trackEvent('Emoji Inserted', {method: 'completed'});
         });
     }, [editor]);
 
@@ -138,6 +141,8 @@ export function EmojiPickerPlugin() {
             selection.insertNodes([emojiNode]);
 
             closeMenu();
+
+            trackEvent('Emoji Inserted', {method: 'selected'});
         });
     }, [editor]);
 
