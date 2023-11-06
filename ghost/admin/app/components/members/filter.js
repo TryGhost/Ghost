@@ -1,7 +1,7 @@
 import Component from '@glimmer/component';
 import moment from 'moment-timezone';
 import nql from '@tryghost/nql-lang';
-import {AUDIENCE_FEEDBACK_FILTER, CREATED_AT_FILTER, EMAIL_CLICKED_FILTER, EMAIL_COUNT_FILTER, EMAIL_FILTER, EMAIL_OPENED_COUNT_FILTER, EMAIL_OPENED_FILTER, EMAIL_OPEN_RATE_FILTER, EMAIL_SENT_FILTER, LABEL_FILTER, LAST_SEEN_FILTER, NAME_FILTER, NEWSLETTERS_FILTER, NEXT_BILLING_DATE_FILTER, OFFERS_FILTER, PLAN_INTERVAL_FILTER, SIGNUP_ATTRIBUTION_FILTER, STATUS_FILTER, SUBSCRIBED_FILTER, SUBSCRIPTION_ATTRIBUTION_FILTER, SUBSCRIPTION_START_DATE_FILTER, SUBSCRIPTION_STATUS_FILTER, TIER_FILTER} from './filters';
+import {AUDIENCE_FEEDBACK_FILTER, CREATED_AT_FILTER, EMAIL_CLICKED_FILTER, EMAIL_COUNT_FILTER, EMAIL_FILTER, EMAIL_OPENED_COUNT_FILTER, EMAIL_OPENED_FILTER, EMAIL_OPEN_RATE_FILTER, EMAIL_SENT_FILTER, LABEL_FILTER, LAST_SEEN_FILTER, NAME_FILTER, NEWSLETTERS_FILTERS, NEXT_BILLING_DATE_FILTER, OFFERS_FILTER, PLAN_INTERVAL_FILTER, SIGNUP_ATTRIBUTION_FILTER, STATUS_FILTER, SUBSCRIBED_FILTER, SUBSCRIPTION_ATTRIBUTION_FILTER, SUBSCRIPTION_START_DATE_FILTER, SUBSCRIPTION_STATUS_FILTER, TIER_FILTER} from './filters';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
@@ -23,6 +23,12 @@ const FILTER_GROUPS = [
             LAST_SEEN_FILTER,
             CREATED_AT_FILTER,
             SIGNUP_ATTRIBUTION_FILTER
+        ]
+    },
+    {
+        name: 'Newsletters',
+        filters: [
+            NEWSLETTERS_FILTERS
         ]
     },
     {
@@ -52,6 +58,15 @@ const FILTER_GROUPS = [
 ];
 
 const FILTER_PROPERTIES = FILTER_GROUPS.flatMap(group => group.filters.map((f) => {
+    if (typeof f === 'function') {
+        return (options) => {
+            return f({
+                ...options,
+                group: group.name
+            });
+        };
+    }
+
     f.group = group.name;
     return f;
 }));
@@ -148,16 +163,33 @@ export default class MembersFilter extends Component {
     get filterProperties() {
         let availableFilters = FILTER_PROPERTIES;
 
+        // Convert the method filters to properties
+        availableFilters = availableFilters.flatMap((filter) => {
+            if (typeof filter === 'function') {
+                const filters = filter({
+                    newsletters: this.newsletters ?? [],
+                    feature: this.feature
+                });
+                if (Array.isArray(filters)) {
+                    return filters;
+                }
+                return [filters];
+            }
+            return [filter];
+        });
+
         // find list of newsletters from store and add them to filter list if there are more than one newsletter
         // it also removes the 'subscribed' filter from the list as that would unsubscribe members from all newsletters, instead replace it with a filter for each newsletter
-        if (this.newsletters?.length > 1) {
-            // remove the 'subscribed' filter from the list
-            availableFilters = availableFilters.filter(prop => prop.name !== 'subscribed');
-            // find the index of the 'basic' group and insert the 'multiple newsletters' filter after it
-            const indexes = availableFilters.map((obj, index) => (obj.group === 'Basic' ? index : null)).filter(i => i !== null);
-            const lastIndex = indexes.pop();
-            availableFilters.splice(lastIndex + 1, 0, ...NEWSLETTERS_FILTER(this.newsletters));
-        }
+        // if (this.newsletters?.length > 1) {
+        //     // remove the 'subscribed' filter from the list
+        //     //availableFilters = availableFilters.filter(prop => prop.name !== 'subscribed');
+        //
+        //     // find the index of the 'basic' group and insert the 'multiple newsletters' filter after it
+        //     const indexes = availableFilters.map((obj, index) => (obj.group === 'Basic' ? index : null)).filter(i => i !== null);
+        //     const lastIndex = indexes.pop();
+        //     availableFilters.splice(lastIndex + 1, 0, ...NEWSLETTERS_FILTER(this.newsletters));
+        // }
+
         // only add the offers filter if there are any offers
         if (this.offers.length > 0) {
             availableFilters = availableFilters.concat(OFFERS_FILTER);
