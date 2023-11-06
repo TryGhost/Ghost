@@ -8,6 +8,11 @@ import {useEffect} from 'react';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
+const createRedemptionFilterUrl = (id: string): string => {
+    const baseHref = '/ghost/#/members';
+    return `${baseHref}?filter=${encodeURIComponent('offer_redemptions:' + id)}`;
+};
+
 const OfferCard: React.FC<{name: string, type: OfferType, onClick: ()=>void}> = ({name, type, onClick}) => {
     let discountColor = '';
 
@@ -36,7 +41,8 @@ const OfferCard: React.FC<{name: string, type: OfferType, onClick: ()=>void}> = 
         </div>
         <div className='flex flex-col items-center text-xs'>
             <span className='font-medium'>Bronze monthly — First payment</span>
-            <a className='text-grey-700 hover:underline' href="/ghost/#/members">4 redemptions</a>
+            {/* TODO: pass in actual offer ID */}
+            <a className='text-grey-700 hover:underline' href={createRedemptionFilterUrl('fda10d177a4f5be094fb4a84')}>4 redemptions</a>
         </div>
     </div>;
 };
@@ -83,6 +89,7 @@ const OffersModal = () => {
                 <h1 className='mt-12 border-b border-b-grey-300 pb-2.5 text-3xl'>Active offers</h1>
             </header>
             <div className='mt-8 grid grid-cols-3 gap-6'>
+                {/* TODO replace 123 with actual offer ID */}
                 <OfferCard name='Black friday' type='percent' onClick={() => handleOfferEdit('123')} />
                 <OfferCard name='Buy this right now' type='fixed' onClick={() => handleOfferEdit('123')} />
                 <OfferCard name='Desperate Sale!' type='trial' onClick={() => handleOfferEdit('123')} />
