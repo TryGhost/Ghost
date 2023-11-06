@@ -1,8 +1,6 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
 <div
     class="gh-editor-feature-image-container"
-    {{on "mouseover" (fn (mut this.isHovered) true)}}
-    {{on "mouseleave" (fn (mut this.isHovered) false)}}
 >
 {{!-- template-lint-enable no-invalid-interactive --}}
     <GhUploader
@@ -39,10 +37,6 @@
             {{#if @isHidden}}
                 <span class="gh-editor-hidden-indicator" data-tooltip="Feature image and post title are hidden on page">
                     {{svg-jar "eye-closed"}}
-                </span>
-            {{else}}
-                <span class="gh-editor-feature-image-indicator" data-tooltip="A feature image is publicly visible to anyone">
-                    {{svg-jar "feature-image"}}
                 </span>
             {{/if}}
             <div class="gh-editor-feature-image">
@@ -87,7 +81,7 @@
             </div>
         {{else}}
             {{!-- no-image state --}}
-            <div class="flex flex-row items-center {{if this.hideButton "invisible"}}">
+            <div class="flex flex-row items-center">
                 {{#if this.canDrop}}
                     <div class="gh-editor-feature-image-add-button"><span>Drop to upload feature image</span></div>
                 {{else}}
