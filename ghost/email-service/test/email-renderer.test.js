@@ -1691,8 +1691,6 @@ describe('Email renderer', function () {
                 options
             );
 
-            // console.log(response.html);
-
             assert.equal(response.html.includes('width="248" height="248"'), true, 'Should not replace img height and width with auto from css');
             assert.equal(response.html.includes('width="auto" height="auto"'), false, 'Should not replace img height and width with auto from css');
         });

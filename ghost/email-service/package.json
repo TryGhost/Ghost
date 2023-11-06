@@ -36,7 +36,7 @@
     "bson-objectid": "2.0.4",
     "cheerio": "0.22.0",
     "handlebars": "4.7.8",
-    "juice": "9.1.0",
+    "juice": "cmraible/juice#fix-auto-attributes",
     "moment-timezone": "0.5.23"
   }
 }
