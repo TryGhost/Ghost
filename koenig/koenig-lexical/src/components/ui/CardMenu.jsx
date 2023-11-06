@@ -14,12 +14,12 @@ export const CardMenuSection = ({label, children, ...props}) => {
     return (
         <li className="flex shrink-0 flex-col justify-center border-t border-grey-200 text-[1.1rem] font-semibold tracking-wide text-grey-600 first-of-type:border-t-0 dark:border-grey-900 dark:text-grey-600" role="separator" {...props}>
             <span
-                className="flex items-center justify-between px-5 pb-2 pt-3 uppercase"
+                className="flex items-center justify-between px-4 pb-2 pt-3 uppercase"
                 data-card-menu-section="label"
                 style={{minWidth: 'calc(100% - 3.2rem)'}}
             >{label}
                 {helpLink && <a href={helpLink} rel="noreferrer" target='_blank'>
-                    <ExternalLinkIcon className="h-6 w-6 cursor-pointer p-1 transition-all hover:text-green-600" />
+                    <ExternalLinkIcon className="-m-1 h-6 w-6 cursor-pointer p-1 transition-all hover:text-green-600" />
                 </a>}
             </span>
             <ul className="md:grid md:gap-y-[.2rem] md:px-2" role="menu">
