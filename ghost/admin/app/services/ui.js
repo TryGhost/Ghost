@@ -48,7 +48,6 @@ export default class UiService extends Service {
 
     @inject config;
 
-    @tracked contextualNavMenu = null;
     @tracked isFullScreen = false;
     @tracked mainClass = '';
     @tracked showMobileMenu = false;

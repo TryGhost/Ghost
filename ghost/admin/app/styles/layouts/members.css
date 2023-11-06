@@ -1862,22 +1862,8 @@ p.gh-members-import-errordetail:first-of-type {
     width: 100%;
 }
 
-.gh-email-design-typography .gh-setting-dropdown {
-    margin: 0;
-    padding: 0 8px 0 8px;
-}
-
-.gh-email-design-typography-wrapper.header .gh-setting-dropdown {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-}
-
 .gh-email-design-typography-wrapper.header .ember-power-select-status-icon {
     right: 16px !important;
-}
-
-.gh-email-design-typography .gh-setting-dropdown-list .ember-power-select-option {
-    padding: 2px 8px;
 }
 
 .gh-email-design-typography-wrapper.header .gh-btn-group {

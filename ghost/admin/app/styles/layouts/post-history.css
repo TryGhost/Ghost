@@ -29,6 +29,27 @@
     background: var(--whitegrey-l2);
 }
 
+.user-list-item-figure {
+    position: relative;
+    display: block;
+    width: 36px;
+    height: 36px;
+    margin-right: 12px;
+    margin-left: 3px;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 100%;
+}
+
+.user-list-item-figure img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
 .gh-post-history .user-list-item-figure {
     width: 2.8rem;
     height: 2.8rem;
