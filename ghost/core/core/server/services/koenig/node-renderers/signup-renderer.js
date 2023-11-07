@@ -10,6 +10,7 @@ function cardTemplate(nodeData) {
     const buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : ``;
     const alignment = nodeData.alignment === 'center' ? 'kg-align-center' : '';
     const backgroundImageStyle = nodeData.backgroundColor !== 'accent' && (!nodeData.backgroundImageSrc || nodeData.layout === 'split') ? `background-color: ${nodeData.backgroundColor}` : '';
+    const useTextColor = !nodeData.backgroundColor === 'transparent';
 
     const imgTemplate = nodeData.backgroundImageSrc ? `
         <picture><img class="kg-signup-card-image" src="${nodeData.backgroundImageSrc}" alt="" /></picture>
@@ -25,10 +26,10 @@ function cardTemplate(nodeData) {
                     <span class="kg-signup-card-button-loading">${loadingIcon()}</span>
                 </button>
             </div>
-            <div class="kg-signup-card-success" style="color: ${nodeData.textColor};">
+            <div class="kg-signup-card-success" ${useTextColor ? `style="color: ${nodeData.textColor};` : ''}>
                 ${nodeData.successMessage || 'Thanks! Now check your email to confirm.'}
             </div>
-            <div class="kg-signup-card-error" style="color: ${nodeData.textColor};" data-members-error></div>
+            <div class="kg-signup-card-error" ${useTextColor ? `style="color: ${nodeData.textColor};` : ''} data-members-error></div>
         </form>
         `;
 
@@ -38,10 +39,10 @@ function cardTemplate(nodeData) {
             <div class="kg-signup-card-content">
                 ${nodeData.layout === 'split' ? imgTemplate : ''}
                 <div class="kg-signup-card-text ${alignment}">
-                    <h2 class="kg-signup-card-heading" style="color: ${nodeData.textColor};">${nodeData.header}</h2>
-                    <p class="kg-signup-card-subheading" style="color: ${nodeData.textColor};">${nodeData.subheader}</p>
+                    <h2 class="kg-signup-card-heading" ${useTextColor ? `style="color: ${nodeData.textColor};` : ''}>${nodeData.header}</h2>
+                    <p class="kg-signup-card-subheading" ${useTextColor ? `style="color: ${nodeData.textColor};` : ''}>${nodeData.subheader}</p>
                     ${formTemplate}
-                    <p class="kg-signup-card-disclaimer" style="color: ${nodeData.textColor};">${nodeData.disclaimer}</p>
+                    <p class="kg-signup-card-disclaimer" ${useTextColor ? `style="color: ${nodeData.textColor};` : ''}>${nodeData.disclaimer}</p>
                 </div>
             </div>
         </div>
