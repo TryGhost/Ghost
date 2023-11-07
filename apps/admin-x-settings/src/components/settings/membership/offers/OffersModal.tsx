@@ -18,7 +18,7 @@ const createRedemptionFilterUrl = (id: string): string => {
     return `${baseHref}?filter=${encodeURIComponent('offer_redemptions:' + id)}`;
 };
 
-const OfferCard: React.FC<{amount: number, cadence: string, currency: string, duration: string, name: string, offerTier: Tier | undefined, redemptionCount: number, type: OfferType, onClick: ()=>void}> = ({amount, cadence, currency, duration, name, offerTier, redemptionCount, type, onClick}) => {
+const OfferCard: React.FC<{amount: number, cadence: string, currency: string, duration: string, name: string, offerId: string, offerTier: Tier | undefined, redemptionCount: number, type: OfferType, onClick: ()=>void}> = ({amount, cadence, currency, duration, name, offerId, offerTier, redemptionCount, type, onClick}) => {
     let discountColor = '';
     let discountOffer = '';
     const originalPrice = cadence === 'month' ? offerTier?.monthly_price ?? 0 : offerTier?.yearly_price ?? 0;
@@ -58,8 +58,7 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
         </div>
         <div className='flex flex-col items-center text-xs'>
             <span className='font-medium'>{tierName}</span>
-            {/* TODO: pass in actual offer ID */}
-            <a className='text-grey-700 hover:underline' href={createRedemptionFilterUrl('fda10d177a4f5be094fb4a84')}>{redemptionCount} redemptions</a>
+            <a className='text-grey-700 hover:underline' href={createRedemptionFilterUrl(offerId)}>{redemptionCount} redemptions</a>
         </div>
     </div>;
 };
@@ -125,7 +124,6 @@ const OffersModal = () => {
                 {offers.filter(offer => offer.status === selectedTab).map((offer) => {
                     const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
 
-                    {/* TODO replace 123 with actual offer ID */}
                     return (
                         <OfferCard
                             key={offer?.id}
@@ -134,10 +132,11 @@ const OffersModal = () => {
                             currency={offer?.currency || 'USD'}
                             duration={offer?.duration}
                             name={offer?.name}
+                            offerId={offer?.id}
                             offerTier={offerTier}
                             redemptionCount={offer?.redemption_count}
                             type={offer?.type as OfferType}
-                            onClick={() => handleOfferEdit('123')}
+                            onClick={() => handleOfferEdit(offer?.id)}
                         />
                     );
                 })}
