@@ -23568,9 +23568,9 @@ moment@2.24.0, moment@2.27.0, moment@2.29.1, moment@2.29.3, moment@2.29.4, "mome
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
   integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
 
-monobundle@TryGhost/monobundle#44fdf2c8e304e797a04858bfd7339b2a1fa47441:
+monobundle@TryGhost/monobundle#811679e94b75f82a0fb1d00a11e6e0b9f6e5e44a:
   version "0.1.0"
-  resolved "https://codeload.github.com/TryGhost/monobundle/tar.gz/44fdf2c8e304e797a04858bfd7339b2a1fa47441"
+  resolved "https://codeload.github.com/TryGhost/monobundle/tar.gz/811679e94b75f82a0fb1d00a11e6e0b9f6e5e44a"
   dependencies:
     detect-indent "6.1.0"
     detect-newline "3.1.0"
