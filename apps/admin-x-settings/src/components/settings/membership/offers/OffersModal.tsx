@@ -25,7 +25,6 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
     let updatedPrice = originalPrice;
     let tierName = offerTier?.name + ' ' + (cadence === 'month' ? 'Monthly' : 'Yearly') + ' — ' + (duration === 'once' ? 'First payment' : duration === 'repeating' ? 'Repeating' : 'Forever');
     let originalPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(originalPrice));
-    const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(updatedPrice));
 
     switch (type) {
     case 'percent':
@@ -47,6 +46,8 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
         break;
     }
 
+    const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(updatedPrice));
+  
     return (
         <div className='flex cursor-pointer flex-col gap-6 border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800' onClick={onClick}>
             <div className='flex items-center justify-between'>

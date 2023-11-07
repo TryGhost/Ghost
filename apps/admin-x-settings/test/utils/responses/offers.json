@@ -39,6 +39,26 @@
                 "id": "645453f4d254799990dd0e22",
                 "name": "Supporter"
             }
+        },
+        {
+            "id": "6487f0c364fca78ec2fff600",
+            "name": "Third offer",
+            "code": "third-offer",
+            "display_title": "Third offer",
+            "display_description": "",
+            "type": "percent",
+            "cadence": "month",
+            "amount": 12,
+            "duration": "repeating",
+            "duration_in_months": 3,
+            "currency_restriction": false,
+            "currency": null,
+            "status": "archived",
+            "redemption_count": 0,
+            "tier": {
+                "id": "645453f4d254799990dd0e22",
+                "name": "Supporter"
+            }
         }
     ]
 }
