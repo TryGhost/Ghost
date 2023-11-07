@@ -127,7 +127,9 @@ const OffersModal = () => {
                 {offers.filter(offer => offer.status === selectedTab).map((offer) => {
                     const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
 
-                    if(!offerTier) return null;
+                    if (!offerTier) {
+                        return null;
+                    }
 
                     return (
                         <OfferCard
