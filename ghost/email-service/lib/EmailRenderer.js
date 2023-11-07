@@ -369,7 +369,8 @@ class EmailRenderer {
         }
 
         // Record the original image width and height attributes before inlining the styles with juice
-        // If any images have `width: auto` or `height: auto` set via CSS, juice will explicitly set the width/height to `auto` on the <img /> tag
+        // If any images have `width: auto` or `height: auto` set via CSS, 
+        // juice will explicitly set the width/height attributes to `auto` on the <img /> tag
         // This is not supported by Outlook, so we need to reset the width/height attributes to the original values
         // Other clients will ignore the width/height attributes and use the inlined CSS instead
         $ = cheerio.load(html);
@@ -390,12 +391,15 @@ class EmailRenderer {
         // Reset any `height="auto"` or `width="auto"` attributes to their original values before inlining CSS
         const imageTags = $('img').get();
         for (let i = 0; i < imageTags.length; i += 1) {
-            // if the newImage width or height is set to 'auto', reset to its original value
-            if (imageTags[i].attribs.width === 'auto' && originalImageSizes[i].width) {
-                imageTags[i].attribs.width = originalImageSizes[i].width;
-            }
-            if (imageTags[i].attribs.height === 'auto' && originalImageSizes[i].height) {
-                imageTags[i].attribs.height = originalImageSizes[i].height;
+            // There shouldn't be any issues with consistency between these two lists, but just in case...
+            if (imageTags[i].attribs.src === originalImageSizes[i].src) {
+                // if the image width or height is set to 'auto', reset to its original value
+                if (imageTags[i].attribs.width === 'auto' && originalImageSizes[i].width) {
+                    imageTags[i].attribs.width = originalImageSizes[i].width;
+                }
+                if (imageTags[i].attribs.height === 'auto' && originalImageSizes[i].height) {
+                    imageTags[i].attribs.height = originalImageSizes[i].height;
+                }
             }
         }
 
