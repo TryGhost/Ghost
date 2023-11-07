@@ -15,7 +15,9 @@
     "test:types": "tsc --noEmit",
     "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
     "lint": "yarn lint:code && yarn lint:test",
-    "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache"
+    "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "files": [
     "es",
@@ -24,6 +26,15 @@
     "tailwind.config.cjs"
   ],
   "devDependencies": {
+    "@storybook/addon-essentials": "7.4.0",
+    "@storybook/addon-interactions": "7.4.0",
+    "@storybook/addon-links": "7.4.0",
+    "@storybook/addon-styling": "1.3.7",
+    "@storybook/blocks": "7.4.0",
+    "@storybook/react": "7.4.0",
+    "@storybook/react-vite": "7.4.0",
+    "@storybook/testing-library": "0.2.2",
+    "@vitejs/plugin-react": "4.1.1",
     "c8": "8.0.1",
     "esbuild": "^0.19.5",
     "mocha": "10.2.0",
@@ -34,7 +45,10 @@
     "vite": "^4.5.0"
   },
   "dependencies": {
-    "clsx": "^2.0.0"
+    "@tailwindcss/forms": "0.5.6",
+    "@tailwindcss/line-clamp": "0.4.4",
+    "clsx": "^2.0.0",
+    "tailwindcss": "3.3.5"
   },
   "peerDependencies": {
     "react": "^18.2.0"

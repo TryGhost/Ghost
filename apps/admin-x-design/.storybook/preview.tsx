@@ -1,13 +1,11 @@
 import React from 'react';
 
-import '../src/styles/demo.css';
-import type { Preview } from "@storybook/react";
-import '../src/admin-x-ds/providers/DesignSystemProvider';
-import DesignSystemProvider from '../src/admin-x-ds/providers/DesignSystemProvider';
-import adminxTheme from './adminx-theme';
-import { themes } from '@storybook/theming';
+import '../styles.css';
+import './storybook.css';
 
-import '../src/admin-x-ds/assets/styles/storybook.css';
+import type { Preview } from "@storybook/react";
+import DesignSystemProvider from '../src/providers/DesignSystemProvider';
+import adminxTheme from './adminx-theme';
 
 const preview: Preview = {
 	parameters: {
@@ -33,12 +31,12 @@ const preview: Preview = {
 			let {scheme} = context.globals;
 
 			return (
-			<div className={`admin-x-settings ${scheme === 'dark' ? 'dark' : ''}`} style={{
+			<div className={`admin-x-design admin-x-base ${scheme === 'dark' ? 'dark' : ''}`} style={{
 				padding: '24px',
 				background: (scheme === 'dark' ? '#131416' : '')
 			}}>
 				{/* 👇 Decorators in Storybook also accept a function. Replace <Story/> with Story() to enable it  */}
-				<DesignSystemProvider>
+				<DesignSystemProvider fetchKoenigLexical={async () => {}}>
 					<Story />
 				</DesignSystemProvider>
 			</div>);
