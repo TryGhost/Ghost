@@ -1075,6 +1075,99 @@ test.describe('Card behaviour', async () => {
                 focusPath: [1, 0, 0]
             });
         });
+
+        test('at start of list after a card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('---');
+            await page.keyboard.type('* Test');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <ul>
+                    <li value="1" dir="ltr"><span data-lexical-text="true">Test</span></li>
+                </ul>
+            `);
+
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('Backspace');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <p dir="ltr"><span data-lexical-text="true">Test</span></p>
+            `);
+        });
+
+        test('at start of a quote block after a card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('---');
+            await page.keyboard.type('> Test');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <blockquote dir="ltr"><span data-lexical-text="true">Test</span></blockquote>
+            `);
+
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('Backspace');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <p dir="ltr"><span data-lexical-text="true">Test</span></p>
+            `);
+        });
+
+        test('at start of an aside after a card', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('---');
+            await page.keyboard.type('> Test');
+            await page.keyboard.press('Control+q');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <aside dir="ltr"><span data-lexical-text="true">Test</span></aside>
+            `);
+
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('ArrowLeft');
+            await page.keyboard.press('Backspace');
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                    <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="horizontalrule">
+                        <hr>
+                    </div>
+                </div>
+                <p dir="ltr"><span data-lexical-text="true">Test</span></p>
+            `);
+        });
     });
 
     test.describe('DELETE', function () {

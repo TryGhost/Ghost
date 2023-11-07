@@ -981,8 +981,24 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 }
                             }
 
-                            // delete any previous card keeping caret in place
                             const anchorNodeParent = anchorNode.getParent();
+
+                            // convert to paragraph if backspace is at start of the quote/aside block
+                            if (
+                                atStartOfElement &&
+                                ($isQuoteNode(anchorNodeParent) || $isAsideNode(anchorNodeParent))
+                            ) {
+                                const paragraph = $createParagraphNode();
+                                anchorNodeParent.getChildren().forEach((child) => {
+                                    paragraph.append(child);
+                                });
+                                anchorNodeParent.replace(paragraph);
+                                paragraph.selectStart();
+                                event.preventDefault();
+                                return true;
+                            }
+
+                            // delete any previous card keeping caret in place
                             if (
                                 atStartOfElement &&
                                 $isDecoratorNode(previousSibling) &&
