@@ -92,23 +92,23 @@ function convertSpanElement(lexicalNode, domNode) {
     // Word uses span tags + "Highlight" class for highlighted text
     const hasHighlightClass = span.classList.contains('Highlight') || span.parentElement?.classList.contains('Highlight');
 
-    if (hasBoldFontWeight) {
+    if (hasBoldFontWeight && !lexicalNode.hasFormat('bold')) {
         lexicalNode = lexicalNode.toggleFormat('bold');
     }
 
-    if (hasItalicFontStyle) {
+    if (hasItalicFontStyle && !lexicalNode.hasFormat('italic')) {
         lexicalNode = lexicalNode.toggleFormat('italic');
     }
 
-    if (hasUnderlineTextDecoration) {
+    if (hasUnderlineTextDecoration && !lexicalNode.hasFormat('underline')) {
         lexicalNode = lexicalNode.toggleFormat('underline');
     }
 
-    if (hasStrikethroughClass) {
+    if (hasStrikethroughClass && !lexicalNode.hasFormat('strikethrough')) {
         lexicalNode = lexicalNode.toggleFormat('strikethrough');
     }
 
-    if (hasHighlightClass) {
+    if (hasHighlightClass && !lexicalNode.hasFormat('highlight')) {
         lexicalNode = lexicalNode.toggleFormat('highlight');
     }
 
