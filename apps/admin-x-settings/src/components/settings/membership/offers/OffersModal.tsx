@@ -90,9 +90,9 @@ const OffersModal = () => {
     const [selectedTab, setSelectedTab] = useState('active');
   
     const handleOfferEdit = (id:string) => {
-          // TODO: implement
-          modal.remove();
-          updateRoute(`offers/${id}`);
+        // TODO: implement
+        modal.remove();
+        updateRoute(`offers/${id}`);
     };
 
     return <Modal 
@@ -125,8 +125,8 @@ const OffersModal = () => {
                 {offers.filter(offer => offer.status === selectedTab).map((offer) => {
                     const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
 
+                    {/* TODO replace 123 with actual offer ID */}
                     return (
-                        {/* TODO replace 123 with actual offer ID */}
                         <OfferCard
                             key={offer?.id}
                             amount={offer?.amount}
