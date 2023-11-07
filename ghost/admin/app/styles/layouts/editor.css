@@ -593,6 +593,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 1em;
     height: 1em;
     margin-left: 24px;
+    margin-bottom: 2px;
     line-height: 1.2;
 }
 
@@ -1057,14 +1058,6 @@ figure {
     padding-right: 8px; /* extra padding used for dynamic positioning with js */
 }
 
-.gh-announcement-editor {
-    width: 100%;
-}
-
-.gh-announcement-editor div {
-    width: 100%;
-}
-
 /* Labs
 /* ---------------------------------------------------------- */
 
@@ -1109,4 +1102,12 @@ figure {
 
 .gh-editor-hidden-indicator svg {
     height: 2.4rem;
+}
+
+.gh-setting-error {
+    margin-top: 1em;
+    line-height: 1.3em;
+    color: var(--red);
+    font-weight: 300;
+    letter-spacing: 0.3px;
 }

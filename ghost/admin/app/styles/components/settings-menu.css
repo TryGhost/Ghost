@@ -535,13 +535,6 @@ li.nav-list-item .for-switch.x-small label {
     transform: translate3d(205px, 0px, 0px);
 }
 
-
-/* Badges
-/* ---------------------------------------------------------- */
-.gh-setting-title .gh-badge {
-    font-size: 13px;
-}
-
 /* Email
 /* ---------------------------------------------------------- */
 .settings-menu-email-button span {

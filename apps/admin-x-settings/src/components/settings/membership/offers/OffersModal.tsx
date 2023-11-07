@@ -13,7 +13,12 @@ import {useEffect, useState} from 'react';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
-const OfferCard: React.FC<{amount: number, cadence: string, currency: string, duration: string, name: string, offerTier: Tier | undefined, redemptionCount: number, type: OfferType}> = ({amount, cadence, currency, duration, name, offerTier, redemptionCount, type}) => {
+const createRedemptionFilterUrl = (id: string): string => {
+    const baseHref = '/ghost/#/members';
+    return `${baseHref}?filter=${encodeURIComponent('offer_redemptions:' + id)}`;
+};
+
+const OfferCard: React.FC<{amount: number, cadence: string, currency: string, duration: string, name: string, offerTier: Tier | undefined, redemptionCount: number, type: OfferType, onClick: ()=>void}> = ({amount, cadence, currency, duration, name, offerTier, redemptionCount, type, onClick}) => {
     let discountColor = '';
     let discountOffer = '';
     const originalPrice = cadence === 'month' ? offerTier?.monthly_price ?? 0 : offerTier?.yearly_price ?? 0;
@@ -43,7 +48,7 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
     }
 
     return <div className='flex flex-col items-center gap-6 border border-transparent bg-grey-100 p-5 text-center transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800'>
-        <h2 className='text-[1.6rem]'>{name}</h2>
+        <h2 className='cursor-pointer text-[1.6rem]' onClick={onClick}>{name}</h2>
         <div className=''>
             <div className='flex gap-3 text-sm uppercase leading-none'>
                 <span className={`font-semibold ${discountColor}`}>{discountOffer}</span>
@@ -53,7 +58,8 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
         </div>
         <div className='flex flex-col items-center text-xs'>
             <span className='font-medium'>{tierName}</span>
-            <a className='text-grey-700 hover:underline' href="/ghost/#/members">{redemptionCount} redemptions</a>
+            {/* TODO: pass in actual offer ID */}
+            <a className='text-grey-700 hover:underline' href={createRedemptionFilterUrl('fda10d177a4f5be094fb4a84')}>{redemptionCount} redemptions</a>
         </div>
     </div>;
 };
@@ -82,6 +88,12 @@ const OffersModal = () => {
         {id: 'archived', title: 'Archived'}
     ];
     const [selectedTab, setSelectedTab] = useState('active');
+  
+    const handleOfferEdit = (id:string) => {
+          // TODO: implement
+          modal.remove();
+          updateRoute(`offers/${id}`);
+    };
 
     return <Modal 
         afterClose={() => {
@@ -105,7 +117,7 @@ const OffersModal = () => {
                         width='wide'
                         onTabChange={setSelectedTab}
                     />
-                    <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' />
+                    <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
                 </div>
                 <h1 className='mt-12 border-b border-b-grey-300 pb-2.5 text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
             </header>
@@ -114,6 +126,7 @@ const OffersModal = () => {
                     const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
 
                     return (
+                        {/* TODO replace 123 with actual offer ID */}
                         <OfferCard
                             key={offer?.id}
                             amount={offer?.amount}
@@ -124,6 +137,7 @@ const OffersModal = () => {
                             offerTier={offerTier}
                             redemptionCount={offer?.redemption_count}
                             type={offer?.type as OfferType}
+                            onClick={() => handleOfferEdit('123')}
                         />
                     );
                 })}
