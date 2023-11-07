@@ -345,7 +345,7 @@ const Modal: React.FC<ModalProps> = ({
 
     contentClasses = clsx(
         contentClasses,
-        ((size === 'full' || size === 'bleed') && 'grow')
+        ((size === 'full' || size === 'bleed' || height === 'full' || typeof height === 'number') && 'grow')
     );
 
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -354,9 +354,10 @@ const Modal: React.FC<ModalProps> = ({
         }
     };
 
-    let modalStyles:{maxWidth?: string; maxHeight?: string;} = {};
+    let modalStyles:{width?: string; height?: string; maxWidth?: string; maxHeight?: string;} = {};
 
     if (typeof width === 'number') {
+        modalStyles.width = '100%';
         modalStyles.maxWidth = width + 'px';
     } else if (width === 'full') {
         modalClasses = clsx(
@@ -366,6 +367,7 @@ const Modal: React.FC<ModalProps> = ({
     }
 
     if (typeof height === 'number') {
+        modalStyles.height = '100%';
         modalStyles.maxHeight = height + 'px';
     } else if (height === 'full') {
         modalClasses = clsx(
