@@ -39,7 +39,17 @@ export default (function viteConfig() {
                 include: [/packages/, /node_modules/]
             },
             rollupOptions: {
-                external: /node_modules/
+                external: (source) => {
+                    if (source.startsWith('.')) {
+                        return false;
+                    }
+
+                    if (source.includes('node_modules')) {
+                        return true;
+                    }
+
+                    return !source.includes(__dirname);
+                }
             }
         },
         test: {
