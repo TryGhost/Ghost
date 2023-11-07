@@ -16,20 +16,25 @@ function useSlashCardMenu(editor) {
     const [commandParams, setCommandParams] = React.useState([]);
     const [cardMenu, setCardMenu] = React.useState({});
     const [selectedItemIndex, setSelectedItemIndex] = React.useState(0);
+    const [scrollToSelectedItem, setScrollToSelectedItem] = React.useState(false);
     const cachedRange = React.useRef(null);
     const containerRef = React.useRef(null);
     const {cardConfig} = React.useContext(KoenigComposerContext);
 
     function setMenuPosition(elem) {
-        const focusedElementRect = elem.getBoundingClientRect();
+        const elemRect = elem.getBoundingClientRect();
+        const containerRect = elem.parentNode.getBoundingClientRect();
         const menuRect = containerRef.current.getBoundingClientRect();
-        const wouldBeOffscreenBottom = focusedElementRect.bottom + menuRect.height > window.innerHeight;
-        const wouldBeOffscreenTop = focusedElementRect.top - menuRect.height < 0;
-        
+
+        const wouldBeOffscreenBottom = elemRect.bottom - containerRect.top + menuRect.height > window.innerHeight;
+        const wouldBeOffscreenTop = elemRect.top - menuRect.height < 0;
+
         if (wouldBeOffscreenBottom && !wouldBeOffscreenTop) {
-            setPosition({top: null, left: focusedElementRect.left, bottom: window.innerHeight - focusedElementRect.top});
+            const bottom = containerRect.height - elem.offsetTop;
+            setPosition({top: null, left: 0, bottom});
         } else {
-            setPosition({top: focusedElementRect.bottom, left: focusedElementRect.left, bottom: null});
+            const top = elem.offsetTop + elemRect.height;
+            setPosition({top, left: 0, bottom: null});
         }
     }
 
@@ -64,6 +69,7 @@ function useSlashCardMenu(editor) {
         setIsShowingMenu(false);
         setQuery('');
         setCommandParams([]);
+        setScrollToSelectedItem(false);
         cachedRange.current = null;
     }, [setIsShowingMenu]);
 
@@ -254,6 +260,7 @@ function useSlashCardMenu(editor) {
             } else {
                 setSelectedItemIndex(selectedItemIndex - 1);
             }
+            setScrollToSelectedItem(true);
 
             event.preventDefault();
             return true;
@@ -265,6 +272,7 @@ function useSlashCardMenu(editor) {
             } else {
                 setSelectedItemIndex(selectedItemIndex + 1);
             }
+            setScrollToSelectedItem(true);
 
             event.preventDefault();
             return true;
@@ -337,7 +345,7 @@ function useSlashCardMenu(editor) {
         if (!containerRef || !containerRef.current) {
             return;
         }
-        
+
         setMenuPosition(getSelectionElement());
     }, [isShowingMenu]);
 
@@ -347,12 +355,13 @@ function useSlashCardMenu(editor) {
 
     if (isShowingMenu) {
         return (
-            <div ref={containerRef} className="fixed -left-2 z-50 mt-2" style={position} data-kg-slash-container>
+            <div ref={containerRef} className="absolute -left-2 z-50 mt-2" style={position} data-kg-slash-container>
                 <SlashMenu>
                     <CardMenu
                         closeMenu={closeMenu}
                         insert={insert}
                         menu={cardMenu.menu}
+                        scrollToSelectedItem={scrollToSelectedItem}
                         selectedItemIndex={selectedItemIndex}
                     />
                 </SlashMenu>

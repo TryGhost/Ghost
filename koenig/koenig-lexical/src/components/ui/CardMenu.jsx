@@ -29,14 +29,15 @@ export const CardMenuSection = ({label, children, ...props}) => {
     );
 };
 
-export const CardMenuItem = ({label, shortcut, desc, isSelected, onClick, Icon, ...props}) => {
+export const CardMenuItem = ({label, shortcut, desc, isSelected, scrollToItem, onClick, Icon, ...props}) => {
     const buttonRef = React.useRef(null);
 
     React.useEffect(() => {
-        if (isSelected) {
+        if (scrollToItem) {
             buttonRef.current.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'nearest'});
         }
-    }, [isSelected]);
+    }, [scrollToItem]);
+
     // browsers will move focus on mouseDown but we don't want that because it
     // removes focus from the editor meaning key commands don't work as
     // expected after a card is inserted
@@ -69,14 +70,15 @@ export const CardMenuItem = ({label, shortcut, desc, isSelected, onClick, Icon, 
     );
 };
 
-export const CardSnippetItem = ({label, isSelected, Icon, onRemove, closeMenu, ...props}) => {
+export const CardSnippetItem = ({label, isSelected, scrollToItem, Icon, onRemove, closeMenu, ...props}) => {
     const itemRef = React.useRef(null);
 
     React.useEffect(() => {
-        if (isSelected) {
+        if (scrollToItem) {
             itemRef.current.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'nearest'});
         }
-    }, [isSelected]);
+    }, [scrollToItem]);
+
     const handleSnippetRemove = (event) => {
         event.stopPropagation(); // prevent snippet insertion
         onRemove();
@@ -115,7 +117,7 @@ export const CardSnippetItem = ({label, isSelected, Icon, onRemove, closeMenu, .
     );
 };
 
-export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex, closeMenu}) => {
+export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex, scrollToSelectedItem, closeMenu}) => {
     // build up the children arrays from the passed in menu Map
     const CardMenuSections = [];
 
@@ -142,6 +144,7 @@ export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex
                         Icon={item.Icon}
                         isSelected={isSelected}
                         label={item.label}
+                        scrollToItem={isSelected && scrollToSelectedItem}
                         shortcut={item.shortcut}
                         onClick={onClick}
                     />
@@ -155,6 +158,7 @@ export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex
                         Icon={item.Icon}
                         isSelected={isSelected}
                         label={item.label}
+                        scrollToItem={isSelected && scrollToSelectedItem}
                         onClick={onClick}
                         onRemove={item.onRemove}
                     />
