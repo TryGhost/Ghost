@@ -4,15 +4,16 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
-import {useEffect, useState} from 'react';
-import {useBrowseOffers} from '../../../../api/offers';
+import {Tier} from '../../../../api/tiers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
+import {getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
 import {numberWithCommas} from '../../../../utils/helpers';
-import {Tier, getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
+import {useBrowseOffers} from '../../../../api/offers';
+import {useEffect, useState} from 'react';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
-const OfferCard: React.FC<{name: string, type: OfferType, redemption_count: number, amount: number, currency: string, offerTier: Tier | undefined, cadence: string, duration: string}> = ({name, type, redemption_count, amount, currency, offerTier, cadence,duration}) => {
+const OfferCard: React.FC<{amount: number, cadence: string, currency: string, duration: string, name: string, offerTier: Tier | undefined, redemptionCount: number, type: OfferType}> = ({amount, cadence, currency, duration, name, offerTier, redemptionCount, type}) => {
     let discountColor = '';
     let discountOffer = '';
     const originalPrice = cadence === 'month' ? offerTier?.monthly_price ?? 0 : offerTier?.yearly_price ?? 0;
@@ -52,7 +53,7 @@ const OfferCard: React.FC<{name: string, type: OfferType, redemption_count: numb
         </div>
         <div className='flex flex-col items-center text-xs'>
             <span className='font-medium'>{tierName}</span>
-            <a className='text-grey-700 hover:underline' href="/ghost/#/members">{redemption_count} redemptions</a>
+            <a className='text-grey-700 hover:underline' href="/ghost/#/members">{redemptionCount} redemptions</a>
         </div>
     </div>;
 };
@@ -61,9 +62,9 @@ const OffersModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const hasOffers = useFeatureFlag('adminXOffers');
-    const { data: { offers = [] } = {} } = useBrowseOffers({
+    const {data: {offers = []} = {}} = useBrowseOffers({
         searchParams: {
-            limit: 'all',
+            limit: 'all'
         }
     });
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
@@ -86,12 +87,14 @@ const OffersModal = () => {
         afterClose={() => {
             updateRoute('offers');
         }}
+        cancelLabel='' header={false}
+        size='lg'
+        testId='offers-modal'
         onOk={() => {
             modal.remove();
             updateRoute('offers');
         }}
-        cancelLabel='' header={false}
-        size='lg'>
+    >
         <div className='pt-6'>
             <header>
                 <div className='flex items-center justify-between'>
@@ -111,17 +114,17 @@ const OffersModal = () => {
                     const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
 
                     return (
-                    <OfferCard
-                        key={offer?.id}
-                        name={offer?.name}
-                        type={offer?.type as OfferType}
-                        redemption_count={offer?.redemption_count}
-                        amount={offer?.amount}
-                        currency={offer?.currency || 'USD'}
-                        cadence={offer?.cadence}
-                        offerTier={offerTier}
-                        duration={offer?.duration}
-                    />
+                        <OfferCard
+                            key={offer?.id}
+                            amount={offer?.amount}
+                            cadence={offer?.cadence}
+                            currency={offer?.currency || 'USD'}
+                            duration={offer?.duration}
+                            name={offer?.name}
+                            offerTier={offerTier}
+                            redemptionCount={offer?.redemption_count}
+                            type={offer?.type as OfferType}
+                        />
                     );
                 })}
             </div>
