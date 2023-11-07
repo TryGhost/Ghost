@@ -84,8 +84,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -201,35 +200,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -320,11 +314,6 @@ table.body h2 span {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -695,8 +684,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -812,35 +800,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -931,11 +914,6 @@ table.body h2 span {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
