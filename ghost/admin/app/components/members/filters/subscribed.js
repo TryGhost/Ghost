@@ -144,6 +144,9 @@ export const SUBSCRIBED_FILTER = ({newsletters, feature, group}) => {
 };
 
 export const NEWSLETTERS_FILTERS = ({newsletters, group, feature}) => {
+    if (newsletters.length <= 1) {
+        return [];
+    }
     return newsletters.map((newsletter) => {
         return {
             label: newsletter.name,

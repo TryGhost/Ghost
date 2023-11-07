@@ -178,18 +178,6 @@ export default class MembersFilter extends Component {
             return [filter];
         });
 
-        // find list of newsletters from store and add them to filter list if there are more than one newsletter
-        // it also removes the 'subscribed' filter from the list as that would unsubscribe members from all newsletters, instead replace it with a filter for each newsletter
-        // if (this.newsletters?.length > 1) {
-        //     // remove the 'subscribed' filter from the list
-        //     //availableFilters = availableFilters.filter(prop => prop.name !== 'subscribed');
-        //
-        //     // find the index of the 'basic' group and insert the 'multiple newsletters' filter after it
-        //     const indexes = availableFilters.map((obj, index) => (obj.group === 'Basic' ? index : null)).filter(i => i !== null);
-        //     const lastIndex = indexes.pop();
-        //     availableFilters.splice(lastIndex + 1, 0, ...NEWSLETTERS_FILTER(this.newsletters));
-        // }
-
         // only add the offers filter if there are any offers
         if (this.offers.length > 0) {
             availableFilters = availableFilters.concat(OFFERS_FILTER);
