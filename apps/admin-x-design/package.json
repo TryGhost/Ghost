@@ -26,6 +26,7 @@
     "tailwind.config.cjs"
   ],
   "devDependencies": {
+    "@codemirror/lang-html": "^6.4.5",
     "@storybook/addon-essentials": "7.4.0",
     "@storybook/addon-interactions": "7.4.0",
     "@storybook/addon-links": "7.4.0",
@@ -36,21 +37,37 @@
     "@storybook/testing-library": "0.2.2",
     "@vitejs/plugin-react": "4.1.1",
     "c8": "8.0.1",
-    "esbuild": "^0.19.5",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "eslint-plugin-react-refresh": "0.4.3",
+    "eslint-plugin-tailwindcss": "3.13.0",
     "mocha": "10.2.0",
-    "rollup-plugin-node-externals": "^6.1.2",
+    "rollup-plugin-node-builtins": "2.1.2",
     "sinon": "17.0.0",
     "ts-node": "10.9.1",
+    "storybook": "7.4.0",
     "typescript": "5.2.2",
-    "vite": "^4.5.0"
+    "vite": "4.5.0",
+    "vite-plugin-svgr": "3.3.0"
   },
   "dependencies": {
+    "@dnd-kit/core": "6.0.8",
+    "@dnd-kit/sortable": "7.0.2",
+    "@ebay/nice-modal-react": "1.2.13",
+    "@sentry/react": "7.77.0",
     "@tailwindcss/forms": "0.5.6",
     "@tailwindcss/line-clamp": "0.4.4",
-    "clsx": "^2.0.0",
+    "@uiw/react-codemirror": "^4.21.9",
+    "autoprefixer": "10.4.16",
+    "clsx": "2.0.0",
+    "postcss": "8.4.31",
+    "postcss-import": "15.1.0",
+    "react-colorful": "^5.1.2",
+    "react-hot-toast": "2.4.1",
+    "react-select": "5.8.0",
     "tailwindcss": "3.3.5"
   },
   "peerDependencies": {
-    "react": "^18.2.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }

@@ -13,8 +13,7 @@ export default (function viteConfig() {
         ],
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-            'process.env.VITEST_SEGFAULT_RETRY': 3,
-            'process.env.DEBUG': false // Shim env var utilized by the @tryghost/nql package
+            'process.env.VITEST_SEGFAULT_RETRY': 3
         },
         preview: {
             port: 4174

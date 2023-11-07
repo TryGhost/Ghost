@@ -1,5 +1,4 @@
 import type { StorybookConfig } from "@storybook/react-vite";
-import { resolve } from "path";
 
 const config: StorybookConfig = {
 	stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
@@ -18,14 +17,11 @@ const config: StorybookConfig = {
 	docs: {
 		autodocs: "tag",
 	},
-	// staticDirs: ['../public/fonts'],
-	async viteFinal(config, options) {
+    async viteFinal(config, options) {
 		config.resolve!.alias = {
-			crypto: require.resolve('rollup-plugin-node-builtins'),
-			// @TODO: Remove this when @tryghost/nql is updated
-			mingo: resolve(__dirname, '../../../node_modules/mingo/dist/mingo.js')
+			crypto: require.resolve('rollup-plugin-node-builtins')
 		}
 		return config;
-	},
+	}
 };
 export default config;
