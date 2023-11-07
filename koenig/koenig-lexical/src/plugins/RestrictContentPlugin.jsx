@@ -11,6 +11,7 @@ import {
 } from 'lexical';
 import {$isListNode} from '@lexical/list';
 import {MIME_TEXT_HTML, MIME_TEXT_PLAIN, PASTE_MARKDOWN_COMMAND} from './MarkdownPastePlugin.jsx';
+import {PASTE_LINK_COMMAND} from './KoenigBehaviourPlugin.jsx';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -73,6 +74,17 @@ export const RestrictContentPlugin = ({paragraphs, allowBr}) => {
                 (clipboard) => {
                     const text = clipboard?.clipboardData?.getData(MIME_TEXT_PLAIN);
                     const html = clipboard?.clipboardData?.getData(MIME_TEXT_HTML);
+
+                    // TODO: replace with better regex to include more protocols like mailto, ftp, etc
+                    const linkMatch = text?.match(/^(https?:\/\/[^\s]+)$/);
+
+                    if (linkMatch) {
+                        // we're pasting a URL, convert it to an embed/bookmark/link
+                        clipboard.preventDefault();
+                        editor.dispatchCommand(PASTE_LINK_COMMAND, {linkMatch});
+
+                        return true;
+                    }
 
                     if (text && !html) {
                         editor.dispatchCommand(PASTE_MARKDOWN_COMMAND, {text, allowBr});

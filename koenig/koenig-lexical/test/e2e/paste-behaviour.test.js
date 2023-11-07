@@ -1,5 +1,5 @@
 import fs from 'fs';
-import {assertHTML, focusEditor, html, initialize, pasteHtml, pasteText} from '../utils/e2e';
+import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, pasteHtml, pasteText} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Paste behaviour', async () => {
@@ -102,6 +102,76 @@ test.describe('Paste behaviour', async () => {
                         <span data-lexical-text="true">test</span>
                     </a>
                 </p>
+            `);
+        });
+
+        test('pasted on selected text within a nested editor converts to link', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('/callout', {delay: 10});
+            await page.keyboard.press('Enter');
+            await page.keyboard.type('1 test');
+            await page.keyboard.press('Shift+ArrowLeft');
+            await page.keyboard.press('Shift+ArrowLeft');
+            await page.keyboard.press('Shift+ArrowLeft');
+            await page.keyboard.press('Shift+ArrowLeft');
+            await pasteText(page, 'https://ghost.org');
+            await page.keyboard.press(`${ctrlOrCmd()}+Enter`); // exit edit mode
+
+            await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+              <div
+                data-kg-card-editing="false"
+                data-kg-card-selected="true"
+                data-kg-card="callout">
+                <div>
+                  <div><button type="button">💡</button></div>
+                  <div>
+                    <div data-kg="editor">
+                      <div
+                        contenteditable="false"
+                        role="textbox"
+                        spellcheck="true"
+                        data-lexical-editor="true"
+                        aria-autocomplete="none"
+                        aria-readonly="true">
+                        <p>
+                          <span data-lexical-text="true">1</span>
+                          <a href="https://ghost.org" dir="ltr">
+                            <span data-lexical-text="true">test</span>
+                          </a>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div></div>
+                <div data-kg-card-toolbar="callout">
+                  <ul>
+                    <li>
+                      <button
+                        aria-label="Edit"
+                        data-kg-active="false"
+                        title="Edit"
+                        type="button">
+                        <svg></svg>
+                      </button>
+                    </li>
+                    <li></li>
+                    <li>
+                      <button
+                        aria-label="Create snippet"
+                        data-kg-active="false"
+                        title="Create snippet"
+                        type="button">
+                        <svg></svg>
+                      </button>
+                    </li>
+                    <li></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <p><br /></p>
             `);
         });
 
