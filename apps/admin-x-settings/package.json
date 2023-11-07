@@ -26,7 +26,7 @@
   },
   "scripts": {
     "dev": "vite build --watch",
-    "dev:start": "yarn nx build && vite",
+    "dev:start": "vite",
     "build": "tsc && vite build",
     "lint": "yarn run lint:js",
     "lint:js": "eslint --ext .js,.ts,.cjs,.tsx --cache src test",
@@ -97,12 +97,13 @@
       "build": {
         "dependsOn": [
           "build",
-          {
-            "projects": [
-              "@tryghost/admin-x-design"
-            ],
-            "target": "build"
-          }
+          {"projects": ["@tryghost/admin-x-design"], "target": "build"}
+        ]
+      },
+      "test:acceptance": {
+        "dependsOn": [
+          "test:acceptance",
+          {"projects": ["@tryghost/admin-x-design"], "target": "build"}
         ]
       }
     }
