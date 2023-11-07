@@ -68,7 +68,7 @@
     "@storybook/testing-library": "0.2.2",
     "@tailwindcss/forms": "0.5.6",
     "@tailwindcss/line-clamp": "0.4.4",
-    "@types/react": "18.2.35",
+    "@types/react": "18.2.36",
     "@types/react-dom": "18.2.14",
     "@types/validator": "13.11.5",
     "@vitejs/plugin-react": "4.1.1",
