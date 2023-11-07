@@ -4,7 +4,12 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
-import {useEffect} from 'react';
+import {Tier} from '../../../../api/tiers';
+import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
+import {getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
+import {numberWithCommas} from '../../../../utils/helpers';
+import {useBrowseOffers} from '../../../../api/offers';
+import {useEffect, useState} from 'react';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
@@ -13,18 +18,30 @@ const createRedemptionFilterUrl = (id: string): string => {
     return `${baseHref}?filter=${encodeURIComponent('offer_redemptions:' + id)}`;
 };
 
-const OfferCard: React.FC<{name: string, type: OfferType, onClick: ()=>void}> = ({name, type, onClick}) => {
+const OfferCard: React.FC<{amount: number, cadence: string, currency: string, duration: string, name: string, offerTier: Tier | undefined, redemptionCount: number, type: OfferType, onClick: ()=>void}> = ({amount, cadence, currency, duration, name, offerTier, redemptionCount, type, onClick}) => {
     let discountColor = '';
+    let discountOffer = '';
+    const originalPrice = cadence === 'month' ? offerTier?.monthly_price ?? 0 : offerTier?.yearly_price ?? 0;
+    let updatedPrice = originalPrice;
+    let tierName = offerTier?.name + ' ' + (cadence === 'month' ? 'Monthly' : 'Yearly') + ' - ' + (duration === 'once' ? 'First payment' : duration === 'repeating' ? 'Repeating' : 'Forever');
+    let originalPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(originalPrice));
+    const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(updatedPrice));
 
     switch (type) {
     case 'percent':
         discountColor = 'text-green';
+        discountOffer = amount + '% OFF';
+        updatedPrice = originalPrice - ((originalPrice * amount) / 100);
         break;
     case 'fixed':
         discountColor = 'text-blue';
+        discountOffer = numberWithCommas(currencyToDecimal(amount)) + ' ' + currency + ' OFF';
+        updatedPrice = originalPrice - amount;
         break;
     case 'trial':
         discountColor = 'text-pink';
+        discountOffer = amount + ' DAYS FREE';
+        originalPriceWithCurrency = '';
         break;
     default:
         break;
@@ -34,15 +51,15 @@ const OfferCard: React.FC<{name: string, type: OfferType, onClick: ()=>void}> = 
         <h2 className='cursor-pointer text-[1.6rem]' onClick={onClick}>{name}</h2>
         <div className=''>
             <div className='flex gap-3 text-sm uppercase leading-none'>
-                <span className={`font-semibold ${discountColor}`}>10% off</span>
-                <span className='text-grey-700 line-through'>$5</span>
+                <span className={`font-semibold ${discountColor}`}>{discountOffer}</span>
+                <span className='text-grey-700 line-through'>{originalPriceWithCurrency}</span>
             </div>
-            <span className='text-3xl font-bold'>$4</span>
+            <span className='text-3xl font-bold'>{updatedPriceWithCurrency}</span>
         </div>
         <div className='flex flex-col items-center text-xs'>
-            <span className='font-medium'>Bronze monthly — First payment</span>
+            <span className='font-medium'>{tierName}</span>
             {/* TODO: pass in actual offer ID */}
-            <a className='text-grey-700 hover:underline' href={createRedemptionFilterUrl('fda10d177a4f5be094fb4a84')}>4 redemptions</a>
+            <a className='text-grey-700 hover:underline' href={createRedemptionFilterUrl('fda10d177a4f5be094fb4a84')}>{redemptionCount} redemptions</a>
         </div>
     </div>;
 };
@@ -51,6 +68,13 @@ const OffersModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const hasOffers = useFeatureFlag('adminXOffers');
+    const {data: {offers = []} = {}} = useBrowseOffers({
+        searchParams: {
+            limit: 'all'
+        }
+    });
+    const {data: {tiers: allTiers} = {}} = useBrowseTiers();
+    const paidActiveTiers = getPaidActiveTiers(allTiers || []);
 
     useEffect(() => {
         if (!hasOffers) {
@@ -63,36 +87,60 @@ const OffersModal = () => {
         {id: 'active', title: 'Active'},
         {id: 'archived', title: 'Archived'}
     ];
-
+    const [selectedTab, setSelectedTab] = useState('active');
+  
     const handleOfferEdit = (id:string) => {
         // TODO: implement
         modal.remove();
         updateRoute(`offers/${id}`);
     };
 
-    return <Modal cancelLabel='' header={false} size='lg' onOk={() => {
-        modal.remove();
-        updateRoute('offers');
-    }}>
+    return <Modal 
+        afterClose={() => {
+            updateRoute('offers');
+        }}
+        cancelLabel='' header={false}
+        size='lg'
+        testId='offers-modal'
+        onOk={() => {
+            modal.remove();
+            updateRoute('offers');
+        }}
+    >
         <div className='pt-6'>
             <header>
                 <div className='flex items-center justify-between'>
                     <TabView
                         border={false}
-                        selectedTab='active'
+                        selectedTab={selectedTab}
                         tabs={offersTabs}
                         width='wide'
-                        onTabChange={() => {}}
+                        onTabChange={setSelectedTab}
                     />
                     <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
                 </div>
-                <h1 className='mt-12 border-b border-b-grey-300 pb-2.5 text-3xl'>Active offers</h1>
+                <h1 className='mt-12 border-b border-b-grey-300 pb-2.5 text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
             </header>
             <div className='mt-8 grid grid-cols-3 gap-6'>
-                {/* TODO replace 123 with actual offer ID */}
-                <OfferCard name='Black friday' type='percent' onClick={() => handleOfferEdit('123')} />
-                <OfferCard name='Buy this right now' type='fixed' onClick={() => handleOfferEdit('123')} />
-                <OfferCard name='Desperate Sale!' type='trial' onClick={() => handleOfferEdit('123')} />
+                {offers.filter(offer => offer.status === selectedTab).map((offer) => {
+                    const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
+
+                    {/* TODO replace 123 with actual offer ID */}
+                    return (
+                        <OfferCard
+                            key={offer?.id}
+                            amount={offer?.amount}
+                            cadence={offer?.cadence}
+                            currency={offer?.currency || 'USD'}
+                            duration={offer?.duration}
+                            name={offer?.name}
+                            offerTier={offerTier}
+                            redemptionCount={offer?.redemption_count}
+                            type={offer?.type as OfferType}
+                            onClick={() => handleOfferEdit('123')}
+                        />
+                    );
+                })}
             </div>
             <a className='absolute bottom-10 text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
         </div>
