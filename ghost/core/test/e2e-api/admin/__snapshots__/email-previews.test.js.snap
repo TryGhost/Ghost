@@ -191,8 +191,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -308,35 +307,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -427,11 +421,6 @@ table.body h2 span {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -736,7 +725,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23946",
+  "content-length": "23765",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -841,8 +830,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -958,35 +946,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -1077,11 +1060,6 @@ table.body h2 span {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -1406,7 +1384,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "28757",
+  "content-length": "28576",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1542,8 +1520,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -1659,35 +1636,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -1778,11 +1750,6 @@ table.body h2 span {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -2094,7 +2061,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23700",
+  "content-length": "23519",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2559,8 +2526,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -2676,35 +2642,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -2795,11 +2756,6 @@ table.body h2 span {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -3121,7 +3077,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24192",
+  "content-length": "24011",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3612,8 +3568,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -3729,35 +3684,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -3848,11 +3798,6 @@ table.body h2 span {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -4174,7 +4119,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24192",
+  "content-length": "24011",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
