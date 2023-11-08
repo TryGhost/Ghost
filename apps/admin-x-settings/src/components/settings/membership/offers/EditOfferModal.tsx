@@ -2,9 +2,11 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
 import {Button, Form, PreviewModalContent, TextArea, TextField} from '@tryghost/admin-x-design';
+import {Offer, useBrowseOffersById} from '../../../../api/offers';
+import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {useEffect} from 'react';
 
-const Sidebar: React.FC = () => {
+const Sidebar: React.FC<{offer: Offer}> = ({offer}) => {
     return (
         <div className='pt-7'>
             <Form>
@@ -12,7 +14,7 @@ const Sidebar: React.FC = () => {
                     hint='Visible to members on Stripe Checkout page.'
                     placeholder='Black Friday'
                     title='Name'
-                    value='Black friday'
+                    value={offer?.name}
                 />
                 <section className='mt-4'>
                     <h2 className='mb-4 text-lg'>Portal Settings</h2>
@@ -20,24 +22,24 @@ const Sidebar: React.FC = () => {
                         <TextField
                             placeholder='Black Friday Special'
                             title='Display title'
-                            value='Black friday'
+                            value={offer?.display_title}
                         />
                         <TextField
                             placeholder='black-friday'
                             title='Offer code'
-                            value='black-friday'
+                            value={offer?.code}
                         />
                         <TextArea
                             placeholder='Take advantage of this limited-time offer.'
                             title='Display description'
-                            value='Get 20% off for Black Friday'
+                            value={offer.display_description}
                         />
                         <div className='flex flex-col gap-1.5'>
                             <TextField
                                 placeholder='https://www.example.com'
                                 title='URL'
                                 type='url'
-                                value='https://example.com/#/portal/offers/black-friday'
+                                value={`http://localhost:2368//#/portal/offers/${offer?.code}`}
                             />
                             <Button color='green' fullWidth={true} label='Copy link' />
                         </div>
@@ -48,10 +50,11 @@ const Sidebar: React.FC = () => {
     );
 };
 
-const EditOfferModal = () => {
+const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const hasOffers = useFeatureFlag('adminXOffers');
+    let offer : Offer;
 
     useEffect(() => {
         if (!hasOffers) {
@@ -60,9 +63,17 @@ const EditOfferModal = () => {
         }
     }, [hasOffers, modal, updateRoute]);
 
-    const sidebar = <Sidebar />;
+    const {data: {offers: offerById = []} = {}} = useBrowseOffersById(params?.id ? params?.id : '');
+    if (offerById.length === 0) {
+        return null;
+    }
+    offer = offerById[0];
 
-    return <PreviewModalContent deviceSelector={false} okLabel='Update' sidebar={sidebar} size='full' title='Offer' onCancel={() => {
+    const sidebar = <Sidebar
+        offer={offer}
+    />;
+
+    return <PreviewModalContent deviceSelector={false} okLabel='Update' sidebar={sidebar} size='full' title={offer?.name} onCancel={() => {
         modal.remove();
         updateRoute('offers/edit');
     }} />;
