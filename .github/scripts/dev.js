@@ -58,7 +58,7 @@ const COMMANDS_ADMINX = [{
     env: {}
 }, {
     name: 'adminX',
-    command: 'yarn build && yarn dev',
+    command: 'yarn nx build && yarn dev',
     cwd: path.resolve(__dirname, '../../apps/admin-x-settings'),
     prefixColor: '#C35831',
     env: {}
