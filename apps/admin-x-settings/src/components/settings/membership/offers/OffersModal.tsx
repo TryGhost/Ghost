@@ -47,7 +47,7 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
     }
 
     const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(updatedPrice));
-  
+
     return (
         <div className='flex cursor-pointer flex-col gap-6 border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800' onClick={onClick}>
             <div className='flex items-center justify-between'>
@@ -101,13 +101,20 @@ const OffersModal = () => {
         afterClose={() => {
             updateRoute('offers');
         }}
-        cancelLabel='' header={false}
+        cancelLabel=''
+        footer={
+            <div className='mx-8 flex w-full items-center justify-between'>
+                <a className='text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
+                <Button color='black' label='Close' onClick={() => {
+                    modal.remove();
+                    updateRoute('offers');
+                }} />
+            </div>
+        }
+        header={false}
         size='lg'
         testId='offers-modal'
-        onOk={() => {
-            modal.remove();
-            updateRoute('offers');
-        }}
+        stickyFooter
     >
         <div className='pt-6'>
             <header>
@@ -148,7 +155,6 @@ const OffersModal = () => {
                     );
                 })}
             </div>
-            <a className='absolute bottom-10 text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
         </div>
     </Modal>;
 };
