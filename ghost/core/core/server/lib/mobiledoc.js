@@ -75,7 +75,17 @@ module.exports = {
 
     get htmlToMobiledocConverter() {
         try {
-            return require('@tryghost/html-to-mobiledoc').toMobiledoc;
+            if (process.env.CI) {
+                console.time('require @tryghost/html-to-mobiledoc'); // eslint-disable-line no-console
+            }
+
+            const toMobiledoc = require('@tryghost/html-to-mobiledoc').toMobiledoc;
+
+            if (process.env.CI) {
+                console.timeEnd('require @tryghost/html-to-mobiledoc'); // eslint-disable-line no-console
+            }
+
+            return toMobiledoc;
         } catch (err) {
             return () => {
                 throw new errors.InternalServerError({
