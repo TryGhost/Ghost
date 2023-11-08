@@ -88,3 +88,11 @@ export const FullBleed: Story = {
         size: 'bleed'
     }
 };
+
+export const BreadcrumbsToolbar: Story = {
+    args: {
+        ...Default.args,
+        previewToolbarTabs: undefined,
+        previewToolbarBreadcrumbs: [{label: 'Previous', onClick: () => {}}, {label: 'Current'}]
+    }
+};
