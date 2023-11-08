@@ -1,11 +1,11 @@
-import NiceModal, { useModal } from '@ebay/nice-modal-react';
-import { ConfirmationModal, Form, ImageUpload, Modal, TextField, showToast } from '@tryghost/admin-x-design-system';
-import { APIKey, Integration, RoutingModalProps, getGhostPaths, getImageUrl, useBrowseIntegrations, useEditIntegration, useHandleError, useRefreshAPIKey, useRouting, useUploadImage } from '@tryghost/admin-x-framework';
-import React, { useEffect, useState } from 'react';
-import { toast } from 'react-hot-toast';
-import useForm from '../../../../hooks/useForm';
 import APIKeys from './APIKeys';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import React, {useEffect, useState} from 'react';
 import WebhooksTable from './WebhooksTable';
+import useForm from '../../../../hooks/useForm';
+import {APIKey, Integration, RoutingModalProps, getGhostPaths, getImageUrl, useBrowseIntegrations, useEditIntegration, useHandleError, useRefreshAPIKey, useRouting, useUploadImage} from '@tryghost/admin-x-framework';
+import {ConfirmationModal, Form, ImageUpload, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {toast} from 'react-hot-toast';
 
 const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({integration}) => {
     const modal = useModal();

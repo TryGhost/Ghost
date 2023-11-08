@@ -1,21 +1,21 @@
-import NiceModal, { useModal } from '@ebay/nice-modal-react';
-import { ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, showToast } from '@tryghost/admin-x-design-system';
-import { RoutingModalProps, User, canAccessSettings, getImageUrl, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useHandleError, useMakeOwner, useRouting, useUploadImage } from '@tryghost/admin-x-framework';
-import clsx from 'clsx';
-import React, { useCallback, useEffect } from 'react';
-import { toast } from 'react-hot-toast';
-import validator from 'validator';
-import useForm, { ErrorMessages } from '../../../hooks/useForm';
-import { HostLimitError, useLimiter } from '../../../hooks/useLimiter';
-import usePinturaEditor from '../../../hooks/usePinturaEditor';
-import useStaffUsers from '../../../hooks/useStaffUsers';
-import { validateFacebookUrl, validateTwitterUrl } from '../../../utils/socialUrls';
-import { useGlobalData } from '../../providers/GlobalDataProvider';
 import ChangePasswordForm from './users/ChangePasswordForm';
 import EmailNotifications from './users/EmailNotifications';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ProfileBasics from './users/ProfileBasics';
 import ProfileDetails from './users/ProfileDetails';
+import React, {useCallback, useEffect} from 'react';
 import StaffToken from './users/StaffToken';
+import clsx from 'clsx';
+import useForm, {ErrorMessages} from '../../../hooks/useForm';
+import usePinturaEditor from '../../../hooks/usePinturaEditor';
+import useStaffUsers from '../../../hooks/useStaffUsers';
+import validator from 'validator';
+import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
+import {RoutingModalProps, User, canAccessSettings, getImageUrl, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useHandleError, useMakeOwner, useRouting, useUploadImage} from '@tryghost/admin-x-framework';
+import {toast} from 'react-hot-toast';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
     name: ({name}) => {

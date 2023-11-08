@@ -1,7 +1,7 @@
-import NiceModal, { useModal } from '@ebay/nice-modal-react';
-import { RoutingModalProps } from '@tryghost/admin-x-framework';
-import DesignModal from './DesignModal';
 import ChangeThemeModal from './ThemeModal';
+import DesignModal from './DesignModal';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import {RoutingModalProps} from '@tryghost/admin-x-framework';
 
 const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
     const modal = useModal();
