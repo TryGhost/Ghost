@@ -1,10 +1,8 @@
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/form/TextField';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -55,7 +53,7 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description="Set the language/locale which is used on your site"
             isEditing={isEditing}
             keywords={keywords}
@@ -68,7 +66,7 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? inputFields : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

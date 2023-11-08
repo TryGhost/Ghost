@@ -1,21 +1,16 @@
 import APIKeys from './APIKeys';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import Form from '../../../../admin-x-ds/global/form/Form';
-import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
 import WebhooksTable from './WebhooksTable';
 import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {APIKey, useRefreshAPIKey} from '../../../../api/apiKeys';
+import {ConfirmationModal, Form, ImageUpload, Modal, TextField, showToast} from '@tryghost/admin-x-design';
 import {Integration, useBrowseIntegrations, useEditIntegration} from '../../../../api/integrations';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {getGhostPaths} from '../../../../utils/helpers';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 
 const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({integration}) => {

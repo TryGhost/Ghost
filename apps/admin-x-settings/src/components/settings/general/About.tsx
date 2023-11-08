@@ -1,9 +1,6 @@
-import Icon from '../../../admin-x-ds/global/Icon';
-import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import Separator from '../../../admin-x-ds/global/Separator';
 import useRouting from '../../../hooks/useRouting';
-import {ReactComponent as GhostLogo} from '../../../admin-x-ds/assets/images/ghost-logo.svg';
+import {GhostLogo, Icon, Modal, Separator} from '@tryghost/admin-x-design';
 import {RoutingModalProps} from '../../providers/RoutingProvider';
 import {linkToGitHubReleases} from '../../../utils/linkToGithubReleases';
 import {showDatabaseWarning} from '../../../utils/showDatabaseWarning';

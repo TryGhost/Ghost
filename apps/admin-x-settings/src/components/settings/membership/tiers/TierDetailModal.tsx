@@ -1,28 +1,16 @@
-import Button, {ButtonProps} from '../../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import CurrencyField from '../../../../admin-x-ds/global/form/CurrencyField';
-import Form from '../../../../admin-x-ds/global/form/Form';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Icon from '../../../../admin-x-ds/global/Icon';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
-import Select from '../../../../admin-x-ds/global/form/Select';
-import SortableList from '../../../../admin-x-ds/global/SortableList';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
 import TierDetailPreview from './TierDetailPreview';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
+import {Button, ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast} from '@tryghost/admin-x-design';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {Tier, useAddTier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
 import {getSettingValues} from '../../../../api/settings';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {

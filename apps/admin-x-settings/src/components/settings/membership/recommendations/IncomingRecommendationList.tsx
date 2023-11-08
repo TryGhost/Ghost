@@ -1,13 +1,8 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import NoValueLabel from '../../../../admin-x-ds/global/NoValueLabel';
 import React, {useMemo} from 'react';
 import RecommendationIcon from './RecommendationIcon';
-import Table, {ShowMoreData} from '../../../../admin-x-ds/global/Table';
-import TableCell from '../../../../admin-x-ds/global/TableCell';
-import TableRow from '../../../../admin-x-ds/global/TableRow';
 import useRouting from '../../../../hooks/useRouting';
+import {Button, NoValueLabel, PaginationData, ShowMoreData, Table, TableCell, TableRow} from '@tryghost/admin-x-design';
 import {IncomingRecommendation} from '../../../../api/recommendations';
-import {PaginationData} from '../../../../hooks/usePagination';
 import {ReferrerHistoryItem} from '../../../../api/referrers';
 import {numberWithCommas} from '../../../../utils/helpers';
 

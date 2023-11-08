@@ -1,15 +1,8 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
-// import IframeBuffering from '../../../../utils/IframeBuffering';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalFrame from '../portal/PortalFrame';
-import Select from '../../../../admin-x-ds/global/form/Select';
-import TextArea from '../../../../admin-x-ds/global/form/TextArea';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
-import {ReactComponent as CheckIcon} from '../../../../admin-x-ds/assets/icons/check.svg';
-import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
-// import {getActiveTiers, useBrowseTiers} from '../../../../api/tiers';
+import {Form, Icon, PreviewModalContent, Select, TextArea, TextField} from '@tryghost/admin-x-design';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {useEffect} from 'react';
 
@@ -25,7 +18,7 @@ const ButtonSelect: React.FC<{type: OfferType, checked: boolean}> = ({type, chec
         <button className='text-left' type='button'>
             <div className='flex gap-3'>
                 <div className={`mt-0.5 flex h-4 w-4 items-center justify-center rounded-full ${checkboxClass}`}>
-                    {checked ? <CheckIcon className='w-2 stroke-[4]' /> : null}
+                    {checked ? <Icon className='w-2 stroke-[4]' name='check' size='custom' /> : null}
                 </div>
                 <div className='flex flex-col'>
                     <span>{type.title}</span>
@@ -166,7 +159,7 @@ const AddOfferModal = () => {
 
     const iframe = <PortalFrame
         href={href}
-        
+
     />;
 
     return <PreviewModalContent cancelLabel='Cancel' deviceSelector={false} okLabel='Publish' preview={iframe} sidebar={sidebar} size='full' title='Offer' onCancel={cancelAddOffer} />;

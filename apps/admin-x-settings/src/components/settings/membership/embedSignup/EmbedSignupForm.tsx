@@ -1,7 +1,7 @@
-import Button from '../../../../admin-x-ds/global/Button';
 import React from 'react';
-import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
+import TopLevelGroup from '../../../TopLevelGroup';
 import useRouting from '../../../../hooks/useRouting';
+import {Button} from '@tryghost/admin-x-design';
 
 const EmbedSignupForm: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
@@ -10,7 +10,7 @@ const EmbedSignupForm: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={<Button color='green' label='Embed' link onClick={openPreviewModal}/>}
             description="Grow your audience from anywhere on the web"
             keywords={keywords}

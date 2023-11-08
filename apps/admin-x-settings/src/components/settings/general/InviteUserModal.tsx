@@ -1,12 +1,9 @@
-import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import Radio from '../../../admin-x-ds/global/form/Radio';
-import TextField from '../../../admin-x-ds/global/form/TextField';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import validator from 'validator';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {showToast} from '../../../admin-x-ds/global/Toast';
+import {Modal, Radio, TextField, showToast} from '@tryghost/admin-x-design';
 import {useAddInvite, useBrowseInvites} from '../../../api/invites';
 import {useBrowseRoles} from '../../../api/roles';
 import {useBrowseUsers} from '../../../api/users';

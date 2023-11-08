@@ -1,15 +1,12 @@
-import Button from '../../../admin-x-ds/global/Button';
 import IncomingRecommendationList from './recommendations/IncomingRecommendationList';
 import React, {useState} from 'react';
 import RecommendationList from './recommendations/RecommendationList';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import TabView from '../../../admin-x-ds/global/TabView';
+import TopLevelGroup from '../../TopLevelGroup';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ShowMoreData} from '../../../admin-x-ds/global/Table';
+import {Button, ShowMoreData, TabView, withErrorBoundary} from '@tryghost/admin-x-design';
 import {useBrowseIncomingRecommendations, useBrowseRecommendations} from '../../../api/recommendations';
 import {useReferrerHistory} from '../../../api/referrers';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -121,7 +118,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             beta={true}
             customButtons={buttons}
             description={groupDescription}
@@ -138,7 +135,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 }} />
             </div>
             <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

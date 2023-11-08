@@ -1,15 +1,11 @@
-import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/form/TextField';
+import TopLevelGroup from '../../TopLevelGroup';
 import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as FacebookLogo} from '../../../admin-x-ds/assets/images/facebook-logo.svg';
+import {FacebookLogo, ImageUpload, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -117,7 +113,7 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Customize structured data of your site'
             isEditing={isEditing}
             keywords={keywords}
@@ -131,7 +127,7 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             {values}
             {isEditing ? inputFields : null}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

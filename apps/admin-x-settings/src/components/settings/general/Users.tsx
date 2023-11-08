@@ -1,21 +1,14 @@
-import Avatar from '../../../admin-x-ds/global/Avatar';
-import Button from '../../../admin-x-ds/global/Button';
-import List from '../../../admin-x-ds/global/List';
-import ListItem from '../../../admin-x-ds/global/ListItem';
-import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
 import React, {useState} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import TabView from '../../../admin-x-ds/global/TabView';
+import TopLevelGroup from '../../TopLevelGroup';
 import clsx from 'clsx';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
+import {Avatar, Button, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design';
 import {User, hasAdminAccess, isContributorUser, isEditorUser} from '../../../api/users';
 import {UserInvite, useAddInvite, useDeleteInvite} from '../../../api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
-import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 interface OwnerProps {
     user: User;
@@ -261,7 +254,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
     ];
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={buttons}
             highlightOnModalClose={highlight}
             keywords={keywords}
@@ -276,7 +269,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
                 link
                 onClick={() => fetchNextPage()}
             />}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

@@ -1,8 +1,7 @@
 import APIKeys from '../../advanced/integrations/APIKeys';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import Heading from '../../../../admin-x-ds/global/Heading';
 import NiceModal from '@ebay/nice-modal-react';
 import useHandleError from '../../../../utils/api/handleError';
+import {ConfirmationModal, Heading} from '@tryghost/admin-x-design';
 import {genStaffToken, getStaffToken} from '../../../../api/staffToken';
 import {useEffect, useState} from 'react';
 

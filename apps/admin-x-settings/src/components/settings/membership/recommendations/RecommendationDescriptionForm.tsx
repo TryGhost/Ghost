@@ -1,13 +1,8 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Hint from '../../../../admin-x-ds/global/Hint';
 import React from 'react';
 import RecommendationIcon from './RecommendationIcon';
-import TextArea from '../../../../admin-x-ds/global/form/TextArea';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
 import {EditOrAddRecommendation, Recommendation} from '../../../../api/recommendations';
 import {ErrorMessages} from '../../../../hooks/useForm';
+import {Form, Heading, Hint, TextArea, TextField, URLTextField} from '@tryghost/admin-x-design';
 
 interface Props<T extends EditOrAddRecommendation> {
     showURL?: boolean,
