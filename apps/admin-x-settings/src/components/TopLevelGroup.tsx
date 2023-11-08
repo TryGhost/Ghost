@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import useRouting from '../hooks/useRouting';
-import {SettingGroup as Base, SettingGroupProps} from '@tryghost/admin-x-design';
+import {SettingGroup as Base, SettingGroupProps} from '@tryghost/admin-x-design-system';
 import {useScrollSection} from '../hooks/useScrollSection';
 import {useSearch} from './providers/ServiceProvider';
 

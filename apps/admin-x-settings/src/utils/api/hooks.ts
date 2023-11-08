@@ -5,7 +5,7 @@ import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from '
 import {UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {getGhostPaths} from '../helpers';
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {usePagination} from '@tryghost/admin-x-design';
+import {usePagination} from '@tryghost/admin-x-design-system';
 import {usePermission} from '../../hooks/usePermissions';
 import {useSentryDSN, useServices} from '../../components/providers/ServiceProvider';
 

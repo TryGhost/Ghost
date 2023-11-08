@@ -1,5 +1,5 @@
 import React from 'react';
-import {ListItem} from '@tryghost/admin-x-design';
+import {ListItem} from '@tryghost/admin-x-design-system';
 
 const LabItem: React.FC<{
     title?: React.ReactNode;

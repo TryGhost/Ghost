@@ -1,7 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../../TopLevelGroup';
 import useRouting from '../../../../hooks/useRouting';
-import {Button} from '@tryghost/admin-x-design';
+import {Button} from '@tryghost/admin-x-design-system';
 
 const EmbedSignupForm: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();

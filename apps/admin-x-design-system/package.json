@@ -1,8 +1,8 @@
 {
-  "name": "@tryghost/admin-x-design",
+  "name": "@tryghost/admin-x-design-system",
   "type": "module",
   "version": "0.0.0",
-  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/admin-x-design",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/admin-x-design-system",
   "author": "Ghost Foundation",
   "private": true,
   "main": "es/index.js",

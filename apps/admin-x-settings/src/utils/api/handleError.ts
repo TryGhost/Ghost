@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react';
 import toast from 'react-hot-toast';
 import {APIError, JSONError, ValidationError} from '../errors';
-import {showToast} from '@tryghost/admin-x-design';
+import {showToast} from '@tryghost/admin-x-design-system';
 import {useCallback} from 'react';
 import {useSentryDSN} from '../../components/providers/ServiceProvider';
 

@@ -3,7 +3,7 @@ import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import Users from './components/settings/general/Users';
 import useRouting from './hooks/useRouting';
-import {Heading, topLevelBackdropClasses} from '@tryghost/admin-x-design';
+import {Heading, topLevelBackdropClasses} from '@tryghost/admin-x-design-system';
 import {ReactNode, useEffect} from 'react';
 import {canAccessSettings, isEditorUser} from './api/users';
 import {toast} from 'react-hot-toast';

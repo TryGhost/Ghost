@@ -3,7 +3,7 @@ import IntegrationHeader from './IntegrationHeader';
 import NiceModal from '@ebay/nice-modal-react';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
-import {Button, ConfirmationModal, Icon, List, ListItem, Modal} from '@tryghost/admin-x-design';
+import {Button, ConfirmationModal, Icon, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Logo} from '../../../../assets/images/zapier-logo.svg';
 import {ReactComponent as ZapierIcon} from '../../../../assets/icons/zapier.svg';
 import {getGhostPaths, resolveAsset} from '../../../../utils/helpers';
