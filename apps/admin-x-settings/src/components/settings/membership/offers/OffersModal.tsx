@@ -70,7 +70,7 @@ const OffersModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const hasOffers = useFeatureFlag('adminXOffers');
-    const {data: {offers = []} = {}} = useBrowseOffers({
+    const {data: {offers: allOffers = []} = {}} = useBrowseOffers({
         searchParams: {
             limit: 'all'
         }
@@ -131,7 +131,7 @@ const OffersModal = () => {
                 <h1 className='mt-12 border-b border-b-grey-300 pb-2.5 text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
             </header>
             <div className='mt-8 grid grid-cols-3 gap-6'>
-                {offers.filter(offer => offer.status === selectedTab).map((offer) => {
+                {allOffers.filter(offer => offer.status === selectedTab).map((offer) => {
                     const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
 
                     if (!offerTier) {
