@@ -20,44 +20,47 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
     let discountOffer = '';
     const originalPrice = cadence === 'month' ? offerTier?.monthly_price ?? 0 : offerTier?.yearly_price ?? 0;
     let updatedPrice = originalPrice;
-    let tierName = offerTier?.name + ' ' + (cadence === 'month' ? 'Monthly' : 'Yearly') + ' - ' + (duration === 'once' ? 'First payment' : duration === 'repeating' ? 'Repeating' : 'Forever');
+    let tierName = offerTier?.name + ' ' + (cadence === 'month' ? 'Monthly' : 'Yearly') + ' — ' + (duration === 'once' ? 'First payment' : duration === 'repeating' ? 'Repeating' : 'Forever');
     let originalPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(originalPrice));
-    const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(updatedPrice));
 
     switch (type) {
     case 'percent':
         discountColor = 'text-green';
-        discountOffer = amount + '% OFF';
+        discountOffer = amount + '% off';
         updatedPrice = originalPrice - ((originalPrice * amount) / 100);
         break;
     case 'fixed':
         discountColor = 'text-blue';
-        discountOffer = numberWithCommas(currencyToDecimal(amount)) + ' ' + currency + ' OFF';
+        discountOffer = numberWithCommas(currencyToDecimal(amount)) + ' ' + currency + ' off';
         updatedPrice = originalPrice - amount;
         break;
     case 'trial':
         discountColor = 'text-pink';
-        discountOffer = amount + ' DAYS FREE';
+        discountOffer = amount + ' days free';
         originalPriceWithCurrency = '';
         break;
     default:
         break;
     }
 
-    return <div className='flex flex-col items-center gap-6 border border-transparent bg-grey-100 p-5 text-center transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800'>
-        <h2 className='cursor-pointer text-[1.6rem]' onClick={onClick}>{name}</h2>
-        <div className=''>
-            <div className='flex gap-3 text-sm uppercase leading-none'>
-                <span className={`font-semibold ${discountColor}`}>{discountOffer}</span>
-                <span className='text-grey-700 line-through'>{originalPriceWithCurrency}</span>
+    const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(updatedPrice));
+
+    return (
+        <div className='flex cursor-pointer flex-col gap-6 border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800' onClick={onClick}>
+            <div className='flex items-center justify-between'>
+                <h2 className='text-[1.6rem] font-semibold' onClick={onClick}>{name}</h2>
+                <span className={`text-xs font-semibold uppercase ${discountColor}`}>{discountOffer}</span>
             </div>
-            <span className='text-3xl font-bold'>{updatedPriceWithCurrency}</span>
+            <div className='flex items-baseline gap-1'>
+                <span className='text-4xl font-bold tracking-tight'>{updatedPriceWithCurrency}</span>
+                <span className='text-[1.6rem] font-medium text-grey-700 line-through'>{originalPriceWithCurrency}</span>
+            </div>
+            <div className='flex flex-col items-start text-xs'>
+                <span className='font-medium'>{tierName}</span>
+                <a className='text-grey-700 hover:underline' href={createRedemptionFilterUrl(offerId)}>{redemptionCount} redemptions</a>
+            </div>
         </div>
-        <div className='flex flex-col items-center text-xs'>
-            <span className='font-medium'>{tierName}</span>
-            <a className='text-grey-700 hover:underline' href={createRedemptionFilterUrl(offerId)}>{redemptionCount} redemptions</a>
-        </div>
-    </div>;
+    );
 };
 
 const OffersModal = () => {
@@ -95,13 +98,20 @@ const OffersModal = () => {
         afterClose={() => {
             updateRoute('offers');
         }}
-        cancelLabel='' header={false}
+        cancelLabel=''
+        footer={
+            <div className='mx-8 flex w-full items-center justify-between'>
+                <a className='text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
+                <Button color='black' label='Close' onClick={() => {
+                    modal.remove();
+                    updateRoute('offers');
+                }} />
+            </div>
+        }
+        header={false}
         size='lg'
         testId='offers-modal'
-        onOk={() => {
-            modal.remove();
-            updateRoute('offers');
-        }}
+        stickyFooter
     >
         <div className='pt-6'>
             <header>
@@ -121,6 +131,10 @@ const OffersModal = () => {
                 {offers.filter(offer => offer.status === selectedTab).map((offer) => {
                     const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
 
+                    if (!offerTier) {
+                        return null;
+                    }
+
                     return (
                         <OfferCard
                             key={offer?.id}
@@ -138,7 +152,6 @@ const OffersModal = () => {
                     );
                 })}
             </div>
-            <a className='absolute bottom-10 text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
         </div>
     </Modal>;
 };

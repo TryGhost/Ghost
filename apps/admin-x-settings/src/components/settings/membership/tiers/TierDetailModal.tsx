@@ -121,7 +121,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             const promptTitle = tier.active ? 'Archive tier' : 'Reactivate tier';
             const prompt = tier.active ? <>
                 <div className='mb-6'>Members will no longer be able to subscribe to <strong>{tier.name}</strong> and it will be removed from the list of available tiers in portal.</div>
-                <div>Existing members on this tier will remain unchanged.</div>
+                <div>Existing members on this tier will remain unchanged. Offers using this tier will be disabled.</div>
             </> : <>
                 <div className='mb-6'>Reactivating <strong>{tier.name}</strong> will re-enable it as an option in portal and allow new members to subscribe to this tier.</div>
                 <div>Existing members will remain unchanged.</div>

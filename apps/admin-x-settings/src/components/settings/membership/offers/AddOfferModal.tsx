@@ -1,7 +1,9 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import PortalFrame from '../portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
 import {Form, Icon, PreviewModalContent, Select, TextArea, TextField} from '@tryghost/admin-x-design';
+import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {useEffect} from 'react';
 
 interface OfferType {
@@ -120,6 +122,8 @@ const AddOfferModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const hasOffers = useFeatureFlag('adminXOffers');
+    // const {data: {tiers, meta, isEnd} = {}} = useBrowseTiers();
+    // const activeTiers = getActiveTiers(tiers || []);
 
     useEffect(() => {
         if (!hasOffers) {
@@ -134,8 +138,31 @@ const AddOfferModal = () => {
     };
 
     const sidebar = <Sidebar />;
+    // TODO: wire up the data from the sidebar inputs
+    let overrides : offerPortalPreviewUrlTypes = {
+        disableBackground: true,
+        name: 'Black Friday',
+        code: 'black-friday',
+        displayTitle: 'Black Friday Special',
+        displayDescription: 'Take advantage of this limited-time offer.',
+        type: 'discount',
+        cadence: 'monthly',
+        amount: 1200,
+        duration: '',
+        durationInMonths: 12,
+        currency: 'USD',
+        status: 'active',
+        tierId: ''
+    };
 
-    return <PreviewModalContent cancelLabel='Cancel' deviceSelector={false} okLabel='Publish' sidebar={sidebar} size='full' title='Offer' onCancel={cancelAddOffer} />;
+    const href = getOfferPortalPreviewUrl(overrides, 'http://localhost:2368');
+
+    const iframe = <PortalFrame
+        href={href}
+
+    />;
+
+    return <PreviewModalContent cancelLabel='Cancel' deviceSelector={false} okLabel='Publish' preview={iframe} sidebar={sidebar} size='full' title='Offer' onCancel={cancelAddOffer} />;
 };
 
 export default NiceModal.create(AddOfferModal);
