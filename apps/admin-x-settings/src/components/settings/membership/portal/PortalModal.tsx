@@ -9,11 +9,8 @@ import useHandleError from '../../../../utils/api/handleError';
 import useQueryParams from '../../../../hooks/useQueryParams';
 import useRouting from '../../../../hooks/useRouting';
 import {ConfirmationModal, PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../../api/settings';
-import {Tier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
-import {fullEmailAddress} from '../../../../api/site';
+import {Setting, SettingValue, Tier, fullEmailAddress, getSettingValues, useBrowseTiers, useEditSettings, useEditTier, verifyEmailToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {verifyEmailToken} from '../../../../api/emailVerification';
 
 const Sidebar: React.FC<{
     localSettings: Setting[]

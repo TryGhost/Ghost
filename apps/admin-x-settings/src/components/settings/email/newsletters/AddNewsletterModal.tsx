@@ -7,8 +7,7 @@ import {Form, LimitModal, Modal, TextArea, TextField, Toggle, showToast} from '@
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {toast} from 'react-hot-toast';
-import {useAddNewsletter} from '../../../../api/newsletters';
-import {useBrowseMembers} from '../../../../api/members';
+import {useAddNewsletter, useBrowseMembers} from '@tryghost/admin-x-framework';
 
 const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();

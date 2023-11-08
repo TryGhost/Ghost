@@ -4,7 +4,7 @@ import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {Form, Modal, Toggle} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Icon} from '../../../../assets/icons/unsplash.svg';
-import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
+import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const UnsplashModal = NiceModal.create(() => {

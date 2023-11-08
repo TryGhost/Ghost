@@ -1,6 +1,5 @@
 import {Heading, Icon, Radio} from '@tryghost/admin-x-design-system';
-import {User, isOwnerUser} from '../../../../api/users';
-import {useBrowseRoles} from '../../../../api/roles';
+import {User, isOwnerUser, useBrowseRoles} from '@tryghost/admin-x-framework';
 
 const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     const {data: {roles} = {}} = useBrowseRoles();

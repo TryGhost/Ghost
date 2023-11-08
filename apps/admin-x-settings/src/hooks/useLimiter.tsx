@@ -1,6 +1,5 @@
 import useStaffUsers from './useStaffUsers';
-import {useBrowseMembers} from '../api/members';
-import {useBrowseNewsletters} from '../api/newsletters';
+import {useBrowseMembers, useBrowseNewsletters} from '@tryghost/admin-x-framework';
 import {useEffect, useMemo, useState} from 'react';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
 

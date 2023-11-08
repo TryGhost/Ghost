@@ -5,12 +5,8 @@ import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
-import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../api/customThemeSettings';
+import {CustomThemeSetting, Setting, SettingValue, getHomepageUrl, getSettingValues, useBrowseCustomThemeSettings, useBrowsePosts, useBrowseThemes, useEditCustomThemeSettings, useEditSettings} from '@tryghost/admin-x-framework';
 import {Icon, PreviewModalContent, StickyFooter, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../api/settings';
-import {getHomepageUrl} from '../../../api/site';
-import {useBrowsePosts} from '../../../api/posts';
-import {useBrowseThemes} from '../../../api/themes';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const Sidebar: React.FC<{

@@ -10,11 +10,9 @@ import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Button, ConfirmationModal, Form, Heading, Modal, StripeButton, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '../../../../utils/errors';
 import {ReactComponent as StripeVerified} from '../../../../assets/images/stripe-verified.svg';
-import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '../../../../api/settings';
+import {checkStripeEnabled, getSettingValue, getSettingValues, useBrowseMembers, useBrowseTiers, useDeleteStripeSettings, useEditSettings, useEditTier} from '@tryghost/admin-x-framework';
 import {getGhostPaths} from '../../../../utils/helpers';
 import {toast} from 'react-hot-toast';
-import {useBrowseMembers} from '../../../../api/members';
-import {useBrowseTiers, useEditTier} from '../../../../api/tiers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;

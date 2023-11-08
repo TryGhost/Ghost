@@ -4,8 +4,7 @@ import TopLevelGroup from '../../TopLevelGroup';
 import clsx from 'clsx';
 import useRouting from '../../../hooks/useRouting';
 import {Button, StripeButton, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '../../../api/tiers';
-import {checkStripeEnabled} from '../../../api/settings';
+import {Tier, checkStripeEnabled, getActiveTiers, getArchivedTiers, useBrowseTiers} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}> = ({className, onClick}) => {

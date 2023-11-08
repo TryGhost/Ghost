@@ -8,9 +8,8 @@ import useSettingGroup from '../../../../hooks/useSettingGroup';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
 import {Button, ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast} from '@tryghost/admin-x-design-system';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {Tier, useAddTier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
+import {Tier, getSettingValues, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
-import {getSettingValues} from '../../../../api/settings';
 import {toast} from 'react-hot-toast';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {

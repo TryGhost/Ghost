@@ -2,7 +2,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {ReactNode, useState} from 'react';
 import useHandleError from '../../../../utils/api/handleError';
 import {Button, ConfirmationModalContent, Heading, List, ListItem, showToast} from '@tryghost/admin-x-design-system';
-import {InstalledTheme, ThemeProblem, useActivateTheme} from '../../../../api/themes';
+import {InstalledTheme, ThemeProblem, useActivateTheme} from '@tryghost/admin-x-framework';
 
 export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);

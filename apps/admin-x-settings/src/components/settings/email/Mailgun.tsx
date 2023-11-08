@@ -3,7 +3,7 @@ import TopLevelGroup from '../../TopLevelGroup';
 import useHandleError from '../../../utils/api/handleError';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {IconLabel, Link, Select, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getSettingValues, useEditSettings} from '../../../api/settings';
+import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework';
 
 const MAILGUN_REGIONS = [
     {label: '🇺🇸 US', value: 'https://api.mailgun.net/v3'},

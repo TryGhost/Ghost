@@ -4,7 +4,7 @@ import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {Form, Modal, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Icon} from '../../../../assets/icons/firstpromoter.svg';
-import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
+import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 

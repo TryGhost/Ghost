@@ -2,7 +2,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
 import {Button, Form, PreviewModalContent, TextArea, TextField} from '@tryghost/admin-x-design-system';
-import {Offer, useBrowseOffersById} from '../../../../api/offers';
+import {Offer, useBrowseOffersById} from '@tryghost/admin-x-framework';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {useEffect} from 'react';
 

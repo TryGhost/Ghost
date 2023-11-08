@@ -5,7 +5,7 @@ import RecommendationIcon from './RecommendationIcon';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Button, Link, NoValueLabel, PaginationData, ShowMoreData, Table, TableCell, TableRow, Tooltip} from '@tryghost/admin-x-design-system';
-import {Recommendation} from '../../../../api/recommendations';
+import {Recommendation} from '@tryghost/admin-x-framework';
 import {numberWithCommas} from '../../../../utils/helpers';
 
 interface RecommendationListProps {

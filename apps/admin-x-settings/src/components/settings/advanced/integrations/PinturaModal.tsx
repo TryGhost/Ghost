@@ -5,10 +5,9 @@ import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {Button, Form, Modal, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Icon} from '../../../../assets/icons/pintura.svg';
-import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
+import {Setting, getSettingValues, useEditSettings, useUploadFile} from '@tryghost/admin-x-framework';
 import {useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {useUploadFile} from '../../../../api/files';
 
 const PinturaModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();

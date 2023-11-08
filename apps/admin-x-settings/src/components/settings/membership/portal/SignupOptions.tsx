@@ -1,7 +1,6 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {CheckboxGroup, CheckboxProps, Form, HtmlField, Toggle} from '@tryghost/admin-x-design-system';
-import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '../../../../api/settings';
-import {Tier, getPaidActiveTiers} from '../../../../api/tiers';
+import {Setting, SettingValue, Tier, checkStripeEnabled, getPaidActiveTiers, getSettingValues} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const SignupOptions: React.FC<{

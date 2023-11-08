@@ -1,0 +1,207 @@
+import NiceModal, { NiceModalHocProps } from '@ebay/nice-modal-react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+
+export type RouteParams = Record<string, string>
+
+export type ExternalLink = {
+    isExternal: true;
+    route: string;
+    models?: string[] | null
+};
+
+export type InternalLink = {
+    isExternal?: false;
+    route: string;
+}
+
+export type RoutingModalProps = {
+    pathName: string;
+    params?: Record<string, string>,
+    searchParams?: URLSearchParams
+}
+
+export type ModalsModule = {default: {[key: string]: ModalComponent}}
+
+export type ModalComponent<Props = object> = React.FC<NiceModalHocProps & RoutingModalProps & Props>;
+
+export type RoutingContextData = {
+    route: string;
+    updateRoute: (to: string | InternalLink | ExternalLink) => void;
+    registerModals: (loadModals: () => Promise<ModalsModule>, modalPaths: Record<string, string>) => void;
+    loadingModal: boolean;
+    eventTarget: EventTarget;
+};
+
+export const RouteContext = createContext<RoutingContextData>({
+    route: '',
+    updateRoute: () => {},
+    registerModals: () => {},
+    loadingModal: false,
+    eventTarget: new EventTarget()
+});
+
+function getHashPath(urlPath: string | undefined) {
+    if (!urlPath) {
+        return null;
+    }
+    const regex = /\/settings\/(.*)/;
+    const match = urlPath?.match(regex);
+
+    if (match) {
+        const afterSettingsX = match[1];
+        return afterSettingsX;
+    }
+    return null;
+}
+
+const handleNavigation = (currentRoute: string | undefined, loadModals: () => Promise<ModalsModule>, modalPaths: Record<string, string>) => {
+    // Get the hash from the URL
+    let hash = window.location.hash;
+    hash = hash.substring(1);
+
+    // Create a URL to easily extract the path without query parameters
+    const domain = `${window.location.protocol}//${window.location.hostname}`;
+    let url = new URL(hash, domain);
+
+    const pathName = getHashPath(url.pathname);
+    const searchParams = url.searchParams;
+
+    if (pathName) {
+        const [, currentModalName] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(currentRoute || '', modalPath)) || [];
+        const [path, modalName] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(pathName, modalPath)) || [];
+
+        return {
+            pathName,
+            changingModal: modalName && modalName !== currentModalName,
+            modal: (path && modalName) ? // we should consider adding '&& modalName !== currentModalName' here, but this breaks tests
+                loadModals().then(({default: modals}) => {
+                    NiceModal.show(modals[modalName] as ModalComponent, {pathName, params: matchRoute(pathName, path), searchParams});
+                }) :
+                undefined
+        };
+    }
+    return {pathName: ''};
+};
+
+const matchRoute = (pathname: string, routeDefinition: string) => {
+    const regex = new RegExp('^' + routeDefinition.replace(/:(\w+)/, '(?<$1>[^/]+)') + '$');
+    const match = pathname.match(regex);
+    if (match) {
+        return match.groups || {};
+    }
+};
+
+type RouteProviderProps = {
+    externalNavigate: (link: ExternalLink) => void;
+    children: React.ReactNode;
+};
+
+const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, children}) => {
+    const [route, setRoute] = useState<string | undefined>(undefined);
+    const [loadingModal, setLoadingModal] = useState(false);
+    const [loadModals, setLoadModals] = useState<() => Promise<ModalsModule>>(() => Promise.resolve({default: {}}));
+    const [modalPaths, setModalPaths] = useState<Record<string, string>>({});
+    const [eventTarget] = useState(new EventTarget());
+
+    const registerModals = useCallback((loadModals: () => Promise<ModalsModule>, modalPaths: Record<string, string>) => {
+        setLoadModals(() => loadModals);
+        setModalPaths(() => modalPaths);
+    }, []);
+
+    const updateRoute = useCallback((to: string | InternalLink | ExternalLink) => {
+        const options = typeof to === 'string' ? {route: to} : to;
+
+        if (options.isExternal) {
+            externalNavigate(options);
+            return;
+        }
+
+        const newPath = options.route;
+
+        if (newPath === route) {
+            // No change
+        } else if (newPath) {
+            window.location.hash = `/settings/${newPath}`;
+        } else {
+            window.location.hash = `/settings`;
+        }
+
+        eventTarget.dispatchEvent(new CustomEvent("routeChange", {detail: {newPath, oldPath: route}}))
+    }, [externalNavigate, route]);
+
+    useEffect(() => {
+        const handleHashChange = () => {
+            setRoute((currentRoute) => {
+                const {pathName, modal, changingModal} = handleNavigation(currentRoute, loadModals, modalPaths);
+
+                if (modal && changingModal) {
+                    setLoadingModal(true);
+                    modal.then(() => setLoadingModal(false));
+                }
+
+                return pathName;
+            });
+        };
+
+        handleHashChange();
+
+        window.addEventListener('hashchange', handleHashChange);
+
+        return () => {
+            window.removeEventListener('hashchange', handleHashChange);
+        };
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    if (route === undefined) {
+        return null;
+    }
+
+    return (
+        <RouteContext.Provider
+            value={{
+                route,
+                updateRoute,
+                loadingModal,
+                eventTarget,
+                registerModals
+            }}
+        >
+            {children}
+        </RouteContext.Provider>
+    );
+};
+
+export default RoutingProvider;
+
+export function useModalPaths<ModalName extends string>(
+    loadModals: () => Promise<ModalsModule>,
+    paths: {[key: string]: ModalName}
+) {
+    const {registerModals} = useRouting();
+
+    useEffect(() => {
+        registerModals(loadModals, paths);
+    }, [loadModals, paths, registerModals]);
+
+    useEffect(() => {
+        // Preload all the modals after initial render to avoid a delay when opening them
+        setTimeout(() => {
+            loadModals();
+        }, 1000);
+    }, []);
+}
+
+export function useRouting() {
+    return useContext(RouteContext);
+}
+
+export function useRouteChangeCallback(callback: (newPath: string, oldPath: string) => void) {
+    const {eventTarget} = useRouting();
+
+    useEffect(() => {
+        eventTarget.addEventListener("routeChange", (e) => {
+            const event = e as CustomEvent<{newPath: string, oldPath: string}>
+            callback(event.detail.newPath, event.detail.oldPath)
+        })
+    }, [eventTarget, callback])
+}

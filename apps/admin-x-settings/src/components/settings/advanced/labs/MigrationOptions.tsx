@@ -3,7 +3,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import useHandleError from '../../../../utils/api/handleError';
 import {Button, ConfirmationModal, FileUpload, List, showToast} from '@tryghost/admin-x-design-system';
-import {downloadAllContent, useDeleteAllContent, useImportContent} from '../../../../api/db';
+import {downloadAllContent, useDeleteAllContent, useImportContent} from '@tryghost/admin-x-framework';
 import {useQueryClient} from '@tanstack/react-query';
 
 const ImportModalContent = () => {

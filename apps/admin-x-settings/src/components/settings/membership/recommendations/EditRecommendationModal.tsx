@@ -5,7 +5,7 @@ import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {ConfirmationModal, Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
-import {Recommendation, useDeleteRecommendation, useEditRecommendation} from '../../../../api/recommendations';
+import {Recommendation, useDeleteRecommendation, useEditRecommendation} from '@tryghost/admin-x-framework';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 
 interface EditRecommendationModalProps {

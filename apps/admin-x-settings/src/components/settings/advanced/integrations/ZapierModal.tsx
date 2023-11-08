@@ -7,10 +7,9 @@ import {Button, ConfirmationModal, Icon, List, ListItem, Modal} from '@tryghost/
 import {ReactComponent as Logo} from '../../../../assets/images/zapier-logo.svg';
 import {ReactComponent as ZapierIcon} from '../../../../assets/icons/zapier.svg';
 import {getGhostPaths, resolveAsset} from '../../../../utils/helpers';
-import {useBrowseIntegrations} from '../../../../api/integrations';
+import {useBrowseIntegrations, useRefreshAPIKey} from '@tryghost/admin-x-framework';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {useRefreshAPIKey} from '../../../../api/apiKeys';
 import {useServices} from '../../../providers/ServiceProvider';
 
 export interface ZapierTemplate {

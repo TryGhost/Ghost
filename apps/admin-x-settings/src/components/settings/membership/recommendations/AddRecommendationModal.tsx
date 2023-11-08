@@ -4,7 +4,7 @@ import React, {useEffect, useState} from 'react';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {AlreadyExistsError} from '../../../../utils/errors';
-import {EditOrAddRecommendation, useCheckRecommendation} from '../../../../api/recommendations';
+import {EditOrAddRecommendation, useCheckRecommendation} from '@tryghost/admin-x-framework';
 import {Form, LoadingIndicator, Modal, TextField, dismissAllToasts, formatUrl, showToast} from '@tryghost/admin-x-design-system';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {trimSearchAndHash} from '../../../../utils/url';

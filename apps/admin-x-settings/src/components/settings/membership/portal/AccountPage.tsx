@@ -1,7 +1,6 @@
 import React, {FocusEventHandler, useEffect, useState} from 'react';
 import {Form, TextField} from '@tryghost/admin-x-design-system';
-import {SettingValue, getSettingValues} from '../../../../api/settings';
-import {fullEmailAddress, getEmailDomain} from '../../../../api/site';
+import {SettingValue, fullEmailAddress, getEmailDomain, getSettingValues} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const AccountPage: React.FC<{

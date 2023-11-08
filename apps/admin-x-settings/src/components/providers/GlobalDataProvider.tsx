@@ -1,9 +1,6 @@
 import SpinningOrb from '../../assets/videos/logo-loader.mp4';
-import {Config, useBrowseConfig} from '../../api/config';
+import {Config, Setting, SiteData, User, useBrowseConfig, useBrowseSettings, useBrowseSite, useCurrentUser} from '@tryghost/admin-x-framework';
 import {ReactNode, createContext, useContext} from 'react';
-import {Setting, useBrowseSettings} from '../../api/settings';
-import {SiteData, useBrowseSite} from '../../api/site';
-import {User, useCurrentUser} from '../../api/users';
 
 interface GlobalData {
     settings: Setting[]

@@ -4,8 +4,7 @@ import React, {useState} from 'react';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {Button, FileUpload, List, showToast} from '@tryghost/admin-x-design-system';
-import {downloadRedirects, useUploadRedirects} from '../../../../api/redirects';
-import {downloadRoutes, useUploadRoutes} from '../../../../api/routes';
+import {downloadRedirects, downloadRoutes, useUploadRedirects, useUploadRoutes} from '@tryghost/admin-x-framework';
 
 const BetaFeatures: React.FC = () => {
     const {updateRoute} = useRouting();

@@ -2,7 +2,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {Breadcrumbs, Button, ButtonGroup, ConfirmationModal, DesktopChrome, MobileChrome, PageHeader, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {OfficialTheme, ThemeVariant} from '../../../providers/ServiceProvider';
-import {Theme, isDefaultOrLegacyTheme} from '../../../../api/themes';
+import {Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework';
 
 const hasVariants = (theme: OfficialTheme) => theme.variants && theme.variants.length > 0;
 

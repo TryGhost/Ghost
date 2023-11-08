@@ -4,9 +4,7 @@ import useRouting from '../../../hooks/useRouting';
 import validator from 'validator';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {Modal, Radio, TextField, showToast} from '@tryghost/admin-x-design-system';
-import {useAddInvite, useBrowseInvites} from '../../../api/invites';
-import {useBrowseRoles} from '../../../api/roles';
-import {useBrowseUsers} from '../../../api/users';
+import {useAddInvite, useBrowseInvites, useBrowseRoles, useBrowseUsers} from '@tryghost/admin-x-framework';
 import {useEffect, useRef, useState} from 'react';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';

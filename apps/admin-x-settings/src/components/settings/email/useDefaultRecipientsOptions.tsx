@@ -1,9 +1,7 @@
 import useFilterableApi from '../../../hooks/useFilterableApi';
 import {GroupBase, MultiValue} from 'react-select';
-import {Label} from '../../../api/labels';
+import {Label, Offer, Tier} from '@tryghost/admin-x-framework';
 import {LoadMultiSelectOptions, MultiSelectOption, debounce} from '@tryghost/admin-x-design-system';
-import {Offer} from '../../../api/offers';
-import {Tier} from '../../../api/tiers';
 import {isObjectId} from '../../../utils/helpers';
 import {useEffect, useState} from 'react';
 

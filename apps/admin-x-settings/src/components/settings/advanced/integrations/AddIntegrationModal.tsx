@@ -5,7 +5,7 @@ import useRouting from '../../../../hooks/useRouting';
 import {Form, LimitModal, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {useCreateIntegration} from '../../../../api/integrations';
+import {useCreateIntegration} from '@tryghost/admin-x-framework';
 
 const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();

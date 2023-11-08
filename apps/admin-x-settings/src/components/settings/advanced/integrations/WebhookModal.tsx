@@ -6,7 +6,7 @@ import useHandleError from '../../../../utils/api/handleError';
 import validator from 'validator';
 import webhookEventOptions from './webhookEventOptions';
 import {Form, Modal, Select, TextField, showToast} from '@tryghost/admin-x-design-system';
-import {Webhook, useCreateWebhook, useEditWebhook} from '../../../../api/webhooks';
+import {Webhook, useCreateWebhook, useEditWebhook} from '@tryghost/admin-x-framework';
 
 interface WebhookModalProps {
     webhook?: Webhook;

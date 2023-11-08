@@ -4,8 +4,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
 import {MultiSelect, MultiSelectOption, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getOptionLabel} from '../../../utils/helpers';
-import {getSettingValues} from '../../../api/settings';
-import {useBrowseTiers} from '../../../api/tiers';
+import {getSettingValues, useBrowseTiers} from '@tryghost/admin-x-framework';
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
     {

@@ -1,9 +1,7 @@
 import React from 'react';
 import useHandleError from '../../../../utils/api/handleError';
 import {ColorPickerField, Heading, Hint, ImageUpload, Select, SettingGroupContent, TextField, Toggle} from '@tryghost/admin-x-design-system';
-import {CustomThemeSetting} from '../../../../api/customThemeSettings';
-import {getImageUrl, useUploadImage} from '../../../../api/images';
-import {humanizeSettingKey} from '../../../../api/settings';
+import {CustomThemeSetting, getImageUrl, humanizeSettingKey, useUploadImage} from '@tryghost/admin-x-framework';
 import {isCustomThemeSettingVisible} from '../../../../utils/isCustomThemeSettingsVisible';
 
 const ThemeSetting: React.FC<{

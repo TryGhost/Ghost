@@ -4,9 +4,7 @@ import React, {useCallback, useState} from 'react';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {CheckboxGroup, ColorIndicator, Form, HtmlField, PreviewModalContent, Tab, showToast} from '@tryghost/admin-x-design-system';
-import {getHomepageUrl} from '../../../api/site';
-import {getSettingValues} from '../../../api/settings';
-import {useBrowsePosts} from '../../../api/posts';
+import {getHomepageUrl, getSettingValues, useBrowsePosts} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 type SidebarProps = {

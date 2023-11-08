@@ -6,7 +6,7 @@ import trackEvent from '../../../../utils/plausible';
 import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
-import {EditOrAddRecommendation, useAddRecommendation} from '../../../../api/recommendations';
+import {EditOrAddRecommendation, useAddRecommendation} from '@tryghost/admin-x-framework';
 import {Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
 
 interface AddRecommendationModalProps {

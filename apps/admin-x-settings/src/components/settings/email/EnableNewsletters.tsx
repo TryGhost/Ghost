@@ -3,7 +3,7 @@ import TopLevelGroup from '../../TopLevelGroup';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {Banner, Icon, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {Setting, getSettingValues, useEditSettings} from '../../../api/settings';
+import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {

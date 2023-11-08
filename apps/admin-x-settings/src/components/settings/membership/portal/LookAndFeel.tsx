@@ -7,8 +7,7 @@ import {ReactComponent as PortalIcon2} from '../../../../assets/icons/portal-ico
 import {ReactComponent as PortalIcon3} from '../../../../assets/icons/portal-icon-3.svg';
 import {ReactComponent as PortalIcon4} from '../../../../assets/icons/portal-icon-4.svg';
 import {ReactComponent as PortalIcon5} from '../../../../assets/icons/portal-icon-5.svg';
-import {Setting, SettingValue, getSettingValues} from '../../../../api/settings';
-import {getImageUrl, useUploadImage} from '../../../../api/images';
+import {Setting, SettingValue, getImageUrl, getSettingValues, useUploadImage} from '@tryghost/admin-x-framework';
 
 const defaultButtonIcons = [
     {

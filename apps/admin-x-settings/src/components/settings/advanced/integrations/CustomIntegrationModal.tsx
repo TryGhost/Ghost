@@ -5,12 +5,10 @@ import WebhooksTable from './WebhooksTable';
 import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
-import {APIKey, useRefreshAPIKey} from '../../../../api/apiKeys';
+import {APIKey, Integration, getImageUrl, useBrowseIntegrations, useEditIntegration, useRefreshAPIKey, useUploadImage} from '@tryghost/admin-x-framework';
 import {ConfirmationModal, Form, ImageUpload, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
-import {Integration, useBrowseIntegrations, useEditIntegration} from '../../../../api/integrations';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {getGhostPaths} from '../../../../utils/helpers';
-import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {toast} from 'react-hot-toast';
 
 const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({integration}) => {

@@ -1,7 +1,4 @@
-import {Config} from '../api/config';
-import {Setting, checkStripeEnabled, getSettingValue} from '../api/settings';
-import {SiteData} from '../api/site';
-import {Tier} from '../api/tiers';
+import {Config, Setting, SiteData, Tier, checkStripeEnabled, getSettingValue} from '@tryghost/admin-x-framework';
 
 export type portalPreviewUrlTypes = {
     settings: Setting[];

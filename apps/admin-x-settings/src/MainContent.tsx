@@ -5,7 +5,7 @@ import Users from './components/settings/general/Users';
 import useRouting from './hooks/useRouting';
 import {Heading, topLevelBackdropClasses} from '@tryghost/admin-x-design-system';
 import {ReactNode, useEffect} from 'react';
-import {canAccessSettings, isEditorUser} from './api/users';
+import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from './components/providers/GlobalDataProvider';
 

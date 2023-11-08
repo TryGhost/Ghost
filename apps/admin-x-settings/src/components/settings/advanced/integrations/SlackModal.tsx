@@ -6,8 +6,7 @@ import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
 import {Button, Form, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Icon} from '../../../../assets/icons/slack.svg';
-import {getSettingValues} from '../../../../api/settings';
-import {useTestSlack} from '../../../../api/slack';
+import {getSettingValues, useTestSlack} from '@tryghost/admin-x-framework';
 
 const SlackModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();

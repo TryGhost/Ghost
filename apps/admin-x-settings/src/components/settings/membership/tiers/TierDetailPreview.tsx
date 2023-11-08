@@ -4,7 +4,7 @@ import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
 import {TierFormState} from './TierDetailModal';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {getSettingValues} from '../../../../api/settings';
+import {getSettingValues} from '@tryghost/admin-x-framework';
 import {numberWithCommas} from '../../../../utils/helpers';
 
 interface TierDetailPreviewProps {

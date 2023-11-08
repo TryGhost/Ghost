@@ -1,6 +1,6 @@
 import useHandleError from '../../../../utils/api/handleError';
 import {Button, Heading, SettingGroup, TextField, showToast} from '@tryghost/admin-x-design-system';
-import {User, useUpdatePassword} from '../../../../api/users';
+import {User, useUpdatePassword} from '@tryghost/admin-x-framework';
 import {ValidationError} from '../../../../utils/errors';
 import {useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';

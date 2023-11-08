@@ -2,7 +2,7 @@ import APIKeys from '../../advanced/integrations/APIKeys';
 import NiceModal from '@ebay/nice-modal-react';
 import useHandleError from '../../../../utils/api/handleError';
 import {ConfirmationModal, Heading} from '@tryghost/admin-x-design-system';
-import {genStaffToken, getStaffToken} from '../../../../api/staffToken';
+import {genStaffToken, getStaffToken} from '@tryghost/admin-x-framework';
 import {useEffect, useState} from 'react';
 
 const StaffToken: React.FC = () => {

@@ -38,7 +38,6 @@
   },
   "dependencies": {
     "@codemirror/lang-html": "^6.4.5",
-    "@tanstack/react-query": "4.36.1",
     "@tryghost/color-utils": "0.2.0",
     "@tryghost/limit-service": "^1.2.10",
     "@tryghost/nql": "0.11.0",
@@ -50,6 +49,7 @@
   "devDependencies": {
     "@playwright/test": "1.38.1",
     "@tryghost/admin-x-design-system": "0.0.0",
+    "@tryghost/admin-x-framework": "0.0.0",
     "@types/react": "18.2.37",
     "@types/react-dom": "18.2.15",
     "@types/validator": "13.11.6",

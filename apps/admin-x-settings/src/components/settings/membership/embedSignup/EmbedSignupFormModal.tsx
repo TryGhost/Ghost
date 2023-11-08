@@ -6,7 +6,7 @@ import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Modal, MultiSelectOption} from '@tryghost/admin-x-design-system';
 import {MultiValue} from 'react-select';
 import {generateCode} from '../../../../utils/generateEmbedCode';
-import {getSettingValues} from '../../../../api/settings';
+import {getSettingValues} from '@tryghost/admin-x-framework';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 

@@ -1,6 +1,4 @@
-import {User, useBrowseUsers} from '../api/users';
-import {UserInvite, useBrowseInvites} from '../api/invites';
-import {useBrowseRoles} from '../api/roles';
+import {User, UserInvite, useBrowseInvites, useBrowseRoles, useBrowseUsers} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
 import {useMemo} from 'react';
 

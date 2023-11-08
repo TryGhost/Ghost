@@ -1,8 +1,7 @@
 import PortalFrame from './PortalFrame';
 import PortalLinks from './PortalLinks';
 import React from 'react';
-import {Setting} from '../../../../api/settings';
-import {Tier} from '../../../../api/tiers';
+import {Setting, Tier} from '@tryghost/admin-x-framework';
 import {getPortalPreviewUrl} from '../../../../utils/getPortalPreviewUrl';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 

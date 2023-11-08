@@ -7,7 +7,7 @@ import useQueryParams from '../../../hooks/useQueryParams';
 import useRouting from '../../../hooks/useRouting';
 import {APIError} from '../../../utils/errors';
 import {Button, ConfirmationModal, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {useBrowseNewsletters, useVerifyNewsletterEmail} from '../../../api/newsletters';
+import {useBrowseNewsletters, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework';
 
 const NavigateToNewsletter = ({id, children}: {id: string; children: ReactNode}) => {
     const modal = useModal();

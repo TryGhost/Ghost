@@ -1,6 +1,6 @@
 import IframeBuffering from '../../../../utils/IframeBuffering';
 import React, {useCallback} from 'react';
-import {CustomThemeSetting, hiddenCustomThemeSettingValue} from '../../../../api/customThemeSettings';
+import {CustomThemeSetting, hiddenCustomThemeSettingValue} from '@tryghost/admin-x-framework';
 import {isCustomThemeSettingVisible} from '../../../../utils/isCustomThemeSettingsVisible';
 
 type BrandSettings = {
