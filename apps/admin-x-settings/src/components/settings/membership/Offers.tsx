@@ -1,8 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
-import useRouting from '../../../hooks/useRouting';
 import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {checkStripeEnabled} from '@tryghost/admin-x-framework';
+import {checkStripeEnabled, useRouting} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {

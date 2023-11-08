@@ -1,10 +1,10 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalFrame from '../portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
-import useRouting from '../../../../hooks/useRouting';
 import {Form, Icon, PreviewModalContent, Select, TextArea, TextField} from '@tryghost/admin-x-design-system';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {useEffect} from 'react';
+import {useRouting} from '@tryghost/admin-x-framework';
 
 interface OfferType {
     title: string;

@@ -1,5 +1,5 @@
 import type {NiceModalHocProps} from '@ebay/nice-modal-react';
-import type {RoutingModalProps} from '../RoutingProvider';
+import type {RoutingModalProps} from '@tryghost/admin-x-framework';
 
 import AboutModal from '../../settings/general/About';
 import AddIntegrationModal from '../../settings/advanced/integrations/AddIntegrationModal';

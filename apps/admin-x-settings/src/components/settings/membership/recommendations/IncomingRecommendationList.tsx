@@ -1,8 +1,7 @@
 import React, {useMemo} from 'react';
 import RecommendationIcon from './RecommendationIcon';
-import useRouting from '../../../../hooks/useRouting';
 import {Button, NoValueLabel, PaginationData, ShowMoreData, Table, TableCell, TableRow} from '@tryghost/admin-x-design-system';
-import {IncomingRecommendation, ReferrerHistoryItem} from '@tryghost/admin-x-framework';
+import {IncomingRecommendation, ReferrerHistoryItem, useRouting} from '@tryghost/admin-x-framework';
 import {numberWithCommas} from '../../../../utils/helpers';
 
 interface IncomingRecommendationListProps {

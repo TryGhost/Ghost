@@ -2,10 +2,9 @@ import IncomingRecommendationList from './recommendations/IncomingRecommendation
 import React, {useState} from 'react';
 import RecommendationList from './recommendations/RecommendationList';
 import TopLevelGroup from '../../TopLevelGroup';
-import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Button, ShowMoreData, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {useBrowseIncomingRecommendations, useBrowseRecommendations, useReferrerHistory} from '@tryghost/admin-x-framework';
+import {useBrowseIncomingRecommendations, useBrowseRecommendations, useReferrerHistory, useRouting} from '@tryghost/admin-x-framework';
 
 const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

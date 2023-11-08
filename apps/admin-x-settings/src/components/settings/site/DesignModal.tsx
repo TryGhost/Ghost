@@ -3,9 +3,7 @@ import React, {useEffect, useState} from 'react';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
-import useHandleError from '../../../utils/api/handleError';
-import useRouting from '../../../hooks/useRouting';
-import {CustomThemeSetting, Setting, SettingValue, getHomepageUrl, getSettingValues, useBrowseCustomThemeSettings, useBrowsePosts, useBrowseThemes, useEditCustomThemeSettings, useEditSettings} from '@tryghost/admin-x-framework';
+import {CustomThemeSetting, Setting, SettingValue, getHomepageUrl, getSettingValues, useBrowseCustomThemeSettings, useBrowsePosts, useBrowseThemes, useEditCustomThemeSettings, useEditSettings, useHandleError, useRouting} from '@tryghost/admin-x-framework';
 import {Icon, PreviewModalContent, StickyFooter, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 

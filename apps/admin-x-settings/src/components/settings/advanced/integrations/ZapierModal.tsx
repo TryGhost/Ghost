@@ -1,16 +1,14 @@
 import APIKeys from './APIKeys';
 import IntegrationHeader from './IntegrationHeader';
 import NiceModal from '@ebay/nice-modal-react';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
 import {Button, ConfirmationModal, Icon, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Logo} from '../../../../assets/images/zapier-logo.svg';
 import {ReactComponent as ZapierIcon} from '../../../../assets/icons/zapier.svg';
-import {getGhostPaths, resolveAsset} from '../../../../utils/helpers';
-import {useBrowseIntegrations, useRefreshAPIKey} from '@tryghost/admin-x-framework';
+import {getGhostPaths, useBrowseIntegrations, useHandleError, useRefreshAPIKey, useRouting} from '@tryghost/admin-x-framework';
+import {resolveAsset} from '../../../../utils/helpers';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {useServices} from '../../../providers/ServiceProvider';
+import {useSettingsApp} from '../../../providers/SettingsAppProvider';
 
 export interface ZapierTemplate {
     ghostImage: string;
@@ -22,7 +20,7 @@ export interface ZapierTemplate {
 const ZapierModal = NiceModal.create(() => {
     const modal = NiceModal.useModal();
     const {updateRoute} = useRouting();
-    const {zapierTemplates} = useServices();
+    const {zapierTemplates} = useSettingsApp();
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
     const {config} = useGlobalData();
     const {adminRoot} = getGhostPaths();

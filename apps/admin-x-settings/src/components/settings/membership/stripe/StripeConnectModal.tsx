@@ -4,14 +4,10 @@ import GhostLogoPink from '../../../../assets/images/orb-pink.png';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Button, ConfirmationModal, Form, Heading, Modal, StripeButton, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
-import {JSONError} from '../../../../utils/errors';
+import {JSONError, checkStripeEnabled, getGhostPaths, getSettingValue, getSettingValues, useBrowseMembers, useBrowseTiers, useDeleteStripeSettings, useEditSettings, useEditTier, useHandleError, useRouting} from '@tryghost/admin-x-framework';
 import {ReactComponent as StripeVerified} from '../../../../assets/images/stripe-verified.svg';
-import {checkStripeEnabled, getSettingValue, getSettingValues, useBrowseMembers, useBrowseTiers, useDeleteStripeSettings, useEditSettings, useEditTier} from '@tryghost/admin-x-framework';
-import {getGhostPaths} from '../../../../utils/helpers';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 

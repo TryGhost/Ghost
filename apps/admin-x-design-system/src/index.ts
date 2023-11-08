@@ -17,7 +17,7 @@ export type {CheckboxProps} from './global/form/Checkbox';
 export {default as CheckboxGroup} from './global/form/CheckboxGroup';
 export type {CheckboxGroupProps} from './global/form/CheckboxGroup';
 export {default as CodeEditor} from './global/form/CodeEditor';
-export type {CodeEditorProps} from './global/form/CodeEditor';
+export type {CodeEditorProps, FetchKoenigLexical} from './global/form/CodeEditor';
 export {default as ColorIndicator} from './global/form/ColorIndicator';
 export type {ColorIndicatorProps} from './global/form/ColorIndicator';
 export {default as ColorPicker} from './global/form/ColorPicker';

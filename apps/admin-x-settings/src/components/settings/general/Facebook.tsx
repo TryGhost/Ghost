@@ -1,10 +1,9 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
-import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {FacebookLogo, ImageUpload, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getImageUrl, getSettingValues, useUploadImage} from '@tryghost/admin-x-framework';
+import {getImageUrl, getSettingValues, useHandleError, useUploadImage} from '@tryghost/admin-x-framework';
 
 const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

@@ -1,12 +1,11 @@
 import IntegrationHeader from './IntegrationHeader';
 import NiceModal from '@ebay/nice-modal-react';
 import toast from 'react-hot-toast';
-import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
 import {Button, Form, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Icon} from '../../../../assets/icons/slack.svg';
-import {getSettingValues, useTestSlack} from '@tryghost/admin-x-framework';
+import {getSettingValues, useRouting, useTestSlack} from '@tryghost/admin-x-framework';
 
 const SlackModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();

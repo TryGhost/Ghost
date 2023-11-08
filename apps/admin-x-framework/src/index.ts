@@ -1,5 +1,9 @@
 export { default as FrameworkProvider } from './providers/FrameworkProvider';
-export type { FrameworkContextType, FrameworkProviderProps, UpgradeStatusType } from './providers/FrameworkProvider';
+export type { FrameworkContextType, FrameworkProviderProps } from './providers/FrameworkProvider';
+export { useModalPaths, useRouteChangeCallback, useRouting } from './providers/RoutingProvider';
+export type { ExternalLink, InternalLink, RoutingModalProps } from './providers/RoutingProvider';
+
+export { default as useFilterableApi } from './hooks/useFilterableApi';
 
 export * from './api/actions';
 export * from './api/apiKeys';
@@ -30,6 +34,7 @@ export * from './api/tiers';
 export * from './api/users';
 export * from './api/webhooks';
 
+export { default as useHandleError } from './utils/api/handleError';
 export * from './utils/errors';
 export * from './utils/helpers';
 

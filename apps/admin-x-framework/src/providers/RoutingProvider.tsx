@@ -20,7 +20,7 @@ export type RoutingModalProps = {
     searchParams?: URLSearchParams
 }
 
-export type ModalsModule = {default: {[key: string]: ModalComponent}}
+export type ModalsModule = {default: {[key: string]: ModalComponent<any>}}
 
 export type ModalComponent<Props = object> = React.FC<NiceModalHocProps & RoutingModalProps & Props>;
 
@@ -40,11 +40,11 @@ export const RouteContext = createContext<RoutingContextData>({
     eventTarget: new EventTarget()
 });
 
-function getHashPath(urlPath: string | undefined) {
+function getHashPath(basePath: string, urlPath: string | undefined) {
     if (!urlPath) {
         return null;
     }
-    const regex = /\/settings\/(.*)/;
+    const regex = new RegExp(`/${basePath}/(.*)`);
     const match = urlPath?.match(regex);
 
     if (match) {
@@ -54,7 +54,7 @@ function getHashPath(urlPath: string | undefined) {
     return null;
 }
 
-const handleNavigation = (currentRoute: string | undefined, loadModals: () => Promise<ModalsModule>, modalPaths: Record<string, string>) => {
+const handleNavigation = (basePath: string, currentRoute: string | undefined, loadModals: () => Promise<ModalsModule>, modalPaths: Record<string, string>) => {
     // Get the hash from the URL
     let hash = window.location.hash;
     hash = hash.substring(1);
@@ -63,7 +63,7 @@ const handleNavigation = (currentRoute: string | undefined, loadModals: () => Pr
     const domain = `${window.location.protocol}//${window.location.hostname}`;
     let url = new URL(hash, domain);
 
-    const pathName = getHashPath(url.pathname);
+    const pathName = getHashPath(basePath, url.pathname);
     const searchParams = url.searchParams;
 
     if (pathName) {
@@ -92,11 +92,12 @@ const matchRoute = (pathname: string, routeDefinition: string) => {
 };
 
 type RouteProviderProps = {
+    basePath: string;
     externalNavigate: (link: ExternalLink) => void;
     children: React.ReactNode;
 };
 
-const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, children}) => {
+const RoutingProvider: React.FC<RouteProviderProps> = ({basePath, externalNavigate, children}) => {
     const [route, setRoute] = useState<string | undefined>(undefined);
     const [loadingModal, setLoadingModal] = useState(false);
     const [loadModals, setLoadModals] = useState<() => Promise<ModalsModule>>(() => Promise.resolve({default: {}}));
@@ -132,7 +133,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({externalNavigate, childr
     useEffect(() => {
         const handleHashChange = () => {
             setRoute((currentRoute) => {
-                const {pathName, modal, changingModal} = handleNavigation(currentRoute, loadModals, modalPaths);
+                const {pathName, modal, changingModal} = handleNavigation(basePath, currentRoute, loadModals, modalPaths);
 
                 if (modal && changingModal) {
                     setLoadingModal(true);
@@ -199,9 +200,13 @@ export function useRouteChangeCallback(callback: (newPath: string, oldPath: stri
     const {eventTarget} = useRouting();
 
     useEffect(() => {
-        eventTarget.addEventListener("routeChange", (e) => {
+        const listener: EventListener = (e) => {
             const event = e as CustomEvent<{newPath: string, oldPath: string}>
             callback(event.detail.newPath, event.detail.oldPath)
-        })
+        };
+
+        eventTarget.addEventListener("routeChange", listener)
+
+        return () => eventTarget.removeEventListener("routeChange", listener)
     }, [eventTarget, callback])
 }

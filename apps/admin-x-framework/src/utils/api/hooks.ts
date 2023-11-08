@@ -162,7 +162,7 @@ type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & {
     defaultErrorHandler?: boolean;
 };
 
-export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}): Omit<UseQueryResult, "data"> & {data: ResponseData | undefined} => {
+export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}): Omit<UseQueryResult<ResponseData>, "data"> & {data: ResponseData | undefined} => {
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
     const fetchApi = useFetchApi();
     const handleError = useHandleError();

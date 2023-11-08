@@ -1,15 +1,11 @@
-import APIKeys from './APIKeys';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useEffect, useState} from 'react';
-import WebhooksTable from './WebhooksTable';
+import NiceModal, { useModal } from '@ebay/nice-modal-react';
+import { ConfirmationModal, Form, ImageUpload, Modal, TextField, showToast } from '@tryghost/admin-x-design-system';
+import { APIKey, Integration, RoutingModalProps, getGhostPaths, getImageUrl, useBrowseIntegrations, useEditIntegration, useHandleError, useRefreshAPIKey, useRouting, useUploadImage } from '@tryghost/admin-x-framework';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import useForm from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
-import {APIKey, Integration, getImageUrl, useBrowseIntegrations, useEditIntegration, useRefreshAPIKey, useUploadImage} from '@tryghost/admin-x-framework';
-import {ConfirmationModal, Form, ImageUpload, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
-import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {getGhostPaths} from '../../../../utils/helpers';
-import {toast} from 'react-hot-toast';
+import APIKeys from './APIKeys';
+import WebhooksTable from './WebhooksTable';
 
 const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({integration}) => {
     const modal = useModal();

@@ -1,10 +1,8 @@
 import IntegrationHeader from './IntegrationHeader';
 import NiceModal from '@ebay/nice-modal-react';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
 import {Form, Modal, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Icon} from '../../../../assets/icons/amp.svg';
-import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework';
+import {Setting, getSettingValues, useEditSettings, useHandleError, useRouting} from '@tryghost/admin-x-framework';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 

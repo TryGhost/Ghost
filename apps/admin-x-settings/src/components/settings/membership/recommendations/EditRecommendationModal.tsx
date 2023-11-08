@@ -2,11 +2,8 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './RecommendationDescriptionForm';
 import useForm from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
 import {ConfirmationModal, Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
-import {Recommendation, useDeleteRecommendation, useEditRecommendation} from '@tryghost/admin-x-framework';
-import {RoutingModalProps} from '../../../providers/RoutingProvider';
+import {Recommendation, RoutingModalProps, useDeleteRecommendation, useEditRecommendation, useHandleError, useRouting} from '@tryghost/admin-x-framework';
 
 interface EditRecommendationModalProps {
     recommendation: Recommendation,

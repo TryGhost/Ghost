@@ -1,7 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
-import useRouting from '../../../hooks/useRouting';
 import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {useRouting} from '@tryghost/admin-x-framework';
 
 const AnnouncementBar: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();

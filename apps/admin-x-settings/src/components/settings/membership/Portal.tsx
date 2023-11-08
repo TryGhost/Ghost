@@ -1,8 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
-import useRouting from '../../../hooks/useRouting';
 import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getSettingValues} from '@tryghost/admin-x-framework';
+import {getSettingValues, useRouting} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {

@@ -1,12 +1,11 @@
 import EmbedSignupPreview from './EmbedSignupPreview';
 import EmbedSignupSidebar, {SelectedLabelTypes} from './EmbedSignupSidebar';
 import NiceModal from '@ebay/nice-modal-react';
-import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Modal, MultiSelectOption} from '@tryghost/admin-x-design-system';
 import {MultiValue} from 'react-select';
 import {generateCode} from '../../../../utils/generateEmbedCode';
-import {getSettingValues} from '@tryghost/admin-x-framework';
+import {getSettingValues, useRouting} from '@tryghost/admin-x-framework';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 

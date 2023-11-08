@@ -1,8 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import WebhookModal from './WebhookModal';
-import useHandleError from '../../../../utils/api/handleError';
 import {Button, ConfirmationModal, Table, TableCell, TableHead, TableRow, showToast} from '@tryghost/admin-x-design-system';
-import {Integration, useDeleteWebhook} from '@tryghost/admin-x-framework';
+import {Integration, useDeleteWebhook, useHandleError} from '@tryghost/admin-x-framework';
 import {getWebhookEventLabel} from './webhookEventOptions';
 
 const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {

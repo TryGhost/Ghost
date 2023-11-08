@@ -5,11 +5,9 @@ import PortalPreview from './PortalPreview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './SignupOptions';
 import useForm, {Dirtyable} from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
 import useQueryParams from '../../../../hooks/useQueryParams';
-import useRouting from '../../../../hooks/useRouting';
 import {ConfirmationModal, PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {Setting, SettingValue, Tier, fullEmailAddress, getSettingValues, useBrowseTiers, useEditSettings, useEditTier, verifyEmailToken} from '@tryghost/admin-x-framework';
+import {Setting, SettingValue, Tier, fullEmailAddress, getSettingValues, useBrowseTiers, useEditSettings, useEditTier, useHandleError, useRouting, verifyEmailToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const Sidebar: React.FC<{

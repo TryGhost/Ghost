@@ -2,13 +2,10 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './TierDetailPreview';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
 import {Button, ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast} from '@tryghost/admin-x-design-system';
-import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {Tier, getSettingValues, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework';
+import {RoutingModalProps, Tier, getSettingValues, useAddTier, useBrowseTiers, useEditTier, useHandleError, useRouting} from '@tryghost/admin-x-framework';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
 import {toast} from 'react-hot-toast';
 

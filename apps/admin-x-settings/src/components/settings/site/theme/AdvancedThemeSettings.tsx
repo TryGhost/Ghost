@@ -1,9 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
-import useHandleError from '../../../../utils/api/handleError';
 import {Button, ButtonProps, ConfirmationModal, List, ListItem, Menu, ModalPage} from '@tryghost/admin-x-design-system';
-import {Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework';
-import {downloadFile, getGhostPaths} from '../../../../utils/helpers';
+import {Theme, downloadFile, getGhostPaths, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme, useHandleError} from '@tryghost/admin-x-framework';
 
 interface ThemeActionProps {
     theme: Theme;

@@ -1,13 +1,12 @@
 import React, {useState} from 'react';
 import clsx from 'clsx';
-import useHandleError from '../../../../utils/api/handleError';
 import {Form, Heading, Icon, ImageUpload, Select, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {ReactComponent as PortalIcon1} from '../../../../assets/icons/portal-icon-1.svg';
 import {ReactComponent as PortalIcon2} from '../../../../assets/icons/portal-icon-2.svg';
 import {ReactComponent as PortalIcon3} from '../../../../assets/icons/portal-icon-3.svg';
 import {ReactComponent as PortalIcon4} from '../../../../assets/icons/portal-icon-4.svg';
 import {ReactComponent as PortalIcon5} from '../../../../assets/icons/portal-icon-5.svg';
-import {Setting, SettingValue, getImageUrl, getSettingValues, useUploadImage} from '@tryghost/admin-x-framework';
+import {Setting, SettingValue, getImageUrl, getSettingValues, useHandleError, useUploadImage} from '@tryghost/admin-x-framework';
 
 const defaultButtonIcons = [
     {

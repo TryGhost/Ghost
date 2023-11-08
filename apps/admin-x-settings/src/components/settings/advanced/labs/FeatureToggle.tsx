@@ -1,6 +1,5 @@
 import React from 'react';
-import useHandleError from '../../../../utils/api/handleError';
-import {ConfigResponseType, configDataType, getSettingValue, useEditSettings} from '@tryghost/admin-x-framework';
+import {ConfigResponseType, configDataType, getSettingValue, useEditSettings, useHandleError} from '@tryghost/admin-x-framework';
 import {Toggle} from '@tryghost/admin-x-design-system';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useQueryClient} from '@tanstack/react-query';

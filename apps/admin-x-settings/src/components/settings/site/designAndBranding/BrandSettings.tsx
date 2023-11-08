@@ -1,11 +1,10 @@
 import React, {useRef, useState} from 'react';
 import UnsplashSearchModal from '../../../../unsplash/UnsplashSearchModal';
-import useHandleError from '../../../../utils/api/handleError';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {ColorPickerField, Heading, Hint, ImageUpload, SettingGroupContent, TextField, debounce} from '@tryghost/admin-x-design-system';
-import {SettingValue, getImageUrl, getSettingValues, useUploadImage} from '@tryghost/admin-x-framework';
+import {SettingValue, getImageUrl, getSettingValues, useHandleError, useUploadImage} from '@tryghost/admin-x-framework';
+import {useFramework} from '@tryghost/admin-x-framework/types/providers/FrameworkProvider';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {useServices} from '../../../providers/ServiceProvider';
 
 export interface BrandSettingValues {
     description: string
@@ -21,7 +20,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
     const {settings} = useGlobalData();
     const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
     const [showUnsplash, setShowUnsplash] = useState<boolean>(false);
-    const {unsplashConfig} = useServices();
+    const {unsplashConfig} = useFramework();
     const handleError = useHandleError();
 
     const updateDescriptionDebouncedRef = useRef(
