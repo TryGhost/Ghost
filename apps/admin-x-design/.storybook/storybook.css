@@ -1,3 +1,13 @@
+/*
+ * We load Inter in Ember admin, so loading it explicitly here makes the final rendering
+ * in Storybook match the final rendering when embedded in Ember
+ */
+@font-face {
+    font-family: "Inter";
+    src: url("./Inter.ttf") format("truetype-variations");
+    font-weight: 100 900;
+}
+
 :root {
     font-size: 62.5%;
     line-height: 1.5;

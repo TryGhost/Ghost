@@ -6,6 +6,7 @@
 
 /* Defaults */
 @layer base {
+    /* This just serves as a placeholder; we actually load Inter from a font file in Ember admin */
     @font-face {
         font-family: "Inter";
         src: local("Inter") format("truetype-variations");
