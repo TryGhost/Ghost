@@ -1,16 +1,13 @@
-import Button from '../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import NewslettersList from './newsletters/NewslettersList';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {ReactNode, useEffect, useState} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import TabView from '../../../admin-x-ds/global/TabView';
+import TopLevelGroup from '../../TopLevelGroup';
 import useHandleError from '../../../utils/api/handleError';
 import useQueryParams from '../../../hooks/useQueryParams';
 import useRouting from '../../../hooks/useRouting';
 import {APIError} from '../../../utils/errors';
+import {Button, ConfirmationModal, TabView, withErrorBoundary} from '@tryghost/admin-x-design';
 import {useBrowseNewsletters, useVerifyNewsletterEmail} from '../../../api/newsletters';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const NavigateToNewsletter = ({id, children}: {id: string; children: ReactNode}) => {
     const modal = useModal();
@@ -89,7 +86,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ];
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={buttons}
             keywords={keywords}
             navid='newsletters'
@@ -102,7 +99,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 link
                 onClick={() => fetchNextPage()}
             />}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

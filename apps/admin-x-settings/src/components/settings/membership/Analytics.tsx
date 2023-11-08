@@ -1,12 +1,9 @@
-import Button from '../../../admin-x-ds/global/Button';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {Button, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design';
 import {getSettingValues} from '../../../api/settings';
 import {usePostsExports} from '../../../api/posts';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -84,7 +81,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Decide what data you collect from your members'
             isEditing={isEditing}
             keywords={keywords}
@@ -102,7 +99,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <Button color='green' label='Export' link linkWithPadding onClick={exportPosts} />
                 <a className='text-sm text-green' href="https://ghost.org/help/post-analytics/" rel="noopener noreferrer" target="_blank">Learn about analytics</a>
             </div>
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

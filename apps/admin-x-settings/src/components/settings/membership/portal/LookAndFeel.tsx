@@ -1,13 +1,7 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Icon from '../../../../admin-x-ds/global/Icon';
-import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import React, {useState} from 'react';
-import Select from '../../../../admin-x-ds/global/form/Select';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import clsx from 'clsx';
 import useHandleError from '../../../../utils/api/handleError';
+import {Form, Heading, Icon, ImageUpload, Select, TextField, Toggle} from '@tryghost/admin-x-design';
 import {ReactComponent as PortalIcon1} from '../../../../assets/icons/portal-icon-1.svg';
 import {ReactComponent as PortalIcon2} from '../../../../assets/icons/portal-icon-2.svg';
 import {ReactComponent as PortalIcon3} from '../../../../assets/icons/portal-icon-3.svg';

@@ -1,16 +1,14 @@
 import AccountPage from './AccountPage';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import LookAndFeel from './LookAndFeel';
 import NiceModal from '@ebay/nice-modal-react';
 import PortalPreview from './PortalPreview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './SignupOptions';
-import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
 import useForm, {Dirtyable} from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useQueryParams from '../../../../hooks/useQueryParams';
 import useRouting from '../../../../hooks/useRouting';
-import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
+import {ConfirmationModal, PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design';
 import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../../api/settings';
 import {Tier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
 import {fullEmailAddress} from '../../../../api/site';

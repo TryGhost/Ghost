@@ -1,6 +1,5 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
 import React, {FocusEventHandler, useEffect, useState} from 'react';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
+import {Form, TextField} from '@tryghost/admin-x-design';
 import {SettingValue, getSettingValues} from '../../../../api/settings';
 import {fullEmailAddress, getEmailDomain} from '../../../../api/site';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';

@@ -1,10 +1,9 @@
-import Button from '../../../admin-x-ds/global/Button';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
+import TopLevelGroup from '../../TopLevelGroup';
 import useRouting from '../../../hooks/useRouting';
+import {Button, withErrorBoundary} from '@tryghost/admin-x-design';
 import {checkStripeEnabled} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
@@ -15,7 +14,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label='Manage offers' link linkWithPadding onClick={openModal}/>}
             description={<>Grow your audience by providing fixed or percentage discounts. <a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">Learn more</a></>}
             keywords={keywords}

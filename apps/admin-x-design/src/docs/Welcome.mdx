@@ -1,0 +1,47 @@
+import { Meta } from '@storybook/blocks';
+import WelcomeImage from './assets/adminx-screenshot.png';
+import BlocksIcon from './assets/blocks.svg';
+import CircleMenu from './assets/circle-menu.svg';
+import AppsIcon from './assets/apps.svg';
+
+<Meta title="Welcome" />
+
+<div className="sb-doc">
+
+<img src={WelcomeImage} className='main-image' />
+
+# AdminX Design System
+
+<p className='excerpt'>Here you can find our design guidelines, component documentation, and resources for building apps in Ghost Admin.</p>
+
+### What's inside
+
+The AdminX Design System is a collection of React UI building blocks for designers and developers to create apps for Ghost Admin. Its main purpose is to provide a library of available components and maintain consistency across the whole product.
+
+<section className="main-structure-container">
+    <div>
+        <img src={CircleMenu} className="icon green" />
+        <h4>Foundations</h4>
+        <p>Basic global design patterns like colors and icons</p>
+        [Read more &rarr;](/docs/foundations-colors--docs)
+    </div>
+    <div>
+        <img src={BlocksIcon} className="icon purple" />
+        <h4>Global components</h4>
+        <p>UI building blocks to be used across all apps in Ghost Admin</p>
+        [Browse &rarr;](/docs/global-form-checkbox--docs)
+    </div>
+    <div>
+        <img src={AppsIcon} className="icon pink" />
+        <h4>App specific</h4>
+        <p>Reusable components of individual React apps in Ghost Admin</p>
+        [Example &rarr;](/docs/settings-setting-section--docs)
+    </div>
+</section>
+
+The system uses Storybook — if you're new to it, we recommend reading about what it is and how to use it, on [storybook.js.org](https://storybook.js.org).
+
+<br/><br/>
+
+
+</div>

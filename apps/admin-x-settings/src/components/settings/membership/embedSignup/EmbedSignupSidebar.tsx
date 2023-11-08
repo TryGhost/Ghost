@@ -1,17 +1,8 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import ColorIndicator from '../../../../admin-x-ds/global/form/ColorIndicator';
-import ColorPicker from '../../../../admin-x-ds/global/form/ColorPicker';
-import Form from '../../../../admin-x-ds/global/form/Form';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import MultiSelect, {LoadOptions, MultiSelectOption} from '../../../../admin-x-ds/global/form/MultiSelect';
-import Radio from '../../../../admin-x-ds/global/form/Radio';
 import React from 'react';
-import StickyFooter from '../../../../admin-x-ds/global/StickyFooter';
-import TextArea from '../../../../admin-x-ds/global/form/TextArea';
 import useFilterableApi from '../../../../hooks/useFilterableApi';
+import {Button, ColorIndicator, ColorPicker, Form, Heading, LoadMultiSelectOptions, MultiSelect, MultiSelectOption, Radio, StickyFooter, TextArea, debounce} from '@tryghost/admin-x-design';
 import {Label} from '../../../../api/labels';
 import {MultiValue} from 'react-select';
-import {debounce} from '../../../../utils/debounce';
 
 export type SelectedLabelTypes = {
     label: string;
@@ -47,7 +38,7 @@ const EmbedSignupSidebar: React.FC<SidebarProps> = ({selectedLayout,
     isCopied}) => {
     const {loadData} = useFilterableApi<Label>({path: '/labels/', filterKey: 'name', responseKey: 'labels'});
 
-    const loadOptions: LoadOptions = async (input, callback) => {
+    const loadOptions: LoadMultiSelectOptions = async (input, callback) => {
         const labels = await loadData(input);
         callback(labels.map(label => ({label: label.name, value: label.name})));
     };

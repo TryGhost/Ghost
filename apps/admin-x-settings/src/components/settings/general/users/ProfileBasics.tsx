@@ -1,8 +1,6 @@
 import CustomHeader from './CustomHeader';
 import RoleSelector from './RoleSelector';
-import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
+import {SettingGroup, SettingGroupContent, TextField} from '@tryghost/admin-x-design';
 import {UserDetailProps} from '../UserDetailModal';
 import {hasAdminAccess} from '../../../../api/users';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';

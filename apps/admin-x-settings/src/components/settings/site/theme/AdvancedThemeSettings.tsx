@@ -1,12 +1,7 @@
-import Button, {ButtonProps} from '../../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import List from '../../../../admin-x-ds/global/List';
-import ListItem from '../../../../admin-x-ds/global/ListItem';
-import Menu from '../../../../admin-x-ds/global/Menu';
-import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useHandleError from '../../../../utils/api/handleError';
+import {Button, ButtonProps, ConfirmationModal, List, ListItem, Menu, ModalPage} from '@tryghost/admin-x-design';
 import {Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '../../../../api/themes';
 import {downloadFile, getGhostPaths} from '../../../../utils/helpers';
 

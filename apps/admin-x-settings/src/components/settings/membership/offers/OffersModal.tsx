@@ -1,12 +1,9 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
-import {Tier} from '../../../../api/tiers';
+import {Button, Modal, Tab, TabView} from '@tryghost/admin-x-design';
+import {Tier, getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
 import {numberWithCommas} from '../../../../utils/helpers';
 import {useBrowseOffers} from '../../../../api/offers';
 import {useEffect, useState} from 'react';

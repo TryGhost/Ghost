@@ -1,14 +1,9 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import Form from '../../../../admin-x-ds/global/form/Form';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import TextArea from '../../../../admin-x-ds/global/form/TextArea';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
-import {Offer} from '../../../../api/offers';
-import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
+import {Button, Form, PreviewModalContent, TextArea, TextField} from '@tryghost/admin-x-design';
+import {Offer, useBrowseOffersById} from '../../../../api/offers';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {useBrowseOffersById} from '../../../../api/offers';
 import {useEffect} from 'react';
 
 const Sidebar: React.FC<{offer: Offer}> = ({offer}) => {
@@ -73,8 +68,8 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         return null;
     }
     offer = offerById[0];
-    
-    const sidebar = <Sidebar 
+
+    const sidebar = <Sidebar
         offer={offer}
     />;
 
