@@ -73,6 +73,14 @@ describe('Format combinations', function () {
         input: `{"root":{"children":[{"children":[{"detail":0,"format":2,"mode":"normal","style":"","text":"Italic ","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"Strong","type":"text","version":1},{"detail":0,"format":2,"mode":"normal","style":"","text":" Italic","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
         output: `<p><em>Italic <strong>Strong</strong> Italic</em></p>`
     }));
+
+    // an earlier TextContent implementation was dependent on content formats having a specific order
+    // otherwise we would start tags and close tags in an incorrect order
+    // previous output: <p>(<strong><em>italic+bold</em><em> italic</em></strong>)</p>
+    it('italic+bold different order', shouldRender({
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"(","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"italic+bold","type":"text","version":1},{"detail":0,"format":2,"mode":"normal","style":"","text":" italic","type":"text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":")","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: `<p>(<em><strong>italic+bold</strong> italic</em>)</p>`
+    }));
 });
 
 describe('Formats with linebreaks', function () {

@@ -64,7 +64,7 @@ function exportChildren(node, options) {
     const output = [];
     const children = node.getChildren();
 
-    const textContent = new TextContent(options.dom);
+    const textContent = new TextContent(exportChildren, options);
 
     for (const child of children) {
         if (!textContent.isEmpty() && !$isLineBreakNode(child) && !$isTextNode(child) && !$isLinkNode(child)) {
@@ -72,12 +72,8 @@ function exportChildren(node, options) {
             textContent.clear();
         }
 
-        if ($isLineBreakNode(child)) {
-            textContent.addLineBreak();
-        } else if ($isTextNode(child)) {
-            textContent.addTextNode(child, node, options);
-        } else if ($isLinkNode(child)) {
-            textContent.addLinkNode(child, node, exportChildren, options);
+        if ($isLineBreakNode(child) || $isTextNode(child) || $isLinkNode(child)) {
+            textContent.addNode(child);
         } else if ($isElementNode(child)) {
             output.push(exportChildren(child, options));
         }
