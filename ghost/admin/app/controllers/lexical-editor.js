@@ -347,7 +347,10 @@ export default class LexicalEditorController extends Controller {
     @action
     setFeatureImageCaption(html) {
         this.post.set('featureImageCaption', html);
+    }
 
+    @action
+    handleFeatureImageCaptionBlur() {
         if (this.post.isDraft) {
             this.autosaveTask.perform();
         }
@@ -432,6 +435,10 @@ export default class LexicalEditorController extends Controller {
     // _xSave tasks  that will also cancel the autosave task
     @task({group: 'saveTasks'})
     *saveTask(options = {}) {
+        if (this.post.isDestroyed || this.post.isDestroying) {
+            return;
+        }
+
         let prevStatus = this.get('post.status');
         let isNew = this.get('post.isNew');
         const adapterOptions = {};
@@ -946,21 +953,6 @@ export default class LexicalEditorController extends Controller {
             return;
         }
 
-        // wait for any save to finish before continuing to avoid any issues
-        // with attempting a new save whilst another has requests in-flight
-        if (this.saveTask.isRunning) {
-            transition.abort();
-            await this.saveTask.last;
-            return transition.retry();
-        }
-        // extra handling for PSM-triggered save tasks that aren't captured above
-        // NOTE: we don't wait on `_savePostTask` as it's only used as a child task
-        if (this.savePostTask.isRunning) {
-            transition.abort();
-            await this.savePostTask.last;
-            return transition.retry();
-        }
-
         // user can enter the slug name and then leave the post page,
         // in such case we should wait until the slug would be saved on backend
         if (this.updateSlugTask.isRunning) {
@@ -998,7 +990,7 @@ export default class LexicalEditorController extends Controller {
                 && (state.isSaving || !state.hasDirtyAttributes);
 
         // If leaving the editor and the post has changed since we last saved a revision, always save a new revision
-        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision) {
+        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes) {
             transition.abort();
             if (this._autosaveRunning) {
                 this.cancelAutosave();

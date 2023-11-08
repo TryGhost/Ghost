@@ -22,13 +22,25 @@ if (sentryConfig && !sentryConfig.disabled) {
                     event.exception.values[0].type = exception.context;
                 }
 
+                // This is a mysql2 error — add some additional context
+                if (exception.sql) {
+                    event.exception.values[0].type = `SQL Error ${exception.errno}: ${exception.sqlErrorCode}`;
+                    event.exception.values[0].value = exception.sqlMessage;
+                    event.contexts.mysql = {
+                        errno: exception.errno,
+                        code: exception.sqlErrorCode,
+                        sql: exception.sql,
+                        message: exception.sqlMessage,
+                        state: exception.sqlState
+                    };
+                }
+
                 // This is a Ghost Error, copy all our extra data to tags
                 event.tags.type = exception.errorType;
                 event.tags.code = exception.code;
                 event.tags.id = exception.id;
                 event.tags.statusCode = exception.statusCode;
             }
-
             return event;
         }
     });

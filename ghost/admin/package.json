@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.71.0",
+  "version": "5.72.1",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -39,13 +39,13 @@
     "@embroider/macros": "1.13.2",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
-    "@sentry/ember": "7.77.0",
+    "@sentry/ember": "7.78.0",
     "@tryghost/color-utils": "0.2.0",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.88",
-    "@tryghost/kg-clean-basic-html": "3.0.39",
-    "@tryghost/kg-converters": "0.0.21",
-    "@tryghost/koenig-lexical": "0.5.12",
+    "@tryghost/kg-clean-basic-html": "3.0.40",
+    "@tryghost/kg-converters": "0.0.22",
+    "@tryghost/koenig-lexical": "0.5.16",
     "@tryghost/limit-service": "1.2.12",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/nql": "0.11.0",
@@ -76,7 +76,7 @@
     "ember-cli-chart": "3.7.2",
     "ember-cli-code-coverage": "1.0.3",
     "ember-cli-dependency-checker": "3.3.2",
-    "ember-cli-deprecation-workflow": "2.1.0",
+    "ember-cli-deprecation-workflow": "2.2.0",
     "ember-cli-htmlbars": "6.3.0",
     "ember-cli-inject-live-reload": "2.1.0",
     "ember-cli-mirage": "2.4.0",
@@ -150,8 +150,8 @@
   "ember-addon": {
     "paths": [
       "lib/asset-delivery",
-      "lib/ember-power-calendar-utils",
-      "lib/ember-power-calendar-moment"
+      "lib/ember-power-calendar-moment",
+      "lib/ember-power-calendar-utils"
     ]
   },
   "resolutions": {

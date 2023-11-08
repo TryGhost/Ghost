@@ -156,6 +156,84 @@ describe('RecommendationController', function () {
         });
     });
 
+    describe('check', function () {
+        it('should return url metadata', async function () {
+            service.checkRecommendation = async (url) => {
+                return {
+                    excerpt: 'Updated excerpt',
+                    url
+                };
+            };
+
+            const result = await controller.check({
+                data: {
+                    recommendations: [
+                        {
+                            url: 'https://example.com/'
+                        }
+                    ]
+                },
+                options: {},
+                user: {}
+            });
+
+            assert.deepEqual(result, {
+                data: [{
+                    excerpt: 'Updated excerpt',
+                    created_at: null,
+                    updated_at: null,
+                    description: null,
+                    favicon: null,
+                    featured_image: null,
+                    id: null,
+                    one_click_subscribe: null,
+                    title: null,
+                    url: 'https://example.com/',
+                    count: undefined
+                }],
+                meta: undefined
+            });
+        });
+
+        it('should serialize undefined url', async function () {
+            service.checkRecommendation = async () => {
+                return {
+                    excerpt: 'Updated excerpt',
+                    url: undefined
+                };
+            };
+
+            const result = await controller.check({
+                data: {
+                    recommendations: [
+                        {
+                            url: 'https://example.com/'
+                        }
+                    ]
+                },
+                options: {},
+                user: {}
+            });
+
+            assert.deepEqual(result, {
+                data: [{
+                    excerpt: 'Updated excerpt',
+                    created_at: null,
+                    updated_at: null,
+                    description: null,
+                    favicon: null,
+                    featured_image: null,
+                    id: null,
+                    one_click_subscribe: null,
+                    title: null,
+                    url: null,
+                    count: undefined
+                }],
+                meta: undefined
+            });
+        });
+    });
+
     describe('edit', function () {
         it('should edit a recommendation', async function () {
             service.editRecommendation = async (id, edit) => {

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/ember';
 import AjaxService from 'ember-ajax/services/ajax';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
@@ -5,7 +6,6 @@ import moment from 'moment-timezone';
 import semverCoerce from 'semver/functions/coerce';
 import semverLt from 'semver/functions/lt';
 import {AjaxError, isAjaxError, isForbiddenError} from 'ember-ajax/errors';
-import {captureMessage} from '@sentry/ember';
 import {get} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {isArray as isEmberArray} from '@ember/array';
@@ -271,7 +271,7 @@ class ajaxService extends AjaxService {
                 success = true;
 
                 if (attempts !== 0 && this.config.sentry_dsn) {
-                    captureMessage('Request took multiple attempts', {extra: getErrorData()});
+                    Sentry.captureMessage('Request took multiple attempts', {extra: getErrorData()});
                 }
 
                 return result;
@@ -289,7 +289,7 @@ class ajaxService extends AjaxService {
                     await timeout(retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1]);
                     attempts += 1;
                 } else if (attempts > 0 && this.config.sentry_dsn) {
-                    captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
+                    Sentry.captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
                     throw error;
                 } else {
                     throw error;
@@ -299,6 +299,16 @@ class ajaxService extends AjaxService {
     }
 
     handleResponse(status, headers, payload, request) {
+        // set some context variables for Sentry in case there is an error
+        Sentry.setContext('ajax', {
+            url: request.url,
+            method: request.method,
+            status
+        });
+        Sentry.setTag('ajaxStatus', status);
+        Sentry.setTag('ajaxUrl', request.url);
+        Sentry.setTag('ajaxMethod', request.method);
+
         if (headers['content-version']) {
             const contentVersion = semverCoerce(headers['content-version']);
             const appVersion = semverCoerce(config.APP.version);

@@ -1,16 +1,12 @@
-import DesignSystemProvider from './admin-x-ds/providers/DesignSystemProvider';
 import GlobalDataProvider from './components/providers/GlobalDataProvider';
 import MainContent from './MainContent';
-import NiceModal from '@ebay/nice-modal-react';
 import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
-import clsx from 'clsx';
 import {DefaultHeaderTypes} from './unsplash/UnsplashTypes';
+import {DesignSystemApp} from '@tryghost/admin-x-design-system';
 import {FetchKoenigLexical, OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
-import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ScrollSectionProvider} from './hooks/useScrollSection';
 import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
-import {Toaster} from 'react-hot-toast';
 import {UpgradeStatusType} from './utils/globalTypes';
 import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
 
@@ -42,12 +38,6 @@ const queryClient = new QueryClient({
 });
 
 function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, fetchKoenigLexical, sentryDSN, onUpdate, onInvalidate, onDelete, upgradeStatus}: AppProps) {
-    const appClassName = clsx(
-        'admin-x-settings admin-x-base',
-        darkMode && 'dark'
-        //'!h-[calc(100vh-55px)] w-full overflow-y-auto overflow-x-hidden tablet:!h-[100vh]'
-    );
-
     return (
         <SentryErrorBoundary>
             <QueryClientProvider client={queryClient}>
@@ -55,20 +45,12 @@ function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, d
                     <GlobalDataProvider>
                         <ScrollSectionProvider>
                             <RoutingProvider externalNavigate={externalNavigate}>
-                                <GlobalDirtyStateProvider>
-                                    <DesignSystemProvider>
-                                        <div className={appClassName} id="admin-x-root" style={{
-                                            // height: '100vh',
-                                            // width: '100%'
-                                        }}
-                                        >
-                                            <Toaster />
-                                            <NiceModal.Provider>
-                                                <MainContent />
-                                            </NiceModal.Provider>
-                                        </div>
-                                    </DesignSystemProvider>
-                                </GlobalDirtyStateProvider>
+                                <DesignSystemApp className='admin-x-settings' darkMode={darkMode} fetchKoenigLexical={fetchKoenigLexical} id="admin-x-settings" style={{
+                                    // height: '100vh',
+                                    // width: '100%'
+                                }}>
+                                    <MainContent />
+                                </DesignSystemApp>
                             </RoutingProvider>
                         </ScrollSectionProvider>
                     </GlobalDataProvider>

@@ -1,8 +1,6 @@
 import CustomHeader from './CustomHeader';
-import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
+import {SettingGroup, SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
 import {User, hasAdminAccess} from '../../../../api/users';
 
 const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {

@@ -92,7 +92,6 @@ export default Route.extend(ShortcutsRoute, {
             // Need a tiny delay here to allow the router to update to the current route
             later(() => {
                 Sentry.setTag('route', this.router.currentRouteName);
-                Sentry.setTag('path', this.router.currentURL);
             }, 2);
         },
 
@@ -181,7 +180,8 @@ export default Route.extend(ShortcutsRoute, {
                 dsn: this.config.sentry_dsn,
                 environment: this.config.sentry_env,
                 release: `ghost@${this.config.version}`,
-                beforeSend(event) {
+                beforeSend(event, hint) {
+                    const exception = hint.originalException;
                     event.tags = event.tags || {};
                     event.tags.shown_to_user = event.tags.shown_to_user || false;
                     event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
@@ -189,6 +189,21 @@ export default Route.extend(ShortcutsRoute, {
                     // Do not report "handled" errors to Sentry
                     if (event.tags.shown_to_user === true) {
                         return null;
+                    }
+
+                    // ajax errors — improve logging and add context for debugging
+                    if (isAjaxError(exception)) {
+                        const error = exception.payload.errors[0];
+                        event.exception.values[0].type = `${error.type}: ${error.context}`;
+                        event.exception.values[0].value = error.message;
+                        event.exception.values[0].context = error.context;
+                        event.tags.isAjaxError = true;
+                    } else {
+                        event.tags.isAjaxError = false;
+                        delete event.contexts.ajax;
+                        delete event.tags.ajaxStatus;
+                        delete event.tags.ajaxMethod;
+                        delete event.tags.ajaxUrl;
                     }
 
                     return event;

@@ -5,7 +5,6 @@
     --mainmenu-color-active-bg: var(--whitegrey);
     --mainmenu-width: 320px;
     --mainmenu-padding: var(--main-layout-area-padding);
-    --contextualmenu-width: 360px;
 }
 
 /* Utils */
@@ -216,9 +215,7 @@
 }
 
 .gh-nav-main-enter-active,
-.gh-nav-main-leave-active,
-.gh-nav-contextual-enter-active,
-.gh-nav-contextual-leave-active {
+.gh-nav-main-leave-active {
     position: absolute;
     top: 0;
     height: 100%;
@@ -233,29 +230,6 @@
 .gh-nav-main-enter,
 .gh-nav-main-leave-to {
     transform: translateX(-100%);
-}
-
-.gh-nav-contextual-enter-active,
-.gh-nav-contextual-leave-active {
-    width: calc(var(--contextualmenu-width) - 1px);
-}
-
-/* For some reason the animate-in transition wasn't working with pure transforms */
-/* Using `left` correctly positioned the starting state so we could then use opposite transforms */
-.gh-nav-contextual-enter-active {
-    left: calc(var(--contextualmenu-width) - 1px);
-}
-
-.gh-nav-contextual-enter-to {
-    transform: translateX(-100%);
-}
-
-.gh-nav-contextual-leave {
-    transform: translateX(0);
-}
-
-.gh-nav-contextual-leave-to {
-    transform: translateX(calc(var(--mainmenu-width) - 1px));
 }
 
 .gh-account-menu-header {
@@ -2042,14 +2016,6 @@ section.gh-ds h2 {
     margin: 0;
     padding: 0 3rem 0 0;
     line-height: 1.45em;
-}
-
-.gh-done .gh-setting-desc {
-    padding-right: 2rem;
-}
-
-.gh-done .gh-nav-design .gh-setting-action {
-    margin-bottom: 12px;
 }
 
 .gh-done-panel {
