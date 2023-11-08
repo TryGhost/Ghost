@@ -9,6 +9,7 @@ import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
 import {ReactComponent as CheckIcon} from '../../../../admin-x-ds/assets/icons/check.svg';
 import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
+// import {getActiveTiers, useBrowseTiers} from '../../../../api/tiers';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {useEffect} from 'react';
 
@@ -128,6 +129,8 @@ const AddOfferModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const hasOffers = useFeatureFlag('adminXOffers');
+    // const {data: {tiers, meta, isEnd} = {}} = useBrowseTiers();
+    // const activeTiers = getActiveTiers(tiers || []);
 
     useEffect(() => {
         if (!hasOffers) {
@@ -142,7 +145,7 @@ const AddOfferModal = () => {
     };
 
     const sidebar = <Sidebar />;
-    
+    // TODO: wire up the data from the sidebar inputs
     let overrides : offerPortalPreviewUrlTypes = {
         disableBackground: true,
         name: 'Black Friday',
@@ -156,7 +159,7 @@ const AddOfferModal = () => {
         durationInMonths: 12,
         currency: 'USD',
         status: 'active',
-        tierId: '21446262'
+        tierId: ''
     };
 
     const href = getOfferPortalPreviewUrl(overrides, 'http://localhost:2368');
