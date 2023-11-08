@@ -1,3 +1,4 @@
+import Breadcrumbs, {BreadcrumbItem} from '../Breadcrumbs';
 import ButtonGroup from '../ButtonGroup';
 import DesktopChrome from '../chrome/DesktopChrome';
 import Heading, {HeadingLevel} from '../Heading';
@@ -10,7 +11,6 @@ import Select, {SelectOption} from '../form/Select';
 import TabView, {Tab} from '../TabView';
 import clsx from 'clsx';
 import useGlobalDirtyState from '../../../hooks/useGlobalDirtyState';
-import Breadcrumbs, {BreadcrumbItem} from '../Breadcrumbs';
 import {ButtonColor, ButtonProps} from '../Button';
 import {confirmIfDirty} from '../../../utils/modals';
 
