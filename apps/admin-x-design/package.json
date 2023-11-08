@@ -44,6 +44,8 @@
     "rollup-plugin-node-builtins": "2.1.2",
     "sinon": "17.0.0",
     "ts-node": "10.9.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "storybook": "7.4.0",
     "typescript": "5.2.2",
     "vite": "4.5.0",
