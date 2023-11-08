@@ -50,20 +50,26 @@ const COMMAND_TYPESCRIPT = {
     env: {}
 };
 
-const COMMAND_ADMINX = {
+const COMMANDS_ADMINX = [{
+    name: 'adminXDS',
+    command: 'nx watch --projects=apps/admin-x-design -- nx run \\$NX_PROJECT_NAME:build --skip-nx-cache',
+    cwd: path.resolve(__dirname, '../..'),
+    prefixColor: '#C35831',
+    env: {}
+}, {
     name: 'adminX',
-    command: 'yarn dev',
+    command: 'yarn build && yarn dev',
     cwd: path.resolve(__dirname, '../../apps/admin-x-settings'),
     prefixColor: '#C35831',
     env: {}
-};
+}];
 
 if (DASH_DASH_ARGS.includes('ghost')) {
     commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT];
 } else if (DASH_DASH_ARGS.includes('admin')) {
-    commands = [COMMAND_ADMIN, COMMAND_ADMINX];
+    commands = [COMMAND_ADMIN, ...COMMANDS_ADMINX];
 } else {
-    commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN, COMMAND_ADMINX];
+    commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN, ...COMMANDS_ADMINX];
 }
 
 if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
