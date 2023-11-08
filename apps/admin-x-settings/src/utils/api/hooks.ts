@@ -143,7 +143,11 @@ export const apiUrl = (path: string, searchParams: Record<string, string> = {}) 
 
 const parameterizedPath = (path: string, params: string | string[]) => {
     const paramList = Array.isArray(params) ? params : [params];
-    return paramList.reduce((updatedPath, param) => updatedPath.replace(/:[a-z0-9]+/, encodeURIComponent(param)), path);
+    return paramList.reduce(function (updatedPath, param) {
+        updatedPath = updatedPath + param + '/';
+        updatedPath.replace(/:[a-z0-9]+/, encodeURIComponent(param));
+        return updatedPath;
+    }, path);
 };
 
 interface QueryOptions<ResponseData> {
