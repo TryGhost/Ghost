@@ -1,3 +1,5 @@
+export {default as AdminXApp} from './AdminXApp';
+
 export {default as FrameworkProvider, useFramework} from './providers/FrameworkProvider';
 export type {FrameworkContextType, FrameworkProviderProps} from './providers/FrameworkProvider';
 export {useModalPaths, useRouteChangeCallback, useRouting} from './providers/RoutingProvider';

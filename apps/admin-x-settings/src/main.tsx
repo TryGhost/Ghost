@@ -8,6 +8,7 @@ import {DefaultHeaderTypes} from './unsplash/UnsplashTypes.ts';
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
         <App
+            darkMode={false}
             externalNavigate={() => {}}
             fetchKoenigLexical={() => {
                 return Promise.resolve();
