@@ -61,6 +61,7 @@ describe('Members Service - utils', function () {
                 extra: 'property',
                 newsletters: [{
                     id: 'newsletter-1',
+                    uuid: 'uuid-1',
                     name: 'Daily brief',
                     description: 'One email daily',
                     sender_name: 'Jamie',
@@ -82,6 +83,7 @@ describe('Members Service - utils', function () {
                 paid: true,
                 newsletters: [{
                     id: 'newsletter-1',
+                    uuid: 'uuid-1',
                     name: 'Daily brief',
                     description: 'One email daily',
                     sort_order: 0

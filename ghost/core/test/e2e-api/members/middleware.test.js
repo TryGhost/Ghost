@@ -12,7 +12,8 @@ const memberMatcher = (newslettersCount) => {
         created_at: anyISODateTime,
         newsletters: new Array(newslettersCount).fill(
             {
-                id: anyObjectId
+                id: anyObjectId,
+                uuid: anyUuid
             }
         )
     };
@@ -23,7 +24,8 @@ const buildMemberMatcher = (newslettersCount) => {
         uuid: anyUuid,
         newsletters: new Array(newslettersCount).fill(
             {
-                id: anyObjectId
+                id: anyObjectId,
+                uuid: anyUuid
             }
         )
     };
