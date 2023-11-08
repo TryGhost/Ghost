@@ -84,7 +84,7 @@
     "ember-cli-postcss": "6.0.1",
     "ember-cli-shims": "1.2.0",
     "ember-cli-string-helpers": "6.1.0",
-    "ember-cli-terser": "4.0.2",
+    "ember-cli-terser": "4.0.1",
     "ember-cli-test-loader": "3.1.0",
     "ember-composable-helpers": "5.0.0",
     "ember-concurrency": "2.3.7",
