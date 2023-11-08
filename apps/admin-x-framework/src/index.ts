@@ -1,4 +1,4 @@
-export { default as FrameworkProvider } from './providers/FrameworkProvider';
+export { default as FrameworkProvider, useFramework } from './providers/FrameworkProvider';
 export type { FrameworkContextType, FrameworkProviderProps } from './providers/FrameworkProvider';
 export { useModalPaths, useRouteChangeCallback, useRouting } from './providers/RoutingProvider';
 export type { ExternalLink, InternalLink, RoutingModalProps } from './providers/RoutingProvider';
