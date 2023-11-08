@@ -1,9 +1,9 @@
 import * as Sentry from '@sentry/react';
-import { showToast } from '@tryghost/admin-x-design-system';
-import { useCallback } from 'react';
+import {showToast} from '@tryghost/admin-x-design-system';
+import {useCallback} from 'react';
 import toast from 'react-hot-toast';
-import { useFramework } from '../../providers/FrameworkProvider';
-import { APIError, JSONError, ValidationError } from '../errors';
+import {useFramework} from '../../providers/FrameworkProvider';
+import {APIError, JSONError, ValidationError} from '../errors';
 
 /**
  * Generic error handling for API calls. This is enabled by default for queries (can be disabled by
@@ -20,7 +20,7 @@ const useHandleError = () => {
      *  so this toast is intended as a worst-case fallback message when we don't know what else to do.
      *
      */
-    type HandleErrorReturnType = void | any;
+    type HandleErrorReturnType = void | any; // eslint-disable-line @typescript-eslint/no-explicit-any
     const handleError = useCallback((error: unknown, {withToast = true}: {withToast?: boolean} = {}) : HandleErrorReturnType => {
         // eslint-disable-next-line no-console
         console.error(error);

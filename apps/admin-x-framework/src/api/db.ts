@@ -1,5 +1,5 @@
-import { createMutation } from '../utils/api/hooks';
-import { downloadFromEndpoint } from '../utils/helpers';
+import {createMutation} from '../utils/api/hooks';
+import {downloadFromEndpoint} from '../utils/helpers';
 
 export const useImportContent = createMutation<unknown, File>({
     method: 'POST',

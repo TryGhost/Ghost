@@ -1,5 +1,5 @@
-import NiceModal, { NiceModalHocProps } from '@ebay/nice-modal-react';
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import NiceModal, {NiceModalHocProps} from '@ebay/nice-modal-react';
+import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
 
 export type RouteParams = Record<string, string>
 
@@ -20,6 +20,7 @@ export type RoutingModalProps = {
     searchParams?: URLSearchParams
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ModalsModule = {default: {[key: string]: ModalComponent<any>}}
 
 export type ModalComponent<Props = object> = React.FC<NiceModalHocProps & RoutingModalProps & Props>;
@@ -61,7 +62,7 @@ const handleNavigation = (basePath: string, currentRoute: string | undefined, lo
 
     // Create a URL to easily extract the path without query parameters
     const domain = `${window.location.protocol}//${window.location.hostname}`;
-    let url = new URL(hash, domain);
+    const url = new URL(hash, domain);
 
     const pathName = getHashPath(basePath, url.pathname);
     const searchParams = url.searchParams;
@@ -104,9 +105,9 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({basePath, externalNaviga
     const [modalPaths, setModalPaths] = useState<Record<string, string>>({});
     const [eventTarget] = useState(new EventTarget());
 
-    const registerModals = useCallback((loadModals: () => Promise<ModalsModule>, modalPaths: Record<string, string>) => {
-        setLoadModals(() => loadModals);
-        setModalPaths(() => modalPaths);
+    const registerModals = useCallback((newLoadModals: () => Promise<ModalsModule>, newModalPaths: Record<string, string>) => {
+        setLoadModals(() => newLoadModals);
+        setModalPaths(() => newModalPaths);
     }, []);
 
     const updateRoute = useCallback((to: string | InternalLink | ExternalLink) => {
@@ -127,8 +128,8 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({basePath, externalNaviga
             window.location.hash = `/settings`;
         }
 
-        eventTarget.dispatchEvent(new CustomEvent("routeChange", {detail: {newPath, oldPath: route}}))
-    }, [externalNavigate, route]);
+        eventTarget.dispatchEvent(new CustomEvent('routeChange', {detail: {newPath, oldPath: route}}));
+    }, [eventTarget, externalNavigate, route]);
 
     useEffect(() => {
         const handleHashChange = () => {
@@ -189,7 +190,7 @@ export function useModalPaths<ModalName extends string>(
         setTimeout(() => {
             loadModals();
         }, 1000);
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 export function useRouting() {
@@ -201,12 +202,12 @@ export function useRouteChangeCallback(callback: (newPath: string, oldPath: stri
 
     useEffect(() => {
         const listener: EventListener = (e) => {
-            const event = e as CustomEvent<{newPath: string, oldPath: string}>
-            callback(event.detail.newPath, event.detail.oldPath)
+            const event = e as CustomEvent<{newPath: string, oldPath: string}>;
+            callback(event.detail.newPath, event.detail.oldPath);
         };
 
-        eventTarget.addEventListener("routeChange", listener)
+        eventTarget.addEventListener('routeChange', listener);
 
-        return () => eventTarget.removeEventListener("routeChange", listener)
-    }, [eventTarget, callback])
+        return () => eventTarget.removeEventListener('routeChange', listener);
+    }, [eventTarget, callback]);
 }

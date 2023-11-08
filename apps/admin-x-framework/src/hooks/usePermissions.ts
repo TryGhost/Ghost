@@ -1,5 +1,5 @@
-import { UserRoleType } from '../api/roles';
-import { useCurrentUser } from '../api/users';
+import {UserRoleType} from '../api/roles';
+import {useCurrentUser} from '../api/users';
 
 export const usePermission = (userRoles:string[]) => {
     const {data: currentUser} = useCurrentUser();

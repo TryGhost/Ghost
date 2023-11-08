@@ -1,6 +1,6 @@
-import { Meta, createMutation, createQuery } from '../utils/api/hooks';
-import { APIKey } from './apiKeys';
-import { Webhook } from './webhooks';
+import {Meta, createMutation, createQuery} from '../utils/api/hooks';
+import {APIKey} from './apiKeys';
+import {Webhook} from './webhooks';
 
 // Types
 

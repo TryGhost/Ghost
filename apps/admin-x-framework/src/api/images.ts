@@ -1,4 +1,4 @@
-import { createMutation } from '../utils/api/hooks';
+import {createMutation} from '../utils/api/hooks';
 
 export interface ImagesResponseType {
     images: {

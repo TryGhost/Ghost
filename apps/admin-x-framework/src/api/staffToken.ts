@@ -1,4 +1,4 @@
-import { Meta, createMutation, createQuery } from '../utils/api/hooks';
+import {Meta, createMutation, createQuery} from '../utils/api/hooks';
 
 export type staffToken = {
     id: string;

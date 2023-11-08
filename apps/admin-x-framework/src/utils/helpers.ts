@@ -6,11 +6,11 @@ export interface IGhostPaths {
 }
 
 export function getGhostPaths(): IGhostPaths {
-    let path = window.location.pathname;
-    let subdir = path.substr(0, path.search('/ghost/'));
-    let adminRoot = `${subdir}/ghost/`;
-    let assetRoot = `${subdir}/ghost/assets/`;
-    let apiRoot = `${subdir}/ghost/api/admin`;
+    const path = window.location.pathname;
+    const subdir = path.substr(0, path.search('/ghost/'));
+    const adminRoot = `${subdir}/ghost/`;
+    const assetRoot = `${subdir}/ghost/assets/`;
+    const apiRoot = `${subdir}/ghost/api/admin`;
     return {subdir, adminRoot, assetRoot, apiRoot};
 }
 

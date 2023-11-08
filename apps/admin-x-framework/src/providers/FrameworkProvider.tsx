@@ -1,9 +1,8 @@
-import { ErrorBoundary as SentryErrorBoundary } from '@sentry/react';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactNode, createContext, useContext } from 'react';
+import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
+import {QueryClientProvider} from '@tanstack/react-query';
+import {ReactNode, createContext, useContext} from 'react';
 import queryClient from '../queryClient';
-import RoutingProvider, { ExternalLink } from './RoutingProvider';
-
+import RoutingProvider, {ExternalLink} from './RoutingProvider';
 
 export interface FrameworkProviderProps {
     basePath: string;
@@ -24,7 +23,7 @@ export interface FrameworkProviderProps {
     children: ReactNode;
 }
 
-export type FrameworkContextType = Omit<FrameworkProviderProps, "basePath" | "externalNavigate" | "children">;
+export type FrameworkContextType = Omit<FrameworkProviderProps, 'basePath' | 'externalNavigate' | 'children'>;
 
 const FrameworkContext = createContext<FrameworkContextType>({
     ghostVersion: '',
@@ -57,4 +56,4 @@ function FrameworkProvider({externalNavigate, basePath, children, ...props}: Fra
 
 export default FrameworkProvider;
 
-export const useFramework = () => useContext(FrameworkContext)
+export const useFramework = () => useContext(FrameworkContext);

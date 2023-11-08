@@ -1,7 +1,7 @@
-import { InfiniteData } from '@tanstack/react-query';
-import { ExternalLink, InternalLink } from '../providers/RoutingProvider';
-import { Meta, createInfiniteQuery } from '../utils/api/hooks';
-import { JSONObject } from './config';
+import {InfiniteData} from '@tanstack/react-query';
+import {ExternalLink, InternalLink} from '../providers/RoutingProvider';
+import {Meta, createInfiniteQuery} from '../utils/api/hooks';
+import {JSONObject} from './config';
 
 // Types
 

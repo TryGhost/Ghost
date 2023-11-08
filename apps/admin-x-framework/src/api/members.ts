@@ -1,4 +1,4 @@
-import { Meta, createQuery } from '../utils/api/hooks';
+import {Meta, createQuery} from '../utils/api/hooks';
 
 export type Member = {
     id: string;

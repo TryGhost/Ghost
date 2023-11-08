@@ -1,4 +1,4 @@
-import { Meta, createMutation } from '../utils/api/hooks';
+import {Meta, createMutation} from '../utils/api/hooks';
 
 export type emailVerification = {
     token: string;

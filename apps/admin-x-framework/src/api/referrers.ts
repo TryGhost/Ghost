@@ -1,4 +1,4 @@
-import { createQuery } from '../utils/api/hooks';
+import {createQuery} from '../utils/api/hooks';
 
 export type ReferrerHistoryItem = {
     date: string,

@@ -1,11 +1,11 @@
 import * as Sentry from '@sentry/react';
-import { UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { usePagination } from '@tryghost/admin-x-design-system';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { usePermission } from '../../hooks/usePermissions';
-import { useFramework } from '../../providers/FrameworkProvider';
-import { APIError, MaintenanceError, ServerUnreachableError, TimeoutError } from '../errors';
-import { getGhostPaths } from '../helpers';
+import {UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {usePagination} from '@tryghost/admin-x-design-system';
+import {useCallback, useEffect, useMemo, useState} from 'react';
+import {usePermission} from '../../hooks/usePermissions';
+import {useFramework} from '../../providers/FrameworkProvider';
+import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from '../errors';
+import {getGhostPaths} from '../helpers';
 import useHandleError from './handleError';
 import handleResponse from './handleResponse';
 
@@ -57,7 +57,7 @@ export const useFetchApi = () => {
         // 1. Server Unreachable error from the browser (code 0 or TypeError), typically from short internet blips
         // 2. Maintenance error from Ghost, upgrade in progress so API is temporarily unavailable
         let attempts = 0;
-        let shouldRetry = options.retry === true || options.retry === undefined;
+        const shouldRetry = options.retry === true || options.retry === undefined;
         let retryingMs = 0;
         const startTime = Date.now();
         const maxRetryingMs = 15_000;
@@ -162,7 +162,7 @@ type QueryHookOptions<ResponseData> = UseQueryOptions<ResponseData> & {
     defaultErrorHandler?: boolean;
 };
 
-export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}): Omit<UseQueryResult<ResponseData>, "data"> & {data: ResponseData | undefined} => {
+export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}): Omit<UseQueryResult<ResponseData>, 'data'> & {data: ResponseData | undefined} => {
     const url = apiUrl(options.path, searchParams || options.defaultSearchParams);
     const fetchApi = useFetchApi();
     const handleError = useHandleError();

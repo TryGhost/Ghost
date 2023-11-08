@@ -1,4 +1,4 @@
-import { createQuery } from '../utils/api/hooks';
+import {createQuery} from '../utils/api/hooks';
 
 export type JSONValue = string|number|boolean|null|Date|JSONObject|JSONArray;
 export interface JSONObject { [key: string]: JSONValue }

@@ -1,4 +1,4 @@
-import { Meta, createQuery, createQueryWithId } from '../utils/api/hooks';
+import {Meta, createQuery, createQueryWithId} from '../utils/api/hooks';
 
 export type Offer = {
     id: string;
