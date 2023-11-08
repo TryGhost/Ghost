@@ -68,7 +68,6 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         }
     }, [hasOffers, modal, updateRoute]);
 
-
     const {data: {offers: offerById = []} = {}} = useBrowseOffersById(params?.id ? params?.id : '');
     if (offerById.length === 0) {
         return null;
@@ -79,7 +78,7 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         offer={offer}
     />;
 
-    return <PreviewModalContent deviceSelector={false} okLabel='Update' sidebar={sidebar} size='full' title='Offer' onCancel={() => {
+    return <PreviewModalContent deviceSelector={false} okLabel='Update' sidebar={sidebar} size='full' title={offer?.name} onCancel={() => {
         modal.remove();
         updateRoute('offers/edit');
     }} />;
