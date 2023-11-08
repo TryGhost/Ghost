@@ -50,9 +50,9 @@
   "devDependencies": {
     "@playwright/test": "1.38.1",
     "@tryghost/admin-x-design": "0.0.0",
-    "@types/react": "18.2.35",
-    "@types/react-dom": "18.2.14",
-    "@types/validator": "13.11.5",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "@types/validator": "13.11.6",
     "@vitejs/plugin-react": "4.1.1",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
