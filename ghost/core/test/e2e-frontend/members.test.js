@@ -194,9 +194,10 @@ describe('Front-end members behavior', function () {
             getJsonResponse.newsletters.should.have.length(1);
 
             // NOTE: these should be snapshots not code
-            Object.keys(getJsonResponse.newsletters[0]).should.have.length(4);
+            Object.keys(getJsonResponse.newsletters[0]).should.have.length(5);
             getJsonResponse.newsletters[0].should.have.properties([
                 'id',
+                'uuid',
                 'name',
                 'description',
                 'sort_order'
@@ -231,9 +232,10 @@ describe('Front-end members behavior', function () {
             restoreJsonResponse.should.not.have.property('id');
             restoreJsonResponse.newsletters.should.have.length(1);
             // @NOTE: this seems like too much exposed information, needs a review
-            Object.keys(restoreJsonResponse.newsletters[0]).should.have.length(4);
+            Object.keys(restoreJsonResponse.newsletters[0]).should.have.length(5);
             restoreJsonResponse.newsletters[0].should.have.properties([
                 'id',
+                'uuid',
                 'name',
                 'description',
                 'sort_order'
@@ -663,9 +665,10 @@ describe('Front-end members behavior', function () {
                 memberData.newsletters.should.have.length(1);
 
                 // @NOTE: this should be a snapshot test not code
-                Object.keys(memberData.newsletters[0]).should.have.length(4);
+                Object.keys(memberData.newsletters[0]).should.have.length(5);
                 memberData.newsletters[0].should.have.properties([
                     'id',
+                    'uuid',
                     'name',
                     'description',
                     'sort_order'
