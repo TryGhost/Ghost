@@ -55,7 +55,7 @@
     "@dnd-kit/core": "6.0.8",
     "@dnd-kit/sortable": "7.0.2",
     "@ebay/nice-modal-react": "1.2.13",
-    "@sentry/react": "7.77.0",
+    "@sentry/react": "7.78.0",
     "@tailwindcss/forms": "0.5.6",
     "@tailwindcss/line-clamp": "0.4.4",
     "@uiw/react-codemirror": "^4.21.9",
