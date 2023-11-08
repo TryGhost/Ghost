@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design';
+import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {facebookHandleToUrl, facebookUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 import {getSettingValues} from '../../../api/settings';
 

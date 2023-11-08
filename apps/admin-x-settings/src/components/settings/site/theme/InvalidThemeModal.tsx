@@ -1,6 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React, {ReactNode, useState} from 'react';
-import {Button, ConfirmationModalContent, Heading, List, ListItem} from '@tryghost/admin-x-design';
+import {Button, ConfirmationModalContent, Heading, List, ListItem} from '@tryghost/admin-x-design-system';
 import {ThemeProblem} from '../../../../api/themes';
 
 type FatalError = {

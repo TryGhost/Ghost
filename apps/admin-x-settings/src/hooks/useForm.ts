@@ -1,4 +1,4 @@
-import {ButtonColor} from '@tryghost/admin-x-design';
+import {ButtonColor} from '@tryghost/admin-x-design-system';
 import {useCallback, useEffect, useState} from 'react';
 
 export type Dirtyable<Data> = Data & {

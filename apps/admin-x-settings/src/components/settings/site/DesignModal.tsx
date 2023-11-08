@@ -6,7 +6,7 @@ import useForm from '../../../hooks/useForm';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../api/customThemeSettings';
-import {Icon, PreviewModalContent, StickyFooter, Tab, TabView} from '@tryghost/admin-x-design';
+import {Icon, PreviewModalContent, StickyFooter, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../api/settings';
 import {getHomepageUrl} from '../../../api/site';
 import {useBrowsePosts} from '../../../api/posts';

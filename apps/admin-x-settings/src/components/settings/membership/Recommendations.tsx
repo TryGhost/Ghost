@@ -4,7 +4,7 @@ import RecommendationList from './recommendations/RecommendationList';
 import TopLevelGroup from '../../TopLevelGroup';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Button, ShowMoreData, TabView, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, ShowMoreData, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {useBrowseIncomingRecommendations, useBrowseRecommendations} from '../../../api/recommendations';
 import {useReferrerHistory} from '../../../api/referrers';
 

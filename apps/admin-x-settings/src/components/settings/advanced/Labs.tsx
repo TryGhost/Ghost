@@ -4,7 +4,7 @@ import LabsBubbles from '../../../assets/images/labs-bg.svg';
 import MigrationOptions from './labs/MigrationOptions';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
-import {Button, SettingGroupHeader, Tab, TabView, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, SettingGroupHeader, Tab, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 type LabsTab = 'labs-migration-options' | 'labs-alpha-features' | 'labs-beta-features';

@@ -6,7 +6,7 @@ import useHandleError from '../../../utils/api/handleError';
 import useQueryParams from '../../../hooks/useQueryParams';
 import useRouting from '../../../hooks/useRouting';
 import {APIError} from '../../../utils/errors';
-import {Button, ConfirmationModal, TabView, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, ConfirmationModal, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {useBrowseNewsletters, useVerifyNewsletterEmail} from '../../../api/newsletters';
 
 const NavigateToNewsletter = ({id, children}: {id: string; children: ReactNode}) => {

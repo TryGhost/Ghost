@@ -1,5 +1,5 @@
 import React, {useEffect, useId, useState} from 'react';
-import {Button, List, ListItem, ModalPage, Select, TextField} from '@tryghost/admin-x-design';
+import {Button, List, ListItem, ModalPage, Select, TextField} from '@tryghost/admin-x-design-system';
 import {getHomepageUrl} from '../../../../api/site';
 import {getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';

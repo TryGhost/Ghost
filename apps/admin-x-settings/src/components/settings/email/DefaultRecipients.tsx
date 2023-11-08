@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useDefaultRecipientsOptions from './useDefaultRecipientsOptions';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {MultiSelect, MultiSelectOption, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design';
+import {MultiSelect, MultiSelectOption, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {MultiValue} from 'react-select';
 import {getOptionLabel} from '../../../utils/helpers';
 import {getSettingValues} from '../../../api/settings';

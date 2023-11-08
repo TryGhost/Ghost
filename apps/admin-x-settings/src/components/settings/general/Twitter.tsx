@@ -3,7 +3,7 @@ import TopLevelGroup from '../../TopLevelGroup';
 import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ImageUpload, SettingGroupContent, TextField, TwitterLogo, withErrorBoundary} from '@tryghost/admin-x-design';
+import {ImageUpload, SettingGroupContent, TextField, TwitterLogo, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getImageUrl, useUploadImage} from '../../../api/images';
 import {getSettingValues} from '../../../api/settings';
 

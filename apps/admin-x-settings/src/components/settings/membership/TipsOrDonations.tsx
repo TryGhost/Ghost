@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Button, CurrencyField, Heading, Select, SettingGroupContent, confirmIfDirty, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, CurrencyField, Heading, Select, SettingGroupContent, confirmIfDirty, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {currencySelectGroups, getSymbol, validateCurrencyAmount} from '../../../utils/currency';
 import {getSettingValues} from '../../../api/settings';
 

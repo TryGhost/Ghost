@@ -1,7 +1,7 @@
 import FeatureToggle from './FeatureToggle';
 import LabItem from './LabItem';
 import React from 'react';
-import {List} from '@tryghost/admin-x-design';
+import {List} from '@tryghost/admin-x-design-system';
 
 const features = [{
     title: 'URL cache',

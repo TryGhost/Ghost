@@ -5,7 +5,7 @@ import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useRouting from '../../../hooks/useRouting';
 import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
-import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
 import {Integration, useBrowseIntegrations, useDeleteIntegration} from '../../../api/integrations';
 import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
