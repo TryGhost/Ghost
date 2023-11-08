@@ -7,14 +7,12 @@ import TextField from '../../../../admin-x-ds/global/form/TextField';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {AlreadyExistsError} from '../../../../utils/errors';
-import {EditOrAddRecommendation, RecommendationResponseType, useGetRecommendationByUrl} from '../../../../api/recommendations';
+import {EditOrAddRecommendation, useCheckRecommendation} from '../../../../api/recommendations';
 import {LoadingIndicator} from '../../../../admin-x-ds/global/LoadingIndicator';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {arePathsEqual, trimSearchAndHash} from '../../../../utils/url';
 import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
 import {formatUrl} from '../../../../admin-x-ds/global/form/URLTextField';
-import {useExternalGhostSite} from '../../../../api/external-ghost-site';
-import {useGetOembed} from '../../../../api/oembed';
+import {trimSearchAndHash} from '../../../../utils/url';
 
 interface AddRecommendationModalProps {
     recommendation?: EditOrAddRecommendation,
@@ -45,9 +43,7 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
     const [enterPressed, setEnterPressed] = useState(false);
     const modal = useModal();
     const {updateRoute} = useRouting();
-    const {query: queryOembed} = useGetOembed();
-    const {query: queryExternalGhostSite} = useExternalGhostSite();
-    const {query: getRecommendationByUrl} = useGetRecommendationByUrl();
+    const {mutateAsync: checkRecommendation} = useCheckRecommendation();
 
     // Handle a URL that was passed via the URL
     const initialUrl = recommendation ? '' : (searchParams?.get('url') ?? '');
@@ -72,26 +68,6 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             validatedUrl = new URL(formState.url);
             validatedUrl = trimSearchAndHash(validatedUrl);
 
-            // Check if the recommendation already exists
-            const {recommendations = []} = await getRecommendationByUrl(validatedUrl) as RecommendationResponseType;
-            if (recommendations && recommendations.length > 0) {
-                const existing = recommendations.find(r => arePathsEqual(r.url, validatedUrl.toString()));
-
-                if (existing) {
-                    throw new AlreadyExistsError('A recommendation with this URL already exists.');
-                }
-            }
-
-            // Check if it's a Ghost site or not:
-            // 1. Check the full path first. This is the most common use case, and also helps to cover Ghost sites that are hosted on a subdirectory
-            // 2. If needed, check the origin. This helps to cover cases where the recommendation URL is a subpage or a post URL of the Ghost site
-            let externalGhostSite = null;
-            externalGhostSite = await queryExternalGhostSite(validatedUrl.toString());
-
-            if (!externalGhostSite && validatedUrl.pathname !== '' && validatedUrl.pathname !== '/') {
-                externalGhostSite = await queryExternalGhostSite(validatedUrl.origin);
-            }
-
             // Use the hostname as fallback title
             const defaultTitle = validatedUrl.hostname.replace('www.', '');
 
@@ -100,25 +76,28 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 url: validatedUrl.toString()
             };
 
-            if (externalGhostSite) {
-                // For Ghost sites, we use the data from the API
-                updatedRecommendation.title = externalGhostSite.site.title || defaultTitle;
-                updatedRecommendation.excerpt = externalGhostSite.site.description ?? formState.excerpt ?? null;
-                updatedRecommendation.featured_image = externalGhostSite.site.cover_image?.toString() ?? formState.featured_image ?? null;
-                updatedRecommendation.favicon = externalGhostSite.site.icon?.toString() ?? externalGhostSite.site.logo?.toString() ?? formState.favicon ?? null;
-                updatedRecommendation.one_click_subscribe = externalGhostSite.site.allow_external_signup;
-            } else {
-                // For non-Ghost sites, we use the Oemebd API to fetch metadata
-                const oembed = await queryOembed({
-                    url: formState.url,
-                    type: 'mention'
-                });
-                updatedRecommendation.title = oembed?.metadata?.title ?? defaultTitle;
-                updatedRecommendation.excerpt = oembed?.metadata?.description ?? formState.excerpt ?? null;
-                updatedRecommendation.featured_image = oembed?.metadata?.thumbnail ?? formState.featured_image ?? null;
-                updatedRecommendation.favicon = oembed?.metadata?.icon ?? formState.favicon ?? null;
-                updatedRecommendation.one_click_subscribe = false;
+            // Check if the recommendation already exists, or fetch metadata if it's a new recommendation
+            const {recommendations = []} = await checkRecommendation(validatedUrl);
+
+            if (!recommendations || recommendations.length === 0) {
+                // Oops! Failed to fetch metadata
+                return;
             }
+
+            const existing = recommendations[0];
+
+            if (existing.id) {
+                throw new AlreadyExistsError('A recommendation with this URL already exists.');
+            }
+
+            // Update metadata so we can preview it
+            updatedRecommendation.title = existing.title ?? defaultTitle;
+            updatedRecommendation.excerpt = existing.excerpt ?? updatedRecommendation.excerpt;
+            updatedRecommendation.featured_image = existing.featured_image ?? updatedRecommendation.featured_image ?? null;
+            updatedRecommendation.favicon = existing.favicon ?? updatedRecommendation.favicon ?? null;
+            updatedRecommendation.one_click_subscribe = existing.one_click_subscribe ?? updatedRecommendation.one_click_subscribe ?? false;
+
+            // Set a default description (excerpt)
             updatedRecommendation.description = updatedRecommendation.excerpt || null;
 
             // Switch modal without changing the route (the second modal is not reachable by URL)
