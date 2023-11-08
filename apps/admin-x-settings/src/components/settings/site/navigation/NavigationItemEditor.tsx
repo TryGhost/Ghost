@@ -1,7 +1,7 @@
 import React, {ReactNode} from 'react';
 import clsx from 'clsx';
 import {EditableItem, NavigationItem, NavigationItemErrors} from '../../../../hooks/site/useNavigationEditor';
-import {TextField, URLTextField} from '@tryghost/admin-x-design';
+import {TextField, URLTextField} from '@tryghost/admin-x-design-system';
 
 export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
     baseUrl: string;

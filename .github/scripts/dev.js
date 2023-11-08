@@ -52,7 +52,7 @@ const COMMAND_TYPESCRIPT = {
 
 const COMMANDS_ADMINX = [{
     name: 'adminXDS',
-    command: 'nx watch --projects=apps/admin-x-design -- nx run \\$NX_PROJECT_NAME:build --skip-nx-cache',
+    command: 'nx watch --projects=apps/admin-x-design-system -- nx run \\$NX_PROJECT_NAME:build --skip-nx-cache',
     cwd: path.resolve(__dirname, '../..'),
     prefixColor: '#C35831',
     env: {}

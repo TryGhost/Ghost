@@ -3,7 +3,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useMemo, useRef, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Button, CodeEditor, TabView, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, CodeEditor, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import {getSettingValues} from '../../../api/settings';
 

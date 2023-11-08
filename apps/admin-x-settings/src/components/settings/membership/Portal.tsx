@@ -1,7 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useRouting from '../../../hooks/useRouting';
-import {Button, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '../../../api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 

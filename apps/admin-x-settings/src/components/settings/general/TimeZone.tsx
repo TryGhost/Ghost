@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import timezoneData from '@tryghost/timezone-data';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getLocalTime} from '../../../utils/helpers';
 import {getSettingValues} from '../../../api/settings';
 

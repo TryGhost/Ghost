@@ -1,4 +1,4 @@
-import {Heading, Icon, Radio} from '@tryghost/admin-x-design';
+import {Heading, Icon, Radio} from '@tryghost/admin-x-design-system';
 import {User, isOwnerUser} from '../../../../api/users';
 import {useBrowseRoles} from '../../../../api/roles';
 

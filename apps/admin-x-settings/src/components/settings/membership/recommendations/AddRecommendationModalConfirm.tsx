@@ -7,7 +7,7 @@ import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {EditOrAddRecommendation, useAddRecommendation} from '../../../../api/recommendations';
-import {Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design';
+import {Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
 
 interface AddRecommendationModalProps {
     recommendation: EditOrAddRecommendation,

@@ -1,6 +1,6 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useMemo} from 'react';
-import {CodeEditor, Modal} from '@tryghost/admin-x-design';
+import {CodeEditor, Modal} from '@tryghost/admin-x-design-system';
 
 interface CodeModalProps {
     hint?: React.ReactNode;

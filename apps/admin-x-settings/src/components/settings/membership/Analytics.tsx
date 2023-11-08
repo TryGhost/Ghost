@@ -1,7 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Button, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design';
+import {Button, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '../../../api/settings';
 import {usePostsExports} from '../../../api/posts';
 

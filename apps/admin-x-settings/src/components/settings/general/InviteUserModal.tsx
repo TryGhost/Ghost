@@ -3,7 +3,7 @@ import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import validator from 'validator';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {Modal, Radio, TextField, showToast} from '@tryghost/admin-x-design';
+import {Modal, Radio, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {useAddInvite, useBrowseInvites} from '../../../api/invites';
 import {useBrowseRoles} from '../../../api/roles';
 import {useBrowseUsers} from '../../../api/users';

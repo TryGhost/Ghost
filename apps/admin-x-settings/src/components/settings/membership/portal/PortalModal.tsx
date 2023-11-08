@@ -8,7 +8,7 @@ import useForm, {Dirtyable} from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useQueryParams from '../../../../hooks/useQueryParams';
 import useRouting from '../../../../hooks/useRouting';
-import {ConfirmationModal, PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design';
+import {ConfirmationModal, PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../../api/settings';
 import {Tier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
 import {fullEmailAddress} from '../../../../api/site';

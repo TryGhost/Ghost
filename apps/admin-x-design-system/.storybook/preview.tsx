@@ -31,7 +31,7 @@ const preview: Preview = {
 			let {scheme} = context.globals;
 
 			return (
-			<div className={`admin-x-design admin-x-base ${scheme === 'dark' ? 'dark' : ''}`} style={{
+			<div className={`admin-x-design-system admin-x-base ${scheme === 'dark' ? 'dark' : ''}`} style={{
 				padding: '24px',
 				background: (scheme === 'dark' ? '#131416' : '')
 			}}>

@@ -2,7 +2,7 @@ import React, {useRef, useState} from 'react';
 import UnsplashSearchModal from '../../../../unsplash/UnsplashSearchModal';
 import useHandleError from '../../../../utils/api/handleError';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
-import {ColorPickerField, Heading, Hint, ImageUpload, SettingGroupContent, TextField, debounce} from '@tryghost/admin-x-design';
+import {ColorPickerField, Heading, Hint, ImageUpload, SettingGroupContent, TextField, debounce} from '@tryghost/admin-x-design-system';
 import {SettingValue, getSettingValues} from '../../../../api/settings';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';

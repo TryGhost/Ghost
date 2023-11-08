@@ -1,6 +1,6 @@
 import React from 'react';
 import useFilterableApi from '../../../../hooks/useFilterableApi';
-import {Button, ColorIndicator, ColorPicker, Form, Heading, LoadMultiSelectOptions, MultiSelect, MultiSelectOption, Radio, StickyFooter, TextArea, debounce} from '@tryghost/admin-x-design';
+import {Button, ColorIndicator, ColorPicker, Form, Heading, LoadMultiSelectOptions, MultiSelect, MultiSelectOption, Radio, StickyFooter, TextArea, debounce} from '@tryghost/admin-x-design-system';
 import {Label} from '../../../../api/labels';
 import {MultiValue} from 'react-select';
 

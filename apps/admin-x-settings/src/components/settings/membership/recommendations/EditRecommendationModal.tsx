@@ -4,7 +4,7 @@ import RecommendationDescriptionForm, {validateDescriptionForm} from './Recommen
 import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
-import {ConfirmationModal, Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design';
+import {ConfirmationModal, Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
 import {Recommendation, useDeleteRecommendation, useEditRecommendation} from '../../../../api/recommendations';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 

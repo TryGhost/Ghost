@@ -1,6 +1,6 @@
 import React, {ReactNode, useState} from 'react';
 import clsx from 'clsx';
-import {Button, Heading} from '@tryghost/admin-x-design';
+import {Button, Heading} from '@tryghost/admin-x-design-system';
 
 export interface APIKeyFieldProps {
     label?: string;

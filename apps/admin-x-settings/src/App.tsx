@@ -2,7 +2,7 @@ import GlobalDataProvider from './components/providers/GlobalDataProvider';
 import MainContent from './MainContent';
 import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
 import {DefaultHeaderTypes} from './unsplash/UnsplashTypes';
-import {DesignSystemApp} from '@tryghost/admin-x-design';
+import {DesignSystemApp} from '@tryghost/admin-x-design-system';
 import {FetchKoenigLexical, OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ScrollSectionProvider} from './hooks/useScrollSection';

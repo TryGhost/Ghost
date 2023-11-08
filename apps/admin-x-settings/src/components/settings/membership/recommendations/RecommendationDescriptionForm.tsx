@@ -2,7 +2,7 @@ import React from 'react';
 import RecommendationIcon from './RecommendationIcon';
 import {EditOrAddRecommendation, Recommendation} from '../../../../api/recommendations';
 import {ErrorMessages} from '../../../../hooks/useForm';
-import {Form, Heading, Hint, TextArea, TextField, URLTextField} from '@tryghost/admin-x-design';
+import {Form, Heading, Hint, TextArea, TextField, URLTextField} from '@tryghost/admin-x-design-system';
 
 interface Props<T extends EditOrAddRecommendation> {
     showURL?: boolean,
