@@ -144,7 +144,10 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         dirty={saveState === 'unsaved'}
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
-        sidebar={sidebar} size='full' title='Offer' 
+        sidebar={sidebar}
+        size='full'
+        testId='offer-update-modal'
+        title='Offer'
         onCancel={() => {
             modal.remove();
             updateRoute('offers/edit');
