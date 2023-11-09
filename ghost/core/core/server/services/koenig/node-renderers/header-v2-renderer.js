@@ -11,7 +11,7 @@ function cardTemplate(nodeData) {
     const backgroundImageStyle = nodeData.backgroundColor !== 'accent' && (!nodeData.backgroundImageSrc || nodeData.layout === 'split') ? `background-color: ${nodeData.backgroundColor}` : '';
 
     const imgTemplate = nodeData.backgroundImageSrc ? `
-        <picture><img class="kg-header-card-image" src="${nodeData.backgroundImageSrc}" alt="" /></picture>
+        <picture><img class="kg-header-card-image" src="${nodeData.backgroundImageSrc}" loading="lazy" alt="" /></picture>
     ` : ``;
 
     const header = () => {
