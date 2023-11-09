@@ -151,9 +151,11 @@ class EmailEventStorage {
             }
 
             const email = await this.#models.Email.findOne({id: event.emailId});
-            const newsletterToRemove = await email.get('newsletter_id');
+            const newsletterToRemove = email.get('newsletter_id');
 
-            return existingNewsletters.toJSON().filter(newsletter => newsletter.id !== newsletterToRemove);
+            return existingNewsletters.models.filter(newsletter => newsletter.id !== newsletterToRemove).map((n) => {
+                return {id: n.id};
+            });
         } catch (err) {
             logging.error(err);
             return [];
