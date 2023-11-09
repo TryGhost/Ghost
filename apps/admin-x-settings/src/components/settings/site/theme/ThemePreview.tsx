@@ -1,13 +1,6 @@
-import Breadcrumbs from '../../../../admin-x-ds/global/Breadcrumbs';
-import Button from '../../../../admin-x-ds/global/Button';
-import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import DesktopChrome from '../../../../admin-x-ds/global/chrome/DesktopChrome';
-import MobileChrome from '../../../../admin-x-ds/global/chrome/MobileChrome';
 import NiceModal from '@ebay/nice-modal-react';
-import PageHeader from '../../../../admin-x-ds/global/layout/PageHeader';
 import React, {useState} from 'react';
-import Select, {SelectOption} from '../../../../admin-x-ds/global/form/Select';
+import {Breadcrumbs, Button, ButtonGroup, ConfirmationModal, DesktopChrome, MobileChrome, PageHeader, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {OfficialTheme, ThemeVariant} from '../../../providers/ServiceProvider';
 import {Theme, isDefaultOrLegacyTheme} from '../../../../api/themes';
 

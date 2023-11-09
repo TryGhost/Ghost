@@ -1,15 +1,9 @@
-import Button from '../../../admin-x-ds/global/Button';
-import CurrencyField from '../../../admin-x-ds/global/form/CurrencyField';
-import Heading from '../../../admin-x-ds/global/Heading';
 import React, {useEffect, useState} from 'react';
-import Select from '../../../admin-x-ds/global/form/Select';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {confirmIfDirty} from '../../../utils/modals';
+import {Button, CurrencyField, Heading, Select, SettingGroupContent, confirmIfDirty, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {currencySelectGroups, getSymbol, validateCurrencyAmount} from '../../../utils/currency';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 // Stripe doesn't allow amounts over 10,000 as a preset amount
 const MAX_AMOUNT = 10_000;
@@ -122,7 +116,7 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description="Give your audience a one-time way to support your work, no membership required."
             isEditing={isEditing}
             keywords={keywords}
@@ -135,7 +129,7 @@ const TipsOrDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? inputFields : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

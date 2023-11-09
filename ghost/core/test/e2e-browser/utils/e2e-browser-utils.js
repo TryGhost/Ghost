@@ -155,31 +155,6 @@ const deleteAllMembers = async (page) => {
 };
 
 /**
- * Archive all tiers, 1 by 1, using the UI
- * @param {import('@playwright/test').Page} page
- */
-const archiveAllTiers = async (page) => {
-    // Navigate to the member settings
-    await page.locator('[data-test-nav="settings"]').click();
-    await page.locator('[data-test-nav="members-membership"]').click();
-
-    // Tiers request can take time, so waiting until there is no connections before interacting with them
-    await page.waitForLoadState('networkidle');
-
-    // Expand the premium tier list
-    await page.locator('[data-test-toggle-pub-info]').click();
-
-    // Archive if already exists
-    while (await page.locator('.gh-tier-card').first().isVisible()) {
-        const tierCard = page.locator('.gh-tier-card').first();
-        await tierCard.locator('.gh-tier-card-actions-button').click();
-        await tierCard.getByRole('button', {name: 'Archive'}).click();
-        await page.locator('.modal-content').getByRole('button', {name: 'Archive'}).click();
-        await page.locator('.modal-content').waitFor({state: 'detached', timeout: 1000});
-    }
-};
-
-/**
  * Allows impersonating a member by copying the impersonate link
  * opens site with member logged in via the link
  * Expects starting at member detail page
@@ -528,7 +503,6 @@ module.exports = {
     setupMailgun,
     deleteAllMembers,
     createTier,
-    archiveAllTiers,
     createOffer,
     createMember,
     createPostDraft,

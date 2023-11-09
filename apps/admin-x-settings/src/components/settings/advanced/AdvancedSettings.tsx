@@ -3,7 +3,7 @@ import History from './History';
 import Integrations from './Integrations';
 import Labs from './Labs';
 import React from 'react';
-import SettingSection from '../../../admin-x-ds/settings/SettingSection';
+import SearchableSection from '../../SearchableSection';
 
 export const searchKeywords = {
     integrations: ['advanced', 'integrations', 'zapier', 'slack', 'amp', 'unsplash', 'first promoter', 'firstpromoter', 'pintura', 'disqus', 'analytics', 'ulysses', 'typeform', 'buffer', 'plausible', 'github'],
@@ -14,12 +14,12 @@ export const searchKeywords = {
 
 const AdvancedSettings: React.FC = () => {
     return (
-        <SettingSection keywords={Object.values(searchKeywords).flat()} title='Advanced'>
+        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Advanced'>
             <Integrations keywords={searchKeywords.integrations} />
             <CodeInjection keywords={searchKeywords.codeInjection} />
             <Labs keywords={searchKeywords.labs} />
             <History keywords={searchKeywords.history} />
-        </SettingSection>
+        </SearchableSection>
     );
 };
 
