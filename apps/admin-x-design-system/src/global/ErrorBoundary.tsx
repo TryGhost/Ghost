@@ -24,7 +24,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
 
     componentDidCatch(error: unknown, info: ErrorInfo) {
         Sentry.withScope((scope) => {
-            scope.setTag('adminX settings component-', info.componentStack);
+            scope.setTag('adminx_settings_component', info.componentStack);
             Sentry.captureException(error);
         });
         // eslint-disable-next-line no-console
