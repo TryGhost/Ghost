@@ -41,9 +41,9 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
             formSheet={formSheet}
             okColor={okColor}
             okLabel={taskState === 'running' ? okRunningLabel : okLabel}
-            size={540}
             testId='confirmation-modal'
             title={title}
+            width={540}
             onCancel={onCancel}
             onOk={async () => {
                 setTaskState('running');
