@@ -2,9 +2,11 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalFrame from '../portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
-import {Form, Icon, PreviewModalContent, Select, TextArea, TextField} from '@tryghost/admin-x-design-system';
+import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField} from '@tryghost/admin-x-design-system';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
-import {useEffect} from 'react';
+import {getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
+import {getTiersCadences} from '../../../../utils/getTiersCadences';
+import {useEffect, useState} from 'react';
 
 interface OfferType {
     title: string;
@@ -29,19 +31,18 @@ const ButtonSelect: React.FC<{type: OfferType, checked: boolean}> = ({type, chec
     );
 };
 
-const Sidebar: React.FC = () => {
+type SidebarProps = {
+    tierOptions: SelectOption[];
+    handleTierChange: (tier: SelectOption) => void;
+    selectedTier: SelectOption;
+    overrides: offerPortalPreviewUrlTypes
+    handleTextInput: (e: React.ChangeEvent<HTMLInputElement>, key: string) => void;
+};
+
+const Sidebar: React.FC<SidebarProps> = ({tierOptions, handleTierChange, selectedTier, handleTextInput, overrides}) => {
     const typeOptions = [
         {title: 'Discount', description: 'Offer a special reduced price'},
         {title: 'Free trial', description: 'Give free access for a limited time'}
-    ];
-
-    const tierCadenceOptions = [
-        {value: '1', label: 'Bronze — Monthly'},
-        {value: '2', label: 'Bronze — Yearly'},
-        {value: '3', label: 'Silver — Monthly'},
-        {value: '4', label: 'Silver — Yearly'},
-        {value: '5', label: 'Gold — Monthly'},
-        {value: '6', label: 'Gold — Yearly'}
     ];
 
     const amountOptions = [
@@ -61,7 +62,10 @@ const Sidebar: React.FC = () => {
                 <TextField
                     hint='Visible to members on Stripe Checkout page.'
                     placeholder='Black Friday'
-                    title='Name'
+                    title={overrides.name}
+                    onChange={(e) => {
+                        handleTextInput(e, 'name');
+                    }}
                 />
                 <section className='mt-4'>
                     <h2 className='mb-4 text-lg'>Offer details</h2>
@@ -71,10 +75,14 @@ const Sidebar: React.FC = () => {
                             <ButtonSelect checked={false} type={typeOptions[1]} />
                         </div>
                         <Select
-                            options={tierCadenceOptions}
-                            selectedOption={tierCadenceOptions[0]}
+                            options={tierOptions}
+                            selectedOption={selectedTier}
                             title='Tier — Cadence'
-                            onSelect={() => {}}
+                            onSelect={(e) => {
+                                if (e) {
+                                    handleTierChange(e);
+                                }
+                            }}
                         />
                         <div className='relative'>
                             <TextField title='Amount off' type='number' />
@@ -101,15 +109,24 @@ const Sidebar: React.FC = () => {
                     <div className='flex flex-col gap-6'>
                         <TextField
                             placeholder='Black Friday Special'
-                            title='Display title'
+                            title={overrides.displayTitle}
+                            onChange={(e) => {
+                                handleTextInput(e, 'displayTitle');
+                            }}
                         />
                         <TextField
                             placeholder='black-friday'
-                            title='Offer code'
+                            title={overrides.code}
+                            onChange={(e) => {
+                                handleTextInput(e, 'code');
+                            }}
                         />
                         <TextArea
                             placeholder='Take advantage of this limited-time offer.'
-                            title='Display description'
+                            title={overrides.displayDescription}
+                            onChange={(e) => {
+                                handleTextInput(e, 'displayDescription');
+                            }}
                         />
                     </div>
                 </section>
@@ -118,12 +135,78 @@ const Sidebar: React.FC = () => {
     );
 };
 
+const parseData = (input: string): { id: string; period: string; currency: string } => {
+    const [id, period, currency] = input.split('-');
+    if (!id || !period || !currency) {
+        throw new Error('Invalid input format. Expected format is: id-period-currency');
+    }
+    return {id, period, currency};
+};
+
 const AddOfferModal = () => {
+    const [href, setHref] = useState<string>('');
     const modal = useModal();
     const {updateRoute} = useRouting();
     const hasOffers = useFeatureFlag('adminXOffers');
-    // const {data: {tiers, meta, isEnd} = {}} = useBrowseTiers();
-    // const activeTiers = getActiveTiers(tiers || []);
+    const {data: {tiers} = {}} = useBrowseTiers();
+    const activeTiers = getPaidActiveTiers(tiers || []);
+    const tierCadenceOptions = getTiersCadences(activeTiers);
+    const [selectedTier, setSelectedTier] = useState({
+        tier: tierCadenceOptions[0] || {},
+        dataset: {
+            id: tierCadenceOptions[0]?.value ? parseData(tierCadenceOptions[0]?.value).id : '',
+            period: tierCadenceOptions[0]?.value ? parseData(tierCadenceOptions[0]?.value).period : '',
+            currency: tierCadenceOptions[0]?.value ? parseData(tierCadenceOptions[0]?.value).currency : ''
+        }
+    });
+
+    const [overrides, setOverrides] = useState({
+        disableBackground: true,
+        name: '',
+        code: 'black-friday',
+        displayTitle: 'Black Friday Special',
+        displayDescription: 'Take advantage of this limited-time offer.',
+        type: 'discount',
+        cadence: 'monthly',
+        amount: 1200,
+        duration: '',
+        durationInMonths: 12,
+        currency: 'USD',
+        status: 'active',
+        tierId: selectedTier?.dataset?.id || ''
+    });
+
+    const handleTierChange = (tier: SelectOption) => {
+        setSelectedTier({
+            tier,
+            dataset: parseData(tier.value)
+        });
+
+        setOverrides({
+            ...overrides,
+            tierId: parseData(tier.value).id,
+            cadence: parseData(tier.value).period,
+            currency: parseData(tier.value).currency
+        });
+    };
+
+    // const handleTextInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, key: string) => {
+    //     setOverrides({
+    //         ...overrides,
+    //         [key]: e.target.value
+    //     });
+    // };
+
+    const handleTextInput = (
+        e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>,
+        key: string
+    ) => {
+        const target = e.target as HTMLInputElement | HTMLTextAreaElement; // Type assertion here
+        setOverrides(prevOverrides => ({
+            ...prevOverrides,
+            [key]: target.value
+        }));
+    };
 
     useEffect(() => {
         if (!hasOffers) {
@@ -137,29 +220,21 @@ const AddOfferModal = () => {
         updateRoute('offers/edit');
     };
 
-    const sidebar = <Sidebar />;
-    // TODO: wire up the data from the sidebar inputs
-    let overrides : offerPortalPreviewUrlTypes = {
-        disableBackground: true,
-        name: 'Black Friday',
-        code: 'black-friday',
-        displayTitle: 'Black Friday Special',
-        displayDescription: 'Take advantage of this limited-time offer.',
-        type: 'discount',
-        cadence: 'monthly',
-        amount: 1200,
-        duration: '',
-        durationInMonths: 12,
-        currency: 'USD',
-        status: 'active',
-        tierId: ''
-    };
+    useEffect(() => {
+        const newHref = getOfferPortalPreviewUrl(overrides, 'http://localhost:2368');
+        setHref(newHref);
+    }, [overrides]);
 
-    const href = getOfferPortalPreviewUrl(overrides, 'http://localhost:2368');
+    const sidebar = <Sidebar 
+        handleTextInput={handleTextInput}
+        handleTierChange={handleTierChange}
+        overrides={overrides}
+        selectedTier={selectedTier.tier}
+        tierOptions={tierCadenceOptions}
+    />;
 
     const iframe = <PortalFrame
         href={href}
-
     />;
 
     return <PreviewModalContent cancelLabel='Cancel' deviceSelector={false} okLabel='Publish' preview={iframe} sidebar={sidebar} size='full' title='Offer' onCancel={cancelAddOffer} />;
