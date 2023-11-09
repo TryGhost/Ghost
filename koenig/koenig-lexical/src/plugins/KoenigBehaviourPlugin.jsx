@@ -81,7 +81,9 @@ function $selectCard(editor, nodeKey) {
     // selecting a decorator node does not change the
     // window selection (there's no caret) so we need
     // to manually move focus to the editor element
-    editor.getRootElement().focus();
+    if (document.activeElement !== editor.getRootElement()) {
+        editor.getRootElement().focus({preventScroll: true});
+    }
 }
 
 // remove empty cards when they are deselected
