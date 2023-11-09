@@ -351,9 +351,32 @@ describe('HTMLtoLexical', function () {
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
-            assert.equal(lexical.root.children[0].type, 'quote');
+            assert.equal(lexical.root.children[0].type, 'extended-quote');
             assert.equal(lexical.root.children[0].children.length, 1);
             assert.equal(lexical.root.children[0].children[0].text, 'Hello World');
+        });
+
+        it('can convert blockquote with nested paragraph', function () {
+            const lexical = converter.htmlToLexical('<blockquote><p>Hello World</p></blockquote>', editorConfig);
+
+            assert.ok(lexical.root);
+            assert.equal(lexical.root.children.length, 1);
+            assert.equal(lexical.root.children[0].type, 'extended-quote');
+            assert.equal(lexical.root.children[0].children.length, 1);
+            assert.equal(lexical.root.children[0].children[0].text, 'Hello World');
+        });
+
+        it('can convert blockquote with nested paragraphs (paragraphs separated by line breaks)', function () {
+            const lexical = converter.htmlToLexical('<blockquote><p>Hello</p><p>World</p></blockquote>', editorConfig);
+
+            assert.ok(lexical.root);
+            assert.equal(lexical.root.children.length, 1);
+            assert.equal(lexical.root.children[0].type, 'extended-quote');
+            assert.equal(lexical.root.children[0].children.length, 4);
+            assert.equal(lexical.root.children[0].children[0].text, 'Hello');
+            assert.equal(lexical.root.children[0].children[1].type, 'linebreak');
+            assert.equal(lexical.root.children[0].children[2].type, 'linebreak');
+            assert.equal(lexical.root.children[0].children[3].text, 'World');
         });
     });
 
@@ -415,7 +438,7 @@ describe('HTMLtoLexical', function () {
 
             assert.ok(lexical.root);
             assert.equal(lexical.root.children.length, 1);
-            assert.equal(lexical.root.children[0].type, 'quote');
+            assert.equal(lexical.root.children[0].type, 'extended-quote');
             assert.equal(lexical.root.children[0].children.length, 1);
             assert.equal(lexical.root.children[0].children[0].text, 'Hello World');
         });

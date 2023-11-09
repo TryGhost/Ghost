@@ -22,6 +22,7 @@ import * as signup from './nodes/signup/SignupNode';
 import * as collection from './nodes/collection/CollectionNode';
 import * as textnode from './nodes/ExtendedTextNode';
 import * as headingnode from './nodes/ExtendedHeadingNode';
+import * as quotenode from './nodes/ExtendedQuoteNode';
 
 // re-export everything for easier importing
 export * from './KoenigDecoratorNode';
@@ -49,6 +50,7 @@ export * from './nodes/signup/SignupNode';
 export * from './nodes/collection/CollectionNode';
 export * from './nodes/ExtendedTextNode';
 export * from './nodes/ExtendedHeadingNode';
+export * from './nodes/ExtendedQuoteNode';
 
 // export convenience objects for use elsewhere
 export const DEFAULT_NODES = [
@@ -56,6 +58,8 @@ export const DEFAULT_NODES = [
     textnode.extendedTextNodeReplacement,
     headingnode.ExtendedHeadingNode,
     headingnode.extendedHeadingNodeReplacement,
+    quotenode.ExtendedQuoteNode,
+    quotenode.extendedQuoteNodeReplacement,
     codeblock.CodeBlockNode,
     image.ImageNode,
     markdown.MarkdownNode,

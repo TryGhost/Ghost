@@ -1,7 +1,9 @@
 import {
     ExtendedHeadingNode,
+    ExtendedQuoteNode,
     ExtendedTextNode,
     extendedHeadingNodeReplacement,
+    extendedQuoteNodeReplacement,
     extendedTextNodeReplacement
 } from '@tryghost/kg-default-nodes';
 
@@ -36,6 +38,8 @@ const DEFAULT_NODES = [
     extendedTextNodeReplacement,
     ExtendedHeadingNode,
     extendedHeadingNodeReplacement,
+    ExtendedQuoteNode,
+    extendedQuoteNodeReplacement,
     HeadingNode,
     ListNode,
     ListItemNode,

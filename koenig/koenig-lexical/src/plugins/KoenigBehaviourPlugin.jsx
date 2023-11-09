@@ -1184,7 +1184,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         const hasIndentedNode = nodes.some((node) => {
                             return node.getIndent && node.getIndent() > 0;
                         });
-                        
+
                         if (!hasIndentedNode) {
                             event.preventDefault();
                             cursorDidExitAtTop();
