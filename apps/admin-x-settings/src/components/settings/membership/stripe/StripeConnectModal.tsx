@@ -6,10 +6,16 @@ import React, {useState} from 'react';
 import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Button, ConfirmationModal, Form, Heading, Modal, StripeButton, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
-import {JSONError, checkStripeEnabled, getGhostPaths, getSettingValue, getSettingValues, useBrowseMembers, useBrowseTiers, useDeleteStripeSettings, useEditSettings, useEditTier, useHandleError, useRouting} from '@tryghost/admin-x-framework';
+import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {ReactComponent as StripeVerified} from '../../../../assets/images/stripe-verified.svg';
+import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {toast} from 'react-hot-toast';
+import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
+import {useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
 const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;

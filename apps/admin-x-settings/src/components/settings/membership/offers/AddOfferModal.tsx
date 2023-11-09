@@ -4,7 +4,7 @@ import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Form, Icon, PreviewModalContent, Select, TextArea, TextField} from '@tryghost/admin-x-design-system';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {useEffect} from 'react';
-import {useRouting} from '@tryghost/admin-x-framework';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface OfferType {
     title: string;

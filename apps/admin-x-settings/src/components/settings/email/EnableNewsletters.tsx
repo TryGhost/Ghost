@@ -1,8 +1,10 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import {Banner, Icon, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {Setting, getSettingValues, useEditSettings, useHandleError, useRouting} from '@tryghost/admin-x-framework';
+import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();

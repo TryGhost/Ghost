@@ -2,8 +2,10 @@ import AddRecommendationModalConfirm from './AddRecommendationModalConfirm';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
-import {AlreadyExistsError, EditOrAddRecommendation, RoutingModalProps, useCheckRecommendation, useRouting} from '@tryghost/admin-x-framework';
+import {AlreadyExistsError} from '@tryghost/admin-x-framework/errors';
+import {EditOrAddRecommendation, useCheckRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {Form, LoadingIndicator, Modal, TextField, dismissAllToasts, formatUrl, showToast} from '@tryghost/admin-x-design-system';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {trimSearchAndHash} from '../../../../utils/url';
 
 interface AddRecommendationModalProps {

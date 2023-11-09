@@ -3,8 +3,11 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useState} from 'react';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {CheckboxGroup, ColorIndicator, Form, HtmlField, PreviewModalContent, Tab, showToast} from '@tryghost/admin-x-design-system';
-import {getHomepageUrl, getSettingValues, useBrowsePosts, useRouting} from '@tryghost/admin-x-framework';
+import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type SidebarProps = {
     announcementContent?: string;

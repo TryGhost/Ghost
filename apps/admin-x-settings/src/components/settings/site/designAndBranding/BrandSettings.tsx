@@ -2,8 +2,11 @@ import React, {useRef, useState} from 'react';
 import UnsplashSearchModal from '../../../../unsplash/UnsplashSearchModal';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {ColorPickerField, Heading, Hint, ImageUpload, SettingGroupContent, TextField, debounce} from '@tryghost/admin-x-design-system';
-import {SettingValue, getImageUrl, getSettingValues, useFramework, useHandleError, useUploadImage} from '@tryghost/admin-x-framework';
+import {SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {useFramework} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 export interface BrandSettingValues {
     description: string

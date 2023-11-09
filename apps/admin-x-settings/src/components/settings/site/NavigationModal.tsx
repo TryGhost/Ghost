@@ -3,7 +3,8 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useNavigationEditor, {NavigationItem} from '../../../hooks/site/useNavigationEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Modal, TabView} from '@tryghost/admin-x-design-system';
-import {getSettingValues, useRouting} from '@tryghost/admin-x-framework';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useState} from 'react';
 
 const NavigationModal = NiceModal.create(() => {

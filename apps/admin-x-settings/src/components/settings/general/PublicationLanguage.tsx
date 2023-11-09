@@ -2,7 +2,7 @@ import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getSettingValues} from '@tryghost/admin-x-framework';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

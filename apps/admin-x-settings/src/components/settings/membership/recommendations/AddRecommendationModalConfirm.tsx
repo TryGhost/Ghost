@@ -4,8 +4,10 @@ import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './RecommendationDescriptionForm';
 import trackEvent from '../../../../utils/plausible';
 import useForm from '../../../../hooks/useForm';
-import {EditOrAddRecommendation, useAddRecommendation, useHandleError, useRouting} from '@tryghost/admin-x-framework';
+import {EditOrAddRecommendation, useAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface AddRecommendationModalProps {
     recommendation: EditOrAddRecommendation,

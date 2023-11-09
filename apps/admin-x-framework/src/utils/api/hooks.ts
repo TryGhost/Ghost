@@ -1,12 +1,12 @@
 import * as Sentry from '@sentry/react';
-import {UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {usePagination} from '@tryghost/admin-x-design-system';
-import {useCallback, useEffect, useMemo, useState} from 'react';
-import {usePermission} from '../../hooks/usePermissions';
-import {useFramework} from '../../providers/FrameworkProvider';
-import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from '../errors';
-import {getGhostPaths} from '../helpers';
-import useHandleError from './handleError';
+import { UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { usePagination } from '@tryghost/admin-x-design-system';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import useHandleError from '../../hooks/useHandleError';
+import { usePermission } from '../../hooks/usePermissions';
+import { useFramework } from '../../providers/FrameworkProvider';
+import { APIError, MaintenanceError, ServerUnreachableError, TimeoutError } from '../errors';
+import { getGhostPaths } from '../helpers';
 import handleResponse from './handleResponse';
 
 export interface Meta {

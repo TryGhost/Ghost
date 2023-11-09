@@ -5,8 +5,32 @@
   "repository": "https://github.com/TryGhost/Ghost/tree/main/apps/admin-x-framework",
   "author": "Ghost Foundation",
   "private": true,
-  "main": "es/index.js",
-  "types": "types/index.d.ts",
+  "exports": {
+    ".": {
+        "import": "./es/index.js",
+        "types": "./types/index.d.ts"
+    },
+    "./errors": {
+        "import": "./es/errors.js",
+        "types": "./types/errors.d.ts"
+    },
+    "./helpers": {
+        "import": "./es/helpers.js",
+        "types": "./types/helpers.d.ts"
+    },
+    "./hooks": {
+        "import": "./es/hooks.js",
+        "types": "./types/hooks.d.ts"
+    },
+    "./routing": {
+        "import": "./es/routing.js",
+        "types": "./types/routing.d.ts"
+    },
+    "./api/*": {
+        "import": "./es/api/*.js",
+        "types": "./types/api/*.d.ts"
+    }
+  },
   "sideEffects": false,
   "scripts": {
     "build": "vite build && tsc -p tsconfig.declaration.json",

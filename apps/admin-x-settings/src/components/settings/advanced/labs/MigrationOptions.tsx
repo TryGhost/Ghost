@@ -2,7 +2,8 @@ import LabItem from './LabItem';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
 import {Button, ConfirmationModal, FileUpload, List, showToast} from '@tryghost/admin-x-design-system';
-import {downloadAllContent, useDeleteAllContent, useHandleError, useImportContent} from '@tryghost/admin-x-framework';
+import {downloadAllContent, useDeleteAllContent, useImportContent} from '@tryghost/admin-x-framework/api/db';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tanstack/react-query';
 
 const ImportModalContent = () => {

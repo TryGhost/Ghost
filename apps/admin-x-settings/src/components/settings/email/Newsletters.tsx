@@ -3,8 +3,11 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {ReactNode, useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useQueryParams from '../../../hooks/useQueryParams';
-import {APIError, useBrowseNewsletters, useHandleError, useRouting, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Button, ConfirmationModal, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {useBrowseNewsletters, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const NavigateToNewsletter = ({id, children}: {id: string; children: ReactNode}) => {
     const modal = useModal();

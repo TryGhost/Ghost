@@ -7,8 +7,13 @@ import SignupOptions from './SignupOptions';
 import useForm, {Dirtyable} from '../../../../hooks/useForm';
 import useQueryParams from '../../../../hooks/useQueryParams';
 import {ConfirmationModal, PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {Setting, SettingValue, Tier, fullEmailAddress, getSettingValues, useBrowseTiers, useEditSettings, useEditTier, useHandleError, useRouting, verifyEmailToken} from '@tryghost/admin-x-framework';
+import {Setting, SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
+import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {verifyEmailToken} from '@tryghost/admin-x-framework/api/emailVerification';
 
 const Sidebar: React.FC<{
     localSettings: Setting[]

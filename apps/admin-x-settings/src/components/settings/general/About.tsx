@@ -1,6 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import {GhostLogo, Icon, Modal, Separator} from '@tryghost/admin-x-design-system';
-import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {linkToGitHubReleases} from '../../../utils/linkToGithubReleases';
 import {showDatabaseWarning} from '../../../utils/showDatabaseWarning';
 import {useGlobalData} from '../../providers/GlobalDataProvider';

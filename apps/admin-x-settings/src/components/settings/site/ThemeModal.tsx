@@ -7,8 +7,10 @@ import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
 import {Breadcrumbs, Button, ConfirmationModal, FileUpload, LimitModal, Modal, PageHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {InstalledTheme, Theme, ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useHandleError, useInstallTheme, useRouting, useUploadTheme} from '@tryghost/admin-x-framework';
+import {InstalledTheme, Theme, ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {OfficialTheme} from '../../providers/SettingsAppProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;

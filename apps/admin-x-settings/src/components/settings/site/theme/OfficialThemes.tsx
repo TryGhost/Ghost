@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
 import {Heading, ModalPage} from '@tryghost/admin-x-design-system';
 import {OfficialTheme, ThemeVariant, useOfficialThemes} from '../../../providers/SettingsAppProvider';
-import {getGhostPaths} from '@tryghost/admin-x-framework';
+import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {resolveAsset} from '../../../../utils/helpers';
 
 const VARIANT_LOOP_INTERVAL = 3000;

@@ -5,7 +5,7 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 import {MultiSelect, MultiSelectOption, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {MultiValue} from 'react-select';
 import {getOptionLabel} from '../../../utils/helpers';
-import {getSettingValues} from '@tryghost/admin-x-framework';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 type RefipientValueArgs = {
     defaultEmailRecipients: string;

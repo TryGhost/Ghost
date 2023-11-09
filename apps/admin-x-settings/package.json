@@ -12,6 +12,7 @@
     "README.md",
     "dist/"
   ],
+  "type": "module",
   "main": "./dist/admin-x-settings.umd.cjs",
   "module": "./dist/admin-x-settings.js",
   "exports": {

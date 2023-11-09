@@ -1,5 +1,5 @@
 import nql from '@tryghost/nql';
-import {CustomThemeSetting} from '@tryghost/admin-x-framework';
+import {CustomThemeSetting} from '@tryghost/admin-x-framework/api/customThemeSettings';
 
 export function isCustomThemeSettingVisible(setting: CustomThemeSetting, settingsKeyValueObj: Record<string, string>) {
     if (!setting.visibility) {

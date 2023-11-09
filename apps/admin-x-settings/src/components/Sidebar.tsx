@@ -6,10 +6,11 @@ import {Button, Icon, SettingNavItem, SettingNavItemProps, SettingNavSection, Te
 import {searchKeywords as advancedSearchKeywords} from './settings/advanced/AdvancedSettings';
 import {searchKeywords as emailSearchKeywords} from './settings/email/EmailSettings';
 import {searchKeywords as generalSearchKeywords} from './settings/general/GeneralSettings';
-import {getSettingValues, useRouting} from '@tryghost/admin-x-framework';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/MembershipSettings';
 import {searchKeywords as siteSearchKeywords} from './settings/site/SiteSettings';
 import {useGlobalData} from './providers/GlobalDataProvider';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext, useScrollSectionNav} from '../hooks/useScrollSection';
 import {useSearch} from './providers/SettingsAppProvider';
 

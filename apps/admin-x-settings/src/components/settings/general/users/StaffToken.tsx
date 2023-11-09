@@ -1,8 +1,9 @@
 import APIKeys from '../../advanced/integrations/APIKeys';
 import NiceModal from '@ebay/nice-modal-react';
 import {ConfirmationModal, Heading} from '@tryghost/admin-x-design-system';
-import {genStaffToken, getStaffToken, useHandleError} from '@tryghost/admin-x-framework';
+import {genStaffToken, getStaffToken} from '@tryghost/admin-x-framework/api/staffToken';
 import {useEffect, useState} from 'react';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const StaffToken: React.FC = () => {
     const {refetch: apiKey} = getStaffToken({

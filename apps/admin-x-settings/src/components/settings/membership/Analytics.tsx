@@ -2,7 +2,8 @@ import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Button, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getSettingValues, usePostsExports} from '@tryghost/admin-x-framework';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {usePostsExports} from '@tryghost/admin-x-framework/api/posts';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

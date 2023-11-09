@@ -4,10 +4,14 @@ import NiceModal from '@ebay/nice-modal-react';
 import {Button, ConfirmationModal, Icon, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Logo} from '../../../../assets/images/zapier-logo.svg';
 import {ReactComponent as ZapierIcon} from '../../../../assets/icons/zapier.svg';
-import {getGhostPaths, useBrowseIntegrations, useHandleError, useRefreshAPIKey, useRouting} from '@tryghost/admin-x-framework';
+import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {resolveAsset} from '../../../../utils/helpers';
+import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/apiKeys';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useSettingsApp} from '../../../providers/SettingsAppProvider';
 
 export interface ZapierTemplate {

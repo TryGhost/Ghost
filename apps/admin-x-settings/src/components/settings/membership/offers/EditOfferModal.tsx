@@ -1,7 +1,8 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, Form, PreviewModalContent, TextArea, TextField} from '@tryghost/admin-x-design-system';
-import {Offer, RoutingModalProps, useBrowseOffersById, useRouting} from '@tryghost/admin-x-framework';
+import {Offer, useBrowseOffersById} from '@tryghost/admin-x-framework/api/offers';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useEffect} from 'react';
 
 const Sidebar: React.FC<{offer: Offer}> = ({offer}) => {

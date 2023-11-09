@@ -5,9 +5,10 @@ import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Modal, MultiSelectOption} from '@tryghost/admin-x-design-system';
 import {MultiValue} from 'react-select';
 import {generateCode} from '../../../../utils/generateEmbedCode';
-import {getSettingValues, useRouting} from '@tryghost/admin-x-framework';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const EmbedSignupFormModal = NiceModal.create(() => {
     let i18nEnabled = false;

@@ -12,9 +12,12 @@ import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {RoutingModalProps, User, canAccessSettings, getImageUrl, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useHandleError, useMakeOwner, useRouting, useUploadImage} from '@tryghost/admin-x-framework';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 
 const validators: Record<string, (u: Partial<User>) => string> = {

@@ -1,7 +1,9 @@
 import NewsletterPreviewContent from './NewsletterPreviewContent';
 import React from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
-import {Newsletter, fullEmailAddress, getSettingValues} from '@tryghost/admin-x-framework';
+import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 

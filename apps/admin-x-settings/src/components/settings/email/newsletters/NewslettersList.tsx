@@ -1,7 +1,8 @@
 import React from 'react';
 import {Button, NoValueLabel, Table, TableCell, TableRow} from '@tryghost/admin-x-design-system';
-import {Newsletter, useRouting} from '@tryghost/admin-x-framework';
+import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {numberWithCommas} from '../../../../utils/helpers';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface NewslettersListProps {
     newsletters: Newsletter[]

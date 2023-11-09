@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {useModalPaths, useRouteChangeCallback, useRouting} from '@tryghost/admin-x-framework';
+import {useModalPaths, useRouteChangeCallback, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext} from '../../hooks/useScrollSection';
 import type {ModalName} from './routing/modals';
 

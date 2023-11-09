@@ -1,7 +1,7 @@
 import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
 import {QueryClientProvider} from '@tanstack/react-query';
 import {ReactNode, createContext, useContext} from 'react';
-import queryClient from '../queryClient';
+import queryClient from '../utils/queryClient';
 import RoutingProvider, {ExternalLink} from './RoutingProvider';
 
 export interface FrameworkProviderProps {

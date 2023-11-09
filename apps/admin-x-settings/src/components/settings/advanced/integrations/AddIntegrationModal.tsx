@@ -2,7 +2,9 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import {Form, LimitModal, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {RoutingModalProps, useCreateIntegration, useHandleError, useRouting} from '@tryghost/admin-x-framework';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useCreateIntegration} from '@tryghost/admin-x-framework/api/integrations';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();

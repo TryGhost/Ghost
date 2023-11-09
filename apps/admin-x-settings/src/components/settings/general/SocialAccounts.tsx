@@ -3,7 +3,7 @@ import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {facebookHandleToUrl, facebookUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
-import {getSettingValues} from '@tryghost/admin-x-framework';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {

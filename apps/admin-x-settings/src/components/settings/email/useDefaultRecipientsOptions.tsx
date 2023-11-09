@@ -1,8 +1,11 @@
 import {GroupBase, MultiValue} from 'react-select';
-import {Label, Offer, Tier, useFilterableApi} from '@tryghost/admin-x-framework';
+import {Label} from '@tryghost/admin-x-framework/api/labels';
 import {LoadMultiSelectOptions, MultiSelectOption, debounce} from '@tryghost/admin-x-design-system';
+import {Offer} from '@tryghost/admin-x-framework/api/offers';
+import {Tier} from '@tryghost/admin-x-framework/api/tiers';
 import {isObjectId} from '../../../utils/helpers';
 import {useEffect, useState} from 'react';
+import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 const SIMPLE_SEGMENT_OPTIONS: MultiSelectOption[] = [{
     label: 'Free members',

@@ -4,8 +4,9 @@ import React, {useState} from 'react';
 import RecommendationIcon from './RecommendationIcon';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Button, Link, NoValueLabel, PaginationData, ShowMoreData, Table, TableCell, TableRow, Tooltip} from '@tryghost/admin-x-design-system';
-import {Recommendation, useRouting} from '@tryghost/admin-x-framework';
+import {Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {numberWithCommas} from '../../../../utils/helpers';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface RecommendationListProps {
     recommendations: Recommendation[],

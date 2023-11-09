@@ -1,5 +1,7 @@
 import * as Sentry from '@sentry/react';
-import {Config, Setting, getGhostPaths, getSettingValues} from '@tryghost/admin-x-framework';
+import {Config} from '@tryghost/admin-x-framework/api/config';
+import {Setting, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
 

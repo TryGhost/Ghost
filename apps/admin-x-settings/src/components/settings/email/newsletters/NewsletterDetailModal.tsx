@@ -7,9 +7,14 @@ import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
 import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {Newsletter, RoutingModalProps, fullEmailAddress, getImageUrl, getSettingValues, useBrowseNewsletters, useEditNewsletter, useHandleError, useRouting, useUploadImage} from '@tryghost/admin-x-framework';
+import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const Sidebar: React.FC<{
     newsletter: Newsletter;

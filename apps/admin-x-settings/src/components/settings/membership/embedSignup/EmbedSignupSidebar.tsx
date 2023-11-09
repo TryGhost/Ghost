@@ -1,7 +1,8 @@
 import React from 'react';
 import {Button, ColorIndicator, ColorPicker, Form, Heading, LoadMultiSelectOptions, MultiSelect, MultiSelectOption, Radio, StickyFooter, TextArea, debounce} from '@tryghost/admin-x-design-system';
-import {Label, useFilterableApi} from '@tryghost/admin-x-framework';
+import {Label} from '@tryghost/admin-x-framework/api/labels';
 import {MultiValue} from 'react-select';
+import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 export type SelectedLabelTypes = {
     label: string;

@@ -49,6 +49,11 @@ export const useDeleteStripeSettings = createMutation<unknown, null>({
     invalidateQueries: {dataType}
 });
 
+export const useTestSlack = createMutation<unknown, null>({
+    method: 'POST',
+    path: () => '/slack/test/'
+});
+
 // Helpers
 
 export function humanizeSettingKey(key: string) {

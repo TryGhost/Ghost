@@ -2,8 +2,8 @@ import * as Sentry from '@sentry/react';
 import {showToast} from '@tryghost/admin-x-design-system';
 import {useCallback} from 'react';
 import toast from 'react-hot-toast';
-import {useFramework} from '../../providers/FrameworkProvider';
-import {APIError, JSONError, ValidationError} from '../errors';
+import {useFramework} from '../providers/FrameworkProvider';
+import {APIError, JSONError, ValidationError} from '../utils/errors';
 
 /**
  * Generic error handling for API calls. This is enabled by default for queries (can be disabled by

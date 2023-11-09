@@ -1,7 +1,9 @@
 import {Button, Heading, SettingGroup, TextField, showToast} from '@tryghost/admin-x-design-system';
-import {User, ValidationError, useHandleError, useUpdatePassword} from '@tryghost/admin-x-framework';
+import {User, useUpdatePassword} from '@tryghost/admin-x-framework/api/users';
+import {ValidationError} from '@tryghost/admin-x-framework/errors';
 import {useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const BAD_PASSWORDS = [
     '1234567890',

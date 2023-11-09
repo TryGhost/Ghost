@@ -4,7 +4,7 @@ import MailGun from './Mailgun';
 import Newsletters from './Newsletters';
 import React from 'react';
 import SearchableSection from '../../SearchableSection';
-import {getSettingValues} from '@tryghost/admin-x-framework';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 export const searchKeywords = {

@@ -5,12 +5,15 @@ import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
 import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
-import {Integration, getSettingValues, useBrowseIntegrations, useDeleteIntegration, useHandleError, useRouting} from '@tryghost/admin-x-framework';
+import {Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
 import {ReactComponent as SlackIcon} from '../../../assets/icons/slack.svg';
 import {ReactComponent as UnsplashIcon} from '../../../assets/icons/unsplash.svg';
 import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface IntegrationItemProps {
     icon?: React.ReactNode,
