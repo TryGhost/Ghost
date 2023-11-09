@@ -8,16 +8,26 @@ import {getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
 import {getTiersCadences} from '../../../../utils/getTiersCadences';
 import {useEffect, useState} from 'react';
 
+function slugify(text: string): string {
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-') // Replace spaces with -
+        .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+        .replace(/\-\-+/g, '-'); // Replace multiple - with single -
+}
+
 interface OfferType {
     title: string;
     description: string;
 }
 
-const ButtonSelect: React.FC<{type: OfferType, checked: boolean}> = ({type, checked}) => {
+const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => void}> = ({type, checked, onClick}) => {
     const checkboxClass = checked ? 'bg-black text-white' : 'border border-grey-300';
 
     return (
-        <button className='text-left' type='button'>
+        <button className='text-left' type='button' onClick={onClick}>
             <div className='flex gap-3'>
                 <div className={`mt-0.5 flex h-4 w-4 items-center justify-center rounded-full ${checkboxClass}`}>
                     {checked ? <Icon className='w-2 stroke-[4]' name='check' size='custom' /> : null}
@@ -37,32 +47,28 @@ type SidebarProps = {
     selectedTier: SelectOption;
     overrides: offerPortalPreviewUrlTypes
     handleTextInput: (e: React.ChangeEvent<HTMLInputElement>, key: string) => void;
+    amountOptions: SelectOption[];
+    typeOptions: OfferType[];
+    durationOptions: SelectOption[];
+    handleTypeChange: (type: string) => void;
 };
 
-const Sidebar: React.FC<SidebarProps> = ({tierOptions, handleTierChange, selectedTier, handleTextInput, overrides}) => {
-    const typeOptions = [
-        {title: 'Discount', description: 'Offer a special reduced price'},
-        {title: 'Free trial', description: 'Give free access for a limited time'}
-    ];
-
-    const amountOptions = [
-        {value: '1', label: '%'},
-        {value: '2', label: 'USD'}
-    ];
-
-    const durationOptions = [
-        {value: '1', label: 'First-payment'},
-        {value: '2', label: 'Multiple-months'},
-        {value: '3', label: 'Forever'}
-    ];
-
+const Sidebar: React.FC<SidebarProps> = ({tierOptions, 
+    handleTierChange, 
+    selectedTier, 
+    handleTextInput, 
+    typeOptions,
+    durationOptions,
+    handleTypeChange,
+    overrides,
+    amountOptions}) => {
     return (
         <div className='pt-7'>
             <Form>
                 <TextField
                     hint='Visible to members on Stripe Checkout page.'
                     placeholder='Black Friday'
-                    title={overrides.name}
+                    title='Name'
                     onChange={(e) => {
                         handleTextInput(e, 'name');
                     }}
@@ -71,8 +77,12 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions, handleTierChange, selecte
                     <h2 className='mb-4 text-lg'>Offer details</h2>
                     <div className='flex flex-col gap-6'>
                         <div className='flex flex-col gap-4 rounded-md border border-grey-200 p-4'>
-                            <ButtonSelect checked={true} type={typeOptions[0]} />
-                            <ButtonSelect checked={false} type={typeOptions[1]} />
+                            <ButtonSelect checked={overrides.type === 'percent' ? true : false} type={typeOptions[0]} onClick={() => {
+                                handleTypeChange('percent');
+                            }} />
+                            <ButtonSelect checked={overrides.type === 'trial' ? true : false} type={typeOptions[1]} onClick={() => {
+                                handleTypeChange('trial');
+                            }} />
                         </div>
                         <Select
                             options={tierOptions}
@@ -109,24 +119,23 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions, handleTierChange, selecte
                     <div className='flex flex-col gap-6'>
                         <TextField
                             placeholder='Black Friday Special'
-                            title={overrides.displayTitle}
+                            title='Display title'
                             onChange={(e) => {
                                 handleTextInput(e, 'displayTitle');
                             }}
                         />
                         <TextField
                             placeholder='black-friday'
-                            title={overrides.code}
+                            title='Offer code'
+                            value={overrides.code}
                             onChange={(e) => {
                                 handleTextInput(e, 'code');
                             }}
                         />
                         <TextArea
                             placeholder='Take advantage of this limited-time offer.'
-                            title={overrides.displayDescription}
-                            onChange={(e) => {
-                                handleTextInput(e, 'displayDescription');
-                            }}
+                            title='Display description'
+                            onChange={e => handleTextInput(e, 'displayDescription')}
                         />
                     </div>
                 </section>
@@ -144,6 +153,19 @@ const parseData = (input: string): { id: string; period: string; currency: strin
 };
 
 const AddOfferModal = () => {
+    const typeOptions = [
+        {title: 'Discount', description: 'Offer a special reduced price', value: 'percent'},
+        {title: 'Free trial', description: 'Give free access for a limited time', value: 'trial'}
+    ];
+
+    // if currency is selected convert it to cents eg 1 = 100
+
+    const durationOptions = [
+        {value: '1', label: 'First-payment'},
+        {value: '2', label: 'Multiple-months'},
+        {value: '3', label: 'Forever'}
+    ];
+
     const [href, setHref] = useState<string>('');
     const modal = useModal();
     const {updateRoute} = useRouting();
@@ -160,21 +182,26 @@ const AddOfferModal = () => {
         }
     });
 
-    const [overrides, setOverrides] = useState({
+    const [overrides, setOverrides] = useState<offerPortalPreviewUrlTypes>({
         disableBackground: true,
         name: '',
-        code: 'black-friday',
-        displayTitle: 'Black Friday Special',
-        displayDescription: 'Take advantage of this limited-time offer.',
+        code: '',
+        displayTitle: '',
+        displayDescription: '',
         type: 'discount',
-        cadence: 'monthly',
-        amount: 1200,
+        cadence: selectedTier?.dataset?.period || '',
+        amount: 0,
         duration: '',
-        durationInMonths: 12,
-        currency: 'USD',
+        durationInMonths: 0,
+        currency: selectedTier?.dataset?.currency || '',
         status: 'active',
         tierId: selectedTier?.dataset?.id || ''
     });
+
+    const amountOptions = [
+        {value: '1', label: '%'},
+        {value: '2', label: overrides.currency}
+    ];
 
     const handleTierChange = (tier: SelectOption) => {
         setSelectedTier({
@@ -190,18 +217,18 @@ const AddOfferModal = () => {
         });
     };
 
-    // const handleTextInput = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, key: string) => {
-    //     setOverrides({
-    //         ...overrides,
-    //         [key]: e.target.value
-    //     });
-    // };
+    const handleTypeChange = (type: string) => {
+        setOverrides({
+            ...overrides,
+            type: type
+        });
+    };
 
     const handleTextInput = (
         e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>,
         key: string
     ) => {
-        const target = e.target as HTMLInputElement | HTMLTextAreaElement; // Type assertion here
+        const target = e.target as HTMLInputElement | HTMLTextAreaElement;
         setOverrides(prevOverrides => ({
             ...prevOverrides,
             [key]: target.value
@@ -226,11 +253,15 @@ const AddOfferModal = () => {
     }, [overrides]);
 
     const sidebar = <Sidebar 
+        amountOptions={amountOptions}
+        durationOptions={durationOptions}
         handleTextInput={handleTextInput}
         handleTierChange={handleTierChange}
+        handleTypeChange={handleTypeChange}
         overrides={overrides}
         selectedTier={selectedTier.tier}
         tierOptions={tierCadenceOptions}
+        typeOptions={typeOptions}
     />;
 
     const iframe = <PortalFrame
