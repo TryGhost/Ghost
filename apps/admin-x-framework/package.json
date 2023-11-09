@@ -66,5 +66,15 @@
   "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "build",
+          {"projects": ["@tryghost/admin-x-design-system"], "target": "build"}
+        ]
+      }
+    }
   }
 }
