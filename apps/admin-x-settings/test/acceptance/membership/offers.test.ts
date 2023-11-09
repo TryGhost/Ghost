@@ -57,11 +57,11 @@ test.describe('Offers Modal', () => {
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
             browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
-            browseOffersById: {method: 'GET', path: `/offers/6487ea6464fca78ec2fff5fe/`, response: responseFixtures.offers},
+            browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers[0].id}/`, response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
-            editOffer: {method: 'PUT', path: `/offers/6487ea6464fca78ec2fff5fe/`, response: {
+            editOffer: {method: 'PUT', path: `/offers/${responseFixtures.offers.offers[0].id}/`, response: {
                 offers: [{
-                    id: '6487ea6464fca78ec2fff5fe',
+                    id: responseFixtures.offers.offers[0].id,
                     name: 'Updated offer',
                     body_font_category: 'sans_serif'
                 }]
@@ -91,11 +91,10 @@ test.describe('Offers Modal', () => {
 
         expect(lastApiRequests.editOffer?.body).toMatchObject({
             offers: [{
-                "id": "6487ea6464fca78ec2fff5fe",
-                "name": "First offer",
-                "code": "black-friday-offer"
+                id: responseFixtures.offers.offers[0].id,
+                name: 'First offer',
+                code: 'black-friday-offer'
             }]
         });
     });
-
 });
