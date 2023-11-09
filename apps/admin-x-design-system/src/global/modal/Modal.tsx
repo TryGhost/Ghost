@@ -8,7 +8,7 @@ import ButtonGroup from '../ButtonGroup';
 import Heading from '../Heading';
 import StickyFooter from '../StickyFooter';
 
-export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed' | number;
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed';
 
 export interface ModalProps {
 
@@ -16,7 +16,8 @@ export interface ModalProps {
      * Possible values are: `sm`, `md`, `lg`, `xl, `full`, `bleed`. Yu can also use any number to set an arbitrary width.
      */
     size?: ModalSize;
-    maxHeight?: number;
+    width?: 'full' | number;
+    height?: 'full' | number;
 
     testId?: string;
     title?: string;
@@ -50,7 +51,8 @@ export const topLevelBackdropClasses = 'bg-[rgba(98,109,121,0.2)] backdrop-blur-
 
 const Modal: React.FC<ModalProps> = ({
     size = 'md',
-    maxHeight,
+    width,
+    height,
     testId,
     title,
     okLabel = 'OK',
@@ -343,7 +345,7 @@ const Modal: React.FC<ModalProps> = ({
 
     contentClasses = clsx(
         contentClasses,
-        ((size === 'full' || size === 'bleed') && 'grow')
+        ((size === 'full' || size === 'bleed' || height === 'full' || typeof height === 'number') && 'grow')
     );
 
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -352,14 +354,26 @@ const Modal: React.FC<ModalProps> = ({
         }
     };
 
-    const modalStyles:{maxWidth?: string; maxHeight?: string;} = {};
+    const modalStyles:{width?: string; height?: string; maxWidth?: string; maxHeight?: string;} = {};
 
-    if (typeof size === 'number') {
-        modalStyles.maxWidth = size + 'px';
+    if (typeof width === 'number') {
+        modalStyles.width = '100%';
+        modalStyles.maxWidth = width + 'px';
+    } else if (width === 'full') {
+        modalClasses = clsx(
+            modalClasses,
+            'w-full'
+        );
     }
 
-    if (maxHeight) {
-        modalStyles.maxHeight = maxHeight + 'px';
+    if (typeof height === 'number') {
+        modalStyles.height = '100%';
+        modalStyles.maxHeight = height + 'px';
+    } else if (height === 'full') {
+        modalClasses = clsx(
+            modalClasses,
+            'h-full'
+        );
     }
 
     let footerContent;

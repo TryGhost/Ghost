@@ -284,9 +284,9 @@ const StripeConnectModal: React.FC = () => {
         }}
         cancelLabel=''
         footer={<div className='mt-8'></div>}
-        size={stripeConnectAccountId ? 740 : 520}
         testId='stripe-modal'
         title=''
+        width={stripeConnectAccountId ? 740 : 520}
         hideXOnMobile
     >
         {contents}

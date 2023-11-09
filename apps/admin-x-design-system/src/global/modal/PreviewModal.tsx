@@ -18,6 +18,8 @@ export interface PreviewModalProps {
     title?: string;
     titleHeadingLevel?: HeadingLevel;
     size?: ModalSize;
+    width?: 'full' | number;
+    height?: 'full' | number;
     sidebar?: boolean | React.ReactNode;
     preview?: React.ReactNode;
     dirty?: boolean
@@ -54,6 +56,8 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     title,
     titleHeadingLevel = 4,
     size = 'full',
+    width,
+    height,
     sidebar = '',
     preview,
     dirty = false,
@@ -244,10 +248,12 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             afterClose={afterClose}
             animate={false}
             footer={false}
+            height={height}
             padding={false}
             size={size}
             testId={testId}
             title=''
+            width={width}
             hideXOnMobile
         >
             <div className='flex h-full grow'>

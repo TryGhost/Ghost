@@ -133,6 +133,44 @@ export const Bleed: Story = {
     }
 };
 
+export const CustomWidth: Story = {
+    args: {
+        width: 600,
+        onOk: () => {
+            alert('Clicked OK!');
+        },
+        onCancel: undefined,
+        title: 'Custom width modal',
+        children: modalContent
+    }
+};
+
+export const CustomHeight: Story = {
+    args: {
+        size: 'md',
+        height: 'full',
+        onOk: () => {
+            alert('Clicked OK!');
+        },
+        onCancel: undefined,
+        title: 'Custom height modal',
+        children: modalContent
+    }
+};
+
+export const Square: Story = {
+    args: {
+        width: 320,
+        height: 320,
+        onOk: () => {
+            alert('Clicked OK!');
+        },
+        onCancel: undefined,
+        title: 'Square modal',
+        children: modalContent
+    }
+};
+
 export const CompletePage: Story = {
     args: {
         size: 'full',
