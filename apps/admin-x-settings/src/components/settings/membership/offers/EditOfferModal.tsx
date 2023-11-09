@@ -19,7 +19,7 @@ const Sidebar: React.FC<{
             const {siteData} = useGlobalData();      
             const [isCopied, setIsCopied] = useState(false);
             
-            const offerUrl = `${getHomepageUrl(siteData!)}/#/portal/offers/${offer?.code}`;
+            const offerUrl = `${getHomepageUrl(siteData!)}${offer?.code}`;
             const handleCopyClick = async () => {
                 try {
                     await navigator.clipboard.writeText(offerUrl);
