@@ -7,7 +7,7 @@ const Placeholder = ({text = 'Type here', className = ''}) => {
     // Note: we use line-clamp-1, instead of truncate because truncate adds 'white-space: nowrap', which often breaks overflows of parents in some cards
     return (
         <div className={`placeholder not-kg-prose pointer-events-none h-0 cursor-text overflow-visible`}>
-            <div className={`line-clamp-1 translate-y-[-100%] ${className}`}>{text}</div>
+            <div className={`line-clamp-1 translate-y-[-100%] xs:overflow-visible ${className}`}>{text}</div>
         </div>
     );
 };
