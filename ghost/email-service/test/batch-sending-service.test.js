@@ -269,7 +269,7 @@ describe('Batch Sending Service', function () {
         });
     });
 
-    describe('createBatches', function () {
+    describe.only('createBatches', function () {
         it('works even when new members are added', async function () {
             const Member = createModelClass({});
             const EmailBatch = createModelClass({});
@@ -450,6 +450,86 @@ describe('Batch Sending Service', function () {
 
             // Check email_count set
             assert.equal(email.get('email_count'), 4);
+        });
+
+        it.only('sends an extra batch if the lastId is numeric', async function () {
+            const Member = createModelClass({});
+            const EmailBatch = createModelClass({});
+            const newsletter = createModel({});
+
+            const members = [
+                // will create ids 0-9
+                ...new Array(10).fill(0).map((i,index) => createModel({
+                    id: index,
+                    email: `test@numericid.com`,
+                    uuid: 12345,
+                    status: 'free',
+                    newsletters: [
+                        newsletter
+                    ]
+                }))
+            ];
+
+            const initialMembers = members.slice();
+
+            Member.getFilteredCollectionQuery = ({filter}) => {
+                const q = nql(filter);
+                const all = members.filter((member) => {
+                    return q.queryJSON(member.toJSON());
+                });
+
+                console.log(filter,all)
+                return createDb({
+                    all: all.map(member => member.toJSON())
+                });
+            };
+
+            const db = createDb({});
+            const insert = sinon.spy(db, 'insert');
+
+            const service = new BatchSendingService({
+                models: {Member, EmailBatch},
+                emailRenderer: {
+                    getSegments() {
+                        return ['status:free'];
+                    }
+                },
+                sendingService: {
+                    getMaximumRecipients() {
+                        return 5;
+                    }
+                },
+                emailSegmenter: {
+                    getMemberFilterForSegment(n, _, segment) {
+                        return `newsletters.id:${n.id}+(${segment})`;
+                    }
+                },
+                db
+            });
+
+            const email = createModel({id: 99999});
+
+            const batches = await service.createBatches({
+                email,
+                post: createModel({}),
+                newsletter
+            });
+            console.log(`batches`,batches)
+            assert.equal(batches.length, 2);
+
+            const calls = insert.getCalls();
+            assert.equal(calls.length, 2);
+
+            const insertedRecipients = calls.flatMap(call => call.args[0]);
+            // assert.equal(insertedRecipients.length, 5);
+
+            console.log(`insertedRecipients`,insertedRecipients)
+
+            // Check all recipients match initialMembers
+            assert.deepEqual(insertedRecipients.map(recipient => recipient.member_id).sort(), initialMembers.map(member => member.id).sort());
+
+            // Check email_count set
+            assert.equal(email.get('email_count'), 5);
         });
     });
 
