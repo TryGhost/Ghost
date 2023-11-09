@@ -1028,18 +1028,21 @@ describe('EmailEventStorage', function () {
     });
 
     it('Can handle unsubscribe events', async function () {
+        const newsletterToRemove = fixtureManager.get('newsletters', 0).id;
+        const newsletterToKeep = fixtureManager.get('newsletters', 1).id;
+
         const email = fixtureManager.get('emails', 0);
+        await models.Email.edit({newsletter_id: newsletterToRemove}, {id: email.id});
+
         const emailBatch = fixtureManager.get('email_batches', 0);
-        const emailId = emailBatch.email_id;
+        assert(emailBatch.email_id === email.id);
 
         const emailRecipient = fixtureManager.get('email_recipients', 0);
         assert(emailRecipient.batch_id === emailBatch.id);
+
         const memberId = emailRecipient.member_id;
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
-
-        const newsletterToRemove = email.newsletter_id;
-        const newsletterToKeep = fixtureManager.get('newsletters', 1).id;
 
         // Initialise member with 2 newsletters
         await membersService.api.members.update({newsletters: [
@@ -1059,7 +1062,7 @@ describe('EmailEventStorage', function () {
             event: 'unsubscribed',
             recipient: emailRecipient.member_email,
             'user-variables': {
-                'email-id': emailId
+                'email-id': email.id
             },
             message: {
                 headers: {
