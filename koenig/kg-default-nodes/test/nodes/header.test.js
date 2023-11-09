@@ -442,7 +442,7 @@ describe('HeaderNode', function () {
                 const renderedHtml = _.replace(element.outerHTML, /\s/g, '');
                 const expectedHtml = `
                 <div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide " style=";" data-background-color="#F0F0F0">
-                <picture><img class="kg-header-card-image" src="https://example.com/image.jpg" alt=""></picture>
+                <picture><img class="kg-header-card-image" src="https://example.com/image.jpg" loading="lazy" alt=""></picture>
                     <div class="kg-header-card-content">
                         <div class="kg-header-card-text kg-align-center">
                             <h2 id="this-is-the-header-card" class="kg-header-card-heading" style="color: #000000;" data-text-color="#000000">This is the header card</h2>
