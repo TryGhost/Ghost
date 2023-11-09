@@ -359,6 +359,52 @@ jobs:
         path: ghost/core/playwright-report
         retention-days: 30
 
+  job_perf-tests:
+    runs-on:
+      labels: ubuntu-latest-4-cores
+    needs: [job_get_metadata, job_install_deps]
+    if: needs.job_get_metadata.outputs.changed_core == 'true' && needs.job_get_metadata.outputs.is_main == 'true'
+    name: Performance tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: '18.12.1'
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+
+      - name: Install hyperfine
+        run: |
+          export HYPERFINE_VERSION=1.18.0
+          wget https://github.com/sharkdp/hyperfine/releases/download/v$HYPERFINE_VERSION/hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu.tar.gz
+          tar -zxvf hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu.tar.gz
+          mv hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu/hyperfine /usr/local/bin
+          chmod +x /usr/local/bin/hyperfine
+
+      - name: Run hyperfine on boot
+        working-directory: ghost/core
+        run: hyperfine --warmup 3 'NODE_ENV=production GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
+
+      - name: Convert data
+        working-directory: ghost/core
+        run: |
+          jq '[{ name: "Boot time", unit: "s", value: .results[0].median, range: ((.results[0].max - .results[0].min) | tostring) }]' < boot-perf.json > boot-perf-formatted.json
+
+      - name: Run analysis
+        uses: benchmark-action/github-action-benchmark@v1.18.0
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: ghost/core/boot-perf-formatted.json
+          benchmark-data-dir-path: ""
+          gh-repository: github.com/TryGhost/Ghost-Benchmarks
+          github-token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          auto-push: true
+
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
