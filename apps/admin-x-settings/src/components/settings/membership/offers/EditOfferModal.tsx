@@ -1,89 +1,90 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
+import useForm, {ErrorMessages} from '../../../../hooks/useForm';
+import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {Button, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {Offer, useBrowseOffersById, useEditOffer} from '../../../../api/offers';
-import {getHomepageUrl} from '../../../../api/site';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
+import {getHomepageUrl} from '../../../../api/site';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import useForm, {ErrorMessages} from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
 
-const Sidebar: React.FC<{offer: Offer, updateOffer: (fields: Partial<Offer>) => void, validate: () => void,
-    errors: ErrorMessages, clearError: (field: string) => void}> = ({offer, updateOffer, errors, validate, clearError}) => {
-    const {siteData} = useGlobalData();      
-    const [isCopied, setIsCopied] = useState(false);
-    
-    const offerUrl = `${getHomepageUrl(siteData!)}/#/portal/offers/${offer?.code}`;
-    const handleCopyClick = async () => {
-        try {
-            await navigator.clipboard.writeText(offerUrl);
-            setIsCopied(true);
-            setTimeout(() => setIsCopied(false), 1000); // reset after 1 seconds
-        } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error('Failed to copy text: ', err);
-        }
-    };
+const Sidebar: React.FC<{
+        clearError: (field: string) => void,
+        errors: ErrorMessages,
+        offer: Offer, 
+        updateOffer: (fields: Partial<Offer>) => void, 
+        validate: () => void}> = ({clearError, errors, offer, updateOffer, validate}) => {
+            const {siteData} = useGlobalData();      
+            const [isCopied, setIsCopied] = useState(false);
+            
+            const offerUrl = `${getHomepageUrl(siteData!)}/#/portal/offers/${offer?.code}`;
+            const handleCopyClick = async () => {
+                try {
+                    await navigator.clipboard.writeText(offerUrl);
+                    setIsCopied(true);
+                    setTimeout(() => setIsCopied(false), 1000); // reset after 1 seconds
+                } catch (err) {
+                    // eslint-disable-next-line no-console
+                    console.error('Failed to copy text: ', err);
+                }
+            };
 
-    return (
-        <div className='pt-7'>
-            <Form>
-                <TextField
-                    error={Boolean(errors.name)}
-                    placeholder='Black Friday'
-                    title='Name'
-                    value={offer?.name}
-                    onChange={e => updateOffer({name: e.target.value})}
-                    onBlur={validate}
-                    hint={errors.name || 'Visible to members on Stripe Checkout page'}
-                    onKeyDown={() => clearError('name')}
-
-                />
-                <section className='mt-4'>
-                    <h2 className='mb-4 text-lg'>Portal Settings</h2>
-                    <div className='flex flex-col gap-6'>
+            return (
+                <div className='pt-7'>
+                    <Form>
                         <TextField
-                            placeholder='Black Friday Special'
-                            title='Display title'
-                            value={offer?.display_title}
-                            onChange={e => updateOffer({display_title: e.target.value})}
-                        />
-                        <TextField
-                            placeholder='black-friday'
-                            error={Boolean(errors.code)}
-                            title='Offer code'
+                            error={Boolean(errors.name)}
+                            hint={errors.name || 'Visible to members on Stripe Checkout page'}
+                            placeholder='Black Friday'
+                            title='Name'
+                            value={offer?.name}
                             onBlur={validate}
-                            value={offer?.code}
+                            onChange={e => updateOffer({name: e.target.value})}
                             onKeyDown={() => clearError('name')}
-                            hint={errors.code}
-                            onChange={e => {
-                                updateOffer({code: e.target.value})
-                                }}
                         />
-                        <TextArea
-                            placeholder='Take advantage of this limited-time offer.'
-                            title='Display description'
-                            value={offer?.display_description}
-                            onChange={e => updateOffer({display_description: e.target.value})}
-                        />
-                        <div className='flex flex-col gap-1.5'>
-                            <TextField
-                                placeholder='https://www.example.com'
-                                title='URL'
-                                type='url'
-                                value={offerUrl}
-                                disabled={Boolean(true)}
-                            />
-                            <Button color={isCopied ? 'green' : 'black'} label={isCopied ? 'Copied!' : 'Copy code'} onClick={handleCopyClick} />
-                        </div>
-                    </div>
-                </section>
-            </Form>
-        </div>
-    );
-};
+                        <section className='mt-4'>
+                            <h2 className='mb-4 text-lg'>Portal Settings</h2>
+                            <div className='flex flex-col gap-6'>
+                                <TextField
+                                    placeholder='Black Friday Special'
+                                    title='Display title'
+                                    value={offer?.display_title}
+                                    onChange={e => updateOffer({display_title: e.target.value})}
+                                />
+                                <TextField
+                                    error={Boolean(errors.code)}
+                                    hint={errors.code}
+                                    placeholder='black-friday'
+                                    title='Offer code'
+                                    value={offer?.code}
+                                    onBlur={validate}
+                                    onChange={e => updateOffer({code: e.target.value})}
+                                    onKeyDown={() => clearError('name')}
+                                />
+                                <TextArea
+                                    placeholder='Take advantage of this limited-time offer.'
+                                    title='Display description'
+                                    value={offer?.display_description}
+                                    onChange={e => updateOffer({display_description: e.target.value})}
+                                />
+                                <div className='flex flex-col gap-1.5'>
+                                    <TextField
+                                        disabled={Boolean(true)}
+                                        placeholder='https://www.example.com'
+                                        title='URL'
+                                        type='url'
+                                        value={offerUrl}
+                                    />
+                                    <Button color={isCopied ? 'green' : 'black'} label={isCopied ? 'Copied!' : 'Copy code'} onClick={handleCopyClick} />
+                                </div>
+                            </div>
+                        </section>
+                    </Form>
+                </div>
+            );
+        };
 
 const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
     const modal = useModal();
@@ -131,24 +132,15 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         updateForm(state => ({...state, ...fields}));
     };
 
-    const sidebar =  <Sidebar
+    const sidebar = <Sidebar
+        clearError={clearError}
+        errors={errors}
         offer={formState}
         updateOffer={updateOffer}
-        errors={errors}
         validate={validate}
-        clearError={clearError}
-
     />;
 
     return offerById ? <PreviewModalContent deviceSelector={false}
-        onOk={async () => {
-            if (!(await handleSave({fakeWhenUnchanged: true}))) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields.'
-                });
-            }
-        }}
         dirty={saveState === 'unsaved'}
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
@@ -156,7 +148,15 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         onCancel={() => {
             modal.remove();
             updateRoute('offers/edit');
-        }} />: null;
+        }}
+        onOk={async () => {
+            if (!(await handleSave({fakeWhenUnchanged: true}))) {
+                showToast({
+                    type: 'pageError',
+                    message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields.'
+                });
+            }
+        }} /> : null;
 };
 
 export default NiceModal.create(EditOfferModal);
