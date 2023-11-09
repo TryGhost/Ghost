@@ -113,14 +113,17 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 <SettingNavSection isVisible={checkVisible(Object.values(membershipSearchKeywords).flat())} title="Membership">
+                    <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Portal settings" onClick={handleSectionClick} />
                     <NavItem icon='key' keywords={membershipSearchKeywords.access} navid='members' title="Access" onClick={handleSectionClick} />
-                    <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Portal" onClick={handleSectionClick} />
                     <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
-                    {hasTipsAndDonations && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-or-donations' title="Tips or donations" onClick={handleSectionClick} />}
-                    <NavItem icon='emailfield' keywords={membershipSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Embeddable signup form" onClick={handleSectionClick} />
-                    {hasRecommendations && <NavItem icon='heart' keywords={membershipSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />}
                     <NavItem icon='baseline-chart' keywords={membershipSearchKeywords.analytics} navid='analytics' title="Analytics" onClick={handleSectionClick} />
+                </SettingNavSection>
+
+                <SettingNavSection isVisible={checkVisible(Object.values(membershipSearchKeywords).flat())} title="Growth">
+                    {hasRecommendations && <NavItem icon='heart' keywords={membershipSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />}
+                    <NavItem icon='emailfield' keywords={membershipSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Embeddable signup form" onClick={handleSectionClick} />
                     {hasOffers && <NavItem icon='discount' keywords={membershipSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
+                    {hasTipsAndDonations && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-or-donations' title="Tips or donations" onClick={handleSectionClick} />}
                 </SettingNavSection>
 
                 <SettingNavSection isVisible={checkVisible(Object.values(emailSearchKeywords).flat())} title="Email newsletter">
