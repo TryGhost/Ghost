@@ -41,8 +41,8 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
             }}
             cancelLabel=''
             footer={(<></>)}
-            size={540}
             topRightContent='close'
+            width={540}
         >
             <div className='flex flex-col gap-4 pb-7 text-sm'>
                 <GhostLogo className="h-auto w-[120px] dark:invert"/>
