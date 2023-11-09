@@ -23,9 +23,9 @@ export const LimitModalContent: React.FC<LimitModalProps> = ({
             formSheet={formSheet}
             okColor='green'
             okLabel={okLabel}
-            size={540}
             testId='limit-modal'
             title={title}
+            width={540}
             onOk={onOk}
         >
             <div className='py-4 leading-9'>
