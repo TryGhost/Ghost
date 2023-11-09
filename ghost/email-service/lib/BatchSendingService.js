@@ -252,6 +252,18 @@ class BatchSendingService {
                     .orderByRaw('id DESC')
                     .select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
 
+                // Remove duplicates, resort and recheck filter condition
+                const filtered = [];
+                for (const member of members) {
+                    if (!filtered.find(m => m.id === member.id)) {
+                        filtered.push(member);
+                    }
+                }
+                if (filtered.length !== members.length) {
+                    logging.error(`[BATCH SENDING SERVICE] Received wrong DB result when creating batches. Got duplicate members. Expected ${filtered.length} members, got ${members.length}.`);
+                    members = filtered.sort((a, b) => a.id.localeCompare(b.id));
+                }
+
                 if (members.length > 0) {
                     totalCount += Math.min(members.length, BATCH_SIZE);
                     const batch = await this.retryDb(
