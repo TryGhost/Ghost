@@ -146,10 +146,6 @@ class EmailEventStorage {
             });
             const existingNewsletters = member.related('newsletters');
 
-            if (!existingNewsletters) {
-                return [];
-            }
-
             const email = await this.#models.Email.findOne({id: event.emailId});
             const newsletterToRemove = email.get('newsletter_id');
 

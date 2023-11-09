@@ -736,7 +736,8 @@ DataGenerator.Content = {
             html: '<p>Look! I\'m an email</p>',
             plaintext: 'Waba-daba-dab-da',
             track_opens: false,
-            submitted_at: moment().toDate()
+            submitted_at: moment().toDate(),
+            newsletter_id: null // newsletter[0] relation added later
         },
         {
             id: ObjectId().toHexString(),
@@ -748,7 +749,8 @@ DataGenerator.Content = {
             html: '<p>What\'s that? Another email!</p>',
             plaintext: 'yes this is an email',
             track_opens: false,
-            submitted_at: moment().toDate()
+            submitted_at: moment().toDate(),
+            newsletter_id: null // newsletter[1] relation added later
         }
     ],
 
@@ -947,6 +949,8 @@ DataGenerator.Content.webhooks[0].integration_id = DataGenerator.Content.integra
 DataGenerator.Content.webhooks[1].integration_id = DataGenerator.Content.integrations[0].id;
 DataGenerator.Content.emails[0].post_id = DataGenerator.Content.posts[0].id;
 DataGenerator.Content.emails[1].post_id = DataGenerator.Content.posts[1].id;
+DataGenerator.Content.emails[0].newsletter_id = DataGenerator.Content.newsletters[0].id;
+DataGenerator.Content.emails[1].newsletter_id = DataGenerator.Content.newsletters[1].id;
 DataGenerator.Content.email_batches[0].email_id = DataGenerator.Content.emails[0].id;
 DataGenerator.Content.email_recipients[0].batch_id = DataGenerator.Content.email_batches[0].id;
 DataGenerator.Content.email_recipients[0].email_id = DataGenerator.Content.email_batches[0].email_id;

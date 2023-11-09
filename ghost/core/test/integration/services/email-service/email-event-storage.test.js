@@ -1028,6 +1028,7 @@ describe('EmailEventStorage', function () {
     });
 
     it('Can handle unsubscribe events', async function () {
+        const email = fixtureManager.get('emails', 0);
         const emailBatch = fixtureManager.get('email_batches', 0);
         const emailId = emailBatch.email_id;
 
@@ -1037,16 +1038,22 @@ describe('EmailEventStorage', function () {
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
 
-        // Reset
+        const newsletterToRemove = email.newsletter_id;
+        const newsletterToKeep = fixtureManager.get('newsletters', 1).id;
+
+        // Initialise member with 2 newsletters
         await membersService.api.members.update({newsletters: [
             {
-                id: fixtureManager.get('newsletters', 0).id
+                id: newsletterToRemove
+            },
+            {
+                id: newsletterToKeep
             }
         ]}, {id: memberId});
 
-        // Check not unsubscribed
+        // Check that the member is subscribed to 2 newsletters
         const memberInitial = await membersService.api.members.get({id: memberId}, {withRelated: ['newsletters']});
-        assert.notEqual(memberInitial.related('newsletters').length, 0, 'This test requires a member that is subscribed to at least one newsletter');
+        assert.equal(memberInitial.related('newsletters').length, 2, 'This test requires a member that is subscribed to at least one newsletter');
 
         events = [{
             event: 'unsubscribed',
@@ -1070,9 +1077,17 @@ describe('EmailEventStorage', function () {
         // Since this is all event based we should wait for all dispatched events to be completed.
         await DomainEvents.allSettled();
 
-        // Check if unsubscribed
+        // The member should be unsubscribed from the specific newsletter
         const member = await membersService.api.members.get({id: memberId}, {withRelated: ['newsletters']});
-        assert.equal(member.related('newsletters').length, 0);
+
+        // The member is now subscribed to 1 newsletter
+        assert.equal(member.related('newsletters').length, 1);
+
+        // The member is now unsubscribed from newsletter 0
+        assert(!member.related('newsletters').models.some(newsletter => newsletter.id === newsletterToRemove));
+
+        // But the member is still subscribed to newsletter 1
+        assert(member.related('newsletters').models.some(newsletter => newsletter.id === newsletterToKeep));
     });
 
     it('Can handle unknown events', async function () {
