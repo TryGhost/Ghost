@@ -486,6 +486,73 @@ describe('Batch Sending Service', function () {
         });
     });
 
+    describe('createBatch', function () {
+        it('generates batches correctly when members have numeric ids', async function () {
+            const Member = createModelClass({});
+            const EmailBatch = createModelClass({});
+            const newsletter = createModel({});
+
+            const member = createModel({
+                email: `test@example.com`,
+                uuid: `member1`,
+                status: 'free',
+                newsletters: [ newsletter ]
+            });
+
+            const members = [
+                member
+            ];
+
+            Member.getFilteredCollectionQuery = ({filter}) => {
+                const q = nql(filter);
+
+                // Check that the filter id:<${lastId} is a string
+                // In rare cases when the object ID is numeric, the query returns unexpected results
+                assert.equal(typeof q.toJSON().$and[2].id.$lt, 'string');
+                const all = members.filter((member) => {
+                    return q.queryJSON(member.toJSON());
+                })
+
+                all.sort((a, b) => {
+                    return b.id.localeCompare(a.id);
+                });
+                return createDb({
+                    all: all.map(member => member.toJSON())
+                });
+            }
+
+            const db = createDb({});
+
+            const service = new BatchSendingService({
+                models: {Member, EmailBatch},
+                emailRenderer: {
+                    getSegments() {
+                        return ['status:free']
+                    }
+                },
+                sendingService: {
+                    getMaximumRecipients() {
+                        return 5;
+                    }
+                },
+                emailSegmenter: {
+                    getMemberFilterForSegment(n, _, segment) {
+                        return `newsletters.id:${n.id}+(${segment})`;
+                    }
+                },
+                db
+            });
+            const post = createModel({});
+            const email = createModel({
+                id: 650706040078550001536020,
+                status: 'submitting',
+                newsletter: newsletter,
+                post
+            });
+            batches = await service.createBatches({email, post, newsletter});
+        });
+    });
+
     describe('sendBatches', function () {
         it('Works for a single batch', async function () {
             const service = new BatchSendingService({});
