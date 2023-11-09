@@ -695,7 +695,6 @@ export default class LexicalEditorController extends Controller {
                     scope.setTag('post_type', post.isPage ? 'page' : 'post');
                     scope.setTag('save_revision', options.adapterOptions?.saveRevision);
                     scope.setTag('email_segment', options.adapterOptions?.emailSegment);
-                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
                     scope.setTag('convert_to_lexical', options.adapterOptions?.convertToLexical);
                 });
             }
@@ -708,7 +707,6 @@ export default class LexicalEditorController extends Controller {
                     scope.setTag('post_type', post.isPage ? 'page' : 'post');
                     scope.setTag('save_revision', options.adapterOptions?.saveRevision);
                     scope.setTag('email_segment', options.adapterOptions?.emailSegment);
-                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
                     scope.setTag('convert_to_lexical', options.adapterOptions?.convertToLexical);
                 });
             }

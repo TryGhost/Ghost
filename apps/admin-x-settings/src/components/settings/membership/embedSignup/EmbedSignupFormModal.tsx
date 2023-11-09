@@ -89,12 +89,12 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             }}
             cancelLabel=''
             footer={false}
-            maxHeight={645}
+            height={645}
             padding={false}
-            size={1120}
             testId='embed-signup-form'
             title=''
             topRightContent='close'
+            width={1120}
         >
             <div className='grid grid-cols-[5.2fr_2.8fr]'>
                 <EmbedSignupPreview
