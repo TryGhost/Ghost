@@ -800,7 +800,7 @@
                     ul,
                     ol
                 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-                    @apply text-sm font-sans leading-relaxed;
+                    @apply text-sm font-sans leading-[24px] tracking-wide;
         }
     }
 }
