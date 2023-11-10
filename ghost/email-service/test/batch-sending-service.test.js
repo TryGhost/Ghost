@@ -298,6 +298,10 @@ describe('Batch Sending Service', function () {
                 }));
 
                 const q = nql(filter);
+                // Check that the filter id:<${lastId} is a string
+                // In rare cases when the object ID is numeric, the query returns unexpected results
+                assert.equal(typeof q.toJSON().$and[1].id.$lt, 'string');
+
                 const all = members.filter((member) => {
                     return q.queryJSON(member.toJSON());
                 });
@@ -394,6 +398,10 @@ describe('Batch Sending Service', function () {
 
             Member.getFilteredCollectionQuery = ({filter}) => {
                 const q = nql(filter);
+                // Check that the filter id:<${lastId} is a string
+                // In rare cases when the object ID is numeric, the query returns unexpected results
+                assert.equal(typeof q.toJSON().$and[2].id.$lt, 'string');
+
                 const all = members.filter((member) => {
                     return q.queryJSON(member.toJSON());
                 });
@@ -450,6 +458,111 @@ describe('Batch Sending Service', function () {
 
             // Check email_count set
             assert.equal(email.get('email_count'), 4);
+        });
+
+        // NOTE: we can't fully test this because javascript can't handle a large number (e.g. 650706040078550001536020) - it uses scientific notation
+        //  so we have to use a string
+        //  ref: https://ghost.slack.com/archives/CTH5NDJMS/p1699359241142969
+        it('sends expected emails if a batch ends on a numeric id', async function () {
+            const Member = createModelClass({});
+            const EmailBatch = createModelClass({});
+            const newsletter = createModel({});
+
+            const members = [
+                createModel({
+                    id: '61a55008a9d68c003baec6df',
+                    email: `test1@numericid.com`,
+                    uuid: 'test1',
+                    status: 'free',
+                    newsletters: [
+                        newsletter
+                    ]
+                }),
+                createModel({
+                    id: '650706040078550001536020', // numeric object id
+                    email: `test2@numericid.com`,
+                    uuid: 'test2',
+                    status: 'free',
+                    newsletters: [
+                        newsletter
+                    ]
+                }),
+                createModel({
+                    id: '65070957007855000153605b',
+                    email: `test3@numericid.com`,
+                    uuid: 'test3',
+                    status: 'free',
+                    newsletters: [
+                        newsletter
+                    ]
+                })
+            ];
+
+            const initialMembers = members.slice();
+
+            Member.getFilteredCollectionQuery = ({filter}) => {
+                const q = nql(filter);
+                // Check that the filter id:<${lastId} is a string
+                // In rare cases when the object ID is numeric, the query returns unexpected results
+                assert.equal(typeof q.toJSON().$and[2].id.$lt, 'string');
+
+                const all = members.filter((member) => {
+                    return q.queryJSON(member.toJSON());
+                });
+
+                // Sort all by id desc (string) - this is how we keep the order of members consistent (object id is a proxy for created_at)
+                all.sort((a, b) => {
+                    return b.id.localeCompare(a.id);
+                });
+
+                return createDb({
+                    all: all.map(member => member.toJSON())
+                });
+            };
+
+            const db = createDb({});
+            const insert = sinon.spy(db, 'insert');
+
+            const service = new BatchSendingService({
+                models: {Member, EmailBatch},
+                emailRenderer: {
+                    getSegments() {
+                        return ['status:free'];
+                    }
+                },
+                sendingService: {
+                    getMaximumRecipients() {
+                        return 2; // pick a batch size that ends with a numeric member object id
+                    }
+                },
+                emailSegmenter: {
+                    getMemberFilterForSegment(n, _, segment) {
+                        return `newsletters.id:${n.id}+(${segment})`;
+                    }
+                },
+                db
+            });
+
+            const email = createModel({});
+
+            const batches = await service.createBatches({
+                email,
+                post: createModel({}),
+                newsletter
+            });
+            assert.equal(batches.length, 2);
+
+            const calls = insert.getCalls();
+            assert.equal(calls.length, 2);
+
+            const insertedRecipients = calls.flatMap(call => call.args[0]);
+            assert.equal(insertedRecipients.length, 3);
+
+            // Check all recipients match initialMembers
+            assert.deepEqual(insertedRecipients.map(recipient => recipient.member_id).sort(), initialMembers.map(member => member.id).sort());
+
+            // Check email_count set
+            assert.equal(email.get('email_count'), 3);
         });
     });
 
