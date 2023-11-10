@@ -459,14 +459,14 @@ describe('Batch Sending Service', function () {
 
             const members = [
                 createModel({
-                    id: '61a55008a9d68c003baec6df', // object id < member #3
+                    id: '61a55008a9d68c003baec6df',
                     email: `test2@numericid.com`,
                     status: 'free',
                     newsletters: [
                         newsletter
                     ]
                 }),
-                createModel({ // member #3
+                createModel({
                     id: '650706040078550001536020', // numeric object id
                     email: `test3@numericid.com`,
                     status: 'free',
@@ -475,7 +475,7 @@ describe('Batch Sending Service', function () {
                     ]
                 }),
                 createModel({
-                    id: '65070957007855000153605b', // object id > member #3
+                    id: '65070957007855000153605b',
                     email: `test4@numericid.com`,
                     status: 'free',
                     newsletters: [
