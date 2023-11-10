@@ -460,7 +460,8 @@ describe('Batch Sending Service', function () {
             const members = [
                 createModel({
                     id: '61a55008a9d68c003baec6df',
-                    email: `test2@numericid.com`,
+                    email: `test1@numericid.com`,
+                    uuid: 'test1',
                     status: 'free',
                     newsletters: [
                         newsletter
@@ -468,7 +469,8 @@ describe('Batch Sending Service', function () {
                 }),
                 createModel({
                     id: '650706040078550001536020', // numeric object id
-                    email: `test3@numericid.com`,
+                    email: `test2@numericid.com`,
+                    uuid: 'test2',
                     status: 'free',
                     newsletters: [
                         newsletter
@@ -476,7 +478,8 @@ describe('Batch Sending Service', function () {
                 }),
                 createModel({
                     id: '65070957007855000153605b',
-                    email: `test4@numericid.com`,
+                    email: `test3@numericid.com`,
+                    uuid: 'test3',
                     status: 'free',
                     newsletters: [
                         newsletter
@@ -496,6 +499,8 @@ describe('Batch Sending Service', function () {
                 all.sort((a, b) => {
                     return b.id.localeCompare(a.id);
                 });
+
+                console.log(filter,all)
 
                 return createDb({
                     all: all.map(member => member.toJSON())
@@ -533,6 +538,7 @@ describe('Batch Sending Service', function () {
                 newsletter
             });
             assert.equal(batches.length, 2);
+            console.log(`batches`,batches)
 
             const calls = insert.getCalls();
             assert.equal(calls.length, 2);
@@ -540,7 +546,7 @@ describe('Batch Sending Service', function () {
             const insertedRecipients = calls.flatMap(call => call.args[0]);
             assert.equal(insertedRecipients.length, 3);
 
-            // console.log(`insertedRecipients`,insertedRecipients)
+            console.log(`insertedRecipients`,insertedRecipients)
 
             // Check all recipients match initialMembers
             assert.deepEqual(insertedRecipients.map(recipient => recipient.member_id).sort(), initialMembers.map(member => member.id).sort());
