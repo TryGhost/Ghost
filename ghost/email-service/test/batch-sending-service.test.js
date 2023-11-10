@@ -458,20 +458,9 @@ describe('Batch Sending Service', function () {
             const newsletter = createModel({});
 
             const members = [
-                // will create ids 0-9
                 createModel({
-                    id: '6457649752fe260001430e5d', // object id < member #3
-                    email: `test@numericid.com`,
-                    uuid: 12345,
-                    status: 'free',
-                    newsletters: [
-                        newsletter
-                    ]
-                }),
-                createModel({
-                    id: '641ed866c32a4f003d78704a', // object id < member #3
+                    id: '61a55008a9d68c003baec6df', // object id < member #3
                     email: `test2@numericid.com`,
-                    uuid: 12346,
                     status: 'free',
                     newsletters: [
                         newsletter
@@ -480,16 +469,14 @@ describe('Batch Sending Service', function () {
                 createModel({ // member #3
                     id: '650706040078550001536020', // numeric object id
                     email: `test3@numericid.com`,
-                    uuid: 12347,
                     status: 'free',
                     newsletters: [
                         newsletter
                     ]
                 }),
                 createModel({
-                    id: '633c23615de215003dcf6671', // object id < member #3
+                    id: '65070957007855000153605b', // object id > member #3
                     email: `test4@numericid.com`,
-                    uuid: 12348,
                     status: 'free',
                     newsletters: [
                         newsletter
@@ -505,7 +492,11 @@ describe('Batch Sending Service', function () {
                     return q.queryJSON(member.toJSON());
                 });
 
-                console.log(filter,all)
+                // Sort all by id desc (string)
+                all.sort((a, b) => {
+                    return b.id.localeCompare(a.id);
+                });
+
                 return createDb({
                     all: all.map(member => member.toJSON())
                 });
@@ -523,7 +514,7 @@ describe('Batch Sending Service', function () {
                 },
                 sendingService: {
                     getMaximumRecipients() {
-                        return 3; // pick a batch size that ends with a numeric member object id
+                        return 2; // pick a batch size that ends with a numeric member object id
                     }
                 },
                 emailSegmenter: {
@@ -541,23 +532,21 @@ describe('Batch Sending Service', function () {
                 post: createModel({}),
                 newsletter
             });
-            console.log(`batches`,batches)
             assert.equal(batches.length, 2);
 
             const calls = insert.getCalls();
-            calls.forEach(call => console.log(`call.args[0]`,call.args[0]))
             assert.equal(calls.length, 2);
 
-            // const insertedRecipients = calls.flatMap(call => call.args[0]);
-            // assert.equal(insertedRecipients.length, 5);
+            const insertedRecipients = calls.flatMap(call => call.args[0]);
+            assert.equal(insertedRecipients.length, 3);
 
             // console.log(`insertedRecipients`,insertedRecipients)
 
             // Check all recipients match initialMembers
-            // assert.deepEqual(insertedRecipients.map(recipient => recipient.member_id).sort(), initialMembers.map(member => member.id).sort());
+            assert.deepEqual(insertedRecipients.map(recipient => recipient.member_id).sort(), initialMembers.map(member => member.id).sort());
 
             // Check email_count set
-            assert.equal(email.get('email_count'), 4);
+            assert.equal(email.get('email_count'), 3);
         });
     });
 
