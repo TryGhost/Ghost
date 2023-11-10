@@ -247,7 +247,7 @@ class BatchSendingService {
             while (!members || lastId) {
                 logging.info(`Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId}`);
 
-                const filter = segmentFilter + `+id:<${lastId}`;
+                const filter = segmentFilter + `+id:<'${lastId}'`;
                 members = await this.#models.Member.getFilteredCollectionQuery({filter})
                     .orderByRaw('id DESC')
                     .select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
