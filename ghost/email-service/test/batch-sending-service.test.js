@@ -452,7 +452,10 @@ describe('Batch Sending Service', function () {
             assert.equal(email.get('email_count'), 4);
         });
 
-        it.only('sends an extra batch if the lastId is numeric', async function () {
+        // NOTE: we can't fully test this because javascript can't handle a large number (e.g. 650706040078550001536020) - it uses scientific notation
+        //  so we have to use a string
+        //  ref: https://ghost.slack.com/archives/CTH5NDJMS/p1699359241142969
+        it('sends expected emails if a batch ends on a numeric id', async function () {
             const Member = createModelClass({});
             const EmailBatch = createModelClass({});
             const newsletter = createModel({});
@@ -495,12 +498,10 @@ describe('Batch Sending Service', function () {
                     return q.queryJSON(member.toJSON());
                 });
 
-                // Sort all by id desc (string)
+                // Sort all by id desc (string) - this is how we keep the order of members consistent (object id is a proxy for created_at)
                 all.sort((a, b) => {
                     return b.id.localeCompare(a.id);
                 });
-
-                console.log(filter,all)
 
                 return createDb({
                     all: all.map(member => member.toJSON())
@@ -538,15 +539,12 @@ describe('Batch Sending Service', function () {
                 newsletter
             });
             assert.equal(batches.length, 2);
-            console.log(`batches`,batches)
 
             const calls = insert.getCalls();
             assert.equal(calls.length, 2);
 
             const insertedRecipients = calls.flatMap(call => call.args[0]);
             assert.equal(insertedRecipients.length, 3);
-
-            console.log(`insertedRecipients`,insertedRecipients)
 
             // Check all recipients match initialMembers
             assert.deepEqual(insertedRecipients.map(recipient => recipient.member_id).sort(), initialMembers.map(member => member.id).sort());
