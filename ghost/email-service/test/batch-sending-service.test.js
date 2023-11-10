@@ -298,6 +298,10 @@ describe('Batch Sending Service', function () {
                 }));
 
                 const q = nql(filter);
+                // Check that the filter id:<${lastId} is a string
+                // In rare cases when the object ID is numeric, the query returns unexpected results
+                assert.equal(typeof q.toJSON().$and[2].id.$lt, 'string');
+
                 const all = members.filter((member) => {
                     return q.queryJSON(member.toJSON());
                 });
@@ -394,6 +398,10 @@ describe('Batch Sending Service', function () {
 
             Member.getFilteredCollectionQuery = ({filter}) => {
                 const q = nql(filter);
+                // Check that the filter id:<${lastId} is a string
+                // In rare cases when the object ID is numeric, the query returns unexpected results
+                assert.equal(typeof q.toJSON().$and[2].id.$lt, 'string');
+
                 const all = members.filter((member) => {
                     return q.queryJSON(member.toJSON());
                 });
@@ -494,6 +502,10 @@ describe('Batch Sending Service', function () {
 
             Member.getFilteredCollectionQuery = ({filter}) => {
                 const q = nql(filter);
+                // Check that the filter id:<${lastId} is a string
+                // In rare cases when the object ID is numeric, the query returns unexpected results
+                assert.equal(typeof q.toJSON().$and[2].id.$lt, 'string');
+
                 const all = members.filter((member) => {
                     return q.queryJSON(member.toJSON());
                 });
