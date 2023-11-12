@@ -107,7 +107,7 @@ export type {PopoverProps} from './global/Popover';
 export {default as Separator} from './global/Separator';
 export type {SeparatorProps} from './global/Separator';
 export {default as SortableList} from './global/SortableList';
-export type {SortableListProps} from './global/SortableList';
+export type {SortableItemContainerProps, SortableListProps} from './global/SortableList';
 export {default as StickyFooter} from './global/StickyFooter';
 export type {StickyFooterProps} from './global/StickyFooter';
 export {default as TabView} from './global/TabView';
@@ -149,6 +149,7 @@ export type {StripeButtonProps} from './settings/StripeButton';
 export {default as useGlobalDirtyState} from './hooks/useGlobalDirtyState';
 export {usePagination} from './hooks/usePagination';
 export type {PaginationData} from './hooks/usePagination';
+export {default as useSortableIndexedList} from './hooks/useSortableIndexedList';
 
 export {debounce} from './utils/debounce';
 export {confirmIfDirty} from './utils/modals';
