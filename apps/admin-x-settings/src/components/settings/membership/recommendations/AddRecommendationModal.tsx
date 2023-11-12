@@ -1,17 +1,12 @@
 import AddRecommendationModalConfirm from './AddRecommendationModalConfirm';
-import Form from '../../../../admin-x-ds/global/form/Form';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useRouting from '../../../../hooks/useRouting';
 import {AlreadyExistsError} from '../../../../utils/errors';
 import {EditOrAddRecommendation, useCheckRecommendation} from '../../../../api/recommendations';
-import {LoadingIndicator} from '../../../../admin-x-ds/global/LoadingIndicator';
+import {Form, LoadingIndicator, Modal, TextField, dismissAllToasts, formatUrl, showToast} from '@tryghost/admin-x-design-system';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
-import {formatUrl} from '../../../../admin-x-ds/global/form/URLTextField';
 import {trimSearchAndHash} from '../../../../utils/url';
 
 interface AddRecommendationModalProps {

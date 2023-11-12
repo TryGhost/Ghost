@@ -4,8 +4,8 @@ import useHandleError from './handleError';
 import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from '../errors';
 import {UseInfiniteQueryOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {getGhostPaths} from '../helpers';
-import {useCallback, useEffect, useMemo} from 'react';
-import {usePage, usePagination} from '../../hooks/usePagination';
+import {useCallback, useEffect, useMemo, useState} from 'react';
+import {usePagination} from '@tryghost/admin-x-design-system';
 import {usePermission} from '../../hooks/usePermissions';
 import {useSentryDSN, useServices} from '../../components/providers/ServiceProvider';
 
@@ -143,7 +143,11 @@ export const apiUrl = (path: string, searchParams: Record<string, string> = {}) 
 
 const parameterizedPath = (path: string, params: string | string[]) => {
     const paramList = Array.isArray(params) ? params : [params];
-    return paramList.reduce((updatedPath, param) => updatedPath.replace(/:[a-z0-9]+/, encodeURIComponent(param)), path);
+    return paramList.reduce(function (updatedPath, param) {
+        updatedPath = updatedPath + param + '/';
+        updatedPath.replace(/:[a-z0-9]+/, encodeURIComponent(param));
+        return updatedPath;
+    }, path);
 };
 
 interface QueryOptions<ResponseData> {
@@ -188,7 +192,7 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
 };
 
 export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}) => {
-    const {page, setPage} = usePage();
+    const [page, setPage] = useState(1);
     const limit = (searchParams?.limit || options.defaultSearchParams?.limit) ? parseInt(searchParams?.limit || options.defaultSearchParams?.limit || '15') : 15;
 
     const paginatedSearchParams = searchParams || options.defaultSearchParams || {};
@@ -213,7 +217,7 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
         setPage,
         limit,
         // Don't pass the meta data if we are fetching, because then it is probably out of date and this causes issues
-        meta: result.isFetching ? undefined : data?.meta
+        meta: result.isFetching ? undefined : data?.meta?.pagination
     });
 
     useEffect(() => {

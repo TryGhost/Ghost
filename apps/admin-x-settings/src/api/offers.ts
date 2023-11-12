@@ -1,4 +1,5 @@
-import {Meta, createQuery} from '../utils/api/hooks';
+import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {updateQueryCache} from '../utils/api/updateQueries';
 
 export type Offer = {
     id: string;
@@ -26,9 +27,29 @@ export interface OffersResponseType {
     offers: Offer[]
 }
 
+export interface OfferEditResponseType extends OffersResponseType {
+    meta?: Meta
+}
+
 const dataType = 'OffersResponseType';
 
 export const useBrowseOffers = createQuery<OffersResponseType>({
     dataType,
     path: '/offers/'
+});
+
+export const useBrowseOffersById = createQueryWithId<OffersResponseType>({
+    dataType,
+    path: `/offers/`
+});
+
+export const useEditOffer = createMutation<OfferEditResponseType, Offer>({
+    method: 'PUT',
+    path: offer => `/offers/${offer.id}/`,
+    body: offer => ({offers: [offer]}),
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: updateQueryCache('offers')
+    }
 });

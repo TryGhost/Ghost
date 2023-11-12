@@ -1,0 +1,148 @@
+/*Errors */
+.theme-validation-container {
+    overflow-y: auto;
+    margin: -32px -32px 0;
+    padding: 32px 32px 0;
+    max-height: calc(100vh - 20vw);
+}
+
+@media (max-height: 960px) {
+    .theme-validation-container {
+        max-height: calc(100vh - 180px);
+    }
+}
+
+.theme-validation-container .gh-image-uploader {
+    justify-content: center;
+}
+
+.theme-validation-container .gh-image-uploader .description {
+    color: var(--green-d1);
+    font-weight: 500;
+}
+
+.theme-validation-container .gh-image-uploader .x-file-input.try-again,
+.theme-validation-container .gh-image-uploader .x-file-input.try-again label {
+    display: inline;
+}
+
+.theme-validation-item {
+    margin: 12px 0 0;
+    padding: 12px 16px 12px 28px;
+    border: 1px solid #e5eff5;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--lightgrey);
+}
+
+.theme-validation-item h4 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 400;
+    line-height: 1.5em;
+}
+
+.theme-validation-rule-text {
+    flex-grow: 1;
+}
+
+.theme-validation-item.theme-fatal-error {
+    border: 1px solid var(--red);
+}
+
+.theme-validation-item.theme-fatal-error .theme-validation-rule-text::before,
+.theme-validation-item.theme-error .theme-validation-rule-text::before,
+.theme-validation-item.theme-warning .theme-validation-rule-text::before
+{
+    font-weight: 600;
+}
+
+.theme-validation-item.theme-fatal-error .theme-validation-rule-text::before {
+    content: "Fatal error:";
+    color: var(--red);
+}
+
+.theme-validation-item.theme-error .theme-validation-rule-text::before {
+    content: "Error:";
+}
+
+.theme-validation-item.theme-warning .theme-validation-rule-text::before {
+    content: "Warning:";
+}
+
+.theme-fatal-error .theme-validation-type-label::before,
+.theme-error .theme-validation-type-label::before,
+.theme-warning .theme-validation-type-label::before {
+    content: "";
+    display: block;
+    width: 8px;
+    height: 8px;
+    margin-top: 6px;
+    margin-left: -16px;
+    border-radius: 999px;
+}
+
+.theme-fatal-error .theme-validation-type-label::before,
+.theme-error .theme-validation-type-label::before {
+    background: color-mod(var(--red) alpha(0.85));
+}
+
+.theme-warning .theme-validation-type-label::before {
+    background: color-mod(var(--yellow));
+}
+
+.theme-validation-list ul {
+    list-style: disc;
+}
+
+.theme-validation-list code,
+.theme-validation-rule-text code {
+    font-size: 0.9em;
+}
+
+.theme-validation-item h6 {
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+.theme-validation-toggle-details {
+    display: flex;
+    justify-content: space-between;
+    flex-grow: 1;
+    align-items: flex-start;
+    padding: 0;
+    color: var(--darkgrey);
+    text-decoration: none!important;
+    font-size: 1.3rem;
+}
+
+.theme-validation-rule-icon {
+    flex-shrink: 0;
+    margin-left: 5px;
+    width: 13px;
+    height: 14px;
+    color: var(--midgrey);
+    transition: all 0.1s ease-out;
+}
+
+.theme-validation-rule-icon svg path {
+    fill: var(--midgrey);
+}
+
+.theme-validation-details {
+    margin-top: 12px;
+    padding-top: 12px;
+    font-size: 1.3rem;
+    border-top: 1px solid var(--lightgrey);
+}
+
+p.theme-validation-details {
+    font-size: 1.3rem;
+}
+
+.theme-validation-screenshot img {
+    margin-bottom: 2rem;
+    border: 1px solid var(--main-color-area-divider);
+    border-radius: 3px;
+}
