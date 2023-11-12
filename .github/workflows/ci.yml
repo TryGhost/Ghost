@@ -167,7 +167,7 @@ jobs:
           key: ${{ env.HEAD_COMMIT }}
 
       - name: Set up Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
@@ -192,7 +192,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 100
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
@@ -228,7 +228,7 @@ jobs:
         || needs.job_get_metadata.outputs.changed_core == 'true'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "18.12.1"
 
@@ -252,7 +252,7 @@ jobs:
       COVERAGE: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "18.12.1"
 
@@ -294,7 +294,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       env:
         FORCE_COLOR: 0
       with:
@@ -371,7 +371,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 100
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
@@ -418,7 +418,7 @@ jobs:
     name: Database tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
@@ -539,7 +539,7 @@ jobs:
     name: Regression tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
@@ -590,7 +590,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
@@ -643,7 +643,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
@@ -696,7 +696,7 @@ jobs:
       CI: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
@@ -750,7 +750,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:
@@ -779,7 +779,7 @@ jobs:
           echo "V4_DIR=$DIR" >> $GITHUB_ENV
           ghost install v4 --local -d $DIR
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
         with:

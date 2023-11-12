@@ -1,13 +1,8 @@
-import Icon from '../../../admin-x-ds/global/Icon';
-import Link from '../../../admin-x-ds/global/Link';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/form/TextField';
-import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {Icon, Link, SettingGroupContent, TextField, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
 
 const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -92,7 +87,7 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Enable protection with a simple shared password.'
             isEditing={isEditing}
             keywords={keywords}
@@ -105,7 +100,7 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? inputs : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

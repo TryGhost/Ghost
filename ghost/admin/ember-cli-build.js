@@ -121,7 +121,8 @@ module.exports = function (defaults) {
                 'woff2',
                 'mp4',
                 'ico'
-            ]
+            ],
+            exclude: ['**/chunk*.map']
         },
         minifyJS: {
             options: {

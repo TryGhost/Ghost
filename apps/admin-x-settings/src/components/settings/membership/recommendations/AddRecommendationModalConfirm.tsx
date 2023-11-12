@@ -1,5 +1,4 @@
 import AddRecommendationModal from './AddRecommendationModal';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './RecommendationDescriptionForm';
@@ -8,7 +7,7 @@ import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {EditOrAddRecommendation, useAddRecommendation} from '../../../../api/recommendations';
-import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
+import {Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
 
 interface AddRecommendationModalProps {
     recommendation: EditOrAddRecommendation,

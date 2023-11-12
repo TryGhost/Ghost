@@ -1,6 +1,4 @@
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Icon from '../../../../admin-x-ds/global/Icon';
-import Radio from '../../../../admin-x-ds/global/form/Radio';
+import {Heading, Icon, Radio} from '@tryghost/admin-x-design-system';
 import {User, isOwnerUser} from '../../../../api/users';
 import {useBrowseRoles} from '../../../../api/roles';
 

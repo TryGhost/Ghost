@@ -1,17 +1,11 @@
 import AnnouncementBarPreview from './announcementBar/AnnouncementBarPreview';
-import CheckboxGroup from '../../../admin-x-ds/global/form/CheckboxGroup';
-import ColorIndicator from '../../../admin-x-ds/global/form/ColorIndicator';
-import Form from '../../../admin-x-ds/global/form/Form';
-import HtmlField from '../../../admin-x-ds/global/form/HtmlField';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useState} from 'react';
 import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
-import {Tab} from '../../../admin-x-ds/global/TabView';
+import {CheckboxGroup, ColorIndicator, Form, HtmlField, PreviewModalContent, Tab, showToast} from '@tryghost/admin-x-design-system';
 import {getHomepageUrl} from '../../../api/site';
 import {getSettingValues} from '../../../api/settings';
-import {showToast} from '../../../admin-x-ds/global/Toast';
 import {useBrowsePosts} from '../../../api/posts';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 

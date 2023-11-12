@@ -5,7 +5,7 @@ import Offers from './Offers';
 import Portal from './Portal';
 import React from 'react';
 import Recommendations from './Recommendations';
-import SettingSection from '../../../admin-x-ds/settings/SettingSection';
+import SearchableSection from '../../SearchableSection';
 import Tiers from './Tiers';
 import TipsOrDonations from './TipsOrDonations';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
@@ -27,7 +27,7 @@ const MembershipSettings: React.FC = () => {
     const hasOffers = useFeatureFlag('adminXOffers');
 
     return (
-        <SettingSection keywords={Object.values(searchKeywords).flat()} title='Membership'>
+        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Membership'>
             <Access keywords={searchKeywords.access} />
             <Portal keywords={searchKeywords.portal} />
             <Tiers keywords={searchKeywords.tiers} />
@@ -36,7 +36,7 @@ const MembershipSettings: React.FC = () => {
             {hasRecommendations && <Recommendations keywords={searchKeywords.recommendations} />}
             <Analytics keywords={searchKeywords.analytics} />
             {hasOffers && <Offers keywords={searchKeywords.offers} />}
-        </SettingSection>
+        </SearchableSection>
     );
 };
 

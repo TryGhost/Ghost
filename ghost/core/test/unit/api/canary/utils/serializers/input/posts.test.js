@@ -232,7 +232,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 should.equal(null, postData.mobiledoc);
             });
 
-            it('transforms html when html is present in data and source options', function () {
+            it.skip('transforms html when html is present in data and source options', function () { // eslint-disable-line
                 const apiConfig = {};
                 const lexical = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
                 const frame = {

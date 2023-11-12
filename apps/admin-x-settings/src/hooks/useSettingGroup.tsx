@@ -1,10 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
 import useForm, {ErrorMessages, OkProps, SaveHandler, SaveState} from './useForm';
-import useGlobalDirtyState from './useGlobalDirtyState';
 import useHandleError from '../utils/api/handleError';
 import {Setting, SettingValue, useEditSettings} from '../api/settings';
 import {SiteData} from '../api/site';
-import {showToast} from '../admin-x-ds/global/Toast';
+import {showToast, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
 
