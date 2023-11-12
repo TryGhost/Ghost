@@ -109,7 +109,7 @@ export default class GhKoenigEditorReactComponent extends Component {
     onTitleKeydown(event) {
         const {editorAPI} = this;
 
-        if (!editorAPI) {
+        if (!editorAPI || event.originalEvent.isComposing) {
             return;
         }
 
