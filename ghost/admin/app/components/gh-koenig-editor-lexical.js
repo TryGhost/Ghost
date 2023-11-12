@@ -113,16 +113,16 @@ export default class GhKoenigEditorReactComponent extends Component {
             return;
         }
 
-        const {keyCode} = event;
+        const {key} = event;
         const {value, selectionStart} = event.target;
 
         const couldLeaveTitle = !value || selectionStart === value.length;
-        const arrowLeavingTitle = [39, 40].includes(keyCode) && couldLeaveTitle;
+        const arrowLeavingTitle = ['ArrowDown', 'ArrowRight'].includes(key) && couldLeaveTitle;
 
-        if (keyCode === 13 || keyCode === 9 || arrowLeavingTitle) {
+        if (key === 'Enter' || key === 'Tab' || arrowLeavingTitle) {
             event.preventDefault();
 
-            if (keyCode === 13 && !editorAPI.editorIsEmpty()) {
+            if (key === 'Enter' && !editorAPI.editorIsEmpty()) {
                 editorAPI.insertParagraphAtTop({focus: true});
             } else {
                 editorAPI.focusEditor({position: 'top'});
