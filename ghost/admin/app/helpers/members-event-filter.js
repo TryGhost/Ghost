@@ -45,11 +45,11 @@ export default class MembersEventFilter extends Helper {
         }
 
         if (member) {
-            filterParts.push(`data.member_id:${member}`);
+            filterParts.push(`data.member_id:'${member}'`);
         }
 
         if (post) {
-            filterParts.push(`data.post_id:${post}`);
+            filterParts.push(`data.post_id:'${post}'`);
         }
 
         return filterParts.join('+');

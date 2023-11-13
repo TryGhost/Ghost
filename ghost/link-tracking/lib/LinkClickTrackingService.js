@@ -154,7 +154,7 @@ class LinkClickTrackingService {
 
         // manages transformation of current url to relative for comparision
         const transformedOldUrl = this.#urlUtils.absoluteToTransformReady(redirectUrl.href);
-        const filterQuery = `post_id:${postId}+to:'${transformedOldUrl}'`;
+        const filterQuery = `post_id:'${postId}'+to:'${transformedOldUrl}'`;
 
         const updatedFilterOptions = {
             ...filterOptions,

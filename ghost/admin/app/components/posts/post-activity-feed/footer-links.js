@@ -3,8 +3,8 @@ import Component from '@glimmer/component';
 export default class FooterLinks extends Component {
     get feedbackLinks() {
         const post = this.args.post;
-        const positiveLink = {filterParam: '(feedback.post_id:' + post.id + '+feedback.score:1)', label: 'More like this'};
-        const negativeLink = {filterParam: '(feedback.post_id:' + post.id + '+feedback.score:0)', label: 'Less like this'};
+        const positiveLink = {filterParam: '(feedback.post_id:\'' + post.id + '\'+feedback.score:1)', label: 'More like this'};
+        const negativeLink = {filterParam: '(feedback.post_id:\'' + post.id + '\'+feedback.score:0)', label: 'Less like this'};
 
         const data = [
             {link: positiveLink, hidden: !post.count.positive_feedback},

@@ -127,7 +127,7 @@ export class PostRevisions {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async removeAuthorFromRevisions(authorId: string, options: any): Promise<void> {
         const revisions = await this.model.findAll({
-            filter: `author_id:${authorId}`,
+            filter: `author_id:'${authorId}'`,
             columns: ['id'],
             transacting: options.transacting
         });

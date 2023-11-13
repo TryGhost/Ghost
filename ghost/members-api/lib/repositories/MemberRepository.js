@@ -764,9 +764,9 @@ module.exports = class MemberRepository {
         if (data.action === 'unsubscribe') {
             const hasNewsletterSelected = (Object.prototype.hasOwnProperty.call(data, 'newsletter') && data.newsletter !== null);
             if (hasNewsletterSelected) {
-                const membersArr = memberIds.join(',');
+                const membersArr = memberIds.map(i => `'${i}'`).join(',');
                 const unsubscribeRows = await this._MemberNewsletter.getFilteredCollectionQuery({
-                    filter: `newsletter_id:${data.newsletter}+member_id:[${membersArr}]`
+                    filter: `newsletter_id:'${data.newsletter}'+member_id:[${membersArr}]`
                 });
                 const toUnsubscribe = unsubscribeRows.map(row => row.id);
 

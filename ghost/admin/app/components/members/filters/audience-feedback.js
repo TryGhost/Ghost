@@ -4,15 +4,15 @@ const FEEDBACK_RELATION_OPTIONS = [
 ];
 
 export const AUDIENCE_FEEDBACK_FILTER = {
-    label: 'Responded with feedback', 
-    name: 'newsletter_feedback', 
-    valueType: 'string', 
-    resource: 'email', 
+    label: 'Responded with feedback',
+    name: 'newsletter_feedback',
+    valueType: 'string',
+    resource: 'email',
     relationOptions: FEEDBACK_RELATION_OPTIONS,
-    feature: 'audienceFeedback', 
+    feature: 'audienceFeedback',
     buildNqlFilter: (filter) => {
         // Added brackets to make sure we can parse as a single AND filter
-        return `(feedback.post_id:${filter.value}+feedback.score:${filter.relation})`;
+        return `(feedback.post_id:'${filter.value}'+feedback.score:${filter.relation})`;
     },
     parseNqlFilter: (filter) => {
         if (!filter.$and) {

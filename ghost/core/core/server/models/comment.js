@@ -78,7 +78,7 @@ const Comment = ghostBookshelf.Model.extend({
                     // Enforce _blank and safe URLs
                     transformTags: {
                         a: sanitizeHtml.simpleTransform('a', {
-                            target: '_blank', 
+                            target: '_blank',
                             rel: 'ugc noopener noreferrer nofollow'
                         })
                     }
@@ -106,7 +106,7 @@ const Comment = ghostBookshelf.Model.extend({
             if (options.parentId === null) {
                 return 'parent_id:null';
             }
-            return 'parent_id:' + options.parentId;
+            return 'parent_id:\'' + options.parentId + '\'';
         }
 
         return null;

@@ -33,7 +33,7 @@ export default class HistoryEventFilter extends Helper {
         }
 
         if (user) {
-            filterParts.push(`actor_id:${user}`);
+            filterParts.push(`actor_id:'${user}'`);
         }
 
         return filterParts.join('+');

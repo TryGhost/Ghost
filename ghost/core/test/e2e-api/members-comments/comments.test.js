@@ -616,7 +616,7 @@ describe('Comments API', function () {
                     .expectEmptyBody();
 
                 // Check report
-                const reports = await models.CommentReport.findAll({filter: 'comment_id:' + commentId});
+                const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + commentId + '\''});
                 reports.models.length.should.eql(1);
 
                 const report = reports.models[0];
@@ -641,7 +641,7 @@ describe('Comments API', function () {
                     .expectEmptyBody();
 
                 // Check report should be the same (no extra created)
-                const reports = await models.CommentReport.findAll({filter: 'comment_id:' + commentId});
+                const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + commentId + '\''});
                 reports.models.length.should.eql(1);
 
                 const report = reports.models[0];
