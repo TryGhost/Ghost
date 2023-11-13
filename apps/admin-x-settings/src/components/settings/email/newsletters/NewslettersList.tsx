@@ -1,7 +1,6 @@
 import React from 'react';
-import clsx from 'clsx';
 import useRouting from '../../../../hooks/useRouting';
-import {Button, Icon, NoValueLabel, SortableItemContainerProps, SortableList, Table, TableCell, TableRow} from '@tryghost/admin-x-design-system';
+import {Button, DragIndicator, NoValueLabel, SortableItemContainerProps, SortableList, Table, TableCell, TableRow} from '@tryghost/admin-x-design-system';
 import {Newsletter} from '../../../../api/newsletters';
 import {numberWithCommas} from '../../../../utils/helpers';
 
@@ -15,11 +14,9 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
     id,
     setRef,
     isDragging,
-    dragHandleAttributes,
-    dragHandleListeners,
-    dragHandleClass,
     style,
-    children
+    children,
+    ...props
 }) => {
     const {updateRoute} = useRouting();
 
@@ -36,19 +33,8 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
             hideActions
             onClick={showDetails}
         >
-            {(dragHandleAttributes || isDragging) && <TableCell className='w-10 !align-middle' >
-                <button
-                    className={clsx(
-                        'h-10 opacity-50 group-hover:opacity-100',
-                        isDragging ? 'cursor-grabbing' : 'cursor-grab',
-                        dragHandleClass
-                    )}
-                    type='button'
-                    {...dragHandleAttributes}
-                    {...dragHandleListeners}
-                >
-                    <Icon colorClass='text-grey-500' name='hamburger' size='sm' />
-                </button>
+            {(props.dragHandleAttributes || isDragging) && <TableCell className='w-10 !align-middle' >
+                <DragIndicator className='h-10' isDragging={isDragging || false} {...props} />
             </TableCell>}
             {children}
         </TableRow>

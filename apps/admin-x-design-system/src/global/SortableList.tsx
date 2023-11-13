@@ -22,15 +22,32 @@ export interface SortableItemContainerProps {
     separator?: boolean;
 }
 
+export type DragIndicatorProps = Pick<SortableItemContainerProps, 'isDragging' | 'dragHandleAttributes' | 'dragHandleListeners' | 'dragHandleClass'> & React.HTMLAttributes<HTMLButtonElement>
+
+export const DragIndicator: React.FC<DragIndicatorProps> = ({isDragging, dragHandleAttributes, dragHandleListeners, dragHandleClass, className, ...props}) => (
+    <button
+        className={clsx(
+            'opacity-50 group-hover:opacity-100',
+            isDragging ? 'cursor-grabbing' : 'cursor-grab',
+            dragHandleClass,
+            className
+        )}
+        type='button'
+        {...dragHandleAttributes}
+        {...dragHandleListeners}
+        {...props}
+    >
+        <Icon colorClass='text-grey-500' name='hamburger' size='sm' />
+    </button>
+);
+
 const DefaultContainer: React.FC<SortableItemContainerProps> = ({
     setRef,
     isDragging,
-    dragHandleAttributes,
-    dragHandleListeners,
-    dragHandleClass,
     style,
     separator,
-    children
+    children,
+    ...props
 }) => (
     <div
         ref={setRef}
@@ -41,18 +58,7 @@ const DefaultContainer: React.FC<SortableItemContainerProps> = ({
         )}
         style={style}
     >
-        <button
-            className={clsx(
-                'h-7 opacity-50 group-hover:opacity-100',
-                isDragging ? 'cursor-grabbing' : 'cursor-grab',
-                dragHandleClass
-            )}
-            type='button'
-            {...dragHandleAttributes}
-            {...dragHandleListeners}
-        >
-            <Icon colorClass='text-grey-500' name='hamburger' size='sm' />
-        </button>
+        <DragIndicator className='h-7' isDragging={isDragging} {...props} />
         {children}
     </div>
 );
