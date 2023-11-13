@@ -3,7 +3,7 @@ import {$createAsideNode, $isAsideNode} from '../nodes/AsideNode';
 import {$createCodeBlockNode} from '../nodes/CodeBlockNode';
 import {$createEmbedNode} from '../nodes/EmbedNode';
 import {$createHeadingNode, $createQuoteNode, $isHeadingNode, $isQuoteNode} from '@lexical/rich-text';
-import {$createLinkNode} from '@lexical/link';
+import {$createLinkNode, $isLinkNode} from '@lexical/link';
 import {
     $createNodeSelection,
     $createParagraphNode,
@@ -964,6 +964,20 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                                 return true;
                             }
 
+                            // see https://github.com/facebook/lexical/issues/5226
+                            // upstream bug with firefox only
+                            if (
+                                atStartOfElement && 
+                                $isLinkNode(anchorNode.getPreviousSibling())
+                            ) {
+                                const linkNode = anchorNode.getPreviousSibling();
+                                const lastDescendent = linkNode.getLastDescendant();
+                                if ($isTextNode(lastDescendent)) {
+                                    lastDescendent.spliceText(lastDescendent.getTextContentSize(), 1, '', true);
+                                    return true;
+                                }
+                            }
+
                             // delete empty paragraphs and select card if preceded by card
                             if ($isParagraphNode(anchorNode) && anchorNode.isEmpty() && $isDecoratorNode(previousSibling)) {
                                 topLevelElement.remove();
@@ -1046,7 +1060,6 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             }
                         }
                     }
-
                     return false;
                 },
                 COMMAND_PRIORITY_LOW
