@@ -5,7 +5,7 @@ import DynamicTable, {DynamicTableTab} from './DynamicTable';
 import Icon from '../Icon';
 
 const meta = {
-    title: 'Global / Dynamic Table / Dynamic Table Container',
+    title: 'Global / Dynamic Table',
     component: DynamicTable,
     render: function Component(args) {
         const [, updateArgs] = useArgs();
