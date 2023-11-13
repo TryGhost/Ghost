@@ -2159,6 +2159,8 @@ describe('Members API', function () {
             email: 'member-log-out-test@test.com'
         });
 
+        const startTransientId = member.get('transient_id');
+
         await agent
             .post(`/members/${member.id}/logout/`)
             .expectStatus(204)
@@ -2167,6 +2169,9 @@ describe('Members API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             });
+
+        await member.refresh();
+        assert.notEqual(member.get('transient_id'), startTransientId, 'The transient_id should have changed');
     });
 
     // Delete a member
