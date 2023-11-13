@@ -27,7 +27,10 @@ export const getOfferPortalPreviewUrl = (overrides:offerPortalPreviewUrlTypes, b
     const {
         disableBackground = false,
         name,
-        code,
+        code = {
+            isDirty: false,
+            value: ''
+        },
         displayTitle = {
             isDirty: false,
             value: ''
