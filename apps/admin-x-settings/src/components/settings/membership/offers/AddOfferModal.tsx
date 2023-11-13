@@ -9,14 +9,15 @@ import {getTiersCadences} from '../../../../utils/getTiersCadences';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
+// we should replace this with a library
 function slugify(text: string): string {
     return text
         .toString()
         .toLowerCase()
         .trim()
-        .replace(/\s+/g, '-') // Replace spaces with -
-        .replace(/[^\w\-]+/g, '') // Remove all non-word chars
-        .replace(/\-\-+/g, '-'); // Replace multiple - with single -
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-');
 }
 
 interface OfferType {
@@ -272,7 +273,7 @@ const AddOfferModal = () => {
     };
 
     const handleTextInput = (
-        e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>,
+        e: React.ChangeEvent<HTMLInputElement>,
         key: keyof offerPortalPreviewUrlTypes
     ) => {
         const target = e.target as HTMLInputElement | HTMLTextAreaElement;
