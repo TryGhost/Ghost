@@ -501,7 +501,7 @@ class BatchSendingService {
      * @returns {Promise<MemberLike[]>}
      */
     async getBatchMembers(batchId) {
-        let models = await this.#models.EmailRecipient.findAll({filter: `batch_id:${batchId}`, withRelated: ['member', 'member.stripeSubscriptions', 'member.products']});
+        let models = await this.#models.EmailRecipient.findAll({filter: `batch_id:'${batchId}'`, withRelated: ['member', 'member.stripeSubscriptions', 'member.products']});
 
         const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
         if (models.length > BATCH_SIZE) {

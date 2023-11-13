@@ -234,7 +234,7 @@ export default class Analytics extends Component {
             return link;
         });
 
-        const filter = `post_id:${this.post.id}+to:'${currentLink}'`;
+        const filter = `post_id:'${this.post.id}'+to:'${currentLink}'`;
         let bulkUpdateUrl = this.ghostPaths.url.api(`links/bulk`) + `?filter=${encodeURIComponent(filter)}`;
         yield this.ajax.put(bulkUpdateUrl, {
             data: {
@@ -246,7 +246,7 @@ export default class Analytics extends Component {
         });
 
         // Refresh links data
-        const linksFilter = `post_id:${this.post.id}`;
+        const linksFilter = `post_id:'${this.post.id}'`;
         let statsUrl = this.ghostPaths.url.api(`links/`) + `?filter=${encodeURIComponent(linksFilter)}`;
         let result = yield this.ajax.request(statsUrl);
         this.updateLinkData(result.links);
@@ -271,7 +271,7 @@ export default class Analytics extends Component {
 
     @task
     *_fetchLinks() {
-        const filter = `post_id:${this.post.id}`;
+        const filter = `post_id:'${this.post.id}'`;
         let statsUrl = this.ghostPaths.url.api(`links/`) + `?filter=${encodeURIComponent(filter)}`;
         let result = yield this.ajax.request(statsUrl);
         this.updateLinkData(result.links);
@@ -286,7 +286,7 @@ export default class Analytics extends Component {
 
     @task
     *_fetchMentions() {
-        const filter = `resource_id:${this.post.id}+resource_type:post`;
+        const filter = `resource_id:'${this.post.id}'+resource_type:post`;
         this.mentions = yield this.store.query('mention', {limit: 5, order: 'created_at desc', filter});
     }
 
