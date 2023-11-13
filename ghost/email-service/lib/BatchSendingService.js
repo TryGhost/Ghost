@@ -216,7 +216,7 @@ class BatchSendingService {
     async getBatches(email) {
         logging.info(`Getting batches for email ${email.id}`);
 
-        return await this.#models.EmailBatch.findAll({filter: 'email_id:' + email.id});
+        return await this.#models.EmailBatch.findAll({filter: 'email_id:\'' + email.id + '\''});
     }
 
     /**
@@ -247,7 +247,7 @@ class BatchSendingService {
             while (!members || lastId) {
                 logging.info(`Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId}`);
 
-                const filter = segmentFilter + `+id:<${lastId}`;
+                const filter = segmentFilter + `+id:<'${lastId}'`;
                 members = await this.#models.Member.getFilteredCollectionQuery({filter})
                     .orderByRaw('id DESC')
                     .select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
@@ -501,7 +501,7 @@ class BatchSendingService {
      * @returns {Promise<MemberLike[]>}
      */
     async getBatchMembers(batchId) {
-        let models = await this.#models.EmailRecipient.findAll({filter: `batch_id:${batchId}`, withRelated: ['member', 'member.stripeSubscriptions', 'member.products']});
+        let models = await this.#models.EmailRecipient.findAll({filter: `batch_id:'${batchId}'`, withRelated: ['member', 'member.stripeSubscriptions', 'member.products']});
 
         const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
         if (models.length > BATCH_SIZE) {
