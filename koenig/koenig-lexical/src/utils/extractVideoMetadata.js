@@ -5,7 +5,6 @@ export default function extractVideoMetadata(file) {
         let duration, width, height;
 
         const video = document.createElement('video');
-        video.preload = 'metadata';
         video.muted = true;
         video.playsInline = true;
 
