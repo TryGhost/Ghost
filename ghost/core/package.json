@@ -194,7 +194,7 @@
     "intl-messageformat": "5.4.3",
     "js-yaml": "4.1.0",
     "jsdom": "22.1.0",
-    "json-stable-stringify": "1.0.2",
+    "json-stable-stringify": "1.1.0",
     "jsonpath": "1.1.1",
     "jsonwebtoken": "8.5.1",
     "juice": "9.1.0",
