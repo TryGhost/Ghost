@@ -2,6 +2,7 @@ import {useArgs} from '@storybook/preview-api';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import DynamicTable, {DynamicTableTab} from './DynamicTable';
+import Icon from '../Icon';
 
 const meta = {
     title: 'Global / Dynamic Table / Dynamic Table Container',
@@ -9,10 +10,16 @@ const meta = {
     render: function Component(args) {
         const [, updateArgs] = useArgs();
 
-        return <DynamicTable {...args} onTabChange={(tab) => {
-            updateArgs({selectedTab: tab});
-            args.onTabChange?.(tab);
-        }} />;
+        return <DynamicTable {...args}
+            onTabChange={(tab) => {
+                updateArgs({selectedTab: tab});
+                args.onTabChange?.(tab);
+            }}
+            onViewChange={(view) => {
+                updateArgs({selectedView: view});
+                args.onViewChange?.(view);
+            }}
+        />;
     },
     tags: ['autodocs']
 } satisfies Meta<typeof DynamicTable>;
@@ -20,11 +27,17 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof DynamicTable>;
 
+const ContentContainer: React.FC<{children: React.ReactNode}> = ({
+    children
+}) => {
+    return <div className='m-auto max-w-[800px] p-5 text-center'>{children}</div>;
+};
+
 export const Default: Story = {
     args: {
         headingType: 'text',
         headingContent: 'Table view',
-        children: 'Hello default view'
+        children: <ContentContainer>The dynamic table component is the basis of lists and tables in Ghost. Quite central to everything.</ContentContainer>
     }
 };
 
@@ -33,30 +46,70 @@ export const HeadingSize: Story = {
         headingType: 'text',
         headingContent: 'Smaller heading',
         headingTextSize: 4,
-        children: 'Hello default view'
+        children: <ContentContainer>Use <code>`level`</code> property of the <code>`Heading`</code> component to set heading size.</ContentContainer>
     }
 };
+
+/**
+ * Multiple views
+ */
+
+const multiViews: DynamicTableTab[] = [
+    {
+        id: 'steph',
+        title: 'Steph Curry',
+        views: [
+            {
+                id: 'view-one',
+                buttonChildren: <Icon name='listview' size='sm' />,
+                contents: <ContentContainer>You can create multiple views and select them in the top right.</ContentContainer>
+            },
+            {
+                id: 'view-two',
+                buttonChildren: <Icon name='cardview' size='sm' />,
+                contents: <ContentContainer>This is view-two.</ContentContainer>
+            }
+        ]
+    }
+];
+
+export const MultiView: Story = {
+    args: {
+        headingType: 'text',
+        headingContent: 'Steph Curry',
+        headingTextSize: 4,
+        tabs: multiViews
+    }
+};
+
+/**
+ * Simple tabs
+ */
 
 const simpleTabs: DynamicTableTab[] = [
     {
         id: 'steph',
         title: 'Steph Curry',
-        contents: 'Splash Brother #1'
+        contents: <ContentContainer>The tabs component lets you add various datasets. It uses the <code>`TabList`</code> component to stay consistent with the simple TabView.</ContentContainer>
     },
     {
         id: 'klay',
         title: 'Klay Thompson',
-        contents: 'Splash Brother #2'
+        contents: <ContentContainer>Splash brother #11.</ContentContainer>
     }
 ];
 
-export const TabsSimpleView: Story = {
+export const SingleViewTabs: Story = {
     args: {
         headingType: 'tabs',
         tabs: simpleTabs,
         selectedTab: 'steph'
     }
 };
+
+/**
+ * Tabs with views
+ */
 
 const multiViewTabs: DynamicTableTab[] = [
     {
@@ -65,13 +118,13 @@ const multiViewTabs: DynamicTableTab[] = [
         views: [
             {
                 id: 'view-one',
-                viewName: 'View one',
-                contents: 'Hello tab 1 / view 1'
+                buttonChildren: <Icon name='listview' size='sm' />,
+                contents: <ContentContainer>You can combine tabs and views. Each tab can have multiple views.</ContentContainer>
             },
             {
                 id: 'view-two',
-                viewName: 'View two',
-                contents: 'Hello tab 1 / view 2'
+                buttonChildren: <Icon name='cardview' size='sm' />,
+                contents: <ContentContainer>Steph Curry view 2</ContentContainer>
             }
         ]
     },
@@ -81,24 +134,24 @@ const multiViewTabs: DynamicTableTab[] = [
         views: [
             {
                 id: 'view-one',
-                viewName: 'View one',
-                contents: 'Hello tab 2 / view 1'
+                buttonChildren: <Icon name='listview' size='sm' />,
+                contents: <ContentContainer>Klay Thompson view 1</ContentContainer>
             },
             {
                 id: 'view-two',
-                viewName: 'View two',
-                contents: 'Hello tab 2 / view 2'
+                buttonChildren: <Icon name='cardview' size='sm' />,
+                contents: <ContentContainer>Klay Thompson view 2</ContentContainer>
             },
             {
                 id: 'view-three',
-                viewName: 'View three',
-                contents: 'Hello tab 2 / view 3'
+                buttonChildren: <Icon name='heart' size='sm' />,
+                contents: <ContentContainer>Klay Thompson view 3</ContentContainer>
             }
         ]
     }
 ];
 
-export const TabsMultiView: Story = {
+export const MultiViewTabs: Story = {
     args: {
         headingType: 'tabs',
         tabs: multiViewTabs,

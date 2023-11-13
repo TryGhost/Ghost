@@ -1,10 +1,12 @@
 import React from 'react';
 import {Tab, TabList} from '../TabView';
 import Heading, {HeadingLevel} from '../Heading';
+import clsx from 'clsx';
 
 export interface DynamicTableView {
     id: string;
-    viewName: string;
+    buttonClasses?: string;
+    buttonChildren: React.ReactNode;
     contents: React.ReactNode;
 }
 
@@ -20,6 +22,7 @@ interface DynamicTableProps {
     selectedTab?: string;
     selectedView?: string;
     onTabChange?: (id: string) => void;
+    onViewChange?: (id: string) => void;
     children?: React.ReactNode;
 }
 
@@ -31,6 +34,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     selectedTab,
     selectedView,
     onTabChange,
+    onViewChange,
     children
 }) => {
     let heading = <></>;
@@ -42,8 +46,13 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
         onTabChange!(newTab);
     };
 
+    const handleViewChange = (e: React.MouseEvent<HTMLButtonElement>) => {
+        const newView = e.currentTarget.id as string;
+        onViewChange!(newView);
+    };
+
     if (headingType === 'text' && typeof headingContent === 'string') {
-        heading = <Heading level={headingTextSize!}>{headingContent}</Heading>;
+        heading = <div className='pb-1'><Heading level={headingTextSize!}>{headingContent}</Heading></div>;
     } else if (headingType === 'tabs') {
         heading = <TabList
             border={false}
@@ -68,15 +77,18 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
                     }
 
                     if (selectedTab === tab.id) {
-                        viewSwitcher = <>
+                        viewSwitcher = <div className='flex items-center gap-2'>
                             {tab.views.map((view) => {
+                                const buttonClasses = clsx(
+                                    'cursor-pointer',
+                                    selectedView === view.id ? 'text-black' : 'text-grey-500',
+                                    view.buttonClasses
+                                );
                                 return (
-                                    <button key={view.id} type='button' onClick={() => {
-                                        alert(tab.id + '/' + view.id);
-                                    }}>{view.viewName}</button>
+                                    <button key={view.id} className={buttonClasses} id={view.id} type='button' onClick={handleViewChange}>{view.buttonChildren}</button>
                                 );
                             })}
-                        </>;
+                        </div>;
                     }
 
                     return (
@@ -109,7 +121,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
         mainContent = children;
     }
 
-    const actions = <div className='flex gap-2'>
+    const actions = <div className='flex gap-5 pb-2'>
         {viewSwitcher}
     </div>;
 
