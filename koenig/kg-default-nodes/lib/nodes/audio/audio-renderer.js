@@ -70,6 +70,7 @@ function frontendTemplate(node, document, thumbnailCls, emptyThumbnailCls) {
     audioPlayer.setAttribute('class', 'kg-audio-player');
     const audioPlayIcon = document.createElement('button');
     audioPlayIcon.setAttribute('class', 'kg-audio-play-icon');
+    audioPlayIcon.setAttribute('aria-label', 'Play audio');
     const audioPlayIconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     audioPlayIconSvg.setAttribute('viewBox', '0 0 24 24');
     const playPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -80,6 +81,7 @@ function frontendTemplate(node, document, thumbnailCls, emptyThumbnailCls) {
 
     const audioPauseIcon = document.createElement('button');
     audioPauseIcon.setAttribute('class', 'kg-audio-pause-icon kg-audio-hide');
+    audioPauseIcon.setAttribute('aria-label', 'Pause audio');
     const audioPauseIconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     audioPauseIconSvg.setAttribute('viewBox', '0 0 24 24');
     const rectSvg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -124,11 +126,13 @@ function frontendTemplate(node, document, thumbnailCls, emptyThumbnailCls) {
 
     const playbackRate = document.createElement('button');
     playbackRate.setAttribute('class', 'kg-audio-playback-rate');
+    playbackRate.setAttribute('aria-label', 'Adjust playback speed');
     playbackRate.innerHTML = '1&#215;'; // innerHTML not textContent because we need the HTML entity
     audioPlayer.appendChild(playbackRate);
 
     const unmuteIcon = document.createElement('button');
     unmuteIcon.setAttribute('class', 'kg-audio-unmute-icon');
+    unmuteIcon.setAttribute('aria-label', 'Unmute');
     const unmuteIconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     unmuteIconSvg.setAttribute('viewBox', '0 0 24 24');
     const unmutePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -139,6 +143,8 @@ function frontendTemplate(node, document, thumbnailCls, emptyThumbnailCls) {
 
     const muteIcon = document.createElement('button');
     muteIcon.setAttribute('class', 'kg-audio-mute-icon kg-audio-hide');
+    muteIcon.setAttribute('aria-label', 'Mute');
+
     const muteIconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     muteIconSvg.setAttribute('viewBox', '0 0 24 24');
     const mutePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');

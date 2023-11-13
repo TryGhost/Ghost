@@ -173,7 +173,7 @@ describe('ToggleNode', function () {
             <div class="kg-card kg-toggle-card" data-kg-toggle-state="close">
                 <div class="kg-toggle-heading">
                     <h4 class="kg-toggle-heading-text">Heading</h4>
-                    <button class="kg-toggle-card-icon">
+                    <button class="kg-toggle-card-icon" aria-label="Expand toggle to read content">
                         <svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                             <path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path>
                         </svg>
@@ -232,7 +232,7 @@ describe('ToggleNode', function () {
     describe('importDOM', function () {
         it('parses toggle card', editorTest(function () {
             const dom = (new JSDOM(html`
-                <div class="kg-card kg-toggle-card" data-kg-toggle-state="close"><div class="kg-toggle-heading"><h4 class="kg-toggle-heading-text">Heading</h4><button class="kg-toggle-card-icon"><svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path></svg></button></div><div class="kg-toggle-content">Content</div></div>
+                <div class="kg-card kg-toggle-card" data-kg-toggle-state="close"><div class="kg-toggle-heading"><h4 class="kg-toggle-heading-text">Heading</h4><button class="kg-toggle-card-icon" aria-label="Expand toggle to read content"><svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path class="cls-1" d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path></svg></button></div><div class="kg-toggle-content">Content</div></div>
             `)).window.document;
             const nodes = $generateNodesFromDOM(editor, dom);
             nodes.length.should.equal(1);
