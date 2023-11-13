@@ -9,6 +9,7 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Debug} from '@sentry/integrations';
 import {importSettings} from '../components/admin-x/settings';
 import {inject} from 'ghost-admin/decorators/inject';
+import { RewriteFrames } from '@sentry/integrations';
 import {
     isAjaxError,
     isNotFoundError,
@@ -210,10 +211,27 @@ export default Route.extend(ShortcutsRoute, {
                 },
                 // TransitionAborted errors surface from normal application behaviour
                 // - https://github.com/emberjs/ember.js/issues/12505
-                ignoreErrors: [/^TransitionAborted$/]
+                ignoreErrors: [/^TransitionAborted$/],
+                integrations: [
+                    // Stack frames in production are rewritten to remove the version identifier
+                    // from the path. This makes grouping by stack trace not work.
+                    // Before: /admin/1633/assets/path/to/file.js
+                    // After: /admin/assets/path/to/file.js
+                    new RewriteFrames({
+                        iteratee: (frame) => {
+                            console.log(frame);
+                            if (frame.filename) {
+                                // Check if the frame.filename matches /admin/1633/assets
+                                // and rewrite it to /admin/assets
+                                frame.filename = frame.filename.replace(/\/admin\/\d+\/assets/, '/admin/assets');
+                            }
+                            return frame;
+                        }
+                    })
+                ]
             };
             if (this.config.sentry_env === 'development') {
-                sentryConfig.integrations = [new Debug()];
+                sentryConfig.integrations.push(new Debug());
             }
             Sentry.init(sentryConfig);
         }
