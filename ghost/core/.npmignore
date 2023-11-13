@@ -62,7 +62,7 @@ renovate.json
 !core/server/services/mail/templates/**
 bower_components/**
 .editorconfig
-gulpfile.js
+monobundle.js
 !content/themes/casper/gulpfile.js
 !content/themes/source/gulpfile.js
 package-lock.json
