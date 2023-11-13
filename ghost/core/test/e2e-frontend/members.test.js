@@ -141,8 +141,8 @@ describe('Front-end members behavior', function () {
         it('should error for invalid subscription id on members create update session endpoint', async function () {
             const membersService = require('../../core/server/services/members');
             const email = 'test-member-create-update-session@email.com';
-            await membersService.api.members.create({email});
-            const token = await membersService.api.getMemberIdentityToken(email);
+            const member = await membersService.api.members.create({email});
+            const token = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
             await request.post('/members/api/create-stripe-update-session')
                 .send({
                     identity: token,
