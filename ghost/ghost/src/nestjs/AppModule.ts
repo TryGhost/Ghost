@@ -1,4 +1,3 @@
-import {Module} from '@nestjs/common';
 import {OffersController} from '../http/controllers/OffersController';
 
 class AppModuleClass {}

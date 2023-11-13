@@ -395,8 +395,8 @@ async function initNestDependencies() {
     const GhostNestApp = require('@tryghost/ghost');
     const providers = GhostNestApp.AppModule.providers;
     providers.push({
-        provide: 'INJECTION_TOKEN',
-        useValue: 'INJECTION_VALUE'
+        provide: 'models',
+        useValue: require('./server/models')
     });
     debug('End: initNestDependencies');
 }
