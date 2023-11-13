@@ -36,7 +36,7 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
             hideActions
             onClick={showDetails}
         >
-            {(dragHandleAttributes || isDragging) && <TableCell className='flex items-center'>
+            {(dragHandleAttributes || isDragging) && <TableCell className='flex w-10 items-center'>
                 <button
                     className={clsx(
                         'h-10 opacity-50 group-hover:opacity-100',
@@ -55,7 +55,7 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
     );
 
     if (isDragging) {
-        return <table><tbody>{container}</tbody></table>;
+        return <Table>{container}</Table>;
     } else {
         return container;
     }
@@ -70,19 +70,19 @@ const NewsletterItem: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
 
     return (
         <>
-            <TableCell onClick={showDetails}>
+            <TableCell className='w-full' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
                     <span className='font-medium'>{newsletter.name}</span>
                     <span className='mt-0.5 text-xs leading-tight text-grey-700'>{newsletter.description || 'No description'}</span>
                 </div>
             </TableCell>
-            <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
+            <TableCell className='hidden md:!visible md:!table-cell md:min-w-[11rem]' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
                     <span>{numberWithCommas(newsletter.count?.active_members || 0) }</span>
                     <span className='mt-0.5 whitespace-nowrap text-xs leading-tight text-grey-700'>Subscribers</span>
                 </div>
             </TableCell>
-            <TableCell className='hidden md:!visible md:!table-cell' onClick={showDetails}>
+            <TableCell className='hidden md:!visible md:!table-cell md:min-w-[11rem]' onClick={showDetails}>
                 <div className={`flex grow flex-col`}>
                     <span>{numberWithCommas(newsletter.count?.posts || 0)}</span>
                     <span className='mt-0.5 whitespace-nowrap text-xs leading-tight text-grey-700'>Delivered</span>
