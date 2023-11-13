@@ -256,15 +256,6 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                         label="Replace"
                         onClick={() => openFileSelection({fileInputRef: toolbarFileInputRef})}
                     />
-                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
-                    <ToolbarMenuItem
-                        dataTestId="create-snippet"
-                        hide={!cardConfig.createSnippet}
-                        icon="snippet"
-                        isActive={false}
-                        label="Create snippet"
-                        onClick={() => setShowSnippetToolbar(true)}
-                    />
                     <ToolbarMenuSeparator hide={!isPinturaEnabled} />
                     <ToolbarMenuItem
                         hide={!isPinturaEnabled}
@@ -281,6 +272,15 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
                                 });
                             }
                         })}
+                    />
+                    <ToolbarMenuSeparator hide={!cardConfig.createSnippet} />
+                    <ToolbarMenuItem
+                        dataTestId="create-snippet"
+                        hide={!cardConfig.createSnippet}
+                        icon="snippet"
+                        isActive={false}
+                        label="Create snippet"
+                        onClick={() => setShowSnippetToolbar(true)}
                     />
                 </ToolbarMenu>
             </ActionToolbar>
