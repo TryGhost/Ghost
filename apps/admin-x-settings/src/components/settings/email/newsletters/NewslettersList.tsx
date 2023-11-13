@@ -36,7 +36,7 @@ const NewsletterItemContainer: React.FC<Partial<SortableItemContainerProps>> = (
             hideActions
             onClick={showDetails}
         >
-            {(dragHandleAttributes || isDragging) && <TableCell className='flex w-10 items-center'>
+            {(dragHandleAttributes || isDragging) && <TableCell className='w-10 !align-middle' >
                 <button
                     className={clsx(
                         'h-10 opacity-50 group-hover:opacity-100',
