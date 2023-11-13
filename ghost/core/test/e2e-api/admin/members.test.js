@@ -66,6 +66,16 @@ async function getNewsletters() {
     return (await models.Newsletter.findAll({filter: 'status:active'})).models;
 }
 
+async function createMember(data) {
+    const member = await models.Member.add({
+        name: '',
+        email_disabled: false,
+        ...data
+    });
+
+    return member;
+}
+
 const newsletterSnapshot = {
     id: anyObjectId
 };
@@ -2140,6 +2150,23 @@ describe('Members API', function () {
             await testMember.refresh();
             should(testMember.get('email_disabled')).be.false();
         });
+    });
+
+    // Log out
+    it('Can log out', async function () {
+        const member = await createMember({
+            name: 'test',
+            email: 'member-log-out-test@test.com'
+        });
+
+        await agent
+            .post(`/members/${member.id}/logout/`)
+            .expectStatus(204)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
     });
 
     // Delete a member

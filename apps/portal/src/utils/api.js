@@ -282,7 +282,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }
         },
 
-        signout(all = true) {
+        signout(all = false) {
             const url = endpointFor({type: 'members', resource: 'session'});
             return makeRequest({
                 url,
