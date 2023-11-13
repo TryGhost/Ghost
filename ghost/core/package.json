@@ -50,7 +50,7 @@
     "lint:test": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js' --cache",
     "lint:code": "yarn lint:server && yarn lint:shared && yarn lint:frontend",
     "lint": "yarn lint:server && yarn lint:shared && yarn lint:frontend && yarn lint:test",
-    "prepack": "monobundle"
+    "prepack": "node monobundle.js"
   },
   "engines": {
     "node": "^18.12.1",
@@ -237,14 +237,16 @@
     "c8": "8.0.1",
     "cli-progress": "3.12.0",
     "cssnano": "6.0.1",
+    "detect-indent": "6.1.0",
+    "detect-newline": "3.1.0",
     "expect": "29.3.1",
+    "find-root": "1.1.0",
     "form-data": "4.0.0",
     "inquirer": "8.2.6",
     "jwks-rsa": "3.1.0",
     "mocha": "10.2.0",
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#d8b93b1c20d4820323477f2c60db016ab3e73192",
-    "monobundle": "TryGhost/monobundle#811679e94b75f82a0fb1d00a11e6e0b9f6e5e44a",
     "nock": "13.3.3",
     "papaparse": "5.3.2",
     "postcss": "8.4.31",
