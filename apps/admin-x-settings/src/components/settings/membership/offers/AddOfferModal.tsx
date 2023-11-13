@@ -46,11 +46,15 @@ type SidebarProps = {
     handleTierChange: (tier: SelectOption) => void;
     selectedTier: SelectOption;
     overrides: offerPortalPreviewUrlTypes
-    handleTextInput: (e: React.ChangeEvent<HTMLInputElement>, key: string) => void;
+    handleTextInput: (e: React.ChangeEvent<HTMLInputElement>, key: keyof offerPortalPreviewUrlTypes) => void;
     amountOptions: SelectOption[];
     typeOptions: OfferType[];
     durationOptions: SelectOption[];
     handleTypeChange: (type: string) => void;
+    handleDurationChange: (duration: string) => void;
+    handleAmountTypeChange: (amountType: string) => void;
+    handleNameInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleTextAreaInput: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 };
 
 const Sidebar: React.FC<SidebarProps> = ({tierOptions, 
@@ -60,7 +64,11 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
     typeOptions,
     durationOptions,
     handleTypeChange,
+    handleDurationChange,
     overrides,
+    handleAmountTypeChange,
+    handleNameInput,
+    handleTextAreaInput,
     amountOptions}) => {
     return (
         <div className='pt-7'>
@@ -70,7 +78,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                     placeholder='Black Friday'
                     title='Name'
                     onChange={(e) => {
-                        handleTextInput(e, 'name');
+                        handleNameInput(e);
                     }}
                 />
                 <section className='mt-4'>
@@ -94,24 +102,42 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 }
                             }}
                         />
-                        <div className='relative'>
-                            <TextField title='Amount off' type='number' />
-                            <div className='absolute bottom-0 right-1.5 z-10 w-10'>
-                                <Select
-                                    clearBg={true}
-                                    controlClasses={{menu: 'w-20 right-0'}}
-                                    options={amountOptions}
-                                    selectedOption={amountOptions[0]}
-                                    onSelect={() => {}}
-                                />
+                        {
+                            overrides.type !== 'trial' && <> <div className='relative'>
+                                <TextField title='Amount off' type='number' onChange={(e) => {
+                                    handleTextInput(e, 'discountAmount');
+                                }} />
+                                <div className='absolute bottom-0 right-1.5 z-10 w-10'>
+                                    <Select
+                                        clearBg={true}
+                                        controlClasses={{menu: 'w-20 right-0'}}
+                                        options={amountOptions}
+                                        selectedOption={overrides.amountType === 'percentageOff' ? amountOptions[0] : amountOptions[1]}
+                                        onSelect={(e) => {
+                                            handleAmountTypeChange(e?.value || '');
+                                        }}
+                                    />
+                                </div>
                             </div>
-                        </div>
-                        <Select
-                            options={durationOptions}
-                            selectedOption={durationOptions[0]}
-                            title='Duration'
-                            onSelect={() => {}}
-                        />
+                            <Select
+                                options={durationOptions}
+                                selectedOption={overrides.duration === 'once' ? durationOptions[0] : overrides.duration === 'repeating' ? durationOptions[1] : durationOptions[2]}
+                                title='Duration'
+                                onSelect={e => handleDurationChange(e?.value || '')}
+                            />
+
+                            {
+                                overrides.duration === 'repeating' && <TextField title='Duration in months' type='number' onChange={(e) => {
+                                    handleTextInput(e, 'durationInMonths');
+                                }} />
+                            }
+                            </>
+                        }
+
+                        {
+                            overrides.type === 'trial' && <TextField title='Trial duration' type='number' value={overrides.trialAmount?.toString()} />
+                        }
+                        
                     </div>
                 </section>
                 <section className='mt-4'>
@@ -120,6 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         <TextField
                             placeholder='Black Friday Special'
                             title='Display title'
+                            value={overrides.displayTitle.value}
                             onChange={(e) => {
                                 handleTextInput(e, 'displayTitle');
                             }}
@@ -127,7 +154,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         <TextField
                             placeholder='black-friday'
                             title='Offer code'
-                            value={overrides.code}
+                            value={overrides.code.value}
                             onChange={(e) => {
                                 handleTextInput(e, 'code');
                             }}
@@ -135,7 +162,10 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         <TextArea
                             placeholder='Take advantage of this limited-time offer.'
                             title='Display description'
-                            onChange={e => handleTextInput(e, 'displayDescription')}
+                            value={overrides.displayDescription}
+                            onChange={(e) => {
+                                handleTextAreaInput(e);
+                            }}
                         />
                     </div>
                 </section>
@@ -161,9 +191,9 @@ const AddOfferModal = () => {
     // if currency is selected convert it to cents eg 1 = 100
 
     const durationOptions = [
-        {value: '1', label: 'First-payment'},
-        {value: '2', label: 'Multiple-months'},
-        {value: '3', label: 'Forever'}
+        {value: 'once', label: 'First-payment'},
+        {value: 'repeating', label: 'Multiple-months'},
+        {value: 'forever', label: 'Forever'}
     ];
 
     const [href, setHref] = useState<string>('');
@@ -185,22 +215,30 @@ const AddOfferModal = () => {
     const [overrides, setOverrides] = useState<offerPortalPreviewUrlTypes>({
         disableBackground: true,
         name: '',
-        code: '',
-        displayTitle: '',
+        code: {
+            isDirty: false,
+            value: ''
+        },
+        displayTitle: {
+            isDirty: false,
+            value: ''
+        },
         displayDescription: '',
-        type: 'discount',
+        type: 'percent',
         cadence: selectedTier?.dataset?.period || '',
-        amount: 0,
-        duration: '',
+        trialAmount: 7,
+        discountAmount: 0,
+        duration: 'once',
         durationInMonths: 0,
         currency: selectedTier?.dataset?.currency || '',
         status: 'active',
-        tierId: selectedTier?.dataset?.id || ''
+        tierId: selectedTier?.dataset?.id || '',
+        amountType: 'percentageOff'
     });
 
     const amountOptions = [
-        {value: '1', label: '%'},
-        {value: '2', label: overrides.currency}
+        {value: 'percentageOff', label: '%'},
+        {value: 'currencyOff', label: overrides.currency}
     ];
 
     const handleTierChange = (tier: SelectOption) => {
@@ -224,15 +262,88 @@ const AddOfferModal = () => {
         });
     };
 
+    const handleAmountTypeChange = (amountType: string) => {
+        setOverrides({
+            ...overrides,
+            amountType: amountType
+        });
+    };
+
     const handleTextInput = (
         e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>,
-        key: string
+        key: keyof offerPortalPreviewUrlTypes
     ) => {
         const target = e.target as HTMLInputElement | HTMLTextAreaElement;
-        setOverrides(prevOverrides => ({
-            ...prevOverrides,
-            [key]: target.value
-        }));
+        setOverrides((prevOverrides: offerPortalPreviewUrlTypes) => {
+            // Extract the current value for the key
+            const currentValue = prevOverrides[key];
+    
+            // Check if the current value is an object and has 'isDirty' and 'value' properties
+            if (currentValue && typeof currentValue === 'object' && 'isDirty' in currentValue && 'value' in currentValue) {
+                // Determine if the field has been modified
+    
+                return {
+                    ...prevOverrides,
+                    [key]: {
+                        ...currentValue,
+                        isDirty: true,
+                        value: target.value
+                    }
+                };
+            } else {
+                // For simple properties, update the value directly
+                return {
+                    ...prevOverrides,
+                    [key]: target.value
+                };
+            }
+        });
+    };
+
+    const handleNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+    
+        setOverrides((prevOverrides) => {
+            // Start with the current overrides
+            let newOverrides = {...prevOverrides};
+    
+            // Update the name
+            newOverrides.name = newValue;
+    
+            // Conditionally update the code if it hasn't been manually altered
+            if (!prevOverrides.code.isDirty) {
+                newOverrides.code = {
+                    ...prevOverrides.code,
+                    value: slugify(newValue)
+                };
+            }
+    
+            // Conditionally update the displayTitle if it hasn't been manually altered
+            if (!prevOverrides.displayTitle.isDirty) {
+                newOverrides.displayTitle = {
+                    ...prevOverrides.displayTitle,
+                    value: newValue
+                };
+            }
+    
+            // Return the updated overrides
+            return newOverrides;
+        });
+    };
+
+    const handleTextAreaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const target = e.target as HTMLTextAreaElement;
+        setOverrides({
+            ...overrides,
+            displayDescription: target.value
+        });
+    };
+
+    const handleDurationChange = (duration: string) => {
+        setOverrides({
+            ...overrides,
+            duration: duration
+        });
     };
 
     useEffect(() => {
@@ -253,8 +364,12 @@ const AddOfferModal = () => {
     }, [overrides]);
 
     const sidebar = <Sidebar 
-        amountOptions={amountOptions}
+        amountOptions={amountOptions as SelectOption[]}
         durationOptions={durationOptions}
+        handleAmountTypeChange={handleAmountTypeChange}
+        handleDurationChange={handleDurationChange}
+        handleNameInput={handleNameInput}
+        handleTextAreaInput={handleTextAreaInput}
         handleTextInput={handleTextInput}
         handleTierChange={handleTierChange}
         handleTypeChange={handleTypeChange}
