@@ -1,3 +1,4 @@
+import {useArgs} from '@storybook/preview-api';
 import type {Meta, StoryObj} from '@storybook/react';
 
 import TableView from './TableView';
@@ -6,6 +7,14 @@ import {Tab} from '../TabView';
 const meta = {
     title: 'Global / Table View / Table View Container',
     component: TableView,
+    render: function Component(args) {
+        const [, updateArgs] = useArgs();
+
+        return <TableView {...args} onTabChange={(tab) => {
+            updateArgs({selectedTab: tab});
+            args.onTabChange?.(tab);
+        }} />;
+    },
     tags: ['autodocs']
 } satisfies Meta<typeof TableView>;
 
@@ -14,11 +23,9 @@ type Story = StoryObj<typeof TableView>;
 
 export const Default: Story = {
     args: {
-        headerLeft: {
-            type: 'text',
-            textSize: 5,
-            content: 'Table view'
-        },
+        leftHeaderType: 'text',
+        leftHeaderTextSize: 5,
+        leftHeaderContent: 'Table view',
         children: 'This is a boilerplate component. Use as a basis to create new components.'
     }
 };
@@ -29,10 +36,9 @@ const testTabs: Tab[] = [
 ];
 export const Tabs: Story = {
     args: {
-        headerLeft: {
-            type: 'tabs',
-            content: testTabs
-        },
+        leftHeaderType: 'tabs',
+        leftHeaderContent: testTabs,
+        selectedTab: 'steph',
         children: 'This is a boilerplate component. Use as a basis to create new components.'
     }
 };

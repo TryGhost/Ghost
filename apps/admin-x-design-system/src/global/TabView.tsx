@@ -12,12 +12,14 @@ export type Tab<ID = string> = {
     contents?: React.ReactNode;
 }
 
+export type TabWidth = 'narrow' | 'normal' | 'wide';
+
 export interface TabButtonProps<ID = string> {
     id: ID,
     title: string;
     onClick?: (e:React.MouseEvent<HTMLButtonElement>) => void;
     selected: boolean;
-    border: boolean;
+    border?: boolean;
     counter?: number | null;
 }
 
@@ -51,12 +53,55 @@ export const TabButton: React.FC<TabButtonProps> = ({
     );
 };
 
+export interface TabListProps<ID = string> {
+    tabs: readonly Tab<ID>[];
+    width: TabWidth;
+    handleTabChange?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+    border: boolean;
+    buttonBorder?: boolean;
+    selectedTab?: ID
+}
+
+export const TabList: React.FC<TabListProps> = ({
+    tabs,
+    width = 'normal',
+    handleTabChange,
+    border,
+    buttonBorder,
+    selectedTab
+}) => {
+    const containerClasses = clsx(
+        'no-scrollbar flex w-full overflow-x-auto',
+        width === 'narrow' && 'gap-3',
+        width === 'normal' && 'gap-5',
+        width === 'wide' && 'gap-7',
+        border && 'border-b border-grey-300 dark:border-grey-900'
+    );
+    return (
+        <div className={containerClasses} role='tablist'>
+            {tabs.map(tab => (
+                <div>
+                    <TabButton
+                        border={buttonBorder}
+                        counter={tab.counter}
+                        id={tab.id}
+                        selected={selectedTab === tab.id}
+                        title={tab.title}
+                        onClick={handleTabChange}
+                    />
+                </div>
+            ))}
+        </div>
+    );
+};
+
 export interface TabViewProps<ID = string> {
     tabs: readonly Tab<ID>[];
     onTabChange: (id: ID) => void;
     selectedTab?: ID;
     border?: boolean;
-    width?: 'narrow' | 'normal' | 'wide';
+    buttonBorder?: boolean;
+    width?: TabWidth;
 }
 
 function TabView<ID extends string = string>({
@@ -64,6 +109,7 @@ function TabView<ID extends string = string>({
     onTabChange,
     selectedTab,
     border = true,
+    buttonBorder = border,
     width = 'normal'
 }: TabViewProps<ID>) {
     if (tabs.length !== 0 && selectedTab === undefined) {
@@ -79,30 +125,16 @@ function TabView<ID extends string = string>({
         onTabChange(newTab);
     };
 
-    const containerClasses = clsx(
-        'no-scrollbar flex w-full overflow-x-auto',
-        width === 'narrow' && 'gap-3',
-        width === 'normal' && 'gap-5',
-        width === 'wide' && 'gap-7',
-        border && 'border-b border-grey-300 dark:border-grey-900'
-    );
-
     return (
         <section>
-            <div className={containerClasses} role='tablist'>
-                {tabs.map(tab => (
-                    <div>
-                        <TabButton
-                            border={border}
-                            counter={tab.counter}
-                            id={tab.id}
-                            selected={selectedTab === tab.id}
-                            title={tab.title}
-                            onClick={handleTabChange}
-                        />
-                    </div>
-                ))}
-            </div>
+            <TabList
+                border={border}
+                buttonBorder={buttonBorder}
+                handleTabChange={handleTabChange}
+                selectedTab={selectedTab}
+                tabs={tabs}
+                width={width}
+            />
             {tabs.map((tab) => {
                 return (
                     <>

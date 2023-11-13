@@ -1,39 +1,67 @@
 import React from 'react';
-import {Tab} from '../TabView';
+import {Tab, TabList} from '../TabView';
 import Heading, {HeadingLevel} from '../Heading';
 
 interface TableViewProps {
-    headerLeft?: {
-        type?: 'text' | 'tabs' | 'custom',
-        textSize?: HeadingLevel,
-        content?: string | Array<Tab> | React.ReactNode;
-    };
+    leftHeaderType?: 'text' | 'tabs' | 'custom',
+    leftHeaderTextSize?: HeadingLevel,
+    leftHeaderContent?: string | Array<Tab> | React.ReactNode;
+    selectedTab?: string;
+    onTabChange?: (id: string) => void;
     children?: React.ReactNode;
 }
 
 const TableView: React.FC<TableViewProps> = ({
-    headerLeft = {
-        type: 'text',
-        textSize: 5,
-        content: ''
-    },
+    leftHeaderType = 'text',
+    leftHeaderTextSize = 5,
+    leftHeaderContent = '',
+    selectedTab = '',
+    onTabChange,
     children
 }) => {
-    let headerLeftContent = <></>;
+    let leftContent = <></>;
+    let mainContent:React.ReactNode = <></>;
 
-    if (headerLeft?.type === 'text' && typeof headerLeft.content === 'string') {
-        headerLeftContent = <Heading level={headerLeft.textSize!}>{headerLeft.content}</Heading>;
-    } else if (headerLeft?.type === 'tabs' && Array.isArray(headerLeft.content)) {
-        headerLeftContent = <>tabs</>;
+    const handleTabChange = (e: React.MouseEvent<HTMLButtonElement>) => {
+        const newTab = e.currentTarget.id as string;
+        onTabChange!(newTab);
+    };
+
+    if (leftHeaderType === 'text' && typeof leftHeaderContent === 'string') {
+        leftContent = <Heading level={leftHeaderTextSize!}>{leftHeaderContent}</Heading>;
+        mainContent = children;
+    } else if (leftHeaderType === 'tabs' && Array.isArray(leftHeaderContent)) {
+        leftContent = <TabList
+            border={false}
+            buttonBorder={true}
+            handleTabChange={handleTabChange}
+            selectedTab={selectedTab}
+            tabs={leftHeaderContent}
+            width='normal'
+        />;
+        mainContent = <>
+            {leftHeaderContent.map((tab) => {
+                return (
+                    <>
+                        {tab.contents &&
+                            <div key={tab.id} className={`${selectedTab === tab.id ? 'block' : 'hidden'}`} role='tabpanel'>
+                                <div>{tab.contents}</div>
+                            </div>
+                        }
+                    </>
+                );
+            })}
+        </>;
     }
 
     return (
         <section>
-            <div className='flex items-end justify-between border-b border-grey-200 pb-1'>
-                <div>{headerLeftContent}</div>
+            <div className='flex items-end justify-between border-b border-grey-200'>
+                <div>{leftContent}</div>
                 <div>right</div>
             </div>
-            {children}
+            {}
+            {mainContent}
         </section>
     );
 };
