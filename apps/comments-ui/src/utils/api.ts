@@ -124,7 +124,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             browse({page, postId}: {page: number, postId: string}) {
                 firstCommentsLoadedAt = firstCommentsLoadedAt ?? new Date().toISOString();
 
-                const filter = encodeURIComponent(`post_id:${postId}+created_at:<=${firstCommentsLoadedAt}`);
+                const filter = encodeURIComponent(`post_id:'${postId}'+created_at:<=${firstCommentsLoadedAt}`);
                 const order = encodeURIComponent('created_at DESC, id DESC');
 
                 const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=5&order=${order}&filter=${filter}&page=${page}`});
