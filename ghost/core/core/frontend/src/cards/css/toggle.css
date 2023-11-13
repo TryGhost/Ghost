@@ -70,6 +70,7 @@
     justify-content: center;
     align-items: center;
     margin-left: 1em;
+    padding: 0;
     background: none;
     border: 0;
 }
