@@ -219,7 +219,6 @@ export default Route.extend(ShortcutsRoute, {
                     // After: /admin/assets/path/to/file.js
                     new RewriteFrames({
                         iteratee: (frame) => {
-                            console.log(frame);
                             if (frame.filename) {
                                 // Check if the frame.filename matches /admin/1633/assets
                                 // and rewrite it to /admin/assets
