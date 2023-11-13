@@ -73,6 +73,7 @@
     padding: 0;
     background: none;
     border: 0;
+    cursor: pointer;
 }
 
 .kg-toggle-heading svg {
