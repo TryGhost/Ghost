@@ -7,6 +7,7 @@ import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../
 import {getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
 import {getTiersCadences} from '../../../../utils/getTiersCadences';
 import {useEffect, useState} from 'react';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 function slugify(text: string): string {
     return text
@@ -135,7 +136,9 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         }
 
                         {
-                            overrides.type === 'trial' && <TextField title='Trial duration' type='number' value={overrides.trialAmount?.toString()} />
+                            overrides.type === 'trial' && <TextField title='Trial duration' type='number' value={overrides.trialAmount?.toString()} onChange={(e) => {
+                                handleTextInput(e, 'trialAmount');
+                            }} />
                         }
                         
                     </div>
@@ -183,12 +186,11 @@ const parseData = (input: string): { id: string; period: string; currency: strin
 };
 
 const AddOfferModal = () => {
+    const {siteData} = useGlobalData();
     const typeOptions = [
         {title: 'Discount', description: 'Offer a special reduced price', value: 'percent'},
         {title: 'Free trial', description: 'Give free access for a limited time', value: 'trial'}
     ];
-
-    // if currency is selected convert it to cents eg 1 = 100
 
     const durationOptions = [
         {value: 'once', label: 'First-payment'},
@@ -304,29 +306,20 @@ const AddOfferModal = () => {
         const newValue = e.target.value;
     
         setOverrides((prevOverrides) => {
-            // Start with the current overrides
             let newOverrides = {...prevOverrides};
-    
-            // Update the name
             newOverrides.name = newValue;
-    
-            // Conditionally update the code if it hasn't been manually altered
             if (!prevOverrides.code.isDirty) {
                 newOverrides.code = {
                     ...prevOverrides.code,
                     value: slugify(newValue)
                 };
             }
-    
-            // Conditionally update the displayTitle if it hasn't been manually altered
             if (!prevOverrides.displayTitle.isDirty) {
                 newOverrides.displayTitle = {
                     ...prevOverrides.displayTitle,
                     value: newValue
                 };
             }
-    
-            // Return the updated overrides
             return newOverrides;
         });
     };
@@ -359,9 +352,9 @@ const AddOfferModal = () => {
     };
 
     useEffect(() => {
-        const newHref = getOfferPortalPreviewUrl(overrides, 'http://localhost:2368');
+        const newHref = getOfferPortalPreviewUrl(overrides, siteData.url);
         setHref(newHref);
-    }, [overrides]);
+    }, [overrides, siteData.url]);
 
     const sidebar = <Sidebar 
         amountOptions={amountOptions as SelectOption[]}
