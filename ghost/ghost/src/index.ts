@@ -6,3 +6,7 @@ export async function create() {
     const app = await NestFactory.create(AppModule);
     return app;
 }
+
+export {
+    AppModule
+};
