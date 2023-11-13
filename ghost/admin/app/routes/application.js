@@ -7,9 +7,9 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Debug} from '@sentry/integrations';
+import {RewriteFrames} from '@sentry/integrations';
 import {importSettings} from '../components/admin-x/settings';
 import {inject} from 'ghost-admin/decorators/inject';
-import { RewriteFrames } from '@sentry/integrations';
 import {
     isAjaxError,
     isNotFoundError,
