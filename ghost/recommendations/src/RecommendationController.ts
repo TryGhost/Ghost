@@ -65,6 +65,22 @@ export class RecommendationController {
         );
     }
 
+    /**
+     * Given a recommendation URL, returns either an existing recommendation with that url and updated metadata,
+     * or the metadata from that URL as if it would create a new one (without creating a new one)
+     *
+     * This can be used in the frontend when creating a new recommendation (duplication checking + showing a preview before saving)
+     */
+    async check(frame: Frame) {
+        const data = new UnsafeData(frame.data);
+        const recommendation = data.key('recommendations').index(0);
+        const url = recommendation.key('url').url;
+
+        return this.#serialize(
+            [await this.service.checkRecommendation(url)]
+        );
+    }
+
     async edit(frame: Frame) {
         const options = new UnsafeData(frame.options);
         const data = new UnsafeData(frame.data);
@@ -201,19 +217,19 @@ export class RecommendationController {
         return null;
     }
 
-    #serialize(recommendations: RecommendationPlain[], meta?: any) {
+    #serialize(recommendations: Partial<RecommendationPlain>[], meta?: any) {
         return {
             data: recommendations.map((entity) => {
                 const d = {
-                    id: entity.id,
-                    title: entity.title,
-                    description: entity.description,
-                    excerpt: entity.excerpt,
+                    id: entity.id ?? null,
+                    title: entity.title ?? null,
+                    description: entity.description ?? null,
+                    excerpt: entity.excerpt ?? null,
                     featured_image: entity.featuredImage?.toString() ?? null,
                     favicon: entity.favicon?.toString() ?? null,
-                    url: entity.url.toString(),
-                    one_click_subscribe: entity.oneClickSubscribe,
-                    created_at: entity.createdAt.toISOString(),
+                    url: entity.url?.toString() ?? null,
+                    one_click_subscribe: entity.oneClickSubscribe ?? null,
+                    created_at: entity.createdAt?.toISOString() ?? null,
                     updated_at: entity.updatedAt?.toISOString() ?? null,
                     count: entity.clickCount !== undefined || entity.subscriberCount !== undefined ? {
                         clicks: entity.clickCount,

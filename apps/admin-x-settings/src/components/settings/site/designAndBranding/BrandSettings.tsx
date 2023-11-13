@@ -1,15 +1,9 @@
-import ColorPickerField from '../../../../admin-x-ds/global/form/ColorPickerField';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Hint from '../../../../admin-x-ds/global/Hint';
-import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import React, {useRef, useState} from 'react';
-import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
 import UnsplashSearchModal from '../../../../unsplash/UnsplashSearchModal';
 import useHandleError from '../../../../utils/api/handleError';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
+import {ColorPickerField, Heading, Hint, ImageUpload, SettingGroupContent, TextField, debounce} from '@tryghost/admin-x-design-system';
 import {SettingValue, getSettingValues} from '../../../../api/settings';
-import {debounce} from '../../../../utils/debounce';
 import {getImageUrl, useUploadImage} from '../../../../api/images';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useServices} from '../../../providers/ServiceProvider';
@@ -27,8 +21,6 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
     const [siteDescription, setSiteDescription] = useState(values.description);
     const {settings} = useGlobalData();
     const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
-    const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
-    const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
     const [showUnsplash, setShowUnsplash] = useState<boolean>(false);
     const {unsplashConfig} = useServices();
     const handleError = useHandleError();
@@ -39,12 +31,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
         }, 500)
     );
 
-    const editor = usePinturaEditor(
-        {config: {
-            jsUrl: pinturaJsUrl || '',
-            cssUrl: pinturaCssUrl || ''
-        }}
-    );
+    const editor = usePinturaEditor();
 
     return (
         <div className='mt-7'>

@@ -1,16 +1,11 @@
 import APIKeys from './APIKeys';
-import Button from '../../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import IntegrationHeader from './IntegrationHeader';
-import List from '../../../../admin-x-ds/global/List';
-import ListItem from '../../../../admin-x-ds/global/ListItem';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
-import {ReactComponent as ArrowRightIcon} from '../../../../admin-x-ds/assets/icons/arrow-right.svg';
-import {ReactComponent as Icon} from '../../../../assets/icons/zapier.svg';
+import {Button, ConfirmationModal, Icon, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Logo} from '../../../../assets/images/zapier-logo.svg';
+import {ReactComponent as ZapierIcon} from '../../../../assets/icons/zapier.svg';
 import {getGhostPaths, resolveAsset} from '../../../../utils/helpers';
 import {useBrowseIntegrations} from '../../../../api/integrations';
 import {useEffect, useState} from 'react';
@@ -111,7 +106,7 @@ const ZapierModal = NiceModal.create(() => {
                     },
                     {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
                 ]} /></div>}
-                icon={<Icon className='h-14 w-14' />}
+                icon={<ZapierIcon className='h-14 w-14' />}
                 title='Zapier'
             />
 
@@ -125,7 +120,7 @@ const ZapierModal = NiceModal.create(() => {
                             <div className='flex flex-col gap-4 md:flex-row md:items-center'>
                                 <div className='flex shrink-0 flex-nowrap items-center gap-2'>
                                     <img className='h-8 w-8 object-contain dark:invert' role='presentation' src={resolveAsset(template.ghostImage, adminRoot)} />
-                                    <ArrowRightIcon className='h-3 w-3' />
+                                    <Icon name="arrow-right" size="xs" />
                                     <img className='h-8 w-8 object-contain' role='presentation' src={resolveAsset(template.appImage, adminRoot)} />
                                 </div>
                                 <span className='text-sm'>{template.title}</span>

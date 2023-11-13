@@ -1,14 +1,12 @@
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './RecommendationDescriptionForm';
 import useForm from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
+import {ConfirmationModal, Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
 import {Recommendation, useDeleteRecommendation, useEditRecommendation} from '../../../../api/recommendations';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {dismissAllToasts, showToast} from '../../../../admin-x-ds/global/Toast';
 
 interface EditRecommendationModalProps {
     recommendation: Recommendation,
@@ -22,12 +20,16 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
     const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
     const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, saveState, errors, clearError, setErrors} = useForm({
+    const {formState, updateForm, handleSave, errors, clearError, setErrors, okProps} = useForm({
         initialState: {
             ...recommendation
         },
+        savingDelay: 500,
+        savedDelay: 500,
         onSave: async (state) => {
             await editRecommendation(state);
+        },
+        onSavedStateReset: () => {
             modal.remove();
             updateRoute('recommendations');
         },
@@ -45,14 +47,6 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
             return newErrors;
         }
     });
-
-    let okLabel = 'Save';
-
-    if (saveState === 'saving') {
-        okLabel = 'Saving...';
-    } else if (saveState === 'saved') {
-        okLabel = 'Saved';
-    }
 
     let leftButtonProps = {
         label: 'Delete',
@@ -94,20 +88,16 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         }}
         animate={animate ?? true}
         backDropClick={false}
+        buttonsDisabled={okProps.disabled}
         cancelLabel={'Cancel'}
         leftButtonProps={leftButtonProps}
-        okColor='black'
-        okLabel={okLabel}
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save & close'}
         size='sm'
         testId='edit-recommendation-modal'
         title={'Edit recommendation'}
         stickyFooter
         onOk={async () => {
-            if (saveState === 'saving') {
-                // Already saving
-                return;
-            }
-
             dismissAllToasts();
             try {
                 await handleSave({force: true});

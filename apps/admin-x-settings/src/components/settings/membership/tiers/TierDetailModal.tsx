@@ -1,28 +1,16 @@
-import Button, {ButtonProps} from '../../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import CurrencyField from '../../../../admin-x-ds/global/form/CurrencyField';
-import Form from '../../../../admin-x-ds/global/form/Form';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Icon from '../../../../admin-x-ds/global/Icon';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useEffect, useRef, useState} from 'react';
-import Select from '../../../../admin-x-ds/global/form/Select';
-import SortableList from '../../../../admin-x-ds/global/SortableList';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
+import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './TierDetailPreview';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
-import useForm from '../../../../hooks/useForm';
+import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
+import {Button, ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast} from '@tryghost/admin-x-design-system';
 import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {Tier, useAddTier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
 import {getSettingValues} from '../../../../api/settings';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
 import {toast} from 'react-hot-toast';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
@@ -41,20 +29,30 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const {localSettings, siteData} = useSettingGroup();
     const siteTitle = getSettingValues(localSettings, ['title']) as string[];
 
-    const [errors, setErrors] = useState<{ [key in keyof Tier]?: string }>({}); // eslint-disable-line no-unused-vars
-
-    const setError = (field: keyof Tier, error: string | undefined) => {
-        setErrors(errs => ({...errs, [field]: error}));
-        return error;
+    const validators: {[key in keyof Tier]?: () => string | undefined} = {
+        name: () => (formState.name ? undefined : 'You must specify a name'),
+        monthly_price: () => (formState.type !== 'free' ? validateCurrencyAmount(formState.monthly_price || 0, formState.currency, {allowZero: false}) : undefined),
+        yearly_price: () => (formState.type !== 'free' ? validateCurrencyAmount(formState.yearly_price || 0, formState.currency, {allowZero: false}) : undefined)
     };
 
-    const {formState, saveState, updateForm, handleSave} = useForm<TierFormState>({
+    const {formState, saveState, updateForm, handleSave, errors, setErrors, clearError, okProps} = useForm<TierFormState>({
         initialState: {
             ...(tier || {}),
             trial_days: tier?.trial_days?.toString() || '',
             currency: tier?.currency || currencies[0].isoCode,
             visibility: tier?.visibility || 'none',
             welcome_page_url: tier?.welcome_page_url || null
+        },
+        savingDelay: 500,
+        savedDelay: 500,
+        onValidate: () => {
+            const newErrors: ErrorMessages = {};
+
+            Object.entries(validators).forEach(([key, validator]) => {
+                newErrors[key as keyof Tier] = validator?.();
+            });
+
+            return newErrors;
         },
         onSave: async () => {
             const {trial_days: trialDays, currency, ...rest} = formState;
@@ -72,16 +70,22 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             } else {
                 await createTier(values);
             }
-
+        },
+        onSavedStateReset: () => {
             modal.remove();
+            updateRoute('tiers');
         },
         onSaveError: handleError
     });
 
-    const validators = {
-        name: () => setError('name', formState.name ? undefined : 'You must specify a name'),
-        monthly_price: () => formState.type !== 'free' && setError('monthly_price', validateCurrencyAmount(formState.monthly_price || 0, formState.currency, {allowZero: false})),
-        yearly_price: () => formState.type !== 'free' && setError('yearly_price', validateCurrencyAmount(formState.yearly_price || 0, formState.currency, {allowZero: false}))
+    const validateField = (key: string) => {
+        const error = validators[key as keyof Tier]?.();
+
+        if (error) {
+            setErrors({...errors, [key]: error});
+        } else {
+            clearError(key);
+        }
     };
 
     const benefits = useSortableIndexedList({
@@ -105,8 +109,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const didInitialRender = useRef(false);
     useEffect(() => {
         if (didInitialRender.current) {
-            validators.monthly_price();
-            validators.yearly_price();
+            validators.monthly_price?.();
+            validators.yearly_price?.();
         }
 
         didInitialRender.current = true;
@@ -117,7 +121,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             const promptTitle = tier.active ? 'Archive tier' : 'Reactivate tier';
             const prompt = tier.active ? <>
                 <div className='mb-6'>Members will no longer be able to subscribe to <strong>{tier.name}</strong> and it will be removed from the list of available tiers in portal.</div>
-                <div>Existing members on this tier will remain unchanged.</div>
+                <div>Existing members on this tier will remain unchanged. Offers using this tier will be disabled.</div>
             </> : <>
                 <div className='mb-6'>Reactivating <strong>{tier.name}</strong> will re-enable it as an option in portal and allow new members to subscribe to this tier.</div>
                 <div>Existing members will remain unchanged.</div>
@@ -164,9 +168,11 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         afterClose={() => {
             updateRoute('tiers');
         }}
+        buttonsDisabled={okProps.disabled}
         dirty={saveState === 'unsaved'}
         leftButtonProps={leftButtonProps}
-        okLabel='Save & close'
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save & close'}
         size='lg'
         testId='tier-detail-modal'
         title={(tier ? (tier.active ? 'Edit tier' : 'Edit archived tier') : 'New tier')}
@@ -174,21 +180,12 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         onOk={async () => {
             toast.remove();
 
-            if (Object.values(validators).filter(validator => validator()).length) {
+            if (!await handleSave({fakeWhenUnchanged: true})) {
                 showToast({
                     type: 'pageError',
                     message: 'Can\'t save tier, please double check that you\'ve filled all mandatory fields.'
                 });
                 return;
-            }
-
-            if (saveState !== 'unsaved') {
-                updateRoute('tiers');
-                modal.remove();
-            }
-
-            if (await handleSave()) {
-                updateRoute('tiers');
             }
         }}
     >
@@ -203,7 +200,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         title='Name'
                         value={formState.name || ''}
                         autoFocus
-                        onBlur={() => validators.name()}
+                        onBlur={() => validateField('name')}
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                     />}
                     <TextField
@@ -243,7 +240,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                         title='Monthly price'
                                         valueInCents={formState.monthly_price || ''}
                                         hideTitle
-                                        onBlur={() => validators.monthly_price()}
+                                        onBlur={() => validateField('monthly_price')}
                                         onChange={price => updateForm(state => ({...state, monthly_price: price}))}
                                     />
                                     <CurrencyField
@@ -254,7 +251,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                         title='Yearly price'
                                         valueInCents={formState.yearly_price || ''}
                                         hideTitle
-                                        onBlur={() => validators.yearly_price()}
+                                        onBlur={() => validateField('yearly_price')}
                                         onChange={price => updateForm(state => ({...state, yearly_price: price}))}
                                     />
                                 </div>

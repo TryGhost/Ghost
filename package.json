@@ -61,7 +61,8 @@
       "validator",
       "codemirror",
       "faker",
-      "ember-cli-code-coverage"
+      "ember-cli-code-coverage",
+      "ember-cli-terser"
     ],
     "ignorePaths": [
       "test",

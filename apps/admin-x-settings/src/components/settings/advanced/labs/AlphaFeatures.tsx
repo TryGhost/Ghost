@@ -1,7 +1,7 @@
 import FeatureToggle from './FeatureToggle';
 import LabItem from './LabItem';
-import List from '../../../../admin-x-ds/global/List';
 import React from 'react';
+import {List} from '@tryghost/admin-x-design-system';
 
 const features = [{
     title: 'URL cache',
@@ -52,9 +52,9 @@ const features = [{
     description: 'Set the List-Unsubscribe header in emails',
     flag: 'listUnsubscribeHeader'
 },{
-    title: 'Editor emoji picker',
-    description: <>Trigger an emoji picker when typing <code>{':{search}'}</code> in the editor</>,
-    flag: 'editorEmojiPicker'
+    title: 'AdminX Offers',
+    description: 'Enables the new offers UI in AdminX settings',
+    flag: 'adminXOffers'
 }];
 
 const AlphaFeatures: React.FC = () => {

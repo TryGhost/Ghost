@@ -1,10 +1,9 @@
 import EmbedSignupPreview from './EmbedSignupPreview';
 import EmbedSignupSidebar, {SelectedLabelTypes} from './EmbedSignupSidebar';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
 import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {MultiSelectOption} from '../../../../admin-x-ds/global/form/MultiSelect';
+import {Modal, MultiSelectOption} from '@tryghost/admin-x-design-system';
 import {MultiValue} from 'react-select';
 import {generateCode} from '../../../../utils/generateEmbedCode';
 import {getSettingValues} from '../../../../api/settings';
@@ -90,12 +89,12 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             }}
             cancelLabel=''
             footer={false}
-            maxHeight={645}
+            height={645}
             padding={false}
-            size={1120}
             testId='embed-signup-form'
             title=''
             topRightContent='close'
+            width={1120}
         >
             <div className='grid grid-cols-[5.2fr_2.8fr]'>
                 <EmbedSignupPreview

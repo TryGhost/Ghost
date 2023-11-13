@@ -1,17 +1,12 @@
 import BrandSettings, {BrandSettingValues} from './designAndBranding/BrandSettings';
-// import Button from '../../../admin-x-ds/global/Button';
-// import ChangeThemeModal from './ThemeModal';
-import Icon from '../../../admin-x-ds/global/Icon';
 import React, {useEffect, useState} from 'react';
-import StickyFooter from '../../../admin-x-ds/global/StickyFooter';
-import TabView, {Tab} from '../../../admin-x-ds/global/TabView';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
 import useHandleError from '../../../utils/api/handleError';
 import useRouting from '../../../hooks/useRouting';
 import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../api/customThemeSettings';
-import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
+import {Icon, PreviewModalContent, StickyFooter, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../api/settings';
 import {getHomepageUrl} from '../../../api/site';
 import {useBrowsePosts} from '../../../api/posts';
@@ -102,21 +97,23 @@ const DesignModal: React.FC = () => {
         saveState,
         handleSave,
         updateForm,
-        setFormState
+        setFormState,
+        okProps
     } = useForm({
         initialState: {
             settings: settings as Array<Setting & { dirty?: boolean }>,
             themeSettings: themeSettings ? (themeSettings.custom_theme_settings as Array<CustomThemeSetting & { dirty?: boolean }>) : undefined
         },
+        savingDelay: 500,
         onSave: async () => {
             if (formState.themeSettings?.some(setting => setting.dirty)) {
                 const response = await editThemeSettings(formState.themeSettings);
-                updateForm(state => ({...state, themeSettings: response.custom_theme_settings}));
+                setFormState(state => ({...state, themeSettings: response.custom_theme_settings}));
             }
 
             if (formState.settings.some(setting => setting.dirty)) {
                 const {settings: newSettings} = await editSettings(formState.settings.filter(setting => setting.dirty));
-                updateForm(state => ({...state, settings: newSettings}));
+                setFormState(state => ({...state, settings: newSettings}));
             }
         },
         onSaveError: handleError
@@ -215,12 +212,12 @@ const DesignModal: React.FC = () => {
         afterClose={() => {
             updateRoute('design');
         }}
-        buttonsDisabled={saveState === 'saving'}
+        buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         defaultTab='homepage'
         dirty={saveState === 'unsaved'}
-        okColor={saveState === 'saved' ? 'green' : 'black'}
-        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save')}
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save'}
         preview={previewContent}
         previewToolbarTabs={previewTabs}
         selectedURL={selectedPreviewTab}
@@ -231,7 +228,7 @@ const DesignModal: React.FC = () => {
         testId='design-modal'
         title='Design'
         onOk={async () => {
-            await handleSave();
+            await handleSave({fakeWhenUnchanged: true});
         }}
         onSelectURL={onSelectURL}
     />;

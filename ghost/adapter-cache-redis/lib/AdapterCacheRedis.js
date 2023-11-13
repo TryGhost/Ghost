@@ -13,6 +13,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {Number} [config.port] - redis port used in case no cache instance provided
      * @param {String} [config.password] - redis password used in case no cache instance provided
      * @param {Object} [config.clusterConfig] - redis cluster config used in case no cache instance provided
+     * @param {Object} [config.storeConfig] - extra redis client config used in case no cache instance provided
      * @param {Number} [config.ttl] - default cached value Time To Live (expiration) in *seconds*
      * @param {String} [config.keyPrefix] - prefix to use when building a unique cache key, e.g.: 'some_id:image-sizes:'
      * @param {Boolean} [config.reuseConnection] - specifies if the redis store/connection should be reused within the process
@@ -38,7 +39,9 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 ttl: config.ttl,
                 host: config.host,
                 port: config.port,
+                username: config.username,
                 password: config.password,
+                ...config.storeConfig,
                 clusterConfig: config.clusterConfig
             };
             const store = redisStoreFactory.getRedisStore(storeOptions, config.reuseConnection);

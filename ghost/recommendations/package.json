@@ -30,7 +30,7 @@
     "typescript": "5.2.2"
   },
   "dependencies": {
-    "@tryghost/tpl": "0.1.25",
+    "@tryghost/tpl": "0.1.26",
     "@tryghost/errors": "1.2.26",
     "@tryghost/in-memory-repository": "0.0.0",
     "@tryghost/bookshelf-repository": "0.0.0",
