@@ -13,7 +13,7 @@ interface TableViewProps {
 
 const TableView: React.FC<TableViewProps> = ({
     leftHeaderType = 'text',
-    leftHeaderTextSize = 5,
+    leftHeaderTextSize = 1,
     leftHeaderContent = '',
     selectedTab = '',
     onTabChange,

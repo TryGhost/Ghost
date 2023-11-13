@@ -24,7 +24,6 @@ type Story = StoryObj<typeof TableView>;
 export const Default: Story = {
     args: {
         leftHeaderType: 'text',
-        leftHeaderTextSize: 5,
         leftHeaderContent: 'Table view',
         children: 'This is a boilerplate component. Use as a basis to create new components.'
     }
