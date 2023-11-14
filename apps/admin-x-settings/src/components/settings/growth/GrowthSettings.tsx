@@ -7,10 +7,10 @@ import TipsOrDonations from './TipsOrDonations';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
 
 export const searchKeywords = {
-    tips: ['membership', 'tip', 'donation', 'one time', 'payment'],
-    embedSignupForm: ['membership', 'embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
-    recommendations: ['membership', 'recommendations', 'recommend', 'blogroll'],
-    offers: ['membership', 'offers', 'discounts', 'coupons', 'promotions']
+    tips: ['growth', 'tip', 'donation', 'one time', 'payment'],
+    embedSignupForm: ['growth', 'embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
+    recommendations: ['growth', 'recommendations', 'recommend', 'blogroll'],
+    offers: ['growth', 'offers', 'discounts', 'coupons', 'promotions']
 };
 
 const GrowthSettings: React.FC = () => {
