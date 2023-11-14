@@ -47,6 +47,7 @@ export interface NewslettersResponseType {
 }
 
 const dataType = 'NewslettersResponseType';
+export const newslettersDataType = dataType;
 
 export const useBrowseNewsletters = createInfiniteQuery<NewslettersResponseType & {isEnd: boolean}>({
     dataType,
