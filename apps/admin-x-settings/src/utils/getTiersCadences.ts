@@ -1,9 +1,9 @@
 import {SelectOption} from '@tryghost/admin-x-design-system';
-import {Tier} from '../api/tiers';
+import {Tier} from '@tryghost/admin-x-framework/api/tiers';
 
 export const getTiersCadences = (tiers: Tier[]): SelectOption[] => {
     const cadences: SelectOption[] = [];
-    
+
     tiers.forEach((tier: Tier) => {
         cadences.push({
             label: `${tier.name} - Monthly`,

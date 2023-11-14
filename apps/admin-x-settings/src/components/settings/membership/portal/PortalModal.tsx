@@ -5,15 +5,15 @@ import PortalPreview from './PortalPreview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './SignupOptions';
 import useForm, {Dirtyable} from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
 import useQueryParams from '../../../../hooks/useQueryParams';
-import useRouting from '../../../../hooks/useRouting';
 import {ConfirmationModal, PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../../api/settings';
-import {Tier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
-import {fullEmailAddress} from '../../../../api/site';
+import {Setting, SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
+import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {verifyEmailToken} from '../../../../api/emailVerification';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {verifyEmailToken} from '@tryghost/admin-x-framework/api/emailVerification';
 
 const Sidebar: React.FC<{
     localSettings: Setting[]

@@ -1,11 +1,11 @@
 import IntegrationHeader from './IntegrationHeader';
 import NiceModal from '@ebay/nice-modal-react';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
 import {Form, Modal, Toggle} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Icon} from '../../../../assets/icons/unsplash.svg';
-import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
+import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const UnsplashModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
