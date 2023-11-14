@@ -1,7 +1,7 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
-import {Button, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -17,6 +17,8 @@ const Sidebar: React.FC<{
         validate: () => void}> = ({clearError, errors, offer, updateOffer, validate}) => {
             const {siteData} = useGlobalData();
             const [isCopied, setIsCopied] = useState(false);
+            const handleError = useHandleError();
+            const {mutateAsync: editOffer} = useEditOffer();
 
             const offerUrl = `${getHomepageUrl(siteData!)}${offer?.code}`;
             const handleCopyClick = async () => {
@@ -27,6 +29,52 @@ const Sidebar: React.FC<{
                 } catch (err) {
                     // eslint-disable-next-line no-console
                     console.error('Failed to copy text: ', err);
+                }
+            };
+
+            const confirmStatusChange = async () => {
+                if (offer?.status === 'active') {
+                    NiceModal.show(ConfirmationModal, {
+                        title: 'Archive offer',
+                        prompt: <>
+                            <p>New members will no longer be able to subscribe using this offer.</p>
+                            <p>All members that previously redeemed <strong>{offer?.name}</strong> will remain unchanged.</p>
+                        </>,
+                        okLabel: 'Archive',
+                        okColor: 'red',
+                        onOk: async (modal) => {
+                            try {
+                                await editOffer({...offer, status: 'archived'});
+                                modal?.remove();
+                                showToast({
+                                    type: 'success',
+                                    message: 'Offer archived successfully'
+                                });
+                            } catch (e) {
+                                handleError(e);
+                            }
+                        }
+                    });
+                } else {
+                    NiceModal.show(ConfirmationModal, {
+                        title: 'Reactivate offer',
+                        prompt: <>
+                            <p>Reactivating <strong>{offer?.name}</strong> will allow new members to subscribe using this offer. Existing members will remain unchanged.</p>
+                        </>,
+                        okLabel: 'Reactivate',
+                        onOk: async (modal) => {
+                            try {
+                                await editOffer({...offer, status: 'active'});
+                                modal?.remove();
+                                showToast({
+                                    type: 'success',
+                                    message: 'Offer reactivated successfully'
+                                });
+                            } catch (e) {
+                                handleError(e);
+                            }
+                        }
+                    });
                 }
             };
 
@@ -81,6 +129,9 @@ const Sidebar: React.FC<{
                             </div>
                         </section>
                     </Form>
+                    <div className='mb-5 mt-10'>
+                        {offer?.status === 'active' ? <Button color='red' label='Archive offer' link onClick={confirmStatusChange} /> : <Button color='green' label='Reactivate offer' link onClick={confirmStatusChange} />}
+                    </div>
                 </div>
             );
         };
