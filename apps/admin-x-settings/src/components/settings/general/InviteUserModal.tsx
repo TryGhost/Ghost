@@ -1,13 +1,13 @@
 import NiceModal from '@ebay/nice-modal-react';
-import useHandleError from '../../../utils/api/handleError';
-import useRouting from '../../../hooks/useRouting';
 import validator from 'validator';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {Modal, Radio, TextField, showToast} from '@tryghost/admin-x-design-system';
-import {useAddInvite, useBrowseInvites} from '../../../api/invites';
-import {useBrowseRoles} from '../../../api/roles';
-import {useBrowseUsers} from '../../../api/users';
+import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
+import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
+import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useEffect, useRef, useState} from 'react';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';
 
@@ -176,9 +176,9 @@ const InviteUserModal = NiceModal.create(() => {
             }}
             cancelLabel=''
             okLabel={okLabel}
-            size={540}
             testId='invite-user-modal'
             title='Invite a new staff user'
+            width={540}
             onOk={handleSendInvitation}
         >
             <div className='flex flex-col gap-6 py-4'>

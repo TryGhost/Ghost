@@ -1,10 +1,10 @@
 import NiceModal from '@ebay/nice-modal-react';
 import WebhookModal from './WebhookModal';
-import useHandleError from '../../../../utils/api/handleError';
 import {Button, ConfirmationModal, Table, TableCell, TableHead, TableRow, showToast} from '@tryghost/admin-x-design-system';
-import {Integration} from '../../../../api/integrations';
+import {Integration} from '@tryghost/admin-x-framework/api/integrations';
 import {getWebhookEventLabel} from './webhookEventOptions';
-import {useDeleteWebhook} from '../../../../api/webhooks';
+import {useDeleteWebhook} from '@tryghost/admin-x-framework/api/webhooks';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
     const {mutateAsync: deleteWebhook} = useDeleteWebhook();

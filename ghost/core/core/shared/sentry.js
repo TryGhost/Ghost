@@ -39,7 +39,7 @@ if (sentryConfig && !sentryConfig.disabled) {
                 event.tags.type = exception.errorType;
                 event.tags.code = exception.code;
                 event.tags.id = exception.id;
-                event.tags.statusCode = exception.statusCode;
+                event.tags.status_code = exception.statusCode;
             }
             return event;
         }

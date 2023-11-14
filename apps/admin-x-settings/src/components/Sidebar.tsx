@@ -2,17 +2,17 @@ import GhostLogo from '../assets/images/orb-pink.png';
 import React, {useEffect, useRef} from 'react';
 import clsx from 'clsx';
 import useFeatureFlag from '../hooks/useFeatureFlag';
-import useRouting from '../hooks/useRouting';
 import {Button, Icon, SettingNavItem, SettingNavItemProps, SettingNavSection, TextField, useFocusContext} from '@tryghost/admin-x-design-system';
 import {searchKeywords as advancedSearchKeywords} from './settings/advanced/AdvancedSettings';
 import {searchKeywords as emailSearchKeywords} from './settings/email/EmailSettings';
 import {searchKeywords as generalSearchKeywords} from './settings/general/GeneralSettings';
-import {getSettingValues} from '../api/settings';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/MembershipSettings';
 import {searchKeywords as siteSearchKeywords} from './settings/site/SiteSettings';
 import {useGlobalData} from './providers/GlobalDataProvider';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext, useScrollSectionNav} from '../hooks/useScrollSection';
-import {useSearch} from './providers/ServiceProvider';
+import {useSearch} from './providers/SettingsAppProvider';
 
 const NavItem: React.FC<Omit<SettingNavItemProps, 'isVisible' | 'isCurrent'> & {keywords: string[]}> = ({keywords, navid, ...props}) => {
     const {ref, props: scrollProps} = useScrollSectionNav(navid);

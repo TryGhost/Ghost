@@ -1,5 +1,5 @@
-import useSortableIndexedList from '../useSortableIndexedList';
 import validator from 'validator';
+import {useSortableIndexedList} from '@tryghost/admin-x-design-system';
 
 export type NavigationItem = {
     label: string;
