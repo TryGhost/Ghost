@@ -3,12 +3,12 @@ import {MATCH_RELATION_OPTIONS} from './relation-options';
 export const SUBSCRIBED_FILTER = ({newsletters, feature, group}) => {
     if (feature.filterEmailDisabled) {
         return {
-            label: 'Newsletter subscription',
+            label: newsletters.length > 1 ? 'Newsletter subscriptions' : 'Newsletter subscription',
             name: 'subscribed',
             columnLabel: 'Subscribed',
             relationOptions: MATCH_RELATION_OPTIONS,
             valueType: 'options',
-            group,
+            group: newsletters.length > 1 ? 'Newsletters' : group,
             // Only show the filter for multiple newsletters if feature flag is enabled
             feature: newsletters.length > 1 ? 'filterEmailDisabled' : undefined,
             buildNqlFilter: (flt) => {
@@ -73,8 +73,10 @@ export const SUBSCRIBED_FILTER = ({newsletters, feature, group}) => {
                         };
                     }
 
-                    return {
-                        text: 'Email enabled'
+                    return member.newsletters.length > 0 ? {
+                        text: 'Subscribed'
+                    } : {
+                        text: 'Unsubscribed'
                     };
                 }
 
