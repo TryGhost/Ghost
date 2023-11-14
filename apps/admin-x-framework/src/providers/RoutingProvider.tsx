@@ -175,6 +175,13 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({basePath, externalNaviga
 
 export default RoutingProvider;
 
+/**
+ * Registers routes which will open modal dialogs. This should be called at most once per app.
+ *
+ * @param loadModals A function which imports the modal components - async to enable code splitting when there are many modals.
+ *                   The FIRST value of this will be used, it will NOT be checked and called again on future renders.
+ * @param paths A mapping of paths to modal names. The path can contain a parameter, e.g. 'staff/:id' will match 'staff/1' and 'staff/2'.
+ */
 export function useModalPaths<ModalName extends string>(
     loadModals: () => Promise<ModalsModule>,
     paths: {[key: string]: ModalName}
@@ -183,7 +190,7 @@ export function useModalPaths<ModalName extends string>(
 
     useEffect(() => {
         registerModals(loadModals, paths);
-    }, [loadModals, paths, registerModals]);
+    }, [paths, registerModals]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         // Preload all the modals after initial render to avoid a delay when opening them
@@ -197,17 +204,20 @@ export function useRouting() {
     return useContext(RouteContext);
 }
 
-export function useRouteChangeCallback(callback: (newPath: string, oldPath: string) => void) {
+export function useRouteChangeCallback(callback: (newPath: string, oldPath: string) => void, deps: React.DependencyList) {
     const {eventTarget} = useRouting();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const stableCallback = useCallback(callback, deps);
 
     useEffect(() => {
         const listener: EventListener = (e) => {
             const event = e as CustomEvent<{newPath: string, oldPath: string}>;
-            callback(event.detail.newPath, event.detail.oldPath);
+            stableCallback(event.detail.newPath, event.detail.oldPath);
         };
 
         eventTarget.addEventListener('routeChange', listener);
 
         return () => eventTarget.removeEventListener('routeChange', listener);
-    }, [eventTarget, callback]);
+    }, [eventTarget, stableCallback]);
 }

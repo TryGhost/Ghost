@@ -47,7 +47,7 @@ const SettingsRouter: React.FC = () => {
         if (newPath === oldPath) {
             scrollToSection(newPath.split('/')[0]);
         }
-    });
+    }, [scrollToSection]);
 
     useEffect(() => {
         if (route !== undefined) {

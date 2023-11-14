@@ -2,9 +2,31 @@ import {DesignSystemApp, DesignSystemAppProps} from '@tryghost/admin-x-design-sy
 import {ReactNode} from 'react';
 import FrameworkProvider, {FrameworkProviderProps} from './FrameworkProvider';
 
-const AdminXApp: React.FC<FrameworkProviderProps & DesignSystemAppProps & {children: ReactNode}> = ({children, ...props}) => {
+const AdminXApp: React.FC<FrameworkProviderProps & DesignSystemAppProps & {children: ReactNode}> = ({
+    basePath,
+    ghostVersion,
+    externalNavigate,
+    unsplashConfig,
+    sentryDSN,
+    onUpdate,
+    onInvalidate,
+    onDelete,
+    children,
+    ...props
+}) => {
+    const frameworkProps = {
+        basePath,
+        ghostVersion,
+        externalNavigate,
+        unsplashConfig,
+        sentryDSN,
+        onUpdate,
+        onInvalidate,
+        onDelete
+    };
+
     return (
-        <FrameworkProvider {...props}>
+        <FrameworkProvider {...frameworkProps}>
             <DesignSystemApp {...props}>
                 {children}
             </DesignSystemApp>
