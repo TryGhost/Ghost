@@ -34,6 +34,7 @@ const preview: Preview = {
 			<div className={`admin-x-design-system admin-x-base ${scheme === 'dark' ? 'dark' : ''}`} style={{
 				padding: '24px',
 				width: 'unset',
+				height: 'unset',
 				background: (scheme === 'dark' ? '#131416' : '')
 			}}>
 				{/* 👇 Decorators in Storybook also accept a function. Replace <Story/> with Story() to enable it  */}

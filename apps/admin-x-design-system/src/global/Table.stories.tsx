@@ -1,7 +1,7 @@
 import type {Meta, StoryObj} from '@storybook/react';
 import {ReactNode} from 'react';
 
-import {useSortableIndexedList} from '..';
+import {Avatar, useSortableIndexedList} from '..';
 import SortableList, {DragIndicator, SortableItemContainerProps} from './SortableList';
 import Table from './Table';
 import TableCell from './TableCell';
@@ -151,4 +151,94 @@ const SortableTable = () => {
  */
 export const Sortable: Story = {
     render: () => <SortableTable />
+};
+
+/**
+ * Sticky header
+ */
+
+const complexTableHeader = (sticky: boolean) => (
+    <>
+        <TableHead sticky={sticky}>Member</TableHead>
+        <TableHead sticky={sticky}>Status</TableHead>
+        <TableHead sticky={sticky}>Open rate</TableHead>
+        <TableHead sticky={sticky}>Location</TableHead>
+        <TableHead sticky={sticky}>Created</TableHead>
+        <TableHead sticky={sticky}>Signed up on post</TableHead>
+        <TableHead sticky={sticky}>Newsletter</TableHead>
+        <TableHead sticky={sticky}>Billing Period</TableHead>
+        <TableHead sticky={sticky}>Email sent</TableHead>
+    </>
+);
+
+const complexTableRows = (rows: number) => {
+    const data = [];
+    for (let i = 0; i < rows; i++) {
+        data.push(
+            <>
+                <TableRow>
+                    <TableCell>
+                        <div className='flex items-center gap-2'>
+                            {i % 3 === 0 && <Avatar bgColor='green' label='JL' labelColor='white' />}
+                            {i % 3 === 1 && <Avatar bgColor='orange' label='GS' labelColor='white' />}
+                            {i % 3 === 2 && <Avatar bgColor='black' label='ZB' labelColor='white' />}
+                            <div>
+                                {i % 3 === 0 && <div className='whitespace-nowrap'>Jamie Larson</div>}
+                                {i % 3 === 1 && <div className='whitespace-nowrap'>Giana Septimus</div>}
+                                {i % 3 === 2 && <div className='whitespace-nowrap'>Zaire Bator</div>}
+                                <div className='text-sm text-grey-700'>jamie@larson.com</div>
+                            </div>
+                        </div>
+                    </TableCell>
+                    <TableCell className='whitespace-nowrap' valign='center'>Free</TableCell>
+                    <TableCell className='whitespace-nowrap' valign='center'>40%</TableCell>
+                    <TableCell className='whitespace-nowrap' valign='center'>London, UK</TableCell>
+                    <TableCell className='whitespace-nowrap' valign='center'>22 June 2023</TableCell>
+                    <TableCell className='whitespace-nowrap' valign='center'>Hiking in the Nordic</TableCell>
+                    <TableCell className='whitespace-nowrap' valign='center'>Subscribed</TableCell>
+                    <TableCell className='whitespace-nowrap' valign='center'>Monthly</TableCell>
+                    <TableCell className='whitespace-nowrap' valign='center'>1,303</TableCell>
+                </TableRow>
+            </>
+        );
+    }
+    return data;
+};
+
+export const HorizontalScroll: Story = {
+    args: {
+        header: complexTableHeader(false),
+        children: complexTableRows(100),
+        hint: 'Massive table',
+        hintSeparator: true
+    }
+};
+
+export const FillContainer: Story = {
+    args: {
+        fillContainer: true,
+        header: complexTableHeader(true),
+        children: complexTableRows(50),
+        hint: 'Massive table',
+        hintSeparator: true
+    }
+};
+
+export const FillSmallerContainer: Story = {
+    decorators: [(_story: () => ReactNode) => (
+        <div className='absolute inset-0 p-10'>
+            <div className='flex h-full flex-col'>
+                <h1 className='mb-3'>Page title</h1>
+                <p className='max-w-2xl pb-6'>This example shows how you can create a page with arbitrary content on the top and a large table at the bottom that fills up the remaining space. The table has a sticky header row, a footer that is always visible and scrolling vertically and horizontally (resize the window to see the effect).</p>
+                <div className='relative flex-auto'>{_story()}</div>
+            </div>
+        </div>
+    )],
+    args: {
+        fillContainer: true,
+        header: complexTableHeader(true),
+        children: complexTableRows(50),
+        hint: 'Massive table',
+        hintSeparator: true
+    }
 };
