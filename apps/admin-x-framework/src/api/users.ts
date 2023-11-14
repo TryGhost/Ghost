@@ -1,6 +1,7 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createMutation, createQuery} from '../utils/api/hooks';
+import {Meta, createInfiniteQuery, createMutation} from '../utils/api/hooks';
 import {deleteFromQueryCache, updateQueryCache} from '../utils/api/updateQueries';
+import {usersDataType} from './currentUser';
 import {UserRole} from './roles';
 
 // Types
@@ -62,7 +63,7 @@ export interface DeleteUserResponse {
 
 // Requests
 
-const dataType = 'UsersResponseType';
+const dataType = usersDataType;
 
 export const useBrowseUsers = createInfiniteQuery<UsersResponseType & {isEnd: boolean}>({
     dataType,
@@ -83,13 +84,6 @@ export const useBrowseUsers = createInfiniteQuery<UsersResponseType & {isEnd: bo
             isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
-});
-
-export const useCurrentUser = createQuery<User>({
-    dataType,
-    path: '/users/me/',
-    defaultSearchParams: {include: 'roles'},
-    returnData: originalData => (originalData as UsersResponseType).users?.[0]
 });
 
 export const useEditUser = createMutation<UsersResponseType, User>({
