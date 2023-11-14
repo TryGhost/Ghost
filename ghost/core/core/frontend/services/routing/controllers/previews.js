@@ -27,8 +27,6 @@ module.exports = function previewController(req, res, next) {
         .then(function then(result) {
             const post = result[res.routerOptions.query.resource][0];
 
-            console.log(`~~~ preview router controller`);
-
             if (!post) {
                 return next();
             }
