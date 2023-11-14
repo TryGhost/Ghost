@@ -160,48 +160,6 @@ test.describe('Editor keyboard shortcuts', async () => {
         `);
     });
 
-    test('heading cycle', async function () {
-        await focusEditor(page);
-
-        await page.keyboard.type('test');
-
-        await page.keyboard.press(`${ctrlOrCmdKey}+h`);
-
-        await assertHTML(page, html`
-            <h2 dir="ltr"><span data-lexical-text="true">test</span></h2>
-        `);
-
-        await page.keyboard.press(`${ctrlOrCmdKey}+h`);
-
-        await assertHTML(page, html`
-            <h3 dir="ltr"><span data-lexical-text="true">test</span></h3>
-        `);
-
-        await page.keyboard.press(`${ctrlOrCmdKey}+h`);
-
-        await assertHTML(page, html`
-            <h4 dir="ltr"><span data-lexical-text="true">test</span></h4>
-        `);
-
-        await page.keyboard.press(`${ctrlOrCmdKey}+h`);
-
-        await assertHTML(page, html`
-            <h5 dir="ltr"><span data-lexical-text="true">test</span></h5>
-        `);
-
-        await page.keyboard.press(`${ctrlOrCmdKey}+h`);
-
-        await assertHTML(page, html`
-            <h6 dir="ltr"><span data-lexical-text="true">test</span></h6>
-        `);
-
-        await page.keyboard.press(`${ctrlOrCmdKey}+h`);
-
-        await assertHTML(page, html`
-            <p dir="ltr"><span data-lexical-text="true">test</span></p>
-        `);
-    });
-
     test('specific heading', async function () {
         await focusEditor(page);
 

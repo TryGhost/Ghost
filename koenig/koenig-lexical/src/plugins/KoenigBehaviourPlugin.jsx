@@ -2,7 +2,7 @@ import React from 'react';
 import {$createAsideNode, $isAsideNode} from '../nodes/AsideNode';
 import {$createCodeBlockNode} from '../nodes/CodeBlockNode';
 import {$createEmbedNode} from '../nodes/EmbedNode';
-import {$createHeadingNode, $createQuoteNode, $isHeadingNode, $isQuoteNode} from '@lexical/rich-text';
+import {$createHeadingNode, $createQuoteNode, $isQuoteNode} from '@lexical/rich-text';
 import {$createLinkNode, $isLinkNode} from '@lexical/link';
 import {
     $createNodeSelection,
@@ -853,36 +853,12 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         }
                     }
 
-                    // Ctrl/Cmd+H to toggle heading
                     // Ctrl+Option+H to toggle highlight
-                    if ((metaKey || ctrlKey) && code === 'KeyH') {
-                        // avoid hide behaviour
-                        event.preventDefault();
-
+                    if (ctrlKey && altKey && code === 'KeyH') {
                         // highlight
-                        if (altKey) {
-                            editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'highlight');
-                        // heading
-                        } else {
-                            const selection = $getSelection();
-                            if ($isRangeSelection(selection)) {
-                                const firstNode = selection.anchor.getNode().getTopLevelElement();
-
-                                if ($isParagraphNode(firstNode)) {
-                                    $setBlocksType(selection, () => $createHeadingNode('h2'));
-                                } else if ($isHeadingNode(firstNode)) {
-                                    const tag = firstNode.getTag();
-                                    const level = parseInt(tag.slice(1), 10);
-                                    const newLevel = level + 1;
-
-                                    if (newLevel > 6) {
-                                        $setBlocksType(selection, () => $createParagraphNode());
-                                    } else {
-                                        $setBlocksType(selection, () => $createHeadingNode(`h${newLevel}`));
-                                    }
-                                }
-                            }
-                        }
+                        event.preventDefault();
+                        editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'highlight');
+                        return true;
                     }
 
                     if (ctrlKey && altKey && key.match(/^[1-6]$/)) {
@@ -967,7 +943,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                             // see https://github.com/facebook/lexical/issues/5226
                             // upstream bug with firefox only
                             if (
-                                atStartOfElement && 
+                                atStartOfElement &&
                                 $isLinkNode(anchorNode.getPreviousSibling())
                             ) {
                                 const linkNode = anchorNode.getPreviousSibling();
