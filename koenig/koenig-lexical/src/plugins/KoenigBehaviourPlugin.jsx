@@ -854,7 +854,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     }
 
                     // Ctrl+Option+H to toggle highlight
-                    if (ctrlKey && altKey && code === 'KeyH') {
+                    if ((ctrlKey || metaKey) && altKey && code === 'KeyH') {
                         // highlight
                         event.preventDefault();
                         editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'highlight');
