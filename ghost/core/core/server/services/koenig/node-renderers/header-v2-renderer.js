@@ -1,7 +1,8 @@
 import {addCreateDocumentOption} from '../../../../utils/add-create-document-option';
 import {slugify} from '../../../../utils/slugify';
+import {getSrcsetAttribute} from '../../../../utils/srcset-attribute';
 
-function cardTemplate(nodeData) {
+function cardTemplate(nodeData, options = {}) {
     const cardClasses = getCardClasses(nodeData).join(' ');
 
     const backgroundAccent = nodeData.backgroundColor === 'accent' ? 'kg-style-accent' : '';
@@ -10,9 +11,21 @@ function cardTemplate(nodeData) {
     const alignment = nodeData.alignment === 'center' ? 'kg-align-center' : '';
     const backgroundImageStyle = nodeData.backgroundColor !== 'accent' && (!nodeData.backgroundImageSrc || nodeData.layout === 'split') ? `background-color: ${nodeData.backgroundColor}` : '';
 
-    const imgTemplate = nodeData.backgroundImageSrc ? `
-        <picture><img class="kg-header-card-image" src="${nodeData.backgroundImageSrc}" loading="lazy" alt="" /></picture>
-    ` : ``;
+    let imgTemplate = '';
+    if (nodeData.backgroundImageSrc) {
+        const bgImage = {
+            src: nodeData.backgroundImageSrc,
+            width: nodeData.backgroundImageWidth,
+            height: nodeData.backgroundImageHeight
+        };
+
+        const srcsetValue = getSrcsetAttribute({...bgImage, options});
+        const srcset = srcsetValue ? `srcset="${srcsetValue}"` : '';
+
+        imgTemplate = `
+            <picture><img class="kg-header-card-image" src="${bgImage.src}" ${srcset} loading="lazy" alt="" /></picture>
+        `;
+    }
 
     const header = () => {
         if (nodeData.header) {
@@ -34,8 +47,11 @@ function cardTemplate(nodeData) {
         }
         return '';
     };
+
+    const wrapperStyle = backgroundImageStyle ? `style="${backgroundImageStyle};"` : '';
+
     return `
-        <div class="${cardClasses} ${backgroundAccent}" style="${backgroundImageStyle};" data-background-color="${nodeData.backgroundColor}">
+        <div class="${cardClasses} ${backgroundAccent}" ${wrapperStyle} data-background-color="${nodeData.backgroundColor}">
             ${nodeData.layout !== 'split' ? imgTemplate : ''}
             <div class="kg-header-card-content">
                 ${nodeData.layout === 'split' ? imgTemplate : ''}
@@ -85,6 +101,8 @@ export function renderHeaderNodeV2(dataset, options = {}) {
         header: dataset.__header,
         subheader: dataset.__subheader,
         backgroundImageSrc: dataset.__backgroundImageSrc,
+        backgroundImageWidth: dataset.__backgroundImageWidth,
+        backgroundImageHeight: dataset.__backgroundImageHeight,
         backgroundSize: dataset.__backgroundSize,
         backgroundColor: dataset.__backgroundColor,
         buttonColor: dataset.__buttonColor,
@@ -99,13 +117,13 @@ export function renderHeaderNodeV2(dataset, options = {}) {
         const emailDoc = options.createDocument();
         const emailDiv = emailDoc.createElement('div');
 
-        emailDiv.innerHTML = emailTemplate(node)?.trim();
+        emailDiv.innerHTML = emailTemplate(node, options)?.trim();
 
         return {element: emailDiv.firstElementChild};
         // return {element: document.createElement('div')}; // TODO
     }
 
-    const htmlString = cardTemplate(node);
+    const htmlString = cardTemplate(node, options);
 
     const element = document.createElement('div');
     element.innerHTML = htmlString?.trim();
