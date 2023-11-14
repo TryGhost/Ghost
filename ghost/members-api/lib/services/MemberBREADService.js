@@ -242,7 +242,7 @@ module.exports = class MemberBREADService {
 
         const suppressionData = await this.emailSuppressionList.getSuppressionData(member.email);
         member.email_suppression = {
-            suppressed: suppressionData.suppressed,
+            suppressed: suppressionData.suppressed || !!model.get('email_disabled'),
             info: suppressionData.info
         };
 
@@ -401,11 +401,10 @@ module.exports = class MemberBREADService {
         const subscriptions = page.data.flatMap(model => model.related('stripeSubscriptions').slice());
         const offerMap = await this.fetchSubscriptionOffers(subscriptions);
 
-        const members = page.data.map(model => model.toJSON(options));
+        const bulkSuppressionData = await this.emailSuppressionList.getBulkSuppressionData(page.data.map(member => member.get('email')));
 
-        const bulkSuppressionData = await this.emailSuppressionList.getBulkSuppressionData(members.map(member => member.email));
-
-        const data = members.map((member, index) => {
+        const data = page.data.map((model, index) => {
+            const member = model.toJSON(options);
             member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
             this.attachSubscriptionsToMember(member);
             this.attachOffersToSubscriptions(member, offerMap);
@@ -413,7 +412,7 @@ module.exports = class MemberBREADService {
                 delete member.products;
             }
             member.email_suppression = {
-                suppressed: bulkSuppressionData[index].suppressed,
+                suppressed: bulkSuppressionData[index].suppressed || !!model.get('email_disabled'),
                 info: bulkSuppressionData[index].info
             };
             return member;
