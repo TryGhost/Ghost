@@ -4,13 +4,13 @@ import type {RoutingModalProps} from '../RoutingProvider';
 import AboutModal from '../../settings/general/About';
 import AddIntegrationModal from '../../settings/advanced/integrations/AddIntegrationModal';
 import AddNewsletterModal from '../../settings/email/newsletters/AddNewsletterModal';
-import AddOfferModal from '../../settings/membership/offers/AddOfferModal';
+// import AddOfferModal from '../../settings/membership/offers/AddOfferModal';
 import AddRecommendationModal from '../../settings/membership/recommendations/AddRecommendationModal';
 import AmpModal from '../../settings/advanced/integrations/AmpModal';
 import AnnouncementBarModal from '../../settings/site/AnnouncementBarModal';
 import CustomIntegrationModal from '../../settings/advanced/integrations/CustomIntegrationModal';
 import DesignAndThemeModal from '../../settings/site/DesignAndThemeModal';
-import EditOfferModal from '../../settings/membership/offers/EditOfferModal';
+// import EditOfferModal from '../../settings/membership/offers/EditOfferModal';
 import EditRecommendationModal from '../../settings/membership/recommendations/EditRecommendationModal';
 import EmbedSignupFormModal from '../../settings/membership/embedSignup/EmbedSignupFormModal';
 import FirstpromoterModal from '../../settings/advanced/integrations/FirstPromoterModal';
@@ -52,8 +52,8 @@ const modals = {
     AnnouncementBarModal,
     EmbedSignupFormModal,
     OffersModal,
-    AddOfferModal,
-    EditOfferModal,
+    // AddOfferModal,
+    // EditOfferModal,
     AboutModal
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } satisfies {[key: string]: ModalComponent<any>};

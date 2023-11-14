@@ -1,19 +1,34 @@
+import AddOfferModal from './AddOfferModal';
+import EditOfferModal from './EditOfferModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
-import {Button, Modal, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {Tier, getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
+import {Button, Modal} from '@tryghost/admin-x-design-system';
+import {OffersList} from './OffersList';
+import {Tier} from '../../../../api/tiers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {numberWithCommas} from '../../../../utils/helpers';
-import {useBrowseOffers} from '../../../../api/offers';
 import {useEffect, useState} from 'react';
-
-export type OfferType = 'percent' | 'fixed' | 'trial';
 
 const createRedemptionFilterUrl = (id: string): string => {
     const baseHref = '/ghost/#/members';
     return `${baseHref}?filter=${encodeURIComponent('offer_redemptions:' + id)}`;
 };
+
+export type OfferType = 'percent' | 'fixed' | 'trial';
+
+export type OfferCardProps = {
+    amount: number;
+    cadence: string;
+    currency: string;
+    duration: string;
+    name: string;
+    offerId: string;
+    offerTier: Tier | undefined;
+    redemptionCount: number;
+    type: OfferType;
+    onClick: () => void;
+  };
 
 const OfferCard: React.FC<{amount: number, cadence: string, currency: string, duration: string, name: string, offerId: string, offerTier: Tier | undefined, redemptionCount: number, type: OfferType, onClick: ()=>void}> = ({amount, cadence, currency, duration, name, offerId, offerTier, redemptionCount, type, onClick}) => {
     let discountColor = '';
@@ -67,13 +82,10 @@ const OffersModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const hasOffers = useFeatureFlag('adminXOffers');
-    const {data: {offers: allOffers = []} = {}} = useBrowseOffers({
-        searchParams: {
-            limit: 'all'
-        }
-    });
-    const {data: {tiers: allTiers} = {}} = useBrowseTiers();
-    const paidActiveTiers = getPaidActiveTiers(allTiers || []);
+
+    const [viewState, setViewState] = useState<'list' | 'add' | 'edit'>('list');
+
+    const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
 
     useEffect(() => {
         if (!hasOffers) {
@@ -82,16 +94,12 @@ const OffersModal = () => {
         }
     }, [hasOffers, modal, updateRoute]);
 
-    let offersTabs: Tab[] = [
-        {id: 'active', title: 'Active'},
-        {id: 'archived', title: 'Archived'}
-    ];
-    const [selectedTab, setSelectedTab] = useState('active');
+    const toggleViewState = (state: 'list' | 'add' | 'edit') => {
+        setViewState(state);
+    };
 
-    const handleOfferEdit = (id:string) => {
-        // TODO: implement
-        modal.remove();
-        updateRoute(`offers/${id}`);
+    const selectOffer = (id: string) => {
+        setSelectedOfferId(id);
     };
 
     return <Modal
@@ -100,7 +108,7 @@ const OffersModal = () => {
         }}
         cancelLabel=''
         footer={
-            <div className='mx-8 flex w-full items-center justify-between'>
+            viewState === 'list' && <div className='mx-8 flex w-full items-center justify-between'>
                 <a className='text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
                 <Button color='black' label='Close' onClick={() => {
                     modal.remove();
@@ -110,49 +118,18 @@ const OffersModal = () => {
         }
         header={false}
         size='lg'
+        stickyFooter={viewState === 'list'}
         testId='offers-modal'
-        stickyFooter
     >
-        <div className='pt-6'>
-            <header>
-                <div className='flex items-center justify-between'>
-                    <TabView
-                        border={false}
-                        selectedTab={selectedTab}
-                        tabs={offersTabs}
-                        width='wide'
-                        onTabChange={setSelectedTab}
-                    />
-                    <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
-                </div>
-                <h1 className='mt-12 border-b border-b-grey-300 pb-2.5 text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
-            </header>
-            <div className='mt-8 grid grid-cols-3 gap-6'>
-                {allOffers.filter(offer => offer.status === selectedTab).map((offer) => {
-                    const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
-
-                    if (!offerTier) {
-                        return null;
-                    }
-
-                    return (
-                        <OfferCard
-                            key={offer?.id}
-                            amount={offer?.amount}
-                            cadence={offer?.cadence}
-                            currency={offer?.currency || 'USD'}
-                            duration={offer?.duration}
-                            name={offer?.name}
-                            offerId={offer?.id}
-                            offerTier={offerTier}
-                            redemptionCount={offer?.redemption_count}
-                            type={offer?.type as OfferType}
-                            onClick={() => handleOfferEdit(offer?.id)}
-                        />
-                    );
-                })}
-            </div>
-        </div>
+        {
+            viewState === 'list' && <OffersList OfferCard={OfferCard} SelectOffer={selectOffer} ToggleViewState={toggleViewState} />
+        }
+        {
+            viewState === 'add' && <AddOfferModal onBack={toggleViewState}/>
+        }
+        {
+            (viewState === 'edit' && selectedOfferId) && <EditOfferModal id={selectedOfferId} onBack={toggleViewState} />
+        }
     </Modal>;
 };
 

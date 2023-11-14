@@ -1,4 +1,3 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalFrame from '../portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useRouting from '../../../../hooks/useRouting';
@@ -186,7 +185,11 @@ const parseData = (input: string): { id: string; period: string; currency: strin
     return {id, period, currency};
 };
 
-const AddOfferModal = () => {
+type AddOfferModalProps = {
+    onBack: (view: 'list') => void;
+};
+
+const AddOfferModal: React.FC<AddOfferModalProps> = ({onBack}) => {
     const {siteData} = useGlobalData();
     const typeOptions = [
         {title: 'Discount', description: 'Offer a special reduced price', value: 'percent'},
@@ -200,7 +203,7 @@ const AddOfferModal = () => {
     ];
 
     const [href, setHref] = useState<string>('');
-    const modal = useModal();
+    // const modal = useModal();
     const {updateRoute} = useRouting();
     const hasOffers = useFeatureFlag('adminXOffers');
     const {data: {tiers} = {}} = useBrowseTiers();
@@ -340,17 +343,23 @@ const AddOfferModal = () => {
         });
     };
 
+    // useEffect(() => {
+    //     if (!hasOffers) {
+    //         modal.remove();
+    //         updateRoute('');
+    //     }
+    // }, [hasOffers, modal, updateRoute]);
+
+    // const cancelAddOffer = () => {
+    //     modal.remove();
+    //     updateRoute('offers/edit');
+    // };
+
     useEffect(() => {
         if (!hasOffers) {
-            modal.remove();
             updateRoute('');
         }
-    }, [hasOffers, modal, updateRoute]);
-
-    const cancelAddOffer = () => {
-        modal.remove();
-        updateRoute('offers/edit');
-    };
+    }, [updateRoute, hasOffers]);
 
     useEffect(() => {
         const newHref = getOfferPortalPreviewUrl(overrides, siteData.url);
@@ -377,7 +386,9 @@ const AddOfferModal = () => {
         href={href}
     />;
 
-    return <PreviewModalContent cancelLabel='Cancel' deviceSelector={false} okLabel='Publish' preview={iframe} sidebar={sidebar} size='full' title='Offer' onCancel={cancelAddOffer} />;
+    return <PreviewModalContent cancelLabel='Cancel' deviceSelector={false} okLabel='Publish' preview={iframe} sidebar={sidebar} size='full' title='Offer' onCancel={() => {
+        onBack('list');
+    }} />;
 };
 
-export default NiceModal.create(AddOfferModal);
+export default AddOfferModal;

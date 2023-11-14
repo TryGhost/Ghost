@@ -1,11 +1,11 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+// import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import useHandleError from '../../../../utils/api/handleError';
 import useRouting from '../../../../hooks/useRouting';
 import {Button, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {Offer, useBrowseOffersById, useEditOffer} from '../../../../api/offers';
-import {RoutingModalProps} from '../../../providers/RoutingProvider';
+// import {RoutingModalProps} from '../../../providers/RoutingProvider';
 import {getHomepageUrl} from '../../../../api/site';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
@@ -86,8 +86,13 @@ const Sidebar: React.FC<{
             );
         };
 
-const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
-    const modal = useModal();
+type EditOfferProps = {
+    id: string,
+    onBack: (view: 'list') => void;
+};
+
+const EditOfferModal: React.FC<EditOfferProps> = ({id, onBack}) => {
+    // const modal = useModal();
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
     const hasOffers = useFeatureFlag('adminXOffers');
@@ -95,12 +100,12 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
 
     useEffect(() => {
         if (!hasOffers) {
-            modal.remove();
+            // modal.remove();
             updateRoute('');
         }
-    }, [hasOffers, modal, updateRoute]);
+    }, [hasOffers, updateRoute]);
 
-    const {data: {offers: offerById = []} = {}} = useBrowseOffersById(params?.id ? params?.id : '');
+    const {data: {offers: offerById = []} = {}} = useBrowseOffersById(id ? id : '');
 
     const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError, okProps} = useForm({
         initialState: offerById[0],
@@ -126,7 +131,7 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
 
     useEffect(() => {
         setFormState(() => offerById[0]);
-    }, [setFormState, offerById[0]]);
+    }, [setFormState, offerById]);
 
     const updateOffer = (fields: Partial<Offer>) => {
         updateForm(state => ({...state, ...fields}));
@@ -149,8 +154,8 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         testId='offer-update-modal'
         title='Offer'
         onCancel={() => {
-            modal.remove();
-            updateRoute('offers/edit');
+            // modal.remove();
+            onBack('list');
         }}
         onOk={async () => {
             if (!(await handleSave({fakeWhenUnchanged: true}))) {
@@ -162,4 +167,4 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         }} /> : null;
 };
 
-export default NiceModal.create(EditOfferModal);
+export default EditOfferModal;
