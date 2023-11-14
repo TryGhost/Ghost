@@ -90,6 +90,14 @@ describe('Frontend Routing: Preview Routes', function () {
             .expect(assertCorrectFrontendHeaders);
     });
 
+    it.only('should redirect sent email-only posts to /email/:uuid from /p/:uuid', async function () {
+        await request.get('/p/c1ed3153-27de-4430-888a-8fd81b47a1dc/')
+            .expect(301)
+            .expect('Location', '/email/c1ed3153-27de-4430-888a-8fd81b47a1dc/')
+            .expect('Cache-Control', testUtils.cacheRules.year)
+            .expect(assertCorrectFrontendHeaders);
+    });
+
     it('404s unknown uuids', async function () {
         request.get('/p/aac6b4f6-e1f3-406c-9247-c94a0496d39f/')
             .expect(404)

@@ -91,6 +91,20 @@ DataGenerator.Content = {
             mobiledoc: DataGenerator.markdownToMobiledoc('<h1>Welcome to my invisible post!</h1>'),
             status: 'scheduled',
             published_at: moment().add(2, 'days').toDate()
+        },
+        {
+            id: '6553a44eb0468c133aee9aa5',
+            uuid: 'c1ed3153-27de-4430-888a-8fd81b47a1dc',
+            title: 'Newsletter only',
+            slug: 'newsletter-only',
+            html: '<p>free</p><!--members-only--><p>paid</p>',
+            status: 'sent',
+            created_at: '2023-11-14T16:46:06.000Z',
+            updated_at: '2023-11-14T16:46:19.000Z',
+            published_at: '2023-11-14T16:46:19.000Z',
+            email_only: true,
+            type: 'post',
+            url: 'http://localhost:2368/email/c1ed3153-27de-4430-888a-8fd81b47a1dc/'
         }
     ],
 
@@ -360,6 +374,15 @@ DataGenerator.Content = {
             email: 'with-product@test.com',
             name: 'Dana Barrett',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b347',
+            status: 'paid',
+            subscribed: false,
+            email_disabled: false
+        },
+        {
+            id: ObjectId().toHexString(),
+            email: 'test2@test.com',
+            name: 'Mister Mister',
+            uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b348',
             status: 'paid',
             subscribed: false,
             email_disabled: false
@@ -1032,7 +1055,7 @@ DataGenerator.forKnex = (function () {
             mobiledocObj = JSON.parse(newObj.mobiledoc);
             newObj.html = mobiledocObj.cards && mobiledocObj.cards[0][1].markdown;
         }
-
+        
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
             uuid: uuid.v4(),
@@ -1405,7 +1428,8 @@ DataGenerator.forKnex = (function () {
         createPost(DataGenerator.Content.posts[4]),
         createPost(DataGenerator.Content.posts[5]),
         createPost(DataGenerator.Content.posts[6]),
-        createPost(DataGenerator.Content.posts[7])
+        createPost(DataGenerator.Content.posts[7]),
+        createPost(DataGenerator.Content.posts[8])
     ];
 
     const tags = [
@@ -1637,6 +1661,12 @@ DataGenerator.forKnex = (function () {
             post_id: DataGenerator.Content.posts[7].id,
             author_id: DataGenerator.Content.users[0].id,
             sort_order: 0
+        },
+        {
+            id: ObjectId().toHexString(),
+            post_id: DataGenerator.Content.posts[8].id,
+            author_id: DataGenerator.Content.users[0].id,
+            sort_order: 0
         }
     ];
 
@@ -1724,7 +1754,8 @@ DataGenerator.forKnex = (function () {
         createMember(DataGenerator.Content.members[4]),
         createMember(DataGenerator.Content.members[5]),
         createMember(DataGenerator.Content.members[6]),
-        createMember(DataGenerator.Content.members[7])
+        createMember(DataGenerator.Content.members[7]),
+        createMember(DataGenerator.Content.members[8])
     ];
 
     const members_created_events = members.map((member, index) => {

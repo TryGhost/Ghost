@@ -53,6 +53,8 @@ const fixtures = {
                     post.tags = postTagRelations;
                     post.authors = postAuthorsRelations;
 
+                    console.log(`post`,post)
+
                     return models.Post.add(post, context.internal);
                 }));
             })
