@@ -1,14 +1,15 @@
+import {DndContext, DragOverlay, DraggableAttributes, closestCenter} from '@dnd-kit/core';
+import {SortableContext, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable';
+import {CSS} from '@dnd-kit/utilities';
+import clsx from 'clsx';
+import React, {ElementType, HTMLProps, ReactNode, useState} from 'react';
 import Heading from './Heading';
 import Hint from './Hint';
 import Icon from './Icon';
-import React, {HTMLProps, ReactNode, useState} from 'react';
 import Separator from './Separator';
-import clsx from 'clsx';
-import {CSS} from '@dnd-kit/utilities';
-import {DndContext, DragOverlay, DraggableAttributes, closestCenter} from '@dnd-kit/core';
-import {SortableContext, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable';
 
 export interface SortableItemContainerProps {
+    id: string;
     setRef?: (element: HTMLElement | null) => void;
     isDragging: boolean;
     dragHandleAttributes?: DraggableAttributes;
@@ -21,15 +22,32 @@ export interface SortableItemContainerProps {
     separator?: boolean;
 }
 
+export type DragIndicatorProps = Pick<SortableItemContainerProps, 'isDragging' | 'dragHandleAttributes' | 'dragHandleListeners' | 'dragHandleClass'> & React.HTMLAttributes<HTMLButtonElement>
+
+export const DragIndicator: React.FC<DragIndicatorProps> = ({isDragging, dragHandleAttributes, dragHandleListeners, dragHandleClass, className, ...props}) => (
+    <button
+        className={clsx(
+            'opacity-50 group-hover:opacity-100',
+            isDragging ? 'cursor-grabbing' : 'cursor-grab',
+            dragHandleClass,
+            className
+        )}
+        type='button'
+        {...dragHandleAttributes}
+        {...dragHandleListeners}
+        {...props}
+    >
+        <Icon colorClass='text-grey-500' name='hamburger' size='sm' />
+    </button>
+);
+
 const DefaultContainer: React.FC<SortableItemContainerProps> = ({
     setRef,
     isDragging,
-    dragHandleAttributes,
-    dragHandleListeners,
-    dragHandleClass,
     style,
     separator,
-    children
+    children,
+    ...props
 }) => (
     <div
         ref={setRef}
@@ -40,18 +58,7 @@ const DefaultContainer: React.FC<SortableItemContainerProps> = ({
         )}
         style={style}
     >
-        <button
-            className={clsx(
-                'h-7 opacity-50 group-hover:opacity-100',
-                isDragging ? 'cursor-grabbing' : 'cursor-grab',
-                dragHandleClass
-            )}
-            type='button'
-            {...dragHandleAttributes}
-            {...dragHandleListeners}
-        >
-            <Icon colorClass='text-grey-500' name='hamburger' size='sm' />
-        </button>
+        <DragIndicator className='h-7' isDragging={isDragging} {...props} />
         {children}
     </div>
 );
@@ -77,6 +84,7 @@ const SortableItem: React.FC<{
     };
 
     return container({
+        id,
         setRef: setNodeRef,
         isDragging: false,
         separator: separator,
@@ -98,6 +106,8 @@ export interface SortableListProps<Item extends {id: string}> extends HTMLProps<
     onMove: (id: string, overId: string) => void;
     renderItem: (item: Item) => ReactNode;
     container?: (props: SortableItemContainerProps) => ReactNode;
+    wrapper?: ElementType;
+    dragOverlayWrapper?: keyof JSX.IntrinsicElements;
 }
 
 /**
@@ -113,6 +123,8 @@ const SortableList = <Item extends {id: string}>({
     onMove,
     renderItem,
     container = props => <DefaultContainer {...props} />,
+    wrapper: Wrapper = React.Fragment,
+    dragOverlayWrapper,
     ...props
 }: SortableListProps<Item>) => {
     const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -130,16 +142,19 @@ const SortableList = <Item extends {id: string}>({
                     onDragEnd={event => onMove(event.active.id as string, event.over?.id as string)}
                     onDragStart={event => setDraggingId(event.active.id as string)}
                 >
-                    <SortableContext
-                        items={items}
-                        strategy={verticalListSortingStrategy}
-                    >
-                        {items.map(item => (
-                            <SortableItem key={item.id} container={container} dragHandleClass={dragHandleClass} id={item.id} separator={itemSeparator}>{renderItem(item)}</SortableItem>
-                        ))}
-                    </SortableContext>
-                    <DragOverlay>
+                    <Wrapper>
+                        <SortableContext
+                            items={items}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            {items.map(item => (
+                                <SortableItem key={item.id} container={container} dragHandleClass={dragHandleClass} id={item.id} separator={itemSeparator}>{renderItem(item)}</SortableItem>
+                            ))}
+                        </SortableContext>
+                    </Wrapper>
+                    <DragOverlay wrapperElement={dragOverlayWrapper}>
                         {draggingId ? container({
+                            id: draggingId,
                             isDragging: true,
                             children: renderItem(items.find(({id}) => id === draggingId)!)
                         }) : null}
