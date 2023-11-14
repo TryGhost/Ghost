@@ -55,6 +55,10 @@ const features = [{
     title: 'AdminX Offers',
     description: 'Enables the new offers UI in AdminX settings',
     flag: 'adminXOffers'
+},{
+    title: 'Filter by email disabled',
+    description: 'Allows filtering members by email disabled',
+    flag: 'filterEmailDisabled'
 }];
 
 const AlphaFeatures: React.FC = () => {

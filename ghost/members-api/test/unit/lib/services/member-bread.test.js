@@ -42,7 +42,10 @@ describe('MemberBreadService', function () {
             memberModelStub = {
                 id: MEMBER_ID,
                 related: sinon.stub().returns([]),
-                toJSON: sinon.stub().returns({...memberModelJSON})
+                toJSON: sinon.stub().returns({...memberModelJSON}),
+                get: function (key) {
+                    return this[key];
+                }
             };
             memberRepositoryStub = {
                 get: sinon.stub().resolves(null),
