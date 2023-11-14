@@ -5,7 +5,7 @@
     "{{amount}} hours ago": "{{amount}} jam yang lalu",
     "{{amount}} minutes ago": "{{amount}} menit yang lalu",
     "{{amount}} months ago": "{{amount}} bulan yang lalu",
-    "{{amount}} more": "",
+    "{{amount}} more": "{{amount}} lagi",
     "{{amount}} seconds ago": "{{amount}} detik yang lalu",
     "{{amount}} weeks ago": "{{amount}} minggu yang lalu",
     "{{amount}} years ago": "{{amount}} tahun yang lalu",
