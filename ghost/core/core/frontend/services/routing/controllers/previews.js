@@ -27,6 +27,8 @@ module.exports = function previewController(req, res, next) {
         .then(function then(result) {
             const post = result[res.routerOptions.query.resource][0];
 
+            console.log(`~~~ preview router controller`);
+
             if (!post) {
                 return next();
             }
@@ -51,6 +53,11 @@ module.exports = function previewController(req, res, next) {
 
             if (post.status === 'published') {
                 return urlUtils.redirect301(res, routerManager.getUrlByResourceId(post.id, {withSubdirectory: true}));
+            }
+
+            // published content should only resolve to /:slug or /email/:uuid - /p/:uuid is for drafts only in lieu of an actual preview api
+            if (post.status !== 'published' && post.email_only === true) {
+                return urlUtils.redirect301(res, urlUtils.urlJoin('/email', post.uuid, '/'));
             }
 
             post.access = !!post.html;
