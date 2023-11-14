@@ -28,7 +28,6 @@ export type ModalComponent<Props = object> = React.FC<NiceModalHocProps & Routin
 export type RoutingContextData = {
     route: string;
     updateRoute: (to: string | InternalLink | ExternalLink) => void;
-    registerModals: (loadModals: () => Promise<ModalsModule>, modalPaths: Record<string, string>) => void;
     loadingModal: boolean;
     eventTarget: EventTarget;
 };
@@ -36,7 +35,6 @@ export type RoutingContextData = {
 export const RouteContext = createContext<RoutingContextData>({
     route: '',
     updateRoute: () => {},
-    registerModals: () => {},
     loadingModal: false,
     eventTarget: new EventTarget()
 });
@@ -55,7 +53,7 @@ function getHashPath(basePath: string, urlPath: string | undefined) {
     return null;
 }
 
-const handleNavigation = (basePath: string, currentRoute: string | undefined, loadModals: () => Promise<ModalsModule>, modalPaths: Record<string, string>) => {
+const handleNavigation = (basePath: string, currentRoute: string | undefined, loadModals?: () => Promise<ModalsModule>, modalPaths?: Record<string, string>) => {
     // Get the hash from the URL
     let hash = window.location.hash;
     hash = hash.substring(1);
@@ -67,7 +65,7 @@ const handleNavigation = (basePath: string, currentRoute: string | undefined, lo
     const pathName = getHashPath(basePath, url.pathname);
     const searchParams = url.searchParams;
 
-    if (pathName) {
+    if (pathName && modalPaths && loadModals) {
         const [, currentModalName] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(currentRoute || '', modalPath)) || [];
         const [path, modalName] = Object.entries(modalPaths).find(([modalPath]) => matchRoute(pathName, modalPath)) || [];
 
@@ -92,23 +90,17 @@ const matchRoute = (pathname: string, routeDefinition: string) => {
     }
 };
 
-type RouteProviderProps = {
+export interface RoutingProviderProps {
     basePath: string;
     externalNavigate: (link: ExternalLink) => void;
+    modals?: {paths: Record<string, string>, load: () => Promise<ModalsModule>}
     children: React.ReactNode;
-};
+}
 
-const RoutingProvider: React.FC<RouteProviderProps> = ({basePath, externalNavigate, children}) => {
+const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, externalNavigate, modals, children}) => {
     const [route, setRoute] = useState<string | undefined>(undefined);
     const [loadingModal, setLoadingModal] = useState(false);
-    const [loadModals, setLoadModals] = useState<() => Promise<ModalsModule>>(() => Promise.resolve({default: {}}));
-    const [modalPaths, setModalPaths] = useState<Record<string, string>>({});
     const [eventTarget] = useState(new EventTarget());
-
-    const registerModals = useCallback((newLoadModals: () => Promise<ModalsModule>, newModalPaths: Record<string, string>) => {
-        setLoadModals(() => newLoadModals);
-        setModalPaths(() => newModalPaths);
-    }, []);
 
     const updateRoute = useCallback((to: string | InternalLink | ExternalLink) => {
         const options = typeof to === 'string' ? {route: to} : to;
@@ -132,9 +124,16 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({basePath, externalNaviga
     }, [eventTarget, externalNavigate, route]);
 
     useEffect(() => {
+        // Preload all the modals after initial render to avoid a delay when opening them
+        setTimeout(() => {
+            modals?.load();
+        }, 1000);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
         const handleHashChange = () => {
             setRoute((currentRoute) => {
-                const {pathName, modal, changingModal} = handleNavigation(basePath, currentRoute, loadModals, modalPaths);
+                const {pathName, modal, changingModal} = handleNavigation(basePath, currentRoute, modals?.load, modals?.paths);
 
                 if (modal && changingModal) {
                     setLoadingModal(true);
@@ -164,8 +163,7 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({basePath, externalNaviga
                 route,
                 updateRoute,
                 loadingModal,
-                eventTarget,
-                registerModals
+                eventTarget
             }}
         >
             {children}
@@ -174,31 +172,6 @@ const RoutingProvider: React.FC<RouteProviderProps> = ({basePath, externalNaviga
 };
 
 export default RoutingProvider;
-
-/**
- * Registers routes which will open modal dialogs. This should be called at most once per app.
- *
- * @param loadModals A function which imports the modal components - async to enable code splitting when there are many modals.
- *                   The FIRST value of this will be used, it will NOT be checked and called again on future renders.
- * @param paths A mapping of paths to modal names. The path can contain a parameter, e.g. 'staff/:id' will match 'staff/1' and 'staff/2'.
- */
-export function useModalPaths<ModalName extends string>(
-    loadModals: () => Promise<ModalsModule>,
-    paths: {[key: string]: ModalName}
-) {
-    const {registerModals} = useRouting();
-
-    useEffect(() => {
-        registerModals(loadModals, paths);
-    }, [paths, registerModals]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    useEffect(() => {
-        // Preload all the modals after initial render to avoid a delay when opening them
-        setTimeout(() => {
-            loadModals();
-        }, 1000);
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
-}
 
 export function useRouting() {
     return useContext(RouteContext);

@@ -1,9 +1,9 @@
 import React, {useEffect} from 'react';
-import {useModalPaths, useRouteChangeCallback, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useRouteChangeCallback, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext} from '../../hooks/useScrollSection';
 import type {ModalName} from './routing/modals';
 
-const modalPaths: {[key: string]: ModalName} = {
+export const modalPaths: {[key: string]: ModalName} = {
     'design/change-theme': 'DesignAndThemeModal',
     'design/edit': 'DesignAndThemeModal',
     // this is a special route, because it can install a theme directly from the Ghost Marketplace
@@ -37,11 +37,11 @@ const modalPaths: {[key: string]: ModalName} = {
     about: 'AboutModal'
 };
 
+export const loadModals = () => import('./routing/modals');
+
 const SettingsRouter: React.FC = () => {
     const {updateNavigatedSection, scrollToSection} = useScrollSectionContext();
     const {route} = useRouting();
-
-    useModalPaths(() => import('./routing/modals'), modalPaths);
 
     useRouteChangeCallback((newPath, oldPath) => {
         if (newPath === oldPath) {
