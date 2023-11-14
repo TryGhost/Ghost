@@ -58,6 +58,11 @@ describe('Special elements', function () {
         input: `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Test","type":"text","version":1},{"type":"linebreak","version":1},{"type":"linebreak","version":1},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"a link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"title":null,"url":"https://ghost.org"},{"detail":0,"format":0,"mode":"normal","style":"","text":" some text","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
         output: `<p>Test<br><br><a href="https://ghost.org">a link</a> some text</p>`
     }));
+
+    it('linebreaks after multiple formats', shouldRender ({
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":3,"mode":"normal","style":"","text":"Test","type":"text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":" test","type":"text","version":1},{"type":"linebreak","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: `<p><strong><em>Test</em></strong> test<br></p>`
+    }));
 });
 
 describe('Unexpected input', function () {

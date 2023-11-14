@@ -69,7 +69,10 @@ class TextContent {
                 const remainingNodes = this.nodes.slice(i + 1);
                 // avoid checking any nodes after a link node because those cause all formats to close
                 const nextLinkNodeIndex = remainingNodes.findIndex(n => $isLinkNode(n));
-                const remainingSortNodes = nextLinkNodeIndex === -1 ? remainingNodes : remainingNodes.slice(0, nextLinkNodeIndex);
+                let remainingSortNodes = nextLinkNodeIndex === -1 ? remainingNodes : remainingNodes.slice(0, nextLinkNodeIndex);
+
+                // ensure we're only working with text nodes as they're the only ones that can open/close formats
+                remainingSortNodes = remainingSortNodes.filter(n => $isTextNode(n));
 
                 formatsToOpen.sort((a, b) => {
                     const aIndex = remainingSortNodes.findIndex(n => n.hasFormat(a));
