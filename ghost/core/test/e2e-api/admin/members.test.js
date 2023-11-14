@@ -2162,7 +2162,7 @@ describe('Members API', function () {
         const startTransientId = member.get('transient_id');
 
         await agent
-            .del(`/members/${member.id}/sessions/`)
+            .delete(`/members/${member.id}/sessions/`)
             .expectStatus(204)
             .matchBodySnapshot()
             .matchHeaderSnapshot({
