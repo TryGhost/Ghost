@@ -736,7 +736,8 @@ DataGenerator.Content = {
             html: '<p>Look! I\'m an email</p>',
             plaintext: 'Waba-daba-dab-da',
             track_opens: false,
-            submitted_at: moment().toDate()
+            submitted_at: moment().toDate(),
+            newsletter_id: null // newsletter[0] relation added later
         },
         {
             id: ObjectId().toHexString(),
@@ -748,7 +749,8 @@ DataGenerator.Content = {
             html: '<p>What\'s that? Another email!</p>',
             plaintext: 'yes this is an email',
             track_opens: false,
-            submitted_at: moment().toDate()
+            submitted_at: moment().toDate(),
+            newsletter_id: null // newsletter[1] relation added later
         }
     ],
 
