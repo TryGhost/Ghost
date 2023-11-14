@@ -230,7 +230,7 @@ export const FillSmallerContainer: Story = {
             <div className='flex h-full flex-col'>
                 <h1 className='mb-3'>Page title</h1>
                 <p className='max-w-2xl pb-6'>This example shows how you can create a page with arbitrary content on the top and a large table at the bottom that fills up the remaining space. The table has a sticky header row, a footer that is always visible and scrolling vertically and horizontally (resize the window to see the effect).</p>
-                <div className='relative flex-auto'>{_story()}</div>
+                <div className='relative -mx-10 flex-auto'>{_story()}</div>
             </div>
         </div>
     )],
@@ -239,6 +239,7 @@ export const FillSmallerContainer: Story = {
         header: complexTableHeader(true),
         children: complexTableRows(50),
         hint: 'Massive table',
-        hintSeparator: true
+        hintSeparator: true,
+        paddingXClassName: 'px-10'
     }
 };

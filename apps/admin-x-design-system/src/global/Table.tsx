@@ -28,6 +28,7 @@ export interface TableProps {
     pagination?: PaginationData;
     showMore?: ShowMoreData;
     fillContainer?: boolean;
+    paddingXClassName?: string;
 }
 
 const OptionalPagination = ({pagination}: {pagination?: PaginationData}) => {
@@ -63,7 +64,8 @@ const Table: React.FC<TableProps> = ({
     pagination,
     showMore,
     isLoading,
-    fillContainer = false
+    fillContainer = false,
+    paddingXClassName
 }) => {
     const table = React.useRef<HTMLTableSectionElement>(null);
     const maxTableHeight = React.useRef(0);
@@ -121,21 +123,40 @@ const Table: React.FC<TableProps> = ({
         'h-9 border-b border-grey-200 dark:border-grey-600'
     );
 
+    /**
+     * To have full-bleed scroll try this:
+     * - unset width of table
+     * - set minWidth of table to 100%
+     * - set side padding of table to 40px
+     * - unset tableContainer width
+     * - set minWidth of tableContainer to 100%
+     * - unset mainContainer width
+     * - set minWidth of mainContainer to 100%
+     * - set side margins of outer container to -40px
+     * - set footer side paddings to 40px
+     */
+
     const tableClasses = clsx(
         'w-full',
+        fillContainer ? 'min-w-full' : 'w-full',
         (borderTop || pageTitle) && 'border-t border-grey-300',
         pageTitle ? 'mb-0 mt-14' : 'my-0',
         className
     );
 
     const mainContainerClasses = clsx(
-        'w-full overflow-x-auto',
-        fillContainer && 'absolute inset-0'
+        'overflow-x-auto',
+        fillContainer ? 'absolute inset-0 min-w-full' : 'w-full'
     );
 
     const tableContainerClasses = clsx(
-        'w-full',
-        fillContainer && 'max-h-[calc(100%-38px)] w-full overflow-y-auto'
+        fillContainer ? 'max-h-[calc(100%-38px)] w-full overflow-y-auto' : 'w-full',
+        paddingXClassName
+    );
+
+    const footerClasses = clsx(
+        'sticky bottom-0 -mt-px bg-white pb-3',
+        paddingXClassName
     );
 
     return (
@@ -159,7 +180,7 @@ const Table: React.FC<TableProps> = ({
                 {isLoading && <div className='p-5'><LoadingIndicator delay={200} size='lg' style={loadingStyle} /></div>}
 
                 {(hint || pagination || showMore) &&
-                <footer className="sticky bottom-0 -mt-px bg-white pb-3">
+                <footer className={footerClasses}>
                     {(hintSeparator || pagination) && <Separator />}
                     <div className="mt-1 flex flex-col-reverse items-start justify-between gap-1 pt-2 md:flex-row md:items-center md:gap-0 md:pt-0">
                         <OptionalShowMore showMore={showMore} />
