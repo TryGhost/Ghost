@@ -90,10 +90,18 @@ describe('Frontend Routing: Preview Routes', function () {
             .expect(assertCorrectFrontendHeaders);
     });
 
-    it.only('should redirect sent email-only posts to /email/:uuid from /p/:uuid', async function () {
-        await request.get('/p/c1ed3153-27de-4430-888a-8fd81b47a1dc/')
+    it('should redirect sent email-only posts to /email/:uuid from /p/:uuid', async function () {
+        const emailedPost = await testUtils.fixtures.insertPosts([{
+            title: 'test newsletter',
+            status: 'sent',
+            posts_meta: {
+                email_only: true
+            }
+        }]);
+
+        await request.get(`/p/${emailedPost[0].get('uuid')}/`)
             .expect(301)
-            .expect('Location', '/email/c1ed3153-27de-4430-888a-8fd81b47a1dc/')
+            .expect('Location', `/email/${emailedPost[0].get('uuid')}/`)
             .expect('Cache-Control', testUtils.cacheRules.year)
             .expect(assertCorrectFrontendHeaders);
     });
