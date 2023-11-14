@@ -5,12 +5,12 @@ import OfficialThemes from './theme/OfficialThemes';
 import React, {useEffect, useRef, useState} from 'react';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
-import useHandleError from '../../../utils/api/handleError';
-import useRouting from '../../../hooks/useRouting';
 import {Breadcrumbs, Button, ConfirmationModal, FileUpload, LimitModal, Modal, PageHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {InstalledTheme, Theme, ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
-import {OfficialTheme} from '../../providers/ServiceProvider';
+import {InstalledTheme, Theme, ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
+import {OfficialTheme} from '../../providers/SettingsAppProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;

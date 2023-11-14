@@ -1,24 +1,23 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
 import {Button, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
-import {Offer, useBrowseOffersById, useEditOffer} from '../../../../api/offers';
-import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {getHomepageUrl} from '../../../../api/site';
+import {Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const Sidebar: React.FC<{
         clearError: (field: string) => void,
         errors: ErrorMessages,
-        offer: Offer, 
-        updateOffer: (fields: Partial<Offer>) => void, 
+        offer: Offer,
+        updateOffer: (fields: Partial<Offer>) => void,
         validate: () => void}> = ({clearError, errors, offer, updateOffer, validate}) => {
-            const {siteData} = useGlobalData();      
+            const {siteData} = useGlobalData();
             const [isCopied, setIsCopied] = useState(false);
-            
+
             const offerUrl = `${getHomepageUrl(siteData!)}${offer?.code}`;
             const handleCopyClick = async () => {
                 try {
