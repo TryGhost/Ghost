@@ -1,12 +1,12 @@
 <div class="modal-content" data-test-modal="logout-member">
     <header class="modal-header">
-        <h1>Sign out this member from all devices?</h1>
+        <h1>Sign out member from all devices?</h1>
     </header>
     <button type="button" class="close" title="Close" {{on "click" (fn @close false)}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
     <div class="modal-body">
         <p class="mb6">
-            This will sign <strong>{{@data.member.email}}</strong> out of all currently active sessions on all devices. This is useful if the member is signed in on a device they currently can’t access.
+            <strong>{{or @data.member.name @data.member.email}}</strong> will be signed out of all active sessions, and will need to sign in again upon return.
         </p>
     </div>
 

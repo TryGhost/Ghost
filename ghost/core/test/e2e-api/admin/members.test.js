@@ -2162,7 +2162,7 @@ describe('Members API', function () {
         const startTransientId = member.get('transient_id');
 
         await agent
-            .post(`/members/${member.id}/logout/`)
+            .del(`/members/${member.id}/sessions/`)
             .expectStatus(204)
             .matchBodySnapshot()
             .matchHeaderSnapshot({

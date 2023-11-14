@@ -14,12 +14,12 @@ export default class LogoutMemberModal extends Component {
     @task({drop: true})
     *logoutMemberTask() {
         try {
-            const url = this.ghostPaths.url.api('/members/', this.member.id, '/logout/');
+            const url = this.ghostPaths.url.api('/members/', this.member.id, '/sessions/');
             const options = {};
-            yield this.ajax.post(url, options);
+            yield this.ajax.delete(url, options);
 
             this.args.data.afterLogout?.();
-            this.notifications.showNotification(`${this.member.email} has been successfully signed out from all devices.`, {type: 'success'});
+            this.notifications.showNotification(`${this.member.name || this.member.email} has been successfully signed out from all devices.`, {type: 'success'});
             this.args.close(true);
             return true;
         } catch (e) {
