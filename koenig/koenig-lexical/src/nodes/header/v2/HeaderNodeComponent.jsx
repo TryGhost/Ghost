@@ -23,6 +23,8 @@ function HeaderNodeComponent({
     alignment,
     backgroundColor,
     backgroundImageSrc,
+    backgroundImageWidth,
+    backgroundImageHeight,
     backgroundSize,
     buttonColor,
     buttonText,
@@ -107,11 +109,13 @@ function HeaderNodeComponent({
             node.backgroundImageSrc = '';
         });
 
-        const {imageSrc} = await backgroundImageUploadHandler(files, imageUploader.upload);
+        const {imageSrc, width, height} = await backgroundImageUploadHandler(files, imageUploader.upload);
 
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.backgroundImageSrc = imageSrc;
+            node.backgroundImageWidth = width;
+            node.backgroundImageHeight = height;
         });
 
         setLastBackgroundImage(imageSrc);

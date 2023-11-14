@@ -40,7 +40,12 @@ export const backgroundImageUploadHandler = async (files, upload) => {
     }
     const result = await upload(files);
     const imageSrc = result?.[0].url;
+
+    const {width, height} = await getImageDimensions(imageSrc);
+
     return {
-        imageSrc
+        imageSrc,
+        width,
+        height
     };
 };

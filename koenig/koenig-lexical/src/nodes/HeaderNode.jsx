@@ -146,7 +146,9 @@ export class HeaderNode extends BaseHeaderNode {
                         accentColor={this.accentColor}
                         alignment={this.alignment}
                         backgroundColor={this.backgroundColor}
+                        backgroundImageHeight={this.backgroundImageHeight}
                         backgroundImageSrc={this.backgroundImageSrc}
+                        backgroundImageWidth={this.backgroundImageWidth}
                         backgroundSize={this.backgroundSize}
                         buttonColor={this.buttonColor}
                         buttonEnabled={this.buttonEnabled}

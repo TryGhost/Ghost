@@ -24,6 +24,8 @@ export class HeaderNode extends generateDecoratorNode({nodeType: 'header',
         // v2 properties
         {name: 'alignment', default: 'center'},
         {name: 'backgroundColor', default: '#000000'},
+        {name: 'backgroundImageWidth', default: null},
+        {name: 'backgroundImageHeight', default: null},
         {name: 'backgroundSize', default: 'cover'},
         {name: 'textColor', default: '#FFFFFF'},
         {name: 'buttonColor', default: '#ffffff'},

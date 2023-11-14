@@ -217,7 +217,7 @@ describe('HeaderNode', function () {
                 node.buttonUrl.should.equal('https://example.com');
                 node.buttonText.should.equal('Button');
             }));
-            
+
             it('does not parse a v2 header as v1', editorTest(function () {
                 const htmlstring = `
             <div class="kg-card kg-header-card kg-v2 kg-size-large kg-style-image" data-kg-background-image="https://example.com/image.jpg" style="background-image: url(https://example.com/image.jpg)">
@@ -286,6 +286,15 @@ describe('HeaderNode', function () {
             };
 
             exportOptions = {
+                imageOptimization: {
+                    contentImageSizes: {
+                        w600: {width: 600},
+                        w1000: {width: 1000},
+                        w1600: {width: 1600},
+                        w2400: {width: 2400}
+                    }
+                },
+                canTransformImage: () => true,
                 createDocument() {
                     return (new JSDOM()).window.document;
                 }
@@ -381,7 +390,7 @@ describe('HeaderNode', function () {
                 node.buttonText.should.equal('Button');
                 node.buttonTextColor.should.equal('#abcdef');
             }));
-            
+
             it('does not parse a v1 header as v2', editorTest(function () {
                 const htmlstring = `
             <div class="kg-card kg-header-card kg-size-large kg-style-image" data-kg-background-image="https://example.com/image.jpg" style="background-image: url(https://example.com/image.jpg)">
@@ -441,7 +450,7 @@ describe('HeaderNode', function () {
                 // Assuming outerHTML gets the full HTML string of the element
                 const renderedHtml = _.replace(element.outerHTML, /\s/g, '');
                 const expectedHtml = `
-                <div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide " style=";" data-background-color="#F0F0F0">
+                <div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide " data-background-color="#F0F0F0">
                 <picture><img class="kg-header-card-image" src="https://example.com/image.jpg" loading="lazy" alt=""></picture>
                     <div class="kg-header-card-content">
                         <div class="kg-header-card-text kg-align-center">
@@ -483,6 +492,39 @@ describe('HeaderNode', function () {
                 const renderedHtml = _.replace(element.outerHTML, /\s/g, '');
                 const expectedHtml = `
                 <div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide " style="background-color: #000000;" data-background-color="#000000">
+                    <div class="kg-header-card-content">
+                        <div class="kg-header-card-text kg-align-center">
+                        <h2 id="hello-world" class="kg-header-card-heading" style="color: #FFFFFF;" data-text-color="#FFFFFF">hello world</h2>
+                        </div>
+                    </div>
+                </div>
+                `;
+
+                const cleanedExpectedHtml = _.replace(expectedHtml, /\s/g, '');
+                renderedHtml.should.equal(cleanedExpectedHtml);
+            }));
+
+            it('renders with srcset', editorTest(function () {
+                let payload = {
+                    version: 2,
+                    backgroundImageSrc: '/content/images/2022/11/koenig-lexical.jpg',
+                    backgroundImageWidth: 3840,
+                    backgroundImageHeight: 2160,
+                    buttonEnabled: false,
+                    buttonText: 'The button',
+                    buttonUrl: 'https://example.com/',
+                    header: 'hello world',
+                    size: 'small',
+                    style: 'dark',
+                    subheader: ''
+                };
+                const node = $createHeaderNode(payload);
+
+                const {element} = node.exportDOM(exportOptions);
+                const renderedHtml = _.replace(element.outerHTML, /\s/g, '');
+                const expectedHtml = `
+                <div class="kg-card kg-header-card kg-v2 kg-width-full kg-content-wide " data-background-color="#000000">
+                    <picture><img class="kg-header-card-image" src="/content/images/2022/11/koenig-lexical.jpg" srcset="/content/images/size/w600/2022/11/koenig-lexical.jpg 600w, /content/images/size/w1000/2022/11/koenig-lexical.jpg 1000w, /content/images/size/w1600/2022/11/koenig-lexical.jpg 1600w, /content/images/size/w2400/2022/11/koenig-lexical.jpg 2400w" loading="lazy" alt=""></picture>
                     <div class="kg-header-card-content">
                         <div class="kg-header-card-text kg-align-center">
                         <h2 id="hello-world" class="kg-header-card-heading" style="color: #FFFFFF;" data-text-color="#FFFFFF">hello world</h2>
