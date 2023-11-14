@@ -1,9 +1,9 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
-import useRouting from '../../../hooks/useRouting';
 import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {checkStripeEnabled} from '../../../api/settings';
+import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
