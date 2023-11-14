@@ -91,6 +91,7 @@ describe('Frontend Routing: Preview Routes', function () {
     });
 
     it('should redirect sent email-only posts to /email/:uuid from /p/:uuid', async function () {
+        // difficult to build a sent newsletter using the data generator
         const emailedPost = await testUtils.fixtures.insertPosts([{
             title: 'test newsletter',
             status: 'sent',
