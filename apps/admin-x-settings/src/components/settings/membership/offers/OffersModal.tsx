@@ -15,12 +15,19 @@ const createRedemptionFilterUrl = (id: string): string => {
     return `${baseHref}?filter=${encodeURIComponent('offer_redemptions:' + id)}`;
 };
 
-const OfferCard: React.FC<{amount: number, cadence: string, currency: string, duration: string, name: string, offerId: string, offerTier: Tier | undefined, redemptionCount: number, type: OfferType, onClick: ()=>void}> = ({amount, cadence, currency, duration, name, offerId, offerTier, redemptionCount, type, onClick}) => {
+const getOfferCadence = (cadence: string): string => {
+    return cadence === 'month' ? 'monthly' : 'yearly';
+};
+
+const getOfferDuration = (duration: string): string => {
+    return (duration === 'once' ? 'First payment' : duration === 'repeating' ? 'Repeating' : 'Forever');
+};
+
+const getOfferDiscount = (type: string, amount: number, cadence: string, currency: string, tier: Tier | undefined): {discountColor: string, discountOffer: string, originalPriceWithCurrency: string, updatedPriceWithCurrency: string} => {
     let discountColor = '';
     let discountOffer = '';
-    const originalPrice = cadence === 'month' ? offerTier?.monthly_price ?? 0 : offerTier?.yearly_price ?? 0;
+    const originalPrice = cadence === 'month' ? tier?.monthly_price ?? 0 : tier?.yearly_price ?? 0;
     let updatedPrice = originalPrice;
-    let tierName = offerTier?.name + ' ' + (cadence === 'month' ? 'Monthly' : 'Yearly') + ' — ' + (duration === 'once' ? 'First payment' : duration === 'repeating' ? 'Repeating' : 'Forever');
     let originalPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(originalPrice));
 
     switch (type) {
@@ -41,9 +48,21 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
         break;
     default:
         break;
-    }
+    };
 
     const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(updatedPrice));
+
+    return {
+        discountColor,
+        discountOffer,
+        originalPriceWithCurrency,
+        updatedPriceWithCurrency
+    };
+};
+
+const OfferCard: React.FC<{amount: number, cadence: string, currency: string, duration: string, name: string, offerId: string, offerTier: Tier | undefined, redemptionCount: number, type: OfferType, onClick: ()=>void}> = ({amount, cadence, currency, duration, name, offerId, offerTier, redemptionCount, type, onClick}) => {
+    let tierName = offerTier?.name + ' ' + getOfferCadence(cadence) + ' — ' + getOfferDuration(duration);
+    const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(type, amount, cadence, currency || 'USD', offerTier);
 
     return (
         <div className='flex cursor-pointer flex-col gap-6 border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800' onClick={onClick}>
@@ -87,12 +106,61 @@ const OffersModal = () => {
         {id: 'archived', title: 'Archived'}
     ];
     const [selectedTab, setSelectedTab] = useState('active');
+    const [selectedLayout, setSelectedLayout] = useState('card');
 
     const handleOfferEdit = (id:string) => {
         // TODO: implement
         modal.remove();
         updateRoute(`offers/${id}`);
     };
+
+    const cardLayoutOutput = <div className='mt-8 grid grid-cols-3 gap-6'>
+        {allOffers.filter(offer => offer.status === selectedTab).map((offer) => {
+            const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
+
+            if (!offerTier) {
+                return null;
+            }
+
+            return (
+                <OfferCard
+                    key={offer?.id}
+                    amount={offer?.amount}
+                    cadence={offer?.cadence}
+                    currency={offer?.currency || 'USD'}
+                    duration={offer?.duration}
+                    name={offer?.name}
+                    offerId={offer?.id}
+                    offerTier={offerTier}
+                    redemptionCount={offer?.redemption_count}
+                    type={offer?.type as OfferType}
+                    onClick={() => handleOfferEdit(offer?.id)}
+                />
+            );
+        })}
+    </div>;
+
+    const listLayoutOutput = <table>
+        {allOffers.filter(offer => offer.status === selectedTab).map((offer) => {
+            const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
+
+            if (!offerTier) {
+                return null;
+            }
+
+            const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
+
+            return (
+                <tr>
+                    <td>{offer?.name}</td>
+                    <td>{offerTier.name} {getOfferCadence(offer.cadence)}</td>
+                    <td><span className={`text-xs font-semibold uppercase ${discountColor}`}>{discountOffer}</span></td>
+                    <td>{updatedPriceWithCurrency}{originalPriceWithCurrency}</td>
+                    <td><a className='hover:underline' href={createRedemptionFilterUrl(offer.id)}>{offer.redemption_count}</a></td>
+                </tr>
+            );
+        })}
+    </table>;
 
     return <Modal
         afterClose={() => {
@@ -109,6 +177,7 @@ const OffersModal = () => {
             </div>
         }
         header={false}
+        height='full'
         size='lg'
         testId='offers-modal'
         stickyFooter
@@ -125,33 +194,15 @@ const OffersModal = () => {
                     />
                     <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
                 </div>
-                <h1 className='mt-12 border-b border-b-grey-300 pb-2.5 text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
+                <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
+                    <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
+                    <div className='flex gap-3'>
+                        <Button icon='layout-module-1' iconColorClass={selectedLayout === 'card' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('card')} />
+                        <Button icon='layout-headline' iconColorClass={selectedLayout === 'list' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('list')} />
+                    </div>
+                </div>
             </header>
-            <div className='mt-8 grid grid-cols-3 gap-6'>
-                {allOffers.filter(offer => offer.status === selectedTab).map((offer) => {
-                    const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
-
-                    if (!offerTier) {
-                        return null;
-                    }
-
-                    return (
-                        <OfferCard
-                            key={offer?.id}
-                            amount={offer?.amount}
-                            cadence={offer?.cadence}
-                            currency={offer?.currency || 'USD'}
-                            duration={offer?.duration}
-                            name={offer?.name}
-                            offerId={offer?.id}
-                            offerTier={offerTier}
-                            redemptionCount={offer?.redemption_count}
-                            type={offer?.type as OfferType}
-                            onClick={() => handleOfferEdit(offer?.id)}
-                        />
-                    );
-                })}
-            </div>
+            {selectedLayout === 'card' ? cardLayoutOutput : listLayoutOutput}
         </div>
     </Modal>;
 };
