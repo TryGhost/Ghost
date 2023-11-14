@@ -138,7 +138,7 @@ test.describe('Email card', async () => {
 
             await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div class="sticky mb-[0.3rem]"><svg></svg></div>
+                <div class="sticky top-0"><svg></svg></div>
                 <div class="relative border-transparent caret-grey-800 hover:shadow-[0_0_0_1px] hover:shadow-green hover:-mx-3 hover:px-3"
                     data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="email-cta">
                     <div class="w-full pb-6">
