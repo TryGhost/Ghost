@@ -1,12 +1,12 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
-import useRouting from '../../../../hooks/useRouting';
 import {Button, Modal, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {Tier, getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
+import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {numberWithCommas} from '../../../../utils/helpers';
-import {useBrowseOffers} from '../../../../api/offers';
+import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useState} from 'react';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 

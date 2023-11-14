@@ -7,18 +7,17 @@ import React, {useCallback, useEffect} from 'react';
 import StaffToken from './users/StaffToken';
 import clsx from 'clsx';
 import useForm, {ErrorMessages} from '../../../hooks/useForm';
-import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
-import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {RoutingModalProps} from '../../providers/RoutingProvider';
-import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '../../../api/users';
-import {getImageUrl, useUploadImage} from '../../../api/images';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 
 const validators: Record<string, (u: Partial<User>) => string> = {

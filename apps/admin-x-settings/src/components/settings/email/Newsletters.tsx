@@ -2,14 +2,14 @@ import NewslettersList from './newsletters/NewslettersList';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {ReactNode, useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
-import useHandleError from '../../../utils/api/handleError';
 import useQueryParams from '../../../hooks/useQueryParams';
-import useRouting from '../../../hooks/useRouting';
-import {APIError} from '../../../utils/errors';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Button, ConfirmationModal, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {InfiniteData, useQueryClient} from '@tanstack/react-query';
-import {Newsletter, NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '../../../api/newsletters';
+import {InfiniteData, useQueryClient} from '@tryghost/admin-x-framework';
+import {Newsletter, NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
 import {arrayMove} from '@dnd-kit/sortable';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const NavigateToNewsletter = ({id, children}: {id: string; children: ReactNode}) => {
     const modal = useModal();

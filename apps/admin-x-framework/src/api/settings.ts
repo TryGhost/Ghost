@@ -1,5 +1,5 @@
-import {Config} from './config';
 import {Meta, createMutation, createQuery} from '../utils/api/hooks';
+import {Config} from './config';
 
 // Types
 
@@ -47,6 +47,11 @@ export const useDeleteStripeSettings = createMutation<unknown, null>({
     method: 'DELETE',
     path: () => '/settings/stripe/connect/',
     invalidateQueries: {dataType}
+});
+
+export const useTestSlack = createMutation<unknown, null>({
+    method: 'POST',
+    path: () => '/slack/test/'
 });
 
 // Helpers

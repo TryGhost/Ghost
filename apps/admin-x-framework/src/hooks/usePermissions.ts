@@ -1,8 +1,8 @@
+import {useCurrentUser} from '../api/currentUser';
 import {UserRoleType} from '../api/roles';
-import {useGlobalData} from '../components/providers/GlobalDataProvider';
 
 export const usePermission = (userRoles:string[]) => {
-    const {currentUser} = useGlobalData();
+    const {data: currentUser} = useCurrentUser();
     const currentUserRoles = currentUser?.roles.map(role => role.name);
     if (!currentUserRoles) {
         return false;

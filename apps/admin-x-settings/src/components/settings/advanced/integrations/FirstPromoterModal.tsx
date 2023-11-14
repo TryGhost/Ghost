@@ -1,12 +1,12 @@
 import IntegrationHeader from './IntegrationHeader';
 import NiceModal from '@ebay/nice-modal-react';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
 import {Form, Modal, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Icon} from '../../../../assets/icons/firstpromoter.svg';
-import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
+import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const FirstpromoterModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();

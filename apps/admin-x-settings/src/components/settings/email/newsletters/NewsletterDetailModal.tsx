@@ -3,19 +3,18 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
 import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '../../../../api/newsletters';
-import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {fullEmailAddress} from '../../../../api/site';
-import {getImageUrl, useUploadImage} from '../../../../api/images';
-import {getSettingValues} from '../../../../api/settings';
+import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const Sidebar: React.FC<{
     newsletter: Newsletter;

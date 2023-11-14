@@ -1,13 +1,13 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalFrame from '../portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
-import useRouting from '../../../../hooks/useRouting';
 import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField} from '@tryghost/admin-x-design-system';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
-import {getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
+import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getTiersCadences} from '../../../../utils/getTiersCadences';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 // we should replace this with a library
 function slugify(text: string): string {
@@ -59,10 +59,10 @@ type SidebarProps = {
     handleTextAreaInput: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 };
 
-const Sidebar: React.FC<SidebarProps> = ({tierOptions, 
-    handleTierChange, 
-    selectedTier, 
-    handleTextInput, 
+const Sidebar: React.FC<SidebarProps> = ({tierOptions,
+    handleTierChange,
+    selectedTier,
+    handleTextInput,
     typeOptions,
     durationOptions,
     handleTypeChange,
@@ -141,7 +141,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 handleTextInput(e, 'trialAmount');
                             }} />
                         }
-                        
+
                     </div>
                 </section>
                 <section className='mt-4'>
@@ -280,11 +280,11 @@ const AddOfferModal = () => {
         setOverrides((prevOverrides: offerPortalPreviewUrlTypes) => {
             // Extract the current value for the key
             const currentValue = prevOverrides[key];
-    
+
             // Check if the current value is an object and has 'isDirty' and 'value' properties
             if (currentValue && typeof currentValue === 'object' && 'isDirty' in currentValue && 'value' in currentValue) {
                 // Determine if the field has been modified
-    
+
                 return {
                     ...prevOverrides,
                     [key]: {
@@ -305,7 +305,7 @@ const AddOfferModal = () => {
 
     const handleNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
-    
+
         setOverrides((prevOverrides) => {
             let newOverrides = {...prevOverrides};
             newOverrides.name = newValue;
@@ -357,7 +357,7 @@ const AddOfferModal = () => {
         setHref(newHref);
     }, [overrides, siteData.url]);
 
-    const sidebar = <Sidebar 
+    const sidebar = <Sidebar
         amountOptions={amountOptions as SelectOption[]}
         durationOptions={durationOptions}
         handleAmountTypeChange={handleAmountTypeChange}

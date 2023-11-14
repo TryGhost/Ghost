@@ -1,14 +1,13 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect} from 'react';
 import useForm from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
 import {Form, LimitModal, Modal, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {RoutingModalProps} from '../../../providers/RoutingProvider';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {toast} from 'react-hot-toast';
-import {useAddNewsletter} from '../../../../api/newsletters';
-import {useBrowseMembers} from '../../../../api/members';
+import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();

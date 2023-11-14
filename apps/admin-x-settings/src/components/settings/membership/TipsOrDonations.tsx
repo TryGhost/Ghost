@@ -3,7 +3,7 @@ import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Button, CurrencyField, Heading, Select, SettingGroupContent, confirmIfDirty, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {currencySelectGroups, getSymbol, validateCurrencyAmount} from '../../../utils/currency';
-import {getSettingValues} from '../../../api/settings';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 // Stripe doesn't allow amounts over 10,000 as a preset amount
 const MAX_AMOUNT = 10_000;

@@ -1,10 +1,10 @@
 import React from 'react';
-import useHandleError from '../../../../utils/api/handleError';
 import {ColorPickerField, Heading, Hint, ImageUpload, Select, SettingGroupContent, TextField, Toggle} from '@tryghost/admin-x-design-system';
-import {CustomThemeSetting} from '../../../../api/customThemeSettings';
-import {getImageUrl, useUploadImage} from '../../../../api/images';
-import {humanizeSettingKey} from '../../../../api/settings';
+import {CustomThemeSetting} from '@tryghost/admin-x-framework/api/customThemeSettings';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {humanizeSettingKey} from '@tryghost/admin-x-framework/api/settings';
 import {isCustomThemeSettingVisible} from '../../../../utils/isCustomThemeSettingsVisible';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const ThemeSetting: React.FC<{
     setting: CustomThemeSetting,

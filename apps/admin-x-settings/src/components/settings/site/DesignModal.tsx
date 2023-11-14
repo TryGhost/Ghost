@@ -3,15 +3,15 @@ import React, {useEffect, useState} from 'react';
 import ThemePreview from './designAndBranding/ThemePreview';
 import ThemeSettings from './designAndBranding/ThemeSettings';
 import useForm from '../../../hooks/useForm';
-import useHandleError from '../../../utils/api/handleError';
-import useRouting from '../../../hooks/useRouting';
-import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '../../../api/customThemeSettings';
+import {CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/customThemeSettings';
 import {Icon, PreviewModalContent, StickyFooter, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../api/settings';
-import {getHomepageUrl} from '../../../api/site';
-import {useBrowsePosts} from '../../../api/posts';
-import {useBrowseThemes} from '../../../api/themes';
+import {Setting, SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
+import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Sidebar: React.FC<{
     brandSettings: BrandSettingValues

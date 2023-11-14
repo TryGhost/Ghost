@@ -4,7 +4,7 @@ import timezoneData from '@tryghost/timezone-data';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getLocalTime} from '../../../utils/helpers';
-import {getSettingValues} from '../../../api/settings';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 interface TimezoneDataDropdownOption {
     name: string;

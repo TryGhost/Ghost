@@ -1,11 +1,11 @@
 import React, {useEffect, useRef, useState} from 'react';
 import useForm, {ErrorMessages, OkProps, SaveHandler, SaveState} from './useForm';
-import useHandleError from '../utils/api/handleError';
-import {Setting, SettingValue, useEditSettings} from '../api/settings';
-import {SiteData} from '../api/site';
+import {Setting, SettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {SiteData} from '@tryghost/admin-x-framework/api/site';
 import {showToast, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 interface LocalSetting extends Setting {
     dirty?: boolean;

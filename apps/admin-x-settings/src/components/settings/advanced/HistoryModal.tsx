@@ -1,12 +1,11 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import useFilterableApi from '../../../hooks/useFilterableApi';
-import useRouting from '../../../hooks/useRouting';
-import {Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '../../../api/actions';
+import {Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
 import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, LoadSelectOptions, Modal, NoValueLabel, Popover, Select, SelectOption, Toggle, ToggleGroup, debounce} from '@tryghost/admin-x-design-system';
-import {RoutingModalProps} from '../../providers/RoutingProvider';
-import {User} from '../../../api/users';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {User} from '@tryghost/admin-x-framework/api/users';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {useCallback, useState} from 'react';
+import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 const HistoryIcon: React.FC<{action: Action}> = ({action}) => {
     let name = 'pen';

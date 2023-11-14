@@ -1,5 +1,6 @@
-import {Meta, apiUrl, useFetchApi} from '../utils/api/hooks';
 import {useRef} from 'react';
+import {apiUrl, useFetchApi} from '../utils/api/fetchApi';
+import {Meta} from '../utils/api/hooks';
 
 const escapeNqlString = (value: string) => {
     return '\'' + value.replace(/'/g, '\\\'') + '\'';

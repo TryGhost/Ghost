@@ -2,12 +2,12 @@ import ExitSettingsButton from './components/ExitSettingsButton';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import Users from './components/settings/general/Users';
-import useRouting from './hooks/useRouting';
 import {Heading, topLevelBackdropClasses} from '@tryghost/admin-x-design-system';
 import {ReactNode, useEffect} from 'react';
-import {canAccessSettings, isEditorUser} from './api/users';
+import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from './components/providers/GlobalDataProvider';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Page: React.FC<{children: ReactNode}> = ({children}) => {
     return <>

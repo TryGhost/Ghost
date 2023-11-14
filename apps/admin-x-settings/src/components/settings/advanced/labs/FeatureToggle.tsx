@@ -1,9 +1,9 @@
 import React from 'react';
-import useHandleError from '../../../../utils/api/handleError';
-import {ConfigResponseType, configDataType} from '../../../../api/config';
+import {ConfigResponseType, configDataType} from '@tryghost/admin-x-framework/api/config';
 import {Toggle} from '@tryghost/admin-x-design-system';
-import {getSettingValue, useEditSettings} from '../../../../api/settings';
+import {getSettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tanstack/react-query';
 
 const FeatureToggle: React.FC<{ flag: string; label?: string; }> = ({label, flag}) => {
