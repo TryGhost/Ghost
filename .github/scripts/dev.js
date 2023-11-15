@@ -2,6 +2,7 @@ const path = require('path');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 
+const chalk = require('chalk');
 const concurrently = require('concurrently');
 
 // check we're running on Node 18 and above
@@ -171,7 +172,6 @@ async function handleStripe() {
         if (DASH_DASH_ARGS.includes('offline')) {
             return;
         }
-        console.log('Fetching Stripe secret token..');
 
         let stripeSecret;
         try {
@@ -203,6 +203,8 @@ async function handleStripe() {
         console.log(`No commands provided`);
         process.exit(0);
     }
+
+    console.log(`Running projects: ${commands.map(c => chalk.green(c.name)).join(', ')}`);
 
     const {result} = concurrently(commands, {
         prefix: 'name',
