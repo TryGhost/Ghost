@@ -31,6 +31,9 @@ module.exports = function setupApiApp() {
     // Admin API shouldn't be cached
     apiApp.use(shared.middleware.cacheControl('private'));
 
+    // Routing
+    apiApp.use(routes());
+
     const nestAppPromise = GhostNestApp.create().then(async (app) => {
         await app.init();
         return app;
@@ -40,9 +43,6 @@ module.exports = function setupApiApp() {
         const app = await nestAppPromise;
         app.getHttpAdapter().getInstance()(req, res, next);
     });
-
-    // Routing
-    apiApp.use(routes());
 
     // API error handling
     apiApp.use(errorHandler.resourceNotFound);
