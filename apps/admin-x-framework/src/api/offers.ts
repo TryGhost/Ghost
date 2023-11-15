@@ -2,7 +2,7 @@ import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api
 import {updateQueryCache} from '../utils/api/updateQueries';
 
 export type Offer = {
-    id: string;
+    id?: string;
     name: string;
     code: string;
     display_title: string;
@@ -15,10 +15,10 @@ export type Offer = {
     currency_restriction: boolean;
     currency: string | null;
     status: string;
-    redemption_count: number;
+    redemption_count?: number;
     tier: {
         id: string;
-        name: string;
+        name?: string;
     }
 }
 
@@ -46,6 +46,17 @@ export const useBrowseOffersById = createQueryWithId<OffersResponseType>({
 export const useEditOffer = createMutation<OfferEditResponseType, Offer>({
     method: 'PUT',
     path: offer => `/offers/${offer.id}/`,
+    body: offer => ({offers: [offer]}),
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: updateQueryCache('offers')
+    }
+});
+
+export const useAddOffer = createMutation<OffersResponseType, Offer>({
+    method: 'POST',
+    path: () => '/offers/',
     body: offer => ({offers: [offer]}),
     updateQueries: {
         dataType,
