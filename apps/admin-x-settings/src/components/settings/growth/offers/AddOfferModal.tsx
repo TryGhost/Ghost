@@ -254,6 +254,7 @@ const AddOfferModal = () => {
         },
         onSave: async () => {
             const dataset = {
+                id: '',
                 name: formState.name,
                 code: formState.code.value,
                 display_title: formState.displayTitle.value,
