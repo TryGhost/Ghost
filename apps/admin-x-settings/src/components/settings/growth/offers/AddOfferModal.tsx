@@ -1,10 +1,12 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
-import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField} from '@tryghost/admin-x-design-system';
+import useForm from '../../../../hooks/useForm';
+import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getTiersCadences} from '../../../../utils/getTiersCadences';
+import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -206,6 +208,7 @@ const AddOfferModal = () => {
     const {data: {tiers} = {}} = useBrowseTiers();
     const activeTiers = getPaidActiveTiers(tiers || []);
     const tierCadenceOptions = getTiersCadences(activeTiers);
+    const {mutateAsync: addOffer} = useAddOffer();
     const [selectedTier, setSelectedTier] = useState({
         tier: tierCadenceOptions[0] || {},
         dataset: {
@@ -214,34 +217,76 @@ const AddOfferModal = () => {
             currency: tierCadenceOptions[0]?.value ? parseData(tierCadenceOptions[0]?.value).currency : ''
         }
     });
+    const getDiscountAmount = (discount: number, dctype: string) => {
+        if (dctype === 'percentageOff') {
+            return discount.toString();
+        }
+        if (dctype === 'currencyOff') {
+            let calcDiscount = discount * 100;
+            return calcDiscount.toString();
+        }
+    };
 
-    const [overrides, setOverrides] = useState<offerPortalPreviewUrlTypes>({
-        disableBackground: true,
-        name: '',
-        code: {
-            isDirty: false,
-            value: ''
+    const {formState, updateForm, handleSave, saveState, okProps} = useForm({
+        initialState: {
+            disableBackground: true,
+            name: '',
+            code: {
+                isDirty: false,
+                value: ''
+            },
+            displayTitle: {
+                isDirty: false,
+                value: ''
+            },
+            displayDescription: '',
+            type: 'percent',
+            cadence: selectedTier?.dataset?.period || '',
+            trialAmount: 7,
+            discountAmount: 0,
+            duration: 'once',
+            durationInMonths: 0,
+            currency: selectedTier?.dataset?.currency || '',
+            status: 'active',
+            tierId: selectedTier?.dataset?.id || '',
+            amountType: 'percentageOff'
         },
-        displayTitle: {
-            isDirty: false,
-            value: ''
+        onSave: async () => {
+            const dataset = {
+                name: formState.name,
+                code: formState.code.value,
+                display_title: formState.displayTitle.value,
+                display_description: formState.displayDescription,
+                cadence: formState.cadence,
+                amount: formState.type === 'trial' ? Number(getDiscountAmount(formState.trialAmount, formState.amountType)) : Number(getDiscountAmount(formState.discountAmount, formState.amountType)),
+                duration: formState.type === 'trial' ? 'trial' : formState.duration,
+                duration_in_months: formState.durationInMonths,
+                currency: formState.currency,
+                status: formState.status,
+                tier: {
+                    id: formState.tierId
+                },
+                type: formState.type,
+                currency_restriction: false
+            };
+
+            const response = await addOffer(dataset);
+
+            if (response && response.offers && response.offers.length > 0) {
+                modal.remove();
+                updateRoute(`offers/${response.offers[0].id}`);
+            }
         },
-        displayDescription: '',
-        type: 'percent',
-        cadence: selectedTier?.dataset?.period || '',
-        trialAmount: 7,
-        discountAmount: 0,
-        duration: 'once',
-        durationInMonths: 0,
-        currency: selectedTier?.dataset?.currency || '',
-        status: 'active',
-        tierId: selectedTier?.dataset?.id || '',
-        amountType: 'percentageOff'
+        onSaveError: () => {},
+        onValidate: () => {
+            return {};
+        },
+        savingDelay: 500
     });
 
     const amountOptions = [
         {value: 'percentageOff', label: '%'},
-        {value: 'currencyOff', label: overrides.currency}
+        {value: 'currencyOff', label: formState.currency}
     ];
 
     const handleTierChange = (tier: SelectOption) => {
@@ -249,27 +294,26 @@ const AddOfferModal = () => {
             tier,
             dataset: parseData(tier.value)
         });
-
-        setOverrides({
-            ...overrides,
-            tierId: parseData(tier.value).id,
+        updateForm(state => ({
+            ...state,
             cadence: parseData(tier.value).period,
-            currency: parseData(tier.value).currency
-        });
+            currency: parseData(tier.value).currency,
+            tierId: parseData(tier.value).id
+        }));
     };
 
     const handleTypeChange = (type: string) => {
-        setOverrides({
-            ...overrides,
+        updateForm(state => ({
+            ...state,
             type: type
-        });
+        }));
     };
 
     const handleAmountTypeChange = (amountType: string) => {
-        setOverrides({
-            ...overrides,
+        updateForm(state => ({
+            ...state,
             amountType: amountType
-        });
+        }));
     };
 
     const handleTextInput = (
@@ -277,16 +321,15 @@ const AddOfferModal = () => {
         key: keyof offerPortalPreviewUrlTypes
     ) => {
         const target = e.target as HTMLInputElement | HTMLTextAreaElement;
-        setOverrides((prevOverrides: offerPortalPreviewUrlTypes) => {
+        updateForm((state) => {
             // Extract the current value for the key
-            const currentValue = prevOverrides[key];
-
+            const currentValue = (state as offerPortalPreviewUrlTypes)[key];
             // Check if the current value is an object and has 'isDirty' and 'value' properties
             if (currentValue && typeof currentValue === 'object' && 'isDirty' in currentValue && 'value' in currentValue) {
                 // Determine if the field has been modified
 
                 return {
-                    ...prevOverrides,
+                    ...state,
                     [key]: {
                         ...currentValue,
                         isDirty: true,
@@ -296,7 +339,7 @@ const AddOfferModal = () => {
             } else {
                 // For simple properties, update the value directly
                 return {
-                    ...prevOverrides,
+                    ...state,
                     [key]: target.value
                 };
             }
@@ -305,8 +348,7 @@ const AddOfferModal = () => {
 
     const handleNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
-
-        setOverrides((prevOverrides) => {
+        updateForm((prevOverrides) => {
             let newOverrides = {...prevOverrides};
             newOverrides.name = newValue;
             if (!prevOverrides.code.isDirty) {
@@ -327,17 +369,17 @@ const AddOfferModal = () => {
 
     const handleTextAreaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const target = e.target as HTMLTextAreaElement;
-        setOverrides({
-            ...overrides,
+        updateForm(state => ({
+            ...state,
             displayDescription: target.value
-        });
+        }));
     };
 
     const handleDurationChange = (duration: string) => {
-        setOverrides({
-            ...overrides,
+        updateForm(state => ({
+            ...state,
             duration: duration
-        });
+        }));
     };
 
     useEffect(() => {
@@ -353,9 +395,9 @@ const AddOfferModal = () => {
     };
 
     useEffect(() => {
-        const newHref = getOfferPortalPreviewUrl(overrides, siteData.url);
+        const newHref = getOfferPortalPreviewUrl(formState, siteData.url);
         setHref(newHref);
-    }, [overrides, siteData.url]);
+    }, [formState, siteData.url]);
 
     const sidebar = <Sidebar
         amountOptions={amountOptions as SelectOption[]}
@@ -367,7 +409,7 @@ const AddOfferModal = () => {
         handleTextInput={handleTextInput}
         handleTierChange={handleTierChange}
         handleTypeChange={handleTypeChange}
-        overrides={overrides}
+        overrides={formState}
         selectedTier={selectedTier.tier}
         tierOptions={tierCadenceOptions}
         typeOptions={typeOptions}
@@ -376,8 +418,25 @@ const AddOfferModal = () => {
     const iframe = <PortalFrame
         href={href}
     />;
-
-    return <PreviewModalContent cancelLabel='Cancel' deviceSelector={false} okLabel='Publish' preview={iframe} sidebar={sidebar} size='full' title='Offer' onCancel={cancelAddOffer} />;
+    return <PreviewModalContent
+        cancelLabel='Cancel'
+        deviceSelector={false}
+        dirty={saveState === 'unsaved'}
+        okColor={okProps.color}
+        okLabel='Publish'
+        preview={iframe}
+        sidebar={sidebar}
+        size='full'
+        title='Offer'
+        onCancel={cancelAddOffer}
+        onOk={async () => {
+            if (!(await handleSave({fakeWhenUnchanged: true}))) {
+                showToast({
+                    type: 'pageError',
+                    message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields.'
+                });
+            }
+        }} />;
 };
 
 export default NiceModal.create(AddOfferModal);
