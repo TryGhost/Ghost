@@ -3,6 +3,8 @@ import type {Meta, StoryObj} from '@storybook/react';
 import DynamicTable, {DynamicTableColumn, DynamicTableRow} from './DynamicTable';
 import Avatar from '../Avatar';
 import Hint from '../Hint';
+import Pagination from '../Pagination';
+import Button from '../Button';
 
 const meta = {
     title: 'Global / Table / Dynamic Table',
@@ -44,6 +46,11 @@ const columns: DynamicTableColumn[] = [
     },
     {
         title: 'Email sent'
+    },
+    {
+        title: '',
+        hidden: true,
+        disableRowClick: true
     }
 ];
 
@@ -52,6 +59,9 @@ const rows = (noOfRows: number) => {
     for (let i = 0; i < noOfRows; i++) {
         data.push(
             {
+                onClick: () => {
+                    alert('Clicked on row: ' + i);
+                },
                 cells: [
                     (<div className='flex items-center gap-2'>
                         {i % 3 === 0 && <Avatar bgColor='green' label='JL' labelColor='white' />}
@@ -71,7 +81,10 @@ const rows = (noOfRows: number) => {
                     'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
                     'Subscribed',
                     'Monthly',
-                    '1,303'
+                    '1,303',
+                    <Button color='green' label='Edit' link onClick={() => {
+                        alert('Clicked Edit in row:' + i);
+                    }} />
                 ]
             }
         );
@@ -164,5 +177,16 @@ export const FullPageExample: Story = {
         tableContainerClassName: 'px-10',
         footerClassName: 'mx-10',
         footer: <Hint>This is a table footer</Hint>
+    }
+};
+
+export const PaginationExample: Story = {
+    args: {
+        columns: columns,
+        rows: rows(10),
+        footer: <div className='flex justify-between'>
+            <Hint>Table footer comes here</Hint>
+            <Pagination limit={5} nextPage={() => {}} page={1} pages={5} prevPage={() => {}} setPage={() => {}} total={15} />
+        </div>
     }
 };

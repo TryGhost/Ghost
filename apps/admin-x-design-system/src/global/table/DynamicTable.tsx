@@ -9,10 +9,13 @@ export type DynamicTableColumn = {
     noWrap?: boolean;
     align?: 'left' | 'center' | 'right';
     valign?: 'top' | 'middle' | 'bottom';
+    hidden?: boolean;
+    disableRowClick?: boolean;
 }
 
 export type DynamicTableRow = {
     cells: React.ReactNode[];
+    onClick?: () => void;
 }
 
 interface DynamicTableProps {
@@ -30,6 +33,7 @@ interface DynamicTableProps {
     tableClassName?: string;
     thClassName?: string;
     tdClassName?: string;
+    cellClassName?: string;
     trClassName?: string;
     footerClassName?: string;
 }
@@ -49,6 +53,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     tableClassName,
     thClassName,
     tdClassName,
+    cellClassName,
     trClassName,
     footerClassName
 }) => {
@@ -72,20 +77,25 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     );
 
     thClassName = clsx(
-        'bg-white py-3 pr-3 text-left',
+        'bg-white text-left',
         headerBorder && 'border-b border-grey-200',
         stickyHeader && 'sticky top-0',
         thClassName
     );
 
     tdClassName = clsx(
-        'w-full py-3 pr-3',
+        'w-full',
         border && 'border-b border-grey-200',
         tdClassName
     );
 
+    cellClassName = clsx(
+        'flex h-full py-3 pr-3',
+        cellClassName
+    );
+
     trClassName = clsx(
-        'hover:bg-gradient-to-r hover:from-white hover:to-grey-50 dark:hover:from-black dark:hover:to-grey-950',
+        'group hover:bg-gradient-to-r hover:from-white hover:to-grey-50 dark:hover:from-black dark:hover:to-grey-950',
         trClassName
     );
 
@@ -126,18 +136,15 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
                             rowID = rowID + 1;
                             return <tr key={'row-' + rowID} className={trClassName}>
                                 {row.cells.map((cell) => {
-                                    let customTdClasses;
-                                    if (columns[colID] !== undefined) {
-                                        customTdClasses = clsx(
-                                            tdClassName,
-                                            columns[colID].noWrap ? 'truncate' : '',
-                                            columns[colID].align === 'center' && 'text-center',
-                                            columns[colID].align === 'right' && 'text-right',
-                                            columns[colID].valign === 'top' && 'align-top',
-                                            columns[colID].valign === 'middle' && 'align-center',
-                                            columns[colID].valign === 'bottom' && 'align-bottom'
-                                        );
-                                    }
+                                    const currentColumn: DynamicTableColumn = columns[colID] || {title: ''};
+
+                                    let customTdClasses = tdClassName;
+                                    customTdClasses = clsx(
+                                        customTdClasses,
+                                        currentColumn.noWrap ? 'truncate' : '',
+                                        currentColumn.align === 'center' && 'text-center',
+                                        currentColumn.align === 'right' && 'text-right'
+                                    );
 
                                     if (rowID === rows.length && footerBorder) {
                                         customTdClasses = clsx(
@@ -146,14 +153,33 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
                                         );
                                     }
 
-                                    const tdMaxWidth: string = (columns[colID] !== undefined && columns[colID].maxWidth) || 'auto';
+                                    const tdMaxWidth: string = (currentColumn !== undefined && currentColumn.maxWidth) || 'auto';
                                     const tdStyles = {
                                         maxWidth: tdMaxWidth,
                                         width: tdMaxWidth
                                     };
+                                    let customCellClasses = cellClassName;
+                                    customCellClasses = clsx(
+                                        customCellClasses,
+                                        currentColumn.valign === 'middle' || !currentColumn.valign && 'items-center',
+                                        currentColumn.valign === 'top' && 'items-start',
+                                        currentColumn.valign === 'bottom' && 'items-end'
+                                    );
+                                    if (row.onClick && !currentColumn.disableRowClick) {
+                                        customCellClasses = clsx(
+                                            customCellClasses,
+                                            'cursor-pointer'
+                                        );
+                                    }
+                                    if (currentColumn.hidden) {
+                                        customCellClasses = clsx(
+                                            customCellClasses,
+                                            'opacity-0 group-hover:opacity-100'
+                                        );
+                                    }
                                     const data = (
                                         <td key={colID} className={customTdClasses} style={tdStyles}>
-                                            {cell}
+                                            <div className={customCellClasses} onClick={(row.onClick && !currentColumn.disableRowClick) ? row.onClick : (() => {})}>{cell}</div>
                                         </td>
                                     );
                                     colID = colID + 1;
