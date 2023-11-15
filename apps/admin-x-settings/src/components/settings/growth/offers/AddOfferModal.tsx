@@ -423,7 +423,6 @@ const AddOfferModal = () => {
         href={href}
     />;
 
-<<<<<<< HEAD
     return <PreviewModalContent
         cancelLabel='Cancel'
         deviceSelector={false}
