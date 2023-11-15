@@ -94,7 +94,7 @@
     "@tryghost/html-to-plaintext": "0.0.0",
     "@tryghost/http-cache-utils": "0.1.11",
     "@tryghost/i18n": "0.0.0",
-    "@tryghost/image-transform": "1.2.10",
+    "@tryghost/image-transform": "1.2.11",
     "@tryghost/importer-handler-content-files": "0.0.0",
     "@tryghost/importer-revue": "0.0.0",
     "@tryghost/job-manager": "0.0.0",
