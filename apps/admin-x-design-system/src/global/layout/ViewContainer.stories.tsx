@@ -1,16 +1,16 @@
 import {useArgs} from '@storybook/preview-api';
 import type {Meta, StoryObj} from '@storybook/react';
 
-import DynamicTable, {DynamicTableTab} from './DynamicTable';
+import ViewContainer, {ViewTab} from './ViewContainer';
 import Icon from '../Icon';
 
 const meta = {
-    title: 'Global / Dynamic Table',
-    component: DynamicTable,
+    title: 'Global / Layout / View Container',
+    component: ViewContainer,
     render: function Component(args) {
         const [, updateArgs] = useArgs();
 
-        return <DynamicTable {...args}
+        return <ViewContainer {...args}
             onTabChange={(tab) => {
                 updateArgs({selectedTab: tab});
                 args.onTabChange?.(tab);
@@ -22,10 +22,10 @@ const meta = {
         />;
     },
     tags: ['autodocs']
-} satisfies Meta<typeof DynamicTable>;
+} satisfies Meta<typeof ViewContainer>;
 
 export default meta;
-type Story = StoryObj<typeof DynamicTable>;
+type Story = StoryObj<typeof ViewContainer>;
 
 const ContentContainer: React.FC<{children: React.ReactNode}> = ({
     children
@@ -54,7 +54,7 @@ export const HeadingSize: Story = {
  * Multiple views
  */
 
-const multiViews: DynamicTableTab[] = [
+const multiViews: ViewTab[] = [
     {
         id: 'steph',
         title: 'Steph Curry',
@@ -86,7 +86,7 @@ export const MultiView: Story = {
  * Simple tabs
  */
 
-const simpleTabs: DynamicTableTab[] = [
+const simpleTabs: ViewTab[] = [
     {
         id: 'steph',
         title: 'Steph Curry',
@@ -111,7 +111,7 @@ export const SingleViewTabs: Story = {
  * Tabs with views
  */
 
-const multiViewTabs: DynamicTableTab[] = [
+const multiViewTabs: ViewTab[] = [
     {
         id: 'steph',
         title: 'Steph Curry',

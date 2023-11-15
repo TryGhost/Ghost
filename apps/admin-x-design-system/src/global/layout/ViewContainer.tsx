@@ -3,22 +3,22 @@ import {Tab, TabList} from '../TabView';
 import Heading, {HeadingLevel} from '../Heading';
 import clsx from 'clsx';
 
-export interface DynamicTableView {
+export interface View {
     id: string;
     buttonClasses?: string;
     buttonChildren: React.ReactNode;
     contents: React.ReactNode;
 }
 
-export interface DynamicTableTab extends Tab {
-    views?: DynamicTableView[];
+export interface ViewTab extends Tab {
+    views?: View[];
 }
 
-interface DynamicTableProps {
+interface ViewContainerProps {
     headingType?: 'text' | 'tabs' | 'custom',
     headingTextSize?: HeadingLevel,
     headingContent?: string | React.ReactNode;
-    tabs?: DynamicTableTab[];
+    tabs?: ViewTab[];
     selectedTab?: string;
     selectedView?: string;
     onTabChange?: (id: string) => void;
@@ -26,7 +26,7 @@ interface DynamicTableProps {
     children?: React.ReactNode;
 }
 
-const DynamicTable: React.FC<DynamicTableProps> = ({
+const ViewContainer: React.FC<ViewContainerProps> = ({
     headingType = 'text',
     headingTextSize = 1,
     headingContent = '',
@@ -137,4 +137,4 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     );
 };
 
-export default DynamicTable;
+export default ViewContainer;
