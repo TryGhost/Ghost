@@ -12,7 +12,6 @@ on:
 env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
-  GITHUB_CONTEXT: ${{ toJson(github) }}
   CACHED_DEPENDENCY_PATHS: |
     ${{ github.workspace }}/node_modules
     ${{ github.workspace }}/apps/*/node_modules
@@ -42,6 +41,11 @@ jobs:
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 2
+
+      - name: Output GitHub context
+        run: echo "$GITHUB_CONTEXT"
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
 
       - name: Get metadata (push)
         if: github.event_name == 'push'
