@@ -1,9 +1,9 @@
-import {OffersController} from '../http/controllers/OffersController';
+import {SnippetsController} from '../http/controllers/snippets.controller';
 
 class AppModuleClass {}
 
 export const AppModule = {
     module: AppModuleClass,
-    controllers: [OffersController],
+    controllers: [SnippetsController],
     providers: []
 };
