@@ -1,9 +1,9 @@
 // Switch these lines once there are useful utils
-const testUtils = require('./utils');
+const testUtils = require('../utils');
 const fs = require('fs-extra');
 const errors = require('@tryghost/errors');
 
-const transform = require('../');
+const transform = require('../..');
 
 describe('Transform', function () {
     afterEach(function () {
@@ -86,7 +86,9 @@ describe('Transform', function () {
             sharpInstance = {
                 resize: sinon.stub().returnsThis(),
                 rotate: sinon.stub().returnsThis(),
-                toBuffer: sinon.stub()
+                toBuffer: sinon.stub(),
+                jpeg: sinon.stub().returnsThis(),
+                metadata: sinon.stub().returns({format: 'test'})
             };
 
             sharp = sinon.stub().callsFake(() => {
