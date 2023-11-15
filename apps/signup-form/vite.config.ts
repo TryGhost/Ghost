@@ -29,6 +29,7 @@ export default (function viteConfig() {
         },
         build: {
             outDir: resolve(__dirname, 'umd'),
+            reportCompressedSize: false,
             emptyOutDir: true,
             minify: true,
             sourcemap: true,
