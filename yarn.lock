@@ -7762,10 +7762,10 @@
     "@tryghost/errors" "^1.2.26"
     "@tryghost/request" "^1.0.0"
 
-"@tryghost/image-transform@1.2.10":
-  version "1.2.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.2.10.tgz#0aea78ba47056e28ca21da9f625da1f1b0ca6085"
-  integrity sha512-xSzivoo2ME4x/UsMT8UpX1kqQTFxzckzl7kVLfvgPsnsSpAOP3W5P5cEb5szptcTLwtZhs/8kCw331Sh9kBd+g==
+"@tryghost/image-transform@1.2.11":
+  version "1.2.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/image-transform/-/image-transform-1.2.11.tgz#82463d97f8747db6db70165a04e824eed6791fee"
+  integrity sha512-O4DRZw3lXj9E4LCV8Mm/gMchhyH9rq4/4h4f4+8tb/dhanz7DMhP5yXHH4WBooF2SG1HWV/XITVSY1erFYQFyA==
   dependencies:
     "@tryghost/errors" "^1.2.26"
     fs-extra "^11.0.0"
