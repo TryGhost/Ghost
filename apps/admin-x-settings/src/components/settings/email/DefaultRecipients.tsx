@@ -142,7 +142,6 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     title='Filter'
                     values={selectedSegments}
                     async
-                    clearBg
                     defaultOptions
                     onChange={updateSelectedSegments}
                 />
