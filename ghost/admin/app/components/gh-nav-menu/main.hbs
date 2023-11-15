@@ -119,6 +119,11 @@
                             </li>
                         {{/if}}
                     {{/if}}
+                    {{#if (feature "adminXDemo")}}
+                        <li>
+                            <LinkTo @route="demo-x" @current-when="demo-x" @alt="AdminX Demo">{{svg-jar "star"}}AdminX Demo</LinkTo>
+                        </li>
+                    {{/if}}
                 </ul>
 
                 {{#if this.session.user.isOwnerOnly}}

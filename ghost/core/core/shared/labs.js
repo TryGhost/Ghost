@@ -46,7 +46,8 @@ const ALPHA_FEATURES = [
     'listUnsubscribeHeader',
     'editorEmojiPicker',
     'adminXOffers',
-    'filterEmailDisabled'
+    'filterEmailDisabled',
+    'adminXDemo'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
