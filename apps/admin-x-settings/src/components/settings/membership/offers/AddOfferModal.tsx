@@ -2,7 +2,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalFrame from '../portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm from '../../../../hooks/useForm';
-import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField} from '@tryghost/admin-x-design-system';
+import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getTiersCadences} from '../../../../utils/getTiersCadences';
@@ -218,7 +218,7 @@ const AddOfferModal = () => {
         }
     });
 
-    const {formState, updateForm, handleSave} = useForm({
+    const {formState, updateForm, handleSave, saveState, okProps} = useForm({
         initialState: {
             disableBackground: true,
             name: '',
@@ -250,7 +250,7 @@ const AddOfferModal = () => {
                 display_description: formState.displayDescription,
                 cadence: formState.cadence,
                 amount: Number(formState.discountAmount),
-                duration: formState.duration,
+                duration: formState.type === 'trial' ? 'trial' : formState.duration,
                 duration_in_months: formState.durationInMonths,
                 currency: formState.currency,
                 status: formState.status,
@@ -268,7 +268,8 @@ const AddOfferModal = () => {
         onSaveError: () => {},
         onValidate: () => {
             return {};
-        }
+        },
+        savingDelay: 500
     });
 
     const amountOptions = [
@@ -311,13 +312,13 @@ const AddOfferModal = () => {
         const target = e.target as HTMLInputElement | HTMLTextAreaElement;
         updateForm((state) => {
             // Extract the current value for the key
-            
+
             const currentValue = (state as offerPortalPreviewUrlTypes)[key];
     
             // Check if the current value is an object and has 'isDirty' and 'value' properties
             if (currentValue && typeof currentValue === 'object' && 'isDirty' in currentValue && 'value' in currentValue) {
                 // Determine if the field has been modified
-    
+
                 return {
                     ...state,
                     [key]: {
@@ -410,7 +411,25 @@ const AddOfferModal = () => {
         href={href}
     />;
 
-    return <PreviewModalContent cancelLabel='Cancel' deviceSelector={false} okLabel='Publish' preview={iframe} sidebar={sidebar} size='full' title='Offer' onCancel={cancelAddOffer} onOk={handleSave} />;
+    return <PreviewModalContent
+        cancelLabel='Cancel'
+        deviceSelector={false}
+        dirty={saveState === 'unsaved'}
+        okColor={okProps.color}
+        okLabel='Publish'
+        preview={iframe}
+        sidebar={sidebar} 
+        size='full'
+        title='Offer'
+        onCancel={cancelAddOffer}
+        onOk={async () => {
+            if (!(await handleSave({fakeWhenUnchanged: true}))) {
+                showToast({
+                    type: 'pageError',
+                    message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields.'
+                });
+            }
+        }} />;
 };
 
 export default NiceModal.create(AddOfferModal);
