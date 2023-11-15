@@ -214,6 +214,10 @@ async function handleStripe() {
     try {
         await result;
     } catch (err) {
-        console.error('\nExecuting dev command failed, ensure dependencies are up-to-date by running `yarn fix`\n');
+        console.error();
+        console.error(chalk.red(`Executing dev command failed:`) + `\n`);
+        console.error(chalk.red(`If you've recently done a \`yarn main\`, dependencies might be out of sync. Try running \`${chalk.green('yarn fix')}\` to fix this.`));
+        console.error(chalk.red(`If not, something else went wrong. Please report this to the Ghost team.`));
+        console.error();
     }
 })();
