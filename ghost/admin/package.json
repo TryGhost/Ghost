@@ -40,6 +40,7 @@
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@sentry/ember": "7.78.0",
+    "@sentry/integrations": "7.80.0",
     "@tryghost/color-utils": "0.2.0",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.88",
@@ -168,7 +169,6 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "@sentry/integrations": "^7.75.1",
     "jose": "4.15.4",
     "path-browserify": "1.0.1",
     "webpack": "5.89.0"
