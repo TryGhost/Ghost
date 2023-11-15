@@ -7,6 +7,7 @@ import {defineConfig} from 'vitest/config';
 // https://vitejs.dev/config/
 export default (function viteConfig() {
     return defineConfig({
+        logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
             svgr(),
             react()
