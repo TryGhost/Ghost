@@ -74,6 +74,15 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
     handleNameInput,
     handleTextAreaInput,
     amountOptions}) => {
+    const getFilteredDurationOptions = () => {
+        // Check if the selected tier's cadence is 'yearly'
+        if (selectedTier?.label?.includes('Yearly')) {
+            // Filter out 'repeating' from duration options
+            return durationOptions.filter(option => option.value !== 'repeating');
+        }
+        return durationOptions;
+    };
+    const filteredDurationOptions = getFilteredDurationOptions();
     return (
         <div className='pt-7'>
             <Form>
@@ -124,8 +133,8 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 </div>
                             </div>
                             <Select
-                                options={durationOptions}
-                                selectedOption={overrides.duration === 'once' ? durationOptions[0] : overrides.duration === 'repeating' ? durationOptions[1] : durationOptions[2]}
+                                options={filteredDurationOptions}
+                                selectedOption={filteredDurationOptions.find(option => option.value === overrides.duration)}
                                 title='Duration'
                                 onSelect={e => handleDurationChange(e?.value || '')}
                             />
