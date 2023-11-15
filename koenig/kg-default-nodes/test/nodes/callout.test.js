@@ -1,8 +1,7 @@
-const {html} = require('../utils');
+const {createDocument, dom, html} = require('../utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
-const {JSDOM} = require('jsdom');
 const {CalloutNode, $createCalloutNode, $isCalloutNode} = require('../../');
 
 const editorNodes = [CalloutNode];
@@ -38,9 +37,7 @@ describe('CalloutNode', function () {
 
         exportOptions = {
             exportFormat: 'html',
-            createDocument() {
-                return (new JSDOM()).window.document;
-            }
+            dom
         };
     });
 
@@ -173,13 +170,13 @@ describe('CalloutNode', function () {
 
     describe('importDOM', function () {
         it('parses callout card', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <div class="kg-card kg-callout-card kg-callout-card-red">
                     <div class="kg-callout-emoji">💡</div>
                     <div class="kg-callout-text">This is a callout</div>
                 </div>
-                    `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
             nodes[0].backgroundColor.should.equal('red');
             nodes[0].calloutText.should.equal('This is a callout');
@@ -187,12 +184,12 @@ describe('CalloutNode', function () {
         }));
 
         it('parses callout card with no emoji', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <div class="kg-card kg-callout-card kg-callout-card-red">
                     <div class="kg-callout-text">This is a callout</div>
                 </div>
-                    `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
             nodes[0].backgroundColor.should.equal('red');
             nodes[0].calloutText.should.equal('This is a callout');

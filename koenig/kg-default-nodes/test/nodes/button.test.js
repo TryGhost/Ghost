@@ -1,8 +1,7 @@
-const {html} = require('../utils');
+const {createDocument, dom, html} = require('../utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
-const {JSDOM} = require('jsdom');
 
 const {ButtonNode, $createButtonNode, $isButtonNode} = require('../../');
 
@@ -35,9 +34,7 @@ describe('ButtonNode', function () {
             alignment: 'center'
         };
         exportOptions = {
-            createDocument() {
-                return (new JSDOM()).window.document;
-            }
+            dom
         };
     });
 
@@ -207,10 +204,10 @@ describe('ButtonNode', function () {
 
     describe('importDOM', function () {
         it('parses button card', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <div class="kg-card kg-button-card kg-align-center"><a href="http://someblog.com/somepost" class="kg-btn kg-btn-accent">click me</a></div>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
             nodes[0].buttonUrl.should.equal('http://someblog.com/somepost');
             nodes[0].buttonText.should.equal('click me');
@@ -218,12 +215,12 @@ describe('ButtonNode', function () {
         }));
 
         it('preserves relative urls in content', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <div class="kg-card kg-button-card kg-align-center">
                     <a href="#/portal/signup" class="kg-btn kg-btn-accent">Subscribe 1</a>
                 </div>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
             nodes[0].buttonUrl.should.equal('#/portal/signup');
             nodes[0].buttonText.should.equal('Subscribe 1');

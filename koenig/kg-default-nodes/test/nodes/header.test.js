@@ -1,7 +1,6 @@
-const {html} = require('../utils');
+const {createDocument, dom, html} = require('../utils');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
-const {JSDOM} = require('jsdom');
 const {HeaderNode, $createHeaderNode, $isHeaderNode} = require('../../');
 const {_} = require('lodash');
 
@@ -40,9 +39,7 @@ describe('HeaderNode', function () {
             };
 
             exportOptions = {
-                createDocument() {
-                    return (new JSDOM()).window.document;
-                }
+                dom
             };
         });
 
@@ -204,8 +201,8 @@ describe('HeaderNode', function () {
                 <h3 class="kg-header-card-subheader" id="subheader-slug">Subheader</h3>
                 <a class="kg-header-card-button" href="https://example.com">Button</a>
             </div>`;
-                const dom = new JSDOM(htmlstring).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(htmlstring);
+                const nodes = $generateNodesFromDOM(editor, document);
                 nodes.length.should.equal(1);
                 const node = nodes[0];
                 node.size.should.equal('large');
@@ -226,8 +223,8 @@ describe('HeaderNode', function () {
                 <a class="kg-header-card-button" href="https://example.com">Button</a>
             </div>`;
 
-                const dom = new JSDOM(htmlstring).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(htmlstring);
+                const nodes = $generateNodesFromDOM(editor, document);
                 nodes.length.should.equal(1);
                 const node = nodes[0];
                 node.version.should.equal(2);
@@ -295,9 +292,7 @@ describe('HeaderNode', function () {
                     }
                 },
                 canTransformImage: () => true,
-                createDocument() {
-                    return (new JSDOM()).window.document;
-                }
+                dom
             };
         });
 
@@ -373,8 +368,8 @@ describe('HeaderNode', function () {
                             </div>
                         </div>
                     </div>`;
-                const dom = new JSDOM(htmlstring).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(htmlstring);
+                const nodes = $generateNodesFromDOM(editor, document);
                 nodes.length.should.equal(1);
                 const node = nodes[0];
                 node.backgroundColor.should.equal('accent');
@@ -399,8 +394,8 @@ describe('HeaderNode', function () {
                 <a class="kg-header-card-button" href="https://example.com">Button</a>
             </div>`;
 
-                const dom = new JSDOM(htmlstring).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(htmlstring);
+                const nodes = $generateNodesFromDOM(editor, document);
                 nodes.length.should.equal(1);
                 const node = nodes[0];
                 node.version.should.equal(1);

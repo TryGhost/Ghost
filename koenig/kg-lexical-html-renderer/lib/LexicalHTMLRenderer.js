@@ -1,9 +1,14 @@
 class LexicalHTMLRenderer {
-    constructor({nodes} = {}) {
-        const jsdom = require('jsdom');
-        const {JSDOM} = jsdom;
+    constructor({dom, nodes} = {}) {
+        if (!dom) {
+            const jsdom = require('jsdom');
+            const {JSDOM} = jsdom;
 
-        this.dom = new JSDOM();
+            this.dom = new JSDOM();
+        } else {
+            this.dom = dom;
+        }
+
         this.nodes = nodes || [];
     }
 

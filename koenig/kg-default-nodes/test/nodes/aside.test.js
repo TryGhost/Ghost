@@ -1,8 +1,7 @@
-const {html} = require('../utils');
+const {createDocument, html} = require('../utils');
 const {$getRoot, $createParagraphNode, $createTextNode} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
-const {JSDOM} = require('jsdom');
 const {AsideNode, $createAsideNode, $isAsideNode} = require('../../');
 
 const editorNodes = [AsideNode];
@@ -38,10 +37,10 @@ describe('AsideNode', function () {
 
     describe('importDOM', function () {
         it('parses an aside element', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <blockquote class="kg-blockquote-alt">Hello</blockquote>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].should.be.instanceof(AsideNode);

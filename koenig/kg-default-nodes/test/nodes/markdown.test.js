@@ -1,6 +1,5 @@
-const {html} = require('../utils');
+const {dom, html} = require('../utils');
 const {createHeadlessEditor} = require('@lexical/headless');
-const {JSDOM} = require('jsdom');
 const {$getRoot} = require('lexical');
 const {MarkdownNode, $createMarkdownNode, $isMarkdownNode} = require('../../');
 
@@ -33,9 +32,7 @@ describe('MarkdownNode', function () {
         };
 
         exportOptions = {
-            createDocument() {
-                return (new JSDOM()).window.document;
-            }
+            dom
         };
     });
 

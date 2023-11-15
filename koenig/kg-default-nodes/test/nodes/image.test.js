@@ -1,8 +1,7 @@
-const {html} = require('../utils');
+const {createDocument, dom, html} = require('../utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
-const {JSDOM} = require('jsdom');
 const {ImageNode, $createImageNode, $isImageNode} = require('../../');
 
 const editorNodes = [ImageNode];
@@ -49,9 +48,7 @@ describe('ImageNode', function () {
                 }
             },
             canTransformImage: () => true,
-            createDocument() {
-                return (new JSDOM()).window.document;
-            }
+            dom
         };
     });
 
@@ -309,7 +306,7 @@ describe('ImageNode', function () {
 
     describe('importDOM', function () {
         it('parses an img element', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <img
                     src="/image.png"
                     alt="Alt text"
@@ -317,8 +314,8 @@ describe('ImageNode', function () {
                     width="3000"
                     height="2000"
                 />
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('/image.png');
@@ -329,12 +326,12 @@ describe('ImageNode', function () {
         }));
 
         it('parses IMG inside FIGURE to image card without caption', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure>
                     <img src="http://example.com/test.png" alt="Alt test" title="Title test" />
                 </figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');
@@ -343,13 +340,13 @@ describe('ImageNode', function () {
         }));
 
         it('parses IMG inside FIGURE to image card with caption', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure>
                     <img src="http://example.com/test.png">
                     <figcaption>&nbsp; <strong>Caption test</strong></figcaption>
                 </figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');
@@ -357,35 +354,35 @@ describe('ImageNode', function () {
         }));
 
         it('extracts Koenig card widths', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure class="kg-card kg-width-wide">
                     <img src="http://example.com/test.png">
                 </figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
             nodes[0].cardWidth.should.equal('wide');
         }));
 
         it('extracts Medium card widths', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure class="graf--layoutFillWidth">
                     <img src="http://example.com/test.png">
                 </figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].cardWidth.should.equal('full');
         }));
 
         it('extracts IMG dimensions from width/height attrs', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure>
                     <img src="http://example.com/test.png" width="640" height="480">
                 </figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');
@@ -394,12 +391,12 @@ describe('ImageNode', function () {
         }));
 
         it('extracts IMG dimensions from dataset', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure>
                     <img src="http://example.com/test.png" width="640" height="480">
                 </figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');
@@ -408,12 +405,12 @@ describe('ImageNode', function () {
         }));
 
         it('extracts IMG dimensions from data-image-dimensions', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure>
                     <img src="http://example.com/test.png" data-image-dimensions="640x480">
                 </figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');
@@ -422,14 +419,14 @@ describe('ImageNode', function () {
         }));
 
         it('extracts href when img wrapped in anchor tag', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure>
                     <a href="https://example.com/link">
                         <img src="http://example.com/test.png">
                     </a>
                 </figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');
@@ -437,12 +434,12 @@ describe('ImageNode', function () {
         }));
 
         it('extracts href when img wrapped in anchor tag not within figure', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <a href="https://example.com/link">
                     <img src="http://example.com/test.png">
                 </a>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('http://example.com/test.png');

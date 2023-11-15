@@ -1,6 +1,5 @@
 const {createHeadlessEditor} = require('@lexical/headless');
-const {html} = require('../utils');
-const {JSDOM} = require('jsdom');
+const {createDocument, dom, html} = require('../utils');
 const {$getRoot} = require('lexical');
 const {SignupNode, $createSignupNode, $isSignupNode, $createPaywallNode} = require('../../');
 const {$generateNodesFromDOM} = require('@lexical/html');
@@ -45,9 +44,7 @@ describe('SignupNode', function () {
         };
 
         exportOptions = {
-            createDocument() {
-                return (new JSDOM()).window.document;
-            }
+            dom
         };
     });
 
@@ -400,8 +397,8 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
 
-            const dom = new JSDOM(element.outerHTML).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            const document = createDocument(element.outerHTML);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
         }));
 
@@ -411,8 +408,8 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
 
-            const dom = new JSDOM(element.outerHTML).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            const document = createDocument(element.outerHTML);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
         }));
 
@@ -421,8 +418,8 @@ describe('SignupNode', function () {
             dataset.swapped = true;
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
-            const dom = new JSDOM(element.outerHTML).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            const document = createDocument(element.outerHTML);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
         }));
 
@@ -431,8 +428,8 @@ describe('SignupNode', function () {
             dataset.backgroundSize = 'contain';
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
-            const dom = new JSDOM(element.outerHTML).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            const document = createDocument(element.outerHTML);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
         }));
 
@@ -441,8 +438,8 @@ describe('SignupNode', function () {
             dataset.backgroundSize = 'cover';
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
-            const dom = new JSDOM(element.outerHTML).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            const document = createDocument(element.outerHTML);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
         }));
 
@@ -455,8 +452,8 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
 
-            const dom = new JSDOM(element.outerHTML).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            const document = createDocument(element.outerHTML);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
         }));
 
@@ -468,8 +465,8 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
 
-            const dom = new JSDOM(element.outerHTML).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            const document = createDocument(element.outerHTML);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
         }));
 
@@ -481,8 +478,8 @@ describe('SignupNode', function () {
             const signupNode = $createSignupNode(dataset);
             const {element} = signupNode.exportDOM(exportOptions);
 
-            const dom = new JSDOM(element.outerHTML).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            const document = createDocument(element.outerHTML);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
         }));
     });

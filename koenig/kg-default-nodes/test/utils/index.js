@@ -1,3 +1,5 @@
+const {JSDOM} = require('jsdom');
+
 /**
  * Test Utilities
  *
@@ -22,4 +24,12 @@ module.exports.html = function html(partials, ...params) {
     }
 
     return Prettier.format(output, {parser: 'html'});
+};
+
+const dom = new JSDOM();
+module.exports.dom = new JSDOM();
+
+const parser = new dom.window.DOMParser();
+module.exports.createDocument = function createDocument(html) {
+    return parser.parseFromString(html, 'text/html');
 };

@@ -1,16 +1,14 @@
-const {JSDOM} = require('jsdom');
+const jsdom = require('jsdom');
+const {JSDOM} = jsdom;
 const Renderer = require('../../');
+
+const dom = new JSDOM();
 
 function shouldRender({input, output, options = {}}) {
     return async function () {
-        const defaultRenderOptions = {
-            createDocument() {
-                return (new JSDOM()).window.document;
-            }
-        };
         const {nodes, ...renderOptions} = options;
-        const renderer = new Renderer({nodes});
-        const renderedInput = await renderer.render(input, {...defaultRenderOptions, ...renderOptions});
+        const renderer = new Renderer({dom, nodes});
+        const renderedInput = await renderer.render(input, renderOptions);
         renderedInput.should.equal(output);
     };
 }

@@ -1,8 +1,7 @@
-const {html} = require('../utils');
+const {createDocument, dom, html} = require('../utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
-const {JSDOM} = require('jsdom');
 const Prettier = require('@prettier/sync');
 
 const {EmbedNode, $createEmbedNode, $isEmbedNode} = require('../../');
@@ -59,9 +58,7 @@ describe('EmbedNode', function () {
         };
 
         exportOptions = {
-            createDocument() {
-                return (new JSDOM()).window.document;
-            }
+            dom
         };
     });
 
@@ -416,8 +413,8 @@ describe('EmbedNode', function () {
         // WP <figure class=\"wp-block-embed-youtube \"><div class=\"wp-block-embed__wrapper\">\n<span class=\"embed-youtube\" style=\"text-align:center; display: block;\"><iframe class='youtube-player' type='text/html' width='640' height='360' src='https://www.youtube.com/embed/YTVID?version=3&rel=1&fs=1&autohide=2&showsearch=0&showinfo=1&iv_load_policy=1&wmode=transparent' allowfullscreen='true' style='border: 0;'></iframe></span>\n</div></figure>
 
             it('youtube iframe', editorTest(function () {
-                const dom = (new JSDOM(html`<figure class="kg-card kg-embed-card"><iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></figure>`)).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(html`<figure class="kg-card kg-embed-card"><iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></figure>`);
+                const nodes = $generateNodesFromDOM(editor, document);
 
                 nodes.length.should.equal(1);
                 nodes[0].getType().should.equal('embed');
@@ -427,8 +424,8 @@ describe('EmbedNode', function () {
             }));
 
             it('medium youtube iframe', editorTest(function () {
-                const dom = (new JSDOM(html`<figure name="abc" id="abc" class="graf graf--figure graf--iframe graf-after--p"><iframe src="https://www.youtube.com/embed/YTVID?feature=oembed" width="700" height="393" frameborder="0" scrolling="no"></iframe></figure>`)).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(html`<figure name="abc" id="abc" class="graf graf--figure graf--iframe graf-after--p"><iframe src="https://www.youtube.com/embed/YTVID?feature=oembed" width="700" height="393" frameborder="0" scrolling="no"></iframe></figure>`);
+                const nodes = $generateNodesFromDOM(editor, document);
 
                 nodes.length.should.equal(1);
                 nodes[0].getType().should.equal('embed');
@@ -438,8 +435,8 @@ describe('EmbedNode', function () {
             }));
 
             it('wordpress youtube iframe', editorTest(function () {
-                const dom = (new JSDOM(html`<figure class="wp-block-embed-youtube "><div class="wp-block-embed__wrapper"><span class="embed-youtube" style="text-align:center; display: block;"><iframe class=\'youtube-player\' type=\'text/html\' width=\'640\' height=\'360\' src=\'https://www.youtube.com/embed/YTVID?version=3&rel=1&fs=1&autohide=2&showsearch=0&showinfo=1&iv_load_policy=1&wmode=transparent\' allowfullscreen=\'true\' style=\'border:0;\'></iframe></span>\n</div></figure>`)).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(html`<figure class="wp-block-embed-youtube "><div class="wp-block-embed__wrapper"><span class="embed-youtube" style="text-align:center; display: block;"><iframe class=\'youtube-player\' type=\'text/html\' width=\'640\' height=\'360\' src=\'https://www.youtube.com/embed/YTVID?version=3&rel=1&fs=1&autohide=2&showsearch=0&showinfo=1&iv_load_policy=1&wmode=transparent\' allowfullscreen=\'true\' style=\'border:0;\'></iframe></span>\n</div></figure>`);
+                const nodes = $generateNodesFromDOM(editor, document);
 
                 nodes.length.should.equal(1);
                 nodes[0].getType().should.equal('embed');
@@ -449,8 +446,8 @@ describe('EmbedNode', function () {
             }));
 
             it('youtube iframe with caption', editorTest(function () {
-                const dom = (new JSDOM(html`<figure class="kg-card kg-embed-card"><iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>My Video</figcaption></figure>`)).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(html`<figure class="kg-card kg-embed-card"><iframe width="480" height="270" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe><figcaption>My Video</figcaption></figure>`);
+                const nodes = $generateNodesFromDOM(editor, document);
 
                 nodes.length.should.equal(1);
                 nodes[0].getType().should.equal('embed');
@@ -461,8 +458,8 @@ describe('EmbedNode', function () {
             }));
 
             it('ignore iframe with relative src', editorTest(function () {
-                const dom = (new JSDOM(html`<figure><iframe data-width="854" data-height="480" width="700" height="393" data-src="/media/345?postId=567" data-media-id="345" data-thumbnail="https://i.embed.ly/1/image?url=https%3A%2F%2Fi.ytimg.com%2Fvi%2FYTVID%2Fhqdefault.jpg&amp;key=abc" class="progressiveMedia-iframe js-progressiveMedia-iframe" allowfullscreen="" frameborder="0" src="/media/345?postId=567"></iframe></figure>`)).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(html`<figure><iframe data-width="854" data-height="480" width="700" height="393" data-src="/media/345?postId=567" data-media-id="345" data-thumbnail="https://i.embed.ly/1/image?url=https%3A%2F%2Fi.ytimg.com%2Fvi%2FYTVID%2Fhqdefault.jpg&amp;key=abc" class="progressiveMedia-iframe js-progressiveMedia-iframe" allowfullscreen="" frameborder="0" src="/media/345?postId=567"></iframe></figure>`);
+                const nodes = $generateNodesFromDOM(editor, document);
 
                 nodes.length.should.equal(0);
             }));
@@ -473,8 +470,8 @@ describe('EmbedNode', function () {
             // Hubspot Naked YouTube <div class="hs-responsive-embed-wrapper hs-responsive-embed" style="width: 100%; height: auto; position: relative; overflow: hidden; padding: 0; min-width: 256px; margin: 0px auto; display: block; margin-left: auto; margin-right: auto;"><div class="hs-responsive-embed-inner-wrapper" style="position: relative; overflow: hidden; max-width: 100%; padding-bottom: 56.25%; margin: 0;"><iframe class="hs-responsive-embed-iframe hs-fullwidth-embed" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" xml="lang" src="//www.youtube.com/embed/YTVID" width="560" height="315" allowfullscreen="" data-service="youtube"></iframe></div></div>
 
             it('youtube iframe with single wrapper div', editorTest(function () {
-                const dom = (new JSDOM(html`<div class="video-container"><iframe width="640" height="360" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>`)).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(html`<div class="video-container"><iframe width="640" height="360" src="https://www.youtube.com/embed/YTVID?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>`);
+                const nodes = $generateNodesFromDOM(editor, document);
 
                 nodes.length.should.equal(1);
                 nodes[0].url.should.equal('https://www.youtube.com/embed/YTVID?feature=oembed');
@@ -482,8 +479,8 @@ describe('EmbedNode', function () {
             }));
 
             it('youtube iframe with double wrapper div + schemaless url', editorTest(function () {
-                const dom = (new JSDOM(html`<div class="hs-responsive-embed-wrapper hs-responsive-embed" style="width: 100%; height: auto; position: relative; overflow: hidden; padding: 0; min-width: 256px; margin: 0px auto; display: block; margin-left: auto; margin-right: auto;"><div class="hs-responsive-embed-inner-wrapper" style="position: relative; overflow: hidden; max-width: 100%; padding-bottom: 56.25%; margin: 0;"><iframe class="hs-responsive-embed-iframe hs-fullwidth-embed" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" xml="lang" src="//www.youtube.com/embed/YTVID" width="560" height="315" allowfullscreen="" data-service="youtube"></iframe></div></div>`)).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(html`<div class="hs-responsive-embed-wrapper hs-responsive-embed" style="width: 100%; height: auto; position: relative; overflow: hidden; padding: 0; min-width: 256px; margin: 0px auto; display: block; margin-left: auto; margin-right: auto;"><div class="hs-responsive-embed-inner-wrapper" style="position: relative; overflow: hidden; max-width: 100%; padding-bottom: 56.25%; margin: 0;"><iframe class="hs-responsive-embed-iframe hs-fullwidth-embed" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" xml="lang" src="//www.youtube.com/embed/YTVID" width="560" height="315" allowfullscreen="" data-service="youtube"></iframe></div></div>`);
+                const nodes = $generateNodesFromDOM(editor, document);
 
                 nodes.length.should.equal(1);
                 nodes[0].url.should.equal('https://www.youtube.com/embed/YTVID');
@@ -499,8 +496,8 @@ describe('EmbedNode', function () {
             // Medium Live HTML <figure name="7b98" id="7b98" class="graf graf--figure graf--iframe graf-after--p graf--trailing"><iframe data-width="500" data-height="281" width="500" height="281" data-src="/media/6969?postId=890" data-media-id="6969" data-thumbnail="https://i.embed.ly/1/image?url=https%3A%2F%2Fpbs.twimg.com%2Fprofile_images%2F1071055431215276033%2FU9-RIlDs_400x400.jpg&amp;key=abc" class="progressiveMedia-iframe js-progressiveMedia-iframe" allowfullscreen="" frameborder="0" src="/media/6969?postId=890"></iframe></figure>
 
             it('twitter blockquote', editorTest(function () {
-                const dom = (new JSDOM(html`<figure class="kg-card kg-embed-card"><blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see &quot;blockchain engineer&quot;, I hear &quot;fancy spreadsheet admin&quot;.</p>&mdash; I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></figure>`)).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(html`<figure class="kg-card kg-embed-card"><blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see &quot;blockchain engineer&quot;, I hear &quot;fancy spreadsheet admin&quot;.</p>&mdash; I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></figure>`);
+                const nodes = $generateNodesFromDOM(editor, document);
 
                 nodes.length.should.equal(1);
                 nodes[0].url.should.equal('https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw');
@@ -508,8 +505,8 @@ describe('EmbedNode', function () {
             }));
 
             it('twitter medium blockquote', editorTest(function () {
-                const dom = (new JSDOM(html`<figure name="7b98" id="7b98" class="graf graf--figure graf--iframe graf-after--p graf--trailing"><blockquote class="twitter-tweet"><a href="https://twitter.com/iamdevloper/status/1133348012439220226"></a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></figure>`)).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(html`<figure name="7b98" id="7b98" class="graf graf--figure graf--iframe graf-after--p graf--trailing"><blockquote class="twitter-tweet"><a href="https://twitter.com/iamdevloper/status/1133348012439220226"></a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></figure>`);
+                const nodes = $generateNodesFromDOM(editor, document);
 
                 nodes.length.should.equal(1);
                 nodes[0].url.should.equal('https://twitter.com/iamdevloper/status/1133348012439220226');
@@ -517,8 +514,8 @@ describe('EmbedNode', function () {
             }));
 
             it('twitter blockquote with caption', editorTest(function () {
-                const dom = (new JSDOM(html`<figure class="kg-card kg-embed-card"><blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see &quot;blockchain engineer&quot;, I hear &quot;fancy spreadsheet admin&quot;.</p>&mdash; I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><figcaption>A Tweet</figcaption></figure>`)).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(html`<figure class="kg-card kg-embed-card"><blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see &quot;blockchain engineer&quot;, I hear &quot;fancy spreadsheet admin&quot;.</p>&mdash; I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><figcaption>A Tweet</figcaption></figure>`);
+                const nodes = $generateNodesFromDOM(editor, document);
 
                 nodes.length.should.equal(1);
                 nodes[0].url.should.equal('https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw');
@@ -527,8 +524,8 @@ describe('EmbedNode', function () {
             }));
 
             it('twitter blockquote with linked caption', editorTest(function () {
-                const dom = (new JSDOM(html`<figure class="kg-card kg-embed-card"><blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see &quot;blockchain engineer&quot;, I hear &quot;fancy spreadsheet admin&quot;.</p>&mdash; I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><figcaption><a href="https://twitter.com">A Tweet</a></figcaption></figure>`)).window.document;
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const document = createDocument(html`<figure class="kg-card kg-embed-card"><blockquote class="twitter-tweet"><p lang="en" dir="ltr">I see &quot;blockchain engineer&quot;, I hear &quot;fancy spreadsheet admin&quot;.</p>&mdash; I Am Devloper (@iamdevloper) <a href="https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw">May 28, 2019</a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><figcaption><a href="https://twitter.com">A Tweet</a></figcaption></figure>`);
+                const nodes = $generateNodesFromDOM(editor, document);
 
                 nodes.length.should.equal(1);
                 nodes[0].url.should.equal('https://twitter.com/iamdevloper/status/1133348012439220226?ref_src=twsrc%5Etfw');

@@ -1,8 +1,7 @@
-// const {html} = require('../utils');
+const {dom, createDocument} = require('../utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
-const {JSDOM} = require('jsdom');
 const {FileNode, $createFileNode, $isFileNode} = require('../../');
 
 const editorNodes = [FileNode];
@@ -39,9 +38,7 @@ describe('FileNode', function () {
         };
         exportOptions = {
             exportFormat: 'html',
-            createDocument() {
-                return (new JSDOM()).window.document;
-            }
+            dom
         };
     });
 
@@ -126,7 +123,7 @@ describe('FileNode', function () {
 
     describe('importDOM', function () {
         it('parses a file card', editorTest(function () {
-            const dom = (new JSDOM(`
+            const document = createDocument(`
                 <div class="kg-card kg-file-card">
                     <a class="kg-file-card-container" href="/content/files/2023/03/IMG_0196.jpeg" title="Download" download="">
                         <div class="kg-file-card-contents">
@@ -158,8 +155,8 @@ describe('FileNode', function () {
                         </div>
                     </a>
                 </div>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
             nodes[0].src.should.equal('/content/files/2023/03/IMG_0196.jpeg');
             nodes[0].fileTitle.should.equal('Cool image to download');

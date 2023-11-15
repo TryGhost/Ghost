@@ -1,8 +1,7 @@
-const {html} = require('../utils');
+const {createDocument, dom, html} = require('../utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
-const {JSDOM} = require('jsdom');
 const {GalleryNode, $createGalleryNode, $isGalleryNode} = require('../../');
 const {ImageNode} = require('../../');
 
@@ -108,9 +107,7 @@ describe('GalleryNode', function () {
                 }
             },
             canTransformImage: () => true,
-            createDocument() {
-                return (new JSDOM()).window.document;
-            }
+            dom
         };
     });
 
@@ -232,7 +229,7 @@ describe('GalleryNode', function () {
 
     describe('importDOM', function () {
         it('parses gallery card', editorTest(function () {
-            const dom = (new JSDOM(`
+            const document = createDocument(`
                 <!--kg-card-begin: gallery-->
                 <figure class="kg-card kg-gallery-card kg-width-wide">
                     <div class="kg-gallery-container">
@@ -258,9 +255,9 @@ describe('GalleryNode', function () {
                     <figcaption>My <em>exciting</em> caption</figcaption>
                 </figure>
                 <!--kg-card-end: gallery-->
-            `)).window.document;
+            `);
 
-            const nodes = $generateNodesFromDOM(editor, dom);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
 
             nodes[0].images.should.deepEqual([
@@ -301,7 +298,7 @@ describe('GalleryNode', function () {
 
         it('parses Medium gallery', editorTest(function () {
             // Medium Export HTML <div data-paragraph-count="2"><figure class="graf graf--figure graf--layoutOutsetRow is-partialWidth graf-after--p" style="width: 50%;"><div class="aspectRatioPlaceholder is-locked"><img class="graf-image" data-image-id="jklm4567.jpeg" data-width="1200" data-height="800" src="https://cdn-images-1.medium.com/max/600/jklm4567.jpeg"></div></figure><figure class="graf graf--figure graf--layoutOutsetRowContinue is-partialWidth graf-after--figure" style="width: 50%;"><div class="aspectRatioPlaceholder is-locked"><img class="graf-image" data-image-id="qurt6789.jpeg" data-width="1200" data-height="800" src="https://cdn-images-1.medium.com/max/600/qurt6789.jpeg"></div></figure></div><div data-paragraph-count="2"><figure class="graf graf--figure graf--layoutOutsetRow is-partialWidth graf-after--figure" style="width: 69.22%;"><div class="aspectRatioPlaceholder is-locked"><img class="graf-image" data-image-id="zyxw3456.jpeg" data-width="1200" data-height="800" src="https://cdn-images-1.medium.com/max/800/zyxw3456.jpeg"></div></figure><figure class="graf graf--figure graf--layoutOutsetRowContinue is-partialWidth graf-after--figure" style="width: 30.78%;"><div class="aspectRatioPlaceholder is-locked"><img class="graf-image" data-image-id="1234abcd.jpeg" data-width="800" data-height="1200" src="https://cdn-images-1.medium.com/max/400/1234abcd.jpeg"></div></figure></div>
-            const dom = (new JSDOM(`
+            const document = createDocument(`
                 <div data-paragraph-count="2">
                     <figure class="graf graf--figure graf--layoutOutsetRow is-partialWidth graf-after--p" style="width: 50%;">
                         <div class="aspectRatioPlaceholder is-locked">
@@ -326,9 +323,9 @@ describe('GalleryNode', function () {
                         </div>
                     </figure>
                 </div>
-            `)).window.document;
+            `);
 
-            const nodes = $generateNodesFromDOM(editor, dom);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
 
             nodes[0].images.should.deepEqual([
@@ -366,7 +363,7 @@ describe('GalleryNode', function () {
         }));
 
         it('handles Medium galleries with multiple captions', editorTest(function () {
-            const dom = (new JSDOM(`
+            const document = createDocument(`
                 <div data-paragraph-count="2">
                     <figure class="graf graf--figure graf--layoutOutsetRow is-partialWidth graf-after--h3" style="width: 69.22%;">
                         <div class="aspectRatioPlaceholder is-locked">
@@ -393,9 +390,9 @@ describe('GalleryNode', function () {
                         <figcaption class="imageCaption" style="width: 199.932%; left: -99.932%;">End Caption</figcaption>
                     </figure>
                 </div>
-            `)).window.document;
+            `);
 
-            const nodes = $generateNodesFromDOM(editor, dom);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
 
             nodes[0].caption.should.equal('First Caption / End Caption');
@@ -408,7 +405,7 @@ describe('GalleryNode', function () {
             // slideshow: <div class="sqs-gallery-container sqs-gallery-block-slideshow sqs-gallery-block-show-meta sqs-gallery-block-meta-position-bottom"><div class="sqs-gallery"><div class="slide content-fill" data-type="image" data-click-through-url><noscript><img src="https://example.com/test.jpg" alt="image alt text"></noscript><img class="thumb-image" data-src="https://example.com/test.jpg" data-image-dimensions="2500x1663" data-image-focal-point="0.5,0.5" alt="image alt text" data-load="false" data-image-id="1234567890" data-type="image" /></div><div class="slide content-fill" data-type="image" data-click-through-url><noscript><img src="https://example.com/test-1.jpg" alt="image alt text"></noscript><img class="thumb-image" data-src="https://example.com/test-1.jpg" data-image-dimensions="800x600" data-image-focal-point="0.5,0.5" alt="image alt text" data-load="false" data-image-id="1234567891" data-type="image" /></div><div class="slide content-fill" data-type="image" data-click-through-url><noscript><img src="https://example.com/test-2.jpg" alt="image alt text"></noscript><img class="thumb-image" data-src="https://example.com/test-2.jpg" data-image-dimensions="600x800" data-image-focal-point="0.5,0.5" alt="image alt text" data-load="false" data-image-id="1234567892" data-type="image" /></div><div class="slide content-fill" data-type="image" data-click-through-url><noscript><img src="https://example.com/test-3.jpg" alt="image alt text"></noscript><img class="thumb-image" data-src="https://example.com/test-3.jpg" data-image-dimensions="800x800" data-image-focal-point="0.5,0.5" alt="image alt text" data-load="false" data-image-id="1234567893" data-type="image" /></div></div></div>
 
             it('parses a stacked gallery into gallery card', editorTest(function () {
-                const dom = (new JSDOM(`
+                const document = createDocument(html`
                     <div class="sqs-gallery-container sqs-gallery-block-stacked">
                         <div class="sqs-gallery">
                             <div class="image-wrapper" id="1234567890" data-type="image" data-animation-role="image">
@@ -433,9 +430,9 @@ describe('GalleryNode', function () {
                             <div class="meta" id="8793002jf84od" data-type="image"></div>
                         </div>
                     </div>
-                `)).window.document;
+                `);
 
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const nodes = $generateNodesFromDOM(editor, document);
                 nodes.length.should.equal(1);
 
                 nodes[0].getType().should.equal('gallery');
@@ -459,7 +456,7 @@ describe('GalleryNode', function () {
             }));
 
             it('can handle multiple captions', editorTest(function () {
-                const dom = (new JSDOM(`
+                const document = createDocument(html`
                     <div class="sqs-gallery-container sqs-gallery-block-stacked">
                         <div class="sqs-gallery">
                             <div class="image-wrapper" id="1234567890" data-type="image" data-animation-role="image">
@@ -486,9 +483,9 @@ describe('GalleryNode', function () {
                             </div>
                         </div>
                     </div>
-                `)).window.document;
+                `);
 
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const nodes = $generateNodesFromDOM(editor, document);
                 nodes.length.should.equal(1);
 
                 const images = nodes[0].images;
@@ -509,7 +506,7 @@ describe('GalleryNode', function () {
             }));
 
             it('parses a slideshow gallery into gallery card', editorTest(function () {
-                const dom = (new JSDOM(`
+                const document = createDocument(html`
                     <div class="sqs-gallery-container sqs-gallery-block-slideshow sqs-gallery-block-show-meta sqs-gallery-block-meta-position-bottom">
                         <div class="sqs-gallery">
                             <div class="slide content-fill" data-type="image" data-click-through-url>
@@ -530,9 +527,9 @@ describe('GalleryNode', function () {
                             </div>
                         </div>
                     </div>
-                `)).window.document;
+                `);
 
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const nodes = $generateNodesFromDOM(editor, document);
                 nodes.length.should.equal(1);
 
                 const images = nodes[0].images;
@@ -556,7 +553,7 @@ describe('GalleryNode', function () {
             }));
 
             it('parses a grid gallery into gallery card', editorTest(function () {
-                const dom = (new JSDOM(`
+                const document = createDocument(html`
                     <div class="sqs-gallery-container sqs-gallery-block-grid sqs-gallery-aspect-ratio-standard sqs-gallery-thumbnails-per-row-1">
                         <div class="sqs-gallery">
                             <div class="slide" data-type="image" data-animation-role="image">
@@ -579,9 +576,9 @@ describe('GalleryNode', function () {
                             </div>
                         </div>
                     </div>
-                `)).window.document;
+                `);
 
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const nodes = $generateNodesFromDOM(editor, document);
                 nodes.length.should.equal(1);
 
                 const images = nodes[0].images;
@@ -599,7 +596,7 @@ describe('GalleryNode', function () {
             }));
 
             it('ignores summary item galleries', editorTest(function () {
-                const dom = (new JSDOM(`
+                const document = createDocument(html`
                     <div class="summary-item-thing sqs-gallery-container sqs-gallery-block-grid sqs-gallery-aspect-ratio-standard sqs-gallery-thumbnails-per-row-1">
                         <div class="sqs-gallery">
                             <div class="slide" data-type="image" data-animation-role="image">
@@ -622,9 +619,9 @@ describe('GalleryNode', function () {
                             </div>
                         </div>
                     </div>
-                `)).window.document;
+                `);
 
-                const nodes = $generateNodesFromDOM(editor, dom);
+                const nodes = $generateNodesFromDOM(editor, document);
                 nodes.length.should.not.equal(1);
                 nodes[0].getType().should.not.equal('gallery');
             }));

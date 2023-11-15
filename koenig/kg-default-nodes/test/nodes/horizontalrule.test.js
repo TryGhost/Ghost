@@ -1,4 +1,4 @@
-const {html} = require('../utils');
+const {createDocument, dom, html} = require('../utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
@@ -32,9 +32,7 @@ describe('HorizontalNode', function () {
         dataset = {};
 
         exportOptions = {
-            createDocument() {
-                return (new JSDOM()).window.document;
-            }
+            dom
         };
     });
 
@@ -56,10 +54,10 @@ describe('HorizontalNode', function () {
 
     describe('importDOM', function () {
         it('parses an hr element', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <hr />
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].should.be.instanceof(HorizontalRuleNode);

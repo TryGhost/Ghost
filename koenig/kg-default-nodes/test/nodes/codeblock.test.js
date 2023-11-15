@@ -1,7 +1,6 @@
-const {html} = require('../utils');
+const {createDocument, dom, html} = require('../utils');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
-const {JSDOM} = require('jsdom');
 const {CodeBlockNode, $createCodeBlockNode, $isCodeBlockNode} = require('../../');
 const {$getRoot} = require('lexical');
 
@@ -42,11 +41,9 @@ describe('CodeBlockNode', function () {
             caption
         };
 
-        exportOptions = new Object({
-            createDocument: () => {
-                return (new JSDOM()).window.document;
-            }
-        });
+        exportOptions = {
+            dom
+        };
     });
 
     it('matches node with $isCodeBlockNode', editorTest(function () {
@@ -238,10 +235,10 @@ describe('CodeBlockNode', function () {
 
     describe('importDOM', function () {
         it('parses PRE>CODE inside FIGURE into code card', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure><pre><code>Test code</code></pre></figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');
@@ -250,10 +247,10 @@ describe('CodeBlockNode', function () {
         }));
 
         it('parses PRE>CODE inside FIGURE with FIGCAPTION into code card', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure><pre><code>Test code</code></pre><figcaption>Test caption</figcaption></figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');
@@ -262,10 +259,10 @@ describe('CodeBlockNode', function () {
         }));
 
         it('extracts language from pre class name for FIGURE>PRE>CODE', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure><pre class="language-js"><code>Test code</code></pre><figcaption>Test caption</figcaption></figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');
@@ -274,10 +271,10 @@ describe('CodeBlockNode', function () {
         }));
 
         it('extracts language from code class name for FIGURE>PRE>CODE', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure><pre><code class="language-js">Test code</code></pre><figcaption>Test caption</figcaption></figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');
@@ -286,19 +283,19 @@ describe('CodeBlockNode', function () {
         }));
 
         it('correctly skips if there is no pre tag', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure><div><span class="nothing-to-see-here"></span></div></figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(0);
         }));
 
         it('parses PRE>CODE into code card', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure><pre><code>Test code</code></pre></figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');
@@ -307,10 +304,10 @@ describe('CodeBlockNode', function () {
         }));
 
         it('extracts language from pre class name for PRE>CODE', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure><pre class="language-javascript"><code>Test code</code></pre></figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');
@@ -319,10 +316,10 @@ describe('CodeBlockNode', function () {
         }));
 
         it('extracts language from code class name for PRE>CODE', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <figure><pre><code class="language-ruby">Test code</code></pre></figure>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].code.should.equal('Test code');

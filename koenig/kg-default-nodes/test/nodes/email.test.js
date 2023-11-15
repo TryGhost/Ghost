@@ -1,7 +1,6 @@
 const {createHeadlessEditor} = require('@lexical/headless');
-const {JSDOM} = require('jsdom');
 const {$getRoot} = require('lexical');
-const {html} = require('../utils');
+const {dom, html} = require('../utils');
 const {EmailNode, $createEmailNode, $isEmailNode} = require('../../');
 
 const editorNodes = [EmailNode];
@@ -33,9 +32,7 @@ describe('EmailNode', function () {
 
         exportOptions = {
             exportFormat: 'html',
-            createDocument() {
-                return (new JSDOM()).window.document;
-            }
+            dom
         };
     });
 

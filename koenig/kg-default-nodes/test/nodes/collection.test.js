@@ -1,7 +1,6 @@
-const {html} = require('../utils');
+const {createDocument, dom, html} = require('../utils');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
-const {JSDOM} = require('jsdom');
 const {CollectionNode, $createCollectionNode, $isCollectionNode} = require('../../');
 
 const editorNodes = [CollectionNode];
@@ -67,9 +66,7 @@ describe('CollectionNode', function () {
         };
 
         exportOptions = {
-            createDocument() {
-                return (new JSDOM()).window.document;
-            },
+            dom,
             renderData: new Map()
         };
     });
@@ -199,7 +196,7 @@ describe('CollectionNode', function () {
             element.outerHTML.should.prettifyTo(expectedElement);
         }));
     });
-    
+
     describe('importDOM', function () {
         it('parses a collection card', editorTest(function () {
             const htmlstring = `
@@ -253,8 +250,8 @@ describe('CollectionNode', function () {
                     </div>
                 </div>
             `;
-            const dom = new JSDOM(htmlstring).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            const document = createDocument(htmlstring);
+            const nodes = $generateNodesFromDOM(editor, document);
             nodes.length.should.equal(1);
             const node = nodes[0];
             node.collection.should.equal('latest');

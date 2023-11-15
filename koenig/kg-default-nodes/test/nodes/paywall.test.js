@@ -1,7 +1,6 @@
 const {createHeadlessEditor} = require('@lexical/headless');
-const {JSDOM} = require('jsdom');
 const {$getRoot} = require('lexical');
-const {html} = require('../utils');
+const {createDocument, dom, html} = require('../utils');
 const {PaywallNode, $createPaywallNode, $isPaywallNode} = require('../../');
 const {$generateNodesFromDOM} = require('@lexical/html');
 
@@ -35,9 +34,7 @@ describe('PaywallNode', function () {
 
         exportOptions = {
             exportFormat: 'html',
-            createDocument() {
-                return (new JSDOM()).window.document;
-            }
+            dom
         };
     });
 
@@ -98,10 +95,10 @@ describe('PaywallNode', function () {
 
     describe('importDOM', function () {
         it('parses a paywall node', editorTest(function () {
-            const dom = (new JSDOM(html`
+            const document = createDocument(html`
                 <span><!--members-only--></span>
-            `)).window.document;
-            const nodes = $generateNodesFromDOM(editor, dom);
+            `);
+            const nodes = $generateNodesFromDOM(editor, document);
 
             nodes.length.should.equal(1);
             nodes[0].should.be.instanceof(PaywallNode);
