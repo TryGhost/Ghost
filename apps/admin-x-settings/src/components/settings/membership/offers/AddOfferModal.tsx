@@ -218,6 +218,16 @@ const AddOfferModal = () => {
         }
     });
 
+    const getDiscountAmount = (discount: number, dctype: string) => {
+        if (dctype === 'percentageOff') {
+            return discount.toString();
+        }
+        if (dctype === 'currencyOff') {
+            let calcDiscount = discount * 100;
+            return calcDiscount.toString();
+        }
+    };
+
     const {formState, updateForm, handleSave, saveState, okProps} = useForm({
         initialState: {
             disableBackground: true,
@@ -249,7 +259,7 @@ const AddOfferModal = () => {
                 display_title: formState.displayTitle.value,
                 display_description: formState.displayDescription,
                 cadence: formState.cadence,
-                amount: formState.type === 'trial' ? Number(formState.trialAmount) : Number(formState.discountAmount),
+                amount: formState.type === 'trial' ? Number(getDiscountAmount(formState.trialAmount, formState.amountType)) : Number(getDiscountAmount(formState.discountAmount, formState.amountType)),
                 duration: formState.type === 'trial' ? 'trial' : formState.duration,
                 duration_in_months: formState.durationInMonths,
                 currency: formState.currency,
