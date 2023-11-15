@@ -45,6 +45,7 @@ export default defineConfig((config) => {
         build: {
             outDir: resolve(__dirname, 'umd'),
             emptyOutDir: true,
+            reportCompressedSize: false,
             minify: true,
             sourcemap: true,
             cssCodeSplit: true,

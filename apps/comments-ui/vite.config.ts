@@ -31,6 +31,7 @@ export default (function viteConfig() {
             port: 5368
         },
         build: {
+            reportCompressedSize: false,
             outDir: resolve(__dirname, 'umd'),
             emptyOutDir: true,
             minify: true,

@@ -50,6 +50,7 @@ export default defineConfig((config) => {
         },
         build: {
             outDir: resolve(__dirname, 'umd'),
+            reportCompressedSize: false,
             emptyOutDir: true,
             minify: true,
             sourcemap: true,

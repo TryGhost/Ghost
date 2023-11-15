@@ -19,6 +19,7 @@ export default (function viteConfig() {
             port: 4174
         },
         build: {
+            reportCompressedSize: false,
             minify: false,
             sourcemap: true,
             outDir: 'es',

@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react';
 import glob from 'glob';
-import { resolve } from 'path';
-import { defineConfig } from 'vitest/config';
+import {resolve} from 'path';
+import {defineConfig} from 'vitest/config';
 
 // https://vitejs.dev/config/
 export default (function viteConfig() {
@@ -17,6 +17,7 @@ export default (function viteConfig() {
             port: 4174
         },
         build: {
+            reportCompressedSize: false,
             minify: false,
             sourcemap: true,
             outDir: 'es',
