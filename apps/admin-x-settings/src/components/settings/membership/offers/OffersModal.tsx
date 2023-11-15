@@ -130,11 +130,11 @@ const OffersModal = () => {
                     currency={offer?.currency || 'USD'}
                     duration={offer?.duration}
                     name={offer?.name}
-                    offerId={offer?.id}
+                    offerId={offer?.id ? offer.id : ''}
                     offerTier={offerTier}
-                    redemptionCount={offer?.redemption_count}
+                    redemptionCount={offer?.redemption_count ? offer.redemption_count : 0}
                     type={offer?.type as OfferType}
-                    onClick={() => handleOfferEdit(offer?.id)}
+                    onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}
                 />
             );
         })}
@@ -156,7 +156,7 @@ const OffersModal = () => {
                     <td>{offerTier.name} {getOfferCadence(offer.cadence)}</td>
                     <td><span className={`text-xs font-semibold uppercase ${discountColor}`}>{discountOffer}</span></td>
                     <td>{updatedPriceWithCurrency}{originalPriceWithCurrency}</td>
-                    <td><a className='hover:underline' href={createRedemptionFilterUrl(offer.id)}>{offer.redemption_count}</a></td>
+                    <td><a className='hover:underline' href={createRedemptionFilterUrl(offer.id ? offer.id : '')}>{offer.redemption_count}</a></td>
                 </tr>
             );
         })}

@@ -2,7 +2,7 @@ import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api
 import {updateQueryCache} from '../utils/api/updateQueries';
 
 export type Offer = {
-    id?: string;
+    id: string;
     name: string;
     code: string;
     display_title: string;
@@ -15,20 +15,28 @@ export type Offer = {
     currency_restriction: boolean;
     currency: string | null;
     status: string;
-    redemption_count?: number;
+    redemption_count: number;
     tier: {
         id: string;
         name?: string;
     }
 }
 
+export type PartialNewOffer = Omit<Offer, 'redemption_count'>;
+export type NewOffer = Partial<Pick<PartialNewOffer, 'id'>> & Omit<PartialNewOffer, 'id'>;
+
 export interface OffersResponseType {
     meta?: Meta
-    offers: Offer[]
+    offers?: Offer[]
 }
 
 export interface OfferEditResponseType extends OffersResponseType {
     meta?: Meta
+}
+
+export interface OfferAddResponseType {
+    meta?: Meta,
+    offers: NewOffer[]
 }
 
 const dataType = 'OffersResponseType';
@@ -54,7 +62,7 @@ export const useEditOffer = createMutation<OfferEditResponseType, Offer>({
     }
 });
 
-export const useAddOffer = createMutation<OffersResponseType, Offer>({
+export const useAddOffer = createMutation<OfferAddResponseType, NewOffer>({
     method: 'POST',
     path: () => '/offers/',
     body: offer => ({offers: [offer]}),

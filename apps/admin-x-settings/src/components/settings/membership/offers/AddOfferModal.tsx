@@ -244,6 +244,7 @@ const AddOfferModal = () => {
         },
         onSave: async () => {
             const dataset = {
+                id: '',
                 name: formState.name,
                 code: formState.code.value,
                 display_title: formState.displayTitle.value,
@@ -263,7 +264,10 @@ const AddOfferModal = () => {
 
             const response = await addOffer(dataset);
 
-            updateRoute({route: `offers/${response.offers[0].id}`});
+            if (response && response.offers && response.offers.length > 0) {
+                modal.remove();
+                updateRoute(`offers/${response.offers[0].id}`);
+            }
         },
         onSaveError: () => {},
         onValidate: () => {
