@@ -130,11 +130,11 @@ const OffersModal = () => {
                     currency={offer?.currency || 'USD'}
                     duration={offer?.duration}
                     name={offer?.name}
-                    offerId={offer?.id}
+                    offerId={offer?.id ? offer.id : ''}
                     offerTier={offerTier}
-                    redemptionCount={offer?.redemption_count}
+                    redemptionCount={offer?.redemption_count ? offer.redemption_count : 0}
                     type={offer?.type as OfferType}
-                    onClick={() => handleOfferEdit(offer?.id)}
+                    onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}
                 />
             );
         })}
@@ -164,7 +164,7 @@ const OffersModal = () => {
                     <td className='p-5 text-sm'>{offerTier.name} {getOfferCadence(offer.cadence)}</td>
                     <td className='p-5 text-sm'><span className={`font-semibold uppercase ${discountColor}`}>{discountOffer}</span> — {getOfferDuration(offer.duration)}</td>
                     <td className='p-5 text-sm'>{updatedPriceWithCurrency} <span className='text-grey-700 line-through'>{originalPriceWithCurrency}</span></td>
-                    <td className='p-5 text-sm'><a className='hover:underline' href={createRedemptionFilterUrl(offer.id)}>{offer.redemption_count}</a></td>
+                    <td className='p-5 text-sm'><a className='hover:underline' href={createRedemptionFilterUrl(offer.id ? offer.id : '')}>{offer.redemption_count}</a></td>
                     <td className='p-5 pr-0 text-right text-sm leading-none'><Button icon='hyperlink-circle' link={true} /></td>
                 </tr>
             );
