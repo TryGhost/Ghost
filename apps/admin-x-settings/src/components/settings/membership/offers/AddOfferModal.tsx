@@ -249,7 +249,7 @@ const AddOfferModal = () => {
                 display_title: formState.displayTitle.value,
                 display_description: formState.displayDescription,
                 cadence: formState.cadence,
-                amount: Number(formState.discountAmount),
+                amount: formState.type === 'trial' ? Number(formState.trialAmount) : Number(formState.discountAmount),
                 duration: formState.type === 'trial' ? 'trial' : formState.duration,
                 duration_in_months: formState.durationInMonths,
                 currency: formState.currency,
