@@ -140,7 +140,15 @@ const OffersModal = () => {
         })}
     </div>;
 
-    const listLayoutOutput = <table>
+    const listLayoutOutput = <table className='m-0'>
+        <tr className='border-b border-b-grey-300'>
+            <th className='px-5 py-2.5 pl-0 text-xs font-normal text-grey-700'>{allOffers.length} {allOffers.length > 1 ? 'offers' : 'offer'}</th>
+            <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Tier</th>
+            <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Terms</th>
+            <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Price</th>
+            <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Redemptions</th>
+            <th className='px-5 py-2.5 pr-0 text-xs font-normal text-grey-700'></th>
+        </tr>
         {allOffers.filter(offer => offer.status === selectedTab).map((offer) => {
             const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
 
@@ -151,12 +159,13 @@ const OffersModal = () => {
             const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
 
             return (
-                <tr>
-                    <td>{offer?.name}</td>
-                    <td>{offerTier.name} {getOfferCadence(offer.cadence)}</td>
-                    <td><span className={`text-xs font-semibold uppercase ${discountColor}`}>{discountOffer}</span></td>
-                    <td>{updatedPriceWithCurrency}{originalPriceWithCurrency}</td>
-                    <td><a className='hover:underline' href={createRedemptionFilterUrl(offer.id ? offer.id : '')}>{offer.redemption_count}</a></td>
+                <tr className='border-b border-b-grey-200'>
+                    <td className='p-5 pl-0 font-semibold'>{offer?.name}</td>
+                    <td className='p-5 text-sm'>{offerTier.name} {getOfferCadence(offer.cadence)}</td>
+                    <td className='p-5 text-sm'><span className={`font-semibold uppercase ${discountColor}`}>{discountOffer}</span> — {getOfferDuration(offer.duration)}</td>
+                    <td className='p-5 text-sm'>{updatedPriceWithCurrency} <span className='text-grey-700 line-through'>{originalPriceWithCurrency}</span></td>
+                    <td className='p-5 text-sm'><a className='hover:underline' href={createRedemptionFilterUrl(offer.id ? offer.id : '')}>{offer.redemption_count}</a></td>
+                    <td className='p-5 pr-0 text-right text-sm leading-none'><Button icon='hyperlink-circle' link={true} /></td>
                 </tr>
             );
         })}
