@@ -3,5 +3,9 @@ module.exports = {
     plugins: ['ghost'],
     extends: [
         'plugin:ghost/ts'
-    ]
+    ],
+    rules: {
+        // disable file naming rule in favor or dotted notation e.g. `snippets.service.ts`
+        'ghost/filenames/match-exported-class': [0, null, true]
+    }
 };
