@@ -1,6 +1,7 @@
 import {Test} from '@nestjs/testing';
 import {SnippetsController} from './snippets.controller';
-import {SnippetsService} from './snippets.service';
+import {SnippetsService} from '../../core/snippets/snippets.service';
+import {SnippetsRepositoryInMemory} from '../../core/snippets/snippets.repository.inmemory';
 import assert from 'assert/strict';
 import sinon from 'sinon';
 
@@ -11,7 +12,13 @@ describe('SnippetsController', () => {
     beforeEach(async () => {
         const moduleRef = await Test.createTestingModule({
             controllers: [SnippetsController],
-            providers: [SnippetsService]
+            providers: [
+                {
+                    provide: 'SnippetsRepository',
+                    useClass: SnippetsRepositoryInMemory
+                },
+                SnippetsService
+            ]
         }).compile();
 
         snippetsService = moduleRef.get<SnippetsService>(SnippetsService);

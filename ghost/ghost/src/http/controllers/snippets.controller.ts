@@ -1,5 +1,5 @@
 import {Controller, Get} from '@nestjs/common';
-import {SnippetsService} from './snippets.service';
+import {SnippetsService} from '../../core/snippets/snippets.service';
 
 @Controller('snippets')
 export class SnippetsController {
