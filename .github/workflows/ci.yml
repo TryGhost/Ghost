@@ -388,7 +388,7 @@ jobs:
 
       - name: Run hyperfine on boot
         working-directory: ghost/core
-        run: hyperfine --warmup 3 'NODE_ENV=production GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
+        run: hyperfine --show-output --warmup 3 'GHOST_CI_SHUTDOWN_AFTER_BOOT=1 node index.js' --export-json boot-perf.json
 
       - name: Convert data
         working-directory: ghost/core
