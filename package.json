@@ -105,6 +105,7 @@
     "*.js": "eslint"
   },
   "devDependencies": {
+    "chalk": "4.1.2",
     "concurrently": "8.2.2",
     "eslint": "8.44.0",
     "eslint-plugin-ghost": "3.3.2",
