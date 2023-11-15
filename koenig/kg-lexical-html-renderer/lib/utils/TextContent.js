@@ -8,7 +8,8 @@ const FORMAT_TAG_MAP = {
     underline: 'U',
     code: 'CODE',
     subscript: 'SUB',
-    superscript: 'SUP'
+    superscript: 'SUP',
+    highlight: 'MARK'
 };
 
 // Builds and renders text content, useful to ensure proper format tag opening/closing

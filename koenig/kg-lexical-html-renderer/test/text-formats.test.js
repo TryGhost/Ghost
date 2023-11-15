@@ -36,6 +36,11 @@ describe('Basic formats', function () {
         input: `{"root":{"children":[{"children":[{"detail":0,"format":64,"mode":"normal","style":"","text":"Superscript","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
         output: `<p><sup>Superscript</sup></p>`
     }));
+
+    it('highlight', shouldRender({
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":128,"mode":"normal","style":"","text":"Highlight","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"highlight","indent":0,"type":"root","version":1}}`,
+        output: `<p><mark>Highlight</mark></p>`
+    }));
 });
 
 describe('Format combinations', function () {
