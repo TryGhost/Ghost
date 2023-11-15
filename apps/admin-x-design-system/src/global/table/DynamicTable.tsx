@@ -18,55 +18,92 @@ export type DynamicTableRow = {
 interface DynamicTableProps {
     columns: DynamicTableColumn[];
     rows: DynamicTableRow[];
+    absolute?: boolean;
     stickyHeader?: boolean;
     headerBorder?: boolean;
     border?: boolean;
     footerBorder?:boolean;
     footer?: React.ReactNode;
     stickyFooter?: boolean;
+    containerClassName?: string;
+    tableContainerClassName?: string;
+    tableClassName?: string;
+    thClassName?: string;
+    tdClassName?: string;
+    trClassName?: string;
+    footerClassName?: string;
 }
 
 const DynamicTable: React.FC<DynamicTableProps> = ({
     columns,
     rows,
+    absolute = false,
     stickyHeader = false,
     headerBorder = true,
     border = true,
     footer,
     footerBorder = true,
-    stickyFooter = false
+    stickyFooter = false,
+    containerClassName,
+    tableContainerClassName,
+    tableClassName,
+    thClassName,
+    tdClassName,
+    trClassName,
+    footerClassName
 }) => {
     let headerColID = 0;
     let rowID = 0;
 
-    const tableClasses = clsx(
-        'h-full max-h-full min-w-full flex-auto border-collapse'
+    containerClassName = clsx(
+        'flex max-h-full w-full flex-col',
+        (stickyHeader || stickyFooter || absolute) ? 'absolute inset-0' : 'relative',
+        containerClassName
     );
 
-    const thClasses = clsx(
+    tableContainerClassName = clsx(
+        'flex-auto overflow-x-auto',
+        tableContainerClassName
+    );
+
+    tableClassName = clsx(
+        'h-full max-h-full min-w-full flex-auto border-collapse',
+        tableClassName
+    );
+
+    thClassName = clsx(
         'bg-white py-3 pr-3 text-left',
         headerBorder && 'border-b border-grey-200',
-        stickyHeader && 'sticky top-0'
+        stickyHeader && 'sticky top-0',
+        thClassName
     );
 
-    const tdClasses = clsx(
+    tdClassName = clsx(
         'w-full py-3 pr-3',
-        border && 'border-b border-grey-200'
+        border && 'border-b border-grey-200',
+        tdClassName
     );
 
-    const footerClasses = clsx(
+    trClassName = clsx(
+        'hover:bg-gradient-to-r hover:from-white hover:to-grey-50 dark:hover:from-black dark:hover:to-grey-950',
+        trClassName
+    );
+
+    footerClassName = clsx(
         'bg-white',
         footer && 'py-3',
-        stickyFooter && 'sticky bottom-0',
-        footerBorder && 'border-t border-grey-200'
+        stickyFooter && 'sticky inset-x-0 bottom-0',
+        footerBorder && 'border-t border-grey-200',
+        footerClassName
     );
 
     return (
-        // Outer container for testing. Should not be part of the table component
-        <div className='h-[40vh]'>
+    // Outer container for testing. Should not be part of the table component
+    // <div className='h-[40vh]'>
 
-            <div className='relative flex max-h-full w-full flex-col overflow-x-auto'>
-                <table className={tableClasses}>
+        <div className={containerClassName}>
+            <div className={tableContainerClassName}>
+                <table className={tableClassName}>
                     <thead>
                         <tr>
                             {columns.map((column) => {
@@ -77,7 +114,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
                                     width: thMaxWidth
                                 };
                                 return (
-                                    <th key={'head-' + headerColID} className={thClasses} style={thStyles}>
+                                    <th key={'head-' + headerColID} className={thClassName} style={thStyles}>
                                         <Heading className='truncate' level={6}>{column.title}</Heading>
                                     </th>);
                             })}
@@ -87,12 +124,12 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
                         {rows.map((row) => {
                             let colID = 0;
                             rowID = rowID + 1;
-                            return <tr key={'row-' + rowID}>
+                            return <tr key={'row-' + rowID} className={trClassName}>
                                 {row.cells.map((cell) => {
                                     let customTdClasses;
                                     if (columns[colID] !== undefined) {
                                         customTdClasses = clsx(
-                                            tdClasses,
+                                            tdClassName,
                                             columns[colID].noWrap ? 'truncate' : '',
                                             columns[colID].align === 'center' && 'text-center',
                                             columns[colID].align === 'right' && 'text-right',
@@ -126,12 +163,13 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
                         })}
                     </tbody>
                 </table>
-                <footer className={footerClasses}>
-                    {footer}
-                </footer>
             </div>
-
+            <footer className={footerClassName}>
+                {footer}
+            </footer>
         </div>
+
+    // </div>
     );
 };
 
