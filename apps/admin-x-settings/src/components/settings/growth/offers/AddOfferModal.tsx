@@ -1,5 +1,5 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import PortalFrame from '../portal/PortalFrame';
+import PortalFrame from '../../membership/portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm from '../../../../hooks/useForm';
 import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
