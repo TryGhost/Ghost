@@ -18,6 +18,7 @@ import HistoryModal from '../../settings/advanced/HistoryModal';
 import InviteUserModal from '../../settings/general/InviteUserModal';
 import NavigationModal from '../../settings/site/NavigationModal';
 import NewsletterDetailModal from '../../settings/email/newsletters/NewsletterDetailModal';
+import OfferSuccess from '../../settings/growth/offers/OfferSuccess';
 import OffersModal from '../../settings/growth/offers/OffersModal';
 import PinturaModal from '../../settings/advanced/integrations/PinturaModal';
 import PortalModal from '../../settings/membership/portal/PortalModal';
@@ -54,7 +55,8 @@ const modals = {
     OffersModal,
     AddOfferModal,
     EditOfferModal,
-    AboutModal
+    AboutModal,
+    OfferSuccess
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } satisfies {[key: string]: ModalComponent<any>};
 
