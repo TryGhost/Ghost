@@ -212,13 +212,13 @@ module.exports = class MemberRepository {
         }, options);
     }
 
-    async _generateTransientId() {
+    _generateTransientId() {
         return uuid.v4();
     }
 
     async cycleTransientId({id, email}) {
         await this.update({
-            transient_id: await this._generateTransientId()
+            transient_id: this._generateTransientId()
         }, {id, email});
     }
 
