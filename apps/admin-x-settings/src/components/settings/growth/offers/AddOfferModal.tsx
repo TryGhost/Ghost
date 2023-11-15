@@ -116,7 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                         clearBg={true}
                                         controlClasses={{menu: 'w-20 right-0'}}
                                         options={amountOptions}
-                                        selectedOption={overrides.amountType === 'percentageOff' ? amountOptions[0] : amountOptions[1]}
+                                        selectedOption={overrides.amountType === 'percent' ? amountOptions[0] : amountOptions[1]}
                                         onSelect={(e) => {
                                             handleAmountTypeChange(e?.value || '');
                                         }}
@@ -218,10 +218,10 @@ const AddOfferModal = () => {
         }
     });
     const getDiscountAmount = (discount: number, dctype: string) => {
-        if (dctype === 'percentageOff') {
+        if (dctype === 'percent') {
             return discount.toString();
         }
-        if (dctype === 'currencyOff') {
+        if (dctype === 'fixed') {
             let calcDiscount = discount * 100;
             return calcDiscount.toString();
         }
@@ -249,7 +249,7 @@ const AddOfferModal = () => {
             currency: selectedTier?.dataset?.currency || '',
             status: 'active',
             tierId: selectedTier?.dataset?.id || '',
-            amountType: 'percentageOff'
+            amountType: 'percent'
         },
         onSave: async () => {
             const dataset = {
@@ -285,8 +285,8 @@ const AddOfferModal = () => {
     });
 
     const amountOptions = [
-        {value: 'percentageOff', label: '%'},
-        {value: 'currencyOff', label: formState.currency}
+        {value: 'percent', label: '%'},
+        {value: 'fixed', label: formState.currency}
     ];
 
     const handleTierChange = (tier: SelectOption) => {
