@@ -11,7 +11,7 @@ type Props = {
     close: () => void;
     closeIfNotChanged: () => void;
     submitText: JSX.Element;
-    submitSize: SubmitSize
+    submitSize: SubmitSize;
 };
 const SecundaryForm: React.FC<Props> = ({editor, submit, close, closeIfNotChanged, submitText, submitSize}) => {
     const {dispatchAction, secundaryFormCount} = useAppContext();
@@ -19,7 +19,6 @@ const SecundaryForm: React.FC<Props> = ({editor, submit, close, closeIfNotChange
     // Keep track of the amount of open forms
     useEffect(() => {
         dispatchAction('increaseSecundaryFormCount', {});
-
         return () => {
             dispatchAction('decreaseSecundaryFormCount', {});
         };
@@ -33,7 +32,7 @@ const SecundaryForm: React.FC<Props> = ({editor, submit, close, closeIfNotChange
 
         if (secundaryFormCount > 1) {
             closeIfNotChanged();
-        }
+        };
     }, [secundaryFormCount]);
 
     const reduced = isMobile();
