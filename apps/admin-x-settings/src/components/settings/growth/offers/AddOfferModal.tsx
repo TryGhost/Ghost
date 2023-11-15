@@ -325,9 +325,8 @@ const AddOfferModal = () => {
         const target = e.target as HTMLInputElement | HTMLTextAreaElement;
         updateForm((state) => {
             // Extract the current value for the key
-
             const currentValue = (state as offerPortalPreviewUrlTypes)[key];
-    
+
             // Check if the current value is an object and has 'isDirty' and 'value' properties
             if (currentValue && typeof currentValue === 'object' && 'isDirty' in currentValue && 'value' in currentValue) {
                 // Determine if the field has been modified
@@ -352,7 +351,7 @@ const AddOfferModal = () => {
 
     const handleNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
-    
+
         updateForm((prevOverrides) => {
             let newOverrides = {...prevOverrides};
             newOverrides.name = newValue;
@@ -424,6 +423,7 @@ const AddOfferModal = () => {
         href={href}
     />;
 
+<<<<<<< HEAD
     return <PreviewModalContent
         cancelLabel='Cancel'
         deviceSelector={false}
@@ -431,7 +431,7 @@ const AddOfferModal = () => {
         okColor={okProps.color}
         okLabel='Publish'
         preview={iframe}
-        sidebar={sidebar} 
+        sidebar={sidebar}
         size='full'
         title='Offer'
         onCancel={cancelAddOffer}
