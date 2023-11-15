@@ -49,5 +49,10 @@ export default Model.extend(ValidationEngine, {
         let response = yield this.ajax.request(url);
 
         return response.member_signin_urls[0];
+    }).drop(),
+
+    logoutAllDevices: task(function* () {
+        let url = this.get('ghostPaths.url').api('members', this.id, 'signout');
+        yield this.ajax.post(url);
     }).drop()
 });

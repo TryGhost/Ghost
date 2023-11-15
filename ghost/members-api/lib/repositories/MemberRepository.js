@@ -7,6 +7,7 @@ const {SubscriptionActivatedEvent, MemberCreatedEvent, SubscriptionCreatedEvent,
 const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
+const uuid = require('uuid');
 
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -200,7 +201,7 @@ module.exports = class MemberRepository {
             }
             return null;
         }
-        return this._Member.findOne(data, options);
+        return await this._Member.findOne(data, options);
     }
 
     async getByToken(token, options) {
@@ -209,6 +210,16 @@ module.exports = class MemberRepository {
         return this.get({
             email: data.sub
         }, options);
+    }
+
+    _generateTransientId() {
+        return uuid.v4();
+    }
+
+    async cycleTransientId({id, email}) {
+        await this.update({
+            transient_id: this._generateTransientId()
+        }, {id, email});
     }
 
     /**
@@ -251,6 +262,9 @@ module.exports = class MemberRepository {
         }
 
         const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters', 'email_disabled']);
+
+        // Generate a random transient_id
+        memberData.transient_id = await this._generateTransientId();
 
         // Throw error if email is invalid using latest validator
         if (!validator.isEmail(memberData.email, {legacy: false})) {
@@ -421,7 +435,8 @@ module.exports = class MemberRepository {
             'last_seen_at',
             'last_commented_at',
             'expertise',
-            'email_disabled'
+            'email_disabled',
+            'transient_id'
         ]);
 
         // Trim whitespaces from expertise

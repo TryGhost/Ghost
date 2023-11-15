@@ -47,6 +47,7 @@
     "jsonwebtoken": "8.5.1",
     "lodash": "4.17.21",
     "moment": "2.29.4",
-    "node-jose": "2.2.0"
+    "node-jose": "2.2.0",
+    "uuid": "9.0.1"
   }
 }

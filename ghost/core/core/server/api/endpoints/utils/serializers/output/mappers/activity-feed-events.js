@@ -107,7 +107,7 @@ const feedbackEventMapper = (json, frame) => {
     } else {
         response.post = null;
     }
-    
+
     if (data.member) {
         response.member = _.pick(data.member, memberFields);
     } else {
@@ -158,6 +158,12 @@ const activityFeedMapper = (event, frame) => {
     }
     if (event.data?.subscriptionCreatedEvent) {
         delete event.data.subscriptionCreatedEvent;
+    }
+
+    if (event.data.member) {
+        event.data.member = _.pick(event.data.member, memberFields);
+    } else {
+        event.data.member = null;
     }
     return event;
 };

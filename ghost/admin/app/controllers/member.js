@@ -1,6 +1,7 @@
 import Controller, {inject as controller} from '@ember/controller';
 import DeleteMemberModal from '../components/members/modals/delete-member';
 import EmberObject, {action, defineProperty} from '@ember/object';
+import LogoutMemberModal from '../components/members/modals/logout-member';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment-timezone';
 import {inject as service} from '@ember/service';
@@ -139,6 +140,16 @@ export default class MemberController extends Controller {
                 this.membersStats.invalidate();
                 this.members.refreshData();
                 this.transitionToRoute('members');
+            }
+        });
+    }
+
+    @action
+    confirmLogoutMember() {
+        this.modals.open(LogoutMemberModal, {
+            member: this.member,
+            afterLogout: () => {
+                this.members.refreshData();
             }
         });
     }

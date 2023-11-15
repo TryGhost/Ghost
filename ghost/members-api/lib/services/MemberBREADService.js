@@ -365,6 +365,10 @@ module.exports = class MemberBREADService {
         return this.read({id: model.id}, options);
     }
 
+    async logout(options) {
+        await this.memberRepository.cycleTransientId(options);
+    }
+
     async browse(options) {
         const defaultWithRelated = [
             'labels',
