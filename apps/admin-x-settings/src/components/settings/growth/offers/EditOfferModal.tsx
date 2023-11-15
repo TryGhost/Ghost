@@ -1,10 +1,12 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import PortalFrame from '../../membership/portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
+import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -137,11 +139,14 @@ const Sidebar: React.FC<{
         };
 
 const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
+    const {siteData} = useGlobalData();
     const modal = useModal();
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
     const hasOffers = useFeatureFlag('adminXOffers');
     const {mutateAsync: editOffer} = useEditOffer();
+
+    const [href, setHref] = useState<string>('');
 
     useEffect(() => {
         if (!hasOffers) {
@@ -176,7 +181,7 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
 
     useEffect(() => {
         setFormState(() => offerById[0]);
-    }, [setFormState, offerById[0]]);
+    }, [setFormState, offerById]);
 
     const updateOffer = (fields: Partial<Offer>) => {
         updateForm(state => ({...state, ...fields}));
@@ -190,10 +195,62 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         validate={validate}
     />;
 
+    // {
+    //     "id": "65541d87ac4bfaf85f35e773",
+    //     "name": "apples",
+    //     "code": "apples",
+    //     "display_title": "apples",
+    //     "display_description": "A new appple",
+    //     "type": "percent",
+    //     "cadence": "month",
+    //     "amount": 30,
+    //     "duration": "forever",
+    //     "duration_in_months": null,
+    //     "currency_restriction": false,
+    //     "currency": null,
+    //     "status": "active",
+    //     "redemption_count": 0,
+    //     "tier": {
+    //         "id": "6535e75005fd81e1492d0cca",
+    //         "name": "Ronald SQLite Dev"
+    //     }
+    // }
+
+    useEffect(() => {
+        const dataset : offerPortalPreviewUrlTypes = {
+            name: formState?.name || '',
+            code: {
+                value: formState?.code || ''
+            },
+            displayTitle: {
+                value: formState?.display_title || ''
+            },
+            displayDescription: formState?.display_description || '',
+            type: formState?.type || '',
+            cadence: formState?.cadence || '',
+            trialAmount: formState?.amount,
+            discountAmount: formState?.amount,
+            duration: formState?.duration || '',
+            durationInMonths: formState?.duration_in_months || 0,
+            currency: formState?.currency || '',
+            status: formState?.status || '',
+            tierId: formState?.tier.id || '',
+            amountType: formState?.type === 'percent' ? 'percent' : 'amount'
+        };
+        
+        const newHref = getOfferPortalPreviewUrl(dataset, siteData.url);
+        setHref(newHref);
+    }, [formState, siteData]);
+
+    const iframe = <PortalFrame
+        href={href}
+    />;
+
     return offerById ? <PreviewModalContent deviceSelector={false}
         dirty={saveState === 'unsaved'}
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
+        preview={iframe}
         sidebar={sidebar}
         size='full'
         testId='offer-update-modal'

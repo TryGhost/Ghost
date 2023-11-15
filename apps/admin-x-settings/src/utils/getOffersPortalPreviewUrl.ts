@@ -54,16 +54,16 @@ export const getOfferPortalPreviewUrl = (overrides:offerPortalPreviewUrlTypes, b
     settingsParam.append('type', encodeURIComponent(type));
 
     const getDiscountAmount = (discount: number, dctype: string) => {
-        if (dctype === 'percentageOff') {
+        if (dctype === 'percent') {
             return discount.toString();
         }
-        if (dctype === 'currencyOff') {
+        if (dctype === 'fixed') {
             settingsParam.append('type', encodeURIComponent('fixed'));
             let calcDiscount = discount * 100;
             return calcDiscount.toString();
         }
     };
-
+    
     settingsParam.append('name', encodeURIComponent(name));
     settingsParam.append('code', encodeURIComponent(code.value));
     settingsParam.append('display_title', encodeURIComponent(displayTitle.value));
@@ -74,7 +74,7 @@ export const getOfferPortalPreviewUrl = (overrides:offerPortalPreviewUrlTypes, b
     settingsParam.append('currency', encodeURIComponent(currency));
     settingsParam.append('status', encodeURIComponent(status));
     settingsParam.append('tier_id', encodeURIComponent(tierId));
-    settingsParam.append('amount', encodeURIComponent(type === 'trial' ? trialAmount.toString() : getDiscountAmount(discountAmount, amountType ? amountType : 'currencyOff') || '0'));
+    settingsParam.append('amount', encodeURIComponent(type === 'trial' ? trialAmount.toString() : getDiscountAmount(discountAmount, amountType ? amountType : 'fixed') || '0'));
 
     if (disableBackground) {
         settingsParam.append('disableBackground', 'true');
