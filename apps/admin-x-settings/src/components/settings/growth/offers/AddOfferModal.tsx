@@ -217,7 +217,6 @@ const AddOfferModal = () => {
             currency: tierCadenceOptions[0]?.value ? parseData(tierCadenceOptions[0]?.value).currency : ''
         }
     });
-
     const getDiscountAmount = (discount: number, dctype: string) => {
         if (dctype === 'percentageOff') {
             return discount.toString();
@@ -295,7 +294,6 @@ const AddOfferModal = () => {
             tier,
             dataset: parseData(tier.value)
         });
-
         updateForm(state => ({
             ...state,
             cadence: parseData(tier.value).period,
@@ -326,7 +324,6 @@ const AddOfferModal = () => {
         updateForm((state) => {
             // Extract the current value for the key
             const currentValue = (state as offerPortalPreviewUrlTypes)[key];
-
             // Check if the current value is an object and has 'isDirty' and 'value' properties
             if (currentValue && typeof currentValue === 'object' && 'isDirty' in currentValue && 'value' in currentValue) {
                 // Determine if the field has been modified
@@ -351,7 +348,6 @@ const AddOfferModal = () => {
 
     const handleNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
-
         updateForm((prevOverrides) => {
             let newOverrides = {...prevOverrides};
             newOverrides.name = newValue;
@@ -422,7 +418,6 @@ const AddOfferModal = () => {
     const iframe = <PortalFrame
         href={href}
     />;
-
     return <PreviewModalContent
         cancelLabel='Cancel'
         deviceSelector={false}
