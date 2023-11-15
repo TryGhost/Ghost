@@ -260,7 +260,7 @@ const AddOfferModal = () => {
                 cadence: formState.cadence,
                 amount: formState.type === 'trial' ? Number(getDiscountAmount(formState.trialAmount, formState.amountType)) : Number(getDiscountAmount(formState.discountAmount, formState.amountType)),
                 duration: formState.type === 'trial' ? 'trial' : formState.duration,
-                duration_in_months: formState.durationInMonths,
+                duration_in_months: Number(formState.durationInMonths),
                 currency: formState.currency,
                 status: formState.status,
                 tier: {
@@ -274,7 +274,7 @@ const AddOfferModal = () => {
 
             if (response && response.offers && response.offers.length > 0) {
                 modal.remove();
-                updateRoute(`offers/${response.offers[0].id}`);
+                updateRoute(`offers/success/${response.offers[0].id}`);
             }
         },
         onSaveError: () => {},
