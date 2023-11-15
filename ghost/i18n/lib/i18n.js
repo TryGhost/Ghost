@@ -7,6 +7,7 @@ const SUPPORTED_LOCALES = [
     'cs', // Czech
     'da', // Danish
     'de', // German
+    'el', // Greek
     'en', // English
     'eo', // Esperanto
     'es', // Spanish
