@@ -58,7 +58,7 @@ const COMMANDS_ADMINX = [{
     env: {}
 }, {
     name: 'adminX',
-    command: 'yarn nx build && yarn dev',
+    command: 'nx run @tryghost/admin-x-settings:build && nx run @tryghost/admin-x-settings:dev',
     cwd: path.resolve(__dirname, '../../apps/admin-x-settings'),
     prefixColor: '#C35831',
     env: {}
@@ -75,7 +75,7 @@ if (DASH_DASH_ARGS.includes('ghost')) {
 if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'portal',
-        command: 'yarn dev',
+        command: 'nx run @tryghost/portal:dev',
         cwd: path.resolve(__dirname, '../../apps/portal'),
         prefixColor: 'magenta',
         env: {}
@@ -98,7 +98,7 @@ if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
 if (DASH_DASH_ARGS.includes('signup') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'signup-form',
-        command: DASH_DASH_ARGS.includes('signup') ? 'yarn dev' : 'yarn preview',
+        command: DASH_DASH_ARGS.includes('signup') ? 'nx run @tryghost/signup-form:dev' : 'nx run @tryghost/signup-form:preview',
         cwd: path.resolve(__dirname, '../../apps/signup-form'),
         prefixColor: 'magenta',
         env: {}
@@ -109,7 +109,7 @@ if (DASH_DASH_ARGS.includes('signup') || DASH_DASH_ARGS.includes('all')) {
 if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('announcementBar') || DASH_DASH_ARGS.includes('announcementbar') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'announcement-bar',
-        command: 'yarn dev',
+        command: 'nx run @tryghost/announcement-bar:dev',
         cwd: path.resolve(__dirname, '../../apps/announcement-bar'),
         prefixColor: '#DC9D00',
         env: {}
@@ -120,7 +120,7 @@ if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('anno
 if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'search',
-        command: 'yarn dev',
+        command: 'nx run @tryghost/sodo-search:dev',
         cwd: path.resolve(__dirname, '../../apps/sodo-search'),
         prefixColor: '#23de43',
         env: {}
@@ -159,7 +159,7 @@ if (DASH_DASH_ARGS.includes('comments') || DASH_DASH_ARGS.includes('all')) {
 
     commands.push({
         name: 'comments',
-        command: 'yarn dev',
+        command: 'nx run @tryghost/comments-ui:dev',
         cwd: path.resolve(__dirname, '../../apps/comments-ui'),
         prefixColor: '#E55137',
         env: {}
