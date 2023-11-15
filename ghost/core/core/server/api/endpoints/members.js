@@ -159,7 +159,7 @@ module.exports = {
             }
         },
         permissions: {
-            method: 'destroy'
+            method: 'edit'
         },
         async query(frame) {
             const member = await membersService.api.memberBREADService.logout(frame.options);
