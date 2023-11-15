@@ -7858,10 +7858,10 @@
     jsdom "^22.1.0"
     lexical "^0.12.2"
 
-"@tryghost/kg-lexical-html-renderer@0.3.48":
-  version "0.3.48"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.3.48.tgz#88ed8b58f9b028c9e6930b04b95611f83acb318b"
-  integrity sha512-DJs4pEwzGfnnGl8hLdV4hI/AXlKqQahAX7msS86l31EOTgyl4xNYGz5y8uERorlGycKSNlndGbgYSVcw/Cgcdg==
+"@tryghost/kg-lexical-html-renderer@0.3.49":
+  version "0.3.49"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.3.49.tgz#2947ce8d85987d98a4eb0d30f58776d2e6632f27"
+  integrity sha512-lyZ5XKhT5OIP6RcTuFUurRf1VSin7r9715Rttj3IGg1VOdfAjhkmNzvvMpF/Ni7kzAT+tkak+Yz8sSezxZONew==
   dependencies:
     "@lexical/clipboard" "^0.12.2"
     "@lexical/code" "^0.12.2"
