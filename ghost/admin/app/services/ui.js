@@ -6,7 +6,6 @@ import {
 } from '@tryghost/color-utils';
 import {action, get} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
-import {isEmpty} from '@ember/utils';
 import {tracked} from '@glimmer/tracking';
 
 function collectMetadataClasses(transition, prop) {
@@ -147,11 +146,7 @@ export default class UiService extends Service {
 
         let blogTitle = this.config.blogTitle;
 
-        if (!isEmpty(tokens)) {
-            window.document.title = `${tokens.join(' - ')} - ${blogTitle}`;
-        } else {
-            window.document.title = blogTitle;
-        }
+        window.document.title = `Ghost Admin - ${blogTitle}`;
     }
 
     @action

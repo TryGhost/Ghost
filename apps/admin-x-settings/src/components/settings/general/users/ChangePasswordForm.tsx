@@ -1,9 +1,9 @@
-import useHandleError from '../../../../utils/api/handleError';
 import {Button, Heading, SettingGroup, TextField, showToast} from '@tryghost/admin-x-design-system';
-import {User, useUpdatePassword} from '../../../../api/users';
-import {ValidationError} from '../../../../utils/errors';
+import {User, useUpdatePassword} from '@tryghost/admin-x-framework/api/users';
+import {ValidationError} from '@tryghost/admin-x-framework/errors';
 import {useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const BAD_PASSWORDS = [
     '1234567890',

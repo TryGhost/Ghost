@@ -1,29 +1,46 @@
 export type offerPortalPreviewUrlTypes = {
     disableBackground?: boolean;
     name: string;
-    code: string;
-    displayTitle?: string;
+    code: {
+        isDirty?: boolean;
+        value: string;
+    }
+    displayTitle: {
+        isDirty?: boolean;
+        value: string;
+    }
     displayDescription?: string;
     type: string;
     cadence: string;
-    amount?: number;
+    trialAmount?: number;
+    discountAmount?: number;
+    percentageOff?: number;
     duration: string;
     durationInMonths: number;
     currency?: string;
     status: string;
     tierId: string;
+    amountType?: string;
 };
 
 export const getOfferPortalPreviewUrl = (overrides:offerPortalPreviewUrlTypes, baseUrl: string) : string => {
     const {
         disableBackground = false,
         name,
-        code,
-        displayTitle = '',
+        code = {
+            isDirty: false,
+            value: ''
+        },
+        displayTitle = {
+            isDirty: false,
+            value: ''
+        },
         displayDescription = '',
         type,
         cadence,
-        amount = 0,
+        trialAmount = 7,
+        discountAmount = 0,
+        amountType,
         duration,
         durationInMonths,
         currency = 'usd',
@@ -34,18 +51,30 @@ export const getOfferPortalPreviewUrl = (overrides:offerPortalPreviewUrlTypes, b
     const portalBase = '/#/portal/preview/offer';
     const settingsParam = new URLSearchParams();
 
-    settingsParam.append('name', encodeURIComponent(name));
-    settingsParam.append('code', encodeURIComponent(code));
-    settingsParam.append('display_title', encodeURIComponent(displayTitle));
-    settingsParam.append('display_description', encodeURIComponent(displayDescription));
     settingsParam.append('type', encodeURIComponent(type));
+
+    const getDiscountAmount = (discount: number, dctype: string) => {
+        if (dctype === 'percent') {
+            return discount.toString();
+        }
+        if (dctype === 'fixed') {
+            settingsParam.append('type', encodeURIComponent('fixed'));
+            let calcDiscount = discount * 100;
+            return calcDiscount.toString();
+        }
+    };
+    
+    settingsParam.append('name', encodeURIComponent(name));
+    settingsParam.append('code', encodeURIComponent(code.value));
+    settingsParam.append('display_title', encodeURIComponent(displayTitle.value));
+    settingsParam.append('display_description', encodeURIComponent(displayDescription));
     settingsParam.append('cadence', encodeURIComponent(cadence));
-    settingsParam.append('amount', encodeURIComponent(amount));
     settingsParam.append('duration', encodeURIComponent(duration));
     settingsParam.append('duration_in_months', encodeURIComponent(durationInMonths));
     settingsParam.append('currency', encodeURIComponent(currency));
     settingsParam.append('status', encodeURIComponent(status));
     settingsParam.append('tier_id', encodeURIComponent(tierId));
+    settingsParam.append('amount', encodeURIComponent(type === 'trial' ? trialAmount.toString() : getDiscountAmount(discountAmount, amountType ? amountType : 'fixed') || '0'));
 
     if (disableBackground) {
         settingsParam.append('disableBackground', 'true');

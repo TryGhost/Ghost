@@ -27,12 +27,18 @@ async function createMember(data) {
     });
 }
 
+async function cycleTransientId(data) {
+    return await members.api.members.cycleTransientId({
+        ...data
+    });
+}
+
 describe('Front-end members behavior', function () {
     let request;
 
     async function loginAsMember(email) {
         // Member should exist, because we are signin in
-        await models.Member.findOne({email}, {require: true});
+        const member = await models.Member.findOne({email}, {require: true});
 
         // membersService needs to be required after Ghost start so that settings
         // are pre-populated with defaults
@@ -51,6 +57,8 @@ describe('Front-end members behavior', function () {
                 should.exist(redirectUrl.searchParams.get('success'));
                 redirectUrl.searchParams.get('success').should.eql('true');
             });
+
+        return member;
     }
 
     before(async function () {
@@ -98,6 +106,7 @@ describe('Front-end members behavior', function () {
 
         it('should return no content when removing member sessions', async function () {
             await request.del('/members/api/session')
+                .expect('set-cookie', /ghost-members-ssr=.*;.*?expires=Thu, 01 Jan 1970 00:00:00 GMT;.*?/)
                 .expect(204);
         });
 
@@ -141,8 +150,8 @@ describe('Front-end members behavior', function () {
         it('should error for invalid subscription id on members create update session endpoint', async function () {
             const membersService = require('../../core/server/services/members');
             const email = 'test-member-create-update-session@email.com';
-            await membersService.api.members.create({email});
-            const token = await membersService.api.getMemberIdentityToken(email);
+            const member = await membersService.api.members.create({email});
+            const token = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
             await request.post('/members/api/create-stripe-update-session')
                 .send({
                     identity: token,
@@ -538,6 +547,104 @@ describe('Front-end members behavior', function () {
                     .expect(assertContentIsPresent);
 
                 assert(spy.notCalled, 'A page view from a non-member shouldn\'t generate a MemberPageViewEvent event');
+            });
+        });
+
+        describe('log out', function () {
+            let member;
+
+            beforeEach(async function () {
+                member = await loginAsMember('member1@test.com');
+            });
+
+            it('an invalid token causes a set-cookie logout when requesting the identity', async function () {
+                // Check logged in
+                await request.get('/members/api/member')
+                    .expect(200);
+
+                // Cycle the transient id manually
+                await cycleTransientId({id: member.id});
+
+                await member.refresh();
+                const transientId = member.get('transient_id');
+
+                await request.get('/members/api/session')
+                    .expect('set-cookie', /ghost-members-ssr=.*;.*?expires=Thu, 01 Jan 1970 00:00:00 GMT;.*?/)
+                    .expect(204);
+
+                // Check logged out
+                await request.get('/members/api/member')
+                    .expect(204);
+
+                // Check transient id has NOT changed
+                await member.refresh();
+                assert.equal(member.get('transient_id'), transientId);
+            });
+
+            it('by default only destroys current session', async function () {
+                const transientId = member.get('transient_id');
+
+                // Check logged in
+                await request.get('/members/api/member')
+                    .expect(200);
+
+                await request.del('/members/api/session')
+                    .expect('set-cookie', /ghost-members-ssr=.*;.*?expires=Thu, 01 Jan 1970 00:00:00 GMT;.*?/)
+                    .expect(204);
+
+                // Check logged out
+                await request.get('/members/api/member')
+                    .expect(204);
+
+                // Check transient id has NOT changed
+                await member.refresh();
+                assert.equal(member.get('transient_id'), transientId);
+            });
+
+            it('can destroy all sessions', async function () {
+                const transientId = member.get('transient_id');
+
+                // Check logged in
+                await request.get('/members/api/member')
+                    .expect(200);
+
+                await request.del('/members/api/session')
+                    .send({
+                        all: true
+                    })
+                    .expect('set-cookie', /ghost-members-ssr=.*;.*?expires=Thu, 01 Jan 1970 00:00:00 GMT;.*?/)
+                    .expect(204);
+
+                // Check logged out
+                await request.get('/members/api/member')
+                    .expect(204);
+
+                // Check transient id has changed
+                await member.refresh();
+                assert.notEqual(member.get('transient_id'), transientId);
+            });
+
+            it('can destroy only current session', async function () {
+                const transientId = member.get('transient_id');
+
+                // Check logged in
+                await request.get('/members/api/member')
+                    .expect(200);
+
+                await request.del('/members/api/session')
+                    .send({
+                        all: false
+                    })
+                    .expect('set-cookie', /ghost-members-ssr=.*;.*?expires=Thu, 01 Jan 1970 00:00:00 GMT;.*?/)
+                    .expect(204);
+
+                // Check logged out
+                await request.get('/members/api/member')
+                    .expect(204);
+
+                // Check transient id has NOT changed
+                await member.refresh();
+                assert.equal(member.get('transient_id'), transientId);
             });
         });
 

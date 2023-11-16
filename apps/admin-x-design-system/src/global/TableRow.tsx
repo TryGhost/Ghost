@@ -1,11 +1,12 @@
 import clsx from 'clsx';
-import React from 'react';
+import React, {forwardRef} from 'react';
 
 export interface TableRowProps {
     id?: string;
     action?: React.ReactNode;
     hideActions?: boolean;
     className?: string;
+    style?: React.CSSProperties;
     testId?: string;
 
     /**
@@ -18,7 +19,7 @@ export interface TableRowProps {
     children?: React.ReactNode;
 }
 
-const TableRow: React.FC<TableRowProps> = ({id, action, hideActions, className, testId, separator, bgOnHover = true, onClick, children}) => {
+const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(function TableRow({id, action, hideActions, className, style, testId, separator, bgOnHover = true, onClick, children}, ref) {
     const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
         onClick?.(e);
     };
@@ -33,7 +34,7 @@ const TableRow: React.FC<TableRowProps> = ({id, action, hideActions, className, 
     );
 
     return (
-        <tr className={tableRowClasses} data-testid={testId} id={id} onClick={handleClick}>
+        <tr ref={ref} className={tableRowClasses} data-testid={testId} id={id} style={style} onClick={handleClick}>
             {children}
             {action &&
                 <td className={`w-[1%] whitespace-nowrap p-0 hover:cursor-pointer`}>
@@ -44,6 +45,6 @@ const TableRow: React.FC<TableRowProps> = ({id, action, hideActions, className, 
             }
         </tr>
     );
-};
+});
 
 export default TableRow;

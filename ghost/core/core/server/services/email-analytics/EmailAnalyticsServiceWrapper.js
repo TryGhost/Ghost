@@ -9,7 +9,7 @@ class EmailAnalyticsServiceWrapper {
         const {EmailAnalyticsService} = require('@tryghost/email-analytics-service');
         const {EmailEventStorage, EmailEventProcessor} = require('@tryghost/email-service');
         const MailgunProvider = require('@tryghost/email-analytics-provider-mailgun');
-        const {EmailRecipientFailure, EmailSpamComplaintEvent} = require('../../models');
+        const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
         const StartEmailAnalyticsJobEvent = require('./events/StartEmailAnalyticsJobEvent');
 
         const domainEvents = require('@tryghost/domain-events');
@@ -19,14 +19,17 @@ class EmailAnalyticsServiceWrapper {
         const queries = require('./lib/queries');
         const membersService = require('../members');
         const membersRepository = membersService.api.members;
+        const emailSuppressionList = require('../email-suppression-list');
 
         this.eventStorage = new EmailEventStorage({
             db,
             membersRepository,
             models: {
+                Email,
                 EmailRecipientFailure,
                 EmailSpamComplaintEvent
-            }
+            },
+            emailSuppressionList
         });
 
         // Since this is running in a worker thread, we cant dispatch directly
