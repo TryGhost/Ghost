@@ -4,7 +4,6 @@ import type {Meta, StoryObj} from '@storybook/react';
 import ViewContainer, {PrimaryActionProps, ViewTab} from './ViewContainer';
 import Button from '../Button';
 import ButtonGroup from '../ButtonGroup';
-// import Icon from '../Icon';
 
 const meta = {
     title: 'Global / Layout / View Container',
@@ -17,10 +16,6 @@ const meta = {
                 updateArgs({selectedTab: tab});
                 args.onTabChange?.(tab);
             }}
-            // onViewChange={(view) => {
-            //     updateArgs({selectedView: view});
-            //     args.onViewChange?.(view);
-            // }}
         />;
     },
     tags: ['autodocs']
@@ -88,7 +83,7 @@ const tabs: ViewTab[] = [
 export const Default: Story = {
     args: {
         type: 'page',
-        headingBorder: false,
+        toolbarBorder: false,
         children: <ContentContainer>The view container component is the main container of pages and/or sections on a page. Select one of the stories on the right to browse use cases.</ContentContainer>
     }
 };
