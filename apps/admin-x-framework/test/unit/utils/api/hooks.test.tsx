@@ -1,9 +1,9 @@
 import {InfiniteData, QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {act, renderHook, waitFor} from '@testing-library/react';
 import React, {ReactNode} from 'react';
-import {MockContext, vi} from 'vitest';
 import FrameworkProvider from '../../../../src/providers/FrameworkProvider';
 import {createInfiniteQuery, createMutation, createPaginatedQuery, createQuery, createQueryWithId} from '../../../../src/utils/api/hooks';
+import {withMockFetch} from '../../../utils/mockFetch';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -36,28 +36,6 @@ const wrapper: React.FC<{ children: ReactNode }> = ({children}) => (
         </QueryClientProvider>
     </FrameworkProvider>
 );
-
-const originalFetch = global.fetch;
-
-type FetchArgs = Parameters<typeof global.fetch>;
-
-const withMockFetch = async (
-    {json = {}, headers = {}, status = 200, ok = true}: {json?: unknown; headers?: Record<string, string>; status?: number; ok?: boolean},
-    callback: (mock: MockContext<FetchArgs, Promise<Response>>) => void | Promise<void>
-) => {
-    const mockFetch = vi.fn<FetchArgs, Promise<Response>>(() => Promise.resolve({
-        json: () => Promise.resolve(json),
-        headers: new Headers(headers),
-        status,
-        ok
-    } as Response));
-
-    global.fetch = mockFetch as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-
-    await callback(mockFetch.mock);
-
-    global.fetch = originalFetch;
-};
 
 describe('API hooks', function () {
     describe('createQuery', function () {
