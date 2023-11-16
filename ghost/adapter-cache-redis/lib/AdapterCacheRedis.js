@@ -154,10 +154,10 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      */
     async reset() {
         try {
+            const p0 = new Date();
             const keys = await this.#getKeys();
-            for (const key of keys) {
-                await this.cache.del(key);
-            }
+            await this.cache.del(keys);
+            logging.info(`Purged ${keys.length} keys in ${new Date() - p0}ms`);
         } catch (err) {
             logging.error(err);
         }
