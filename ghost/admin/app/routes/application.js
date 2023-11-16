@@ -197,13 +197,11 @@ export default Route.extend(ShortcutsRoute, {
                         event.exception.values[0].type = `${error.type}: ${error.context}`;
                         event.exception.values[0].value = error.message;
                         event.exception.values[0].context = error.context;
-                        event.tags.isAjaxError = true;
                     } else {
-                        event.tags.isAjaxError = false;
                         delete event.contexts.ajax;
-                        delete event.tags.ajaxStatus;
-                        delete event.tags.ajaxMethod;
-                        delete event.tags.ajaxUrl;
+                        delete event.tags.ajax_status;
+                        delete event.tags.ajax_method;
+                        delete event.tags.ajax_url;
                     }
 
                     return event;
