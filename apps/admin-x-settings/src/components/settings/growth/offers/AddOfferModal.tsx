@@ -429,11 +429,12 @@ const AddOfferModal = () => {
         cancelLabel='Cancel'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
+        height='full'
         okColor={okProps.color}
         okLabel='Publish'
         preview={iframe}
         sidebar={sidebar}
-        size='full'
+        size='lg'
         title='Offer'
         onCancel={cancelAddOffer}
         onOk={async () => {

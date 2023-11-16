@@ -1,5 +1,6 @@
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {Modal} from '@tryghost/admin-x-design-system';
 import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -193,26 +194,48 @@ export const OffersIndexModal = () => {
         })}
     </table>;
 
-    return <div className='pt-6'>
-        <header>
-            <div className='flex items-center justify-between'>
-                <TabView
-                    border={false}
-                    selectedTab={selectedTab}
-                    tabs={offersTabs}
-                    width='wide'
-                    onTabChange={setSelectedTab}
-                />
-                <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
+    return <Modal
+        afterClose={() => {
+            updateRoute('offers');
+        }}
+        animate={false}
+        cancelLabel=''
+        footer={
+            <div className='mx-8 flex w-full items-center justify-between'>
+                <a className='text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
+                <Button color='black' label='Close' onClick={() => {
+                    modal.remove();
+                    updateRoute('offers');
+                }} />
             </div>
-            <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
-                <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
-                <div className='flex gap-3'>
-                    <Button icon='layout-module-1' iconColorClass={selectedLayout === 'card' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('card')} />
-                    <Button icon='layout-headline' iconColorClass={selectedLayout === 'list' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('list')} />
+        }
+        header={false}
+        height='full'
+        size='lg'
+        testId='offers-modal'
+        stickyFooter
+    >
+        <div className='pt-6'>
+            <header>
+                <div className='flex items-center justify-between'>
+                    <TabView
+                        border={false}
+                        selectedTab={selectedTab}
+                        tabs={offersTabs}
+                        width='wide'
+                        onTabChange={setSelectedTab}
+                    />
+                    <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
                 </div>
-            </div>
-        </header>
-        {selectedLayout === 'card' ? cardLayoutOutput : listLayoutOutput}
-    </div>;
+                <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
+                    <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
+                    <div className='flex gap-3'>
+                        <Button icon='layout-module-1' iconColorClass={selectedLayout === 'card' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('card')} />
+                        <Button icon='layout-headline' iconColorClass={selectedLayout === 'list' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('list')} />
+                    </div>
+                </div>
+            </header>
+            {selectedLayout === 'card' ? cardLayoutOutput : listLayoutOutput}
+        </div>
+    </Modal>;
 };
