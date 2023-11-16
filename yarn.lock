@@ -7973,7 +7973,7 @@
 
 "@tryghost/mongo-knex@^0.9.0":
   version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/mongo-knex/-/mongo-knex-0.9.0.tgz#34463ceaa23b8e5e4c7ff859d9d5cc8f300ceade"
+  resolved "https://registry.npmjs.org/@tryghost/mongo-knex/-/mongo-knex-0.9.0.tgz#34463ceaa23b8e5e4c7ff859d9d5cc8f300ceade"
   integrity sha512-1dksBf+nVyfVRssFC3/Tn1KqMhKfLhsjCnxnLv8vW5ZxSw39U6Kyp97u4BWithx31M/g3Q8nfCVg8hIgYVyt7w==
   dependencies:
     debug "^4.3.3"
@@ -18951,10 +18951,10 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha512-+xGQY0YyAWCnqy7Cd++hc2JqMYzlm0dG30Jd0beaA64sROr8C4nt8Yc9V5Ro3avlSUDTN0ulqP/VBKi1/lLygw==
 
-gscan@4.41.0:
-  version "4.41.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.41.0.tgz#1949a8e296995ee1ddc89e092eeda57414ffbad6"
-  integrity sha512-Pd2q+k82quw3VSk9U7u0FsElyThFV8/3NedDOvimMYZqFuugLfafczGt8A9wZA3XcqWr8YtI3G0MHLnb7LLSRA==
+gscan@4.42.0:
+  version "4.42.0"
+  resolved "https://registry.npmjs.org/gscan/-/gscan-4.42.0.tgz#f25208327642680a5210094af20c1f1c6b5251df"
+  integrity sha512-LDNksyNY4Pb3Hc3OC56Zu3uNDODmcJSP2Rtzc1UVZ3/SWLoqcIU9+nyzHNy3uCdbIGg3HK0Ho2D89jiumWD0LA==
   dependencies:
     "@sentry/node" "^7.73.0"
     "@tryghost/config" "^0.2.18"
