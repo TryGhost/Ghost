@@ -6,7 +6,6 @@ import {
 } from '@tryghost/color-utils';
 import {action, get} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
-import {isEmpty} from '@ember/utils';
 import {tracked} from '@glimmer/tracking';
 
 function collectMetadataClasses(transition, prop) {
