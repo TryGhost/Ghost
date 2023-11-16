@@ -49,7 +49,7 @@ export default [
     setting('site', 'twitter_description', null),
 
     // THEME
-    setting('theme', 'active_theme', 'Source'),
+    setting('theme', 'active_theme', 'source'),
 
     // PRIVATE
     setting('private', 'is_private', false),
