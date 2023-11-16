@@ -75,12 +75,13 @@
       "build": {
         "dependsOn": [
           "build",
-          {
-            "projects": [
-              "@tryghost/admin-x-design-system"
-            ],
-            "target": "build"
-          }
+          {"projects": ["@tryghost/admin-x-design-system"], "target": "build"}
+        ]
+      },
+      "test:unit": {
+        "dependsOn": [
+          "test:unit",
+          {"projects": ["@tryghost/admin-x-design-system"], "target": "build"}
         ]
       }
     }
