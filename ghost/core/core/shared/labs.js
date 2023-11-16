@@ -22,7 +22,8 @@ const GA_FEATURES = [
     'signupForm',
     'recommendations',
     'editorEmojiPicker',
-    'listUnsubscribeHeader'
+    'listUnsubscribeHeader',
+    'filterEmailDisabled'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -45,8 +46,7 @@ const ALPHA_FEATURES = [
     'importMemberTier',
     'lexicalIndicators',
     'editorEmojiPicker',
-    'adminXOffers',
-    'filterEmailDisabled'
+    'adminXOffers'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
