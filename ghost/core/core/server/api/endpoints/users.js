@@ -40,6 +40,45 @@ async function fetchOrCreatePersonalToken(userId) {
     return token;
 }
 
+const shouldInvalidateCacheAfterChange = (model) => {
+    // Model attributes that should not trigger cache invalidation when changed
+    // (because they have no effect on the frontend)
+    const privateAttrs = [
+        'id',
+        'password',
+        'email',
+        'accessibility',
+        'status',
+        'locale',
+        'visibility',
+        'last_seen',
+        'tour',
+        'comment_notifications',
+        'free_member_signup_notification',
+        'paid_subscription_started_notification',
+        'paid_subscription_canceled_notification',
+        'mention_notifications',
+        'recommendation_notifications',
+        'milestone_notifications',
+        'donation_notifications',
+        'updated_at',
+        'updated_by'
+    ];
+
+    if (model.wasChanged() === false) {
+        return false;
+    }
+
+    // Check if any of the changed attributes are not private
+    for (const attr of Object.keys(model._changed)) {
+        if (privateAttrs.includes(attr) === false) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
 module.exports = {
     docName: 'users',
 
@@ -137,11 +176,7 @@ module.exports = {
                         }));
                     }
 
-                    if (model.wasChanged()) {
-                        this.headers.cacheInvalidate = true;
-                    } else {
-                        this.headers.cacheInvalidate = false;
-                    }
+                    this.headers.cacheInvalidate = shouldInvalidateCacheAfterChange(model);
 
                     return model;
                 });
