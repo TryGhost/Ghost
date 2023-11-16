@@ -191,6 +191,13 @@ export default Route.extend(ShortcutsRoute, {
                         return null;
                     }
 
+                    // if the error value includes a model id then overwrite it to improve grouping
+                    if (event.exception.values && event.exception.values.length > 0) {
+                        const pattern = /<(post|page):[a-f0-9]+>/;
+                        const replacement = "<$1:ID>";
+                        event.exception.values[0].value = event.exception.values[0].value.replace(pattern, replacement);
+                    }
+
                     // ajax errors — improve logging and add context for debugging
                     if (isAjaxError(exception)) {
                         const error = exception.payload.errors[0];
