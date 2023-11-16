@@ -1,15 +1,15 @@
 import type {Meta, StoryObj} from '@storybook/react';
 
-import BoilerPlate from './Boilerplate';
+import PageToolbar from './PageToolbar';
 
 const meta = {
-    title: 'Meta / Boilerplate',
-    component: BoilerPlate,
+    title: 'Global / Layout / Page Toolbar',
+    component: PageToolbar,
     tags: ['autodocs']
-} satisfies Meta<typeof BoilerPlate>;
+} satisfies Meta<typeof PageToolbar>;
 
 export default meta;
-type Story = StoryObj<typeof BoilerPlate>;
+type Story = StoryObj<typeof PageToolbar>;
 
 export const Default: Story = {
     args: {
