@@ -4,12 +4,12 @@ import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
-import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Sidebar: React.FC<{
         clearError: (field: string) => void,
@@ -166,7 +166,7 @@ const Sidebar: React.FC<{
             );
         };
 
-const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
+const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     const {siteData} = useGlobalData();
     const modal = useModal();
     const {updateRoute} = useRouting();
@@ -183,7 +183,7 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         }
     }, [hasOffers, modal, updateRoute]);
 
-    const {data: {offers: offerById = []} = {}} = useBrowseOffersById(params?.id ? params?.id : '');
+    const {data: {offers: offerById = []} = {}} = useBrowseOffersById(id ? id : '');
 
     const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError, okProps} = useForm({
         initialState: offerById[0],
@@ -222,27 +222,6 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         updateOffer={updateOffer}
         validate={validate}
     />;
-
-    // {
-    //     "id": "65541d87ac4bfaf85f35e773",
-    //     "name": "apples",
-    //     "code": "apples",
-    //     "display_title": "apples",
-    //     "display_description": "A new appple",
-    //     "type": "percent",
-    //     "cadence": "month",
-    //     "amount": 30,
-    //     "duration": "forever",
-    //     "duration_in_months": null,
-    //     "currency_restriction": false,
-    //     "currency": null,
-    //     "status": "active",
-    //     "redemption_count": 0,
-    //     "tier": {
-    //         "id": "6535e75005fd81e1492d0cca",
-    //         "name": "Ronald SQLite Dev"
-    //     }
-    // }
 
     useEffect(() => {
         const dataset : offerPortalPreviewUrlTypes = {
@@ -284,7 +263,6 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         testId='offer-update-modal'
         title='Offer'
         onCancel={() => {
-            modal.remove();
             updateRoute('offers/edit');
         }}
         onOk={async () => {
@@ -297,4 +275,4 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         }} /> : null;
 };
 
-export default NiceModal.create(EditOfferModal);
+export default EditOfferModal;

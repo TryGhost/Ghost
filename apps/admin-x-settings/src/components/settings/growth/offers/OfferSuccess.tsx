@@ -9,7 +9,6 @@ import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const OfferSuccess: React.FC<RoutingModalProps> = ({params}) => {
-    // const {updateRoute} = useRouting();
     const {data: {offers: offerById = []} = {}} = useBrowseOffersById(params?.id ? params?.id : '');
 
     const [offerLink, setOfferLink] = useState<string>('');
