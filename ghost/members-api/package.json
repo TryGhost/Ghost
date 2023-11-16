@@ -36,7 +36,7 @@
     "@tryghost/magic-link": "0.0.0",
     "@tryghost/member-events": "0.0.0",
     "@tryghost/members-payments": "0.0.0",
-    "@tryghost/nql": "0.11.0",
+    "@tryghost/nql": "0.12.0",
     "@tryghost/tpl": "0.1.26",
     "@tryghost/validator": "0.2.6",
     "@types/jsonwebtoken": "9.0.5",
@@ -47,6 +47,7 @@
     "jsonwebtoken": "8.5.1",
     "lodash": "4.17.21",
     "moment": "2.29.4",
-    "node-jose": "2.2.0"
+    "node-jose": "2.2.0",
+    "uuid": "9.0.1"
   }
 }

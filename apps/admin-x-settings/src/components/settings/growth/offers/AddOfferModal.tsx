@@ -1,4 +1,3 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm from '../../../../hooks/useForm';
@@ -9,6 +8,7 @@ import {getTiersCadences} from '../../../../utils/getTiersCadences';
 import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useModal} from '@ebay/nice-modal-react';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 // we should replace this with a library
@@ -282,7 +282,6 @@ const AddOfferModal = () => {
             const response = await addOffer(dataset);
 
             if (response && response.offers && response.offers.length > 0) {
-                modal.remove();
                 updateRoute(`offers/success/${response.offers[0].id}`);
             }
         },
@@ -399,7 +398,6 @@ const AddOfferModal = () => {
     }, [hasOffers, modal, updateRoute]);
 
     const cancelAddOffer = () => {
-        modal.remove();
         updateRoute('offers/edit');
     };
 
@@ -431,12 +429,19 @@ const AddOfferModal = () => {
         cancelLabel='Cancel'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
+        height='full'
         okColor={okProps.color}
         okLabel='Publish'
         preview={iframe}
+        previewToolbarBreadcrumbs={[{label: 'Offers', onClick: () => {
+            updateRoute('offers/edit');
+        }}, {label: 'New offer'}]}
         sidebar={sidebar}
-        size='full'
+        size='lg'
         title='Offer'
+        onBreadcrumbsBack={() => {
+            updateRoute('offers/edit');
+        }}
         onCancel={cancelAddOffer}
         onOk={async () => {
             if (!(await handleSave({fakeWhenUnchanged: true}))) {
@@ -445,7 +450,8 @@ const AddOfferModal = () => {
                     message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields.'
                 });
             }
-        }} />;
+        }}
+    />;
 };
 
-export default NiceModal.create(AddOfferModal);
+export default AddOfferModal;

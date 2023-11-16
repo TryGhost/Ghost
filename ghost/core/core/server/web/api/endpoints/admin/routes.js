@@ -144,6 +144,7 @@ module.exports = function apiRoutes() {
     router.get('/members/:id', mw.authAdminApi, http(api.members.read));
     router.put('/members/:id', mw.authAdminApi, http(api.members.edit));
     router.del('/members/:id', mw.authAdminApi, http(api.members.destroy));
+    router.del('/members/:id/sessions', mw.authAdminApi, http(api.members.logout));
 
     router.post('/members/:id/subscriptions/', mw.authAdminApi, http(api.members.createSubscription));
     router.put('/members/:id/subscriptions/:subscription_id', mw.authAdminApi, http(api.members.editSubscription));

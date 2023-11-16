@@ -4,12 +4,21 @@ import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
-import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
+
+function formatTimestamp(timestamp: string): string {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
 
 const Sidebar: React.FC<{
         clearError: (field: string) => void,
@@ -83,18 +92,56 @@ const Sidebar: React.FC<{
             return (
                 <div className='pt-7'>
                     <Form>
-                        <TextField
-                            error={Boolean(errors.name)}
-                            hint={errors.name || 'Visible to members on Stripe Checkout page'}
-                            placeholder='Black Friday'
-                            title='Name'
-                            value={offer?.name}
-                            onBlur={validate}
-                            onChange={e => updateOffer({name: e.target.value})}
-                            onKeyDown={() => clearError('name')}
-                        />
                         <section className='mt-4'>
-                            <h2 className='mb-4 text-lg'>Portal Settings</h2>
+                            <h2 className='mb-4 text-lg'>Stats</h2>
+                            <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5'>
+                                <div className='flex flex-col gap-1.5'>
+                                    <span className='text-xs font-semibold leading-none text-grey-700'>Created at</span>
+                                    <span>{formatTimestamp(offer?.created_at ? offer.created_at : '')}</span>
+                                </div>
+                                <div className='flex flex-col gap-1.5'>
+                                    <span className='text-xs font-semibold leading-none text-grey-700'>Total redemptions</span>
+                                    <span>{offer?.redemption_count} {offer?.redemption_count === 1 ? 'redemption' : 'redemptions'}</span>
+                                </div>
+                                {offer?.redemption_count > 0 ?
+                                    <div className='flex items-end justify-between'>
+                                        <div className='flex flex-col gap-1.5'>
+                                            <span className='text-xs font-semibold leading-none text-grey-700'>Last redemption</span>
+                                            <span>August 30, 2023</span>
+                                        </div>
+                                        <a className='font-semibold text-green' href="#">See all →</a>
+                                    </div> :
+                                    null
+                                }
+                            </div>
+                        </section>
+                        <section className='mt-4'>
+                            <h2 className='mb-4 text-lg'>General</h2>
+                            <div className='flex flex-col gap-6'>
+                                <TextField
+                                    error={Boolean(errors.name)}
+                                    hint={errors.name || 'Visible to members on Stripe Checkout page'}
+                                    placeholder='Black Friday'
+                                    title='Name'
+                                    value={offer?.name}
+                                    onBlur={validate}
+                                    onChange={e => updateOffer({name: e.target.value})}
+                                    onKeyDown={() => clearError('name')}
+                                />
+                                <div className='flex flex-col gap-1.5'>
+                                    <TextField
+                                        disabled={Boolean(true)}
+                                        placeholder='https://www.example.com'
+                                        title='URL'
+                                        type='url'
+                                        value={offerUrl}
+                                    />
+                                    <Button color='green' label={isCopied ? 'Copied!' : 'Copy code'} onClick={handleCopyClick} />
+                                </div>
+                            </div>
+                        </section>
+                        <section className='mt-4'>
+                            <h2 className='mb-4 text-lg'>Portal settings</h2>
                             <div className='flex flex-col gap-6'>
                                 <TextField
                                     placeholder='Black Friday Special'
@@ -118,27 +165,17 @@ const Sidebar: React.FC<{
                                     value={offer?.display_description}
                                     onChange={e => updateOffer({display_description: e.target.value})}
                                 />
-                                <div className='flex flex-col gap-1.5'>
-                                    <TextField
-                                        disabled={Boolean(true)}
-                                        placeholder='https://www.example.com'
-                                        title='URL'
-                                        type='url'
-                                        value={offerUrl}
-                                    />
-                                    <Button color={isCopied ? 'green' : 'black'} label={isCopied ? 'Copied!' : 'Copy code'} onClick={handleCopyClick} />
-                                </div>
                             </div>
                         </section>
                     </Form>
-                    <div className='mb-5 mt-10'>
+                    <div className='mb-6'>
                         {offer?.status === 'active' ? <Button color='red' label='Archive offer' link onClick={confirmStatusChange} /> : <Button color='green' label='Reactivate offer' link onClick={confirmStatusChange} />}
                     </div>
                 </div>
             );
         };
 
-const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
+const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     const {siteData} = useGlobalData();
     const modal = useModal();
     const {updateRoute} = useRouting();
@@ -155,7 +192,7 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         }
     }, [hasOffers, modal, updateRoute]);
 
-    const {data: {offers: offerById = []} = {}} = useBrowseOffersById(params?.id ? params?.id : '');
+    const {data: {offers: offerById = []} = {}} = useBrowseOffersById(id ? id : '');
 
     const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError, okProps} = useForm({
         initialState: offerById[0],
@@ -195,27 +232,6 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         validate={validate}
     />;
 
-    // {
-    //     "id": "65541d87ac4bfaf85f35e773",
-    //     "name": "apples",
-    //     "code": "apples",
-    //     "display_title": "apples",
-    //     "display_description": "A new appple",
-    //     "type": "percent",
-    //     "cadence": "month",
-    //     "amount": 30,
-    //     "duration": "forever",
-    //     "duration_in_months": null,
-    //     "currency_restriction": false,
-    //     "currency": null,
-    //     "status": "active",
-    //     "redemption_count": 0,
-    //     "tier": {
-    //         "id": "6535e75005fd81e1492d0cca",
-    //         "name": "Ronald SQLite Dev"
-    //     }
-    // }
-
     useEffect(() => {
         const dataset : offerPortalPreviewUrlTypes = {
             name: formState?.name || '',
@@ -237,7 +253,7 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
             tierId: formState?.tier.id || '',
             amountType: formState?.type === 'percent' ? 'percent' : 'amount'
         };
-        
+
         const newHref = getOfferPortalPreviewUrl(dataset, siteData.url);
         setHref(newHref);
     }, [formState, siteData]);
@@ -246,17 +262,24 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         href={href}
     />;
 
-    return offerById ? <PreviewModalContent deviceSelector={false}
+    return offerById ? <PreviewModalContent
+        deviceSelector={false}
         dirty={saveState === 'unsaved'}
+        height='full'
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
         preview={iframe}
+        previewToolbarBreadcrumbs={[{label: 'Offers', onClick: () => {
+            updateRoute('offers/edit');
+        }}, {label: offerById[0]?.name || ''}]}
         sidebar={sidebar}
-        size='full'
+        size='lg'
         testId='offer-update-modal'
         title='Offer'
+        onBreadcrumbsBack={() => {
+            updateRoute('offers/edit');
+        }}
         onCancel={() => {
-            modal.remove();
             updateRoute('offers/edit');
         }}
         onOk={async () => {
@@ -269,4 +292,4 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
         }} /> : null;
 };
 
-export default NiceModal.create(EditOfferModal);
+export default EditOfferModal;

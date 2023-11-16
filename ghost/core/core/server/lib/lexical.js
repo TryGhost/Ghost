@@ -99,10 +99,6 @@ module.exports = {
                     && imageTransform.shouldResizeFileExtension(ext)
                     && typeof storage.getStorage('images').saveRaw === 'function';
             },
-            createDocument() {
-                const {JSDOM} = require('jsdom');
-                return (new JSDOM()).window.document;
-            },
             getCollectionPosts
         }, userOptions);
 
