@@ -63,7 +63,7 @@ const PageToolbar: React.FC<PageToolbarProps> = ({
     </div>;
 
     mainClassName = clsx(
-        'absolute inset-0 flex h-[100vh] w-[100vw] flex-col',
+        'flex h-[calc(100%-72px)] w-[100vw] flex-auto flex-col',
         mainClassName
     );
 
@@ -79,15 +79,17 @@ const PageToolbar: React.FC<PageToolbarProps> = ({
     );
 
     return (
-        <main className={mainClassName}>
-            <section className='mx-auto flex h-full w-full flex-col'>
-                <header className='sticky top-0 z-50 flex h-18 items-center justify-between gap-5 bg-white p-6'>
-                    <nav>{left}</nav>
-                    <div>{globalActions}</div>
-                </header>
-                {children}
-            </section>
-        </main>
+        <div className='w-100 h-[100vh] overflow-y-auto overflow-x-hidden'>
+            <header className='sticky top-0 z-50 flex h-18 items-center justify-between gap-5 bg-white p-6'>
+                <nav>{left}</nav>
+                <div>{globalActions}</div>
+            </header>
+            <main className={mainClassName}>
+                <section className='mx-auto flex h-full w-full flex-col'>
+                    {children}
+                </section>
+            </main>
+        </div>
     );
 };
 

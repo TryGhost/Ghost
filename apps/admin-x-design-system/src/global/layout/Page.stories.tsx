@@ -51,6 +51,9 @@ const pageTabs: Tab[] = [
 ];
 
 export const Default: Story = {
+    parameters: {
+        layout: 'fullscreen'
+    },
     args: {
         pageTabs: pageTabs,
         children: dummyContent
@@ -58,6 +61,9 @@ export const Default: Story = {
 };
 
 export const WithHamburger: Story = {
+    parameters: {
+        layout: 'fullscreen'
+    },
     args: {
         pageTabs: pageTabs,
         showPageMenu: true,
@@ -66,6 +72,9 @@ export const WithHamburger: Story = {
 };
 
 export const WithGlobalActions: Story = {
+    parameters: {
+        layout: 'fullscreen'
+    },
     args: {
         pageTabs: pageTabs,
         showPageMenu: true,
@@ -75,6 +84,9 @@ export const WithGlobalActions: Story = {
 };
 
 export const CustomGlobalActions: Story = {
+    parameters: {
+        layout: 'fullscreen'
+    },
     args: {
         pageTabs: pageTabs,
         showPageMenu: true,
@@ -96,6 +108,9 @@ const simpleList = <ViewContainer
 </ViewContainer>;
 
 export const ExampleSimpleList: Story = {
+    parameters: {
+        layout: 'fullscreen'
+    },
     name: 'Example: Simple List',
     args: {
         pageTabs: pageTabs,
@@ -120,6 +135,9 @@ const stickyList = <ViewContainer
 </ViewContainer>;
 
 export const ExampleStickyList: Story = {
+    parameters: {
+        layout: 'fullscreen'
+    },
     name: 'Example: Sticky Header/Footer List',
     args: {
         pageTabs: pageTabs,
