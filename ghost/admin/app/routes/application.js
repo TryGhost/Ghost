@@ -194,7 +194,7 @@ export default Route.extend(ShortcutsRoute, {
                     // if the error value includes a model id then overwrite it to improve grouping
                     if (event.exception.values && event.exception.values.length > 0) {
                         const pattern = /<(post|page):[a-f0-9]+>/;
-                        const replacement = "<$1:ID>";
+                        const replacement = '<$1:ID>';
                         event.exception.values[0].value = event.exception.values[0].value.replace(pattern, replacement);
                     }
 
