@@ -218,13 +218,18 @@ export const OffersIndexModal = () => {
         <div className='pt-6'>
             <header>
                 <div className='flex items-center justify-between'>
-                    <TabView
-                        border={false}
-                        selectedTab={selectedTab}
-                        tabs={offersTabs}
-                        width='wide'
-                        onTabChange={setSelectedTab}
-                    />
+                    <div>
+                        {allOffers.some(offer => offer.hasOwnProperty('status') && offer.status === 'archived') ?
+                            <TabView
+                                border={false}
+                                selectedTab={selectedTab}
+                                tabs={offersTabs}
+                                width='wide'
+                                onTabChange={setSelectedTab}
+                            /> :
+                            null
+                        }
+                    </div>
                     <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
                 </div>
                 <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
