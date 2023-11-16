@@ -83,18 +83,56 @@ const Sidebar: React.FC<{
             return (
                 <div className='pt-7'>
                     <Form>
-                        <TextField
-                            error={Boolean(errors.name)}
-                            hint={errors.name || 'Visible to members on Stripe Checkout page'}
-                            placeholder='Black Friday'
-                            title='Name'
-                            value={offer?.name}
-                            onBlur={validate}
-                            onChange={e => updateOffer({name: e.target.value})}
-                            onKeyDown={() => clearError('name')}
-                        />
                         <section className='mt-4'>
-                            <h2 className='mb-4 text-lg'>Portal Settings</h2>
+                            <h2 className='mb-4 text-lg'>Stats</h2>
+                            <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5'>
+                                <div className='flex flex-col gap-1.5'>
+                                    <span className='text-xs font-semibold leading-none text-grey-700'>Created at</span>
+                                    <span>June 14, 2023</span>
+                                </div>
+                                <div className='flex flex-col gap-1.5'>
+                                    <span className='text-xs font-semibold leading-none text-grey-700'>Total redemptions</span>
+                                    <span>{offer?.redemption_count} {offer?.redemption_count === 1 ? 'redemption' : 'redemptions'}</span>
+                                </div>
+                                {offer?.redemption_count > 0 ?
+                                    <div className='flex items-end justify-between'>
+                                        <div className='flex flex-col gap-1.5'>
+                                            <span className='text-xs font-semibold leading-none text-grey-700'>Last redemption</span>
+                                            <span>August 30, 2023</span>
+                                        </div>
+                                        <a className='font-semibold text-green' href="#">See all →</a>
+                                    </div> :
+                                    null
+                                }
+                            </div>
+                        </section>
+                        <section className='mt-4'>
+                            <h2 className='mb-4 text-lg'>General</h2>
+                            <div className='flex flex-col gap-6'>
+                                <TextField
+                                    error={Boolean(errors.name)}
+                                    hint={errors.name || 'Visible to members on Stripe Checkout page'}
+                                    placeholder='Black Friday'
+                                    title='Name'
+                                    value={offer?.name}
+                                    onBlur={validate}
+                                    onChange={e => updateOffer({name: e.target.value})}
+                                    onKeyDown={() => clearError('name')}
+                                />
+                                <div className='flex flex-col gap-1.5'>
+                                    <TextField
+                                        disabled={Boolean(true)}
+                                        placeholder='https://www.example.com'
+                                        title='URL'
+                                        type='url'
+                                        value={offerUrl}
+                                    />
+                                    <Button color='green' label={isCopied ? 'Copied!' : 'Copy code'} onClick={handleCopyClick} />
+                                </div>
+                            </div>
+                        </section>
+                        <section className='mt-4'>
+                            <h2 className='mb-4 text-lg'>Portal settings</h2>
                             <div className='flex flex-col gap-6'>
                                 <TextField
                                     placeholder='Black Friday Special'
@@ -118,20 +156,10 @@ const Sidebar: React.FC<{
                                     value={offer?.display_description}
                                     onChange={e => updateOffer({display_description: e.target.value})}
                                 />
-                                <div className='flex flex-col gap-1.5'>
-                                    <TextField
-                                        disabled={Boolean(true)}
-                                        placeholder='https://www.example.com'
-                                        title='URL'
-                                        type='url'
-                                        value={offerUrl}
-                                    />
-                                    <Button color={isCopied ? 'green' : 'black'} label={isCopied ? 'Copied!' : 'Copy code'} onClick={handleCopyClick} />
-                                </div>
                             </div>
                         </section>
                     </Form>
-                    <div className='mb-5 mt-10'>
+                    <div className='mb-6'>
                         {offer?.status === 'active' ? <Button color='red' label='Archive offer' link onClick={confirmStatusChange} /> : <Button color='green' label='Reactivate offer' link onClick={confirmStatusChange} />}
                     </div>
                 </div>
@@ -237,7 +265,7 @@ const EditOfferModal: React.FC<RoutingModalProps> = ({params}) => {
             tierId: formState?.tier.id || '',
             amountType: formState?.type === 'percent' ? 'percent' : 'amount'
         };
-        
+
         const newHref = getOfferPortalPreviewUrl(dataset, siteData.url);
         setHref(newHref);
     }, [formState, siteData]);
