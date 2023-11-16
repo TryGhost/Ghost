@@ -46,7 +46,7 @@
     "types"
   ],
   "devDependencies": {
-    "@vitejs/plugin-react": "4.1.1",
+    "@vitejs/plugin-react": "4.2.0",
     "c8": "8.0.1",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
