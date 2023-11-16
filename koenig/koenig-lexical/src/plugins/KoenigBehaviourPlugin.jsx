@@ -792,7 +792,7 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
             editor.registerCommand(
                 KEY_MODIFIER_COMMAND,
                 (event) => {
-                    const {altKey, ctrlKey, metaKey, code, key} = event;
+                    const {altKey, ctrlKey, metaKey, shiftKey, code, key} = event;
                     const isArrowUp = key === 'ArrowUp' || event.keyCode === 38;
                     const isArrowDown = key === 'ArrowDown' || event.keyCode === 40;
 
@@ -855,12 +855,24 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     // Ctrl+Option+H to toggle highlight
                     if ((ctrlKey || metaKey) && altKey && code === 'KeyH') {
-                        // highlight
                         event.preventDefault();
                         editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'highlight');
                         return true;
                     }
 
+                    // ctrl shift K should format text as code
+                    if (ctrlKey && shiftKey && code === 'KeyK') {
+                        editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'code');
+                        return true;
+                    }
+
+                    // ctrl alt U should strikethrough (cmd alt U launches the browser source view)
+                    if (ctrlKey && altKey && code === 'KeyU') {
+                        editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
+                        return true;
+                    }
+
+                    // ctrl alt 1-6 should create headings
                     if (ctrlKey && altKey && key.match(/^[1-6]$/)) {
                         event.preventDefault();
 

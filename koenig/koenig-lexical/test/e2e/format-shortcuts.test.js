@@ -106,7 +106,7 @@ test.describe('Editor keyboard shortcuts', async () => {
             await page.keyboard.press('ArrowLeft');
             await page.keyboard.up('Shift', {delay: 100});
 
-            await page.keyboard.press(`${ctrlOrCmdKey}+Shift+K`, {delay: 100});
+            await page.keyboard.press(`Control+Shift+K`, {delay: 100});
 
             await assertHTML(page, html`<p dir="ltr"><code spellcheck="false" data-lexical-text="true"><span>test</span></code></p>`);
         });
