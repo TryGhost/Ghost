@@ -1,6 +1,5 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
-import {Button, Modal, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -8,6 +7,7 @@ import {numberWithCommas} from '../../../../utils/helpers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useModal} from '@ebay/nice-modal-react';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
@@ -105,7 +105,7 @@ const CopyLinkButton: React.FC<{offerCode: string}> = ({offerCode}) => {
         <Button className='opacity-0 will-change-[opacity] group-hover:opacity-100' icon='hyperlink-circle' link={true} onClick={handleCopyClick} />;
 };
 
-const OffersModal = () => {
+export const OffersIndexModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const hasOffers = useFeatureFlag('adminXOffers');
@@ -133,8 +133,7 @@ const OffersModal = () => {
 
     const handleOfferEdit = (id:string) => {
         // TODO: implement
-        modal.remove();
-        updateRoute(`offers/${id}`);
+        updateRoute(`offers/edit/${id}`);
     };
 
     const cardLayoutOutput = <div className='mt-8 grid grid-cols-3 gap-6'>
@@ -194,54 +193,26 @@ const OffersModal = () => {
         })}
     </table>;
 
-    return <Modal
-        afterClose={() => {
-            updateRoute('offers');
-        }}
-        cancelLabel=''
-        footer={
-            <div className='mx-8 flex w-full items-center justify-between'>
-                <a className='text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
-                <Button color='black' label='Close' onClick={() => {
-                    modal.remove();
-                    updateRoute('offers');
-                }} />
+    return <div className='pt-6'>
+        <header>
+            <div className='flex items-center justify-between'>
+                <TabView
+                    border={false}
+                    selectedTab={selectedTab}
+                    tabs={offersTabs}
+                    width='wide'
+                    onTabChange={setSelectedTab}
+                />
+                <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
             </div>
-        }
-        header={false}
-        height='full'
-        size='lg'
-        testId='offers-modal'
-        stickyFooter
-    >
-        <div className='pt-6'>
-            <header>
-                <div className='flex items-center justify-between'>
-                    <div>
-                        {allOffers.some(offer => offer.hasOwnProperty('status') && offer.status === 'archived') ?
-                            <TabView
-                                border={false}
-                                selectedTab={selectedTab}
-                                tabs={offersTabs}
-                                width='wide'
-                                onTabChange={setSelectedTab}
-                            /> :
-                            null
-                        }
-                    </div>
-                    <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
+            <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
+                <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
+                <div className='flex gap-3'>
+                    <Button icon='layout-module-1' iconColorClass={selectedLayout === 'card' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('card')} />
+                    <Button icon='layout-headline' iconColorClass={selectedLayout === 'list' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('list')} />
                 </div>
-                <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
-                    <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
-                    <div className='flex gap-3'>
-                        <Button icon='layout-module-1' iconColorClass={selectedLayout === 'card' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('card')} />
-                        <Button icon='layout-headline' iconColorClass={selectedLayout === 'list' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('list')} />
-                    </div>
-                </div>
-            </header>
-            {selectedLayout === 'card' ? cardLayoutOutput : listLayoutOutput}
-        </div>
-    </Modal>;
+            </div>
+        </header>
+        {selectedLayout === 'card' ? cardLayoutOutput : listLayoutOutput}
+    </div>;
 };
-
-export default NiceModal.create(OffersModal);

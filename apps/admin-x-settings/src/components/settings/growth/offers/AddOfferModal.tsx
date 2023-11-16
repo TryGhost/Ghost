@@ -1,4 +1,3 @@
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useForm from '../../../../hooks/useForm';
@@ -9,6 +8,7 @@ import {getTiersCadences} from '../../../../utils/getTiersCadences';
 import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useModal} from '@ebay/nice-modal-react';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 // we should replace this with a library
@@ -282,7 +282,6 @@ const AddOfferModal = () => {
             const response = await addOffer(dataset);
 
             if (response && response.offers && response.offers.length > 0) {
-                modal.remove();
                 updateRoute(`offers/success/${response.offers[0].id}`);
             }
         },
@@ -399,7 +398,6 @@ const AddOfferModal = () => {
     }, [hasOffers, modal, updateRoute]);
 
     const cancelAddOffer = () => {
-        modal.remove();
         updateRoute('offers/edit');
     };
 
@@ -448,4 +446,4 @@ const AddOfferModal = () => {
         }} />;
 };
 
-export default NiceModal.create(AddOfferModal);
+export default AddOfferModal;
