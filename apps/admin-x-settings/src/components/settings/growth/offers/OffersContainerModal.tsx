@@ -2,60 +2,30 @@ import AddOfferModal from './AddOfferModal';
 import EditOfferModal from './EditOfferModal';
 import NiceModal from '@ebay/nice-modal-react';
 import OfferSuccess from './OfferSuccess';
-import {Button, Modal} from '@tryghost/admin-x-design-system';
 import {OffersIndexModal} from './OffersIndex';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
-import {useState} from 'react';
 
 type OffersRouteHandlerProps = {
     route: string;
-    setIsIndex: (value: boolean) => void;
 };
 
-const OffersRouteHandler: React.FC<OffersRouteHandlerProps> = ({route, setIsIndex}) => {
+const OffersRouteHandler: React.FC<OffersRouteHandlerProps> = ({route}) => {
     if (route === 'offers/new') {
-        setIsIndex(false);
         return <AddOfferModal />;
     } else if (route.startsWith('offers/edit/') && route.length > 'offers/edit/'.length) {
-        setIsIndex(false);
         const offerId = route.split('/').pop();
         return <EditOfferModal id={offerId ? offerId : ''} />;
     } else if (route.startsWith('offers/success/') && route.length > 'offers/success/'.length) {
-        setIsIndex(false);
         const offerId = route.split('/').pop();
         return <OfferSuccess id={offerId ? offerId : ''} />;
     } else {
-        setIsIndex(true);
         return <OffersIndexModal />;
     }
 };
 
 const OffersContainerModal = () => {
-    const {route, updateRoute} = useRouting();
-    const [isIndex, setIsIndex] = useState<boolean>(true);
-    return (
-        <Modal
-            afterClose={() => {
-                updateRoute('offers');
-            }}
-            cancelLabel=''
-            footer={
-                isIndex && <div className='mx-8 flex w-full items-center justify-between'>
-                    <a className='text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
-                    <Button color='black' label='Close' onClick={() => {
-                        updateRoute('offers');
-                    }} />
-                </div>
-            }
-            header={false}
-            height='full'
-            size='lg'
-            stickyFooter= {isIndex}
-            testId='offers-modal'
-        >
-            <OffersRouteHandler route={route} setIsIndex={setIsIndex} />
-        </Modal>
-    );
+    const {route} = useRouting();
+    return <OffersRouteHandler route={route} />;
 };
 
 export default NiceModal.create(OffersContainerModal);
