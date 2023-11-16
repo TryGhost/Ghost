@@ -8,7 +8,7 @@ export interface FrameworkProviderProps {
     basePath: string;
     ghostVersion: string;
     externalNavigate: RoutingProviderProps['externalNavigate'];
-    modals: RoutingProviderProps['modals'];
+    modals?: RoutingProviderProps['modals'];
     unsplashConfig: {
         Authorization: string;
         'Accept-Version': string;

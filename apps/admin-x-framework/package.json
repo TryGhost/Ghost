@@ -7,38 +7,39 @@
   "private": true,
   "exports": {
     ".": {
-        "import": "./es/index.js",
-        "types": "./types/index.d.ts"
+      "import": "./es/index.js",
+      "types": "./types/index.d.ts"
     },
     "./errors": {
-        "import": "./es/errors.js",
-        "types": "./types/errors.d.ts"
+      "import": "./es/errors.js",
+      "types": "./types/errors.d.ts"
     },
     "./helpers": {
-        "import": "./es/helpers.js",
-        "types": "./types/helpers.d.ts"
+      "import": "./es/helpers.js",
+      "types": "./types/helpers.d.ts"
     },
     "./hooks": {
-        "import": "./es/hooks.js",
-        "types": "./types/hooks.d.ts"
+      "import": "./es/hooks.js",
+      "types": "./types/hooks.d.ts"
     },
     "./routing": {
-        "import": "./es/routing.js",
-        "types": "./types/routing.d.ts"
+      "import": "./es/routing.js",
+      "types": "./types/routing.d.ts"
     },
     "./api/*": {
-        "import": "./es/api/*.js",
-        "types": "./types/api/*.d.ts"
+      "import": "./es/api/*.js",
+      "types": "./types/api/*.d.ts"
     }
   },
   "sideEffects": false,
   "scripts": {
     "build": "vite build && tsc -p tsconfig.declaration.json",
     "prepare": "yarn build",
-    "test": "yarn test:types",
+    "test": "yarn test:types && yarn test:unit",
     "test:types": "tsc --noEmit",
+    "test:unit": "vitest run --coverage",
     "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
-    "lint": "yarn lint:code && (yarn lint:test || echo \"TODO ADD TESTS TO LINT\")",
+    "lint": "yarn lint:code && yarn lint:test",
     "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache"
   },
   "files": [
@@ -46,15 +47,17 @@
     "types"
   ],
   "devDependencies": {
+    "@testing-library/react": "^14.1.0",
+    "@types/mocha": "10.0.1",
     "@vitejs/plugin-react": "4.1.1",
     "c8": "8.0.1",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "mocha": "10.2.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
     "sinon": "17.0.0",
     "ts-node": "10.9.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "typescript": "5.2.2",
     "vite": "4.5.0"
   },
@@ -72,7 +75,12 @@
       "build": {
         "dependsOn": [
           "build",
-          {"projects": ["@tryghost/admin-x-design-system"], "target": "build"}
+          {
+            "projects": [
+              "@tryghost/admin-x-design-system"
+            ],
+            "target": "build"
+          }
         ]
       }
     }
