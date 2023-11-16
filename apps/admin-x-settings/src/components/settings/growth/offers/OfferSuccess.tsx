@@ -1,15 +1,13 @@
-import NiceModal from '@ebay/nice-modal-react';
 import {Button} from '@tryghost/admin-x-design-system';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
-import {RoutingModalProps} from '@tryghost/admin-x-framework/routing';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useBrowseOffersById} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
-const OfferSuccess: React.FC<RoutingModalProps> = ({params}) => {
-    const {data: {offers: offerById = []} = {}} = useBrowseOffersById(params?.id ? params?.id : '');
+const OfferSuccess: React.FC<{id: string}> = ({id}) => {
+    const {data: {offers: offerById = []} = {}} = useBrowseOffersById(id ? id : '');
 
     const [offerLink, setOfferLink] = useState<string>('');
 
@@ -54,9 +52,8 @@ const OfferSuccess: React.FC<RoutingModalProps> = ({params}) => {
                     <Button className='h-8 border border-grey-300' disabled={true} icon='facebook' size='sm' fullWidth />
                     <Button className='h-8 border border-grey-300' disabled={true} icon='linkedin' size='sm' fullWidth />
                 </div>
-            </div>
         </div>
-    </Modal>;
+    </div>;
 };
 
-export default NiceModal.create(OfferSuccess);
+export default OfferSuccess;

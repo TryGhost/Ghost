@@ -282,7 +282,6 @@ const AddOfferModal = () => {
             const response = await addOffer(dataset);
 
             if (response && response.offers && response.offers.length > 0) {
-                modal.remove();
                 updateRoute(`offers/success/${response.offers[0].id}`);
             }
         },
