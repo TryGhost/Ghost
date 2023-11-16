@@ -18,7 +18,7 @@ export type DynamicTableRow = {
     onClick?: () => void;
 }
 
-interface DynamicTableProps {
+export interface DynamicTableProps {
     columns: DynamicTableColumn[];
     rows: DynamicTableRow[];
     absolute?: boolean;
@@ -26,9 +26,9 @@ interface DynamicTableProps {
     headerBorder?: boolean;
 
     /**
-     * Use this parameter to set correct paddings for a table with sticky
+     * Set this parameter if the table is the main content in a viewcontainer or on a page
      */
-    usePagePaddingsForSticky?: boolean;
+    singlePageTable?: boolean;
 
     border?: boolean;
     footerBorder?:boolean;
@@ -54,7 +54,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     footer,
     footerBorder = true,
     stickyFooter = false,
-    usePagePaddingsForSticky = false,
+    singlePageTable = false,
     containerClassName,
     tableContainerClassName,
     tableClassName,
@@ -75,7 +75,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
 
     tableContainerClassName = clsx(
         'flex-auto overflow-x-auto',
-        usePagePaddingsForSticky && 'px-6 xl:px-[calc((100%-1280px)/2+24px)]',
+        (singlePageTable && (stickyHeader || stickyFooter || absolute)) && 'px-6 xl:px-[calc((100%-1280px)/2+24px)]',
         tableContainerClassName
     );
 
@@ -109,7 +109,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
 
     footerClassName = clsx(
         'bg-white',
-        usePagePaddingsForSticky && 'mx-6 xl:mx-[calc((100%-1280px)/2+24px)]',
+        (singlePageTable && (stickyHeader || stickyFooter || absolute)) && 'mx-6 xl:mx-[calc((100%-1280px)/2+24px)]',
         footer && 'py-3',
         stickyFooter && 'sticky inset-x-0 bottom-0',
         footerBorder && 'border-t border-grey-200',

@@ -4,6 +4,7 @@ import Heading from '../Heading';
 import clsx from 'clsx';
 import Button, {ButtonColor, ButtonProps} from '../Button';
 import {ButtonGroupProps} from '../ButtonGroup';
+import DynamicTable, {DynamicTableProps} from '../table/DynamicTable';
 
 export interface View {
     id: string;
@@ -70,6 +71,9 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
         onTabChange!(newTab);
     };
 
+    let isSingleDynamicTable;
+    let singleDynamicTableIsSticky = false;
+
     if (tabs?.length && !children) {
         if (!selectedTab) {
             selectedTab = tabs[0].id;
@@ -90,6 +94,13 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
         </>;
     } else if (children) {
         mainContent = children;
+        isSingleDynamicTable = React.Children.only(children) && React.isValidElement(children) && React.Children.only(children)?.type === DynamicTable;
+        if (isSingleDynamicTable) {
+            const dynTable = (children as React.ReactElement<DynamicTableProps>);
+            if (dynTable.props.stickyHeader || dynTable.props.stickyFooter) {
+                singleDynamicTableIsSticky = true;
+            }
+        }
     }
 
     toolbarWrapperClassName = clsx(
@@ -153,6 +164,10 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
         'group/view-container flex flex-auto flex-col',
         mainContainerClassName
     );
+
+    if (singleDynamicTableIsSticky) {
+        contentFullBleed = true;
+    }
 
     contentWrapperClassName = clsx(
         'relative mx-auto w-full flex-auto',

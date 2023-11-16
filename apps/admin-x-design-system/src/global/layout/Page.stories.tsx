@@ -108,15 +108,14 @@ export const ExampleSimpleList: Story = {
 const stickyList = <ViewContainer
     title='List page'
     type='page'
-    contentFullBleed
 >
     <DynamicTable
         columns={testColumns}
         footer={<Hint>Sticky footer</Hint>}
         rows={testRows(40)}
+        singlePageTable
         stickyFooter
         stickyHeader
-        usePagePaddingsForSticky
     />
 </ViewContainer>;
 
