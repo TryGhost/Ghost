@@ -28,6 +28,7 @@
  * @prop {object} tier
  * @prop {string} tier.id
  * @prop {string} tier.name
+ * @prop {Date} created_at
  */
 
 class OfferMapper {
@@ -54,7 +55,8 @@ class OfferMapper {
             tier: {
                 id: offer.tier.id,
                 name: offer.tier.name
-            }
+            },
+            created_at: offer.createdAt
         };
     }
 }
