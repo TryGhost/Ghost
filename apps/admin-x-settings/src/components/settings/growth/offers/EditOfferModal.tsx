@@ -11,6 +11,15 @@ import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
+function formatTimestamp(timestamp: string): string {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
 const Sidebar: React.FC<{
         clearError: (field: string) => void,
         errors: ErrorMessages,
@@ -88,7 +97,7 @@ const Sidebar: React.FC<{
                             <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5'>
                                 <div className='flex flex-col gap-1.5'>
                                     <span className='text-xs font-semibold leading-none text-grey-700'>Created at</span>
-                                    <span>June 14, 2023</span>
+                                    <span>{formatTimestamp(offer?.created_at ? offer.created_at : '')}</span>
                                 </div>
                                 <div className='flex flex-col gap-1.5'>
                                     <span className='text-xs font-semibold leading-none text-grey-700'>Total redemptions</span>
