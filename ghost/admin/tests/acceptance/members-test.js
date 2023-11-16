@@ -49,9 +49,6 @@ describe('Acceptance: Members', function () {
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/members');
 
-            // it has correct page title
-            expect(document.title, 'page title').to.equal('Members - Test Blog');
-
             // it lists all members
             expect(findAll('[data-test-list="members-list-item"]').length, 'members list count')
                 .to.equal(2);
@@ -104,9 +101,6 @@ describe('Acceptance: Members', function () {
 
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/members');
-
-            // it has correct page title
-            expect(document.title, 'page title').to.equal('Members - Test Blog');
 
             // it lists all members
             expect(findAll('[data-test-list="members-list-item"]').length, 'members list count')

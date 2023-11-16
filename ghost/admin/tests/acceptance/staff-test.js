@@ -102,9 +102,6 @@
 //             // doesn't do any redirecting
 //             expect(currentURL(), 'currentURL').to.equal('/settings/staff');
 
-//             // it has correct page title
-//             expect(document.title, 'page title').to.equal('Staff - Test Blog');
-
 //             // it shows active users in active section
 //             expect(
 //                 findAll('[data-test-active-users] [data-test-user-id]').length,
@@ -133,9 +130,6 @@
 
 //             // url is correct
 //             expect(currentURL(), 'url after clicking user').to.equal(`/settings/staff/${user2.slug}`);
-
-//             // title is correct
-//             expect(document.title, 'title after clicking user').to.equal('Staff - User - Test Blog');
 
 //             // view title should exist and be linkable and active
 //             expect(

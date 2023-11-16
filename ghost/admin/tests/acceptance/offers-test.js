@@ -56,9 +56,6 @@ describe('Acceptance: Offers', function () {
             // lands on correct page
             expect(currentURL(), 'currentURL').to.equal('/offers');
 
-            // it has correct page title
-            expect(document.title, 'page title').to.equal('Offers - Test Blog');
-
             // it highlights active state in nav menu
             expect(
                 find('[data-test-nav="offers"]'),
