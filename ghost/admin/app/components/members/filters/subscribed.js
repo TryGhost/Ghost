@@ -76,7 +76,7 @@ export const SUBSCRIBED_FILTER = ({newsletters, feature, group}) => {
                 };
             },
             options: [
-                {label: newsletters.length > 1 ? 'Subscribed to one or more' : 'Subscribed', name: 'subscribed'},
+                {label: newsletters.length > 1 ? 'Subscribed to at least one' : 'Subscribed', name: 'subscribed'},
                 {label: newsletters.length > 1 ? 'Unsubscribed from all' : 'Unsubscribed', name: 'unsubscribed'},
                 {label: 'Email disabled', name: 'email-disabled'}
             ],
