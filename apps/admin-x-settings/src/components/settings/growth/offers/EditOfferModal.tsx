@@ -253,13 +253,15 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         href={href}
     />;
 
-    return offerById ? <PreviewModalContent deviceSelector={false}
+    return offerById ? <PreviewModalContent
+        deviceSelector={false}
         dirty={saveState === 'unsaved'}
+        height='full'
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
         preview={iframe}
         sidebar={sidebar}
-        size='full'
+        size='lg'
         testId='offer-update-modal'
         title='Offer'
         onCancel={() => {
