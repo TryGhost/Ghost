@@ -23,6 +23,7 @@
   "devDependencies": {
     "@nestjs/testing": "10.2.8",
     "c8": "8.0.1",
+    "lexical": "^0.12.2",
     "mocha": "10.2.0",
     "reflect-metadata": "0.1.13",
     "sinon": "^17.0.1",
