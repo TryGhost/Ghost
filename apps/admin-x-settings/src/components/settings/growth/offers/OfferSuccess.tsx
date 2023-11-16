@@ -3,7 +3,9 @@ import {Button} from '@tryghost/admin-x-design-system';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {Offer, useBrowseOffersById} from '@tryghost/admin-x-framework/api/offers';
+import {currencyToDecimal} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
+import {numberWithCommas} from '../../../../utils/helpers';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -40,7 +42,22 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
     };
 
     const handleTwitter = () => {
-        window.open(`https://twitter.com/intent/tweet?url=${encodeURI(offerLink)}&text=${encodeURIComponent(offer?.name || '')}`, '_blank');
+        let tweetText = '';
+
+        switch (offer?.type) {
+        case 'percent':
+            tweetText = offer?.amount + '% discount';
+            break;
+        case 'fixed':
+            tweetText = numberWithCommas(currencyToDecimal(offer?.amount)) + ' ' + offer?.currency + ' discount';
+            break;
+        case 'trial':
+            tweetText = offer?.amount + ' days free trial';
+            break;
+        default:
+            break;
+        };
+        window.open(`https://twitter.com/intent/tweet?url=${encodeURI(offerLink)}&text=${encodeURIComponent(offer?.name || '')} — Check out ${encodeURIComponent(tweetText)} on:`, '_blank');
     };
 
     const handleFacebook = () => {
