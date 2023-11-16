@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - arch
+      - 'arch-cm'
       - 'v5.*'
       - 3.x
       - 2.x
@@ -117,7 +118,7 @@ jobs:
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       changed_new_package: ${{ steps.added.outputs.new-package }}
       base_commit: ${{ env.BASE_COMMIT }}
-      is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch') }}
+      is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch' || github.ref == 'refs/heads/arch-cm') }}
       is_main: ${{ github.ref == 'refs/heads/main' }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
 
@@ -953,9 +954,15 @@ jobs:
       - name: Output needs (for debugging)
         run: echo "${{ toJson(needs) }}"
 
-      - name: Set env variables
+      - name: Set env variables (main)
+        if: github.ref == 'refs/heads/main'
         run: |
           echo "CANARY_BUILD_INPUTS={\"version\":\"canary\",\"environment\":\"staging\"}" >> $GITHUB_ENV
+
+      - name: Set env variables (arch-cm)
+        if: github.ref == 'refs/heads/arch-cm'
+        run: |
+          echo "CANARY_BUILD_INPUTS={\"version\":\"canary-arch-cm\",\"environment\":\"staging\"}" >> $GITHUB_ENV
 
       - name: Invoke build
         uses: aurelien-baudet/workflow-dispatch@v2
