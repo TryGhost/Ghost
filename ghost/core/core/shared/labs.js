@@ -21,7 +21,8 @@ const GA_FEATURES = [
     'announcementBar',
     'signupForm',
     'recommendations',
-    'editorEmojiPicker'
+    'editorEmojiPicker',
+    'listUnsubscribeHeader'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -43,7 +44,6 @@ const ALPHA_FEATURES = [
     'tipsAndDonations',
     'importMemberTier',
     'lexicalIndicators',
-    'listUnsubscribeHeader',
     'editorEmojiPicker',
     'adminXOffers',
     'filterEmailDisabled'
