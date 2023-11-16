@@ -218,7 +218,7 @@ const OffersModal = () => {
             <header>
                 <div className='flex items-center justify-between'>
                     <div>
-                        {!allOffers.some(offer => offer.hasOwnProperty('status') && offer.status === 'archived') ?
+                        {allOffers.some(offer => offer.hasOwnProperty('status') && offer.status === 'archived') ?
                             <TabView
                                 border={false}
                                 selectedTab={selectedTab}
