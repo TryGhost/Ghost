@@ -97,7 +97,6 @@ class OfferBookshelfRepository {
      */
     async mapToOffer(model, options) {
         const json = model.toJSON();
-
         const count = await this.OfferRedemptionModel.where({offer_id: json.id}).count('id', {
             transacting: options.transacting
         });
@@ -119,7 +118,8 @@ class OfferBookshelfRepository {
                 tier: {
                     id: json.product.id,
                     name: json.product.name
-                }
+                },
+                createdAt: json.created_at
             }, null);
         } catch (err) {
             logger.error(err);
