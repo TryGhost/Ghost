@@ -87,6 +87,27 @@ export const CustomGlobalActions: Story = {
 const simpleList = <ViewContainer
     title='List page'
     type='page'
+>
+    <DynamicTable
+        columns={testColumns}
+        footer={<Hint>Just a regular table footer</Hint>}
+        rows={testRows(100)}
+    />
+</ViewContainer>;
+
+export const ExampleSimpleList: Story = {
+    name: 'Example: Simple List',
+    args: {
+        pageTabs: pageTabs,
+        showPageMenu: true,
+        showGlobalActions: true,
+        children: simpleList
+    }
+};
+
+const stickyList = <ViewContainer
+    title='List page'
+    type='page'
     contentFullBleed
 >
     <DynamicTable
@@ -99,12 +120,12 @@ const simpleList = <ViewContainer
     />
 </ViewContainer>;
 
-export const ExampleSimpleList: Story = {
-    name: 'Example: Simple List',
+export const ExampleStickyList: Story = {
+    name: 'Example: Sticky Header/Footer List',
     args: {
         pageTabs: pageTabs,
         showPageMenu: true,
         showGlobalActions: true,
-        children: simpleList
+        children: stickyList
     }
 };

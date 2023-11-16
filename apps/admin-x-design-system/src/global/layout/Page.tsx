@@ -80,11 +80,11 @@ const PageToolbar: React.FC<PageToolbarProps> = ({
 
     return (
         <main className={mainClassName}>
-            <header className='sticky top-0 z-50 flex h-18 items-center justify-between gap-5 bg-white p-6'>
-                <nav>{left}</nav>
-                <div>{globalActions}</div>
-            </header>
-            <section className='mx-auto w-full flex-auto'>
+            <section className='mx-auto flex h-full w-full flex-col'>
+                <header className='sticky top-0 z-50 flex h-18 items-center justify-between gap-5 bg-white p-6'>
+                    <nav>{left}</nav>
+                    <div>{globalActions}</div>
+                </header>
                 {children}
             </section>
         </main>

@@ -150,7 +150,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     );
 
     mainContainerClassName = clsx(
-        'group/view-container flex min-h-full flex-col',
+        'group/view-container flex flex-auto flex-col',
         mainContainerClassName
     );
 
@@ -161,7 +161,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     );
 
     return (
-        <section className={mainContainerClassName}>
+        <section className={mainContainerClassName} id="viewContainer">
             {toolbar}
             <div className={contentWrapperClassName}>
                 {mainContent}
