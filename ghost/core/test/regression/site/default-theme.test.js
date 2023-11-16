@@ -7,8 +7,8 @@ it('Default theme passes linked gscan version', async function () {
     const themeService = require('../../../core/server/services/themes');
 
     // Set active theme name
-    mockSetting('active_theme', 'Source');
+    mockSetting('active_theme', 'source');
     await themeService.init();
-    const theme = await themeService.api.getThemeErrors('Source');
+    const theme = await themeService.api.getThemeErrors('source');
     assert.deepEqual(theme.errors, [], 'Default theme should have no errors');
 });
