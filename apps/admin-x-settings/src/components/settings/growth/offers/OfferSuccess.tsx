@@ -43,7 +43,7 @@ const OfferSuccess: React.FC<RoutingModalProps> = ({params}) => {
         size='lg'
         topRightContent='close'
     >
-        <div className='flex h-full flex-col items-center justify-center text-center'>
+        <div className='-mt-6 flex h-full flex-col items-center justify-center text-center'>
             <Icon name='tags-check' size='xl' />
             <h1 className='mt-6 text-4xl'>Your new offer is live!</h1>
             <p className='mt-3 max-w-[510px] text-[1.6rem]'>You can share the link anywhere. In your newsletter, social media, a podcast, or in-person. It all just works.</p>
