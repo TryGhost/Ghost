@@ -1,4 +1,4 @@
-import {Actor} from './Actor';
+import {Actor} from './actor';
 import ObjectID from 'bson-objectid';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,5 +1,5 @@
 import {Injectable, Inject} from '@nestjs/common';
-import {Snippet} from './Snippet';
+import {Snippet} from './snippet.entity';
 import {ISnippetsRepository} from './snippets.repository.interface';
 
 @Injectable()
