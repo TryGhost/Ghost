@@ -19,7 +19,8 @@ export type Offer = {
     tier: {
         id: string;
         name?: string;
-    }
+    },
+    created_at?: string;
 }
 
 export type PartialNewOffer = Omit<Offer, 'redemption_count'>;
