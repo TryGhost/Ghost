@@ -19,7 +19,7 @@ type BaseEntityData = {
 
 export class Entity<Data> {
     constructor(protected attr: Data & BaseEntityData) {}
-    private actor: Actor | null;
+    private actor?: Actor | null;
     setActor(actor: Actor) {
         if (this.actor !== null) {
             throw new Error(`Entity already owned by ${actor.id}`);
