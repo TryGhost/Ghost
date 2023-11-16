@@ -29,7 +29,7 @@ const OfferCodeChangeEvent = require('../events/OfferCodeChangeEvent');
  * @prop {OfferStatus} status
  * @prop {OfferTier} tier
  * @prop {number} redemptionCount
- * @prop {Date} createdAt
+ * @prop {Date} created_at
  */
 
 /**
@@ -48,7 +48,7 @@ const OfferCodeChangeEvent = require('../events/OfferCodeChangeEvent');
  * @prop {string} status
  * @prop {number} redemptionCount
  * @prop {TierProps|OfferTier} tier
- * @prop {Date} createdAt
+ * @prop {Date} created_at
  */
 
 /**
@@ -182,7 +182,7 @@ class Offer {
     }
 
     get createdAt() {
-        return this.props.createdAt;
+        return this.props.created_at;
     }
 
     /**
@@ -281,7 +281,7 @@ class Offer {
         const cadence = OfferCadence.create(data.cadence);
         const duration = OfferDuration.create(data.duration, data.duration_in_months);
         const status = OfferStatus.create(data.status || 'active');
-        const createdAt = data.createdAt;
+        const createdAt = data.created_at;
 
         if (isNew && data.redemptionCount !== undefined) {
             // TODO correct error
@@ -348,7 +348,7 @@ class Offer {
             tier,
             redemptionCount,
             status,
-            createdAt
+            created_at: createdAt
         }, {isNew});
     }
 }

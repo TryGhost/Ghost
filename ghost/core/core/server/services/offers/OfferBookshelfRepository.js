@@ -119,7 +119,7 @@ class OfferBookshelfRepository {
                     id: json.product.id,
                     name: json.product.name
                 },
-                createdAt: json.created_at
+                created_at: json.created_at
             }, null);
         } catch (err) {
             logger.error(err);
