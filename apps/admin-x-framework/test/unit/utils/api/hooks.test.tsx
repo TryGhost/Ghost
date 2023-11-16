@@ -1,4 +1,4 @@
-import {InfiniteData, QueryClient} from '@tanstack/react-query';
+import {InfiniteData, QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {act, renderHook, waitFor} from '@testing-library/react';
 import React, {ReactNode} from 'react';
 import {MockContext, vi} from 'vitest';
@@ -30,7 +30,10 @@ const wrapper: React.FC<{ children: ReactNode }> = ({children}) => (
         onInvalidate={() => {}}
         onUpdate={() => {}}
     >
-        {children}
+        {/* Being nested, this overrides the default QueryClientProvider from the framework */}
+        <QueryClientProvider client={queryClient}>
+            {children}
+        </QueryClientProvider>
     </FrameworkProvider>
 );
 
@@ -342,7 +345,7 @@ describe('API hooks', function () {
             }, async (mock) => {
                 const useTestQuery = createQueryWithId({
                     dataType: 'test',
-                    path: '/test/:id/'
+                    path: id => `/test/${id}/`
                 });
 
                 const {result} = renderHook(() => useTestQuery('1'), {wrapper});
