@@ -1,3 +1,5 @@
+const logging = require('@tryghost/logging');
+
 class TagsPublicServiceWrapper {
     async init() {
         if (this.api) {
@@ -16,7 +18,12 @@ class TagsPublicServiceWrapper {
             let tagsPublicCache = adapterManager.getAdapter('cache:tagsPublic');
             tagsCache = new EventAwareCacheWrapper({
                 cache: tagsPublicCache,
-                resetEvents: ['site.changed'],
+                logging,
+                resetEvents: [
+                    'tag.added',
+                    'tag.edited',
+                    'tag.deleted'
+                ],
                 eventRegistry: EventRegistry
             });
         }

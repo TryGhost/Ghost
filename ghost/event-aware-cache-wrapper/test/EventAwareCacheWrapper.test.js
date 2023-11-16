@@ -7,8 +7,12 @@ const {EventEmitter} = require('stream');
 describe('EventAwareCacheWrapper', function () {
     it('Can initialize', function () {
         const cache = new InMemoryCache();
+        const logging = {
+            info: () => {}
+        };
         const wrappedCache = new EventAwareCacheWrapper({
-            cache
+            cache,
+            logging
         });
         assert.ok(wrappedCache);
     });
@@ -16,8 +20,12 @@ describe('EventAwareCacheWrapper', function () {
     describe('get', function () {
         it('calls a wrapped cache with extra key', async function () {
             const cache = new InMemoryCache();
+            const logging = {
+                info: () => {}
+            };
             const wrapper = new EventAwareCacheWrapper({
-                cache: cache
+                cache,
+                logging
             });
 
             await wrapper.set('a', 'b');
@@ -29,10 +37,13 @@ describe('EventAwareCacheWrapper', function () {
     describe('listens to reset events', function () {
         it('resets the cache when reset event is triggered', async function () {
             const cache = new InMemoryCache();
-
+            const logging = {
+                info: () => {}
+            };
             const eventRegistry = new EventEmitter();
             const wrapper = new EventAwareCacheWrapper({
-                cache: cache,
+                cache,
+                logging,
                 resetEvents: ['site.changed'],
                 eventRegistry: eventRegistry
             });

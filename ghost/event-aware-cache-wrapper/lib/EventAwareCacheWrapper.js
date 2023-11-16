@@ -1,13 +1,17 @@
 class EventAwareCacheWrapper {
     #cache;
+    #logging;
+
     /**
      * @param {Object} deps
      * @param {Object} deps.cache - cache instance extending adapter-base-cache
+     * @param {Object} deps.logging - logging instance
      * @param {Object} [deps.eventRegistry] - event registry instance
-     * @param {String[]} [deps.resetEvents] - event to listen to triggering reset
+     * @param {String[]} [deps.resetEvents] - events that should trigger a cache reset
      */
     constructor(deps) {
         this.#cache = deps.cache;
+        this.#logging = deps.logging;
 
         if (deps.resetEvents && deps.eventRegistry) {
             this.#initListeners(deps.eventRegistry, deps.resetEvents);
@@ -17,6 +21,8 @@ class EventAwareCacheWrapper {
     #initListeners(eventRegistry, eventsToResetOn) {
         eventsToResetOn.forEach((event) => {
             eventRegistry.on(event, () => {
+                this.#logging.info(`Purging cache entries prefixed with "${this.#cache.keyPrefix}" due to event: ${event}`);
+
                 this.reset();
             });
         });
