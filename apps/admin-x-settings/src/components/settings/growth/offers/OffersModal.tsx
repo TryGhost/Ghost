@@ -3,9 +3,11 @@ import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, Modal, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
+import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {numberWithCommas} from '../../../../utils/helpers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useState} from 'react';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
@@ -82,6 +84,27 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
     );
 };
 
+const CopyLinkButton: React.FC<{offerCode: string}> = ({offerCode}) => {
+    const [isCopied, setIsCopied] = useState(false);
+    const {siteData} = useGlobalData();
+
+    const handleCopyClick = async () => {
+        const offerLink = `${getHomepageUrl(siteData!)}${offerCode}`;
+        try {
+            await navigator.clipboard.writeText(offerLink);
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000); // reset after 2 seconds
+        } catch (err) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to copy text: ', err);
+        }
+    };
+
+    return isCopied ?
+        <span className='inline-block leading-[22px] text-green'>Copied</span> :
+        <Button className='opacity-0 will-change-[opacity] group-hover:opacity-100' icon='hyperlink-circle' link={true} onClick={handleCopyClick} />;
+};
+
 const OffersModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
@@ -147,7 +170,7 @@ const OffersModal = () => {
             <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Terms</th>
             <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Price</th>
             <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Redemptions</th>
-            <th className='px-5 py-2.5 pr-0 text-xs font-normal text-grey-700'></th>
+            <th className='min-w-[80px] px-5 py-2.5 pr-0 text-xs font-normal text-grey-700'></th>
         </tr>
         {allOffers.filter(offer => offer.status === selectedTab).map((offer) => {
             const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
@@ -159,13 +182,13 @@ const OffersModal = () => {
             const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
 
             return (
-                <tr className='border-b border-b-grey-200'>
-                    <td className='p-5 pl-0 font-semibold'>{offer?.name}</td>
-                    <td className='p-5 text-sm'>{offerTier.name} {getOfferCadence(offer.cadence)}</td>
-                    <td className='p-5 text-sm'><span className={`font-semibold uppercase ${discountColor}`}>{discountOffer}</span> — {getOfferDuration(offer.duration)}</td>
-                    <td className='p-5 text-sm'>{updatedPriceWithCurrency} <span className='text-grey-700 line-through'>{originalPriceWithCurrency}</span></td>
-                    <td className='p-5 text-sm'><a className='hover:underline' href={createRedemptionFilterUrl(offer.id ? offer.id : '')}>{offer.redemption_count}</a></td>
-                    <td className='p-5 pr-0 text-right text-sm leading-none'><Button icon='hyperlink-circle' link={true} /></td>
+                <tr className='group border-b border-b-grey-200'>
+                    <td className='p-0 font-semibold'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>{offer?.name}</a></td>
+                    <td className='p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>{offerTier.name} {getOfferCadence(offer.cadence)}</a></td>
+                    <td className='p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}><span className={`font-semibold uppercase ${discountColor}`}>{discountOffer}</span> — {getOfferDuration(offer.duration)}</a></td>
+                    <td className='p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>{updatedPriceWithCurrency} <span className='text-grey-700 line-through'>{originalPriceWithCurrency}</span></a></td>
+                    <td className='p-0 text-sm'><a className='block cursor-pointer p-5 hover:underline' href={createRedemptionFilterUrl(offer.id ? offer.id : '')}>{offer.redemption_count}</a></td>
+                    <td className='min-w-[80px] p-5 pr-0 text-right text-sm leading-none'><CopyLinkButton offerCode={offer.code} /></td>
                 </tr>
             );
         })}
@@ -194,13 +217,18 @@ const OffersModal = () => {
         <div className='pt-6'>
             <header>
                 <div className='flex items-center justify-between'>
-                    <TabView
-                        border={false}
-                        selectedTab={selectedTab}
-                        tabs={offersTabs}
-                        width='wide'
-                        onTabChange={setSelectedTab}
-                    />
+                    <div>
+                        {allOffers.some(offer => offer.hasOwnProperty('status') && offer.status === 'archived') ?
+                            <TabView
+                                border={false}
+                                selectedTab={selectedTab}
+                                tabs={offersTabs}
+                                width='wide'
+                                onTabChange={setSelectedTab}
+                            /> :
+                            null
+                        }
+                    </div>
                     <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
                 </div>
                 <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
