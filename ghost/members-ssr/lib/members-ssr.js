@@ -267,7 +267,7 @@ class MembersSSR {
      * @returns {Promise<void>}
      */
     async deleteSession(req, res) {
-        if (req.body.all) {
+        if (req.body && typeof req.body === 'object' && req.body.all) {
             // Update transient_id to invalidate all sessions
             const member = await this.getMemberDataFromSession(req, res);
             if (member) {
@@ -303,7 +303,7 @@ class MembersSSR {
         const transientId = this._getSessionCookies(req, res);
         const token = await this._getMemberIdentityToken(transientId);
         if (!token) {
-            this.deleteSession(req, res);
+            await this.deleteSession(req, res);
             throw new BadRequestError({
                 message: 'Invalid session, could not get identity token'
             });

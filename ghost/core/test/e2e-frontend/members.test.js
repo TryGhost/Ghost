@@ -27,6 +27,12 @@ async function createMember(data) {
     });
 }
 
+async function cycleTransientId(data) {
+    return await members.api.members.cycleTransientId({
+        ...data
+    });
+}
+
 describe('Front-end members behavior', function () {
     let request;
 
@@ -100,6 +106,7 @@ describe('Front-end members behavior', function () {
 
         it('should return no content when removing member sessions', async function () {
             await request.del('/members/api/session')
+                .expect('set-cookie', /ghost-members-ssr=.*;.*?expires=Thu, 01 Jan 1970 00:00:00 GMT;.*?/)
                 .expect(204);
         });
 
@@ -548,6 +555,30 @@ describe('Front-end members behavior', function () {
 
             beforeEach(async function () {
                 member = await loginAsMember('member1@test.com');
+            });
+
+            it('an invalid token causes a set-cookie logout when requesting the identity', async function () {
+                // Check logged in
+                await request.get('/members/api/member')
+                    .expect(200);
+
+                // Cycle the transient id manually
+                await cycleTransientId({id: member.id});
+
+                await member.refresh();
+                const transientId = member.get('transient_id');
+
+                await request.get('/members/api/session')
+                    .expect('set-cookie', /ghost-members-ssr=.*;.*?expires=Thu, 01 Jan 1970 00:00:00 GMT;.*?/)
+                    .expect(204);
+
+                // Check logged out
+                await request.get('/members/api/member')
+                    .expect(204);
+
+                // Check transient id has NOT changed
+                await member.refresh();
+                assert.equal(member.get('transient_id'), transientId);
             });
 
             it('by default only destroys current session', async function () {
