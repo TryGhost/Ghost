@@ -4,6 +4,7 @@ import React, {useEffect, useState} from 'react';
 import useGlobalDirtyState from '../../hooks/useGlobalDirtyState';
 import {confirmIfDirty} from '../../utils/modals';
 import {ButtonColor, ButtonProps} from '../Button';
+import Breadcrumbs, {BreadcrumbItem} from '../Breadcrumbs';
 import ButtonGroup from '../ButtonGroup';
 import Heading, {HeadingLevel} from '../Heading';
 import Icon from '../Icon';
@@ -33,6 +34,7 @@ export interface PreviewModalProps {
     deviceSelector?: boolean;
     siteLink?: string;
     previewToolbarURLs?: SelectOption[];
+    previewToolbarBreadcrumbs?: BreadcrumbItem[];
     previewBgColor?: 'grey' | 'white' | 'greygradient';
     selectedURL?: string;
     previewToolbarTabs?: Tab[];
@@ -49,6 +51,7 @@ export interface PreviewModalProps {
     onSelectURL?: (url: string) => void;
     onSelectDesktopView?: () => void;
     onSelectMobileView?: () => void;
+    onBreadcrumbsBack?: () => void;
 }
 
 export const PreviewModalContent: React.FC<PreviewModalProps> = ({
@@ -73,6 +76,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     previewBgColor = 'grey',
     selectedURL,
     previewToolbarTabs,
+    previewToolbarBreadcrumbs,
     buttonsDisabled,
     sidebarButtons,
     sidebarHeader,
@@ -85,7 +89,8 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     afterClose,
     onSelectURL,
     onSelectDesktopView,
-    onSelectMobileView
+    onSelectMobileView,
+    onBreadcrumbsBack
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -144,6 +149,16 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                 tabs={previewToolbarTabs}
                 width='wide'
                 onTabChange={onSelectURL!}
+            />;
+        } else if (previewToolbarBreadcrumbs) {
+            toolbarLeft = <Breadcrumbs
+                activeItemClassName='hidden md:!block md:!visible'
+                containerClassName='whitespace-nowrap'
+                itemClassName='hidden md:!block md:!visible'
+                items={previewToolbarBreadcrumbs}
+                separatorClassName='hidden md:!block md:!visible'
+                backIcon
+                onBack={onBreadcrumbsBack}
             />;
         }
 

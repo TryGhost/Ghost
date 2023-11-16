@@ -433,9 +433,15 @@ const AddOfferModal = () => {
         okColor={okProps.color}
         okLabel='Publish'
         preview={iframe}
+        previewToolbarBreadcrumbs={[{label: 'Offers', onClick: () => {
+            updateRoute('offers/edit');
+        }}, {label: 'New offer'}]}
         sidebar={sidebar}
         size='lg'
         title='Offer'
+        onBreadcrumbsBack={() => {
+            updateRoute('offers/edit');
+        }}
         onCancel={cancelAddOffer}
         onOk={async () => {
             if (!(await handleSave({fakeWhenUnchanged: true}))) {
@@ -444,7 +450,8 @@ const AddOfferModal = () => {
                     message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields.'
                 });
             }
-        }} />;
+        }}
+    />;
 };
 
 export default AddOfferModal;

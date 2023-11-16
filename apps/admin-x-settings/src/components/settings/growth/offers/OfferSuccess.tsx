@@ -1,8 +1,11 @@
+import {Breadcrumbs} from '@tryghost/admin-x-design-system';
 import {Button} from '@tryghost/admin-x-design-system';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {Offer, useBrowseOffersById} from '@tryghost/admin-x-framework/api/offers';
+import {currencyToDecimal} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
+import {numberWithCommas} from '../../../../utils/helpers';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -39,7 +42,22 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
     };
 
     const handleTwitter = () => {
-        window.open(`https://twitter.com/intent/tweet?url=${encodeURI(offerLink)}&text=${encodeURIComponent(offer?.name || '')}`, '_blank');
+        let tweetText = '';
+
+        switch (offer?.type) {
+        case 'percent':
+            tweetText = offer?.amount + '% discount';
+            break;
+        case 'fixed':
+            tweetText = numberWithCommas(currencyToDecimal(offer?.amount)) + ' ' + offer?.currency + ' discount';
+            break;
+        case 'trial':
+            tweetText = offer?.amount + ' days free trial';
+            break;
+        default:
+            break;
+        };
+        window.open(`https://twitter.com/intent/tweet?url=${encodeURI(offerLink)}&text=${encodeURIComponent(offer?.name || '')} — Check out ${encodeURIComponent(tweetText)} on:`, '_blank');
     };
 
     const handleFacebook = () => {
@@ -61,6 +79,21 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
         topRightContent='close'
     >
         <div className='-mt-6 flex h-full flex-col items-center justify-center text-center'>
+            <div className='absolute left-6 top-5'>
+                <Breadcrumbs
+                    activeItemClassName='hidden md:!block md:!visible'
+                    containerClassName='whitespace-nowrap'
+                    itemClassName='hidden md:!block md:!visible'
+                    items={[{label: 'Offers', onClick: () => {
+                        updateRoute('offers/edit');
+                    }}, {label: offer?.name || ''}]}
+                    separatorClassName='hidden md:!block md:!visible'
+                    backIcon
+                    onBack={() => {
+                        updateRoute('offers/edit');
+                    }}
+                />
+            </div>
             <Icon name='tags-check' size='xl' />
             <h1 className='mt-6 text-4xl'>Your new offer is live!</h1>
             <p className='mt-3 max-w-[510px] text-[1.6rem]'>You can share the link anywhere. In your newsletter, social media, a podcast, or in-person. It all just works.</p>
