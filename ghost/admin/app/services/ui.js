@@ -147,11 +147,7 @@ export default class UiService extends Service {
 
         let blogTitle = this.config.blogTitle;
 
-        if (!isEmpty(tokens)) {
-            window.document.title = `${tokens.join(' - ')} - ${blogTitle}`;
-        } else {
-            window.document.title = blogTitle;
-        }
+        window.document.title = `Ghost Admin - ${blogTitle}`;
     }
 
     @action
