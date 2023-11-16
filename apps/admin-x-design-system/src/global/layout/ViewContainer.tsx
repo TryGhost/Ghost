@@ -30,6 +30,7 @@ interface ViewContainerProps {
     selectedView?: string;
     onTabChange?: (id: string) => void;
     mainContainerClassName?: string;
+    toolbarWrapperClassName?: string;
     toolbarContainerClassName?: string;
     toolbarLeftClassName?: string;
     toolbarBorder?: boolean;
@@ -37,6 +38,8 @@ interface ViewContainerProps {
     actions?: (React.ReactElement<ButtonProps> | React.ReactElement<ButtonGroupProps>)[];
     actionsClassName?: string;
     actionsHidden?: boolean;
+    contentWrapperClassName?: string;
+    contentFullBleed?: boolean;
     children?: React.ReactNode;
 }
 
@@ -47,6 +50,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     selectedTab,
     onTabChange,
     mainContainerClassName,
+    toolbarWrapperClassName,
     toolbarContainerClassName,
     toolbarLeftClassName,
     primaryAction,
@@ -54,6 +58,8 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     actionsClassName,
     actionsHidden,
     toolbarBorder = true,
+    contentWrapperClassName,
+    contentFullBleed = false,
     children
 }) => {
     let toolbar = <></>;
@@ -86,8 +92,13 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
         mainContent = children;
     }
 
+    toolbarWrapperClassName = clsx(
+        'z-50',
+        type === 'page' && 'sticky top-18 mx-auto w-full max-w-7xl bg-white px-6 pt-[3vmin]',
+        toolbarContainerClassName
+    );
+
     toolbarContainerClassName = clsx(
-        'flex flex-auto items-end justify-between gap-5',
         toolbarBorder && 'border-b border-grey-200',
         toolbarContainerClassName
     );
@@ -115,36 +126,46 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     </>;
 
     toolbar = (
-        <div className={toolbarContainerClassName}>
-            <div className={toolbarLeftClassName}>
-                {title && <Heading className={tabs?.length ? 'pb-3' : 'pb-2'} level={type === 'page' ? 1 : 4}>{title}</Heading>}
-                {tabs?.length && (
-                    <TabList
-                        border={false}
-                        buttonBorder={true}
-                        handleTabChange={handleTabChange}
-                        selectedTab={selectedTab}
-                        tabs={tabs!}
-                        width='normal'
-                    />
-                )}
-            </div>
-            <div className={actionsClassName}>
-                {actions}
-                {primaryActionContents}
+        <div className={toolbarWrapperClassName}>
+            <div className={toolbarContainerClassName}>
+                <div className={toolbarLeftClassName}>
+                    {title && <Heading className={tabs?.length ? 'pb-3' : 'pb-2'} level={type === 'page' ? 1 : 4}>{title}</Heading>}
+                    {tabs?.length && (
+                        <TabList
+                            border={false}
+                            buttonBorder={true}
+                            handleTabChange={handleTabChange}
+                            selectedTab={selectedTab}
+                            tabs={tabs!}
+                            width='normal'
+                        />
+                    )}
+                </div>
+                <div className={actionsClassName}>
+                    {actions}
+                    {primaryActionContents}
+                </div>
             </div>
         </div>
     );
 
     mainContainerClassName = clsx(
-        'group/view-container',
+        'group/view-container flex min-h-full flex-col',
         mainContainerClassName
+    );
+
+    contentWrapperClassName = clsx(
+        'relative mx-auto w-full flex-auto',
+        !contentFullBleed && 'max-w-7xl px-6',
+        contentWrapperClassName
     );
 
     return (
         <section className={mainContainerClassName}>
             {toolbar}
-            {mainContent}
+            <div className={contentWrapperClassName}>
+                {mainContent}
+            </div>
         </section>
     );
 };

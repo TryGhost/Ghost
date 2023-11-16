@@ -15,7 +15,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof DynamicTable>;
 
-const columns: DynamicTableColumn[] = [
+export const testColumns: DynamicTableColumn[] = [
     {
         title: 'Member'
     },
@@ -54,7 +54,7 @@ const columns: DynamicTableColumn[] = [
     }
 ];
 
-const rows = (noOfRows: number) => {
+export const testRows = (noOfRows: number) => {
     const data: DynamicTableRow[] = [];
     for (let i = 0; i < noOfRows; i++) {
         data.push(
@@ -99,8 +99,8 @@ const rows = (noOfRows: number) => {
  */
 export const Default: Story = {
     args: {
-        columns: columns,
-        rows: rows(10)
+        columns: testColumns,
+        rows: testRows(10)
     }
 };
 
@@ -112,8 +112,8 @@ export const Default: Story = {
 export const StickyHeader: Story = {
     args: {
         stickyHeader: true,
-        columns: columns,
-        rows: rows(40)
+        columns: testColumns,
+        rows: testRows(40)
     }
 };
 
@@ -121,18 +121,21 @@ export const StickyFooter: Story = {
     args: {
         stickyFooter: true,
         footer: <Hint>Here we go</Hint>,
-        columns: columns,
-        rows: rows(40)
+        columns: testColumns,
+        rows: testRows(40)
     }
 };
 
 export const AllSticky: Story = {
+    // render: () => (
+    //     <DynamicTable columns={columns} footer={<Hint>Table footer</Hint>} rows={rows(40)} stickyFooter stickyHeader />
+    // )
     args: {
         stickyHeader: true,
         stickyFooter: true,
         footer: <Hint>Here we go</Hint>,
-        columns: columns,
-        rows: rows(40)
+        columns: testColumns,
+        rows: testRows(40)
     }
 };
 
@@ -152,8 +155,8 @@ export const HalfPageExample: Story = {
     args: {
         stickyHeader: true,
         stickyFooter: true,
-        columns: columns,
-        rows: rows(40),
+        columns: testColumns,
+        rows: testRows(40),
         footer: <Hint>This is a table footer</Hint>
     }
 };
@@ -172,8 +175,8 @@ export const FullPageExample: Story = {
     args: {
         stickyHeader: true,
         stickyFooter: true,
-        columns: columns,
-        rows: rows(40),
+        columns: testColumns,
+        rows: testRows(40),
         tableContainerClassName: 'px-10',
         footerClassName: 'mx-10',
         footer: <Hint>This is a table footer</Hint>
@@ -182,8 +185,8 @@ export const FullPageExample: Story = {
 
 export const PaginationExample: Story = {
     args: {
-        columns: columns,
-        rows: rows(10),
+        columns: testColumns,
+        rows: testRows(10),
         footer: <div className='flex justify-between'>
             <Hint>Table footer comes here</Hint>
             <Pagination limit={5} nextPage={() => {}} page={1} pages={5} prevPage={() => {}} setPage={() => {}} total={15} />

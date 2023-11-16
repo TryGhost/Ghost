@@ -63,12 +63,12 @@ const PageToolbar: React.FC<PageToolbarProps> = ({
     </div>;
 
     mainClassName = clsx(
-        'absolute inset-0 h-[100vh] w-[100vw] overflow-y-auto overflow-x-hidden',
+        'absolute inset-0 flex h-[100vh] w-[100vw] flex-col',
         mainClassName
     );
 
     const globalActions = (
-        <div className='flex items-center gap-7'>
+        <div className='sticky flex items-center gap-7'>
             {(customGlobalActions?.map((action) => {
                 return (
                     <Button icon={action.iconName} iconColorClass='text-black' size='sm' link onClick={action.onClick} />
@@ -80,11 +80,11 @@ const PageToolbar: React.FC<PageToolbarProps> = ({
 
     return (
         <main className={mainClassName}>
-            <header className='flex items-center justify-between gap-5 p-6'>
+            <header className='sticky top-0 z-50 flex h-18 items-center justify-between gap-5 bg-white p-6'>
                 <nav>{left}</nav>
                 <div>{globalActions}</div>
             </header>
-            <section className='mx-auto max-w-7xl p-6 pt-[3vmin]'>
+            <section className='mx-auto w-full flex-auto'>
                 {children}
             </section>
         </main>

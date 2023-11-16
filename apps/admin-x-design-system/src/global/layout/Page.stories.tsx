@@ -3,6 +3,11 @@ import {useArgs} from '@storybook/preview-api';
 
 import Page, {CustomGlobalAction} from './Page';
 import {Tab} from '../TabView';
+import ViewContainer from './ViewContainer';
+
+import {testColumns, testRows} from '../table/DynamicTable.stories';
+import DynamicTable from '../table/DynamicTable';
+import Hint from '../Hint';
 
 const meta = {
     title: 'Global / Layout / Page',
@@ -76,5 +81,30 @@ export const CustomGlobalActions: Story = {
         showGlobalActions: true,
         children: dummyContent,
         customGlobalActions: customGlobalActions
+    }
+};
+
+const simpleList = <ViewContainer
+    title='List page'
+    type='page'
+    contentFullBleed
+>
+    <DynamicTable
+        columns={testColumns}
+        footer={<Hint>Sticky footer</Hint>}
+        rows={testRows(40)}
+        stickyFooter
+        stickyHeader
+        usePagePaddingsForSticky
+    />
+</ViewContainer>;
+
+export const ExampleSimpleList: Story = {
+    name: 'Example: Simple List',
+    args: {
+        pageTabs: pageTabs,
+        showPageMenu: true,
+        showGlobalActions: true,
+        children: simpleList
     }
 };

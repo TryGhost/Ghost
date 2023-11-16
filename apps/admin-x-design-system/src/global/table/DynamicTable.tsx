@@ -24,6 +24,12 @@ interface DynamicTableProps {
     absolute?: boolean;
     stickyHeader?: boolean;
     headerBorder?: boolean;
+
+    /**
+     * Use this parameter to set correct paddings for a table with sticky
+     */
+    usePagePaddingsForSticky?: boolean;
+
     border?: boolean;
     footerBorder?:boolean;
     footer?: React.ReactNode;
@@ -48,6 +54,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     footer,
     footerBorder = true,
     stickyFooter = false,
+    usePagePaddingsForSticky = false,
     containerClassName,
     tableContainerClassName,
     tableClassName,
@@ -68,6 +75,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
 
     tableContainerClassName = clsx(
         'flex-auto overflow-x-auto',
+        usePagePaddingsForSticky && 'px-6 xl:px-[calc((100%-1280px)/2+24px)]',
         tableContainerClassName
     );
 
@@ -77,7 +85,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     );
 
     thClassName = clsx(
-        'bg-white text-left',
+        'bg-white py-3 pr-3 text-left',
         headerBorder && 'border-b border-grey-200',
         stickyHeader && 'sticky top-0',
         thClassName
@@ -101,6 +109,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
 
     footerClassName = clsx(
         'bg-white',
+        usePagePaddingsForSticky && 'mx-6 xl:mx-[calc((100%-1280px)/2+24px)]',
         footer && 'py-3',
         stickyFooter && 'sticky inset-x-0 bottom-0',
         footerBorder && 'border-t border-grey-200',
