@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/ember';
+import AdminXSettings from '../components/admin-x/settings';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -7,7 +8,7 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Debug} from '@sentry/integrations';
-import {importSettings} from '../components/admin-x/settings';
+import {importComponent} from '../components/admin-x/admin-x-component';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
     isAjaxError,
@@ -234,7 +235,9 @@ export default Route.extend(ShortcutsRoute, {
         }
 
         // Preload settings to avoid a delay when opening
-        setTimeout(importSettings, 1000);
+        setTimeout(() => {
+            importComponent(AdminXSettings.packageName);
+        }, 1000);
     }
 
 });
