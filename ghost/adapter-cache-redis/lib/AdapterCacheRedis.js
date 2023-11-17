@@ -174,7 +174,6 @@ class AdapterCacheRedis extends BaseCacheAdapter {
             metrics.metric('cache-reset-delete', (performance.now() - t1).toFixed(1));
             metrics.metric('cache-reset', (performance.now() - t0).toFixed(1));
             metrics.metric('cache-reset-key-count', keys.length);
-
         } catch (err) {
             logging.error(err);
         }
