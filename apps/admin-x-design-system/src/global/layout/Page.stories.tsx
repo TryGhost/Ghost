@@ -42,12 +42,12 @@ const customGlobalActions: CustomGlobalAction[] = [
 
 const pageTabs: Tab[] = [
     {
-        id: 'steph',
-        title: 'Steph Curry'
+        id: 'active',
+        title: 'Active'
     },
     {
-        id: 'klay',
-        title: 'Klay Thompson'
+        id: 'archive',
+        title: 'Archive'
     }
 ];
 
@@ -98,7 +98,7 @@ export const CustomGlobalActions: Story = {
 };
 
 const simpleList = <ViewContainer
-    title='List page'
+    title='Members'
     type='page'
 >
     <DynamicTable
@@ -122,7 +122,7 @@ export const ExampleSimpleList: Story = {
 };
 
 const stickyList = <ViewContainer
-    title='List page'
+    title='Members'
     type='page'
 >
     <DynamicTable
@@ -155,7 +155,7 @@ const examplePrimaryAction = <ViewContainer
             alert('Clicked primary action');
         }
     }}
-    title='List page'
+    title='Members'
     type='page'
 >
     <DynamicTable
@@ -190,7 +190,7 @@ const exampleActions = <ViewContainer
             alert('Clicked primary action');
         }
     }}
-    title='List page'
+    title='Members'
     type='page'
 >
     <DynamicTable
