@@ -128,7 +128,6 @@ const stickyList = <ViewContainer
         columns={testColumns}
         footer={<Hint>Sticky footer</Hint>}
         rows={testRows(40)}
-        singlePageTable
         stickyFooter
         stickyHeader
     />

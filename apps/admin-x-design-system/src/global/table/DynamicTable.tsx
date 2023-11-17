@@ -109,12 +109,14 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
 
     footerClassName = clsx(
         'bg-white',
-        (singlePageTable && (stickyHeader || stickyFooter || absolute)) && 'mx-6 xl:mx-[calc((100%-1280px)/2+24px)]',
+        (singlePageTable && stickyFooter) && 'mx-6 xl:mx-[calc((100%-1280px)/2+24px)]',
         footer && 'py-3',
         stickyFooter && 'sticky inset-x-0 bottom-0',
         footerBorder && 'border-t border-grey-200',
         footerClassName
     );
+
+    const footerContents = <footer className={footerClassName}>{footer}</footer>;
 
     return (
     // Outer container for testing. Should not be part of the table component
@@ -198,10 +200,9 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
                         })}
                     </tbody>
                 </table>
+                {!stickyFooter && footerContents}
             </div>
-            <footer className={footerClassName}>
-                {footer}
-            </footer>
+            {stickyFooter && footerContents}
         </div>
 
     // </div>

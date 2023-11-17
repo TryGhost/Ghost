@@ -93,14 +93,20 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
             })}
         </>;
     } else if (children) {
-        mainContent = children;
         isSingleDynamicTable = React.Children.only(children) && React.isValidElement(children) && React.Children.only(children)?.type === DynamicTable;
         if (isSingleDynamicTable) {
             const dynTable = (children as React.ReactElement<DynamicTableProps>);
             if (dynTable.props.stickyHeader || dynTable.props.stickyFooter) {
                 singleDynamicTableIsSticky = true;
+                children = isSingleDynamicTable
+                    ? React.cloneElement(dynTable, {
+                        ...(dynTable.props as DynamicTableProps),
+                        singlePageTable: true
+                    })
+                    : children;
             }
         }
+        mainContent = children;
     }
 
     toolbarWrapperClassName = clsx(
