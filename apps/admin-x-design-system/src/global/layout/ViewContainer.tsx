@@ -18,8 +18,9 @@ export interface ViewTab extends Tab {
 }
 
 export interface PrimaryActionProps {
-    title: string;
-    color?: ButtonColor
+    title?: string;
+    icon?: string;
+    color?: ButtonColor;
     onClick?: () => void;
 }
 
@@ -116,6 +117,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     );
 
     toolbarContainerClassName = clsx(
+        'flex justify-between',
         toolbarBorder && 'border-b border-grey-200',
         toolbarContainerClassName
     );
@@ -138,7 +140,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     const primaryActionContents = <>
         {primaryAction?.title && (
-            <Button color={primaryAction.color} label={primaryAction.title} size={type === 'page' ? 'md' : 'sm'} onClick={primaryAction.onClick} />
+            <Button color={primaryAction.color} icon={primaryAction.icon} iconColorClass='text-white' label={primaryAction.title} size={type === 'page' ? 'md' : 'sm'} onClick={primaryAction.onClick} />
         )}
     </>;
 

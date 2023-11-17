@@ -6,6 +6,7 @@ import {Tab} from '../TabView';
 import ViewContainer from './ViewContainer';
 
 import {testColumns, testRows} from '../table/DynamicTable.stories';
+import {exampleActions as exampleActionButtons} from './ViewContainer.stories';
 import DynamicTable from '../table/DynamicTable';
 import Hint from '../Hint';
 
@@ -143,5 +144,73 @@ export const ExampleStickyList: Story = {
         showPageMenu: true,
         showGlobalActions: true,
         children: stickyList
+    }
+};
+
+const examplePrimaryAction = <ViewContainer
+    primaryAction={{
+        title: 'Add member',
+        color: 'black',
+        onClick: () => {
+            alert('Clicked primary action');
+        }
+    }}
+    title='List page'
+    type='page'
+>
+    <DynamicTable
+        columns={testColumns}
+        footer={<Hint>Sticky footer</Hint>}
+        rows={testRows(40)}
+        stickyFooter
+        stickyHeader
+    />
+</ViewContainer>;
+
+export const ExamplePrimaryAction: Story = {
+    parameters: {
+        layout: 'fullscreen'
+    },
+    name: 'Example: Primary Action',
+    args: {
+        pageTabs: pageTabs,
+        showPageMenu: true,
+        showGlobalActions: true,
+        children: examplePrimaryAction
+    }
+};
+
+const exampleActions = <ViewContainer
+    actions={exampleActionButtons}
+    primaryAction={{
+        title: 'Add member',
+        icon: 'add',
+        color: 'black',
+        onClick: () => {
+            alert('Clicked primary action');
+        }
+    }}
+    title='List page'
+    type='page'
+>
+    <DynamicTable
+        columns={testColumns}
+        footer={<Hint>Sticky footer</Hint>}
+        rows={testRows(40)}
+        stickyFooter
+        stickyHeader
+    />
+</ViewContainer>;
+
+export const ExampleActions: Story = {
+    parameters: {
+        layout: 'fullscreen'
+    },
+    name: 'Example: Custom Actions',
+    args: {
+        pageTabs: pageTabs,
+        showPageMenu: true,
+        showGlobalActions: true,
+        children: exampleActions
     }
 };

@@ -30,12 +30,15 @@ const ContentContainer: React.FC<{children: React.ReactNode}> = ({
     return <div className='m-auto max-w-[800px] p-5 text-center'>{children}</div>;
 };
 
-const actions = [
+export const exampleActions = [
     <Button label='Filter' link onClick={() => {
         alert('Clicked filter');
     }} />,
     <Button label='Sort' link onClick={() => {
-        alert('Clicked filter');
+        alert('Clicked sort');
+    }} />,
+    <Button icon='magnifying-glass' size='sm' link onClick={() => {
+        alert('Clicked search');
     }} />,
     <ButtonGroup buttons={[
         {
@@ -118,7 +121,7 @@ export const ActionsOnPage: Story = {
     args: {
         type: 'page',
         title: 'Page title',
-        actions: actions,
+        actions: exampleActions,
         primaryAction: primaryAction
     }
 };
@@ -154,7 +157,7 @@ export const TabsWithActions: Story = {
         title: 'Section title',
         tabs: tabs,
         primaryAction: primaryAction,
-        actions: actions
+        actions: exampleActions
     }
 };
 
@@ -163,7 +166,7 @@ export const HiddenActions: Story = {
         type: 'section',
         title: 'Hover to show actions',
         tabs: tabs,
-        actions: actions,
+        actions: exampleActions,
         actionsHidden: true
     }
 };
