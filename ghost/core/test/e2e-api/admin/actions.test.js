@@ -33,7 +33,7 @@ describe('Actions API', function () {
         postUpdatedAt = res.body.posts[0].updated_at;
 
         const res2 = await request
-            .get(localUtils.API.getApiQuery(`actions/?filter=${encodeURIComponent(`resource_id:'${postId}'`)}&include=actor`))
+            .get(localUtils.API.getApiQuery(`actions/?filter=resource_id:${postId}&include=actor`))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -73,7 +73,7 @@ describe('Actions API', function () {
         postUpdatedAt = res3.body.posts[0].updated_at;
 
         const res4 = await request
-            .get(localUtils.API.getApiQuery(`actions/?filter=${encodeURIComponent(`resource_id:'${postId}'`)}&include=actor`))
+            .get(localUtils.API.getApiQuery(`actions/?filter=resource_id:${postId}&include=actor`))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -113,7 +113,7 @@ describe('Actions API', function () {
             .expect(200);
 
         const res5 = await request
-            .get(localUtils.API.getApiQuery(`actions/?filter=${encodeURIComponent(`resource_id:'${postId}'`)}&include=actor`))
+            .get(localUtils.API.getApiQuery(`actions/?filter=resource_id:${postId}&include=actor`))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
