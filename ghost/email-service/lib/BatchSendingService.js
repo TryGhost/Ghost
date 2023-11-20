@@ -248,6 +248,8 @@ class BatchSendingService {
                 logging.info(`Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId}`);
 
                 const filter = segmentFilter + `+id:<'${lastId}'`;
+                logging.info(`Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId} ${filter}`);
+
                 members = await this.#models.Member.getFilteredCollectionQuery({filter})
                     .orderByRaw('id DESC')
                     .select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
@@ -505,18 +507,9 @@ class BatchSendingService {
 
         const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
         if (models.length > BATCH_SIZE) {
-            // @NOTE: filtering by batch_id is our best effort to "correct" returned data
-            logging.warn(`Email batch ${batchId} has ${models.length} members, which exceeds the maximum of ${BATCH_SIZE} members per batch. Filtering by batch_id: ${batchId}`);
-            models = models.filter(m => m.get('batch_id') === batchId);
-
-            if (models.length > BATCH_SIZE) {
-                // @NOTE this is a best effort logic to still try sending an email batch
-                //       even if it exceeds the maximum recipients limit of the sending service.
-                //       In theory this should never happen, but being extra safe to make sure
-                //       the email delivery still happens.
-                logging.error(`Email batch ${batchId} has ${models.length} members, which exceeds the maximum of ${BATCH_SIZE}. Truncating to ${BATCH_SIZE}`);
-                models = models.slice(0, BATCH_SIZE);
-            }
+            throw new errors.EmailError({
+                message: `Email batch ${batchId} has ${models.length} members, which exceeds the maximum of ${BATCH_SIZE} members per batch.`
+            });
         }
 
         return models.map((model) => {

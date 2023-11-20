@@ -1501,7 +1501,7 @@ describe('Post Model', function () {
 
                     return models.MobiledocRevision
                         .findAll({
-                            filter: `post_id:${updatedPost.id}`
+                            filter: `post_id:'${updatedPost.id}'`
                         });
                 })
                 .then((mobiledocRevisions) => {
@@ -1536,7 +1536,7 @@ describe('Post Model', function () {
                 })
                 .then(() => models.MobiledocRevision
                     .findAll({
-                        filter: `post_id:${revisionedPost.id}`
+                        filter: `post_id:'${revisionedPost.id}'`
                     })
                 )
                 .then((mobiledocRevisions) => {
@@ -1566,7 +1566,7 @@ describe('Post Model', function () {
 
                     return models.MobiledocRevision
                         .findAll({
-                            filter: `post_id:${createdPost.id}`
+                            filter: `post_id:'${createdPost.id}'`
                         });
                 })
                 .then((mobiledocRevisions) => {
@@ -1582,7 +1582,7 @@ describe('Post Model', function () {
 
                     return models.MobiledocRevision
                         .findAll({
-                            filter: `post_id:${editedPost.id}`
+                            filter: `post_id:'${editedPost.id}'`
                         });
                 })
                 .then((mobiledocRevisions) => {

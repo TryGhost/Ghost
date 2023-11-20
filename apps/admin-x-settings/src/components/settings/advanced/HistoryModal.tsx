@@ -174,7 +174,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
             filter: [
                 excludedEvents.length && `event:-[${excludedEvents.join(',')}]`,
                 excludedResources.length && `resource_type:-[${excludedResources.join(',')}]`,
-                params?.user && `actor_id:${params.user}`
+                params?.user && `actor_id:'${params.user}'`
             ].filter(Boolean).join('+')
         },
         getNextPageParams: (lastPage, otherParams) => ({
