@@ -278,7 +278,7 @@ const mockPosts = () => {
 
     for (let i = 0; i < 11; i++) {
         posts.push(
-            <div className={`grid grid-cols-[96px_auto_120px_120px_60px] items-center gap-7 border-b border-grey-200 py-5 ${tableRowHoverBgClasses}`}>
+            <div className={`group grid grid-cols-[96px_auto_120px_120px_60px] items-center gap-7 border-b border-grey-200 py-5 ${tableRowHoverBgClasses}`}>
                 <div className='flex h-24 w-24 items-center justify-center rounded-sm bg-grey-100'>
 
                 </div>
@@ -305,7 +305,7 @@ const mockPosts = () => {
                     opened
                 </div>
                 <div className='flex justify-end pr-7'>
-                    <Icon name='ellipsis' />
+                    <Button className='group-hover:bg-grey-200' icon='ellipsis' />
                 </div>
             </div>
         );

@@ -86,14 +86,12 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     );
 
     tableClassName = clsx(
-        'h-full max-h-full min-w-full flex-auto table-fixed border-collapse',
+        'h-full max-h-full min-w-full flex-auto table-fixed',
         tableClassName
     );
 
     thClassName = clsx(
         'bg-white py-3 pr-3 text-left',
-        headerBorder && 'border-b border-grey-200',
-        stickyHeader && 'sticky top-0',
         thClassName
     );
 
@@ -109,6 +107,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     );
 
     trClassName = clsx(
+        'group',
         tableRowHoverBgClasses,
         trClassName
     );
@@ -132,7 +131,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
             <div className={tableContainerClassName}>
                 <table className={tableClassName}>
                     {!hideHeader &&
-                    <thead>
+                    <thead className={stickyHeader ? 'sticky top-0' : ''}>
                         <tr>
                             {columns.map((column) => {
                                 headerColID = headerColID + 1;
@@ -149,6 +148,11 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
                                     </th>);
                             })}
                         </tr>
+                        {headerBorder && (
+                            <tr>
+                                <th className='h-px bg-grey-200 p-0' colSpan={columns.length}></th>
+                            </tr>
+                        )}
                     </thead>
                     }
                     <tbody>

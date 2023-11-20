@@ -185,7 +185,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     );
 
     return (
-        <section className={mainContainerClassName} id="viewContainer">
+        <section className={mainContainerClassName}>
             {(title || actions) && toolbar}
             <div className={contentWrapperClassName}>
                 {mainContent}
