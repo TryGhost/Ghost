@@ -2,6 +2,6 @@
   - 'ghost/i18n/**'
 'affects:admin':
   - 'ghost/admin/**'
-  - 'apps/admin-x-**'
+  - 'apps/admin-x-*/**'
 'affects:portal':
   - 'apps/portal/**'
