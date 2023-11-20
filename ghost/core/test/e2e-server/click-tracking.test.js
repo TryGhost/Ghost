@@ -49,7 +49,7 @@ describe('Click Tracking', function () {
         await jobService.allSettled();
 
         const {body: {links}} = await agent.get(
-            `/links/?filter=${encodeURIComponent(`post_id:'${post.id}'`)}`
+            `/links/?filter=post_id:${post.id}`
         );
 
         /** @type {(url: string) => Promise<import('node-fetch').Response>} */
@@ -101,13 +101,13 @@ describe('Click Tracking', function () {
         await fetchWithoutFollowingRedirect(urlOfLinkToClick.href);
 
         const {body: {links: [clickedLink]}} = await agent.get(
-            `/links/?filter=${encodeURIComponent(`post_id:'${post.id}'`)}`
+            `/links/?filter=post_id:${post.id}`
         );
 
         const clickCount = clickedLink.count.clicks;
 
         const {body: {events: clickEvents}} = await agent.get(
-            `/members/events/?filter=${encodeURIComponent(`data.member_id:'${memberToClickLink.id}'+type:click_event`)}`
+            `/members/events/?filter=data.member_id:${memberToClickLink.id}${encodeURIComponent('+')}type:click_event`
         );
 
         const clickEvent = clickEvents.find((/** @type any */ event) => {

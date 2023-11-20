@@ -38,7 +38,7 @@ function basicAsserts(member, row) {
 async function testOutput(member, asserts, filters = []) {
     // Add default filters that always should match
     filters.push('limit=all');
-    filters.push(`filter=id:'${member.id}'`);
+    filters.push(`filter=id:${member.id}`);
 
     for (const filter of filters) {
         // Test all
@@ -61,7 +61,7 @@ async function testOutput(member, asserts, filters = []) {
 
         asserts(row);
 
-        if (filter === `filter=id:'${member.id}'`) {
+        if (filter === 'filter=id:${member.id}') {
             csv.data.length.should.eql(1);
         }
     }
