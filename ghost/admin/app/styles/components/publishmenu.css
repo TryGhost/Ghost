@@ -631,12 +631,8 @@
 
 .gh-publish-cta {
     display: flex;
-    flex-direction: column;
     width: max-content;
-}
-
-.gh-update-flow .gh-publish-cta {
-    flex-direction: row;
+    gap: 3.2rem;
 }
 
 .gh-publish-cta .gh-btn {
