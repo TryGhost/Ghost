@@ -1,13 +1,9 @@
 const _ = require('lodash');
 const uuid = require('uuid');
+const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
 const constants = require('@tryghost/constants');
 const DataGenerator = {};
-const ghostBookshelf = require('../../../core/server/models/base');
-
-function generateId() {
-    return ghostBookshelf.Model.generateId();
-}
 
 DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
     const mobiledoc = {
@@ -206,61 +202,61 @@ DataGenerator.Content = {
 
     permissions: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Browse posts',
             action_type: 'browse',
             object_type: 'post'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'test',
             action_type: 'edit',
             object_type: 'post'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'test',
             action_type: 'edit',
             object_type: 'tag'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'test',
             action_type: 'edit',
             object_type: 'user'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'test',
             action_type: 'edit',
             object_type: 'page'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'test',
             action_type: 'add',
             object_type: 'post'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'test',
             action_type: 'add',
             object_type: 'user'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'test',
             action_type: 'add',
             object_type: 'page'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'test',
             action_type: 'destroy',
             object_type: 'post'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'test',
             action_type: 'destroy',
             object_type: 'user'
@@ -269,32 +265,32 @@ DataGenerator.Content = {
 
     roles: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Administrator',
             description: 'Administrators'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Editor',
             description: 'Editors'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Author',
             description: 'Authors'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Owner',
             description: 'Blog Owner'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Contributor',
             description: 'Contributors'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Admin Integration',
             description: 'External Apps'
         }
@@ -302,7 +298,7 @@ DataGenerator.Content = {
 
     members: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email: 'member1@test.com',
             name: 'Mr Egg',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b340',
@@ -310,7 +306,7 @@ DataGenerator.Content = {
             email_disabled: false
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email: 'member2@test.com',
             email_open_rate: 50,
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b341',
@@ -318,7 +314,7 @@ DataGenerator.Content = {
             email_disabled: false
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email: 'paid@test.com',
             name: 'Egon Spengler',
             email_open_rate: 80,
@@ -327,7 +323,7 @@ DataGenerator.Content = {
             email_disabled: false
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email: 'trialing@test.com',
             name: 'Ray Stantz',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b343',
@@ -335,7 +331,7 @@ DataGenerator.Content = {
             email_disabled: false
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email: 'comped@test.com',
             name: 'Vinz Clortho',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b344',
@@ -343,7 +339,7 @@ DataGenerator.Content = {
             email_disabled: false
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email: 'vip@test.com',
             name: 'Winston Zeddemore',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b345',
@@ -351,7 +347,7 @@ DataGenerator.Content = {
             email_disabled: false
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email: 'vip-paid@test.com',
             name: 'Peter Venkman',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b346',
@@ -360,7 +356,7 @@ DataGenerator.Content = {
             email_disabled: false
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email: 'with-product@test.com',
             name: 'Dana Barrett',
             uuid: 'f6f91461-d7d8-4a3f-aa5d-8e582c40b347',
@@ -372,7 +368,7 @@ DataGenerator.Content = {
 
     newsletters: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Daily newsletter',
             slug: 'daily-newsletter',
             description: '',
@@ -390,7 +386,7 @@ DataGenerator.Content = {
             header_image: '__GHOST_URL__/content/images/2022/05/test.jpg'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Weekly newsletter',
             slug: 'weekly-newsletter',
             description: '',
@@ -408,7 +404,7 @@ DataGenerator.Content = {
             header_image: '__GHOST_URL__/content/images/2022/05/test.jpg'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Old newsletter',
             slug: 'old-newsletter',
             description: '',
@@ -450,17 +446,17 @@ DataGenerator.Content = {
 
     labels: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Label 1',
             slug: 'label-1'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Label 2',
             slug: 'label-2'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'VIP',
             slug: 'vip'
         }
@@ -468,35 +464,35 @@ DataGenerator.Content = {
 
     members_stripe_customers: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: null, // relation added later
             customer_id: 'cus_HR3tBmNhx4QsZY',
             name: 'Egon Spengler',
             email: 'paid@test.com'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: null, // relation added later
             customer_id: 'cus_HR3tBmNhx4QsZZ',
             name: 'Ray Stantz',
             email: 'trialing@test.com'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: null, // relation added later
             customer_id: 'cus_HR3tBmNhx4QsZ0',
             name: 'Vinz Clortho',
             email: 'comped@test.com'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: null, // relation added later
             customer_id: 'cus_HR3tBmNhx4QsZ1',
             name: 'Peter Venkman',
             email: 'vip-paid@test.com'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: null, // relation added later
             customer_id: 'cus_HR3tBmNhx4QsZ2',
             name: 'Dana Barrett',
@@ -506,7 +502,7 @@ DataGenerator.Content = {
 
     members_paid_subscription_events: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             type: 'created',
             mrr_delta: 1000,
             currency: 'usd',
@@ -517,7 +513,7 @@ DataGenerator.Content = {
             from_plan: null,
             to_plan: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb8'
         }, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             type: 'created',
             mrr_delta: 0,
             currency: 'usd',
@@ -528,7 +524,7 @@ DataGenerator.Content = {
             from_plan: null,
             to_plan: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb9'
         }, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             type: 'created',
             mrr_delta: 0,
             currency: 'usd',
@@ -542,7 +538,7 @@ DataGenerator.Content = {
     ],
     members_stripe_customers_subscriptions: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             customer_id: 'cus_HR3tBmNhx4QsZY',
             subscription_id: 'sub_HR3tLNgGAHsa7b',
             plan_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb8',
@@ -559,7 +555,7 @@ DataGenerator.Content = {
             mrr: 1000
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             customer_id: 'cus_HR3tBmNhx4QsZZ',
             subscription_id: 'sub_HR3tLNgGAHsa7c',
             plan_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb9',
@@ -576,7 +572,7 @@ DataGenerator.Content = {
             mrr: 0
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             customer_id: 'cus_HR3tBmNhx4QsZ0',
             subscription_id: 'sub_HR3tLNgGAHsa7d',
             plan_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730ba0',
@@ -595,7 +591,7 @@ DataGenerator.Content = {
     ],
     stripe_prices: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b12',
             stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
             active: true,
@@ -606,7 +602,7 @@ DataGenerator.Content = {
             interval: 'month'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb8',
             stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
             active: true,
@@ -617,7 +613,7 @@ DataGenerator.Content = {
             interval: 'month'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730ba0',
             stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
             active: true,
@@ -628,7 +624,7 @@ DataGenerator.Content = {
             interval: 'year'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730bb9',
             stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
             active: true,
@@ -639,7 +635,7 @@ DataGenerator.Content = {
             interval: 'year'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             stripe_price_id: '173e16a1fffa7d232b398e4a9b08d266a456ae8f3d23e5f11cc608ced6730b13',
             stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d',
             active: true,
@@ -652,19 +648,19 @@ DataGenerator.Content = {
     ],
     stripe_products: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             product_id: '',
             stripe_product_id: '109c85c734fb9992e7bc30a26af66c22f5c94d8dc62e0a33cb797be902c06b2d'
         }
     ],
     webhooks: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             event: 'member.added',
             target_url: 'https://example.com/webhooks/subscriber-added'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             event: 'member.removed',
             target_url: 'https://example.com/webhooks/subscriber-removed'
         }
@@ -672,24 +668,24 @@ DataGenerator.Content = {
 
     integrations: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Test Integration',
             slug: 'test-integration'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Test Internal Integration',
             slug: 'test-internal-integration',
             type: 'internal'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Test Builtin Integration',
             slug: 'test-builtin-integration',
             type: 'builtin'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Test Core Integration',
             slug: 'test-core-integration',
             type: 'core'
@@ -698,31 +694,31 @@ DataGenerator.Content = {
 
     api_keys: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             type: 'admin',
             secret: _.repeat('a', 64)
             // integration_id: DataGenerator.Content.integrations[0].id
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             type: 'content',
             secret: _.repeat('c', 26)
             // integration_id: DataGenerator.Content.integrations[0].id
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             type: 'admin',
             secret: _.repeat('b', 64),
             integration_id: undefined // "internal"
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             type: 'admin',
             secret: _.repeat('d', 26),
             integration_id: undefined // "builtin"
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             type: 'admin',
             secret: _.repeat('e', 64),
             integration_id: undefined // "core"
@@ -731,7 +727,7 @@ DataGenerator.Content = {
 
     emails: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             uuid: '6b6afda6-4b5e-4893-bff6-f16859e8349a',
             status: 'submitted',
             email_count: 2,
@@ -744,7 +740,7 @@ DataGenerator.Content = {
             newsletter_id: null // newsletter[0] relation added later
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             uuid: '365daa11-4bf0-4614-ad43-6346387ffa00',
             status: 'failed',
             error: 'Everything went south',
@@ -760,7 +756,7 @@ DataGenerator.Content = {
 
     email_batches: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email_id: null, // emails[0] relation added later
             provider_id: 'email1@testing.mailgun.net',
             status: 'submitted'
@@ -769,7 +765,7 @@ DataGenerator.Content = {
 
     email_recipients: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email_id: null, // emails[0] relation added later
             member_id: null, // members[0] relation added later
             batch_id: null, // email_batches[0] relation added later
@@ -781,7 +777,7 @@ DataGenerator.Content = {
             member_name: 'Mr Egg'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email_id: null, // emails[0] relation added later
             member_id: null, // members[1] relation added later
             batch_id: null, // email_batches[0] relation added later
@@ -793,7 +789,7 @@ DataGenerator.Content = {
             member_name: null
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email_id: null, // emails[0] relation added later
             member_id: null, // members[2] relation added later
             batch_id: null, // email_batches[0] relation added later
@@ -805,7 +801,7 @@ DataGenerator.Content = {
             member_name: 'Mr Egg'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email_id: null, // emails[0] relation added later
             member_id: null, // members[3] relation added later
             batch_id: null, // email_batches[0] relation added later
@@ -817,7 +813,7 @@ DataGenerator.Content = {
             member_name: 'Mr Egg'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email_id: null, // emails[0] relation added later
             member_id: null, // members[4] relation added later
             batch_id: null, // email_batches[0] relation added later
@@ -830,7 +826,7 @@ DataGenerator.Content = {
             member_name: 'Mr Egg'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email_id: null, // emails[0] relation added later
             member_id: null, // members[5] relation added later
             batch_id: null, // email_batches[0] relation added later
@@ -846,7 +842,7 @@ DataGenerator.Content = {
 
     snippets: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Test snippet 1',
             mobiledoc: '{}'
         }
@@ -854,14 +850,14 @@ DataGenerator.Content = {
 
     custom_theme_settings: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             theme: 'casper',
             key: 'header_typography',
             type: 'select',
             value: 'Serif'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             theme: 'casper',
             key: 'footer_type',
             type: 'select',
@@ -885,21 +881,21 @@ DataGenerator.Content = {
 
     links: [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             from: '/r/70b0129a',
             to: '__GHOST_URL__/blog/email/01cd4df3-83fa-4921-83be-3bb9a465ef83/?ref=Test-newsletter&attribution_id=6343994e7216ffcbce491716&attribution_type=post',
             created_at: null,
             updated_at: null
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             from: '/r/a0b0129a',
             to: '__GHOST_URL__/blog/email/01cd4df3-83fa-4921-83be-3bb9a465ef83/?ref=Test-newsletter&attribution_id=6343994e7216ffcbce491716&attribution_type=post',
             created_at: null,
             updated_at: null
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             from: '/r/20b0129a',
             to: 'https://example.com/subscripe?ref=Test-newsletter',
             created_at: null,
@@ -921,21 +917,21 @@ DataGenerator.Content = {
         // sourceFavicon: metadata.favicon,
         // sourceFeaturedImage: metadata.image
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             source: 'https://source.com',
             target: 'https://target.com',
             sourceTitle: 'Title!',
             sourceExcerpt: 'Excerpt!'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             source: 'https://anothersource.com',
             target: 'https://anothertarget.com',
             sourceTitle: 'Another Title!',
             sourceExcerpt: 'Another Excerpt!'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             source: 'https://src.com',
             target: 'https://target.com',
             sourceTitle: 'Title goes here',
@@ -995,7 +991,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
             updated_by: DataGenerator.Content.users[0].id,
@@ -1007,7 +1003,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'tag',
             slug: 'slug',
             feature_image: null,
@@ -1038,7 +1034,7 @@ DataGenerator.forKnex = (function () {
         }
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             uuid: uuid.v4(),
             title: 'title',
             status: 'published',
@@ -1061,7 +1057,7 @@ DataGenerator.forKnex = (function () {
         locale = locale || null;
 
         return createPost({
-            id: generateId(),
+            id: ObjectId().toHexString(),
             title: 'Test Post ' + uniqueInteger,
             slug: 'ghost-from-fiction-to-function-' + uniqueInteger,
             mobiledoc: DataGenerator.markdownToMobiledoc('Three days ago I released a <a title="Ghost" href="http:\/\/john.onolan.org\/ghost\/">concept page<\/a> for a lite version of WordPress that I\'ve been thinking about for a long time, called Ghost. I think it\'s fair to say that I didn\'t quite anticipate how strong the reaction would be - and I\'ve hardly had time to catch my breath in the last 72 hours.\n\nThe response was overwhelming, and overwhelmingly positive. In the first 6 hours my site got 35,000 page views after hitting the number 1 slot on <a href="http:\/\/news.ycombinator.com\/item?id=4743245" onclick="javascript:_gaq.push([\'_trackEvent\',\'outbound-article\',\'http:\/\/news.ycombinator.com\']);">Hacker News<\/a>.&nbsp;As of right now, the traffic count is just over <a href="http:\/\/john.onolan.org\/wp-content\/uploads\/2012\/11\/Screen-Shot-2012-11-09-at-17.51.21.png" rel="lightbox" class="cboxElement">91,000 page views<\/a>&nbsp;- and Ghost has been featured all over the place. Notable mentions so far include Christina Warren from Mashable, who <a href="http:\/\/christina.is\/" onclick="javascript:_gaq.push([\'_trackEvent\',\'outbound-article\',\'http:\/\/christina.is\']);">wrote about it<\/a>. Michael Carney from PandoDaily <a href="http:\/\/pandodaily.com\/2012\/11\/07\/wordpress-guru-designs-a-concept-blogging-platform-that-doesnt-suck-gets-rave-reviews\/" onclick="javascript:_gaq.push([\'_trackEvent\',\'outbound-article\',\'http:\/\/pandodaily.com\']);">interviewed me about it<\/a>. Someone even <a href="http:\/\/www.voicens.com\/web\/?p=4425" onclick="javascript:_gaq.push([\'_trackEvent\',\'outbound-article\',\'http:\/\/www.voicens.com\']);">wrote about it in Chinese<\/a>. That\'s pretty cool.\n\n\nThe feedback has been amazing, and while it\'s impossible to reply to all of the messages individually, I\'m getting to as many of them as I can and I want to thank each and every one of you who took the time to send me a message or share the concept because you liked it. Now that the initial storm has died down a bit, I wanted to take some time to answer some of the more common questions and talk about what\'s next.\n<h2>FAQ - Continued...<\/h2>\n\nThe most common question, bizarrely:\n<h5><em><strong>Oh my god, why is that whole page made of images? What\'s wrong with you? \/\/ I can\'t take you seriously \/\/ Don\'t you know anything about the web? \/\/ You are literally Satan re-incarnate.<\/strong><\/em><\/h5>\n\nThis was really the only negativity I got in response to the post, and it surprised me. I put together the concept page as... just that... a concept. It was a way for me to get the ideas out of my head and "down on paper" - or so to speak. I used photoshop as a <em>tool<\/em> to write down my idea with text and images. If I used a sketchbook as a <em>tool&nbsp;<\/em>to create images and handwritten notes, then uploaded scans of it, I doubt anyone would complain. The concept page was never supposed to be a finished product because I had no idea if there would be any interest in it. I had no motivation to waste hours coding a custom layout for something might only ever be read by a few people and then forgotten.\n\nHardware manufacturers make hundreds of foam cutout prototypes of products before they build one with working buttons and screens. I\'m aware of all the usability problems with a web page made of images, and equally, foam cutouts without buttons or screens aren\'t particularly user friendly either. They\'re not supposed to be.\n\nLet\'s move on.\n<h5><em><strong>What? Why no comments? I need comments.<\/strong><\/em><\/h5>\n\nBecause comments add a layer of complexity that is beyond the core focus of this platform, which is publishing. Again, that\'s not to say you couldn\'t have any comments. This could easily be added with a dedicated plugin where you own the data or (as mentioned) there are third party providers such as Disqus, IntenseDebate, Livefyre and Facebook who all have great platforms. The point of this isn\'t to say "you can\'t have comments" - it\'s to say "comments aren\'t on by default". It\'s about simplicity, more than anything else.\n<h5><em><strong>Yeah, but WordPress are already going to revise their dashboard, WordPress.com is experimenting with a potential simplified version... so why bother with this?<\/strong><\/em><\/h5>\n\n<a href="http:\/\/john.onolan.org\/wp-content\/uploads\/2012\/11\/newwp.png" rel="lightbox[2102]" title="newwp" class="cboxElement"><img class="alignnone size-large wp-image-2117" title="newwp" src="http:\/\/john.onolan.org\/wp-content\/uploads\/2012\/11\/newwp-550x210.png" alt="" width="550" height="210"><\/a>\n\nSorry, but Tumblr already did this - it\'s not the future of blogging, it\'s the past.\n\nGhost isn\'t about sharing "Fuck Yeah [<a href="http:\/\/fuckyeahdogs.tumblr.com\/" onclick="javascript:_gaq.push([\'_trackEvent\',\'outbound-article\',\'http:\/\/fuckyeahdogs.tumblr.com\']);">Dogs<\/a>\/<a href="http:\/\/fuckyeahsharks.tumblr.com\/" onclick="javascript:_gaq.push([\'_trackEvent\',\'outbound-article\',\'http:\/\/fuckyeahsharks.tumblr.com\']);" rel="lightbox" class="cboxElement">Sharks<\/a>\/<a href="http:\/\/fuckyeahgirlswithtattoos.tumblr.com\/" onclick="javascript:_gaq.push([\'_trackEvent\',\'outbound-article\',\'http:\/\/fuckyeahgirlswithtattoos.tumblr.com\']);">Girls with Tattoos<\/a>]" - it\'s about publishing - which means writing - rather than mashing a few buttons to make sure that everyone can see and appreciate your latest funny picture\/status, which is surely the most funny picture\/status you\'ve ever posted.\n\nTumblr, Pinterest and Facebook already have this locked down.&nbsp;It\'s not the future.\n<h5><em><strong>So... are you actually going to build this thing?<\/strong><\/em><\/h5>\n\nThe concept page was a way for me to test demand and interest. To see if anyone actually agreed with my frustrations and, more importantly, my solutions. I plucked a random figure of "10,000 pageviews" out of the air before I hit the publish button. If it got less than 10,000 pageviews, I would surrender to the fact that it would only ever be an idea. I\'ve now exceeded that goal 9 times over, so yes, I\'m looking at how Ghost can now be made into a reality.\n<h5><em><strong>How can I find out when it\'s done? \/\/ SHUT UP AND TAKE MY MONEY<\/strong><\/em><\/h5>\n\nOk, ok - there\'s a holding page up on <a href="http:\/\/tryghost.org" onclick="javascript:_gaq.push([\'_trackEvent\',\'outbound-article\',\'http:\/\/tryghost.org\']);">http:\/\/TryGhost.org<\/a> - put your email address in.\n<hr>\n<h3>How are you going to do this?<\/h3>\n\nThere\'s three main ways of going about this, each has merits as well as drawbacks.\n\n<em><strong>1.) Build it from scratch<\/strong><\/em> - Many people (particularly the Hacker News crowd) expressed the sentiment that there was little point in forking WordPress. When you\'re going to strip out so much, you get to a point where you might as well start from scratch anyway. Take away the crutches of being stuck with older technologies and put together something which is as sophisticated in code as it is in UI\/UX.\n<ul>\n<li><em>Pros:<\/em> The idea of something completely new is exciting, opportunity to build something very sophisticated, complete control over everything.<\/li>\n<li><em>Cons:<\/em> Lose the &nbsp;WordPress ecosystem which includes millions of users and thousands of developers, potentially spend the next 6 months fighting over whether to use PHP\/RoR\/Django\/Python\/Node\/Whateverthefuck because everyone loves to evangelise the technology they know best.<\/li>\n<\/ul>\n\n<em><strong>2.) Fork WordPress<\/strong><\/em> - This was the original idea I put out. Take the WordPress codebase, as is, and modify it to turn it into something new. Initially the codebase is practically the same, which means developers already know it. Then it can change over time and evolve into its own thing.\n<ul>\n<li><em>Pros:<\/em> Easy start with existing codebase, potential to evolve, doesn\'t lose WordPress ecosystem initially.<\/li>\n<li><em>Cons:<\/em> Stuck with existing codebase - the good as well as the bad, &nbsp;eventually needs to be rewritten completely, less control, loses the WordPress ecosystem after a while anyway, makes it complicated to transition from legacy code to new code.<\/li>\n<\/ul>\n\n<em><strong>3.) Make it a plugin\/extension<\/strong><\/em> - Lots of people asked why Ghost couldn\'t just be a WordPress plugin. It would certainly be the easiest route of the 3, it\'s possible to completely remove \/wp-admin\/ and replace with with \/ghost\/ ... but I feel like it kind of misses the point. This route bolts Ghost on, but it\'s still WordPress under the hood. From a UI\/UX standpoint it would function - but it wouldn\'t revolutionise anything else. It makes WordPress itself about blogging again, rather than creating something new.\n<ul>\n<li><em>Pros:<\/em> Very easy development, very easy deployment, keeps WordPress ecosystem forever, doesn\'t force anyone to change.<\/li>\n<li><em>Cons:<\/em> The least exciting (for me, personally), much less control, it would be much harder to maintain something like this on a non-profit basis - which loses a piece of what Ghost is about.<\/li>\n<\/ul>\n<h3>What\'s the answer?<\/h3>\n\nI\'ve spoken to a lot of smart people over the last few days. The one thing that everyone seems to agree on is that a fork is the worst of both worlds. So the one thing that I suggested as a way of making this happen, is the least likely to work in reality. Remember the foam prototype metaphor earlier? Learning and iterating - that\'s what happening now.\n\nThat leaves a choice between WordPress plugin or fresh build. The answer? Both.\n\nA WordPress plugin will act as a proof of concept and a working prototype, initially, because it\'s easier to leverage the existing WordPress ecosystem to create it than to go into a cave for 6 months trying to build this amazing thing that everyone will have forgotten about.\n\nThe plugin will not be perfect. It will add the Ghost UI\/UX and as much functionality as we can cram into it. It will completely remove \/wp-admin\/ and replace it with \/ghost\/ - effectively using WordPress core as a basic foundation to build on top of. It will give people who don\'t want to switch away from WordPress access to the Ghost UX which they want to have, and it will give people who want the full Ghost platform a taste of what\'s to come.\n\nIt will allow us to develop and learn and iterate on the concept pretty rapidly, which has a great deal of value.\n\nThis is step one. Assuming the plugin is actually used by people - it would then justify exploring building the standalone version of Ghost from the ground up. The plugin would subsequently serve as a great marketing tool for the platform. Think of it as an upgrade path. But that\'s a long way away. Having the idea is the easy part. Making it happen is what counts.\n\nHappily - amongst the thousands of people talking about Ghost for the last few days - several have been talking about how they\'ve already built some working prototypes of my mockups and turned them into WordPress plugins or just local development sites. These will likely go on to be the starting point of the first Ghost plugin.<\/p>\n\nThere\'s a lot to do, and I\'m amazed by the number of people who have offered their help with this. In the next few days I\'ll be kicking off work on the plugin properly and start putting together a more organised structure which explains how you can get involved and contribute to the project if you\'re interested. So... watch this space - and thanks for all your support so far.\n\n<a href="http:\/\/twitter.com\/TryGhost" onclick="javascript:_gaq.push([\'_trackEvent\',\'outbound-article\',\'http:\/\/twitter.com\']);" class="twitter-follow-button">Follow @TryGhost<\/a>'),
@@ -1084,7 +1080,7 @@ DataGenerator.forKnex = (function () {
         }
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'name',
             email: 'test@ghost.org',
             bio: 'bio',
@@ -1108,7 +1104,7 @@ DataGenerator.forKnex = (function () {
         const basics = createBasic(newObj);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             uuid: uuid.v4(),
             secret: 'not_available',
             redirection_uri: 'http://localhost:9999',
@@ -1131,7 +1127,7 @@ DataGenerator.forKnex = (function () {
 
     function createPostsTags(postId, tagId) {
         return {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: postId,
             tag_id: tagId
         };
@@ -1139,7 +1135,7 @@ DataGenerator.forKnex = (function () {
 
     function createUsersRoles(userId, roleId) {
         return {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             user_id: userId,
             role_id: roleId
         };
@@ -1147,7 +1143,7 @@ DataGenerator.forKnex = (function () {
 
     function createPostsAuthors(postId, authorId, sort_order = 0) {
         return {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             author_id: authorId,
             post_id: postId,
             sort_order: sort_order
@@ -1157,7 +1153,7 @@ DataGenerator.forKnex = (function () {
     function createNewsletter(overrides) {
         const newObj = _.cloneDeep(overrides);
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             uuid: uuid.v4(),
             slug: 'daily-newsletter',
             name: 'Daily Newsletter',
@@ -1179,7 +1175,7 @@ DataGenerator.forKnex = (function () {
     function createOffer(overrides) {
         const newObj = _.cloneDeep(overrides);
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'Black Friday',
             code: 'black-friday',
             display_title: 'Black Friday Sale!',
@@ -1199,7 +1195,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email: 'member@ghost.org'
         });
     }
@@ -1208,7 +1204,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email: 'member@ghost.org',
             newsletters: [{
                 id: 'newsletter-1'
@@ -1220,7 +1216,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email: 'member@ghost.org',
             products: [{
                 id: 'product-1'
@@ -1232,7 +1228,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'label',
             slug: 'slug',
             created_by: DataGenerator.Content.users[0].id,
@@ -1246,7 +1242,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'product',
             slug: 'gold',
             active: true,
@@ -1265,7 +1261,7 @@ DataGenerator.forKnex = (function () {
 
     function createMembersLabels(member_id, label_id, sort_order = 0) {
         return {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id,
             label_id,
             sort_order
@@ -1274,7 +1270,7 @@ DataGenerator.forKnex = (function () {
 
     function createStripeProduct(product_id, stripe_product_id) {
         return {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             product_id,
             stripe_product_id
         };
@@ -1284,7 +1280,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             uuid: '95ce1c53-69b0-4f5f-be91-d3aeb39046b5',
             key: 'title',
             value: null,
@@ -1300,7 +1296,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             token: uuid.v4(),
             expires: Date.now() + constants.ONE_DAY_MS
         });
@@ -1310,7 +1306,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             token: uuid.v4(),
             email: 'test@ghost.org',
             role_id: DataGenerator.Content.roles[0].id,
@@ -1325,7 +1321,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             event: 'test',
             target_url: 'https://example.com/hooks/test',
             created_by: DataGenerator.Content.users[0].id,
@@ -1339,7 +1335,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             name: 'test integration',
             slug: 'test-integration',
             created_by: DataGenerator.Content.users[0].id,
@@ -1360,7 +1356,7 @@ DataGenerator.forKnex = (function () {
     function createEmailBatch(overrides) {
         const newObj = _.cloneDeep(overrides);
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             created_at: new Date(),
             updated_at: new Date()
         });
@@ -1369,7 +1365,7 @@ DataGenerator.forKnex = (function () {
     function createEmailRecipient(overrides) {
         const newObj = _.cloneDeep(overrides);
         return _.defaults(newObj, {
-            id: generateId()
+            id: ObjectId().toHexString()
         });
     }
 
@@ -1380,7 +1376,7 @@ DataGenerator.forKnex = (function () {
         const newObj = _.cloneDeep(overrides);
 
         return _.defaults(newObj, {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[memberIndex].id,
             post_id: DataGenerator.Content.posts[0].id
         });
@@ -1440,35 +1436,35 @@ DataGenerator.forKnex = (function () {
     const roles_users = [
         {
             // owner
-            id: generateId(),
+            id: ObjectId().toHexString(),
             role_name: 'Owner',
             user_id: DataGenerator.Content.users[0].id,
             role_id: DataGenerator.Content.roles[3].id
         },
         {
             // admin
-            id: generateId(),
+            id: ObjectId().toHexString(),
             role_name: 'Administrator',
             user_id: DataGenerator.Content.users[1].id,
             role_id: DataGenerator.Content.roles[0].id
         },
         {
             // editor
-            id: generateId(),
+            id: ObjectId().toHexString(),
             role_name: 'Editor',
             user_id: DataGenerator.Content.users[2].id,
             role_id: DataGenerator.Content.roles[1].id
         },
         {
             // author
-            id: generateId(),
+            id: ObjectId().toHexString(),
             role_name: 'Author',
             user_id: DataGenerator.Content.users[3].id,
             role_id: DataGenerator.Content.roles[2].id
         },
         {
             // contributor
-            id: generateId(),
+            id: ObjectId().toHexString(),
             role_name: 'Contributor',
             user_id: DataGenerator.Content.users[7].id,
             role_id: DataGenerator.Content.roles[4].id
@@ -1477,12 +1473,12 @@ DataGenerator.forKnex = (function () {
 
     const posts_meta = [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[2].id,
             meta_description: 'meta description for short and sweet'
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[3].id,
             meta_description: 'meta description for draft post'
         }
@@ -1492,37 +1488,37 @@ DataGenerator.forKnex = (function () {
     // it relies on the created posts/tags
     const posts_tags = [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[0].id,
             tag_id: DataGenerator.Content.tags[0].id,
             sort_order: 0
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[0].id,
             tag_id: DataGenerator.Content.tags[1].id,
             sort_order: 1
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[1].id,
             tag_id: DataGenerator.Content.tags[0].id,
             sort_order: 0
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[1].id,
             tag_id: DataGenerator.Content.tags[1].id,
             sort_order: 1
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[2].id,
             tag_id: DataGenerator.Content.tags[2].id,
             sort_order: 0
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[3].id,
             tag_id: DataGenerator.Content.tags[3].id,
             sort_order: 0
@@ -1531,50 +1527,50 @@ DataGenerator.forKnex = (function () {
 
     const members_newsletters = [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[0].id,
             newsletter_id: DataGenerator.Content.newsletters[0].id
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[1].id,
             newsletter_id: DataGenerator.Content.newsletters[0].id
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[2].id,
             newsletter_id: DataGenerator.Content.newsletters[0].id
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[3].id,
             newsletter_id: DataGenerator.Content.newsletters[1].id
         },
         // Member index 4 (comped@test.com), subscribed to two active newsletters
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[4].id,
             newsletter_id: DataGenerator.Content.newsletters[0].id
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[4].id,
             newsletter_id: DataGenerator.Content.newsletters[1].id
         },
         // Member index 5 (vip@test.com), subscribed to an active and archived newsletter
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[5].id,
             newsletter_id: DataGenerator.Content.newsletters[1].id
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[5].id,
             newsletter_id: DataGenerator.Content.newsletters[2].id
         },
         // Member index 6 (vip-paid@test.com), subscribed to an archived newsletter
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: DataGenerator.Content.members[6].id,
             newsletter_id: DataGenerator.Content.newsletters[2].id
         }
@@ -1583,61 +1579,61 @@ DataGenerator.forKnex = (function () {
 
     const posts_authors = [
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[0].id,
             author_id: DataGenerator.Content.users[0].id,
             sort_order: 0
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[1].id,
             author_id: DataGenerator.Content.users[0].id,
             sort_order: 0
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[2].id,
             author_id: DataGenerator.Content.users[0].id,
             sort_order: 0
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[3].id,
             author_id: DataGenerator.Content.users[0].id,
             sort_order: 0
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[3].id,
             author_id: _.find(DataGenerator.Content.users, {email: 'jbOgendAth@example.com'}).id,
             sort_order: 1
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[4].id,
             author_id: DataGenerator.Content.users[0].id,
             sort_order: 0
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[4].id,
             author_id: _.find(DataGenerator.Content.users, {slug: 'slimer-mcectoplasm'}).id,
             sort_order: 1
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[5].id,
             author_id: DataGenerator.Content.users[0].id,
             sort_order: 0
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[6].id,
             author_id: DataGenerator.Content.users[0].id,
             sort_order: 0
         },
         {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[7].id,
             author_id: DataGenerator.Content.users[0].id,
             sort_order: 0
@@ -1691,7 +1687,7 @@ DataGenerator.forKnex = (function () {
         if (recipient.failed_at === null) {
             if (recipient.delivered_at === null) {
                 return [{
-                    id: generateId(),
+                    id: ObjectId().toHexString(),
                     email_recipient_id: recipient.id,
                     email_id: recipient.email_id,
                     member_id: recipient.member_id,
@@ -1700,14 +1696,14 @@ DataGenerator.forKnex = (function () {
                     enhanced_code: '5.5.5',
                     severity: 'temporary',
                     failed_at: recipient.processed_at,
-                    event_id: 'event-id-' + generateId()
+                    event_id: 'event-id-' + ObjectId().toHexString()
                 }];
             }
 
             return [];
         }
         return [{
-            id: generateId(),
+            id: ObjectId().toHexString(),
             email_recipient_id: recipient.id,
             email_id: recipient.email_id,
             member_id: recipient.member_id,
@@ -1716,7 +1712,7 @@ DataGenerator.forKnex = (function () {
             enhanced_code: '5.5.5',
             severity: 'permanent',
             failed_at: recipient.failed_at,
-            event_id: 'event-id-' + generateId()
+            event_id: 'event-id-' + ObjectId().toHexString()
         }];
     });
 
@@ -1745,7 +1741,7 @@ DataGenerator.forKnex = (function () {
             }
         ];
         return {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: member.id,
             source: 'system',
             attribution_type: 'post',
@@ -1830,7 +1826,7 @@ DataGenerator.forKnex = (function () {
             }
         ];
         return {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: members[index].id,
             subscription_id: subscription.id,
             source: 'system',
@@ -1847,7 +1843,7 @@ DataGenerator.forKnex = (function () {
         createBasic(DataGenerator.Content.members_paid_subscription_events[2]),
         ...members_subscription_created_events.map((e) => {
             return {
-                id: generateId(),
+                id: ObjectId().toHexString(),
                 type: 'created',
                 mrr_delta: 1000,
                 currency: 'usd',
@@ -1862,7 +1858,7 @@ DataGenerator.forKnex = (function () {
 
     const redirects = posts.map((post, index) => {
         return {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             from: '/r/' + index,
             to: 'https:://ghost.org',
             post_id: post.id,
@@ -1873,7 +1869,7 @@ DataGenerator.forKnex = (function () {
 
     const members_click_events = redirects.map((redirect, index) => {
         return {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: members[index].id,
             redirect_id: redirect.id,
             created_at: new Date()
@@ -1882,7 +1878,7 @@ DataGenerator.forKnex = (function () {
 
     const members_feedback = posts.map((redirect, index) => {
         return {
-            id: generateId(),
+            id: ObjectId().toHexString(),
             member_id: members[index].id,
             post_id: redirect.id,
             score: index % 2,
@@ -2012,7 +2008,7 @@ DataGenerator.forModel = (function () {
     });
 
     roles = _.map(DataGenerator.Content.roles, function (role) {
-        return _.extend({}, role, {id: generateId()});
+        return _.extend({}, role, {id: ObjectId().toHexString()});
     });
 
     return {

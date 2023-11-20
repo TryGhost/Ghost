@@ -7,10 +7,6 @@ const schema = require('../../../data/schema');
 // This wires up our model event system
 const events = require('../../../lib/common/events');
 
-// Run tests or development with NUMERIC_IDS=1 to enable numeric object IDs
-let forceNumericObjectIds = process.env.NODE_ENV !== 'production' && !!process.env.NUMERIC_IDS;
-let numberGenerator = 0;
-
 module.exports = function (Bookshelf) {
     Bookshelf.Model = Bookshelf.Model.extend({
         initializeEvents: function () {
@@ -43,7 +39,7 @@ module.exports = function (Bookshelf) {
          * no auto increment
          */
         setId: function setId() {
-            this.set('id', Bookshelf.Model.generateId());
+            this.set('id', ObjectId().toHexString());
         },
 
         /**
@@ -271,21 +267,6 @@ module.exports = function (Bookshelf) {
             Object.assign(model._changed, _.cloneDeep(model.changed));
 
             this.addAction(model, 'deleted', options);
-        }
-    }, {
-        generateId: function generateId() {
-            if (forceNumericObjectIds) {
-                numberGenerator = numberGenerator + 1;
-                const counter = numberGenerator.toString();
-
-                // 77777777 here are to make sure generated ids's are larger than naturally generated ones
-                const base = '777777770000000000000000';
-                const id = base.substring(0, base.length - counter.length) + counter;
-
-                //// This always generates a valid object ID that is fully numeric
-                return id;
-            }
-            return ObjectId().toHexString();
         }
     });
 };

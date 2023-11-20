@@ -9,7 +9,7 @@ const logging = require('@tryghost/logging');
 let agent;
 
 async function testPagination(skippedTypes, postId, totalExpected, limit) {
-    const postFilter = postId ? `+data.post_id:'${postId}'` : '';
+    const postFilter = postId ? `+data.post_id:${postId}` : '';
 
     // To make the test cover more edge cases, we test different limit configurations
     const {body: firstPage} = await agent
@@ -49,7 +49,7 @@ async function testPagination(skippedTypes, postId, totalExpected, limit) {
         const remaining = totalExpected - (page - 1) * limit;
 
         const {body: secondPage} = await agent
-            .get(`/members/events?filter=${encodeURIComponent(`type:-[${skippedTypes.join(',')}]${postFilter}+(data.created_at:<'${lastCreatedAt}',(data.created_at:'${lastCreatedAt}'+id:<'${lastId}'))`)}&limit=${limit}`)
+            .get(`/members/events?filter=${encodeURIComponent(`type:-[${skippedTypes.join(',')}]${postFilter}+(data.created_at:<'${lastCreatedAt}',(data.created_at:'${lastCreatedAt}'+id:<${lastId}))`)}&limit=${limit}`)
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
@@ -162,7 +162,7 @@ describe('Activity Feed API', function () {
             const memberId = fixtureManager.get('members', 0).id;
 
             await agent
-                .get(`/members/events?filter=${encodeURIComponent(`data.post_id:'${postId}',data.member_id:'${memberId}'`)}`)
+                .get(`/members/events?filter=${encodeURIComponent(`data.post_id:${postId},data.member_id:${memberId}`)}`)
                 .expectStatus(200)
                 .matchBodySnapshot({
                     events: new Array(10).fill({
@@ -180,7 +180,7 @@ describe('Activity Feed API', function () {
             const memberId = fixtureManager.get('members', 0).id;
 
             await agent
-                .get(`/members/events?filter=${encodeURIComponent(`(type:comment_event,type:click_event)+(data.post_id:'${postId}',data.member_id:'${memberId}')`)}`)
+                .get(`/members/events?filter=${encodeURIComponent(`(type:comment_event,type:click_event)+(data.post_id:${postId},data.member_id:${memberId})`)}`)
                 .expectStatus(200)
                 .matchBodySnapshot({
                     events: new Array(3).fill({
@@ -407,7 +407,7 @@ describe('Activity Feed API', function () {
         const postId = fixtureManager.get('posts', 0).id;
 
         await agent
-            .get(`/members/events?filter=data.post_id:'${postId}'&limit=20`)
+            .get(`/members/events?filter=data.post_id:${postId}&limit=20`)
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
@@ -441,7 +441,7 @@ describe('Activity Feed API', function () {
     it('Can limit events', async function () {
         const postId = fixtureManager.get('posts', 0).id;
         await agent
-            .get(`/members/events?filter=data.post_id:'${postId}'&limit=2`)
+            .get(`/members/events?filter=data.post_id:${postId}&limit=2`)
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,

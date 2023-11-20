@@ -369,7 +369,7 @@ class EmailRenderer {
         }
 
         // Record the original image width and height attributes before inlining the styles with juice
-        // If any images have `width: auto` or `height: auto` set via CSS,
+        // If any images have `width: auto` or `height: auto` set via CSS, 
         // juice will explicitly set the width/height attributes to `auto` on the <img /> tag
         // This is not supported by Outlook, so we need to reset the width/height attributes to the original values
         // Other clients will ignore the width/height attributes and use the inlined CSS instead
@@ -984,7 +984,7 @@ class EmailRenderer {
         if (newsletter.get('show_latest_posts')) {
             // Fetch last 3 published posts
             const {data} = await this.#models.Post.findPage({
-                filter: `status:published+id:-'${post.id}'`,
+                filter: 'status:published+id:-' + post.id,
                 order: 'published_at DESC',
                 limit: 3
             });
