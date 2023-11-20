@@ -61,7 +61,7 @@
     "react-dom": "18.2.0",
     "sinon": "17.0.0",
     "ts-node": "10.9.1",
-    "typescript": "5.2.2"
+    "typescript": "5.3.2"
   },
   "dependencies": {
     "@sentry/react": "7.81.0",
