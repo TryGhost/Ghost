@@ -19,7 +19,7 @@ export const useFetchApi = () => {
     const {ghostVersion, sentryDSN} = useFramework();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return async <ResponseData = any>(endpoint: string | URL, options: RequestOptions = {}): Promise<ResponseData> => {
+    return async <ResponseData = any>(endpoint: string | URL, {headers = {}, retry, ...options}: RequestOptions = {}): Promise<ResponseData> => {
         // By default, we set the Content-Type header to application/json
         const defaultHeaders: Record<string, string> = {
             'app-pragma': 'no-cache',
@@ -28,7 +28,6 @@ export const useFetchApi = () => {
         if (typeof options.body === 'string') {
             defaultHeaders['content-type'] = 'application/json';
         }
-        const headers = options?.headers || {};
 
         const controller = new AbortController();
         const {timeout} = options;
@@ -41,7 +40,7 @@ export const useFetchApi = () => {
         // 1. Server Unreachable error from the browser (code 0 or TypeError), typically from short internet blips
         // 2. Maintenance error from Ghost, upgrade in progress so API is temporarily unavailable
         let attempts = 0;
-        const shouldRetry = options.retry === true || options.retry === undefined;
+        const shouldRetry = retry !== false;
         let retryingMs = 0;
         const startTime = Date.now();
         const maxRetryingMs = 15_000;

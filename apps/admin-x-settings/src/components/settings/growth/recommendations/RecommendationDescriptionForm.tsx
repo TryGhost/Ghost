@@ -1,7 +1,7 @@
 import React from 'react';
 import RecommendationIcon from './RecommendationIcon';
 import {EditOrAddRecommendation, Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
-import {ErrorMessages} from '../../../../hooks/useForm';
+import {ErrorMessages} from '@tryghost/admin-x-framework/hooks';
 import {Form, Heading, Hint, TextArea, TextField, URLTextField} from '@tryghost/admin-x-design-system';
 
 interface Props<T extends EditOrAddRecommendation> {
