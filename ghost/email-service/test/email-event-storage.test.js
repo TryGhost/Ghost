@@ -456,14 +456,20 @@ describe('Email Event Storage', function () {
 
         const update = sinon.stub().resolves();
 
+        const emailSuppressionList = {
+            removeUnsubscribe: sinon.stub().resolves()
+        };
+
         const eventHandler = new EmailEventStorage({
             membersRepository: {
                 update
-            }
+            },
+            emailSuppressionList
         });
         await eventHandler.handleUnsubscribed(event);
         assert(update.calledOnce);
         assert(update.firstCall.args[0].newsletters.length === 0);
+        assert(emailSuppressionList.removeUnsubscribe.calledOnce);
     });
 
     it('Handles unsubscribe with a non-existent member', async function () {
@@ -485,6 +491,44 @@ describe('Email Event Storage', function () {
         await eventHandler.handleUnsubscribed(event);
         assert(update.calledOnce);
         assert(update.firstCall.args[0].newsletters.length === 0);
+    });
+
+    it('Finds newsletters to keep during an unsubscribe', async function () {
+        const event = EmailUnsubscribedEvent.create({
+            email: 'example@example.com',
+            memberId: '123',
+            emailId: '456',
+            timestamp: new Date(0)
+        });
+
+        const Email = {
+            findOne: sinon.stub().resolves({
+                get: sinon.stub().returns('newsletter_1')
+            })
+        };
+
+        const membersRepository = {
+            get: sinon.stub().resolves({
+                related: sinon.stub().returns({
+                    models: [
+                        {id: 'newsletter_1'},
+                        {id: 'newsletter_2'}
+                    ]
+                })
+            })
+        };
+
+        const eventHandler = new EmailEventStorage({
+            membersRepository,
+            models: {
+                Email
+            }
+        });
+
+        const result = await eventHandler.findNewslettersToKeep(event);
+
+        assert(result.length === 1);
+        assert(result[0].id === 'newsletter_2');
     });
 
     it('Handles complaints', async function () {

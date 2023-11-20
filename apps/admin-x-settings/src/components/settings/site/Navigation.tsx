@@ -1,8 +1,7 @@
-import Button from '../../../admin-x-ds/global/Button';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import useRouting from '../../../hooks/useRouting';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import TopLevelGroup from '../../TopLevelGroup';
+import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Navigation: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
@@ -11,7 +10,7 @@ const Navigation: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={<Button color='green' label='Customize' link linkWithPadding onClick={openPreviewModal}/>}
             description="Set up primary and secondary menus"
             keywords={keywords}

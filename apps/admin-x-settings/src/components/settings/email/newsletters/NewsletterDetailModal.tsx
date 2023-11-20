@@ -1,38 +1,17 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
-import ColorPickerField from '../../../../admin-x-ds/global/form/ColorPickerField';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import Form from '../../../../admin-x-ds/global/form/Form';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Hint from '../../../../admin-x-ds/global/Hint';
-import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
-import Icon from '../../../../admin-x-ds/global/Icon';
-import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
-import LimitModal from '../../../../admin-x-ds/global/modal/LimitModal';
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
-import Select, {SelectOption} from '../../../../admin-x-ds/global/form/Select';
-import Separator from '../../../../admin-x-ds/global/Separator';
-import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
-import TextArea from '../../../../admin-x-ds/global/form/TextArea';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import ToggleGroup from '../../../../admin-x-ds/global/form/ToggleGroup';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
-import useForm, {ErrorMessages} from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
+import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
+import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '../../../../api/newsletters';
-import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
-import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {fullEmailAddress} from '../../../../api/site';
-import {getImageUrl, useUploadImage} from '../../../../api/images';
-import {getSettingValues} from '../../../../api/settings';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
@@ -438,8 +417,9 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
 
-    const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError} = useForm({
+    const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError, okProps} = useForm({
         initialState: newsletter,
+        savingDelay: 500,
         onSave: async () => {
             const {newsletters, meta} = await editNewsletter(formState);
             if (meta?.sent_email_verification) {
@@ -489,12 +469,12 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
 
     return <PreviewModalContent
         afterClose={() => updateRoute('newsletters')}
-        buttonsDisabled={saveState === 'saving'}
+        buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
-        okColor={saveState === 'saved' ? 'green' : 'black'}
-        okLabel={saveState === 'saved' ? 'Saved' : (saveState === 'saving' ? 'Saving...' : 'Save')}
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save'}
         preview={preview}
         previewBgColor={'grey'}
         previewToolbar={false}
@@ -503,7 +483,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         testId='newsletter-modal'
         title='Newsletter'
         onOk={async () => {
-            if (!(await handleSave())) {
+            if (!(await handleSave({fakeWhenUnchanged: true}))) {
                 showToast({
                     type: 'pageError',
                     message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'

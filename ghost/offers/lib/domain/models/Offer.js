@@ -13,6 +13,7 @@ const OfferCurrency = require('./OfferCurrency');
 const OfferStatus = require('./OfferStatus');
 const OfferCreatedEvent = require('../events/OfferCreatedEvent');
 const OfferCodeChangeEvent = require('../events/OfferCodeChangeEvent');
+const OfferCreatedAt = require('./OfferCreatedAt');
 
 /**
  * @typedef {object} OfferProps
@@ -29,6 +30,7 @@ const OfferCodeChangeEvent = require('../events/OfferCodeChangeEvent');
  * @prop {OfferStatus} status
  * @prop {OfferTier} tier
  * @prop {number} redemptionCount
+ * @prop {Date} createdAt
  */
 
 /**
@@ -47,6 +49,7 @@ const OfferCodeChangeEvent = require('../events/OfferCodeChangeEvent');
  * @prop {string} status
  * @prop {number} redemptionCount
  * @prop {TierProps|OfferTier} tier
+ * @prop {Date} createdAt
  */
 
 /**
@@ -179,6 +182,10 @@ class Offer {
         return !!this.options.isNew;
     }
 
+    get createdAt() {
+        return this.props.createdAt;
+    }
+
     /**
      * @param {OfferCode} code
      * @param {UniqueChecker} uniqueChecker
@@ -275,6 +282,7 @@ class Offer {
         const cadence = OfferCadence.create(data.cadence);
         const duration = OfferDuration.create(data.duration, data.duration_in_months);
         const status = OfferStatus.create(data.status || 'active');
+        const createdAt = isNew ? new Date().toISOString : OfferCreatedAt.create(data.created_at);
 
         if (isNew && data.redemptionCount !== undefined) {
             // TODO correct error
@@ -340,7 +348,8 @@ class Offer {
             currency,
             tier,
             redemptionCount,
-            status
+            status,
+            createdAt
         }, {isNew});
     }
 }

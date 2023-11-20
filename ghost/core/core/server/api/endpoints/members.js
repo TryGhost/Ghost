@@ -143,6 +143,31 @@ module.exports = {
         }
     },
 
+    logout: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            const member = await membersService.api.memberBREADService.logout(frame.options);
+
+            return member;
+        }
+    },
+
     editSubscription: {
         statusCode: 200,
         headers: {

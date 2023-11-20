@@ -1,14 +1,11 @@
-import MultiSelect, {MultiSelectOption} from '../../../admin-x-ds/global/form/MultiSelect';
 import React from 'react';
-import Select from '../../../admin-x-ds/global/form/Select';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
+import {MultiSelect, MultiSelectOption, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getOptionLabel} from '../../../utils/helpers';
-import {getSettingValues} from '../../../api/settings';
-import {useBrowseTiers} from '../../../api/tiers';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
     {
@@ -178,7 +175,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Set up default access options for subscription and posts'
             isEditing={isEditing}
             keywords={keywords}
@@ -191,7 +188,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? form : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

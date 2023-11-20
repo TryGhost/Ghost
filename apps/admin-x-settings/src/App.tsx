@@ -1,79 +1,28 @@
-import DesignSystemProvider from './admin-x-ds/providers/DesignSystemProvider';
-import GlobalDataProvider from './components/providers/GlobalDataProvider';
 import MainContent from './MainContent';
-import NiceModal from '@ebay/nice-modal-react';
-import RoutingProvider, {ExternalLink} from './components/providers/RoutingProvider';
-import clsx from 'clsx';
-import {DefaultHeaderTypes} from './unsplash/UnsplashTypes';
-import {FetchKoenigLexical, OfficialTheme, ServicesProvider} from './components/providers/ServiceProvider';
-import {GlobalDirtyStateProvider} from './hooks/useGlobalDirtyState';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {ScrollSectionProvider} from './hooks/useScrollSection';
-import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
-import {Toaster} from 'react-hot-toast';
-import {UpgradeStatusType} from './utils/globalTypes';
+import SettingsAppProvider, {OfficialTheme, UpgradeStatusType} from './components/providers/SettingsAppProvider';
+import SettingsRouter, {loadModals, modalPaths} from './components/providers/SettingsRouter';
+import {DesignSystemApp, FetchKoenigLexical} from '@tryghost/admin-x-design-system';
+import {FrameworkProvider, FrameworkProviderProps} from '@tryghost/admin-x-framework';
 import {ZapierTemplate} from './components/settings/advanced/integrations/ZapierModal';
 
-interface AppProps {
-    ghostVersion: string;
+interface AppProps extends Omit<FrameworkProviderProps, 'basePath' | 'modals' | 'children'> {
     officialThemes: OfficialTheme[];
     zapierTemplates: ZapierTemplate[];
-    externalNavigate: (link: ExternalLink) => void;
-    darkMode?: boolean;
-    unsplashConfig: DefaultHeaderTypes
-    sentryDSN: string | null;
+    darkMode: boolean;
     fetchKoenigLexical: FetchKoenigLexical;
-    onUpdate: (dataType: string, response: unknown) => void;
-    onInvalidate: (dataType: string) => void;
-    onDelete: (dataType: string, id: string) => void;
     upgradeStatus?: UpgradeStatusType;
 }
 
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            refetchOnWindowFocus: false,
-            staleTime: 5 * (60 * 1000), // 5 mins
-            cacheTime: 10 * (60 * 1000), // 10 mins
-            // We have custom retry logic for specific errors in fetchApi()
-            retry: false
-        }
-    }
-});
-
-function App({ghostVersion, officialThemes, zapierTemplates, externalNavigate, darkMode = false, unsplashConfig, fetchKoenigLexical, sentryDSN, onUpdate, onInvalidate, onDelete, upgradeStatus}: AppProps) {
-    const appClassName = clsx(
-        'admin-x-settings admin-x-base h-[100vh] w-full overflow-y-auto overflow-x-hidden',
-        darkMode && 'dark'
-    );
-
+function App({officialThemes, zapierTemplates, upgradeStatus, darkMode, fetchKoenigLexical, ...props}: AppProps) {
     return (
-        <SentryErrorBoundary>
-            <QueryClientProvider client={queryClient}>
-                <ServicesProvider fetchKoenigLexical={fetchKoenigLexical} ghostVersion={ghostVersion} officialThemes={officialThemes} sentryDSN={sentryDSN} unsplashConfig={unsplashConfig} upgradeStatus={upgradeStatus} zapierTemplates={zapierTemplates} onDelete={onDelete} onInvalidate={onInvalidate} onUpdate={onUpdate}>
-                    <GlobalDataProvider>
-                        <ScrollSectionProvider>
-                            <RoutingProvider externalNavigate={externalNavigate}>
-                                <GlobalDirtyStateProvider>
-                                    <DesignSystemProvider>
-                                        <div className={appClassName} id="admin-x-root" style={{
-                                            height: '100vh',
-                                            width: '100%'
-                                        }}
-                                        >
-                                            <Toaster />
-                                            <NiceModal.Provider>
-                                                <MainContent />
-                                            </NiceModal.Provider>
-                                        </div>
-                                    </DesignSystemProvider>
-                                </GlobalDirtyStateProvider>
-                            </RoutingProvider>
-                        </ScrollSectionProvider>
-                    </GlobalDataProvider>
-                </ServicesProvider>
-            </QueryClientProvider>
-        </SentryErrorBoundary>
+        <FrameworkProvider basePath='settings' modals={{paths: modalPaths, load: loadModals}} {...props}>
+            <SettingsAppProvider officialThemes={officialThemes} upgradeStatus={upgradeStatus} zapierTemplates={zapierTemplates}>
+                <DesignSystemApp className='admin-x-settings' darkMode={darkMode} fetchKoenigLexical={fetchKoenigLexical} id='admin-x-settings'>
+                    <SettingsRouter />
+                    <MainContent />
+                </DesignSystemApp>
+            </SettingsAppProvider>
+        </FrameworkProvider>
     );
 }
 

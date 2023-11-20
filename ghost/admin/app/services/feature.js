@@ -77,6 +77,8 @@ export default class FeatureService extends Service {
     @feature('tipsAndDonations') tipsAndDonations;
     @feature('recommendations') recommendations;
     @feature('lexicalIndicators') lexicalIndicators;
+    @feature('editorEmojiPicker') editorEmojiPicker;
+    @feature('filterEmailDisabled') filterEmailDisabled;
 
     _user = null;
 

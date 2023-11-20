@@ -40,6 +40,11 @@ const HtmlOutputPlugin = ({editorResource, ...props}) => {
     return <_HtmlOutputPlugin {...props} />;
 };
 
+const EmojiPickerPlugin = ({editorResource, ...props}) => {
+    const {EmojiPickerPlugin: _EmojiPickerPlugin} = editorResource.read();
+    return <_EmojiPickerPlugin {...props} />;
+};
+
 export default class KoenigLexicalEditorInput extends Component {
     @service ajax;
     @service feature;
@@ -49,6 +54,14 @@ export default class KoenigLexicalEditorInput extends Component {
     @inject config;
 
     editorResource = this.koenig.resource;
+
+    get emojiPicker() {
+        if (!this.feature.editorEmojiPicker) {
+            return false;
+        }
+
+        return this.args.emojiPicker ?? true;
+    }
 
     @action
     onError(error) {
@@ -84,11 +97,12 @@ export default class KoenigLexicalEditorInput extends Component {
                                 onFocus={props.onFocus}
                                 isSnippetsEnabled={false}
                                 singleParagraph={true}
-                                className="koenig-lexical-editor-input"
+                                className={`koenig-lexical-editor-input ${this.feature.nightShift ? 'dark' : ''}`}
                                 placeholderText={props.placeholderText}
                                 placeholderClassName="koenig-lexical-editor-input-placeholder"
                             >
                                 <HtmlOutputPlugin editorResource={this.editorResource} html={props.html} setHtml={props.onChangeHtml} />
+                                {this.emojiPicker ? <EmojiPickerPlugin editorResource={this.editorResource} /> : null}
                             </KoenigComposableEditor>
                         </KoenigComposer>
                     </Suspense>

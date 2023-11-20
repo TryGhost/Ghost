@@ -181,13 +181,18 @@ export class Recommendation {
     edit(properties: EditRecommendation) {
         // Delete undefined properties
         const newProperties = this.plain;
+        let didChange = false;
 
         for (const key of Object.keys(properties) as (keyof EditRecommendation)[]) {
-            if (Object.prototype.hasOwnProperty.call(properties, key) && properties[key] !== undefined) {
+            if (Object.prototype.hasOwnProperty.call(properties, key) && properties[key] !== undefined && properties[key] !== newProperties[key]) {
                 (newProperties as Record<string, unknown>)[key] = properties[key] as unknown;
+                didChange = true;
             }
         }
 
+        if (!didChange) {
+            return;
+        }
         newProperties.updatedAt = new Date();
 
         const created = Recommendation.create(newProperties);

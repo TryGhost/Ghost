@@ -66,10 +66,11 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -224,7 +225,7 @@ Object {
       "featured": false,
       "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "published_at": null,
       "slug": "testing-post-deleted-webhook",
       "status": "draft",
@@ -317,11 +318,11 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -564,7 +565,7 @@ Header Level 3
  * Aliquam tincidunt mauris eu risus.
 
 #header h1 a{display: block;width: 300px;height: 80px;}",
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -784,11 +785,11 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1006,11 +1007,11 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1228,11 +1229,11 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1476,7 +1477,7 @@ Header Level 3
  * Aliquam tincidunt mauris eu risus.
 
 #header h1 a{display: block;width: 300px;height: 80px;}",
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1765,7 +1766,7 @@ Header Level 3
  * Aliquam tincidunt mauris eu risus.
 
 #header h1 a{display: block;width: 300px;height: 80px;}",
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1994,7 +1995,7 @@ Header Level 3
  * Aliquam tincidunt mauris eu risus.
 
 #header h1 a{display: block;width: 300px;height: 80px;}",
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -2213,11 +2214,11 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",

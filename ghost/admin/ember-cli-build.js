@@ -121,7 +121,8 @@ module.exports = function (defaults) {
                 'woff2',
                 'mp4',
                 'ico'
-            ]
+            ],
+            exclude: ['**/chunk*.map']
         },
         minifyJS: {
             options: {
@@ -205,6 +206,7 @@ module.exports = function (defaults) {
         autoImport: {
             publicAssetURL,
             webpack: {
+                devtool: 'source-map',
                 resolve: {
                     fallback: {
                         util: require.resolve('util'),

@@ -53,6 +53,11 @@ module.exports = function previewController(req, res, next) {
                 return urlUtils.redirect301(res, routerManager.getUrlByResourceId(post.id, {withSubdirectory: true}));
             }
 
+            // published content should only resolve to /:slug or /email/:uuid - /p/:uuid is for drafts only in lieu of an actual preview api
+            if (post.status !== 'published' && post.email_only === true) {
+                return urlUtils.redirect301(res, urlUtils.urlJoin('/email', post.uuid, '/'));
+            }
+
             post.access = !!post.html;
 
             return renderer.renderEntry(req, res)(post);

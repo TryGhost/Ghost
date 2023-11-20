@@ -591,10 +591,6 @@ button {
     line-height: inherit;
 }
 
-i {
-    display: block;
-}
-
 img,
 input[type="image"] {
     max-width: 100%;

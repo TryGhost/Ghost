@@ -136,7 +136,7 @@ describe('Batch sending tests', function () {
         // Prepare a post and email model
         const {emailModel} = await sendEmail(agent);
 
-        assert.equal(emailModel.get('source_type'), 'mobiledoc');
+        assert.equal(emailModel.get('source_type'), 'lexical');
         assert(emailModel.get('subject'));
         assert(emailModel.get('from'));
         assert.equal(emailModel.get('email_count'), 4);
@@ -567,7 +567,7 @@ describe('Batch sending tests', function () {
             // Test if all links are replaced and contain the member id
             const cheerio = require('cheerio');
             const $ = cheerio.load(html);
-            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:\'' + emailModel.get('post_id') + '\''});
 
             for (const el of $('a').toArray()) {
                 const href = $(el).attr('href');
@@ -612,7 +612,7 @@ describe('Batch sending tests', function () {
 
             const {emailModel, html} = await sendEmail(agent);
             assert.match(html, /\m=/);
-            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:\'' + emailModel.get('post_id') + '\''});
 
             for (const link of links) {
                 // Check ref not added to all replaced links
@@ -627,7 +627,7 @@ describe('Batch sending tests', function () {
 
             const {emailModel, html} = await sendEmail(agent);
             assert.match(html, /\m=/);
-            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:\'' + emailModel.get('post_id') + '\''});
 
             for (const link of links) {
                 // Check ref not added to all replaced links
@@ -640,7 +640,7 @@ describe('Batch sending tests', function () {
 
             const {emailModel, html} = await sendEmail(agent);
             assert.doesNotMatch(html, /\m=/);
-            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:\'' + emailModel.get('post_id') + '\''});
             assert.equal(links.length, 0);
         });
     });

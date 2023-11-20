@@ -1,12 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import Select from '../../../admin-x-ds/global/form/Select';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TopLevelGroup from '../../TopLevelGroup';
 import timezoneData from '@tryghost/timezone-data';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getLocalTime} from '../../../utils/helpers';
-import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 interface TimezoneDataDropdownOption {
     name: string;
@@ -68,7 +66,7 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 key: 'site-timezone',
                 value: <div className='flex flex-col'>
                     {publicationTimezoneData?.label || publicationTimezone}
-                    <span className='text-sm'><Hint timezone={publicationTimezone} /></span>
+                    <span className='text-xs'><Hint timezone={publicationTimezone} /></span>
                 </div>
             }
         ]} />
@@ -88,7 +86,7 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Set the time and date of your publication, used for all published posts'
             isEditing={isEditing}
             keywords={keywords}
@@ -101,7 +99,7 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? inputFields : viewContent}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

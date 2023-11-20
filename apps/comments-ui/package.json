@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/comments-ui",
-  "version": "0.13.1",
+  "version": "0.13.3",
   "license": "MIT",
   "repository": "git@github.com:TryGhost/comments-ui.git",
   "author": "Ghost Foundation",
@@ -64,7 +64,7 @@
     "@testing-library/react": "12.1.5",
     "@testing-library/user-event": "14.4.3",
     "@tryghost/i18n": "0.0.0",
-    "@vitejs/plugin-react": "4.1.0",
+    "@vitejs/plugin-react": "4.2.0",
     "@vitest/coverage-v8": "0.34.3",
     "autoprefixer": "10.4.16",
     "bson-objectid": "2.0.4",
@@ -75,8 +75,8 @@
     "eslint-plugin-tailwindcss": "3.13.0",
     "jsdom": "22.1.0",
     "postcss": "8.4.31",
-    "tailwindcss": "3.3.3",
-    "vite": "4.4.11",
+    "tailwindcss": "3.3.5",
+    "vite": "4.5.0",
     "vite-plugin-css-injected-by-js": "3.3.0",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "0.34.3"
