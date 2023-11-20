@@ -1,6 +1,7 @@
 import React from 'react';
 import {Heading} from '../..';
 import clsx from 'clsx';
+import {tableRowHoverBgClasses} from '../TableRow';
 
 export type DynamicTableColumn = {
     title: string;
@@ -21,8 +22,10 @@ export type DynamicTableRow = {
 export interface DynamicTableProps {
     columns: DynamicTableColumn[];
     rows: DynamicTableRow[];
+    horizontalScrolling?: boolean;
     absolute?: boolean;
     stickyHeader?: boolean;
+    hideHeader?: boolean;
     headerBorder?: boolean;
 
     /**
@@ -47,8 +50,10 @@ export interface DynamicTableProps {
 const DynamicTable: React.FC<DynamicTableProps> = ({
     columns,
     rows,
+    horizontalScrolling = false,
     absolute = false,
     stickyHeader = false,
+    hideHeader = false,
     headerBorder = true,
     border = true,
     footer,
@@ -75,12 +80,13 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
 
     tableContainerClassName = clsx(
         'flex-auto overflow-x-auto',
+        !horizontalScrolling && 'w-full max-w-full',
         (singlePageTable && (stickyHeader || stickyFooter || absolute)) && 'px-6 xl:px-[calc((100%-1280px)/2+24px)]',
         tableContainerClassName
     );
 
     tableClassName = clsx(
-        'h-full max-h-full min-w-full flex-auto border-collapse',
+        'h-full max-h-full min-w-full flex-auto table-fixed border-collapse',
         tableClassName
     );
 
@@ -92,8 +98,8 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     );
 
     tdClassName = clsx(
-        'w-full',
-        border && 'border-b border-grey-200',
+        'w-full border-b group-hover:border-grey-200',
+        border ? 'border-grey-200' : 'border-transparent',
         tdClassName
     );
 
@@ -103,7 +109,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     );
 
     trClassName = clsx(
-        'group hover:bg-gradient-to-r hover:from-white hover:to-grey-50 dark:hover:from-black dark:hover:to-grey-950',
+        tableRowHoverBgClasses,
         trClassName
     );
 
@@ -125,13 +131,16 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
         <div className={containerClassName}>
             <div className={tableContainerClassName}>
                 <table className={tableClassName}>
+                    {!hideHeader &&
                     <thead>
                         <tr>
                             {columns.map((column) => {
                                 headerColID = headerColID + 1;
                                 const thMaxWidth: string = column.maxWidth || 'auto';
+                                const thMinWidth: string = column.minWidth || 'auto';
                                 const thStyles = {
                                     maxWidth: thMaxWidth,
+                                    minWidth: thMinWidth,
                                     width: thMaxWidth
                                 };
                                 return (
@@ -141,6 +150,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
                             })}
                         </tr>
                     </thead>
+                    }
                     <tbody>
                         {rows.map((row) => {
                             let colID = 0;
@@ -165,8 +175,10 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
                                     }
 
                                     const tdMaxWidth: string = (currentColumn !== undefined && currentColumn.maxWidth) || 'auto';
+                                    const tdMinWidth: string = (currentColumn !== undefined && currentColumn.minWidth) || 'auto';
                                     const tdStyles = {
                                         maxWidth: tdMaxWidth,
+                                        minWidth: tdMinWidth,
                                         width: tdMaxWidth
                                     };
                                     let customCellClasses = cellClassName;

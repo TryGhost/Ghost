@@ -10,6 +10,8 @@ import {exampleActions as exampleActionButtons} from './ViewContainer.stories';
 import DynamicTable from '../table/DynamicTable';
 import Hint from '../Hint';
 import Heading from '../Heading';
+import {tableRowHoverBgClasses} from '../TableRow';
+import Icon from '../Icon';
 
 const meta = {
     title: 'Global / Layout / Page',
@@ -264,5 +266,74 @@ export const ExampleCardView: Story = {
         showPageMenu: true,
         showGlobalActions: true,
         children: exampleCardViewContent
+    }
+};
+
+const mockPosts = () => {
+    const posts = [];
+
+    for (let i = 0; i < 11; i++) {
+        posts.push(
+            <div className={`grid grid-cols-[96px_auto_120px_120px_60px] items-center gap-7 border-b border-grey-200 py-5 ${tableRowHoverBgClasses}`}>
+                <div className='flex h-24 w-24 items-center justify-center rounded-sm bg-grey-100'>
+
+                </div>
+                <div className='overflow-hidden'>
+                    <div className='flex flex-col'>
+                        <Heading className='truncate' level={5}>
+                            {i % 3 === 0 && 'Sunset drinks cruise eat sleep repeat'}
+                            {i % 3 === 1 && 'Elegance Rolls Royce on my private jet'}
+                            {i % 3 === 2 && 'Down to the wire Bathurst 5000 Le Tour'}
+                        </Heading>
+                        <div className='truncate'>
+                            {i % 3 === 0 && 'Numea captain’s table crystal waters paradise island the scenic route great adventure. Pirate speak the road less travelled seas the day '}
+                            {i % 3 === 1 && 'Another day in paradise cruise life adventure bound gap year cruise time languid afternoons let the sea set you free'}
+                            {i % 3 === 2 && <span className='text-grey-500'>No body text</span>}
+                        </div>
+                    </div>
+                </div>
+                <div className='flex flex-col'>
+                    <strong>15%</strong>
+                    viewed
+                </div>
+                <div className='flex flex-col'>
+                    <strong>55%</strong>
+                    opened
+                </div>
+                <div className='flex justify-end pr-7'>
+                    <Icon name='pen' size='sm' />
+                </div>
+            </div>
+        );
+    }
+    return posts;
+};
+
+const examplePostsContent = (
+    <ViewContainer
+        actions={exampleActionButtons}
+        primaryAction={{
+            title: 'New post',
+            icon: 'add'
+        }}
+        title='Posts'
+        type='page'
+    >
+        <div className='mb-10'>
+            {<>{mockPosts()}</>}
+        </div>
+    </ViewContainer>
+);
+
+export const ExampleAlternativeList: Story = {
+    parameters: {
+        layout: 'fullscreen'
+    },
+    name: 'Example: Alternative List',
+    args: {
+        pageTabs: pageTabs,
+        showPageMenu: true,
+        showGlobalActions: true,
+        children: examplePostsContent
     }
 };

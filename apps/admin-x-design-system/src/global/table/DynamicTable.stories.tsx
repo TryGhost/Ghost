@@ -104,6 +104,22 @@ export const Default: Story = {
     }
 };
 
+export const HiddenHeader: Story = {
+    args: {
+        columns: testColumns,
+        rows: testRows(10),
+        hideHeader: true
+    }
+};
+
+export const NoBorder: Story = {
+    args: {
+        columns: testColumns,
+        rows: testRows(10),
+        border: false
+    }
+};
+
 /**
  * By default it's just a simple table but you can set its header or footer to
  * be sticky. In this case the container is `absolute` positioned with `inset-0`
