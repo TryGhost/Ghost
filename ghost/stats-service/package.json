@@ -21,8 +21,8 @@
   ],
   "devDependencies": {
     "@types/luxon": "3.3.4",
-    "@types/mocha": "10.0.1",
-    "@types/sinon": "10.0.16",
+    "@types/mocha": "10.0.4",
+    "@types/sinon": "10.0.20",
     "c8": "8.0.1",
     "knex": "2.4.2",
     "luxon": "3.4.4",
