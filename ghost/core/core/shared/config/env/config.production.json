@@ -2,10 +2,24 @@
     "database": {
         "client": "mysql",
         "connection": {
-            "host"     : "127.0.0.1",
-            "user"     : "root",
-            "password" : "",
-            "database" : "ghost"
+            "host": "eu-brand-hub-dev.cb8vrdblj7t1.us-east-1.rds.amazonaws.com",
+            "user": "admin",
+            "password": "buARzWFxvGmG8yOxq79t",
+            "database":"eu-brand-hub-dev-initial"
+        },
+        "debug": false
+    },
+    "mail": {
+        "transport": "SMTP",
+        "options": {
+            "service": "Mailgun",
+            "host": "smtp.eu.mailgun.org",
+            "port": 465,
+            "secureConnection": true,
+            "auth": {
+                "user": "noreply@mg.hyperboliq.com",
+                "pass": "8d8a7094cb8035bcb05c849fb21d30e6-5d2b1caa-d316631f"
+            }
         }
     },
     "paths": {
