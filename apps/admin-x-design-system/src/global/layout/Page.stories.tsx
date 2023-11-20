@@ -11,7 +11,6 @@ import DynamicTable from '../table/DynamicTable';
 import Hint from '../Hint';
 import Heading from '../Heading';
 import {tableRowHoverBgClasses} from '../TableRow';
-import Icon from '../Icon';
 import Breadcrumbs from '../Breadcrumbs';
 import Avatar from '../Avatar';
 import Button from '../Button';
