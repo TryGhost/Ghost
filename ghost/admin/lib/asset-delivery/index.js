@@ -63,11 +63,21 @@ module.exports = {
         // copy the index.html file
         fs.copySync(`${results.directory}/index.html`, `${assetsOut}/index.html`, {overwrite: true, dereference: true});
 
-        // copy all the `/assets` files, except the `icons` folder
+        // get all the `/assets` files, except the `icons` folder
         const assets = walkSync(results.directory + '/assets', {
             ignore: ['icons']
         });
 
+        // loop over any sourcemaps and remove `assets/` key from each one
+        assets.filter((file) => file.endsWith('.map')).forEach((file) => {
+            const mapFilePath = `${results.directory}/assets/${file}`;
+            const mapFile = JSON.parse(fs.readFileSync(mapFilePath, 'utf8'));
+            // loop over the sources and remove `assets/` from each one
+            mapFile.sources = mapFile.sources.map((source) => source.replace('assets/', ''));
+            fs.writeFileSync(mapFilePath, JSON.stringify(mapFile));
+        });
+
+        // copy the assets to assetsOut
         assets.forEach(function (relativePath) {
             if (relativePath.slice(-1) === '/') { return; }
 

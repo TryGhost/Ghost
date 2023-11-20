@@ -1,28 +1,13 @@
-import Button, {ButtonProps} from '../../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import CurrencyField from '../../../../admin-x-ds/global/form/CurrencyField';
-import Form from '../../../../admin-x-ds/global/form/Form';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Icon from '../../../../admin-x-ds/global/Icon';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
-import Select from '../../../../admin-x-ds/global/form/Select';
-import SortableList from '../../../../admin-x-ds/global/SortableList';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
 import TierDetailPreview from './TierDetailPreview';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import URLTextField from '../../../../admin-x-ds/global/form/URLTextField';
-import useForm, {ErrorMessages} from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import useSortableIndexedList from '../../../../hooks/useSortableIndexedList';
-import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {Tier, useAddTier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
+import {Button, ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
+import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
-import {getSettingValues} from '../../../../api/settings';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'react-hot-toast';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
@@ -133,7 +118,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             const promptTitle = tier.active ? 'Archive tier' : 'Reactivate tier';
             const prompt = tier.active ? <>
                 <div className='mb-6'>Members will no longer be able to subscribe to <strong>{tier.name}</strong> and it will be removed from the list of available tiers in portal.</div>
-                <div>Existing members on this tier will remain unchanged.</div>
+                <div>Existing members on this tier will remain unchanged. Offers using this tier will be disabled.</div>
             </> : <>
                 <div className='mb-6'>Reactivating <strong>{tier.name}</strong> will re-enable it as an option in portal and allow new members to subscribe to this tier.</div>
                 <div>Existing members will remain unchanged.</div>

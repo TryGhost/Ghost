@@ -21,7 +21,7 @@
   ],
   "devDependencies": {
     "@tryghost/member-attribution": "0.0.0",
-    "@types/node-jose": "1.1.12",
+    "@types/node-jose": "1.1.13",
     "c8": "8.0.1",
     "jwk-to-pem": "2.0.5",
     "mocha": "10.2.0",
@@ -36,10 +36,10 @@
     "@tryghost/magic-link": "0.0.0",
     "@tryghost/member-events": "0.0.0",
     "@tryghost/members-payments": "0.0.0",
-    "@tryghost/nql": "0.11.0",
-    "@tryghost/tpl": "0.1.24",
-    "@tryghost/validator": "0.2.4",
-    "@types/jsonwebtoken": "9.0.4",
+    "@tryghost/nql": "0.12.0",
+    "@tryghost/tpl": "0.1.26",
+    "@tryghost/validator": "0.2.6",
+    "@types/jsonwebtoken": "9.0.5",
     "body-parser": "1.20.2",
     "bson-objectid": "2.0.4",
     "express": "4.18.2",
@@ -47,6 +47,7 @@
     "jsonwebtoken": "8.5.1",
     "lodash": "4.17.21",
     "moment": "2.29.4",
-    "node-jose": "2.2.0"
+    "node-jose": "2.2.0",
+    "uuid": "9.0.1"
   }
 }

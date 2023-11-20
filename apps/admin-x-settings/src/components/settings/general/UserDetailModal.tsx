@@ -1,30 +1,20 @@
 import ChangePasswordForm from './users/ChangePasswordForm';
-import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import EmailNotifications from './users/EmailNotifications';
-import Heading from '../../../admin-x-ds/global/Heading';
-import Icon from '../../../admin-x-ds/global/Icon';
-import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
-import LimitModal from '../../../admin-x-ds/global/modal/LimitModal';
-import Menu, {MenuItem} from '../../../admin-x-ds/global/Menu';
-import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ProfileBasics from './users/ProfileBasics';
 import ProfileDetails from './users/ProfileDetails';
 import React, {useCallback, useEffect} from 'react';
 import StaffToken from './users/StaffToken';
 import clsx from 'clsx';
-import useForm, {ErrorMessages} from '../../../hooks/useForm';
-import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
-import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
+import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {RoutingModalProps} from '../../providers/RoutingProvider';
-import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '../../../api/users';
-import {getImageUrl, useUploadImage} from '../../../api/images';
-import {getSettingValues} from '../../../api/settings';
-import {showToast} from '../../../admin-x-ds/global/Toast';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
@@ -149,16 +139,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const limiter = useLimiter();
 
     // Pintura integration
-    const {settings} = useGlobalData();
-    const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
-    const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
-
-    const editor = usePinturaEditor(
-        {config: {
-            jsUrl: pinturaJsUrl || '',
-            cssUrl: pinturaCssUrl || ''
-        }}
-    );
+    const editor = usePinturaEditor();
 
     const navigateOnClose = useCallback(() => {
         if (canAccessSettings(currentUser)) {

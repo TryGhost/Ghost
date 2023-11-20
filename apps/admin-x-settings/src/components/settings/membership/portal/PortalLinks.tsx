@@ -1,12 +1,7 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import List from '../../../../admin-x-ds/global/List';
-import ListItem from '../../../../admin-x-ds/global/ListItem';
-import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import React, {useEffect, useId, useState} from 'react';
-import Select from '../../../../admin-x-ds/global/form/Select';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import {getHomepageUrl} from '../../../../api/site';
-import {getPaidActiveTiers, useBrowseTiers} from '../../../../api/tiers';
+import {Button, List, ListItem, ModalPage, Select, TextField} from '@tryghost/admin-x-design-system';
+import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
+import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 interface PortalLinkPrefs {
@@ -27,12 +22,11 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
                     button.innerText = 'Copy';
                 }, 1000);
             }}/>}
-            hideActions
             separator
         >
-            <div className='flex w-full grow items-center gap-5 py-3'>
-                <label className='inline-block w-[240px] whitespace-nowrap' htmlFor={id}>{name}</label>
-                <TextField className='border-b-500 grow bg-transparent p-1 text-grey-700' id={id} value={value} disabled unstyled />
+            <div className='flex w-full grow flex-col py-3 lg:flex-row lg:items-center lg:gap-2'>
+                <label className='inline-block whitespace-nowrap lg:w-[180px] lg:min-w-[180px]' htmlFor={id}>{name}:</label>
+                <TextField className='border-b-500 grow bg-transparent py-1 text-grey-700 lg:p-1' id={id} value={value} disabled unstyled />
             </div>
         </ListItem>
     );
@@ -79,8 +73,8 @@ const PortalLinks: React.FC = () => {
                     hideActions
                     separator
                 >
-                    <div className='flex w-full items-center gap-5 py-2 pr-6'>
-                        <span className='inline-block w-[240px] shrink-0'>Tier</span>
+                    <div className='flex w-full items-center gap-2 py-2'>
+                        <span className='inline-block w-[180px] min-w-[180px] shrink-0'>Tier:</span>
                         <Select
                             options={tierOptions}
                             selectedOption={tierOptions.find(option => option.value === selectedTier)}

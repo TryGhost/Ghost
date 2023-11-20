@@ -1,16 +1,15 @@
-import Button from '../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
 import NewslettersList from './newsletters/NewslettersList';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {ReactNode, useEffect, useState} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import TabView from '../../../admin-x-ds/global/TabView';
-import useHandleError from '../../../utils/api/handleError';
+import TopLevelGroup from '../../TopLevelGroup';
 import useQueryParams from '../../../hooks/useQueryParams';
-import useRouting from '../../../hooks/useRouting';
-import {APIError} from '../../../utils/errors';
-import {useBrowseNewsletters, useVerifyNewsletterEmail} from '../../../api/newsletters';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {APIError} from '@tryghost/admin-x-framework/errors';
+import {Button, ConfirmationModal, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {InfiniteData, useQueryClient} from '@tryghost/admin-x-framework';
+import {Newsletter, NewslettersResponseType, newslettersDataType, useBrowseNewsletters, useEditNewsletter, useVerifyNewsletterEmail} from '@tryghost/admin-x-framework/api/newsletters';
+import {arrayMove} from '@dnd-kit/sortable';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const NavigateToNewsletter = ({id, children}: {id: string; children: ReactNode}) => {
     const modal = useModal();
@@ -28,11 +27,19 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateRoute('newsletters/new');
     };
     const [selectedTab, setSelectedTab] = useState('active-newsletters');
-    const {data: {newsletters, meta, isEnd} = {}, fetchNextPage} = useBrowseNewsletters();
+    const {data: {newsletters: apiNewsletters, meta, isEnd} = {}, fetchNextPage} = useBrowseNewsletters();
+    const {mutateAsync: editNewsletter} = useEditNewsletter();
+    const queryClient = useQueryClient();
 
     const verifyEmailToken = useQueryParams().getParam('verifyEmail');
     const {mutateAsync: verifyEmail} = useVerifyNewsletterEmail();
     const handleError = useHandleError();
+
+    const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
+
+    useEffect(() => {
+        setNewsletters(apiNewsletters || []);
+    }, [apiNewsletters]);
 
     useEffect(() => {
         if (!verifyEmailToken) {
@@ -75,21 +82,60 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }} />
     );
 
+    const sortedActiveNewsletters = newsletters.filter(n => n.status === 'active').sort((a, b) => a.sort_order - b.sort_order) || [];
+    const archivedNewsletters = newsletters.filter(newsletter => newsletter.status !== 'active');
+
+    const onSort = async (id: string, overId?: string) => {
+        const fromIndex = sortedActiveNewsletters.findIndex(newsletter => newsletter.id === id);
+        const toIndex = sortedActiveNewsletters.findIndex(newsletter => newsletter.id === overId) || 0;
+        const newSortOrder = arrayMove(sortedActiveNewsletters, fromIndex, toIndex);
+
+        const updatedActiveNewsletters = newSortOrder.map((newsletter, index) => (
+            newsletter.sort_order === index ? null : {...newsletter, sort_order: index}
+        )).filter((newsletter): newsletter is Newsletter => !!newsletter);
+
+        const updatedArchivedNewsletters = archivedNewsletters.map((newsletter, index) => (
+            newsletter.sort_order === index + sortedActiveNewsletters.length ? null : {...newsletter, sort_order: index}
+        )).filter((newsletter): newsletter is Newsletter => !!newsletter);
+
+        const orderUpdatedNewsletters = [...updatedActiveNewsletters, ...updatedArchivedNewsletters].sort((a, b) => a.sort_order - b.sort_order);
+
+        // Set the new order in local state and cache first so that the UI updates immediately
+        setNewsletters(newsletters.map(newsletter => orderUpdatedNewsletters.find(n => n.id === newsletter.id) || newsletter));
+        queryClient.setQueriesData<InfiniteData<NewslettersResponseType>>([newslettersDataType], (currentData) => {
+            if (!currentData) {
+                return;
+            }
+
+            return {
+                ...currentData,
+                pages: currentData.pages.map(page => ({
+                    ...page,
+                    newsletters: page.newsletters.map(newsletter => orderUpdatedNewsletters.find(n => n.id === newsletter.id) || newsletter)
+                }))
+            };
+        });
+
+        for (const newsletter of orderUpdatedNewsletters) {
+            await editNewsletter(newsletter);
+        }
+    };
+
     const tabs = [
         {
             id: 'active-newsletters',
             title: 'Active',
-            contents: (<NewslettersList newsletters={newsletters?.filter(newsletter => newsletter.status === 'active') || []} />)
+            contents: (<NewslettersList newsletters={sortedActiveNewsletters} isSortable onSort={onSort} />)
         },
         {
             id: 'archived-newsletters',
             title: 'Archived',
-            contents: (<NewslettersList newsletters={newsletters?.filter(newsletter => newsletter.status !== 'active') || []} />)
+            contents: (<NewslettersList newsletters={archivedNewsletters} />)
         }
     ];
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={buttons}
             keywords={keywords}
             navid='newsletters'
@@ -102,7 +148,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 link
                 onClick={() => fetchNextPage()}
             />}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

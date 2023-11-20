@@ -1,14 +1,11 @@
-import MultiSelect, {MultiSelectOption} from '../../../admin-x-ds/global/form/MultiSelect';
 import React, {useState} from 'react';
-import Select from '../../../admin-x-ds/global/form/Select';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import TopLevelGroup from '../../TopLevelGroup';
 import useDefaultRecipientsOptions from './useDefaultRecipientsOptions';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {MultiSelect, MultiSelectOption, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {MultiValue} from 'react-select';
 import {getOptionLabel} from '../../../utils/helpers';
-import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 type RefipientValueArgs = {
     defaultEmailRecipients: string;
@@ -145,7 +142,6 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     title='Filter'
                     values={selectedSegments}
                     async
-                    clearBg
                     defaultOptions
                     onChange={updateSelectedSegments}
                 />
@@ -154,7 +150,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='When you publish new content, who do you usually want to send it to?'
             isEditing={isEditing}
             keywords={keywords}
@@ -167,7 +163,7 @@ const DefaultRecipients: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? form : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

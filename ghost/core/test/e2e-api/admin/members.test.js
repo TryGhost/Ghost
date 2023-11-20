@@ -66,6 +66,16 @@ async function getNewsletters() {
     return (await models.Newsletter.findAll({filter: 'status:active'})).models;
 }
 
+async function createMember(data) {
+    const member = await models.Member.add({
+        name: '',
+        email_disabled: false,
+        ...data
+    });
+
+    return member;
+}
+
 const newsletterSnapshot = {
     id: anyObjectId
 };
@@ -2095,6 +2105,73 @@ describe('Members API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             });
+    });
+
+    describe('email_disabled', function () {
+        const testMemberId = '6543c13c13575e086a06b222';
+        const suppressedEmail = 'suppressed@email.com';
+        const okEmail = 'ok@email.com';
+
+        let testMember;
+        let suppression;
+
+        beforeEach(async function () {
+            testMember = await models.Member.add({id: testMemberId, email: okEmail, name: 'Test Member 123', email_disabled: false});
+            suppression = await models.Suppression.add({
+                email: suppressedEmail,
+                reason: 'bounce'
+            });
+        });
+
+        afterEach(async function () {
+            // Delete member & suppression
+            await models.Member.destroy({id: testMember.id});
+            await models.Suppression.destroy({id: suppression.id});
+        });
+
+        it('Updates the email_disabled field when a member email is updated', async function () {
+            // Now update the email address of the test member to suppressed email
+            await agent
+                .put(`/members/${testMember.id}/`)
+                .body({members: [{email: suppressedEmail}]})
+                .expectStatus(200);
+
+            // email_disabled should be true
+            await testMember.refresh();
+            should(testMember.get('email_disabled')).be.true();
+
+            // Now update the email address of that member to a non-suppressed email
+            await agent
+                .put(`/members/${testMember.id}/`)
+                .body({members: [{email: okEmail}]})
+                .expectStatus(200);
+
+            // email_disabled should be false
+            await testMember.refresh();
+            should(testMember.get('email_disabled')).be.false();
+        });
+    });
+
+    // Log out
+    it('Can log out', async function () {
+        const member = await createMember({
+            name: 'test',
+            email: 'member-log-out-test@test.com'
+        });
+
+        const startTransientId = member.get('transient_id');
+
+        await agent
+            .delete(`/members/${member.id}/sessions/`)
+            .expectStatus(204)
+            .matchBodySnapshot()
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        await member.refresh();
+        assert.notEqual(member.get('transient_id'), startTransientId, 'The transient_id should have changed');
     });
 
     // Delete a member

@@ -34,6 +34,7 @@ const externalPlugin = ({externals}: { externals: Record<string, string> }): Plu
 // https://vitejs.dev/config/
 export default (function viteConfig() {
     return defineConfig({
+        logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
             svgr(),
             react(),
@@ -54,6 +55,7 @@ export default (function viteConfig() {
             port: 4174
         },
         build: {
+            reportCompressedSize: false,
             minify: true,
             sourcemap: true,
             lib: {

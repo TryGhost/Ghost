@@ -1,11 +1,9 @@
 import React, {useState} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/form/TextField';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {facebookHandleToUrl, facebookUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
-import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -103,7 +101,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Link your social accounts for full structured data and rich card support'
             isEditing={isEditing}
             keywords={keywords}
@@ -141,7 +139,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
             }}
         >
             {isEditing ? inputs : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

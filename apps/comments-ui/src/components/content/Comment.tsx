@@ -140,7 +140,7 @@ const MemberExpertise: React.FC<{comment: Comment}> = ({comment}) => {
     }
 
     return (
-        <span>{memberExpertise}<span className="mx-[0.3em]">·</span></span>
+        <span className="[overflow-wrap:anywhere]">{memberExpertise}<span className="mx-[0.3em]">·</span></span>
     );
 };
 
@@ -225,7 +225,7 @@ const CommentBody: React.FC<{html: string}> = ({html}) => {
     const dangerouslySetInnerHTML = {__html: html};
     return (
         <div className="mt mb-2 flex flex-row items-center gap-4 pr-4">
-            <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content font-sans text-[16px] leading-normal text-neutral-900 dark:text-[rgba(255,255,255,0.85)]" data-testid="comment-content"/>
+            <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content font-sans text-[16px] leading-normal text-neutral-900 [overflow-wrap:anywhere] dark:text-[rgba(255,255,255,0.85)]" data-testid="comment-content"/>
         </div>
     );
 };

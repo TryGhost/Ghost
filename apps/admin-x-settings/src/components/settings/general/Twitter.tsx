@@ -1,15 +1,11 @@
-import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/form/TextField';
-import useHandleError from '../../../utils/api/handleError';
+import TopLevelGroup from '../../TopLevelGroup';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as TwitterLogo} from '../../../admin-x-ds/assets/images/x-logo.svg';
-import {getImageUrl, useUploadImage} from '../../../api/images';
-import {getSettingValues} from '../../../api/settings';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {ImageUpload, SettingGroupContent, TextField, XLogo, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -26,15 +22,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const {mutateAsync: uploadImage} = useUploadImage();
 
-    const [pinturaJsUrl] = getSettingValues<string>(localSettings, ['pintura_js_url']);
-    const [pinturaCssUrl] = getSettingValues<string>(localSettings, ['pintura_css_url']);
-
-    const editor = usePinturaEditor(
-        {config: {
-            jsUrl: pinturaJsUrl || '',
-            cssUrl: pinturaCssUrl || ''
-        }}
-    );
+    const editor = usePinturaEditor();
 
     const [
         twitterTitle, twitterDescription, twitterImage, siteTitle, siteDescription
@@ -68,7 +56,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const inputFields = (
         <div className="flex flex-col gap-3 md:flex-row">
             <div className="pt-1">
-                <TwitterLogo className='-mb-1 h-10 w-10' />
+                <XLogo className='-mb-1 h-10 w-10' />
             </div>
             <div className="w-full md:mr-[52px]">
                 <div className="mb-2">
@@ -121,7 +109,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Customize structured data of your site for X (formerly Twitter)'
             isEditing={isEditing}
             keywords={keywords}
@@ -135,7 +123,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             {values}
             {isEditing ? inputFields : null}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

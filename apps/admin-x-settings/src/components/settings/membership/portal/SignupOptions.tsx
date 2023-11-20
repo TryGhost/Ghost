@@ -1,11 +1,7 @@
-import CheckboxGroup from '../../../../admin-x-ds/global/form/CheckboxGroup';
-import Form from '../../../../admin-x-ds/global/form/Form';
-import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
 import React, {useCallback, useEffect, useMemo} from 'react';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import {CheckboxProps} from '../../../../admin-x-ds/global/form/Checkbox';
-import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '../../../../api/settings';
-import {Tier, getPaidActiveTiers} from '../../../../api/tiers';
+import {CheckboxGroup, CheckboxProps, Form, HtmlField, Toggle} from '@tryghost/admin-x-design-system';
+import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {Tier, getPaidActiveTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const SignupOptions: React.FC<{
