@@ -115,13 +115,13 @@ const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, externalNavi
         if (newPath === route) {
             // No change
         } else if (newPath) {
-            window.location.hash = `/settings/${newPath}`;
+            window.location.hash = `/${basePath}/${newPath}`;
         } else {
-            window.location.hash = `/settings`;
+            window.location.hash = `/${basePath}`;
         }
 
         eventTarget.dispatchEvent(new CustomEvent('routeChange', {detail: {newPath, oldPath: route}}));
-    }, [eventTarget, externalNavigate, route]);
+    }, [basePath, eventTarget, externalNavigate, route]);
 
     useEffect(() => {
         // Preload all the modals after initial render to avoid a delay when opening them

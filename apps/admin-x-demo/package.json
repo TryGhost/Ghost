@@ -1,0 +1,54 @@
+{
+  "name": "@tryghost/admin-x-demo",
+  "version": "0.0.20",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TryGhost/Ghost/tree/main/apps/admin-x-demo"
+  },
+  "author": "Ghost Foundation",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist/"
+  ],
+  "type": "module",
+  "main": "./dist/admin-x-demo.umd.cjs",
+  "module": "./dist/admin-x-demo.js",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "dev": "vite build --watch",
+    "dev:start": "vite",
+    "build": "tsc && vite build",
+    "lint": "yarn run lint:js",
+    "lint:js": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@tryghost/admin-x-design-system": "0.0.0",
+    "@tryghost/admin-x-framework": "0.0.0",
+    "@types/react": "18.2.37",
+    "@types/react-dom": "18.2.15",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "build",
+          {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
+        ]
+      },
+      "test:acceptance": {
+        "dependsOn": [
+          "test:acceptance",
+          {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
+        ]
+      }
+    }
+  }
+}
