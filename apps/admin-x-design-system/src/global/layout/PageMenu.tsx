@@ -1,9 +1,11 @@
 import React from 'react';
-import Icon from '../Icon';
+import Button from '../Button';
 
 const PageMenu: React.FC = () => {
     return (
-        <Icon colorClass='text-black' name='hamburger' />
+        <Button icon='hamburger' iconColorClass='text-black' size='sm' link onClick={() => {
+            alert('Clicked on hamburger');
+        }} />
     );
 };
 
