@@ -9,6 +9,7 @@ import {testColumns, testRows} from '../table/DynamicTable.stories';
 import {exampleActions as exampleActionButtons} from './ViewContainer.stories';
 import DynamicTable from '../table/DynamicTable';
 import Hint from '../Hint';
+import Heading from '../Heading';
 
 const meta = {
     title: 'Global / Layout / Page',
@@ -180,7 +181,7 @@ export const ExamplePrimaryAction: Story = {
     }
 };
 
-const exampleActions = <ViewContainer
+const exampleActionsContent = <ViewContainer
     actions={exampleActionButtons}
     primaryAction={{
         title: 'Add member',
@@ -211,6 +212,57 @@ export const ExampleActions: Story = {
         pageTabs: pageTabs,
         showPageMenu: true,
         showGlobalActions: true,
-        children: exampleActions
+        children: exampleActionsContent
+    }
+};
+
+const mockIdeaCards = () => {
+    const cards = [];
+
+    for (let i = 0; i < 11; i++) {
+        cards.push(
+            <div className='min-h-[30vh] rounded-sm bg-grey-100 p-7 transition-all hover:bg-grey-200'>
+                <Heading level={5}>
+                    {i % 3 === 0 && 'Sunset drinks cruise eat sleep repeat'}
+                    {i % 3 === 1 && 'Elegance Rolls Royce on my private jet'}
+                    {i % 3 === 2 && 'Down to the wire Bathurst 5000 Le Tour'}
+                </Heading>
+                <div className='mt-4'>
+                    {i % 3 === 0 && 'Numea captain’s table crystal waters paradise island the scenic route great adventure. Pirate speak the road less travelled seas the day '}
+                    {i % 3 === 1 && 'Another day in paradise cruise life adventure bound gap year cruise time languid afternoons let the sea set you free'}
+                    {i % 3 === 2 && <span className='text-grey-500'>No body text</span>}
+                </div>
+            </div>
+        );
+    }
+    return cards;
+};
+
+const exampleCardViewContent = (
+    <ViewContainer
+        actions={exampleActionButtons}
+        primaryAction={{
+            title: 'New idea',
+            icon: 'add'
+        }}
+        title='Ideas'
+        type='page'
+    >
+        <div className='grid grid-cols-4 gap-7 py-7'>
+            {mockIdeaCards()}
+        </div>
+    </ViewContainer>
+);
+
+export const ExampleCardView: Story = {
+    parameters: {
+        layout: 'fullscreen'
+    },
+    name: 'Example: Card View',
+    args: {
+        pageTabs: pageTabs,
+        showPageMenu: true,
+        showGlobalActions: true,
+        children: exampleCardViewContent
     }
 };
