@@ -48,7 +48,8 @@ const ALPHA_FEATURES = [
     'editorEmojiPicker',
     'adminXOffers',
     'filterEmailDisabled',
-    'adminXDemo'
+    'adminXDemo',
+    'tkReminders'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
