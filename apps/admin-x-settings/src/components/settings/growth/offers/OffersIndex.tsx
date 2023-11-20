@@ -131,7 +131,6 @@ export const OffersIndexModal = () => {
         }
     });
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
-    const paidActiveTiers = getPaidActiveTiers(allTiers || []);
     const activeOffers = allOffers.filter(offer => offer.status === 'active');
 
     useEffect(() => {
@@ -210,8 +209,13 @@ export const OffersIndexModal = () => {
             <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Redemptions</th>
             <th className='min-w-[80px] px-5 py-2.5 pr-0 text-xs font-normal text-grey-700'></th>
         </tr>
-        {sortedOffers.filter(offer => offer.status === selectedTab).map((offer) => {
-            const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
+        {sortedOffers.filter((offer) => {
+            const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+            //Check to filter out offers with archived offerTier
+            return (selectedTab === 'active' && (offer.status === selectedTab && offerTier && offerTier.active === true)) ||
+            (selectedTab === 'archived' && (offer.status === selectedTab || (offerTier && offerTier.active === false)));
+        }).map((offer) => {
+            const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
 
             if (!offerTier) {
                 return null;
