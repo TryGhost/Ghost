@@ -87,7 +87,17 @@ module.exports.prepareError = (err, req, res, next) => {
                 message: err.message,
                 statusCode: err.statusCode
             });
-        // For everything else, create a generic 500 error, with context set to the original error message
+        // Catch database errors and turn them into 500 errors, but log some useful data to sentry
+        } else if (isDependencyInStack('mysql2', err)) {
+            // we don't want to return raw database errors to our users
+            err.sqlErrorCode = err.code;
+            err = new errors.InternalServerError({
+                err: err,
+                message: tpl(messages.genericError),
+                statusCode: err.statusCode,
+                code: 'UNEXPECTED_ERROR'
+            });
+        // For everything else, create a generic 500 error, with context set to the original error message        
         } else {
             err = new errors.InternalServerError({
                 err: err,

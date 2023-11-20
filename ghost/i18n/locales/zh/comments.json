@@ -5,6 +5,7 @@
     "{{amount}} hours ago": "{{amount}}小时前",
     "{{amount}} minutes ago": "{{amount}}分钟前",
     "{{amount}} months ago": "{{amount}}个月前",
+    "{{amount}} more": "",
     "{{amount}} seconds ago": "{{amount}}秒前",
     "{{amount}} weeks ago": "{{amount}}周前",
     "{{amount}} years ago": "{{amount}}年前",

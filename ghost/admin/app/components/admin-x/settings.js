@@ -279,6 +279,7 @@ const fetchSettings = function () {
 const emberDataTypeMapping = {
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
+    OffersResponseType: {type: 'offer'},
     NewslettersResponseType: {type: 'newsletter'},
     RecommendationResponseType: {type: 'recommendation'},
     SettingsResponseType: {type: 'setting', singleton: true},
@@ -310,11 +311,7 @@ export default class AdminXSettings extends Component {
         console.error(error); // eslint-disable-line
 
         if (this.config.sentry_dsn) {
-            Sentry.captureException(error, {
-                tags: {
-                    adminx: true
-                }
-            });
+            Sentry.captureException(error);
         }
 
         // don't rethrow, app should attempt to gracefully recover
@@ -437,7 +434,7 @@ export default class AdminXSettings extends Component {
                             externalNavigate={this.externalNavigate}
                             darkMode={this.feature.nightShift}
                             unsplashConfig={defaultUnsplashHeaders}
-                            sentry={this.config.sentry_dsn ? Sentry : undefined}
+                            sentryDSN={this.config.sentry_dsn ?? null}
                             fetchKoenigLexical={fetchKoenigLexical}
                             onUpdate={this.onUpdate}
                             onInvalidate={this.onInvalidate}

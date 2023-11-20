@@ -99,10 +99,6 @@ module.exports = {
                     && imageTransform.shouldResizeFileExtension(ext)
                     && typeof storage.getStorage('images').saveRaw === 'function';
             },
-            createDocument() {
-                const {JSDOM} = require('jsdom');
-                return (new JSDOM()).window.document;
-            },
             getCollectionPosts
         }, userOptions);
 
@@ -143,7 +139,17 @@ module.exports = {
 
     get htmlToLexicalConverter() {
         try {
-            return require('@tryghost/kg-html-to-lexical').htmlToLexical;
+            if (process.env.CI) {
+                console.time('require @tryghost/kg-html-to-lexical'); // eslint-disable-line no-console
+            }
+
+            const htmlToLexical = require('@tryghost/kg-html-to-lexical').htmlToLexical;
+
+            if (process.env.CI) {
+                console.timeEnd('require @tryghost/kg-html-to-lexical'); // eslint-disable-line no-console
+            }
+
+            return htmlToLexical;
         } catch (err) {
             throw new errors.InternalServerError({
                 message: 'Unable to convert from source HTML to Lexical',

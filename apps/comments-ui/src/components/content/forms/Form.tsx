@@ -8,7 +8,7 @@ import {Transition} from '@headlessui/react';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {usePopupOpen} from '../../../utils/hooks';
 
-type Progress = 'default' | 'sending' | 'sent' | 'error'
+type Progress = 'default' | 'sending' | 'sent' | 'error';
 export type SubmitSize = 'small' | 'medium' | 'large';
 type FormEditorProps = {
     submit: (data: {html: string}) => Promise<void>;

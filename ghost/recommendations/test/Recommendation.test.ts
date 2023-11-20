@@ -173,6 +173,30 @@ describe('Recommendation', function () {
             assert.notEqual(recommendation.updatedAt, null);
         });
 
+        it('does not change updatedAt if nothing changed', function () {
+            const recommendation = Recommendation.create({
+                title: 'Test',
+                description: null,
+                excerpt: null,
+                featuredImage: null,
+                favicon: null,
+                url: 'https://example.com',
+                oneClickSubscribe: false,
+                createdAt: new Date('2021-01-01T00:00:05Z'),
+                updatedAt: null
+            });
+            assert.equal(recommendation.updatedAt, null);
+
+            recommendation.edit({
+                title: 'Test',
+                url: undefined
+            } as any);
+
+            assert.equal(recommendation.title, 'Test');
+            assert.equal(recommendation.url.toString(), 'https://example.com/');
+            assert.equal(recommendation.updatedAt, null);
+        });
+
         it('can not edit unknown properties', function () {
             const recommendation = Recommendation.create({
                 title: 'Test',

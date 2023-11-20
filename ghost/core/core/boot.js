@@ -543,6 +543,11 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         // Step 7 - Init our background services, we don't wait for this to finish
         initBackgroundServices({config});
 
+        // If we pass the env var, kill Ghost
+        if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {
+            process.exit(0);
+        }
+
         // We return the server purely for testing purposes
         if (server) {
             debug('End Boot: Returning Ghost Server');

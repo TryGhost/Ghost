@@ -1,7 +1,7 @@
 import FeatureToggle from './FeatureToggle';
 import LabItem from './LabItem';
-import List from '../../../../admin-x-ds/global/List';
 import React from 'react';
+import {List} from '@tryghost/admin-x-design-system';
 
 const features = [{
     title: 'URL cache',
@@ -17,7 +17,7 @@ const features = [{
     flag: 'webmentions'
 },{
     title: 'Websockets',
-    description: 'Test out Websockets functionality at <code>/ghost/#/websockets</code>.',
+    description: <>Test out Websockets functionality at <code>/ghost/#/websockets</code>.</>,
     flag: 'websockets'
 },{
     title: 'Stripe Automatic Tax',
@@ -48,13 +48,13 @@ const features = [{
     description: 'Enables publishers to collect one-time payments',
     flag: 'tipsAndDonations'
 },{
-    title: 'Recommendations',
-    description: 'Enables publishers to recommend sites to their audience',
-    flag: 'recommendations'
+    title: 'AdminX Offers',
+    description: 'Enables the new offers UI in AdminX settings',
+    flag: 'adminXOffers'
 },{
-    title: 'List-Unsubscribe header',
-    description: 'Set the List-Unsubscribe header in emails',
-    flag: 'listUnsubscribeHeader'
+    title: 'Filter by email disabled',
+    description: 'Allows filtering members by email disabled',
+    flag: 'filterEmailDisabled'
 }];
 
 const AlphaFeatures: React.FC = () => {

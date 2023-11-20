@@ -368,14 +368,40 @@ class EmailRenderer {
             }, {base});
         }
 
+        // Record the original image width and height attributes before inlining the styles with juice
+        // If any images have `width: auto` or `height: auto` set via CSS, 
+        // juice will explicitly set the width/height attributes to `auto` on the <img /> tag
+        // This is not supported by Outlook, so we need to reset the width/height attributes to the original values
+        // Other clients will ignore the width/height attributes and use the inlined CSS instead
+        $ = cheerio.load(html);
+        const originalImageSizes = $('img').get().map((image) => {
+            const src = image.attribs.src;
+            const width = image.attribs.width;
+            const height = image.attribs.height;
+            return {src, width, height};
+        });
+
         // Juice HTML (inline CSS)
         const juice = require('juice');
-        juice.heightElements = ['TABLE', 'TD', 'TH'];
-        juice.widthElements = ['TABLE', 'TD', 'TH'];
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
         $ = cheerio.load(html);
+
+        // Reset any `height="auto"` or `width="auto"` attributes to their original values before inlining CSS
+        const imageTags = $('img').get();
+        for (let i = 0; i < imageTags.length; i += 1) {
+            // There shouldn't be any issues with consistency between these two lists, but just in case...
+            if (imageTags[i].attribs.src === originalImageSizes[i].src) {
+                // if the image width or height is set to 'auto', reset to its original value
+                if (imageTags[i].attribs.width === 'auto' && originalImageSizes[i].width) {
+                    imageTags[i].attribs.width = originalImageSizes[i].width;
+                }
+                if (imageTags[i].attribs.height === 'auto' && originalImageSizes[i].height) {
+                    imageTags[i].attribs.height = originalImageSizes[i].height;
+                }
+            }
+        }
 
         // force all links to open in new tab
         $('a').attr('target', '_blank');
@@ -445,29 +471,6 @@ class EmailRenderer {
         if (options.comments) {
             unsubscribeUrl.searchParams.set('comments', '1');
         }
-
-        return unsubscribeUrl.href;
-    }
-
-    /**
-     * This is identical to createUnsubscribeUrl, but used in the List-Unsubscribe header, and uses the POST method
-     * to unsubscribe automatically
-     */
-    createPostUnsubscribeUrl(uuid, options = {}) {
-        const siteUrl = 'https://ghost.org';
-        const unsubscribeUrl = new URL(siteUrl);
-        unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
-        if (uuid) {
-            unsubscribeUrl.searchParams.set('uuid', uuid);
-        } //else {
-        //  unsubscribeUrl.searchParams.set('preview', '1');
-        //}
-        if (options.newsletterUuid) {
-            unsubscribeUrl.searchParams.set('newsletter', options.newsletterUuid);
-        }
-        // if (options.comments) {
-        //     unsubscribeUrl.searchParams.set('comments', '1');
-        // }
 
         return unsubscribeUrl.href;
     }
@@ -650,7 +653,8 @@ class EmailRenderer {
                 {
                     id: 'list_unsubscribe',
                     getValue: (member) => {
-                        return '<' + this.createPostUnsubscribeUrl(member.uuid, {newsletterUuid}) + '>';
+                        // Same URL
+                        return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
                     },
                     required: true // Used in email headers
                 }

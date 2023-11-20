@@ -51,14 +51,14 @@ export const responseFixtures = {
 };
 
 let defaultLabFlags = {
-    recommendations: false,
     audienceFeedback: false,
     collections: false,
     themeErrorsNotification: false,
     outboundLinkTagging: false,
     announcementBar: false,
     signupForm: false,
-    members: false
+    members: false,
+    adminXOffers: false
 };
 
 // Inject defaultLabFlags into responseFixtures.settings and config
@@ -122,6 +122,13 @@ export const globalDataRequests = {
     browseSite: {method: 'GET', path: '/site/', response: responseFixtures.site},
     browseMe: {method: 'GET', path: '/users/me/?include=roles', response: responseFixtures.me}
 };
+
+export const settingsWithStripe = updatedSettingsResponse([
+    {key: 'stripe_connect_publishable_key', value: 'pk_test_123'},
+    {key: 'stripe_connect_secret_key', value: 'sk_test_123'},
+    {key: 'stripe_connect_display_name', value: 'Dummy'},
+    {key: 'stripe_connect_account_id', value: 'acct_123'}
+]);
 
 export const limitRequests = {
     browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
@@ -240,6 +247,6 @@ export async function testUrlValidation(input: Locator, textToEnter: string, exp
     expect(input).toHaveValue(expectedResult);
 
     if (expectedError) {
-        await expect(input.locator('xpath=..')).toContainText(expectedError);
+        await expect(input.locator('xpath=../..')).toContainText(expectedError);
     }
 };

@@ -1,16 +1,13 @@
-import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import Radio from '../../../admin-x-ds/global/form/Radio';
-import TextField from '../../../admin-x-ds/global/form/TextField';
-import useHandleError from '../../../utils/api/handleError';
-import useRouting from '../../../hooks/useRouting';
 import validator from 'validator';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {showToast} from '../../../admin-x-ds/global/Toast';
-import {useAddInvite, useBrowseInvites} from '../../../api/invites';
-import {useBrowseRoles} from '../../../api/roles';
-import {useBrowseUsers} from '../../../api/users';
+import {Modal, Radio, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
+import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
+import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useEffect, useRef, useState} from 'react';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';
 
@@ -179,9 +176,9 @@ const InviteUserModal = NiceModal.create(() => {
             }}
             cancelLabel=''
             okLabel={okLabel}
-            size={540}
             testId='invite-user-modal'
             title='Invite a new staff user'
+            width={540}
             onOk={handleSendInvitation}
         >
             <div className='flex flex-col gap-6 py-4'>
@@ -189,7 +186,6 @@ const InviteUserModal = NiceModal.create(() => {
                     Send an invitation for a new person to create a staff account on your site, and select a role that matches what you’d like them to be able to do.
                 </p>
                 <TextField
-                    clearBg={true}
                     error={!!errors.email}
                     hint={errors.email}
                     inputRef={focusRef}

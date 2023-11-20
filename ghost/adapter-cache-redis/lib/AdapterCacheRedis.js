@@ -1,5 +1,7 @@
 const BaseCacheAdapter = require('@tryghost/adapter-base-cache');
 const logging = require('@tryghost/logging');
+const metrics = require('@tryghost/metrics');
+const debug = require('@tryghost/debug')('redis-cache');
 const cacheManager = require('cache-manager');
 const redisStoreFactory = require('./redis-store-factory');
 const calculateSlot = require('cluster-key-slot');
@@ -13,6 +15,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {Number} [config.port] - redis port used in case no cache instance provided
      * @param {String} [config.password] - redis password used in case no cache instance provided
      * @param {Object} [config.clusterConfig] - redis cluster config used in case no cache instance provided
+     * @param {Object} [config.storeConfig] - extra redis client config used in case no cache instance provided
      * @param {Number} [config.ttl] - default cached value Time To Live (expiration) in *seconds*
      * @param {String} [config.keyPrefix] - prefix to use when building a unique cache key, e.g.: 'some_id:image-sizes:'
      * @param {Boolean} [config.reuseConnection] - specifies if the redis store/connection should be reused within the process
@@ -38,7 +41,9 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 ttl: config.ttl,
                 host: config.host,
                 port: config.port,
+                username: config.username,
                 password: config.password,
+                ...config.storeConfig,
                 clusterConfig: config.clusterConfig
             };
             const store = redisStoreFactory.getRedisStore(storeOptions, config.reuseConnection);
@@ -60,6 +65,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     }
 
     #getPrimaryRedisNode() {
+        debug('getPrimaryRedisNode');
         if (this.redisClient.constructor.name !== 'Cluster') {
             return this.redisClient;
         }
@@ -74,6 +80,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     }
 
     #scanNodeForKeys(node) {
+        debug(`scanNodeForKeys matching ${this._keysPattern}`);
         return new Promise((resolve, reject) => {
             const stream = node.scanStream({match: this._keysPattern, count: 100});
             let keys = [];
@@ -90,6 +97,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     }
 
     async #getKeys() {
+        debug('#getKeys');
         const primaryNode = this.#getPrimaryRedisNode();
         if (primaryNode === null) {
             return [];
@@ -139,6 +147,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {*} value
      */
     async set(key, value) {
+        debug('set', key);
         try {
             return await this.cache.set(this._buildKey(key), value);
         } catch (err) {
@@ -150,11 +159,21 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * Reset the cache by deleting everything from redis
      */
     async reset() {
+        debug('reset');
         try {
+            const t0 = performance.now();
+            logging.debug(`[RedisAdapter] Clearing cache: scanning for keys matching ${this._keysPattern}`);
             const keys = await this.#getKeys();
+            logging.debug(`[RedisAdapter] Clearing cache: found ${keys.length} keys matching ${this._keysPattern} in ${(performance.now() - t0).toFixed(1)}ms`);
+            metrics.metric('cache-reset-scan', (performance.now() - t0).toFixed(1));
+            const t1 = performance.now();
             for (const key of keys) {
                 await this.cache.del(key);
             }
+            logging.debug(`[RedisAdapter] Clearing cache: deleted ${keys.length} keys matching ${this._keysPattern} in ${(performance.now() - t1).toFixed(1)}ms`);
+            metrics.metric('cache-reset-delete', (performance.now() - t1).toFixed(1));
+            metrics.metric('cache-reset', (performance.now() - t0).toFixed(1));
+            metrics.metric('cache-reset-key-count', keys.length);
         } catch (err) {
             logging.error(err);
         }

@@ -1,13 +1,11 @@
 import CustomHeader from './CustomHeader';
 import RoleSelector from './RoleSelector';
-import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
+import {SettingGroup, SettingGroupContent, TextField} from '@tryghost/admin-x-design-system';
 import {UserDetailProps} from '../UserDetailModal';
-import {hasAdminAccess} from '../../../../api/users';
+import {hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
-const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, clearError, user, setUserData}) => {
+const BasicInputs: React.FC<UserDetailProps> = ({errors, validateField, clearError, user, setUserData}) => {
     const {currentUser} = useGlobalData();
 
     return (
@@ -18,7 +16,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, clearError,
                 title="Full name"
                 value={user.name}
                 onBlur={(e) => {
-                    validators.name({name: e.target.value});
+                    validateField('name', e.target.value);
                 }}
                 onChange={(e) => {
                     setUserData({...user, name: e.target.value});
@@ -31,7 +29,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, clearError,
                 title="Email"
                 value={user.email}
                 onBlur={(e) => {
-                    validators.email({email: e.target.value});
+                    validateField('email', e.target.value);
                 }}
                 onChange={(e) => {
                     setUserData({...user, email: e.target.value});

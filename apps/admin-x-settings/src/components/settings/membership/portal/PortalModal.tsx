@@ -1,21 +1,18 @@
 import AccountPage from './AccountPage';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import LookAndFeel from './LookAndFeel';
 import NiceModal from '@ebay/nice-modal-react';
 import PortalPreview from './PortalPreview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './SignupOptions';
-import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
-import useForm, {Dirtyable} from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
 import useQueryParams from '../../../../hooks/useQueryParams';
-import useRouting from '../../../../hooks/useRouting';
-import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
-import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../../api/settings';
-import {Tier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
-import {fullEmailAddress} from '../../../../api/site';
+import {ConfirmationModal, PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {Setting, SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
+import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {verifyEmailToken} from '../../../../api/emailVerification';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {verifyEmailToken} from '@tryghost/admin-x-framework/api/emailVerification';
 
 const Sidebar: React.FC<{
     localSettings: Setting[]
@@ -115,11 +112,13 @@ const PortalModal: React.FC = () => {
         }
     }, [handleError, verifyEmail, verifyToken]);
 
-    const {formState, setFormState, saveState, handleSave, updateForm} = useForm({
+    const {formState, setFormState, saveState, handleSave, updateForm, okProps} = useForm({
         initialState: {
             settings: settings as Dirtyable<Setting>[],
             tiers: allTiers as Dirtyable<Tier>[] || []
         },
+
+        savingDelay: 500,
 
         onSave: async () => {
             await Promise.all(formState.tiers.filter(({dirty}) => dirty).map(tier => editTier(tier)));
@@ -204,22 +203,17 @@ const PortalModal: React.FC = () => {
         {id: 'account', title: 'Account page'},
         {id: 'links', title: 'Links'}
     ];
-    let okLabel = 'Save';
-    if (saveState === 'saving') {
-        okLabel = 'Saving...';
-    } else if (saveState === 'saved') {
-        okLabel = 'Saved';
-    }
 
     return <PreviewModalContent
         afterClose={() => {
             updateRoute('portal');
         }}
+        buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
-        okColor={saveState === 'saved' ? 'green' : 'black'}
-        okLabel={okLabel}
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save'}
         preview={preview}
         previewBgColor={selectedPreviewTab === 'links' ? 'white' : 'greygradient'}
         previewToolbarTabs={previewTabs}

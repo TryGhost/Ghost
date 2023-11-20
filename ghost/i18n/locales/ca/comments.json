@@ -5,6 +5,7 @@
     "{{amount}} hours ago": "Fa {{amount}} hores",
     "{{amount}} minutes ago": "Fa {{amount}} minuts",
     "{{amount}} months ago": "Fa {{amount}} mesos",
+    "{{amount}} more": "",
     "{{amount}} seconds ago": "Fa {{amount}} segons",
     "{{amount}} weeks ago": "Fa {{amount}} setmanes",
     "{{amount}} years ago": "Fa {{amount}} anys",

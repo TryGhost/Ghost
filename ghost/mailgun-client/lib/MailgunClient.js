@@ -73,7 +73,7 @@ module.exports = class MailgunClient {
             // Do we have a custom List-Unsubscribe header set?
             // (we need a variable for this, as this is a per-email setting)
             if (Object.keys(recipientData)[0] && recipientData[Object.keys(recipientData)[0]].list_unsubscribe) {
-                messageData['h:List-Unsubscribe'] = '%recipient.list_unsubscribe%';
+                messageData['h:List-Unsubscribe'] = '<%recipient.list_unsubscribe%>, <%tag_unsubscribe_email%>';
                 messageData['h:List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
             }
 

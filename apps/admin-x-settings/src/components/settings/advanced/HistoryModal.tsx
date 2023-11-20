@@ -1,25 +1,11 @@
-import Avatar from '../../../admin-x-ds/global/Avatar';
-import Button from '../../../admin-x-ds/global/Button';
-import Icon from '../../../admin-x-ds/global/Icon';
-import InfiniteScrollListener from '../../../admin-x-ds/global/InfiniteScrollListener';
-import List from '../../../admin-x-ds/global/List';
-import ListItem from '../../../admin-x-ds/global/ListItem';
-import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
-import Popover from '../../../admin-x-ds/global/Popover';
-import Select, {SelectOption} from '../../../admin-x-ds/global/form/Select';
-import Toggle from '../../../admin-x-ds/global/form/Toggle';
-import ToggleGroup from '../../../admin-x-ds/global/form/ToggleGroup';
-import useFilterableApi from '../../../hooks/useFilterableApi';
-import useRouting from '../../../hooks/useRouting';
-import {Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '../../../api/actions';
-import {LoadOptions} from '../../../admin-x-ds/global/form/MultiSelect';
-import {RoutingModalProps} from '../../providers/RoutingProvider';
-import {User} from '../../../api/users';
-import {debounce} from '../../../utils/debounce';
+import {Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
+import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, LoadSelectOptions, Modal, NoValueLabel, Popover, Select, SelectOption, Toggle, ToggleGroup, debounce} from '@tryghost/admin-x-design-system';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {User} from '@tryghost/admin-x-framework/api/users';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {useCallback, useState} from 'react';
+import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 const HistoryIcon: React.FC<{action: Action}> = ({action}) => {
     let name = 'pen';
@@ -78,7 +64,7 @@ const HistoryFilter: React.FC<{
     const {updateRoute} = useRouting();
     const usersApi = useFilterableApi<User, 'users', 'name'>({path: '/users/', filterKey: 'name', responseKey: 'users'});
 
-    const loadOptions: LoadOptions = async (input, callback) => {
+    const loadOptions: LoadSelectOptions = async (input, callback) => {
         const users = await usersApi.loadData(input);
         callback(users.map(user => ({label: user.name, value: user.id})));
     };
