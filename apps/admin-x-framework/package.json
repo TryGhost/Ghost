@@ -64,7 +64,7 @@
     "typescript": "5.2.2"
   },
   "dependencies": {
-    "@sentry/react": "7.80.1",
+    "@sentry/react": "7.81.0",
     "@tanstack/react-query": "4.36.1",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@types/react": "18.2.37",
