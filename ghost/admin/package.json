@@ -180,6 +180,7 @@
           "build:dev",
           {
             "projects": [
+              "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings"
             ],
             "target": "build"
@@ -191,6 +192,7 @@
           "build",
           {
             "projects": [
+              "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings"
             ],
             "target": "build"
