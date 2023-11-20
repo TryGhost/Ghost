@@ -93,26 +93,26 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
                 );
             })}
         </>;
-    } else if (children) {
-        isSingleDynamicTable = React.Children.only(children) && React.isValidElement(children) && React.Children.only(children)?.type === DynamicTable;
-        if (isSingleDynamicTable) {
-            const dynTable = (children as React.ReactElement<DynamicTableProps>);
-            if (dynTable.props.stickyHeader || dynTable.props.stickyFooter) {
-                singleDynamicTableIsSticky = true;
-                children = isSingleDynamicTable
-                    ? React.cloneElement(dynTable, {
-                        ...(dynTable.props as DynamicTableProps),
-                        singlePageTable: true
-                    })
-                    : children;
-            }
+    } else if (React.isValidElement(children) && children.type === DynamicTable) {
+        isSingleDynamicTable = true;
+        const dynTable = (children as React.ReactElement<DynamicTableProps>);
+        if (dynTable.props.stickyHeader || dynTable.props.stickyFooter) {
+            singleDynamicTableIsSticky = true;
+            children = isSingleDynamicTable
+                ? React.cloneElement(dynTable, {
+                    ...(dynTable.props as DynamicTableProps),
+                    singlePageTable: true
+                })
+                : children;
         }
+        mainContent = children;
+    } else {
         mainContent = children;
     }
 
     toolbarWrapperClassName = clsx(
         'z-50',
-        type === 'page' && 'sticky top-18 mx-auto w-full max-w-7xl bg-white px-6 pt-[3vmin]',
+        type === 'page' && 'sticky top-18 mx-auto w-full max-w-7xl bg-white px-12 pt-[3vmin]',
         toolbarContainerClassName
     );
 
@@ -179,13 +179,14 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     contentWrapperClassName = clsx(
         'relative mx-auto w-full flex-auto',
-        !contentFullBleed && 'max-w-7xl px-6',
-        contentWrapperClassName
+        !contentFullBleed && 'max-w-7xl px-12',
+        contentWrapperClassName,
+        (!title && !actions) && 'pt-[3vmin]'
     );
 
     return (
         <section className={mainContainerClassName} id="viewContainer">
-            {toolbar}
+            {(title || actions) && toolbar}
             <div className={contentWrapperClassName}>
                 {mainContent}
             </div>

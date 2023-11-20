@@ -81,7 +81,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     tableContainerClassName = clsx(
         'flex-auto overflow-x-auto',
         !horizontalScrolling && 'w-full max-w-full',
-        (singlePageTable && (stickyHeader || stickyFooter || absolute)) && 'px-6 xl:px-[calc((100%-1280px)/2+24px)]',
+        (singlePageTable && (stickyHeader || stickyFooter || absolute)) && 'px-12 xl:px-[calc((100%-1280px)/2+48px)]',
         tableContainerClassName
     );
 
@@ -115,7 +115,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
 
     footerClassName = clsx(
         'bg-white',
-        (singlePageTable && stickyFooter) && 'mx-6 xl:mx-[calc((100%-1280px)/2+24px)]',
+        (singlePageTable && stickyFooter) && 'mx-12 xl:mx-[calc((100%-1280px)/2+48px)]',
         footer && 'py-3',
         stickyFooter && 'sticky inset-x-0 bottom-0',
         footerBorder && 'border-t border-grey-200',

@@ -12,6 +12,10 @@ import Hint from '../Hint';
 import Heading from '../Heading';
 import {tableRowHoverBgClasses} from '../TableRow';
 import Icon from '../Icon';
+import Breadcrumbs from '../Breadcrumbs';
+import Avatar from '../Avatar';
+import Button from '../Button';
+import {Toggle} from '../..';
 
 const meta = {
     title: 'Global / Layout / Page',
@@ -288,7 +292,7 @@ const mockPosts = () => {
                         <div className='truncate'>
                             {i % 3 === 0 && 'Numea captain’s table crystal waters paradise island the scenic route great adventure. Pirate speak the road less travelled seas the day '}
                             {i % 3 === 1 && 'Another day in paradise cruise life adventure bound gap year cruise time languid afternoons let the sea set you free'}
-                            {i % 3 === 2 && <span className='text-grey-500'>No body text</span>}
+                            {i % 3 === 2 && 'Grand Prix gamble responsibly intensity is not a perfume The Datsun 180B Aerial ping pong knock for six watch with the boys total hospital pass.'}
                         </div>
                     </div>
                 </div>
@@ -301,7 +305,7 @@ const mockPosts = () => {
                     opened
                 </div>
                 <div className='flex justify-end pr-7'>
-                    <Icon name='pen' size='sm' />
+                    <Icon name='ellipsis' />
                 </div>
             </div>
         );
@@ -335,5 +339,112 @@ export const ExampleAlternativeList: Story = {
         showPageMenu: true,
         showGlobalActions: true,
         children: examplePostsContent
+    }
+};
+
+export const ExampleDetailScreen: Story = {
+    parameters: {
+        layout: 'fullscreen'
+    },
+    name: 'Example: Detail Page',
+    args: {
+        showPageMenu: true,
+        breadCrumbs: <Breadcrumbs
+            items={[
+                {
+                    label: 'Members'
+                },
+                {
+                    label: 'Emerson Vaccaro'
+                }
+            ]}
+            backIcon
+        />,
+        showGlobalActions: true,
+        children: <>
+            <ViewContainer
+                toolbarBorder={false}
+                type='page'>
+                <div className='flex items-end justify-between gap-5 border-b border-grey-200 py-2'>
+                    <div>
+                        <Avatar bgColor='#A5D5F7' label='EV' labelColor='white' size='xl' />
+                        <Heading className='mt-2' level={1}>Emerson Vaccaro</Heading>
+                        <div className=''>Colombus, OH</div>
+                    </div>
+                    <div className='pb-2'>
+                        <Button color='outline' icon='ellipsis' />
+                    </div>
+                </div>
+                <div className='grid grid-cols-4 border-b border-grey-200 py-5'>
+                    <div className='-ml-5 flex h-full flex-col px-5'>
+                        <span>Last seen on <strong>22 June 2023</strong></span>
+                        <span className='mt-2'>Created on <strong>27 Jan 2021</strong></span>
+                    </div>
+                    <div className='flex h-full flex-col px-5'>
+                        <Heading level={6}>Emails received</Heading>
+                        <span className='mt-1 text-4xl font-bold leading-none'>181</span>
+                    </div>
+                    <div className='flex h-full flex-col px-5'>
+                        <Heading level={6}>Emails opened</Heading>
+                        <span className='mt-1 text-4xl font-bold leading-none'>104</span>
+                    </div>
+                    <div className='-mr-5 flex h-full flex-col px-5'>
+                        <Heading level={6}>Average open rate</Heading>
+                        <span className='mt-1 text-4xl font-bold leading-none'>57%</span>
+                    </div>
+                </div>
+                <div className='grid grid-cols-4 items-baseline py-5'>
+                    <div className='-ml-5 flex h-full flex-col gap-6 border-r border-grey-200 px-5'>
+                        <div className='flex justify-between'>
+                            <Heading level={5}>Member data</Heading>
+                            <Button color='green' label='Edit' link />
+                        </div>
+                        <div>
+                            <Heading level={6}>Name</Heading>
+                            <div>Emerson Vaccaro</div>
+                        </div>
+                        <div>
+                            <Heading level={6}>Email</Heading>
+                            <div>emerson@vaccaro.com</div>
+                        </div>
+                        <div>
+                            <Heading level={6}>Labels</Heading>
+                            <div className='inline-block rounded-sm bg-grey-300 px-1 text-xs font-medium'>VIP</div>
+                        </div>
+                    </div>
+                    <div className='flex h-full flex-col gap-6 border-r border-grey-200 px-5'>
+                        <Heading level={5}>Newsletters</Heading>
+                        <div className='flex flex-col gap-3'>
+                            <div className='flex items-center gap-2'>
+                                <Toggle />
+                                <span>Daily news</span>
+                            </div>
+                            <div className='flex items-center gap-2'>
+                                <Toggle />
+                                <span>Weekly roundup</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className='flex h-full flex-col gap-6 border-r border-grey-200 px-5'>
+                        <Heading level={5}>Subscriptions</Heading>
+                        <div className='flex flex-col'>
+                            <span className='font-semibold'>Gold &mdash; $12/month</span>
+                            <span className='text-sm text-grey-500'>Renews 21 Jan 2024</span>
+                        </div>
+                    </div>
+                    <div className='-mr-5 flex h-full flex-col gap-6 px-5'>
+                        <Heading level={5}>Activity</Heading>
+                        <div className='flex flex-col'>
+                            <span className='font-semibold'>Logged in</span>
+                            <span className='text-sm text-grey-500'>Renews 21 Jan 2024</span>
+                        </div>
+                        <div className='flex flex-col'>
+                            <span className='font-semibold'>Subscribed to Daily News</span>
+                            <span className='text-sm text-grey-500'>Renews 21 Jan 2024</span>
+                        </div>
+                    </div>
+                </div>
+            </ViewContainer>
+        </>
     }
 };

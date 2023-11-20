@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import PageMenu from './PageMenu';
 import GlobalActions from './GlobalActions';
 import Button from '../Button';
+import {BreadcrumbsProps} from '../Breadcrumbs';
 
 export interface PageTab {
     id: string;
@@ -20,6 +21,7 @@ interface PageToolbarProps {
     showPageMenu?: boolean;
     showGlobalActions?: boolean;
     customGlobalActions?: CustomGlobalAction[];
+    breadCrumbs?: React.ReactElement<BreadcrumbsProps>;
     pageTabs?: PageTab[],
     selectedTab?: string;
     onTabChange?: (id: string) => void;
@@ -31,6 +33,7 @@ const PageToolbar: React.FC<PageToolbarProps> = ({
     showPageMenu = false,
     showGlobalActions = false,
     customGlobalActions,
+    breadCrumbs,
     pageTabs,
     selectedTab,
     onTabChange,
@@ -49,6 +52,7 @@ const PageToolbar: React.FC<PageToolbarProps> = ({
         {showPageMenu && (
             <PageMenu />
         )}
+        {breadCrumbs}
         {pageTabs?.length && (
             <TabList
                 border={false}
