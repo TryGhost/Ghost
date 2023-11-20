@@ -26,14 +26,14 @@
         "sinon": "15.2.0"
     },
     "dependencies": {
-        "@tryghost/debug": "0.1.26",
-        "@tryghost/errors": "1.2.26",
+        "@tryghost/debug": "0.1.27",
+        "@tryghost/errors": "1.2.27",
         "@tryghost/in-memory-repository": "0.0.0",
-        "@tryghost/logging": "2.4.8",
+        "@tryghost/logging": "2.4.9",
         "@tryghost/nql": "0.12.0",
         "@tryghost/nql-filter-expansions": "0.0.0",
         "@tryghost/post-events": "0.0.0",
-        "@tryghost/tpl": "0.1.26",
+        "@tryghost/tpl": "0.1.27",
         "bson-objectid": "2.0.4",
         "lodash": "4.17.21"
     },

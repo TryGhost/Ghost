@@ -23,9 +23,9 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.26",
-    "@tryghost/validator": "0.2.6",
-    "@tryghost/version": "0.1.24",
+    "@tryghost/errors": "1.2.27",
+    "@tryghost/validator": "0.2.7",
+    "@tryghost/version": "0.1.25",
     "got": "9.6.0"
   }
 }
