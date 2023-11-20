@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'assert/strict';
 import ObjectID from 'bson-objectid';
 import {Collection} from '../src/index';
 
