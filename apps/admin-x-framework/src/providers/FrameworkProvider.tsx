@@ -24,6 +24,9 @@ export interface FrameworkProviderProps {
     children: ReactNode;
 }
 
+// children, basePath and modals should be provided by each app, while others are passed in from Ember
+export type TopLevelFrameworkProps = Omit<FrameworkProviderProps, 'children' | 'basePath' | 'modals'>;
+
 export type FrameworkContextType = Omit<FrameworkProviderProps, 'basePath' | 'externalNavigate' | 'modals' | 'children'>;
 
 const FrameworkContext = createContext<FrameworkContextType>({

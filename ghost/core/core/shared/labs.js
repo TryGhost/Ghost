@@ -46,7 +46,9 @@ const ALPHA_FEATURES = [
     'importMemberTier',
     'lexicalIndicators',
     'editorEmojiPicker',
-    'adminXOffers'
+    'adminXOffers',
+    'filterEmailDisabled',
+    'adminXDemo'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
