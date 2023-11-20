@@ -692,12 +692,8 @@
 .gh-publish-cta-secondary {
     display: block;
     overflow: hidden;
-    margin-top: 1rem;
-    height: 40px;
     color: var(--midgrey);
-    font-size: 1.35rem;
     font-weight: 400;
-    line-height: 40px;
     letter-spacing: .4px;
     text-align: left;
     white-space: nowrap;
@@ -719,6 +715,10 @@
     font-size: 1.8rem;
     font-weight: 400;
     line-height: 1.6em;
+}
+
+.gh-publish-confirmation strong {
+    white-space: nowrap;
 }
 
 .gh-publish-confirmation + .gh-box-error {
