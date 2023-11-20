@@ -51,6 +51,8 @@ const COMMAND_TYPESCRIPT = {
     env: {}
 };
 
+const adminXApps = '@tryghost/admin-x-demo,@tryghost/admin-x-settings';
+
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',
     command: 'nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework -- nx run \\$NX_PROJECT_NAME:build --skip-nx-cache',
@@ -59,7 +61,7 @@ const COMMANDS_ADMINX = [{
     env: {}
 }, {
     name: 'adminX',
-    command: 'nx run @tryghost/admin-x-settings:build && nx run @tryghost/admin-x-settings:dev',
+    command: `nx run-many --projects=${adminXApps} --targets=build && nx run-many --projects=${adminXApps} --parallel=${adminXApps.length} --targets=dev`,
     cwd: path.resolve(__dirname, '../../apps/admin-x-settings'),
     prefixColor: '#C35831',
     env: {}
