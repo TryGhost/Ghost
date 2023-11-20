@@ -48,10 +48,6 @@ const features = [{
     description: 'Enables publishers to collect one-time payments',
     flag: 'tipsAndDonations'
 },{
-    title: 'List-Unsubscribe header',
-    description: 'Set the List-Unsubscribe header in emails',
-    flag: 'listUnsubscribeHeader'
-},{
     title: 'AdminX Offers',
     description: 'Enables the new offers UI in AdminX settings',
     flag: 'adminXOffers'

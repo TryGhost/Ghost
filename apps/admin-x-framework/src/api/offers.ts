@@ -19,7 +19,8 @@ export type Offer = {
     tier: {
         id: string;
         name?: string;
-    }
+    },
+    created_at?: string;
 }
 
 export type PartialNewOffer = Omit<Offer, 'redemption_count'>;
@@ -48,7 +49,7 @@ export const useBrowseOffers = createQuery<OffersResponseType>({
 
 export const useBrowseOffersById = createQueryWithId<OffersResponseType>({
     dataType,
-    path: `/offers/`
+    path: id => `/offers/${id}/`
 });
 
 export const useEditOffer = createMutation<OfferEditResponseType, Offer>({

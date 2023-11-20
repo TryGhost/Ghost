@@ -1,12 +1,12 @@
 import PortalFrame from '../../membership/portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
-import useForm from '../../../../hooks/useForm';
 import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getTiersCadences} from '../../../../utils/getTiersCadences';
 import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useState} from 'react';
+import {useForm} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useModal} from '@ebay/nice-modal-react';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -433,9 +433,15 @@ const AddOfferModal = () => {
         okColor={okProps.color}
         okLabel='Publish'
         preview={iframe}
+        previewToolbarBreadcrumbs={[{label: 'Offers', onClick: () => {
+            updateRoute('offers/edit');
+        }}, {label: 'New offer'}]}
         sidebar={sidebar}
         size='lg'
         title='Offer'
+        onBreadcrumbsBack={() => {
+            updateRoute('offers/edit');
+        }}
         onCancel={cancelAddOffer}
         onOk={async () => {
             if (!(await handleSave({fakeWhenUnchanged: true}))) {
@@ -444,7 +450,8 @@ const AddOfferModal = () => {
                     message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields.'
                 });
             }
-        }} />;
+        }}
+    />;
 };
 
 export default AddOfferModal;

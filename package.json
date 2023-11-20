@@ -6,10 +6,13 @@
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "workspaces": [
-    "ghost/*",
-    "apps/*"
-  ],
+  "workspaces": {
+    "packages": [
+        "ghost/*",
+        "apps/*"
+    ],
+    "nohoist": ["**/@testing-library/react"]
+  },
   "monorepo": {
     "public": false,
     "internalPackages": true,
@@ -108,7 +111,7 @@
     "chalk": "4.1.2",
     "concurrently": "8.2.2",
     "eslint": "8.44.0",
-    "eslint-plugin-ghost": "3.3.2",
+    "eslint-plugin-ghost": "3.4.0",
     "eslint-plugin-react": "7.33.0",
     "husky": "8.0.3",
     "lint-staged": "14.0.1",

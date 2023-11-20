@@ -1,15 +1,23 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
-import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+
+function formatTimestamp(timestamp: string): string {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
 
 const Sidebar: React.FC<{
         clearError: (field: string) => void,
@@ -88,7 +96,7 @@ const Sidebar: React.FC<{
                             <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5'>
                                 <div className='flex flex-col gap-1.5'>
                                     <span className='text-xs font-semibold leading-none text-grey-700'>Created at</span>
-                                    <span>June 14, 2023</span>
+                                    <span>{formatTimestamp(offer?.created_at ? offer.created_at : '')}</span>
                                 </div>
                                 <div className='flex flex-col gap-1.5'>
                                     <span className='text-xs font-semibold leading-none text-grey-700'>Total redemptions</span>
@@ -260,10 +268,16 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
         preview={iframe}
+        previewToolbarBreadcrumbs={[{label: 'Offers', onClick: () => {
+            updateRoute('offers/edit');
+        }}, {label: offerById[0]?.name || ''}]}
         sidebar={sidebar}
         size='lg'
         testId='offer-update-modal'
         title='Offer'
+        onBreadcrumbsBack={() => {
+            updateRoute('offers/edit');
+        }}
         onCancel={() => {
             updateRoute('offers/edit');
         }}
