@@ -120,7 +120,7 @@
     "storybook": "^7.0.12",
     "stylelint": "^15.6.1",
     "tailwindcss": "3.3.5",
-    "typescript": "5.2.2",
+    "typescript": "5.3.2",
     "vite": "4.3.8",
     "vite-plugin-svgr": "^3.2.0",
     "vitest": "0.34.6",
