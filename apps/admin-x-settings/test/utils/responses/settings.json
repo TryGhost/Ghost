@@ -213,6 +213,10 @@
             "value": null
         },
         {
+            "key": "postmark_api_token",
+            "value": null
+        },
+        {
             "key": "email_track_opens",
             "value": true
         },
