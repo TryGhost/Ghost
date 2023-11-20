@@ -262,7 +262,7 @@ describe('Integrations API', function () {
         should.equal(updatedIntegration.id, createdIntegration.id);
         updatedAdminApiKey.secret.should.not.eql(adminApiKey.secret);
 
-        const res3 = await request.get(localUtils.API.getApiQuery(`actions/?filter=resource_id:'${adminApiKey.id}'&include=actor`))
+        const res3 = await request.get(localUtils.API.getApiQuery(`actions/?filter=resource_id:${adminApiKey.id}&include=actor`))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)

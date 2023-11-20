@@ -268,7 +268,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:'${emailRecipient.id}'`
+            filter: `email_recipient_id:${emailRecipient.id}`
         });
         assert.equal(permanentFailures.length, 1);
 
@@ -364,7 +364,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:'${emailRecipient.id}'`
+            filter: `email_recipient_id:${emailRecipient.id}`
         });
         assert.equal(permanentFailures.length, 1);
 
@@ -455,7 +455,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:'${emailRecipient.id}'`
+            filter: `email_recipient_id:${emailRecipient.id}`
         });
         assert.equal(permanentFailures.length, 1);
 
@@ -544,7 +544,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:'${emailRecipient.id}'`
+            filter: `email_recipient_id:${emailRecipient.id}`
         });
         assert.equal(permanentFailures.length, 1);
 
@@ -661,7 +661,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored temporary failure
         const failures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:'${emailRecipient.id}'`
+            filter: `email_recipient_id:${emailRecipient.id}`
         });
         assert.equal(failures.length, 1);
 
@@ -763,7 +763,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored temporary failure
         const failures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:'${emailRecipient.id}'`
+            filter: `email_recipient_id:${emailRecipient.id}`
         });
         assert.equal(failures.length, 1);
 
@@ -865,7 +865,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored temporary failure
         const failures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:'${emailRecipient.id}'`
+            filter: `email_recipient_id:${emailRecipient.id}`
         });
         assert.equal(failures.length, 1);
 
@@ -967,7 +967,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored temporary failure
         const failures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:'${emailRecipient.id}'`
+            filter: `email_recipient_id:${emailRecipient.id}`
         });
         assert.equal(failures.length, 1);
 
@@ -991,7 +991,7 @@ describe('EmailEventStorage', function () {
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
         const eventsURI = '/members/events/?' + encodeURIComponent(
-            `filter=type:-[comment_event,aggregated_click_event]+data.member_id:'${memberId}'`
+            `filter=type:-[comment_event,aggregated_click_event]+data.member_id:${memberId}`
         );
 
         // Check not unsubscribed
