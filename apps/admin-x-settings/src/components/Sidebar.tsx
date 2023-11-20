@@ -133,8 +133,7 @@ const Sidebar: React.FC = () => {
                         <>
                             <NavItem icon='recepients' keywords={emailSearchKeywords.defaultRecipients} navid='default-recipients' title="Default recipients" onClick={handleSectionClick} />
                             <NavItem icon='email' keywords={emailSearchKeywords.newsletters} navid='newsletters' title="Newsletters" onClick={handleSectionClick} />
-                            {!config.mailgunIsConfigured && <NavItem icon='at-sign' keywords={emailSearchKeywords.mailgun} navid='mailgun' title="Mailgun settings" onClick={handleSectionClick} />}
-                            {!config.postmarkIsConfigured && <NavItem icon='at-sign' keywords={emailSearchKeywords.postmark} navid='postmark' title="Postmark settings" onClick={handleSectionClick} />}
+                            {!config.mailgunIsConfigured && <NavItem icon='at-sign' keywords={emailSearchKeywords.bulkEmail} navid='bulk-email' title="Email provider" onClick={handleSectionClick} />}
                         </>
                     )}
                 </SettingNavSection>

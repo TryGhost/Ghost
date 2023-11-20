@@ -364,6 +364,10 @@
         }
     },
     "email": {
+        "bulk_email_provider": {
+            "defaultValue": "mailgun",
+            "type": "string"
+        },
         "mailgun_domain": {
             "defaultValue": null,
             "type": "string"

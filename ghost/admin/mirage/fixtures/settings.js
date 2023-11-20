@@ -85,6 +85,7 @@ export default [
     setting('portal', 'portal_signup_checkbox_required', false),
 
     // EMAIL
+    setting('email', 'bulk_email_provider', null),
     setting('email', 'mailgun_domain', null),
     setting('email', 'mailgun_api_key', null),
     setting('email', 'mailgun_base_url', null),

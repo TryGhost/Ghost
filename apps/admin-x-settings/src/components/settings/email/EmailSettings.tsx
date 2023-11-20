@@ -1,8 +1,7 @@
 import DefaultRecipients from './DefaultRecipients';
 import EnableNewsletters from './EnableNewsletters';
-import MailGun from './Mailgun';
-import Postmark from './Postmark';
 import Newsletters from './Newsletters';
+import BulkEmail from './BulkEmail';
 import React from 'react';
 import SearchableSection from '../../SearchableSection';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -12,12 +11,11 @@ export const searchKeywords = {
     enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
     newsletters: ['newsletters', 'emails'],
     defaultRecipients: ['newsletters', 'default recipients', 'emails'],
-    mailgun: ['mailgun', 'emails', 'newsletters'],
-    postmark: ['postmark', 'emails', 'newsletters']
+    bulkEmail: ['mailgun', 'emails', 'newsletters', 'postmark']
 };
 
 const EmailSettings: React.FC = () => {
-    const {settings, config} = useGlobalData();
+    const {settings} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     return (
@@ -27,8 +25,7 @@ const EmailSettings: React.FC = () => {
                 <>
                     <DefaultRecipients keywords={searchKeywords.defaultRecipients} />
                     <Newsletters keywords={searchKeywords.newsletters} />
-                    {!config.mailgunIsConfigured && <MailGun keywords={searchKeywords.mailgun} />}
-                    {!config.postmarkIsConfigured && <Postmark keywords={searchKeywords.postmark} />}
+                    <BulkEmail keywords={searchKeywords.bulkEmail} />
                 </>
             )}
         </SearchableSection>

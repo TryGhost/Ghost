@@ -201,6 +201,10 @@
             "value": false
         },
         {
+            "key": "bulk_email_provider",
+            "value": null
+        },
+        {
             "key": "mailgun_domain",
             "value": null
         },
