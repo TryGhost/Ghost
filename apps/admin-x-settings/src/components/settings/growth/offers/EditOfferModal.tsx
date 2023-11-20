@@ -268,10 +268,16 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
         preview={iframe}
+        previewToolbarBreadcrumbs={[{label: 'Offers', onClick: () => {
+            updateRoute('offers/edit');
+        }}, {label: offerById[0]?.name || ''}]}
         sidebar={sidebar}
         size='lg'
         testId='offer-update-modal'
         title='Offer'
+        onBreadcrumbsBack={() => {
+            updateRoute('offers/edit');
+        }}
         onCancel={() => {
             updateRoute('offers/edit');
         }}
