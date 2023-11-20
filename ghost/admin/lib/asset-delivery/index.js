@@ -40,8 +40,9 @@ module.exports = {
             }
 
             if (this.env === 'production') {
-                console.log('Admin-X Settings:', this.packageConfig['adminXSettingsFilename'], this.packageConfig['adminXSettingsHash']);
-                console.log('Koenig-Lexical:', this.packageConfig['editorFilename'], this.packageConfig['editorHash']);
+                for (const [key, value] of Object.entries(this.packageConfig)) {
+                    console.log(`Asset-Delivery: ${key} = ${value}`);
+                }
             }
 
             return this.packageConfig;
