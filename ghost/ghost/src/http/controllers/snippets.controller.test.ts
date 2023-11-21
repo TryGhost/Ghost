@@ -34,8 +34,8 @@ describe('SnippetsController', () => {
             snippetsService.browse = sinon.stub().returns(result);
 
             const response = await snippetsController.browse();
-            assert.equal(response.length, 1);
-            assert.equal(response[0], result[0]);
+            assert.equal(response.snippets.length, 1);
+            assert.equal(response.snippets[0], result[0]);
         });
     });
 });
