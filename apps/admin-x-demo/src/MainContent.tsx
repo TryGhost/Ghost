@@ -205,12 +205,12 @@ const MainContent = () => {
                 actions={dummyActions}
                 firstOnPage={true}
                 primaryAction={{
-                    title: 'Add item',
+                    title: 'About',
                     onClick: () => {
                         updateRoute('demo-modal');
                     }
                 }}
-                title='Admin X Demo'
+                title='AdminX Demo App'
                 toolbarBorder={view === 'card'}
                 type='page'
             >
