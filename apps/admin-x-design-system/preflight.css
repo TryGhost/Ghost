@@ -150,6 +150,19 @@
         text-indent: 0; /* 1 */
         border-color: inherit; /* 2 */
         border-collapse: collapse; /* 3 */
+        margin: 0;
+        width: auto;
+        max-width: auto;
+    }
+
+    table td, table th {
+        padding: unset;
+        vertical-align: middle;
+        text-align: left;
+        line-height: auto;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        user-select: text;
     }
 
     /*
@@ -200,6 +213,8 @@
         background-color: transparent; /* 2 */
         background-image: none; /* 2 */
     }
+
+
 
     /*
     Use the modern Firefox focus style for all focusable elements.

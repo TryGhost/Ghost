@@ -135,6 +135,10 @@ export {default as ViewContainer} from './global/layout/ViewContainer';
 export type {View} from './global/layout/ViewContainer';
 export type {ViewTab} from './global/layout/ViewContainer';
 export type {PrimaryActionProps} from './global/layout/ViewContainer';
+export {default as DynamicTable} from './global/table/DynamicTable';
+export type {DynamicTableProps} from './global/table/DynamicTable';
+export type {DynamicTableColumn} from './global/table/DynamicTable';
+export type {DynamicTableRow} from './global/table/DynamicTable';
 
 export {default as SettingGroup} from './settings/SettingGroup';
 export type {SettingGroupProps} from './settings/SettingGroup';
