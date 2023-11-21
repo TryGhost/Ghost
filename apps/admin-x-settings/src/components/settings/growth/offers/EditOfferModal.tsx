@@ -102,11 +102,11 @@ const Sidebar: React.FC<{
                                     <span className='text-xs font-semibold leading-none text-grey-700'>Total redemptions</span>
                                     <span>{offer?.redemption_count} {offer?.redemption_count === 1 ? 'redemption' : 'redemptions'}</span>
                                 </div>
-                                {offer?.redemption_count > 0 ?
+                                {offer?.redemption_count > 0 && offer?.last_redeemed ?
                                     <div className='flex items-end justify-between'>
                                         <div className='flex flex-col gap-1.5'>
                                             <span className='text-xs font-semibold leading-none text-grey-700'>Last redemption</span>
-                                            <span>August 30, 2023</span>
+                                            <span>{formatTimestamp(offer?.last_redeemed)}</span>
                                         </div>
                                         <a className='font-semibold text-green' href="#">See all →</a>
                                     </div> :

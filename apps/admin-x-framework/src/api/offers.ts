@@ -21,6 +21,7 @@ export type Offer = {
         name?: string;
     },
     created_at?: string;
+    last_redeemed? : string;
 }
 
 export type PartialNewOffer = Omit<Offer, 'redemption_count'>;
