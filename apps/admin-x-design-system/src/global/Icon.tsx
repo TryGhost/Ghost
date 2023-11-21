@@ -62,7 +62,7 @@ const Icon: React.FC<IconProps> = ({name, size = 'md', colorClass = '', classNam
 
     if (SvgComponent) {
         return (
-            <SvgComponent className={`${styles} ${className}`} />
+            <SvgComponent className={`pointer-events-none ${styles} ${className}`} />
         );
     }
     return null;
