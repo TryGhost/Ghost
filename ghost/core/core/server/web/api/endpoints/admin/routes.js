@@ -329,7 +329,7 @@ module.exports = function apiRoutes() {
     router.delete('/emails/analytics', mw.authAdminApi, http(api.emails.cancelScheduledAnalytics));
 
     // ## Snippets
-    router.get('/snippets', mw.authAdminApi, http(api.snippets.browse));
+    router.get('/snippets', mw.authAdminApi, labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.browse)));
     router.get('/snippets/:id', mw.authAdminApi, http(api.snippets.read));
     router.post('/snippets', mw.authAdminApi, http(api.snippets.add));
     router.put('/snippets/:id', mw.authAdminApi, http(api.snippets.edit));

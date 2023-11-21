@@ -146,3 +146,11 @@ module.exports.enabledMiddleware = flag => (req, res, next) => {
         return next(new errors.NotFoundError());
     }
 };
+
+module.exports.skipMiddleware = (flag, fn) => (req, res, next) => {
+    if (module.exports.isSet(flag) === true) {
+        return next();
+    } else {
+        fn(req, res, next);
+    }
+};
