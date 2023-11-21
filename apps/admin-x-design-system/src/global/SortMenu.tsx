@@ -58,12 +58,12 @@ const SortMenu: React.FC<SortMenuProps> = ({
         <Popover position={position} trigger={trigger}>
             <div className="flex min-w-[160px] flex-col justify-stretch py-1" role="none">
                 {localItems.map(item => (
-                    <button key={item.id} className="relative mx-1 flex grow cursor-pointer items-center rounded-[2.5px] px-8 py-1.5 pr-12 text-left text-sm hover:bg-grey-100 dark:hover:bg-grey-800" type="button" onClick={() => {
+                    <button key={item.id} className="group relative mx-1 flex grow cursor-pointer items-center rounded-[2.5px] px-8 py-1.5 pr-12 text-left text-sm hover:bg-grey-100 dark:hover:bg-grey-800" type="button" onClick={() => {
                         handleSortChange(item.id);
                     }}>
                         {item.selected ? <Icon className='absolute left-2' name='check' size='sm' /> : null}
                         {item.label}
-                        {item.selected ? <button className='absolute right-2 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-grey-200' type='button' onClick={handleSortDirection}>
+                        {item.selected ? <button className='absolute right-2 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-grey-200 opacity-0 group-hover:bg-grey-300 group-hover:opacity-100' title={`${localDirection === 'asc' ? 'Ascending' : 'Descending'}`} type='button' onClick={handleSortDirection}>
                             {localDirection === 'asc' ? <Icon name='arrow-up' size='xs' /> : <Icon name='arrow-down' size='xs' />}
                         </button> : null}
                     </button>
