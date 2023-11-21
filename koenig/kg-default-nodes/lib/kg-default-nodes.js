@@ -23,6 +23,7 @@ import * as collection from './nodes/collection/CollectionNode';
 import * as textnode from './nodes/ExtendedTextNode';
 import * as headingnode from './nodes/ExtendedHeadingNode';
 import * as quotenode from './nodes/ExtendedQuoteNode';
+import * as tk from './nodes/TKNode';
 
 // re-export everything for easier importing
 export * from './KoenigDecoratorNode';
@@ -51,6 +52,7 @@ export * from './nodes/collection/CollectionNode';
 export * from './nodes/ExtendedTextNode';
 export * from './nodes/ExtendedHeadingNode';
 export * from './nodes/ExtendedQuoteNode';
+export * from './nodes/TKNode';
 
 // export convenience objects for use elsewhere
 export const DEFAULT_NODES = [
@@ -81,5 +83,6 @@ export const DEFAULT_NODES = [
     gallery.GalleryNode,
     emailCta.EmailCtaNode,
     signup.SignupNode,
-    collection.CollectionNode
+    collection.CollectionNode,
+    tk.TKNode
 ];
