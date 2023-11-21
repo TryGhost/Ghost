@@ -201,7 +201,7 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
     React.useEffect(() => {
         const galleryElem = containerRef;
 
-        if (!galleryElem) {
+        if (!galleryElem || !koenig?.dragDropHandler) {
             return;
         }
 
@@ -232,7 +232,7 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
         // we want to be specific about when we want the drag/drop handler to
         // be set up or refreshed so we disable the exhaustive-deps rule here
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [containerRef, images]);
+    }, [containerRef, images, koenig.dragDropHandler]);
 
     return {setContainerRef, isDraggedOver};
 }
