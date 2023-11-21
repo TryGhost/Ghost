@@ -1958,7 +1958,7 @@ describe('Members API', function () {
 
         // Check activity feed
         const {body: eventsBody} = await agent
-            .get(`/members/events?filter=data.member_id:${newMember.id}`)
+            .get(`/members/events?filter=data.member_id:'${newMember.id}'`)
             .body({members: [memberChanged]})
             .expectStatus(200)
             .matchHeaderSnapshot({
@@ -3037,7 +3037,7 @@ describe('Members API Bulk operations', function () {
         should(model.relations.newsletters.models.length).equal(newsletterCount, 'This test requires a member with 2 or more newsletters');
 
         await agent
-            .put(`/members/bulk/?filter=id:${member.id}`)
+            .put(`/members/bulk/?filter=id:'${member.id}'`)
             .body({bulk: {
                 action: 'unsubscribe'
             }})
@@ -3065,7 +3065,7 @@ describe('Members API Bulk operations', function () {
 
         // When we do it again, we should still receive a count of 1, because we unsubcribed one member (who happens to be already unsubscribed)
         await agent
-            .put(`/members/bulk/?filter=id:${member.id}`)
+            .put(`/members/bulk/?filter=id:'${member.id}'`)
             .body({bulk: {
                 action: 'unsubscribe'
             }})
@@ -3303,7 +3303,7 @@ describe('Members API Bulk operations', function () {
         should(model2.relations.labels.models.map(m => m.id)).match([firstId, secondId]);
 
         await agent
-            .put(`/members/bulk/?filter=id:${member1.id}`)
+            .put(`/members/bulk/?filter=id:'${member1.id}'`)
             .body({bulk: {
                 action: 'removeLabel',
                 meta: {

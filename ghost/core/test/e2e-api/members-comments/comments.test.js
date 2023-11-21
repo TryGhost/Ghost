@@ -213,7 +213,7 @@ describe('Comments API', function () {
 
             it('Can browse all comments of a post', async function () {
                 await membersAgent
-                    .get(`/api/comments/?filter=post_id:${postId}`)
+                    .get(`/api/comments/?filter=post_id:'${postId}'`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
                         etag: anyEtag
@@ -308,7 +308,7 @@ describe('Comments API', function () {
 
             it('Can browse all comments of a post', async function () {
                 await membersAgent
-                    .get(`/api/comments/?filter=post_id:${postId}`)
+                    .get(`/api/comments/?filter=post_id:'${postId}'`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
                         etag: anyEtag
@@ -679,7 +679,7 @@ describe('Comments API', function () {
                     }]});
 
                 const {body} = await membersAgent
-                    .get(`/api/comments/?filter=post_id:${anotherPostId}`);
+                    .get(`/api/comments/?filter=post_id:'${anotherPostId}'`);
 
                 assert(!body.comments.find(comment => comment.id === commentId), 'The comment should not have moved post');
             });
