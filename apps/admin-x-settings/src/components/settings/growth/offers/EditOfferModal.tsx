@@ -4,6 +4,7 @@ import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
+import {createRedemptionFilterUrl} from './OffersIndex';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {useEffect, useState} from 'react';
@@ -108,7 +109,7 @@ const Sidebar: React.FC<{
                                             <span className='text-xs font-semibold leading-none text-grey-700'>Last redemption</span>
                                             <span>{formatTimestamp(offer?.last_redeemed)}</span>
                                         </div>
-                                        <a className='font-semibold text-green' href="#">See all →</a>
+                                        <a className='font-semibold text-green' href={createRedemptionFilterUrl(offer.id)}>See all →</a>
                                     </div> :
                                     null
                                 }
