@@ -108,6 +108,8 @@ export {default as Separator} from './global/Separator';
 export type {SeparatorProps} from './global/Separator';
 export {DragIndicator, default as SortableList} from './global/SortableList';
 export type {DragIndicatorProps, SortableItemContainerProps, SortableListProps} from './global/SortableList';
+export {default as SortMenu} from './global/SortMenu';
+export type {SortMenuProps} from './global/SortMenu';
 export {default as StickyFooter} from './global/StickyFooter';
 export type {StickyFooterProps} from './global/StickyFooter';
 export {default as TabView} from './global/TabView';
