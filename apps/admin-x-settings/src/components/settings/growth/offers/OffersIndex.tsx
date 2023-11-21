@@ -14,7 +14,7 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
-const createRedemptionFilterUrl = (id: string): string => {
+export const createRedemptionFilterUrl = (id: string): string => {
     const baseHref = '/ghost/#/members';
     return `${baseHref}?filter=${encodeURIComponent('offer_redemptions:' + id)}`;
 };
