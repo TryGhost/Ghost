@@ -54,7 +54,7 @@ const getOfferDiscount = (type: string, amount: number, cadence: string, currenc
         break;
     };
 
-    const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(updatedPrice));
+    const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(currencyToDecimal(updatedPrice).toFixed(2));
 
     return {
         discountColor,

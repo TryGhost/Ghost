@@ -154,11 +154,11 @@ export function getSymbol(currency: string): string {
 
 // We currently only support decimal currencies
 export function currencyToDecimal(integerAmount: number): number {
-    return integerAmount / 100;
+    return parseFloat((integerAmount / 100).toFixed(2));
 }
 
 export function currencyFromDecimal(decimalAmount: number): number {
-    return decimalAmount * 100;
+    return parseFloat((decimalAmount * 100).toFixed(2));
 }
 
 /*
