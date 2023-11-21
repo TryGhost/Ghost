@@ -48,7 +48,11 @@ export type Config = {
         pintura?: {
             js?: string
             css?: string
-        }
+        },
+        managedEmail?: {
+            enabled?: boolean
+            sendingDomain?: string
+        },
     }
 
     // Config is relatively fluid, so we only type used properties above and still support arbitrary property access when needed

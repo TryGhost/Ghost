@@ -91,6 +91,30 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         secondaryTextColor
     } : {};
 
+    const isManagedEmail = () => {
+        return !!config?.hostSettings?.managedEmail?.enabled;
+    };
+
+    const hasSendingDomain = () => {
+        const isDomain = /[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+        const sendingDomain = config?.hostSettings?.managedEmail?.sendingDomain;
+        return typeof sendingDomain === 'string' && isDomain.test(sendingDomain);
+    };
+
+    const sendingDomain = () => {
+        return config?.hostSettings?.managedEmail?.sendingDomain;
+    };
+
+    const renderSenderEmail = () => {
+        if (isManagedEmail()) {
+            if (hasSendingDomain()) {
+                return newsletter.sender_email || 'noreply@' + sendingDomain();
+            }
+        }
+
+        return fullEmailAddress(newsletter.sender_email || 'noreply', siteData);
+    };
+
     return <NewsletterPreviewContent
         authorPlaceholder={currentUser.name || currentUser.email}
         backgroundColor={colors.backgroundColor || '#ffffff'}
@@ -100,7 +124,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}
         headerTitle={headerTitle}
-        senderEmail={fullEmailAddress(newsletter.sender_email || 'noreply', siteData)}
+        senderEmail={renderSenderEmail()}
         senderName={newsletter.sender_name || title}
         showBadge={newsletter.show_badge}
         showCommentCta={showCommentCta}
