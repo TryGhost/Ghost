@@ -98,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                     <h2 className='mb-4 text-lg'>Offer details</h2>
                     <div className='flex flex-col gap-6'>
                         <div className='flex flex-col gap-4 rounded-md border border-grey-200 p-4'>
-                            <ButtonSelect checked={overrides.type === 'percent' ? true : false} type={typeOptions[0]} onClick={() => {
+                            <ButtonSelect checked={overrides.type !== 'trial' ? true : false} type={typeOptions[0]} onClick={() => {
                                 handleTypeChange('percent');
                             }} />
                             <ButtonSelect checked={overrides.type === 'trial' ? true : false} type={typeOptions[1]} onClick={() => {
@@ -320,7 +320,8 @@ const AddOfferModal = () => {
     const handleAmountTypeChange = (amountType: string) => {
         updateForm(state => ({
             ...state,
-            amountType: amountType
+            amountType: amountType,
+            type: amountType === 'percent' ? 'percent' : 'fixed' || state.type
         }));
     };
 
