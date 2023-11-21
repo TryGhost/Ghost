@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyLocationFor, anyObjectId, anyISODateTime, anyErrorId} = matchers;
 
 const matchSnippet = {
@@ -11,6 +11,7 @@ describe('Snippets API', function () {
     let agent;
 
     before(async function () {
+        mockManager.mockLabsEnabled('nestSnippetsAPI');
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('snippets');
         await agent.loginAsOwner();
