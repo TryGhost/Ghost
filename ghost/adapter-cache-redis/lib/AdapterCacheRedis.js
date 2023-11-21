@@ -181,7 +181,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 scan: scanTiming,
                 delete: deleteTiming,
                 reset: resetTiming,
-                keyCount: keys.length,
+                keyCount: keys.length
             });
         } catch (err) {
             logging.error(err);
