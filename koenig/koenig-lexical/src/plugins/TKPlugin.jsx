@@ -5,7 +5,7 @@ import {useLexicalTextEntity} from '../hooks/useExtendedTextEntity';
 
 const REGEX = new RegExp(/(?<!\w)TK(?!\w)/);
 
-export function TKPlugin() {
+export default function TKPlugin() {
     const [editor] = useLexicalComposerContext();
 
     useEffect(() => {

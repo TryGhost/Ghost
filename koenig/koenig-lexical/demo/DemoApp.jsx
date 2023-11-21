@@ -15,6 +15,7 @@ import {
     KoenigComposer, KoenigEditor, MINIMAL_NODES, MINIMAL_TRANSFORMERS,
     MobiledocCopyPlugin,
     RestrictContentPlugin,
+    TKPlugin,
     WordCountPlugin
 } from '../src';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
@@ -45,8 +46,7 @@ const cardConfig = {
     feature: {
         collections: true,
         collectionsCard: true,
-        emojiPicker: true,
-        tkReminders: true
+        emojiPicker: true
     },
     deprecated: {
         headerV1: process.env.NODE_ENV === 'test' ? false : true // show header v1 only for tests
@@ -104,6 +104,7 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
         >
             <MobiledocCopyPlugin />
             <WordCountPlugin onChange={setWordCount} />
+            <TKPlugin />
         </KoenigEditor>
     );
 }

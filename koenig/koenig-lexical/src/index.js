@@ -30,6 +30,7 @@ import PlusCardMenuPlugin from './plugins/PlusCardMenuPlugin';
 import RestrictContentPlugin from './plugins/RestrictContentPlugin';
 import SignupPlugin from './plugins/SignupPlugin';
 import SlashCardMenuPlugin from './plugins/SlashCardMenuPlugin';
+import TKPlugin from './plugins/TKPlugin';
 import TogglePlugin from './plugins/TogglePlugin';
 import VideoPlugin from './plugins/VideoPlugin';
 import WordCountPlugin from './plugins/WordCountPlugin';
@@ -89,6 +90,7 @@ export {
     VideoPlugin,
     WordCountPlugin,
     CollectionPlugin,
+    TKPlugin,
 
     AllDefaultPlugins,
 
