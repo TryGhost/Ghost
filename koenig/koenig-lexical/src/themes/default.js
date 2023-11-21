@@ -30,7 +30,7 @@ const defaultTheme = {
         code: undefined
     },
     code: undefined,
-    tk: 'tk-highlight'
+    tk: 'bg-lime-300'
 };
 
 export default defaultTheme;

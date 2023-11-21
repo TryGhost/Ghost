@@ -72,7 +72,9 @@ module.exports = {
                 600: '#F0A000'
             },
             lime: {
-                DEFAULT: '#B5FF18'
+                DEFAULT: '#B5FF18',
+                300: '#CFFF99',
+                500: '#B5FF18'
             }
         },
         fontFamily: {
