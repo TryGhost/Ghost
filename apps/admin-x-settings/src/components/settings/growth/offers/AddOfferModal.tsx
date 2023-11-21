@@ -34,7 +34,7 @@ const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => 
         <button className='text-left' type='button' onClick={onClick}>
             <div className='flex gap-3'>
                 <div className={`mt-0.5 flex h-4 w-4 items-center justify-center rounded-full ${checkboxClass}`}>
-                    {checked ? <Icon className='w-2 stroke-[4]' name='check' size='custom' /> : null}
+                    {checked ? <Icon className='w-[7px] stroke-[4]' name='check' size='custom' /> : null}
                 </div>
                 <div className='flex flex-col'>
                     <span>{type.title}</span>
@@ -120,7 +120,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 <TextField title='Amount off' type='number' onChange={(e) => {
                                     handleTextInput(e, 'discountAmount');
                                 }} />
-                                <div className='absolute bottom-0 right-1.5 z-10 w-10'>
+                                <div className='absolute bottom-0 right-1.5 z-10'>
                                     <Select
                                         clearBg={true}
                                         controlClasses={{menu: 'w-20 right-0'}}
