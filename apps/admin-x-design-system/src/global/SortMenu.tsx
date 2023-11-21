@@ -3,6 +3,8 @@ import Button, {ButtonProps} from './Button';
 import Popover, {PopoverPosition} from './Popover';
 import {Icon} from '..';
 
+export type SortDirection = 'asc' | 'desc';
+
 export type SortItem = {
     id: string,
     label: string;
@@ -11,7 +13,7 @@ export type SortItem = {
 
 export interface SortMenuProps {
     items: SortItem[];
-    direction: string;
+    direction: SortDirection;
     onSortChange: (selectedOption: string) => void;
     onDirectionChange: (selectedDirection: string) => void;
     trigger?: React.ReactNode;
