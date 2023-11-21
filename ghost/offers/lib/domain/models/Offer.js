@@ -30,7 +30,7 @@ const OfferCreatedAt = require('./OfferCreatedAt');
  * @prop {OfferStatus} status
  * @prop {OfferTier} tier
  * @prop {number} redemptionCount
- * @prop {Date} createdAt
+ * @prop {string} createdAt
  */
 
 /**
@@ -49,7 +49,7 @@ const OfferCreatedAt = require('./OfferCreatedAt');
  * @prop {string} status
  * @prop {number} redemptionCount
  * @prop {TierProps|OfferTier} tier
- * @prop {Date} createdAt
+ * @prop {Date} created_at
  */
 
 /**
