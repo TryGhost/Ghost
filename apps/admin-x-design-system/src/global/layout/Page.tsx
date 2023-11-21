@@ -56,23 +56,23 @@ const Page: React.FC<PageProps> = ({
         selectedTab = pageTabs[0].id;
     }
 
-    const left: React.ReactNode = <div className='flex items-center gap-10'>
-        {showPageMenu && (
-            <PageMenu />
-        )}
-        {breadCrumbs}
-        {pageTabs?.length && (
-            <TabList
-                border={false}
-                buttonBorder={false}
-                handleTabChange={handleTabChange}
-                selectedTab={selectedTab}
-                tabs={pageTabs!}
-                width='normal'
-            />
-        )}
-
-    </div>;
+    const left: React.ReactNode = (
+        (showPageMenu || breadCrumbs || pageTabs?.length) && <div className='flex items-center gap-10'>
+            {showPageMenu && (
+                <PageMenu />
+            )}
+            {breadCrumbs}
+            {pageTabs?.length && (
+                <TabList
+                    border={false}
+                    buttonBorder={false}
+                    handleTabChange={handleTabChange}
+                    selectedTab={selectedTab}
+                    tabs={pageTabs!}
+                    width='normal'
+                />
+            )}
+        </div>);
 
     mainClassName = clsx(
         'flex w-full flex-auto flex-col',
@@ -80,6 +80,7 @@ const Page: React.FC<PageProps> = ({
     );
 
     const globalActions = (
+        (customGlobalActions?.length || showGlobalActions) &&
         <div className='sticky flex items-center gap-7'>
             {(customGlobalActions?.map((action) => {
                 return (
@@ -87,8 +88,7 @@ const Page: React.FC<PageProps> = ({
                 );
             }))}
             {showGlobalActions && <GlobalActions />}
-        </div>
-    );
+        </div>);
 
     mainContainerClassName = clsx(
         'flex h-[100vh] w-full flex-col overflow-y-auto overflow-x-hidden',
@@ -104,10 +104,12 @@ const Page: React.FC<PageProps> = ({
 
     return (
         <div className={mainContainerClassName}>
-            <header className={pageToolbarClassName}>
-                <nav>{left}</nav>
-                <div>{globalActions}</div>
-            </header>
+            {(left || globalActions) &&
+                <header className={pageToolbarClassName}>
+                    <nav>{left}</nav>
+                    <div>{globalActions}</div>
+                </header>
+            }
             <main className={mainClassName}>
                 {children}
             </main>

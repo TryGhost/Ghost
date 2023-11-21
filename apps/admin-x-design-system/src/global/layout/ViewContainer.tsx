@@ -28,7 +28,14 @@ export interface PrimaryActionProps {
 interface ViewContainerProps {
     type: 'page' | 'section';
     title?: string;
+
+    /**
+     * Sticks to top: 0 instead of keeping space for page toolbar
+     */
+    firstOnPage?:boolean;
+
     headerContent?: React.ReactNode;
+    stickyHeader?: boolean;
     tabs?: ViewTab[];
     selectedTab?: string;
     selectedView?: string;
@@ -50,7 +57,9 @@ interface ViewContainerProps {
 const ViewContainer: React.FC<ViewContainerProps> = ({
     type,
     title,
+    firstOnPage,
     headerContent,
+    stickyHeader = true,
     tabs,
     selectedTab,
     onTabChange,
@@ -115,12 +124,13 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     toolbarWrapperClassName = clsx(
         'z-50',
-        type === 'page' && 'sticky top-18 mx-auto w-full max-w-7xl bg-white px-12 pt-[3vmin]',
+        type === 'page' && 'mx-auto w-full max-w-7xl bg-white px-12',
+        (type === 'page' && stickyHeader) && (firstOnPage ? 'sticky top-0 pt-8' : 'sticky top-18 pt-[3vmin]'),
         toolbarContainerClassName
     );
 
     toolbarContainerClassName = clsx(
-        'flex items-end justify-between pb-3',
+        'flex items-end justify-between pb-8',
         toolbarBorder && 'border-b border-grey-200',
         toolbarContainerClassName
     );
@@ -133,22 +143,27 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     actionsClassName = clsx(
         'flex items-center gap-10 transition-all',
         actionsHidden && 'opacity-0 group-hover/view-container:opacity-100',
-        tabs?.length ? 'pb-2' : 'pb-3',
+        tabs?.length ? 'pb-2' : '',
         actionsClassName
     );
 
     const primaryActionContents = <>
-        {primaryAction?.title || primaryAction?.icon && (
+        {(primaryAction?.title || primaryAction?.icon) && (
             <Button className={primaryAction.className} color={primaryAction.color || 'black'} icon={primaryAction.icon} label={primaryAction.title} size={type === 'page' ? 'md' : 'sm'} onClick={primaryAction.onClick} />
         )}
     </>;
+
+    const headingClassName = clsx(
+        tabs?.length && 'pb-3',
+        '-mt-2'
+    );
 
     toolbar = (
         <div className={toolbarWrapperClassName}>
             <div className={toolbarContainerClassName}>
                 <div className={toolbarLeftClassName}>
                     {headerContent}
-                    {title && <Heading className={tabs?.length ? 'pb-3' : ''} level={type === 'page' ? 1 : 4}>{title}</Heading>}
+                    {title && <Heading className={headingClassName} level={type === 'page' ? 1 : 4}>{title}</Heading>}
                     {tabs?.length && (
                         <TabList
                             border={false}
