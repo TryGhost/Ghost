@@ -397,6 +397,10 @@ async function initNestDependencies() {
     providers.push({
         provide: 'models',
         useValue: require('./server/models')
+    }, {
+        // @NOTE: decide if this comes in as separate values
+        provide: 'settings',
+        useValue: require('./shared/settings-cache')
     });
     debug('End: initNestDependencies');
 }
