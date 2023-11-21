@@ -247,7 +247,7 @@ module.exports = {
                 '4xl': '89.6rem',
                 '5xl': '102.4rem',
                 '6xl': '115.2rem',
-                '7xl': '128rem',
+                '7xl': '132rem',
                 '8xl': '140rem',
                 '9xl': '156rem',
                 full: '100%',

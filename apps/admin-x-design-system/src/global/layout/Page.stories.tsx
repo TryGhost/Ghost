@@ -35,7 +35,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof Page>;
 
-const dummyContent = <div className='m-auto max-w-[800px] p-5 text-center'>Placeholder content</div>;
+const dummyContent = <div className='w-full bg-grey-100 p-5 text-center'>Placeholder content</div>;
 
 const customGlobalActions: CustomGlobalAction[] = [
     {
@@ -64,6 +64,17 @@ export const Default: Story = {
     args: {
         pageTabs: pageTabs,
         children: dummyContent
+    }
+};
+
+export const LimitToolbarWidth: Story = {
+    parameters: {
+        layout: 'fullscreen'
+    },
+    args: {
+        pageTabs: pageTabs,
+        children: dummyContent,
+        fullBleedToolbar: false
     }
 };
 

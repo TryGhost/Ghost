@@ -16,8 +16,12 @@ export interface CustomGlobalAction {
     onClick?: () => void;
 }
 
-interface PageToolbarProps {
+interface PageProps {
+    mainContainerClassName?: string;
     mainClassName?: string;
+    fullBleedPage?: boolean;
+    pageToolbarClassName?: string;
+    fullBleedToolbar?: boolean;
     showPageMenu?: boolean;
     showGlobalActions?: boolean;
     customGlobalActions?: CustomGlobalAction[];
@@ -28,8 +32,12 @@ interface PageToolbarProps {
     children?: React.ReactNode;
 }
 
-const PageToolbar: React.FC<PageToolbarProps> = ({
+const Page: React.FC<PageProps> = ({
+    fullBleedPage = true,
+    mainContainerClassName,
     mainClassName,
+    pageToolbarClassName,
+    fullBleedToolbar = true,
     showPageMenu = false,
     showGlobalActions = false,
     customGlobalActions,
@@ -67,7 +75,7 @@ const PageToolbar: React.FC<PageToolbarProps> = ({
     </div>;
 
     mainClassName = clsx(
-        'flex h-[calc(100%-72px)] w-[100vw] flex-auto flex-col',
+        'flex w-full flex-auto flex-col',
         mainClassName
     );
 
@@ -82,19 +90,29 @@ const PageToolbar: React.FC<PageToolbarProps> = ({
         </div>
     );
 
+    mainContainerClassName = clsx(
+        'flex h-[100vh] w-full flex-col overflow-y-auto overflow-x-hidden',
+        !fullBleedPage && 'mx-auto max-w-7xl',
+        mainContainerClassName
+    );
+
+    pageToolbarClassName = clsx(
+        'sticky top-0 z-50 flex h-18 w-full items-center justify-between gap-5 bg-white p-6',
+        !fullBleedToolbar && 'mx-auto max-w-7xl',
+        pageToolbarClassName
+    );
+
     return (
-        <div className='w-100 h-[100vh] overflow-y-auto overflow-x-hidden'>
-            <header className='sticky top-0 z-50 flex h-18 items-center justify-between gap-5 bg-white p-6'>
+        <div className={mainContainerClassName}>
+            <header className={pageToolbarClassName}>
                 <nav>{left}</nav>
                 <div>{globalActions}</div>
             </header>
             <main className={mainClassName}>
-                <section className='mx-auto flex h-full w-full flex-col'>
-                    {children}
-                </section>
+                {children}
             </main>
         </div>
     );
 };
 
-export default PageToolbar;
+export default Page;
