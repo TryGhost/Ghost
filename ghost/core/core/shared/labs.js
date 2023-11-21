@@ -51,7 +51,8 @@ const ALPHA_FEATURES = [
     'adminXDemo',
     'tkReminders',
     'newEmailAddresses',
-    'portalImprovements'
+    'portalImprovements',
+    'nestSnippetsAPI'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
