@@ -1,5 +1,4 @@
 /* eslint-disable ghost/filenames/match-exported-class */
-import {addClassNamesToElement} from '@lexical/utils';
 import {$applyNodeReplacement, TextNode} from 'lexical';
 
 export class TKNode extends TextNode {
@@ -17,7 +16,7 @@ export class TKNode extends TextNode {
 
     createDOM(config) {
         const element = super.createDOM(config);
-        addClassNamesToElement(element, 'tk-highlight');
+        element.classList.add('tk-highlight');
         return element;
     }
 
