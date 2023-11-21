@@ -1,5 +1,7 @@
 const logging = require('@tryghost/logging');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
+const MailgunClient = require('@tryghost/mailgun-client');
+const PostmarkClient = require('@tryghost/postmark-client');
 
 class EmailServiceWrapper {
     getPostUrl(post) {
@@ -8,14 +10,27 @@ class EmailServiceWrapper {
         return jsonModel.url;
     }
 
+    getMailClient(settingsCache, configService) {
+        if (settingsCache.get('bulk_email_provider') === 'postmark') {
+            // Postmark client instance for email provider
+            return new PostmarkClient({
+                config: configService, settings: settingsCache
+            });
+        }
+
+        // Mailgun client instance for email provider
+        return new MailgunClient({
+            config: configService, settings: settingsCache
+        });
+    }
+
     init() {
         if (this.service) {
             return;
         }
 
-        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, MailgunEmailProvider} = require('@tryghost/email-service');
+        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, BulkEmailProvider} = require('@tryghost/email-service');
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
-        const MailgunClient = require('@tryghost/mailgun-client');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
         const settingsHelpers = require('../settings-helpers');
@@ -44,13 +59,10 @@ class EmailServiceWrapper {
             sentry.captureException(error);
         };
 
-        // Mailgun client instance for email provider
-        const mailgunClient = new MailgunClient({
-            config: configService, settings: settingsCache
-        });
+        let mailClient = this.getMailClient(settingsCache, configService);
 
-        const mailgunEmailProvider = new MailgunEmailProvider({
-            mailgunClient,
+        const bulkEmailProvider = new BulkEmailProvider({
+            mailClient,
             errorHandler
         });
 
@@ -75,7 +87,7 @@ class EmailServiceWrapper {
         });
 
         const sendingService = new SendingService({
-            emailProvider: mailgunEmailProvider,
+            emailProvider: bulkEmailProvider,
             emailRenderer
         });
 
