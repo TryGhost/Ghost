@@ -327,9 +327,15 @@
 
 @media (max-width: 1024px) {
     .gh-editor-header {
-        padding: 0 0 0 15px;
+        padding: 15px 0 0 15px;
         background-color: var(--white);
         border-radius: 0;
+    }
+}
+
+@media (max-width: 447px) {
+    .gh-editor-header {
+        padding: 0 0 0 15px;
     }
 }
 
