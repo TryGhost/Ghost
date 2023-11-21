@@ -1,5 +1,5 @@
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
-import {updateQueryCache} from '../utils/api/updateQueries';
+import {updateQueryCache, insertToQueryCache} from '../utils/api/updateQueries';
 
 export type Offer = {
     id: string;
@@ -71,6 +71,6 @@ export const useAddOffer = createMutation<OfferAddResponseType, NewOffer>({
     updateQueries: {
         dataType,
         emberUpdateType: 'createOrUpdate',
-        update: updateQueryCache('offers')
+        update: insertToQueryCache('offers')
     }
 });
