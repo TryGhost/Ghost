@@ -128,6 +128,13 @@ export {default as Tooltip} from './global/Tooltip';
 export type {TooltipProps} from './global/Tooltip';
 export {default as PageHeader} from './global/layout/PageHeader';
 export type {PageHeaderProps} from './global/layout/PageHeader';
+export {default as Page} from './global/layout/Page';
+export type {PageTab} from './global/layout/Page';
+export type {CustomGlobalAction} from './global/layout/Page';
+export {default as ViewContainer} from './global/layout/ViewContainer';
+export type {View} from './global/layout/ViewContainer';
+export type {ViewTab} from './global/layout/ViewContainer';
+export type {PrimaryActionProps} from './global/layout/ViewContainer';
 
 export {default as SettingGroup} from './settings/SettingGroup';
 export type {SettingGroupProps} from './settings/SettingGroup';
@@ -159,4 +166,3 @@ export {confirmIfDirty} from './utils/modals';
 export {default as DesignSystemApp} from './DesignSystemApp';
 export type {DesignSystemAppProps} from './DesignSystemApp';
 export {useFocusContext} from './providers/DesignSystemProvider';
-
