@@ -17,8 +17,8 @@ export interface TableProps {
     /**
      * If the table is the primary content on a page (e.g. Members table) then you can set a pagetitle to be consistent
      */
-    pageTitle?: string;
     header?: React.ReactNode;
+    pageTitle?: string;
     children?: React.ReactNode;
     borderTop?: boolean;
     hint?: React.ReactNode;
@@ -27,6 +27,8 @@ export interface TableProps {
     isLoading?: boolean;
     pagination?: PaginationData;
     showMore?: ShowMoreData;
+    fillContainer?: boolean;
+    paddingXClassName?: string;
 }
 
 const OptionalPagination = ({pagination}: {pagination?: PaginationData}) => {
@@ -51,14 +53,20 @@ const OptionalShowMore = ({showMore}: {showMore?: ShowMoreData}) => {
     );
 };
 
-const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSeparator, pageTitle, className, pagination, showMore, isLoading}) => {
-    const tableClasses = clsx(
-        (borderTop || pageTitle) && 'border-t border-grey-300',
-        'w-full overflow-x-auto',
-        pageTitle ? 'mb-0 mt-14' : 'my-0',
-        className
-    );
-
+const Table: React.FC<TableProps> = ({
+    header,
+    children,
+    borderTop,
+    hint,
+    hintSeparator,
+    pageTitle,
+    className,
+    pagination,
+    showMore,
+    isLoading,
+    fillContainer = false,
+    paddingXClassName
+}) => {
     const table = React.useRef<HTMLTableSectionElement>(null);
     const maxTableHeight = React.useRef(0);
     const [tableHeight, setTableHeight] = React.useState<number | undefined>(undefined);
@@ -111,33 +119,75 @@ const Table: React.FC<TableProps> = ({header, children, borderTop, hint, hintSep
         };
     }, [tableHeight]);
 
+    const headerClasses = clsx(
+        'h-9 border-b border-grey-200 dark:border-grey-600'
+    );
+
+    /**
+     * To have full-bleed scroll try this:
+     * - unset width of table
+     * - set minWidth of table to 100%
+     * - set side padding of table to 40px
+     * - unset tableContainer width
+     * - set minWidth of tableContainer to 100%
+     * - unset mainContainer width
+     * - set minWidth of mainContainer to 100%
+     * - set side margins of outer container to -40px
+     * - set footer side paddings to 40px
+     */
+
+    const tableClasses = clsx(
+        'w-full',
+        fillContainer ? 'min-w-full' : 'w-full',
+        (borderTop || pageTitle) && 'border-t border-grey-300',
+        pageTitle ? 'mb-0 mt-14' : 'my-0',
+        className
+    );
+
+    const mainContainerClasses = clsx(
+        'overflow-x-auto',
+        fillContainer ? 'absolute inset-0 min-w-full' : 'w-full'
+    );
+
+    const tableContainerClasses = clsx(
+        fillContainer ? 'max-h-[calc(100%-38px)] w-full overflow-y-auto' : 'w-full',
+        paddingXClassName
+    );
+
+    const footerClasses = clsx(
+        'sticky bottom-0 -mt-px bg-white pb-3',
+        paddingXClassName
+    );
+
     return (
         <>
-            <div className='w-full'>
+            <div className={mainContainerClasses}>
                 {pageTitle && <Heading>{pageTitle}</Heading>}
 
-                <table className={tableClasses}>
-                    {header && <thead className='border-b border-grey-200 dark:border-grey-600'>
-                        <TableRow bgOnHover={false} separator={false}>{header}</TableRow>
-                    </thead>}
-                    {!isLoading && <tbody ref={table}>
-                        {children}
-                    </tbody>}
+                <div className={tableContainerClasses}>
+                    <table className={tableClasses}>
+                        {header && <thead className={headerClasses}>
+                            <TableRow bgOnHover={false} separator={false}>{header}</TableRow>
+                        </thead>}
+                        {!isLoading && <tbody ref={table}>
+                            {children}
+                        </tbody>}
 
-                    {multiplePages && <div style={spaceHeightStyle} />}
-                </table>
+                        {multiplePages && <div style={spaceHeightStyle} />}
+                    </table>
+                </div>
 
-                {isLoading && <LoadingIndicator delay={200} size='lg' style={loadingStyle} />}
+                {isLoading && <div className='p-5'><LoadingIndicator delay={200} size='lg' style={loadingStyle} /></div>}
 
                 {(hint || pagination || showMore) &&
-                <div className="-mt-px">
+                <footer className={footerClasses}>
                     {(hintSeparator || pagination) && <Separator />}
                     <div className="mt-1 flex flex-col-reverse items-start justify-between gap-1 pt-2 md:flex-row md:items-center md:gap-0 md:pt-0">
                         <OptionalShowMore showMore={showMore} />
                         <Hint>{hint ?? ' '}</Hint>
                         <OptionalPagination pagination={pagination} />
                     </div>
-                </div>}
+                </footer>}
             </div>
         </>
     );

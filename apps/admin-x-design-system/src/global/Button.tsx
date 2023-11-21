@@ -54,7 +54,8 @@ const Button: React.FC<ButtonProps> = ({
         className = clsx(
             'inline-flex items-center justify-center whitespace-nowrap rounded text-sm transition',
             ((link && color !== 'clear' && color !== 'black') || (!link && color !== 'clear')) ? 'font-bold' : 'font-semibold',
-            !link ? `${size === 'sm' ? ' h-7 px-3 ' : ' h-[34px] px-4 '}` : '',
+            !link ? `${size === 'sm' ? 'h-7' : 'h-[34px]'}` : '',
+            !link ? `${size === 'sm' || label && icon ? 'px-3' : 'px-4'}` : '',
             (link && linkWithPadding) && '-m-1 p-1',
             className
         );
@@ -125,7 +126,7 @@ const Button: React.FC<ButtonProps> = ({
     labelClasses += loading ? 'invisible' : '';
 
     const buttonChildren = <>
-        {icon && <Icon className={iconClasses} colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
+        {icon && <Icon className={iconClasses} colorClass={iconColorClass} name={icon} size={size === 'sm' || (label && icon) ? 'sm' : 'md'} />}
         <span className={labelClasses}>{label}</span>
         {loading && <div className='absolute flex'><LoadingIndicator color={loadingIndicatorColor} size={size}/><span className='sr-only'>Loading...</span></div>}
     </>;

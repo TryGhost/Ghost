@@ -1,6 +1,8 @@
 import clsx from 'clsx';
 import React, {forwardRef} from 'react';
 
+export const tableRowHoverBgClasses = 'hover:bg-gradient-to-r hover:from-white hover:to-grey-50 dark:hover:from-black dark:hover:to-grey-950';
+
 export interface TableRowProps {
     id?: string;
     action?: React.ReactNode;
@@ -27,7 +29,7 @@ const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(function TableRo
     separator = (separator === undefined) ? true : separator;
     const tableRowClasses = clsx(
         'group/table-row',
-        bgOnHover && 'hover:bg-gradient-to-r hover:from-white hover:to-grey-50 dark:hover:from-black dark:hover:to-grey-950',
+        bgOnHover && tableRowHoverBgClasses,
         onClick && 'cursor-pointer',
         separator ? 'border-b border-grey-100 last-of-type:border-b-transparent hover:border-grey-200 dark:border-grey-950 dark:hover:border-grey-900' : 'border-y border-none first-of-type:hover:border-t-transparent',
         className
