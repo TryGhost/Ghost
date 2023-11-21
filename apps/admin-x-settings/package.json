@@ -53,7 +53,7 @@
     "@types/react": "18.2.37",
     "@types/react-dom": "18.2.15",
     "@types/validator": "13.11.6",
-    "@vitejs/plugin-react": "4.1.1",
+    "@vitejs/plugin-react": "4.2.0",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "eslint-plugin-tailwindcss": "3.13.0",

@@ -1,12 +1,8 @@
-import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
-import pkg from './package.json';
 import react from '@vitejs/plugin-react';
+import {PluginOption, UserConfig, mergeConfig} from 'vite';
+import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import svgr from 'vite-plugin-svgr';
-import {PluginOption} from 'vite';
 import {defineConfig} from 'vitest/config';
-import {resolve} from 'path';
-
-const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
 const externalPlugin = ({externals}: { externals: Record<string, string> }): PluginOption => {
     return {
@@ -32,8 +28,10 @@ const externalPlugin = ({externals}: { externals: Record<string, string> }): Plu
 };
 
 // https://vitejs.dev/config/
-export default (function viteConfig() {
-    return defineConfig({
+export default function adminXViteConfig({packageName, entry, overrides}: {packageName: string; entry: string; overrides?: UserConfig}) {
+    const outputFileName = packageName[0] === '@' ? packageName.slice(packageName.indexOf('/') + 1) : packageName;
+
+    const defaultConfig = defineConfig({
         logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
             svgr(),
@@ -48,8 +46,7 @@ export default (function viteConfig() {
         ],
         define: {
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-            'process.env.VITEST_SEGFAULT_RETRY': 3,
-            'process.env.DEBUG': false // Shim env var utilized by the @tryghost/nql package
+            'process.env.VITEST_SEGFAULT_RETRY': 3
         },
         preview: {
             port: 4174
@@ -60,8 +57,8 @@ export default (function viteConfig() {
             sourcemap: true,
             lib: {
                 formats: ['es'],
-                entry: resolve(__dirname, 'src/index.tsx'),
-                name: pkg.name,
+                entry,
+                name: packageName,
                 fileName(format) {
                     if (format === 'umd') {
                         return `${outputFileName}.umd.js`;
@@ -83,16 +80,8 @@ export default (function viteConfig() {
                 minThreads: 1,
                 maxThreads: 2
             })
-        },
-        resolve: {
-            // Shim node modules utilized by the @tryghost/nql package
-            alias: {
-                fs: 'node-shim.cjs',
-                path: 'node-shim.cjs',
-                util: 'node-shim.cjs',
-                // @TODO: Remove this when @tryghost/nql is updated
-                mingo: resolve(__dirname, '../../node_modules/mingo/dist/mingo.js')
-            }
         }
     });
-});
+
+    return mergeConfig(defaultConfig, overrides || {});
+};

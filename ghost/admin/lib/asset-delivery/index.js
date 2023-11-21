@@ -4,8 +4,9 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const camelCase = require('lodash/camelCase');
 
-const adminXSettingsPath = '../../apps/admin-x-settings/dist';
+const adminXApps = ['admin-x-demo', 'admin-x-settings'];
 
 function generateHash(filePath) {
     const fileContents = fs.readFileSync(filePath, 'utf8');
@@ -31,13 +32,17 @@ module.exports = {
             this.packageConfig['editorHash'] = process.env.EDITOR_URL ? 'development' : generateHash(koenigLexicalPath);
 
             // TODO: ideally take this from the package, but that's broken thanks to .cjs file ext
-            const defaultAdminXSettingFilename = 'admin-x-settings.js';
-            this.packageConfig['adminXSettingsFilename'] = defaultAdminXSettingFilename;
-            this.packageConfig['adminXSettingsHash'] = (this.env === 'production') ? generateHash(path.join(adminXSettingsPath, defaultAdminXSettingFilename)) : 'development';
+            for (const app of adminXApps) {
+                const defaultFilename = `${app}.js`;
+                const configName = camelCase(app);
+                this.packageConfig[`${configName}Filename`] = defaultFilename;
+                this.packageConfig[`${configName}Hash`] = (this.env === 'production') ? generateHash(path.join(`../../apps/${app}/dist`, defaultFilename)) : 'development';
+            }
 
             if (this.env === 'production') {
-                console.log('Admin-X Settings:', this.packageConfig['adminXSettingsFilename'], this.packageConfig['adminXSettingsHash']);
-                console.log('Koenig-Lexical:', this.packageConfig['editorFilename'], this.packageConfig['editorHash']);
+                for (const [key, value] of Object.entries(this.packageConfig)) {
+                    console.log(`Asset-Delivery: ${key} = ${value}`);
+                }
             }
 
             return this.packageConfig;
@@ -84,17 +89,19 @@ module.exports = {
             fs.copySync(`${results.directory}/assets/${relativePath}`, `${assetsOut}/assets/${relativePath}`, {overwrite: true, dereference: true});
         });
 
-        // copy the @tryghost/admin-x-settings assets
-        const assetsAdminXPath = `${assetsOut}/assets/admin-x-settings`;
-
-        if (fs.existsSync(adminXSettingsPath)) {
-            if (this.env === 'production') {
-                fs.copySync(adminXSettingsPath, assetsAdminXPath, {overwrite: true, dereference: true});
-            } else {
-                fs.ensureSymlinkSync(adminXSettingsPath, assetsAdminXPath);
+        // copy assets for each admin-x app
+        for (const app of adminXApps) {
+            const adminXPath = `../../apps/${app}/dist`;
+            const assetsAdminXPath = `${assetsOut}/assets/${app}`;
+            if (fs.existsSync(adminXPath)) {
+                if (this.env === 'production') {
+                    fs.copySync(adminXPath, assetsAdminXPath, {overwrite: true, dereference: true});
+                } else {
+                    fs.ensureSymlinkSync(adminXPath, assetsAdminXPath);
+                }
+            } else  {
+                console.log(`${app} folder not found`);
             }
-        } else  {
-            console.log('Admin-X-Settings folder not found');
         }
 
         // if we are passed a URL for Koenig-Lexical dev server, we don't need to copy the assets

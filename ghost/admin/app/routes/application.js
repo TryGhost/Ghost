@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/ember';
+import AdminXSettings from '../components/admin-x/settings';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -7,7 +8,7 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Debug} from '@sentry/integrations';
-import {importSettings} from '../components/admin-x/settings';
+import {importComponent} from '../components/admin-x/admin-x-component';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
     isAjaxError,
@@ -191,19 +192,24 @@ export default Route.extend(ShortcutsRoute, {
                         return null;
                     }
 
+                    // if the error value includes a model id then overwrite it to improve grouping
+                    if (event.exception.values && event.exception.values.length > 0) {
+                        const pattern = /<(post|page):[a-f0-9]+>/;
+                        const replacement = '<$1:ID>';
+                        event.exception.values[0].value = event.exception.values[0].value.replace(pattern, replacement);
+                    }
+
                     // ajax errors — improve logging and add context for debugging
                     if (isAjaxError(exception)) {
                         const error = exception.payload.errors[0];
                         event.exception.values[0].type = `${error.type}: ${error.context}`;
                         event.exception.values[0].value = error.message;
                         event.exception.values[0].context = error.context;
-                        event.tags.isAjaxError = true;
                     } else {
-                        event.tags.isAjaxError = false;
                         delete event.contexts.ajax;
-                        delete event.tags.ajaxStatus;
-                        delete event.tags.ajaxMethod;
-                        delete event.tags.ajaxUrl;
+                        delete event.tags.ajax_status;
+                        delete event.tags.ajax_method;
+                        delete event.tags.ajax_url;
                     }
 
                     return event;
@@ -234,7 +240,9 @@ export default Route.extend(ShortcutsRoute, {
         }
 
         // Preload settings to avoid a delay when opening
-        setTimeout(importSettings, 1000);
+        setTimeout(() => {
+            importComponent(AdminXSettings.packageName);
+        }, 1000);
     }
 
 });

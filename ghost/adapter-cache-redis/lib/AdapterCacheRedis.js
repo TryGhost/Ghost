@@ -1,5 +1,7 @@
 const BaseCacheAdapter = require('@tryghost/adapter-base-cache');
 const logging = require('@tryghost/logging');
+const metrics = require('@tryghost/metrics');
+const debug = require('@tryghost/debug')('redis-cache');
 const cacheManager = require('cache-manager');
 const redisStoreFactory = require('./redis-store-factory');
 const calculateSlot = require('cluster-key-slot');
@@ -63,6 +65,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     }
 
     #getPrimaryRedisNode() {
+        debug('getPrimaryRedisNode');
         if (this.redisClient.constructor.name !== 'Cluster') {
             return this.redisClient;
         }
@@ -77,6 +80,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     }
 
     #scanNodeForKeys(node) {
+        debug(`scanNodeForKeys matching ${this._keysPattern}`);
         return new Promise((resolve, reject) => {
             const stream = node.scanStream({match: this._keysPattern, count: 100});
             let keys = [];
@@ -93,6 +97,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     }
 
     async #getKeys() {
+        debug('#getKeys');
         const primaryNode = this.#getPrimaryRedisNode();
         if (primaryNode === null) {
             return [];
@@ -142,6 +147,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {*} value
      */
     async set(key, value) {
+        debug('set', key);
         try {
             return await this.cache.set(this._buildKey(key), value);
         } catch (err) {
@@ -153,11 +159,30 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * Reset the cache by deleting everything from redis
      */
     async reset() {
+        debug('reset');
         try {
+            const t0 = performance.now();
+            logging.debug(`[RedisAdapter] Clearing cache: scanning for keys matching ${this._keysPattern}`);
             const keys = await this.#getKeys();
+            const scanTiming = (performance.now() - t0).toFixed(1);
+            logging.debug(`[RedisAdapter] Clearing cache: found ${keys.length} keys matching ${this._keysPattern} in ${scanTiming}ms`);
+            const t1 = performance.now();
             for (const key of keys) {
                 await this.cache.del(key);
             }
+            const t2 = performance.now();
+
+            const deleteTiming = (t2 - t1).toFixed(1);
+            const resetTiming = (t2 - t0).toFixed(1);
+            logging.debug(`[RedisAdapter] Clearing cache: deleted ${keys.length} keys matching ${this._keysPattern} in ${deleteTiming}ms`);
+            logging.debug(`[RedisAdapter] Clearing cache: finished in ${resetTiming}ms`);
+
+            metrics.metric('redis-cache', {
+                scan: scanTiming,
+                delete: deleteTiming,
+                reset: resetTiming,
+                keyCount: keys.length
+            });
         } catch (err) {
             logging.error(err);
         }

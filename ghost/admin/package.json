@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.73.2",
+  "version": "5.74.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -39,14 +39,14 @@
     "@embroider/macros": "1.13.3",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
-    "@sentry/ember": "7.80.1",
-    "@sentry/integrations": "7.80.1",
+    "@sentry/ember": "7.81.0",
+    "@sentry/integrations": "7.81.0",
     "@tryghost/color-utils": "0.2.0",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.88",
     "@tryghost/kg-clean-basic-html": "3.0.41",
     "@tryghost/kg-converters": "0.0.22",
-    "@tryghost/koenig-lexical": "0.5.19",
+    "@tryghost/koenig-lexical": "0.5.20",
     "@tryghost/limit-service": "1.2.12",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/nql": "0.12.0",
@@ -142,7 +142,7 @@
     "react-dom": "18.2.0",
     "reframe.js": "4.0.2",
     "semver": "7.5.4",
-    "testem": "3.10.1",
+    "testem": "3.11.0",
     "tracked-built-ins": "3.3.0",
     "util": "0.12.5",
     "validator": "7.2.0",
@@ -180,6 +180,7 @@
           "build:dev",
           {
             "projects": [
+              "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings"
             ],
             "target": "build"
@@ -191,6 +192,7 @@
           "build",
           {
             "projects": [
+              "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings"
             ],
             "target": "build"

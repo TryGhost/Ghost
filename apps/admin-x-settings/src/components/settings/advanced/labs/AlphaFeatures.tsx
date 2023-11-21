@@ -48,10 +48,6 @@ const features = [{
     description: 'Enables publishers to collect one-time payments',
     flag: 'tipsAndDonations'
 },{
-    title: 'List-Unsubscribe header',
-    description: 'Set the List-Unsubscribe header in emails',
-    flag: 'listUnsubscribeHeader'
-},{
     title: 'AdminX Offers',
     description: 'Enables the new offers UI in AdminX settings',
     flag: 'adminXOffers'
@@ -59,6 +55,10 @@ const features = [{
     title: 'Filter by email disabled',
     description: 'Allows filtering members by email disabled',
     flag: 'filterEmailDisabled'
+},{
+    title: 'AdminX Demo',
+    description: 'Adds a navigation link to the AdminX demo app',
+    flag: 'adminXDemo'
 }];
 
 const AlphaFeatures: React.FC = () => {
