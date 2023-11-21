@@ -5,8 +5,7 @@ const configUtils = require('../../../utils/configUtils');
 const {sendEmail, matchEmailSnapshot} = require('../../../utils/batch-email-utils');
 const cheerio = require('cheerio');
 const fs = require('fs-extra');
-const { DEFAULT_NODES } = require('@tryghost/kg-default-nodes');
-const CommentsController = require('../../../../core/server/services/comments/CommentsController');
+const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
 
 const goldenPost = fs.readJsonSync('./test/utils/fixtures/email-service/golden-post.json');
 
@@ -149,8 +148,6 @@ describe('Can send cards via email', function () {
             lexical: JSON.stringify(goldenPost)
         });
 
-
-
         splitPreheader(data);
 
         await matchEmailSnapshot();
@@ -165,8 +162,8 @@ describe('Can send cards via email', function () {
             'collection', // only used in pages, will never be emailed
             'extended-text', // not a card
             'extended-quote', // not a card
-            'extended-heading', // not a card
-        ]
+            'extended-heading' // not a card
+        ];
 
         const cardsInDefaultNodes = DEFAULT_NODES.map((node) => {
             try {
@@ -178,7 +175,7 @@ describe('Can send cards via email', function () {
             return card !== null && !excludedCards.includes(card); // don't include extended versions of regular text type nodes, we only want the cards (decorator nodes)
         });
 
-
+        // Check that every card in DEFAULT_NODES are present in the golden post (with the exception of the excludedCards above)
         for (const card of cardsInDefaultNodes) {
             assert.ok(cardsInGoldenPost.includes(card), `The golden post does not contain the ${card} card`);
         }
