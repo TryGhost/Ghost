@@ -31,7 +31,11 @@ class PostsPublicServiceWrapper {
                     'post.tag.attached',
                     'post.tag.detached',
                     'page.tag.attached',
-                    'page.tag.detached'
+                    'page.tag.detached',
+                    'tag.edited',
+                    'tag.deleted',
+                    'user.edited',
+                    'user.deleted'
                 ],
                 eventRegistry: EventRegistry
             });
