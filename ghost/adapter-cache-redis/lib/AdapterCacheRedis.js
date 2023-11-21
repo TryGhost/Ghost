@@ -164,16 +164,25 @@ class AdapterCacheRedis extends BaseCacheAdapter {
             const t0 = performance.now();
             logging.debug(`[RedisAdapter] Clearing cache: scanning for keys matching ${this._keysPattern}`);
             const keys = await this.#getKeys();
-            logging.debug(`[RedisAdapter] Clearing cache: found ${keys.length} keys matching ${this._keysPattern} in ${(performance.now() - t0).toFixed(1)}ms`);
-            metrics.metric('cache-reset-scan', (performance.now() - t0).toFixed(1));
+            const scanTiming = (performance.now() - t0).toFixed(1);
+            logging.debug(`[RedisAdapter] Clearing cache: found ${keys.length} keys matching ${this._keysPattern} in ${scanTiming}ms`);
             const t1 = performance.now();
             for (const key of keys) {
                 await this.cache.del(key);
             }
-            logging.debug(`[RedisAdapter] Clearing cache: deleted ${keys.length} keys matching ${this._keysPattern} in ${(performance.now() - t1).toFixed(1)}ms`);
-            metrics.metric('cache-reset-delete', (performance.now() - t1).toFixed(1));
-            metrics.metric('cache-reset', (performance.now() - t0).toFixed(1));
-            metrics.metric('cache-reset-key-count', keys.length);
+            const t2 = performance.now();
+
+            const deleteTiming = (t2 - t1).toFixed(1);
+            const resetTiming = (t2 - t0).toFixed(1);
+            logging.debug(`[RedisAdapter] Clearing cache: deleted ${keys.length} keys matching ${this._keysPattern} in ${deleteTiming}ms`);
+            logging.debug(`[RedisAdapter] Clearing cache: finished in ${resetTiming}ms`);
+
+            metrics.metric('redis-cache', {
+                scan: scanTiming,
+                delete: deleteTiming,
+                reset: resetTiming,
+                keyCount: keys.length,
+            });
         } catch (err) {
             logging.error(err);
         }
