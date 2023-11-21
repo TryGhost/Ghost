@@ -8,7 +8,7 @@ type QueryOptions = {
 
 type BookshelfModels = {
     Snippet: {
-        findPage: (options: QueryOptions) => Promise<Snippet[]>;
+        findPage: (options: QueryOptions) => Promise<{data: any[]}>;
     }
 };
 
@@ -18,6 +18,18 @@ export class SnippetRepositoryBookshelf implements ISnippetsRepository {
     ) {}
 
     async findAll(options: QueryOptions): Promise<Snippet[]> {
-        return this.models.Snippet.findPage(options);
+        const snippetsDBResponse = await this.models.Snippet.findPage(options);
+
+        const snippets = snippetsDBResponse.data
+            .map(dbSnippet => Snippet.create({
+                id: dbSnippet.get('id'),
+                name: dbSnippet.get('name'),
+                lexical: dbSnippet.get('lexical'),
+                mobiledoc: dbSnippet.get('mobiledoc'),
+                createdAt: dbSnippet.get('created_at'),
+                updatedAt: dbSnippet.get('updated_at')
+            }));
+
+        return snippets;
     }
 }

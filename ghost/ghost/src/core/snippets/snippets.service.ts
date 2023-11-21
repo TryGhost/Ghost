@@ -8,8 +8,7 @@ export class SnippetsService {
         @Inject('SnippetsRepository') private readonly repository: ISnippetsRepository
     ) {}
 
-    async browse(): Promise<Snippet[]> {
-        console.log('getting snippets from NEST!');
-        return this.repository.findAll({});
+    async browse(options: {debug?: boolean, filter?: string}): Promise<Snippet[]> {
+        return this.repository.findAll(options);
     }
 }
