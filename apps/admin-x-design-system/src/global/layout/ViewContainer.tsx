@@ -21,12 +21,14 @@ export interface PrimaryActionProps {
     title?: string;
     icon?: string;
     color?: ButtonColor;
+    className?: string;
     onClick?: () => void;
 }
 
 interface ViewContainerProps {
     type: 'page' | 'section';
     title?: string;
+    headerContent?: React.ReactNode;
     tabs?: ViewTab[];
     selectedTab?: string;
     selectedView?: string;
@@ -48,6 +50,7 @@ interface ViewContainerProps {
 const ViewContainer: React.FC<ViewContainerProps> = ({
     type,
     title,
+    headerContent,
     tabs,
     selectedTab,
     onTabChange,
@@ -117,7 +120,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     );
 
     toolbarContainerClassName = clsx(
-        'flex justify-between',
+        'flex items-end justify-between pb-3',
         toolbarBorder && 'border-b border-grey-200',
         toolbarContainerClassName
     );
@@ -134,13 +137,9 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
         actionsClassName
     );
 
-    if (primaryAction) {
-        primaryAction!.color = 'black';
-    }
-
     const primaryActionContents = <>
-        {primaryAction?.title && (
-            <Button color={primaryAction.color} icon={primaryAction.icon} iconColorClass='text-white' label={primaryAction.title} size={type === 'page' ? 'md' : 'sm'} onClick={primaryAction.onClick} />
+        {primaryAction?.title || primaryAction?.icon && (
+            <Button className={primaryAction.className} color={primaryAction.color || 'black'} icon={primaryAction.icon} label={primaryAction.title} size={type === 'page' ? 'md' : 'sm'} onClick={primaryAction.onClick} />
         )}
     </>;
 
@@ -148,7 +147,8 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
         <div className={toolbarWrapperClassName}>
             <div className={toolbarContainerClassName}>
                 <div className={toolbarLeftClassName}>
-                    {title && <Heading className={tabs?.length ? 'pb-3' : 'pb-2'} level={type === 'page' ? 1 : 4}>{title}</Heading>}
+                    {headerContent}
+                    {title && <Heading className={tabs?.length ? 'pb-3' : ''} level={type === 'page' ? 1 : 4}>{title}</Heading>}
                     {tabs?.length && (
                         <TabList
                             border={false}
@@ -186,7 +186,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     return (
         <section className={mainContainerClassName}>
-            {(title || actions) && toolbar}
+            {(title || actions || headerContent) && toolbar}
             <div className={contentWrapperClassName}>
                 {mainContent}
             </div>

@@ -362,19 +362,26 @@ export const ExampleDetailScreen: Story = {
         showGlobalActions: true,
         children: <>
             <ViewContainer
-                toolbarBorder={false}
-                type='page'>
-                <div className='flex items-end justify-between gap-5 border-b border-grey-200 py-2'>
+                headerContent={
                     <div>
                         <Avatar bgColor='#A5D5F7' label='EV' labelColor='white' size='xl' />
                         <Heading className='mt-2' level={1}>Emerson Vaccaro</Heading>
                         <div className=''>Colombus, OH</div>
                     </div>
+                }
+                primaryAction={
+                    {
+                        icon: 'ellipsis',
+                        color: 'black'
+                    }
+                }
+                type='page'>
+                {/* <div className='flex items-end justify-between gap-5 border-b border-grey-200 py-2'>
                     <div className='pb-2'>
                         <Button color='outline' icon='ellipsis' />
                     </div>
-                </div>
-                <div className='grid grid-cols-4 border-b border-grey-200 py-5'>
+                </div> */}
+                <div className='grid grid-cols-4 border-b border-grey-200 pb-5'>
                     <div className='-ml-5 flex h-full flex-col px-5'>
                         <span>Last seen on <strong>22 June 2023</strong></span>
                         <span className='mt-2'>Created on <strong>27 Jan 2021</strong></span>
