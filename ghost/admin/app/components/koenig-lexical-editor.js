@@ -293,7 +293,8 @@ export default class KoenigLexicalEditor extends Component {
             feature: {
                 collectionsCard: this.feature.get('collectionsCard'),
                 collections: this.feature.get('collections'),
-                emojiPicker: this.feature.get('editorEmojiPicker')
+                emojiPicker: this.feature.get('editorEmojiPicker'),
+                tkReminders: this.feature.get('tkReminders')
             },
             depreciated: {
                 headerV1: true // if false, shows header v1 in the menu

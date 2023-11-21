@@ -18,7 +18,7 @@ const preview: Preview = {
 		},
 		options: {
 			storySort: {
-				mathod: 'alphabetical',
+				method: 'alphabetical',
 				order: ['Welcome', 'Foundations', ['Style Guide', 'Colors', 'Icons', 'ErrorHandling'], 'Global', ['Form', 'Chrome', 'Modal', 'Layout', 'List', 'Table', '*'], 'Settings', ['Setting Section', 'Setting Group', '*'], 'Experimental'],
 			},
 		},
@@ -32,7 +32,10 @@ const preview: Preview = {
 
 			return (
 			<div className={`admin-x-design-system admin-x-base ${scheme === 'dark' ? 'dark' : ''}`} style={{
-				padding: '24px',
+				// padding: '24px',
+				// width: 'unset',
+				height: 'unset',
+				// overflow: 'unset',
 				background: (scheme === 'dark' ? '#131416' : '')
 			}}>
 				{/* 👇 Decorators in Storybook also accept a function. Replace <Story/> with Story() to enable it  */}

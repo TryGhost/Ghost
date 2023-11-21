@@ -55,6 +55,14 @@ const features = [{
     title: 'Filter by email disabled',
     description: 'Allows filtering members by email disabled',
     flag: 'filterEmailDisabled'
+},{
+    title: 'AdminX Demo',
+    description: 'Adds a navigation link to the AdminX demo app',
+    flag: 'adminXDemo'
+},{
+    title: 'TK Reminders',
+    description: 'Enables the TK Reminders feature in the editor',
+    flag: 'tkReminders'
 }];
 
 const AlphaFeatures: React.FC = () => {

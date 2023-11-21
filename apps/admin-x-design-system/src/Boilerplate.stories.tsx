@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/react';
 import BoilerPlate from './Boilerplate';
 
 const meta = {
-    title: 'Meta / Boilerplate story',
+    title: 'Meta / Boilerplate',
     component: BoilerPlate,
     tags: ['autodocs']
 } satisfies Meta<typeof BoilerPlate>;

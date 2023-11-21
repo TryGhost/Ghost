@@ -8,12 +8,16 @@ import {DefaultHeaderTypes} from './unsplash/UnsplashTypes.ts';
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
         <App
-            darkMode={false}
-            externalNavigate={() => {}}
-            fetchKoenigLexical={() => {
-                return Promise.resolve();
+            designSystem={{darkMode: false, fetchKoenigLexical: async () => {}}}
+            framework={{
+                externalNavigate: () => {},
+                ghostVersion: '5.x',
+                sentryDSN: null,
+                unsplashConfig: {} as DefaultHeaderTypes,
+                onDelete: () => {},
+                onInvalidate: () => {},
+                onUpdate: () => {}
             }}
-            ghostVersion='5.x'
             officialThemes={[{
                 name: 'Source',
                 category: 'News',
@@ -53,12 +57,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                 ref: 'TryGhost/Edition',
                 image: 'assets/img/themes/Edition.png'
             }]}
-            sentryDSN={null}
-            unsplashConfig={{} as DefaultHeaderTypes}
             zapierTemplates={[]}
-            onDelete={() => {}}
-            onInvalidate={() => {}}
-            onUpdate={() => {}}
         />
     </React.StrictMode>
 );

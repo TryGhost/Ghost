@@ -2211,9 +2211,9 @@ section.gh-ds h2 {
     line-height: 40px;
 }
 
-.admin-x-settings-container-error {
+.admin-x-container-error {
     height: 100vh;
-    width: 100vw;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2221,12 +2221,12 @@ section.gh-ds h2 {
     background: var(--whitegrey-l2);
 }
 
-.admin-x-settings-error {
+.admin-x-error {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 20px;
-    background: white;
+    background: var(--white);
     box-shadow: var(--box-shadow-m);
     border-radius: 20px;
     padding: 5vmin;
@@ -2234,13 +2234,13 @@ section.gh-ds h2 {
     color: var(--darkgrey);
 }
 
-.admin-x-settings-container-error p,
-.admin-x-settings-container-error h1 {
+.admin-x-container-error p,
+.admin-x-container-error h1 {
     margin: 0;
     padding: 0;
 }
 
-.admin-x-settings-container-error a {
+.admin-x-container-error a {
     display: inline-block;
     padding: 6px 10px;
     border: 1px solid var(--green);
