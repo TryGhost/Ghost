@@ -244,8 +244,14 @@ export const OffersIndexModal = () => {
                                 {id: 'redemptions', label: 'Redemptions'}
                             ]}
                             position='right'
-                            onDirectionChange={() => {}}
-                            onSortChange={() => {}}
+                            onDirectionChange={(selectedDirection) => {
+                                // eslint-disable-next-line no-console
+                                console.log(`Sorting direction: ${selectedDirection}`);
+                            }}
+                            onSortChange={(selectedOption) => {
+                                // eslint-disable-next-line no-console
+                                console.log(`Sorting option: ${selectedOption}`);
+                            }}
                         />
                         <div className='flex gap-3'>
                             <Button icon='layout-module-1' iconColorClass={selectedLayout === 'card' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('card')} />
