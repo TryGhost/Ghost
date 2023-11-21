@@ -4,6 +4,11 @@ const assert = require('assert/strict');
 const configUtils = require('../../../utils/configUtils');
 const {sendEmail, matchEmailSnapshot} = require('../../../utils/batch-email-utils');
 const cheerio = require('cheerio');
+const fs = require('fs-extra');
+const { DEFAULT_NODES } = require('@tryghost/kg-default-nodes');
+const CommentsController = require('../../../../core/server/services/comments/CommentsController');
+
+const goldenPost = fs.readJsonSync('./test/utils/fixtures/email-service/golden-post.json');
 
 /**
  * Remove the preheader span from the email html and put it in a separate field called preheader
@@ -137,5 +142,45 @@ describe('Can send cards via email', function () {
         assert.ok(data.preheader.includes('This is a paragraph'));
 
         await matchEmailSnapshot();
+    });
+
+    it('renders the golden post correctly', async function () {
+        const data = await sendEmail(agent, {
+            lexical: JSON.stringify(goldenPost)
+        });
+
+
+
+        splitPreheader(data);
+
+        await matchEmailSnapshot();
+    });
+
+    it('renders all of the default nodes in the golden post', async function () {
+        const cardsInGoldenPost = goldenPost.root.children.map((child) => {
+            return child.type;
+        });
+
+        const excludedCards = [
+            'collection', // only used in pages, will never be emailed
+            'extended-text', // not a card
+            'extended-quote', // not a card
+            'extended-heading', // not a card
+        ]
+
+        const cardsInDefaultNodes = DEFAULT_NODES.map((node) => {
+            try {
+                return node.getType();
+            } catch (error) {
+                return null;
+            }
+        }).filter((card) => {
+            return card !== null && !excludedCards.includes(card); // don't include extended versions of regular text type nodes, we only want the cards (decorator nodes)
+        });
+
+
+        for (const card of cardsInDefaultNodes) {
+            assert.ok(cardsInGoldenPost.includes(card), `The golden post does not contain the ${card} card`);
+        }
     });
 });
