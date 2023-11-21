@@ -2,6 +2,7 @@ import {
     ExtendedHeadingNode,
     ExtendedQuoteNode,
     ExtendedTextNode,
+    TKNode,
     extendedHeadingNodeReplacement,
     extendedQuoteNodeReplacement,
     extendedTextNodeReplacement
@@ -66,7 +67,8 @@ const DEFAULT_NODES = [
     EmbedNode,
     GalleryNode,
     SignupNode,
-    CollectionNode
+    CollectionNode,
+    TKNode
 ];
 
 export default DEFAULT_NODES;

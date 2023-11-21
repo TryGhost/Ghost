@@ -45,6 +45,11 @@ body,
     background-color: inherit;
 }
 
+.tk-highlight {
+    background-color: #BAF2FF;
+    border-radius: 3px;
+}
+
 @font-face {
     font-family: "Inter";
     src: url("./assets/fonts/Inter.ttf") format("truetype-variations");

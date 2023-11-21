@@ -25,6 +25,7 @@ import {SignupPlugin} from '../plugins/SignupPlugin';
 // import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import {EmojiPickerPlugin} from './EmojiPickerPlugin';
+import {TKPlugin} from '../plugins/TKPlugin';
 import {TogglePlugin} from '../plugins/TogglePlugin';
 import {VideoPlugin} from '../plugins/VideoPlugin';
 
@@ -67,6 +68,8 @@ export const AllDefaultPlugins = () => {
 
             {/* Snippet Plugins */}
             <KoenigSnippetPlugin />
+
+            {cardConfig.feature?.tkReminders ? <TKPlugin /> : null}
         </>
     );
 };
