@@ -1,6 +1,7 @@
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
+import {SortMenu} from '@tryghost/admin-x-design-system';
 import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -235,8 +236,21 @@ export const OffersIndexModal = () => {
                 <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
                     <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
                     <div className='flex gap-3'>
-                        <Button icon='layout-module-1' iconColorClass={selectedLayout === 'card' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('card')} />
-                        <Button icon='layout-headline' iconColorClass={selectedLayout === 'list' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('list')} />
+                        <SortMenu
+                            direction='desc'
+                            items={[
+                                {id: 'date-added', label: 'Date added', selected: true},
+                                {id: 'name', label: 'Name'},
+                                {id: 'redemptions', label: 'Redemptions'}
+                            ]}
+                            position='right'
+                            onDirectionChange={() => {}}
+                            onSortChange={() => {}}
+                        />
+                        <div className='flex gap-3'>
+                            <Button icon='layout-module-1' iconColorClass={selectedLayout === 'card' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('card')} />
+                            <Button icon='layout-headline' iconColorClass={selectedLayout === 'list' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('list')} />
+                        </div>
                     </div>
                 </div>
             </header>
