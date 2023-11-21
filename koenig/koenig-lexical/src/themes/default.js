@@ -29,7 +29,8 @@ const defaultTheme = {
         underlinestrikethrough: undefined,
         code: undefined
     },
-    code: undefined
+    code: undefined,
+    tk: 'tk-highlight'
 };
 
 export default defaultTheme;

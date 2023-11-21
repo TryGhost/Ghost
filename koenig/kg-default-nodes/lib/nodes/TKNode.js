@@ -16,7 +16,7 @@ export class TKNode extends TextNode {
 
     createDOM(config) {
         const element = super.createDOM(config);
-        element.classList.add('tk-highlight');
+        element.classList.add(config.theme.tk);
         return element;
     }
 
