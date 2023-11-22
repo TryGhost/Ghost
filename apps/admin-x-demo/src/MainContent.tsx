@@ -1,4 +1,4 @@
-import {Avatar, Button, ButtonGroup, DynamicTable, DynamicTableColumn, DynamicTableRow, Heading, Page, SortMenu, ViewContainer} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, ButtonGroup, DynamicTable, DynamicTableColumn, DynamicTableRow, Heading, Hint, Page, SortMenu, ViewContainer} from '@tryghost/admin-x-design-system';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useState} from 'react';
 
@@ -206,7 +206,11 @@ const MainContent = () => {
         contents = <DynamicTable
             cellClassName='text-sm'
             columns={testColumns}
+            footer={
+                <Hint>30 members</Hint>
+            }
             rows={testRows(30)}
+            stickyFooter
             stickyHeader
         />;
         break;
@@ -219,7 +223,6 @@ const MainContent = () => {
         <Page>
             <ViewContainer
                 actions={dummyActions}
-                firstOnPage={true}
                 primaryAction={{
                     title: 'About',
                     onClick: () => {
