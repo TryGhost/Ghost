@@ -7,6 +7,7 @@ const configUtils = require('../../utils/configUtils');
 const {mockLabsDisabled, mockLabsEnabled, mockSetting} = require('../../utils/e2e-framework-mock-manager');
 const ObjectId = require('bson-objectid').default;
 const {sendEmail, getDefaultNewsletter, getLastEmail} = require('../../utils/batch-email-utils');
+const urlUtils = require('../../utils/urlUtils');
 
 let emailMockReceiver, agent, membersAgent;
 
@@ -60,7 +61,7 @@ async function sendCommentNotification() {
         .expectStatus(201);
 }
 
-async function configureSite({siteUrl}) {
+function configureSite({siteUrl}) {
     configUtils.set('url', new URL(siteUrl).href);
 }
 
@@ -108,7 +109,7 @@ async function assertFromAddressNewsletter(aFrom, aReplyTo) {
 describe('Email addresses', function () {
     before(async function () {
         // Can only set site URL once because otherwise agents are messed up
-        await configureSite({
+        configureSite({
             siteUrl: 'http://blog.acme.com'
         });
 
@@ -126,7 +127,7 @@ describe('Email addresses', function () {
         mockManager.mockMailgun();
         mockLabsDisabled('newEmailAddresses');
 
-        await configureSite({
+        configureSite({
             siteUrl: 'http://blog.acme.com'
         });
         mockSetting('title', 'Example Site');
@@ -136,8 +137,9 @@ describe('Email addresses', function () {
     });
 
     afterEach(async function () {
-        mockManager.restore();
         await configUtils.restore();
+        urlUtils.restore();
+        mockManager.restore();
     });
 
     describe('Legacy setup', function () {
@@ -281,15 +283,13 @@ describe('Email addresses', function () {
         });
 
         it('[NEWSLETTER] Does allow to set the replyTo address to any address', async function () {
-            // TODO: fix test - This requires a schema change to allow non-enum values in sender_reply_to
-            this.skip();
             await configureNewsletter({
                 sender_email: 'anything@sendingdomain.com',
                 sender_name: 'Anything Possible',
                 sender_reply_to: 'anything@possible.com'
             });
             await sendNewsletter();
-            await assertFromAddressNewsletter('"Anything Possible" <anything@sendingdomain.com>', '"Anything Possible" <anything@possible.com>');
+            await assertFromAddressNewsletter('"Anything Possible" <anything@sendingdomain.com>', 'anything@possible.com');
         });
 
         it('[NEWSLETTER] Can set the reply to to the support address', async function () {
@@ -369,15 +369,13 @@ describe('Email addresses', function () {
         });
 
         it('[NEWSLETTER] Does allow to set the replyTo address to any address', async function () {
-            // TODO: fix test - This requires a schema change to allow non-enum values in sender_reply_to
-            this.skip();
             await configureNewsletter({
                 sender_email: 'anything@possible.com',
                 sender_name: 'Anything Possible',
                 sender_reply_to: 'anything@possible.com'
             });
             await sendNewsletter();
-            await assertFromAddressNewsletter('"Anything Possible" <anything@sendingdomain.com>', '"Anything Possible" <anything@possible.com>');
+            await assertFromAddressNewsletter('"Anything Possible" <default@sendingdomain.com>', 'anything@possible.com');
         });
 
         it('[NEWSLETTER] Can set the reply to to the support address', async function () {
@@ -459,8 +457,6 @@ describe('Email addresses', function () {
         });
 
         it('[NEWSLETTER] Does allow to set the replyTo address to any address', async function () {
-            // TODO: fix test - This requires a schema change to allow non-enum values in sender_reply_to
-            this.skip();
             await configureNewsletter({
                 sender_email: 'anything@possible.com',
                 sender_name: 'Anything Possible',

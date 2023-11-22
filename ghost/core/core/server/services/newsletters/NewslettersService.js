@@ -9,7 +9,8 @@ const errors = require('@tryghost/errors');
 const messages = {
     nameAlreadyExists: 'A newsletter with the same name already exists',
     newsletterNotFound: 'Newsletter not found.',
-    senderEmailNotAllowed: 'You cannot set the sender email address to this address'
+    senderEmailNotAllowed: 'You cannot set the sender email address to this address',
+    replyToNotAllowed: 'You cannot set the reply-to email address to this address'
 };
 
 class NewslettersService {
@@ -249,8 +250,24 @@ class NewslettersService {
         const emailsToVerify = [];
         const emailProperties = [
             {property: 'sender_email', type: 'from'}
-            //{property: 'sender_reply_to', type: 'replyTo'}
         ];
+
+        if (!this.emailAddressService.useNewEmailAddresses) {
+            // Validate reply_to is either newsletter or support
+            if (cleanedAttrs.sender_reply_to !== undefined) {
+                if (!['newsletter', 'support'].includes(cleanedAttrs.sender_reply_to)) {
+                    throw new errors.ValidationError({
+                        message: tpl(messages.replyToNotAllowed)
+                    });
+                }
+            }
+        } else {
+            if (cleanedAttrs.sender_reply_to !== undefined) {
+                if (!['newsletter', 'support'].includes(cleanedAttrs.sender_reply_to)) {
+                    emailProperties.push({property: 'sender_reply_to', type: 'replyTo'});
+                }
+            }
+        }
 
         for (const {property, type} of emailProperties) {
             const email = cleanedAttrs[property];
