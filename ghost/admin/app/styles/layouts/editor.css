@@ -320,12 +320,18 @@
 @media (max-width: 1024px) {
     .gh-editor-header {
         z-index: 100;
-        height: 56px;
+        height: 64px;
         margin: 0;
         padding: 0;
         padding-left: 15px;
         background-color: var(--white);
         border-radius: 0;
+    }
+}
+
+@media (max-width: 500px) {
+    .gh-editor-header .mobile {
+        margin-left: 5px;
     }
 }
 
@@ -371,57 +377,6 @@
 
 .gh-editor-wordcount-container svg path {
     stroke: var(--midgrey-l2);
-}
-
-@media (max-width: 500px) {
-    .gh-editor-wordcount-container {
-        display: none;
-    }
-}
-
-.gh-editor-mobile-menu {
-    display: none;
-}
-
-@media (max-width: 500px) {
-    .gh-editor-mobile-menu {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1.2rem;
-        height: 48px;
-        padding: 0 32px;
-        background: var(--white);
-    }
-
-    .gh-editor-mobile-menu .gh-editor-wordcount {
-        padding: 0;
-    }
-
-    .gh-editor-mobile-menu svg {
-        width: 16px;
-        height: 16px;
-    }
-
-    .gh-editor-mobile-menu .gh-editor-publish-buttons {
-        display: flex;
-        align-items: center;
-        gap: 1.6rem;
-    }
-
-    .gh-editor-mobile-menu .gh-btn-editor:hover {
-        background: none !important;
-    }
-
-    .gh-editor-mobile-menu .gh-btn-editor span {
-        height: 100%;
-        padding: 0;
-        font-size: 1.3rem;
-    }
 }
 
 .gh-editor-wordcount {
@@ -607,18 +562,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     fill: var(--darkgrey);
 }
 
-.gh-editor-feature-image-add {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-}
-
-@media (max-width: 768px) {
-    .gh-editor-feature-image-add {
-        padding-top: 1.6rem;
-    }
-}
-
 .gh-editor-feature-image-add-button {
     display: flex;
     align-items: center;
@@ -741,10 +684,8 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 }
 
 .gh-editor-back-button {
-    display: flex;
-    align-items: center;
     height: 34px;
-    gap: 8px;
+    margin-right: 8px;
     padding: 0 12px;
     outline: none;
     border: none;
@@ -766,24 +707,23 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     background: var(--whitegrey);
 }
 
+.gh-editor-back-button span {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .gh-editor-back-button svg {
-    width: 1.2rem;
-    height: 1.2rem;
+    width: .8em;
+    height: .8em;
     margin-right: .5em;
     padding-top: 2px;
     fill: var(--darkgrey);
 }
 
 @media (max-width: 500px) {
-    .gh-editor-back-button span {
-        display: none;
-    }
-
-    .gh-editor-back-button svg {
-        width: 1.3rem;
-        height: 1.3rem;
+    .gh-editor-back-button {
         margin-right: 0;
-        fill: var(--midgrey-l1);
     }
 }
 
@@ -799,12 +739,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     line-height: 34px;
     background: var(--white);
     border-radius: 3px;
-}
-
-@media (max-width: 500px) {
-    .gh-editor-post-status {
-        padding: 0 8px;
-    }
 }
 
 .gh-editor-post-status-btn {
@@ -851,19 +785,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     font-weight: 500;
 }
 
-.gh-editor-publish-buttons {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    pointer-events: auto;
-}
-
-@media (max-width: 500px) {
-    .gh-editor-publish-buttons {
-        display: none;
-    }
-}
-
 .gh-lexical-indicator {
     margin: 1px 0 0 8px;
     padding: 1px 8px;
@@ -876,12 +797,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 
 .gh-editor-save-trigger {
     margin-right: 8px;
-}
-
-@media (max-width: 500px) {
-    .gh-editor-save-trigger {
-        margin-right: 0;
-    }
 }
 
 .gh-editor-preview-trigger {
@@ -1147,7 +1062,7 @@ figure {
 /* Labs
 /* ---------------------------------------------------------- */
 
-.gh-editor-title-container {
+.gh-editor-title-container.page-improvements {
     position: relative;
     max-width: 740px;
     width: 100%;
@@ -1157,7 +1072,7 @@ figure {
     background: transparent;
 }
 
-.gh-editor .gh-editor-title {
+.gh-editor .page-improvements .gh-editor-title {
     display: block;
     width: 100%;
     max-width: unset;
@@ -1172,18 +1087,6 @@ figure {
     font-weight: 700;
     overflow: hidden;
     box-shadow: none;
-}
-
-@media (min-width: 500px) and (max-width: 768px) {
-    .gh-editor .gh-editor-title {
-        font-size: 3.6rem;
-    }
-}
-
-@media (max-width: 500px) {
-    .gh-editor .gh-editor-title {
-        font-size: 2.8rem;
-    }
 }
 
 .gh-editor-hidden-indicator {
