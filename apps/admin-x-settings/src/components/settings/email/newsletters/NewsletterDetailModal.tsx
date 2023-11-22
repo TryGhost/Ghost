@@ -182,7 +182,7 @@ const Sidebar: React.FC<{
     const renderReplyToEmailField = () => {
         if (isManagedEmail(config)) {
             if (hasSendingDomain(config)) {
-                const replyToEmailUsername = newsletter.sender_reply_to?.split('@')[0];
+                const replyToEmailUsername = ['newsletter', 'support'].includes(newsletter.sender_reply_to) ? '' : newsletter.sender_reply_to?.split('@')[0];
                 return (
                     <TextField
                         error={Boolean(errors.sender_reply_to)}
