@@ -81,7 +81,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     tableContainerClassName = clsx(
         'flex-auto overflow-x-auto',
         !horizontalScrolling && 'w-full max-w-full',
-        (singlePageTable && (stickyHeader || stickyFooter || absolute)) && 'px-12 xl:px-[calc((100%-1280px)/2+48px)]',
+        (singlePageTable && (stickyHeader || stickyFooter || absolute)) && 'px-12 xl:px-[calc((100%-1320px)/2+48px)]',
         tableContainerClassName
     );
 
@@ -91,7 +91,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     );
 
     thClassName = clsx(
-        'bg-white py-3 pr-3 text-left',
+        'last-child:pr-5 bg-white py-3 text-left [&:not(:first-child)]:pl-5',
         thClassName
     );
 
@@ -102,7 +102,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     );
 
     cellClassName = clsx(
-        'flex h-full py-3 pr-3',
+        'flex h-full py-4',
         cellClassName
     );
 
@@ -114,8 +114,8 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
 
     footerClassName = clsx(
         'bg-white',
-        (singlePageTable && stickyFooter) && 'mx-12 xl:mx-[calc((100%-1280px)/2+48px)]',
-        footer && 'py-3',
+        (singlePageTable && stickyFooter) && 'mx-12 xl:mx-[calc((100%-1320px)/2+48px)]',
+        footer && 'py-4',
         stickyFooter && 'sticky inset-x-0 bottom-0',
         footerBorder && 'border-t border-grey-200',
         footerClassName
@@ -166,7 +166,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
                                     let customTdClasses = tdClassName;
                                     customTdClasses = clsx(
                                         customTdClasses,
-                                        currentColumn.noWrap ? 'truncate' : '',
+                                        // currentColumn.noWrap ? 'truncate' : '',
                                         currentColumn.align === 'center' && 'text-center',
                                         currentColumn.align === 'right' && 'text-right'
                                     );
@@ -188,6 +188,9 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
                                     let customCellClasses = cellClassName;
                                     customCellClasses = clsx(
                                         customCellClasses,
+                                        colID !== 0 && 'pl-5',
+                                        (colID === columns.length - 1) && 'pr-5',
+                                        currentColumn.noWrap ? 'truncate' : '',
                                         currentColumn.valign === 'middle' || !currentColumn.valign && 'items-center',
                                         currentColumn.valign === 'top' && 'items-start',
                                         currentColumn.valign === 'bottom' && 'items-end'

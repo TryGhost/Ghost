@@ -28,7 +28,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     children
 }) => {
     const containerClasses = clsx(
-        'z-50 h-[74px] p-5 px-7',
+        'z-50 h-[72px] p-5 px-7',
         !children && 'flex items-center justify-between gap-3',
         sticky && 'sticky top-0',
         containerClassName

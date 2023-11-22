@@ -32,7 +32,7 @@ const Button: React.FC<ButtonProps> = ({
     label = '',
     hideLabel = false,
     icon = '',
-    iconColorClass = 'text-black',
+    iconColorClass,
     color = 'clear',
     fullWidth,
     link,
@@ -67,6 +67,7 @@ const Button: React.FC<ButtonProps> = ({
                 className
             );
             loadingIndicatorColor = 'light';
+            iconColorClass = iconColorClass || 'text-white';
             break;
         case 'grey':
             className = clsx(
@@ -81,6 +82,7 @@ const Button: React.FC<ButtonProps> = ({
                 className
             );
             loadingIndicatorColor = 'light';
+            iconColorClass = iconColorClass || 'text-white';
             break;
         case 'red':
             className = clsx(
@@ -88,6 +90,7 @@ const Button: React.FC<ButtonProps> = ({
                 className
             );
             loadingIndicatorColor = 'light';
+            iconColorClass = iconColorClass || 'text-white';
             break;
         case 'white':
             className = clsx(
