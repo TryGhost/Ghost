@@ -18,15 +18,9 @@
     padding: 11vw 92px;
 }
 
-@media (min-width: 500px) and (max-width: 960px) {
+@media (max-width: 768px) {
     .gh-koenig-editor-pane {
-        padding: 15vw 92px;
-    }
-}
-
-@media (max-width: 500px) {
-    .gh-koenig-editor-pane {
-        padding: 20vw 32px;
+        padding: 56px 32px;
     }
 }
 
