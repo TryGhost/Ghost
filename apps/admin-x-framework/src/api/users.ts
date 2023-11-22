@@ -11,11 +11,11 @@ export type User = {
     name: string;
     slug: string;
     email: string;
-    profile_image: string;
+    profile_image: string|null;
     cover_image: string|null;
     bio: string|null;
-    website: string;
-    location: string;
+    website: string|null;
+    location: string|null;
     facebook: string|null;
     twitter: string|null;
     accessibility: string|null;

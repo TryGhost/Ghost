@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe, toggleLabsFlag} from '../../utils/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Offers Modal', () => {
     test.beforeEach(async () => {
@@ -32,7 +32,7 @@ test.describe('Offers Modal', () => {
         const modal = page.getByTestId('offers-modal');
         await expect(modal).toContainText('Active offers');
         await expect(modal).toContainText('First offer');
-        await expect(modal).toContainText('Second offer'); 
+        await expect(modal).toContainText('Second offer');
     });
 
     test('Can view archived offers', async ({page}) => {
@@ -49,7 +49,7 @@ test.describe('Offers Modal', () => {
         const modal = page.getByTestId('offers-modal');
         await modal.getByText('Archived').click();
         await expect(modal).toContainText('Archived offers');
-        await expect(modal).toContainText('Third offer'); 
+        await expect(modal).toContainText('Third offer');
     });
 
     test('Supports updating an offer', async ({page}) => {
@@ -57,11 +57,11 @@ test.describe('Offers Modal', () => {
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
             browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
-            browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers[0].id}/`, response: responseFixtures.offers},
+            browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
-            editOffer: {method: 'PUT', path: `/offers/${responseFixtures.offers.offers[0].id}/`, response: {
+            editOffer: {method: 'PUT', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: {
                 offers: [{
-                    id: responseFixtures.offers.offers[0].id,
+                    id: responseFixtures.offers.offers![0].id,
                     name: 'Updated offer',
                     body_font_category: 'sans_serif'
                 }]
@@ -73,7 +73,7 @@ test.describe('Offers Modal', () => {
         await section.getByRole('button', {name: 'Manage offers'}).click();
         const modal = page.getByTestId('offers-modal');
         await expect(modal).toContainText('Active offers');
-        await expect(modal).toContainText('First offer'); 
+        await expect(modal).toContainText('First offer');
         await modal.getByText('First offer').click();
 
         const offerUpdateModal = page.getByTestId('offer-update-modal');
@@ -91,7 +91,7 @@ test.describe('Offers Modal', () => {
 
         expect(lastApiRequests.editOffer?.body).toMatchObject({
             offers: [{
-                id: responseFixtures.offers.offers[0].id,
+                id: responseFixtures.offers.offers![0].id,
                 name: 'First offer',
                 code: 'black-friday-offer'
             }]

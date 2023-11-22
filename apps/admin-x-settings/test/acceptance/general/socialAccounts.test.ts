@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, testUrlValidation, updatedSettingsResponse} from '../../utils/acceptance';
+import {globalDataRequests, mockApi, testUrlValidation, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Social account settings', async () => {
     test('Supports editing social URLs', async ({page}) => {
