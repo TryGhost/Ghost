@@ -420,7 +420,7 @@ Object {
     },
     Object {
       "key": "title",
-      "value": "[]",
+      "value": null,
     },
     Object {
       "key": "description",
@@ -778,7 +778,7 @@ Object {
     },
     Object {
       "key": "title",
-      "value": "[]",
+      "value": null,
     },
     Object {
       "key": "description",
@@ -1135,7 +1135,7 @@ Object {
     },
     Object {
       "key": "title",
-      "value": "[]",
+      "value": null,
     },
     Object {
       "key": "description",
@@ -1497,7 +1497,7 @@ Object {
     },
     Object {
       "key": "title",
-      "value": "[]",
+      "value": null,
     },
     Object {
       "key": "description",
@@ -1947,7 +1947,7 @@ Object {
     },
     Object {
       "key": "title",
-      "value": "[]",
+      "value": null,
     },
     Object {
       "key": "description",
@@ -2369,7 +2369,7 @@ Object {
     },
     Object {
       "key": "title",
-      "value": "[]",
+      "value": null,
     },
     Object {
       "key": "description",

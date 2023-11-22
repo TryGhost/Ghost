@@ -5,6 +5,7 @@ const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyLoca
 const {queryStringToken} = regexes;
 const models = require('../../../core/server/models');
 const logging = require('@tryghost/logging');
+const {mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
 
 const assertMemberRelationCount = async (newsletterId, expectedCount) => {
     const relations = await dbUtils.knex('members_newsletters').where({newsletter_id: newsletterId}).pluck('id');
@@ -39,6 +40,7 @@ describe('Newsletters API', function () {
 
     beforeEach(function () {
         emailMockReceiver = mockManager.mockMail();
+        mockLabsDisabled('newEmailAddresses');
     });
 
     afterEach(function () {
