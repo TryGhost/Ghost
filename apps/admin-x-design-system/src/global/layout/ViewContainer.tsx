@@ -179,7 +179,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     toolbarContainerClassName = clsx(
         'flex justify-between gap-5',
-        (type === 'page' && actions?.length) ? 'flex-col tablet:flex-row tablet:items-end' : 'items-end',
+        (type === 'page' && actions?.length) ? 'flex-col md:flex-row md:items-end' : 'items-end',
         (firstOnPage && type === 'page') ? 'pb-3 tablet:pb-8' : (tabs?.length ? '' : 'pb-2'),
         toolbarBorder && 'border-b border-grey-200',
         toolbarContainerClassName
@@ -193,7 +193,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     actionsClassName = clsx(
         'flex items-center justify-between gap-3 transition-all tablet:justify-start tablet:gap-5',
         actionsHidden && 'opacity-0 group-hover/view-container:opacity-100',
-        tabs?.length ? 'pb-2' : (type === 'page' ? 'pb-1' : ''),
+        tabs?.length ? 'pb-1' : (type === 'page' ? 'pb-1' : ''),
         actionsClassName
     );
 

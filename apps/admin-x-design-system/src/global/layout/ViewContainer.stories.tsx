@@ -36,13 +36,13 @@ export default meta;
 type Story = StoryObj<typeof ViewContainer>;
 
 export const exampleActions = [
-    <Button label='Filter' onClick={() => {
+    <Button label='Filter' outlineOnMobile onClick={() => {
         alert('Clicked filter');
     }} />,
-    <Button label='Sort' onClick={() => {
+    <Button label='Sort' outlineOnMobile onClick={() => {
         alert('Clicked sort');
     }} />,
-    <Button icon='magnifying-glass' size='sm' onClick={() => {
+    <Button icon='magnifying-glass' iconSize='sm' outlineOnMobile onClick={() => {
         alert('Clicked search');
     }} />,
     <ButtonGroup buttons={[
@@ -62,7 +62,7 @@ export const exampleActions = [
                 alert('Clicked card view');
             }
         }
-    ]} clearBg={false} link />
+    ]} clearBg={false} link outlineOnMobile />
 ];
 
 const primaryAction: PrimaryActionProps = {
@@ -155,13 +155,37 @@ export const TabsWithPrimaryAction: Story = {
     }
 };
 
+const sectionActions = [
+    <Button label='Filter' size='sm' onClick={() => {
+        alert('Clicked filter');
+    }} />,
+    <ButtonGroup buttons={[
+        {
+            icon: 'listview',
+            size: 'sm',
+            iconColorClass: 'text-black',
+            onClick: () => {
+                alert('Clicked list view');
+            }
+        },
+        {
+            icon: 'cardview',
+            size: 'sm',
+            iconColorClass: 'text-grey-500',
+            onClick: () => {
+                alert('Clicked card view');
+            }
+        }
+    ]} clearBg={false} size='sm' link />
+];
+
 export const TabsWithActions: Story = {
     args: {
         type: 'section',
         title: 'Section title',
         tabs: tabs,
         primaryAction: primaryAction,
-        actions: exampleActions
+        actions: sectionActions
     }
 };
 
@@ -170,7 +194,7 @@ export const HiddenActions: Story = {
         type: 'section',
         title: 'Hover to show actions',
         tabs: tabs,
-        actions: exampleActions,
+        actions: sectionActions,
         actionsHidden: true
     }
 };

@@ -267,7 +267,7 @@ const exampleCardViewContent = (
         title='Ideas'
         type='page'
     >
-        <div className='grid grid-cols-4 gap-7 py-7'>
+        <div className='grid grid-cols-2 gap-7 py-7 tablet:grid-cols-4'>
             {mockIdeaCards()}
         </div>
     </ViewContainer>
