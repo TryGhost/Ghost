@@ -1,6 +1,7 @@
 const ghostBookshelf = require('./base');
 const ObjectID = require('bson-objectid').default;
 const uuid = require('uuid');
+const DatabaseInfo = require('@tryghost/database-info');
 const urlUtils = require('../../shared/url-utils');
 
 const Newsletter = ghostBookshelf.Model.extend({
@@ -155,11 +156,17 @@ const Newsletter = ghostBookshelf.Model.extend({
             active_members(modelOrCollection) {
                 modelOrCollection.query('columns', 'newsletters.*', (qb) => {
                     qb.count('members_newsletters.id')
-                        .from('members_newsletters')
                         .join('members', 'members.id', 'members_newsletters.member_id')
                         .whereRaw('members_newsletters.newsletter_id = newsletters.id')
                         .andWhere('members.email_disabled', false)
                         .as('count__active_members');
+
+                    // https://github.com/TryGhost/Product/issues/4181
+                    if (DatabaseInfo.isMySQL(ghostBookshelf.knex)) {
+                        qb.fromRaw('members_newsletters force index (members_newsletters_newsletter_id_foreign)');
+                    } else {
+                        qb.from('members_newsletters');
+                    }
                 });
             }
         };
