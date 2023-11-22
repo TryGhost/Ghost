@@ -31,7 +31,7 @@
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
     "@types/react": "18.2.38",
-    "@types/react-dom": "18.2.16",
+    "@types/react-dom": "18.2.17",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
