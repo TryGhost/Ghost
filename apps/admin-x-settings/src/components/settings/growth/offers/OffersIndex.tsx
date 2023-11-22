@@ -132,14 +132,28 @@ export const OffersIndexModal = () => {
     ];
     const [selectedTab, setSelectedTab] = useState('active');
     const [selectedLayout, setSelectedLayout] = useState('card');
+    const [sortOption, setSortOption] = useState('date-added');
 
     const handleOfferEdit = (id:string) => {
         // TODO: implement
         updateRoute(`offers/edit/${id}`);
     };
 
+    const sortedOffers = allOffers
+        .sort((a, b) => {
+            switch (sortOption) {
+            case 'name':
+                return a.name.localeCompare(b.name);
+            case 'redemptions':
+                return b.redemption_count - a.redemption_count;
+            default:
+                // 'date-added' or unknown option, use default sorting
+                return (a.created_at ? new Date(a.created_at).getTime() : 0) - (b.created_at ? new Date(b.created_at).getTime() : 0);
+            }
+        });
+
     const cardLayoutOutput = <div className='mt-8 grid grid-cols-3 gap-6'>
-        {allOffers.filter(offer => offer.status === selectedTab).map((offer) => {
+        {sortedOffers.filter(offer => offer.status === selectedTab).map((offer) => {
             const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
 
             if (!offerTier) {
@@ -166,14 +180,14 @@ export const OffersIndexModal = () => {
 
     const listLayoutOutput = <table className='m-0'>
         <tr className='border-b border-b-grey-300'>
-            <th className='px-5 py-2.5 pl-0 text-xs font-normal text-grey-700'>{allOffers.length} {allOffers.length > 1 ? 'offers' : 'offer'}</th>
+            <th className='px-5 py-2.5 pl-0 text-xs font-normal text-grey-700'>{sortedOffers.length} {sortedOffers.length > 1 ? 'offers' : 'offer'}</th>
             <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Tier</th>
             <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Terms</th>
             <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Price</th>
             <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Redemptions</th>
             <th className='min-w-[80px] px-5 py-2.5 pr-0 text-xs font-normal text-grey-700'></th>
         </tr>
-        {allOffers.filter(offer => offer.status === selectedTab).map((offer) => {
+        {sortedOffers.filter(offer => offer.status === selectedTab).map((offer) => {
             const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
 
             if (!offerTier) {
@@ -220,7 +234,7 @@ export const OffersIndexModal = () => {
             <header>
                 <div className='flex items-center justify-between'>
                     <div>
-                        {allOffers.some(offer => offer.hasOwnProperty('status') && offer.status === 'archived') ?
+                        {sortedOffers.some(offer => offer.hasOwnProperty('status') && offer.status === 'archived') ?
                             <TabView
                                 border={false}
                                 selectedTab={selectedTab}
@@ -239,9 +253,9 @@ export const OffersIndexModal = () => {
                         <SortMenu
                             direction='desc'
                             items={[
-                                {id: 'date-added', label: 'Date added', selected: true},
-                                {id: 'name', label: 'Name'},
-                                {id: 'redemptions', label: 'Redemptions'}
+                                {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added'},
+                                {id: 'name', label: 'Name', selected: sortOption === 'name'},
+                                {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions'}
                             ]}
                             position='right'
                             onDirectionChange={(selectedDirection) => {
@@ -249,8 +263,7 @@ export const OffersIndexModal = () => {
                                 console.log(`Sorting direction: ${selectedDirection}`);
                             }}
                             onSortChange={(selectedOption) => {
-                                // eslint-disable-next-line no-console
-                                console.log(`Sorting option: ${selectedOption}`);
+                                setSortOption(selectedOption);
                             }}
                         />
                         <div className='flex gap-3'>
