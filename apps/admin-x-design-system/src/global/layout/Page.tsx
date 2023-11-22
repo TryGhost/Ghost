@@ -138,7 +138,7 @@ const Page: React.FC<PageProps> = ({
     );
 
     pageToolbarClassName = clsx(
-        'sticky top-0 z-50 flex h-18 w-full items-center justify-between gap-5 bg-white p-6 dark:bg-black',
+        'sticky top-0 z-50 flex h-24 w-full items-center justify-between gap-5 bg-white p-8 dark:bg-black',
         !fullBleedToolbar && 'mx-auto max-w-7xl',
         pageToolbarClassName
     );
