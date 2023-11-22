@@ -18,7 +18,36 @@ describe('HTMLtoLexical', function () {
 
             assert.deepEqual(lexical, {
                 root: {
-                    children: [],
+                    children: [{
+                        children: [],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'paragraph',
+                        version: 1
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+        });
+
+        it('can convert null document', function () {
+            const lexical = converter.htmlToLexical(null, editorConfig);
+
+            assert.deepEqual(lexical, {
+                root: {
+                    children: [{
+                        children: [],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'paragraph',
+                        version: 1
+                    }],
                     direction: null,
                     format: '',
                     indent: 0,
@@ -563,8 +592,8 @@ describe('HTMLtoLexical', function () {
                     <h4 class="kg-toggle-heading-text">
                         <span style="white-space: pre-wrap">toggle header</span>
                     </h4>
-                    <button 
-                        class="kg-toggle-card-icon" 
+                    <button
+                        class="kg-toggle-card-icon"
                         aria-label="Expand toggle to read content"
                     >
                         <svg

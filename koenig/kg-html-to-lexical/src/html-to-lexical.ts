@@ -1,5 +1,5 @@
 /* eslint-disable ghost/filenames/match-exported-class */
-import {$createParagraphNode, $getRoot, $getSelection, CreateEditorArgs, type SerializedEditorState} from 'lexical';
+import {$createParagraphNode, $getRoot, CreateEditorArgs, SerializedParagraphNode, type SerializedEditorState} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
 import {$insertGeneratedNodes} from '@lexical/clipboard';
@@ -9,6 +9,26 @@ import {LinkNode} from '@lexical/link';
 import {DEFAULT_NODES} from '@tryghost/kg-default-nodes';
 import {JSDOM} from 'jsdom';
 import {registerDefaultTransforms} from '@tryghost/kg-default-transforms';
+
+const EMPTY_PARAGRAPH: SerializedParagraphNode = {
+    children: [],
+    direction: null,
+    format: '',
+    indent: 0,
+    type: 'paragraph',
+    version: 1
+};
+
+const BLANK_DOCUMENT: SerializedEditorState = {
+    root: {
+        children: [EMPTY_PARAGRAPH],
+        direction: null,
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1
+    }
+};
 
 export interface htmlToLexicalOptions {
     editorConfig: CreateEditorArgs
@@ -27,6 +47,10 @@ const defaultNodes = [
 ];
 
 export function htmlToLexical(html: string, options?: htmlToLexicalOptions): SerializedEditorState {
+    if (!html) {
+        return BLANK_DOCUMENT;
+    }
+
     const defaultEditorConfig = {
         nodes: defaultNodes
     };

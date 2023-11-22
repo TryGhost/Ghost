@@ -35,9 +35,31 @@ const KoenigComposer = ({
     children
 }) => {
     const initialConfig = React.useMemo(() => {
+        let editorState = initialEditorState;
+
+        // root needs to have at least one paragraph node for the editor to work
+        if (editorState) {
+            if (typeof editorState === 'string') {
+                editorState = JSON.parse(editorState);
+            }
+
+            if (editorState.root?.children?.length === 0) {
+                editorState.root.children.push({
+                    children: [],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'paragraph',
+                    version: 1
+                });
+            }
+
+            editorState = JSON.stringify(editorState);
+        }
+
         return Object.assign({}, defaultConfig, {
             nodes,
-            editorState: enableMultiplayer ? null : initialEditorState,
+            editorState: enableMultiplayer ? null : editorState,
             onError
         });
     }, [enableMultiplayer, initialEditorState, nodes, onError]);
