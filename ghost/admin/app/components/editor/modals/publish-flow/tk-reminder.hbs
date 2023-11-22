@@ -2,13 +2,22 @@
     <div>Forget something?</div>
 </div>
 <p class="gh-publish-confirmation">
-    Looks like you've got some unfinished business. There are <strong>5 TK reminders</strong> left in your post.
+    Looks like you've got some unfinished business. There are <strong>{{@tkCount}} TK reminders</strong> left in your post.
 </p>
 
 <div class="gh-publish-cta">
-    <GhTaskButton
-        @buttonText="&larr; Back to editor"
-        @class="gh-btn gh-btn-black gh-btn-large"
-    />
-    <button type="button" class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary">Continue to publish</button>
+    <button
+        type="button"
+        class="gh-btn gh-btn-black gh-btn-large"
+        {{on "click" @close}}
+    >
+        <span>&larr; Back to editor</span>
+    </button>
+    <button
+        type="button"
+        class="gh-btn gh-btn-link gh-btn-large gh-publish-cta-secondary"
+        {{on "click" @confirm}}
+    >
+        Continue to publish
+    </button>
 </div>
