@@ -46,7 +46,7 @@ interface ViewContainerProps {
     toolbarLeftClassName?: string;
     toolbarBorder?: boolean;
     primaryAction?: PrimaryActionProps;
-    actions?: (React.ReactElement<ButtonProps> | React.ReactElement<ButtonGroupProps>)[];
+    actions?: (React.ReactElement<ButtonProps> | React.ReactElement<ButtonGroupProps> | React.ReactNode)[];
     actionsClassName?: string;
     actionsHidden?: boolean;
     contentWrapperClassName?: string;
@@ -141,7 +141,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     );
 
     actionsClassName = clsx(
-        'flex items-center gap-10 transition-all',
+        'flex items-center gap-6 transition-all',
         actionsHidden && 'opacity-0 group-hover/view-container:opacity-100',
         tabs?.length ? 'pb-2' : '',
         actionsClassName
