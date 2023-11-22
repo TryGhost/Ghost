@@ -6,7 +6,7 @@ import {useLexicalTextEntity} from '../hooks/useExtendedTextEntity';
 
 const REGEX = new RegExp(/(?<!\w)TK(?!\w)/);
 
-export default function TKPlugin(setTkCount) {
+export default function TKPlugin({setTkCount = () => {}}) {
     const [editor] = useLexicalComposerContext();
     const [tkNodes, setTkNodes] = useState([]);
 
@@ -18,7 +18,6 @@ export default function TKPlugin(setTkCount) {
 
     const getTKNodesForIndicators = useCallback((editorState) => {
         let foundNodes = [];
-        let nodesToIndicate = [];
 
         if (!editorState) {
             return foundNodes;
@@ -29,19 +28,7 @@ export default function TKPlugin(setTkCount) {
             foundNodes = $nodesOfType(TKNode);
         });
 
-        // filter down to only the first TK per parent, since that's all the ones we need indicators for
-        if (foundNodes.length > 0) {
-            const parentKeys = new Set();
-            nodesToIndicate = foundNodes.filter((node) => {
-                if (parentKeys.has(node.__parent)) {
-                    return false;
-                } 
-                parentKeys.add(node.__parent);
-                return true;
-            });
-        }
-
-        return nodesToIndicate;
+        return foundNodes;
     }, []);
 
     // TODO: may be some competition with the listener for clicking outside the editor since clicking on the indicator sometimes focuses the document body
@@ -56,23 +43,33 @@ export default function TKPlugin(setTkCount) {
 
     const renderIndicators = useCallback((nodes) => {
         // clean up existing indicators
-        document.body.querySelectorAll('.tk-indicator').forEach((el) => {
+        document.body.querySelectorAll('[data-kg-has-tk]').forEach((el) => {
             el.remove();
         });
 
+        // pull only the first child for each parent for the indicator as this is what we link to on click
+        const parentKeys = new Set();
+        const firstTks = nodes.filter((node) => {
+            if (parentKeys.has(node.__parent)) {
+                return false;
+            } 
+            parentKeys.add(node.__parent);
+            return true;
+        });
+
         // add indicators to the dom
-        nodes.forEach((node) => {
+        firstTks.forEach((node) => {
             const element = editor.getElementByKey(node.getKey());
             const editorParent = editor.getRootElement().parentElement;
             const editorParentTop = editorParent.getBoundingClientRect().top;
             const tkParentTop = element.parentElement.getBoundingClientRect().top;
 
             // create an element
-            // TODO: styles can migrated to use tailwind/themes
             const indicator = document.createElement('div');
             indicator.style.top = `${tkParentTop - editorParentTop + 4}px`;
             indicator.textContent = 'TK';
             indicator.classList.add('absolute', '-right-14', 'p-1', 'text-xs', 'text-grey-600', 'font-medium', 'cursor-pointer');
+            indicator.setAttribute('data-kg-has-tk', 'true');
             indicator.dataset.key = node.getKey();
 
             indicator.onclick = indicatorOnClick;
@@ -84,9 +81,10 @@ export default function TKPlugin(setTkCount) {
 
     // run once on mount and then let the editor state listener handle updates
     useLayoutEffect(() => {
-        const foundNodes = getTKNodesForIndicators(editor.getEditorState());
-        setTkNodes(foundNodes);
-        renderIndicators(foundNodes);
+        const nodes = getTKNodesForIndicators(editor.getEditorState());
+        setTkNodes(nodes);
+        setTkCount(nodes.length);
+        renderIndicators(nodes);
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
     }, []);
 
@@ -95,8 +93,11 @@ export default function TKPlugin(setTkCount) {
         const removeListener = editor.registerUpdateListener(({editorState}) => {
             const foundNodes = getTKNodesForIndicators(editorState);
             // this is a simple way to check that the nodes actually changed before we re-render indicators on the dom
+            // TODO: this is a problem because it doesn't account for if the first TK node changes, but the second one doesn't
+            //  as the parent is not changed
             if (foundNodes.toString() !== tkNodes.toString()) {
                 setTkNodes(foundNodes);
+                setTkCount(foundNodes.length);
                 renderIndicators(foundNodes);
             }
         });
@@ -104,7 +105,7 @@ export default function TKPlugin(setTkCount) {
         return () => {
             removeListener();
         };
-    }, [editor, renderIndicators, getTKNodesForIndicators, setTkNodes, tkNodes]);
+    }, [editor, renderIndicators, getTKNodesForIndicators, setTkNodes, tkNodes, setTkCount]);
 
     const createTKNode = useCallback((textNode) => {
         return $createTKNode(textNode.getTextContent());
