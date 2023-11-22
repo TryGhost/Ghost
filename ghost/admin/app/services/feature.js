@@ -79,6 +79,8 @@ export default class FeatureService extends Service {
     @feature('lexicalIndicators') lexicalIndicators;
     @feature('editorEmojiPicker') editorEmojiPicker;
     @feature('filterEmailDisabled') filterEmailDisabled;
+    @feature('adminXDemo') adminXDemo;
+    @feature('tkReminders') tkReminders;
 
     _user = null;
 

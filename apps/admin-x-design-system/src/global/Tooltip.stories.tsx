@@ -6,7 +6,12 @@ import Tooltip from './Tooltip';
 const meta = {
     title: 'Global / Tooltip',
     component: Tooltip,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    decorators: [(_story: () => React.ReactNode) => (
+        <div className='p-10'>
+            {_story()}
+        </div>
+    )]
 } satisfies Meta<typeof Tooltip>;
 
 export default meta;

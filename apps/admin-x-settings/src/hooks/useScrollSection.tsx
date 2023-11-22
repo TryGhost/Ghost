@@ -21,7 +21,7 @@ export const useScrollSectionContext = () => useContext(ScrollSectionContext);
 const scrollMargin = 193;
 
 const scrollToSection = (element: HTMLDivElement, doneInitialScroll: boolean) => {
-    const root = document.getElementById('admin-x-settings')!;
+    const root = document.querySelector('.admin-x-settings')!;
     const top = element.getBoundingClientRect().top + root.scrollTop;
 
     root.scrollTo({

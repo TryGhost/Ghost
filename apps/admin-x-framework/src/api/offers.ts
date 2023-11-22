@@ -1,5 +1,5 @@
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
-import {updateQueryCache} from '../utils/api/updateQueries';
+import {updateQueryCache, insertToQueryCache} from '../utils/api/updateQueries';
 
 export type Offer = {
     id: string;
@@ -21,6 +21,7 @@ export type Offer = {
         name?: string;
     },
     created_at?: string;
+    last_redeemed? : string;
 }
 
 export type PartialNewOffer = Omit<Offer, 'redemption_count'>;
@@ -49,7 +50,7 @@ export const useBrowseOffers = createQuery<OffersResponseType>({
 
 export const useBrowseOffersById = createQueryWithId<OffersResponseType>({
     dataType,
-    path: `/offers/`
+    path: id => `/offers/${id}/`
 });
 
 export const useEditOffer = createMutation<OfferEditResponseType, Offer>({
@@ -70,6 +71,6 @@ export const useAddOffer = createMutation<OfferAddResponseType, NewOffer>({
     updateQueries: {
         dataType,
         emberUpdateType: 'createOrUpdate',
-        update: updateQueryCache('offers')
+        update: insertToQueryCache('offers')
     }
 });

@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, toggleLabsFlag} from '../../utils/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Recommendations', async () => {
     test.beforeEach(async () => {
@@ -174,6 +174,7 @@ test.describe('Recommendations', async () => {
         expect(confirmation).toContainText('Your recommendation Recommendation 1 title will no longer be visible to your audience.');
 
         await confirmation.getByRole('button', {name: 'Delete'}).click();
+        await expect(page.getByTestId('toast-success')).toContainText('deleted the recommendation');
 
         expect(lastApiRequests.deleteRecommendation).toBeTruthy();
     });

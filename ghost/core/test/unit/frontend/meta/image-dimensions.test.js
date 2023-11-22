@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
@@ -215,6 +216,69 @@ describe('getImageDimensions', function () {
             result.ogImage.dimensions.should.have.property('width', 80);
             result.site.logo.should.have.property('url');
             result.site.logo.should.not.have.property('dimensions');
+            done();
+        }).catch(done);
+    });
+
+    it('should adjust image sizes to a max width', function (done) {
+        const originalMetaData = {
+            coverImage: {
+                url: 'http://mysite.com/content/images/mypostcoverimage.jpg'
+            },
+            authorImage: {
+                url: 'http://mysite.com/content/images/me.jpg'
+            },
+            ogImage: {
+                url: 'http://mysite.com/content/images/super-facebook-image.jpg'
+            },
+            twitterImage: 'http://mysite.com/content/images/super-twitter-image.jpg',
+            site: {
+                logo: {
+                    url: 'http://mysite.com/content/images/logo.jpg'
+                }
+            }
+        };
+
+        // getImageDimensions modifies metaData so we clone so we can compare
+        // against the original
+        const metaData = _.cloneDeep(originalMetaData);
+
+        // callsFake rather than returns otherwise the object is passed by
+        // reference and assigned to each image meaning it gets modified when
+        // the first image is resized and later images no longer look oversized
+        sizeOfStub.callsFake(() => ({
+            width: 2000,
+            height: 1200,
+            type: 'jpg'
+        }));
+
+        getImageDimensions.__set__('imageSizeCache', {
+            getCachedImageSizeFromUrl: sizeOfStub
+        });
+
+        getImageDimensions(metaData).then(function (result) {
+            should.exist(result);
+            sizeOfStub.calledWith(originalMetaData.coverImage.url).should.be.true();
+            sizeOfStub.calledWith(originalMetaData.authorImage.url).should.be.true();
+            sizeOfStub.calledWith(originalMetaData.ogImage.url).should.be.true();
+            sizeOfStub.calledWith(originalMetaData.twitterImage).should.be.true();
+            sizeOfStub.calledWith(originalMetaData.site.logo.url).should.be.true();
+            result.coverImage.should.have.property('url');
+            result.coverImage.url.should.eql('http://mysite.com/content/images/size/w1200/mypostcoverimage.jpg');
+            result.coverImage.should.have.property('dimensions');
+            result.coverImage.dimensions.should.have.property('width', 1200);
+            result.coverImage.dimensions.should.have.property('height', 720);
+            result.authorImage.should.have.property('url');
+            result.authorImage.url.should.eql('http://mysite.com/content/images/size/w1200/me.jpg');
+            result.authorImage.should.have.property('dimensions');
+            result.authorImage.dimensions.should.have.property('width', 1200);
+            result.authorImage.dimensions.should.have.property('height', 720);
+            result.ogImage.should.have.property('url');
+            result.ogImage.url.should.eql('http://mysite.com/content/images/size/w1200/super-facebook-image.jpg');
+            result.ogImage.should.have.property('dimensions');
+            result.ogImage.dimensions.should.have.property('width', 1200);
+            result.ogImage.dimensions.should.have.property('height', 720);
+            result.twitterImage.should.eql('http://mysite.com/content/images/size/w1200/super-twitter-image.jpg');
             done();
         }).catch(done);
     });

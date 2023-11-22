@@ -723,7 +723,7 @@ export default class DashboardStatsService extends Service {
         }
 
         const start30d = new Date(Date.now() - 30 * 86400 * 1000);
-        const result = yield this.store.query('email', {limit: 100, filter: 'submitted_at:>' + start30d.toISOString()});
+        const result = yield this.store.query('email', {limit: 100, filter: `submitted_at:>'${start30d.toISOString()}'`});
         this.emailsSent30d = result.reduce((c, email) => c + email.emailCount, 0);
     }
 

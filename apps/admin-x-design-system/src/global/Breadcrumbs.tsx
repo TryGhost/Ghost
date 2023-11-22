@@ -10,6 +10,7 @@ export type BreadcrumbItem = {
 export interface BreadcrumbsProps {
     items: BreadcrumbItem[];
     backIcon?: boolean;
+    snapBackIcon?: boolean;
     onBack?: () => void;
     containerClassName?: string;
     itemClassName?: string;
@@ -20,6 +21,7 @@ export interface BreadcrumbsProps {
 const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     items,
     backIcon = false,
+    snapBackIcon = true,
     onBack,
     containerClassName,
     itemClassName,
@@ -47,7 +49,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     return (
         <div className={containerClassName}>
             {backIcon &&
-            <Button className='mr-6' icon='arrow-left' iconColorClass='dark:text-white' size='sm' link onClick={onBack} />
+            <Button className={snapBackIcon ? 'mr-1' : 'mr-6'} icon='arrow-left' iconColorClass='dark:text-white' size='sm' link onClick={onBack} />
             }
             {items.map((item) => {
                 const bcItem = (i === allItems - 1 ?
