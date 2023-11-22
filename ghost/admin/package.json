@@ -46,7 +46,7 @@
     "@tryghost/helpers": "1.1.88",
     "@tryghost/kg-clean-basic-html": "3.0.41",
     "@tryghost/kg-converters": "0.0.22",
-    "@tryghost/koenig-lexical": "0.5.21",
+    "@tryghost/koenig-lexical": "0.5.22",
     "@tryghost/limit-service": "1.2.12",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/nql": "0.12.0",
