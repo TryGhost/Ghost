@@ -52,7 +52,8 @@ export default class PublishManagement extends Component {
                 publishOptions: this.publishOptions,
                 saveTask: this.publishTask,
                 togglePreviewPublish: this.togglePreviewPublish,
-                skipAnimation
+                skipAnimation,
+                tkCount: this.args.tkCount
             });
 
             const result = await this.publishFlowModal;
