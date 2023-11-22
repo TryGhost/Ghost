@@ -3,7 +3,7 @@ import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {SortMenu} from '@tryghost/admin-x-design-system';
-import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {Tier, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {Tooltip} from '@tryghost/admin-x-design-system';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -85,8 +85,10 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
     let tierName = offerTier?.name + ' ' + getOfferCadence(cadence) + ' — ' + getOfferDuration(duration);
     const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(type, amount, cadence, currency || 'USD', offerTier);
 
+    const isTierArchived = offerTier?.active === false;
+
     return (
-        <div className='group flex cursor-pointer flex-col gap-6 border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800' onClick={onClick}>
+        <div className={`group flex cursor-pointer flex-col gap-6 border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800 ${isTierArchived ? 'opacity-50 pointer-events-none' : ''}`} onClick={onClick}>
             <div className='flex items-center justify-between'>
                 <h2 className='text-[1.6rem] font-semibold' onClick={onClick}>{name}</h2>
                 <span className={`text-xs font-semibold uppercase ${discountColor}`}>{discountOffer}</span>
@@ -221,10 +223,12 @@ export const OffersIndexModal = () => {
                 return null;
             }
 
+            const isTierArchived = offerTier?.active === false;
+
             const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
 
             return (
-                <tr className='group border-b border-b-grey-200'>
+                <tr className={`group border-b border-b-grey-200 ${isTierArchived ? 'opacity-50 pointer-events-none' : ''}`}>
                     <td className='p-0 font-semibold'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>{offer?.name}</a></td>
                     <td className='p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>{offerTier.name} {getOfferCadence(offer.cadence)}</a></td>
                     <td className='p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}><span className={`font-semibold uppercase ${discountColor}`}>{discountOffer}</span> — {getOfferDuration(offer.duration)}</a></td>
