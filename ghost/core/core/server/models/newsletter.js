@@ -153,13 +153,13 @@ const Newsletter = ghostBookshelf.Model.extend({
                 });
             },
             active_members(modelOrCollection) {
-                modelOrCollection.query('columns', 'newsletters.*', (qb) => {
-                    qb.count('members_newsletters.id')
-                        .from('members_newsletters')
+                modelOrCollection.query(function (qb) {
+                    qb.select('newsletters.*')
+                        .count('members_newsletters.id as count__active_members')
+                        .join('members_newsletters', 'members_newsletters.newsletter_id', 'newsletters.id')
                         .join('members', 'members.id', 'members_newsletters.member_id')
-                        .whereRaw('members_newsletters.newsletter_id = newsletters.id')
-                        .andWhere('members.email_disabled', false)
-                        .as('count__active_members');
+                        .where('members.email_disabled', false)
+                        .groupBy('members_newsletters.newsletter_id');
                 });
             }
         };
