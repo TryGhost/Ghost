@@ -174,6 +174,7 @@ test.describe('Recommendations', async () => {
         expect(confirmation).toContainText('Your recommendation Recommendation 1 title will no longer be visible to your audience.');
 
         await confirmation.getByRole('button', {name: 'Delete'}).click();
+        await expect(page.getByTestId('toast-success')).toContainText('deleted the recommendation');
 
         expect(lastApiRequests.deleteRecommendation).toBeTruthy();
     });

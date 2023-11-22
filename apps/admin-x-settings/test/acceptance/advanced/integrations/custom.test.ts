@@ -1,5 +1,5 @@
-import {Integration, IntegrationsResponseType} from '../../../../src/api/integrations';
-import {Webhook, WebhooksResponseType} from '../../../../src/api/webhooks';
+import {Integration, IntegrationsResponseType} from '@tryghost/admin-x-framework/api/integrations';
+import {Webhook, WebhooksResponseType} from '@tryghost/admin-x-framework/api/webhooks';
 import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 

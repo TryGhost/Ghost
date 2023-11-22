@@ -27,7 +27,7 @@ const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
         <div className='relative shrink-0'>
             <Avatar
                 bgColor={generateAvatarColor(action.actor?.name || action.actor?.slug || '')}
-                image={action.actor?.image}
+                image={action.actor?.image ?? undefined}
                 label={getInitials(action.actor?.name || action.actor?.slug)}
                 labelColor='white'
                 size='md'

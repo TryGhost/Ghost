@@ -7,39 +7,48 @@
   "private": true,
   "exports": {
     ".": {
-      "import": "./es/index.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "types": "./types/index.d.ts"
     },
     "./errors": {
-      "import": "./es/errors.js",
+      "import": "./dist/errors.js",
+      "require": "./dist/errors.cjs",
       "types": "./types/errors.d.ts"
     },
     "./helpers": {
-      "import": "./es/helpers.js",
+      "import": "./dist/helpers.js",
+      "require": "./dist/helpers.cjs",
       "types": "./types/helpers.d.ts"
     },
     "./hooks": {
-      "import": "./es/hooks.js",
+      "import": "./dist/hooks.js",
+      "require": "./dist/hooks.cjs",
       "types": "./types/hooks.d.ts"
     },
     "./routing": {
-      "import": "./es/routing.js",
+      "import": "./dist/routing.js",
+      "require": "./dist/routing.cjs",
       "types": "./types/routing.d.ts"
     },
     "./api/*": {
-      "import": "./es/api/*.js",
+      "import": "./dist/api/*.js",
+      "require": "./dist/api/*.cjs",
       "types": "./types/api/*.d.ts"
     },
     "./vite": {
-      "import": "./es/vite.js",
+      "import": "./dist/vite.js",
+      "require": "./dist/vite.cjs",
       "types": "./types/vite.d.ts"
     },
     "./playwright": {
-      "import": "./es/playwright.js",
+      "import": "./dist/playwright.js",
+      "require": "./dist/playwright.cjs",
       "types": "./types/playwright.d.ts"
     },
     "./test/*": {
-      "import": "./es/test/*.js",
+      "import": "./dist/test/*.js",
+      "require": "./dist/test/*.cjs",
       "types": "./types/test/*.d.ts"
     }
   },
