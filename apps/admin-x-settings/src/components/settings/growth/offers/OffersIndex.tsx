@@ -132,6 +132,7 @@ export const OffersIndexModal = () => {
     });
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     const paidActiveTiers = getPaidActiveTiers(allTiers || []);
+    const activeOffers = allOffers.filter(offer => offer.status === 'active');
 
     useEffect(() => {
         if (!hasOffers) {
@@ -233,7 +234,7 @@ export const OffersIndexModal = () => {
         animate={false}
         cancelLabel=''
         footer={
-            allOffers.length > 0 ?
+            activeOffers.length > 0 ?
                 <div className='mx-8 flex w-full items-center justify-between'>
                     <a className='text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
                     <Button color='black' label='Close' onClick={() => {
@@ -249,7 +250,7 @@ export const OffersIndexModal = () => {
         testId='offers-modal'
         stickyFooter
     >
-        {allOffers.length > 0 ?
+        {activeOffers.length > 0 ?
             <div className='pt-6'>
                 <header>
                     <div className='flex items-center justify-between'>
