@@ -170,8 +170,13 @@ export const OffersIndexModal = () => {
         });
 
     const cardLayoutOutput = <div className='mt-8 grid grid-cols-3 gap-6'>
-        {sortedOffers.filter(offer => offer.status === selectedTab).map((offer) => {
-            const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
+        {sortedOffers.filter((offer) => {
+            const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+            //Check to filter out offers with archived offerTier
+            return (selectedTab === 'active' && (offer.status === selectedTab && offerTier && offerTier.active === true)) ||
+            (selectedTab === 'archived' && (offer.status === selectedTab || (offerTier && offerTier.active === false)));
+        }).map((offer) => {
+            const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
 
             if (!offerTier) {
                 return null;
