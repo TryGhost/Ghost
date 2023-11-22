@@ -271,6 +271,7 @@
 }
 
 .gh-post-list-title .gh-featured-post {
+    flex-shrink: 0;
     width: 11px;
     height: 11px;
     margin: -2px 6px 0 0;
