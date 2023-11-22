@@ -174,8 +174,8 @@ export const OffersIndexModal = () => {
         {sortedOffers.filter((offer) => {
             const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
             //Check to filter out offers with archived offerTier
-            return (selectedTab === 'active' && (offer.status === selectedTab && offerTier && offerTier.active === true)) ||
-            (selectedTab === 'archived' && (offer.status === selectedTab || (offerTier && offerTier.active === false)));
+            return (selectedTab === 'active' && (offer.status === 'active' && offerTier && offerTier.active === true)) ||
+            (selectedTab === 'archived' && (offer.status === 'archived' || (offerTier && offerTier.active === false)));
         }).map((offer) => {
             const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
 
@@ -214,8 +214,8 @@ export const OffersIndexModal = () => {
         {sortedOffers.filter((offer) => {
             const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
             //Check to filter out offers with archived offerTier
-            return (selectedTab === 'active' && (offer.status === selectedTab && offerTier && offerTier.active === true)) ||
-            (selectedTab === 'archived' && (offer.status === selectedTab || (offerTier && offerTier.active === false)));
+            return (selectedTab === 'active' && (offer.status === 'active' && offerTier && offerTier.active === true)) ||
+            (selectedTab === 'archived' && (offer.status === 'archived' || (offerTier && offerTier.active === false)));
         }).map((offer) => {
             const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
 
