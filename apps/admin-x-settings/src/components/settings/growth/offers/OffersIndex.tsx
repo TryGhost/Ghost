@@ -3,7 +3,7 @@ import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {SortMenu} from '@tryghost/admin-x-design-system';
-import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {Tier, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {Tooltip} from '@tryghost/admin-x-design-system';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -85,8 +85,10 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
     let tierName = offerTier?.name + ' ' + getOfferCadence(cadence) + ' — ' + getOfferDuration(duration);
     const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(type, amount, cadence, currency || 'USD', offerTier);
 
+    const isTierArchived = offerTier?.active === false;
+
     return (
-        <div className='group flex cursor-pointer flex-col gap-6 border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800' onClick={onClick}>
+        <div className={`group ${isTierArchived ? 'opacity-50' : ''} ${isTierArchived ? 'pointer-events-none' : ''} flex cursor-pointer flex-col gap-6 border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800`} onClick={onClick}>
             <div className='flex items-center justify-between'>
                 <h2 className='text-[1.6rem] font-semibold' onClick={onClick}>{name}</h2>
                 <span className={`text-xs font-semibold uppercase ${discountColor}`}>{discountOffer}</span>
@@ -131,7 +133,6 @@ export const OffersIndexModal = () => {
         }
     });
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
-    const paidActiveTiers = getPaidActiveTiers(allTiers || []);
     const activeOffers = allOffers.filter(offer => offer.status === 'active');
 
     useEffect(() => {
@@ -170,8 +171,13 @@ export const OffersIndexModal = () => {
         });
 
     const cardLayoutOutput = <div className='mt-8 grid grid-cols-3 gap-6'>
-        {sortedOffers.filter(offer => offer.status === selectedTab).map((offer) => {
-            const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
+        {sortedOffers.filter((offer) => {
+            const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+            //Check to filter out offers with archived offerTier
+            return (selectedTab === 'active' && (offer.status === 'active' && offerTier && offerTier.active === true)) ||
+            (selectedTab === 'archived' && (offer.status === 'archived' || (offerTier && offerTier.active === false)));
+        }).map((offer) => {
+            const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
 
             if (!offerTier) {
                 return null;
@@ -205,17 +211,24 @@ export const OffersIndexModal = () => {
             <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Redemptions</th>
             <th className='min-w-[80px] px-5 py-2.5 pr-0 text-xs font-normal text-grey-700'></th>
         </tr>
-        {sortedOffers.filter(offer => offer.status === selectedTab).map((offer) => {
-            const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
+        {sortedOffers.filter((offer) => {
+            const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+            //Check to filter out offers with archived offerTier
+            return (selectedTab === 'active' && (offer.status === 'active' && offerTier && offerTier.active === true)) ||
+            (selectedTab === 'archived' && (offer.status === 'archived' || (offerTier && offerTier.active === false)));
+        }).map((offer) => {
+            const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
 
             if (!offerTier) {
                 return null;
             }
 
+            const isTierArchived = offerTier?.active === false;
+
             const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
 
             return (
-                <tr className='group border-b border-b-grey-200'>
+                <tr className={`group ${isTierArchived ? 'opacity-50' : ''} ${isTierArchived ? 'pointer-events-none' : ''} border-b border-b-grey-200`}>
                     <td className='p-0 font-semibold'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>{offer?.name}</a></td>
                     <td className='p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>{offerTier.name} {getOfferCadence(offer.cadence)}</a></td>
                     <td className='p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}><span className={`font-semibold uppercase ${discountColor}`}>{discountOffer}</span> — {getOfferDuration(offer.duration)}</a></td>
