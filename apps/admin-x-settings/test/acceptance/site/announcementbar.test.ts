@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, mockSitePreview, responseFixtures} from '../../utils/acceptance';
+import {globalDataRequests, mockApi, mockSitePreview, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Announcement Bar', async () => {
     test('Working with the announcement bar preview', async ({page}) => {

@@ -33,6 +33,14 @@
     "./vite": {
       "import": "./es/vite.js",
       "types": "./types/vite.d.ts"
+    },
+    "./playwright": {
+      "import": "./es/playwright.js",
+      "types": "./types/playwright.d.ts"
+    },
+    "./test/*": {
+      "import": "./es/test/*.js",
+      "types": "./types/test/*.d.ts"
     }
   },
   "sideEffects": false,

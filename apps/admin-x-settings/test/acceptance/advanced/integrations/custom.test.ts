@@ -1,6 +1,6 @@
 import {Integration, IntegrationsResponseType} from '../../../../src/api/integrations';
 import {Webhook, WebhooksResponseType} from '../../../../src/api/webhooks';
-import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/acceptance';
+import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 
 test.describe('Custom integrations', async () => {

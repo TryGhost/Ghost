@@ -1,19 +1,19 @@
-import {ActionsResponseType} from '../../src/api/actions';
-import {ConfigResponseType} from '../../src/api/config';
-import {CustomThemeSettingsResponseType} from '../../src/api/customThemeSettings';
-import {InvitesResponseType} from '../../src/api/invites';
-import {LabelsResponseType} from '../../src/api/labels';
 import {Locator, Page, expect} from '@playwright/test';
-import {NewslettersResponseType} from '../../src/api/newsletters';
-import {OffersResponseType} from '../../src/api/offers';
-import {RecommendationResponseType} from '../../src/api/recommendations';
-import {RolesResponseType} from '../../src/api/roles';
-import {SettingsResponseType} from '../../src/api/settings';
-import {SiteResponseType} from '../../src/api/site';
-import {ThemesResponseType} from '../../src/api/themes';
-import {TiersResponseType} from '../../src/api/tiers';
-import {UsersResponseType} from '../../src/api/users';
 import {readFileSync} from 'fs';
+import {ActionsResponseType} from '../api/actions';
+import {ConfigResponseType} from '../api/config';
+import {CustomThemeSettingsResponseType} from '../api/customThemeSettings';
+import {InvitesResponseType} from '../api/invites';
+import {LabelsResponseType} from '../api/labels';
+import {NewslettersResponseType} from '../api/newsletters';
+import {OffersResponseType} from '../api/offers';
+import {RecommendationResponseType} from '../api/recommendations';
+import {RolesResponseType} from '../api/roles';
+import {SettingsResponseType} from '../api/settings';
+import {SiteResponseType} from '../api/site';
+import {ThemesResponseType} from '../api/themes';
+import {TiersResponseType} from '../api/tiers';
+import {UsersResponseType} from '../api/users';
 
 interface MockRequestConfig {
     method: string;
@@ -50,7 +50,7 @@ export const responseFixtures = {
     latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]}
 };
 
-let defaultLabFlags = {
+const defaultLabFlags = {
     audienceFeedback: false,
     collections: false,
     themeErrorsNotification: false,
@@ -213,7 +213,7 @@ export function meWithRole(name: string) {
 };
 
 export async function mockSitePreview({page, url, response}: {page: Page, url: string, response: string}) {
-    let lastRequest: {previewHeader?: string} = {};
+    const lastRequest: {previewHeader?: string} = {};
 
     await page.route(url, async (route) => {
         if (route.request().method() !== 'POST') {

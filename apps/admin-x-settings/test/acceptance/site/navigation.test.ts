@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../utils/acceptance';
+import {globalDataRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Navigation settings', async () => {
     test('Editing primary and secondary navigation', async ({page}) => {

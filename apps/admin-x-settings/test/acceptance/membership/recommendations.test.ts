@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, toggleLabsFlag} from '../../utils/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Recommendations', async () => {
     test.beforeEach(async () => {
