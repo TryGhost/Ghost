@@ -20,6 +20,9 @@ const meta = {
     title: 'Global / Layout / Page',
     component: Page,
     tags: ['autodocs'],
+    parameters: {
+        layout: 'fullscreen'
+    },
     render: function Component(args) {
         const [, updateArgs] = useArgs();
 
@@ -35,7 +38,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof Page>;
 
-const dummyContent = <div className='m-auto max-w-[800px] p-5 text-center'>Placeholder content</div>;
+const dummyContent = <div className='w-full bg-grey-100 p-5 text-center'>Placeholder content</div>;
 
 const customGlobalActions: CustomGlobalAction[] = [
     {
@@ -58,52 +61,66 @@ const pageTabs: Tab[] = [
 ];
 
 export const Default: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     args: {
         pageTabs: pageTabs,
         children: dummyContent
     }
 };
 
-export const WithHamburger: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
+export const LimitToolbarWidth: Story = {
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        children: dummyContent,
+        fullBleedToolbar: false
+    }
+};
+
+export const WithHamburger: Story = {
+    args: {
+        pageTabs: pageTabs,
+        showAppMenu: true,
         children: dummyContent
     }
 };
 
 export const WithGlobalActions: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: dummyContent
     }
 };
 
 export const CustomGlobalActions: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: dummyContent,
         customGlobalActions: customGlobalActions
     }
 };
 
+const currentAdminExample = <ViewContainer
+    title='Members'
+    type='page'
+>
+    <DynamicTable
+        columns={testColumns}
+        rows={testRows(100)}
+    />
+</ViewContainer>;
+
+export const ExampleCurrentAdminList: Story = {
+    name: 'Example: List in Current Admin',
+    args: {
+        children: currentAdminExample
+    }
+};
+
 const simpleList = <ViewContainer
+    firstOnPage={false}
     title='Members'
     type='page'
 >
@@ -115,19 +132,17 @@ const simpleList = <ViewContainer
 </ViewContainer>;
 
 export const ExampleSimpleList: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Simple List',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: simpleList
     }
 };
 
 const stickyList = <ViewContainer
+    firstOnPage={false}
     title='Members'
     type='page'
 >
@@ -141,19 +156,17 @@ const stickyList = <ViewContainer
 </ViewContainer>;
 
 export const ExampleStickyList: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Sticky Header/Footer List',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: stickyList
     }
 };
 
 const examplePrimaryAction = <ViewContainer
+    firstOnPage={false}
     primaryAction={{
         title: 'Add member',
         color: 'black',
@@ -174,13 +187,10 @@ const examplePrimaryAction = <ViewContainer
 </ViewContainer>;
 
 export const ExamplePrimaryAction: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Primary Action',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: examplePrimaryAction
     }
@@ -188,6 +198,7 @@ export const ExamplePrimaryAction: Story = {
 
 const exampleActionsContent = <ViewContainer
     actions={exampleActionButtons}
+    firstOnPage={false}
     primaryAction={{
         title: 'Add member',
         icon: 'add',
@@ -209,13 +220,10 @@ const exampleActionsContent = <ViewContainer
 </ViewContainer>;
 
 export const ExampleActions: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Custom Actions',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: exampleActionsContent
     }
@@ -246,6 +254,7 @@ const mockIdeaCards = () => {
 const exampleCardViewContent = (
     <ViewContainer
         actions={exampleActionButtons}
+        firstOnPage={false}
         primaryAction={{
             title: 'New idea',
             icon: 'add'
@@ -260,13 +269,10 @@ const exampleCardViewContent = (
 );
 
 export const ExampleCardView: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Card View',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: exampleCardViewContent
     }
@@ -315,6 +321,7 @@ const mockPosts = () => {
 const examplePostsContent = (
     <ViewContainer
         actions={exampleActionButtons}
+        firstOnPage={false}
         primaryAction={{
             title: 'New post',
             icon: 'add'
@@ -329,25 +336,19 @@ const examplePostsContent = (
 );
 
 export const ExampleAlternativeList: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Alternative List',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: examplePostsContent
     }
 };
 
 export const ExampleDetailScreen: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Detail Page',
     args: {
-        showPageMenu: true,
+        showAppMenu: true,
         breadCrumbs: <Breadcrumbs
             items={[
                 {
@@ -362,19 +363,23 @@ export const ExampleDetailScreen: Story = {
         showGlobalActions: true,
         children: <>
             <ViewContainer
-                toolbarBorder={false}
-                type='page'>
-                <div className='flex items-end justify-between gap-5 border-b border-grey-200 py-2'>
+                firstOnPage={false}
+                headerContent={
                     <div>
                         <Avatar bgColor='#A5D5F7' label='EV' labelColor='white' size='xl' />
                         <Heading className='mt-2' level={1}>Emerson Vaccaro</Heading>
                         <div className=''>Colombus, OH</div>
                     </div>
-                    <div className='pb-2'>
-                        <Button color='outline' icon='ellipsis' />
-                    </div>
-                </div>
-                <div className='grid grid-cols-4 border-b border-grey-200 py-5'>
+                }
+                primaryAction={
+                    {
+                        icon: 'ellipsis',
+                        color: 'outline'
+                    }
+                }
+                type='page'
+            >
+                <div className='grid grid-cols-4 border-b border-grey-200 pb-5'>
                     <div className='-ml-5 flex h-full flex-col px-5'>
                         <span>Last seen on <strong>22 June 2023</strong></span>
                         <span className='mt-2'>Created on <strong>27 Jan 2021</strong></span>

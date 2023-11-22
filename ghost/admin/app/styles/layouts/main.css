@@ -1444,11 +1444,11 @@
     display: flex;
     align-items: center;
     overflow: hidden;
-    margin: -3px 0 0 0;
+    margin: -8px 0 0 0;
     padding: 0;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 3.2rem;
+    font-size: 3.6rem;
     line-height: 1.3em;
     font-weight: 700;
     letter-spacing: -0.021em;
