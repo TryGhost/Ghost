@@ -3,6 +3,7 @@ import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {SortMenu} from '@tryghost/admin-x-design-system';
 import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {Tooltip} from '@tryghost/admin-x-design-system';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {numberWithCommas} from '../../../../utils/helpers';
@@ -64,12 +65,27 @@ const getOfferDiscount = (type: string, amount: number, cadence: string, currenc
     };
 };
 
-const OfferCard: React.FC<{amount: number, cadence: string, currency: string, duration: string, name: string, offerId: string, offerTier: Tier | undefined, redemptionCount: number, type: OfferType, onClick: ()=>void}> = ({amount, cadence, currency, duration, name, offerId, offerTier, redemptionCount, type, onClick}) => {
+export const CopyLinkButton: React.FC<{offerCode: string}> = ({offerCode}) => {
+    const [isCopied, setIsCopied] = useState(false);
+    const {siteData} = useGlobalData();
+
+    const handleCopyClick = (e?: React.MouseEvent<HTMLElement, MouseEvent>) => {
+        e?.stopPropagation();
+        const offerLink = `${getHomepageUrl(siteData!)}${offerCode}`;
+        navigator.clipboard.writeText(offerLink);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+    };
+
+    return <Tooltip containerClassName='group-hover:opacity-100 opacity-0 flex items-center -mr-1 justify-center leading-none w-5 h-5' content={isCopied ? 'Copied' : 'Copy link'} size='sm'><Button color='clear' hideLabel={true} icon={isCopied ? 'check-circle' : 'hyperlink-circle'} iconColorClass={isCopied ? 'text-green w-[14px] h-[14px]' : 'w-[18px] h-[18px]'} label={isCopied ? 'Copied' : 'Copy'} unstyled={true} onClick={handleCopyClick} /></Tooltip>;
+};
+
+const OfferCard: React.FC<{amount: number, cadence: string, currency: string, duration: string, name: string, code: string, offerId: string, offerTier: Tier | undefined, redemptionCount: number, type: OfferType, onClick: ()=>void}> = ({amount, cadence, currency, duration, name, code, offerId, offerTier, redemptionCount, type, onClick}) => {
     let tierName = offerTier?.name + ' ' + getOfferCadence(cadence) + ' — ' + getOfferDuration(duration);
     const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(type, amount, cadence, currency || 'USD', offerTier);
 
     return (
-        <div className='flex cursor-pointer flex-col gap-6 border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800' onClick={onClick}>
+        <div className='group flex cursor-pointer flex-col gap-6 border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800' onClick={onClick}>
             <div className='flex items-center justify-between'>
                 <h2 className='text-[1.6rem] font-semibold' onClick={onClick}>{name}</h2>
                 <span className={`text-xs font-semibold uppercase ${discountColor}`}>{discountOffer}</span>
@@ -78,33 +94,15 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
                 <span className='text-4xl font-bold tracking-tight'>{updatedPriceWithCurrency}</span>
                 <span className='text-[1.6rem] font-medium text-grey-700 line-through'>{originalPriceWithCurrency}</span>
             </div>
-            <div className='flex flex-col items-start text-xs'>
-                <span className='font-medium'>{tierName}</span>
-                <a className='text-grey-700 hover:underline' href={createRedemptionFilterUrl(offerId)}>{redemptionCount} redemptions</a>
+            <div className='flex items-end justify-between'>
+                <div className='flex flex-col items-start text-xs'>
+                    <span className='font-medium'>{tierName}</span>
+                    <a className='text-grey-700 hover:underline' href={createRedemptionFilterUrl(offerId)}>{redemptionCount} redemptions</a>
+                </div>
+                <CopyLinkButton offerCode={code} />
             </div>
         </div>
     );
-};
-
-const CopyLinkButton: React.FC<{offerCode: string}> = ({offerCode}) => {
-    const [isCopied, setIsCopied] = useState(false);
-    const {siteData} = useGlobalData();
-
-    const handleCopyClick = async () => {
-        const offerLink = `${getHomepageUrl(siteData!)}${offerCode}`;
-        try {
-            await navigator.clipboard.writeText(offerLink);
-            setIsCopied(true);
-            setTimeout(() => setIsCopied(false), 2000); // reset after 2 seconds
-        } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error('Failed to copy text: ', err);
-        }
-    };
-
-    return isCopied ?
-        <span className='inline-block leading-[22px] text-green'>Copied</span> :
-        <Button className='opacity-0 will-change-[opacity] group-hover:opacity-100' icon='hyperlink-circle' link={true} onClick={handleCopyClick} />;
 };
 
 export const OffersIndexModal = () => {
@@ -167,6 +165,7 @@ export const OffersIndexModal = () => {
                     key={offer?.id}
                     amount={offer?.amount}
                     cadence={offer?.cadence}
+                    code={offer?.code}
                     currency={offer?.currency || 'USD'}
                     duration={offer?.duration}
                     name={offer?.name}
