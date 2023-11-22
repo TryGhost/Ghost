@@ -133,6 +133,7 @@ export const OffersIndexModal = () => {
     const [selectedTab, setSelectedTab] = useState('active');
     const [selectedLayout, setSelectedLayout] = useState('card');
     const [sortOption, setSortOption] = useState('date-added');
+    const [sortDirection, setSortDirection] = useState('desc');
 
     const handleOfferEdit = (id:string) => {
         // TODO: implement
@@ -141,14 +142,15 @@ export const OffersIndexModal = () => {
 
     const sortedOffers = allOffers
         .sort((a, b) => {
+            const multiplier = sortDirection === 'desc' ? 1 : -1;
             switch (sortOption) {
             case 'name':
-                return a.name.localeCompare(b.name);
+                return multiplier * a.name.localeCompare(b.name);
             case 'redemptions':
-                return b.redemption_count - a.redemption_count;
+                return multiplier * (b.redemption_count - a.redemption_count);
             default:
                 // 'date-added' or unknown option, use default sorting
-                return (a.created_at ? new Date(a.created_at).getTime() : 0) - (b.created_at ? new Date(b.created_at).getTime() : 0);
+                return multiplier * ((a.created_at ? new Date(a.created_at).getTime() : 0) - (b.created_at ? new Date(b.created_at).getTime() : 0));
             }
         });
 
@@ -259,8 +261,7 @@ export const OffersIndexModal = () => {
                             ]}
                             position='right'
                             onDirectionChange={(selectedDirection) => {
-                                // eslint-disable-next-line no-console
-                                console.log(`Sorting direction: ${selectedDirection}`);
+                                setSortDirection(selectedDirection);
                             }}
                             onSortChange={(selectedOption) => {
                                 setSortOption(selectedOption);
