@@ -52,6 +52,7 @@ function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
             replyTo: addresses.replyTo ? EmailAddressParser.stringify(addresses.replyTo) : null
         };
     }
+    const configAddress = config.get('mail') && config.get('mail').from;
 
     const address = requestedFromAddress || configAddress;
     // If we don't have a from address at all
