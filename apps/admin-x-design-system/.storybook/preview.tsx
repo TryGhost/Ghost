@@ -34,7 +34,7 @@ const preview: Preview = {
 			<div className={`admin-x-design-system admin-x-base ${scheme === 'dark' ? 'dark' : ''}`} style={{
 				// padding: '24px',
 				// width: 'unset',
-				// height: 'unset',
+				height: 'unset',
 				// overflow: 'unset',
 				background: (scheme === 'dark' ? '#131416' : '')
 			}}>

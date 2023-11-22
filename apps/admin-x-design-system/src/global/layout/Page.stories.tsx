@@ -20,6 +20,9 @@ const meta = {
     title: 'Global / Layout / Page',
     component: Page,
     tags: ['autodocs'],
+    parameters: {
+        layout: 'fullscreen'
+    },
     render: function Component(args) {
         const [, updateArgs] = useArgs();
 
@@ -58,9 +61,6 @@ const pageTabs: Tab[] = [
 ];
 
 export const Default: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     args: {
         pageTabs: pageTabs,
         children: dummyContent
@@ -68,9 +68,6 @@ export const Default: Story = {
 };
 
 export const LimitToolbarWidth: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     args: {
         pageTabs: pageTabs,
         children: dummyContent,
@@ -79,9 +76,6 @@ export const LimitToolbarWidth: Story = {
 };
 
 export const WithHamburger: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     args: {
         pageTabs: pageTabs,
         showPageMenu: true,
@@ -90,9 +84,6 @@ export const WithHamburger: Story = {
 };
 
 export const WithGlobalActions: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     args: {
         pageTabs: pageTabs,
         showPageMenu: true,
@@ -102,9 +93,6 @@ export const WithGlobalActions: Story = {
 };
 
 export const CustomGlobalActions: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     args: {
         pageTabs: pageTabs,
         showPageMenu: true,
@@ -126,9 +114,6 @@ const simpleList = <ViewContainer
 </ViewContainer>;
 
 export const ExampleSimpleList: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Simple List',
     args: {
         pageTabs: pageTabs,
@@ -152,9 +137,6 @@ const stickyList = <ViewContainer
 </ViewContainer>;
 
 export const ExampleStickyList: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Sticky Header/Footer List',
     args: {
         pageTabs: pageTabs,
@@ -185,9 +167,6 @@ const examplePrimaryAction = <ViewContainer
 </ViewContainer>;
 
 export const ExamplePrimaryAction: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Primary Action',
     args: {
         pageTabs: pageTabs,
@@ -220,9 +199,6 @@ const exampleActionsContent = <ViewContainer
 </ViewContainer>;
 
 export const ExampleActions: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Custom Actions',
     args: {
         pageTabs: pageTabs,
@@ -271,9 +247,6 @@ const exampleCardViewContent = (
 );
 
 export const ExampleCardView: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Card View',
     args: {
         pageTabs: pageTabs,
@@ -340,9 +313,6 @@ const examplePostsContent = (
 );
 
 export const ExampleAlternativeList: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Alternative List',
     args: {
         pageTabs: pageTabs,
@@ -353,9 +323,6 @@ export const ExampleAlternativeList: Story = {
 };
 
 export const ExampleDetailScreen: Story = {
-    parameters: {
-        layout: 'fullscreen'
-    },
     name: 'Example: Detail Page',
     args: {
         showPageMenu: true,
@@ -383,15 +350,10 @@ export const ExampleDetailScreen: Story = {
                 primaryAction={
                     {
                         icon: 'ellipsis',
-                        color: 'black'
+                        color: 'outline'
                     }
                 }
                 type='page'>
-                {/* <div className='flex items-end justify-between gap-5 border-b border-grey-200 py-2'>
-                    <div className='pb-2'>
-                        <Button color='outline' icon='ellipsis' />
-                    </div>
-                </div> */}
                 <div className='grid grid-cols-4 border-b border-grey-200 pb-5'>
                     <div className='-ml-5 flex h-full flex-col px-5'>
                         <span>Last seen on <strong>22 June 2023</strong></span>

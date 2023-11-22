@@ -31,20 +31,19 @@ const ContentContainer: React.FC<{children: React.ReactNode}> = ({
 };
 
 export const exampleActions = [
-    <Button label='Filter' link onClick={() => {
+    <Button label='Filter' onClick={() => {
         alert('Clicked filter');
     }} />,
-    <Button label='Sort' link onClick={() => {
+    <Button label='Sort' onClick={() => {
         alert('Clicked sort');
     }} />,
-    <Button icon='magnifying-glass' size='sm' link onClick={() => {
+    <Button icon='magnifying-glass' size='sm' onClick={() => {
         alert('Clicked search');
     }} />,
     <ButtonGroup buttons={[
         {
             icon: 'listview',
             size: 'sm',
-            link: true,
             iconColorClass: 'text-black',
             onClick: () => {
                 alert('Clicked list view');
@@ -53,13 +52,12 @@ export const exampleActions = [
         {
             icon: 'cardview',
             size: 'sm',
-            link: true,
             iconColorClass: 'text-grey-500',
             onClick: () => {
                 alert('Clicked card view');
             }
         }
-    ]} />
+    ]} clearBg={false} link />
 ];
 
 const primaryAction: PrimaryActionProps = {

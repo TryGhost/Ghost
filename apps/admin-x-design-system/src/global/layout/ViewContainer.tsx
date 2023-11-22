@@ -130,7 +130,8 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     );
 
     toolbarContainerClassName = clsx(
-        'flex items-end justify-between pb-8',
+        'flex items-end justify-between',
+        firstOnPage ? 'pb-8' : (tabs?.length ? '' : 'pb-2'),
         toolbarBorder && 'border-b border-grey-200',
         toolbarContainerClassName
     );
@@ -141,9 +142,9 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     );
 
     actionsClassName = clsx(
-        'flex items-center gap-6 transition-all',
+        'flex items-center gap-5 transition-all',
         actionsHidden && 'opacity-0 group-hover/view-container:opacity-100',
-        tabs?.length ? 'pb-2' : '',
+        tabs?.length ? 'pb-2' : (type === 'page' ? 'pb-1' : ''),
         actionsClassName
     );
 
@@ -155,7 +156,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     const headingClassName = clsx(
         tabs?.length && 'pb-3',
-        '-mt-2'
+        type === 'page' && '-mt-2'
     );
 
     toolbar = (
