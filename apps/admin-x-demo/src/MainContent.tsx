@@ -1,4 +1,4 @@
-import {Avatar, Button, ButtonGroup, DynamicTable, DynamicTableColumn, DynamicTableRow, Heading, Page, ViewContainer} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, ButtonGroup, DynamicTable, DynamicTableColumn, DynamicTableRow, Heading, Page, SortMenu, ViewContainer} from '@tryghost/admin-x-design-system';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useState} from 'react';
 
@@ -7,20 +7,37 @@ const MainContent = () => {
     const [view, setView] = useState<string>('list');
 
     const dummyActions = [
-        <Button label='Filter' link onClick={() => {
+        <Button label='Filter' onClick={() => {
             alert('Clicked filter');
         }} />,
-        <Button label='Sort' link onClick={() => {
-            alert('Clicked sort');
-        }} />,
-        <Button icon='magnifying-glass' size='sm' link onClick={() => {
+        <SortMenu
+            direction='desc'
+            items={[
+                {
+                    id: 'date-added',
+                    label: 'Date added',
+                    selected: true
+                },
+                {
+                    id: 'name',
+                    label: 'Name'
+                },
+                {
+                    id: 'redemptions',
+                    label: 'Open Rate'
+                }
+            ]}
+            position="left"
+            onDirectionChange={() => {}}
+            onSortChange={() => {}}
+        />,
+        <Button icon='magnifying-glass' size='sm' onClick={() => {
             alert('Clicked search');
         }} />,
         <ButtonGroup buttons={[
             {
                 icon: 'listview',
                 size: 'sm',
-                link: true,
                 iconColorClass: (view === 'list' ? 'text-black' : 'text-grey-500'),
                 onClick: () => {
                     setView('list');
@@ -29,13 +46,12 @@ const MainContent = () => {
             {
                 icon: 'cardview',
                 size: 'sm',
-                link: true,
                 iconColorClass: (view === 'card' ? 'text-black' : 'text-grey-500'),
                 onClick: () => {
                     setView('card');
                 }
             }
-        ]} />
+        ]} clearBg={false} link />
     ];
 
     const testColumns: DynamicTableColumn[] = [
