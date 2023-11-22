@@ -125,7 +125,7 @@ const Page: React.FC<PageProps> = ({
         <div className='sticky flex items-center gap-7'>
             {(customGlobalActions?.map((action) => {
                 return (
-                    <Button icon={action.iconName} iconColorClass='text-black' size='sm' link onClick={action.onClick} />
+                    <Button icon={action.iconName} iconColorClass='text-black dark:text-white' size='sm' link onClick={action.onClick} />
                 );
             }))}
             {showGlobalActions && <GlobalActions />}
@@ -138,7 +138,7 @@ const Page: React.FC<PageProps> = ({
     );
 
     pageToolbarClassName = clsx(
-        'sticky top-0 z-50 flex h-18 w-full items-center justify-between gap-5 bg-white p-6',
+        'sticky top-0 z-50 flex h-18 w-full items-center justify-between gap-5 bg-white p-6 dark:bg-black',
         !fullBleedToolbar && 'mx-auto max-w-7xl',
         pageToolbarClassName
     );
