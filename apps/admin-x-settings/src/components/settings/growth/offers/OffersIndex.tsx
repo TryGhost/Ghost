@@ -132,7 +132,7 @@ export const OffersIndexModal = () => {
     });
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     const paidActiveTiers = getPaidActiveTiers(allTiers || []);
-    const activeOffers = allOffers.filter(offer => offer.status === 'active')
+    const activeOffers = allOffers.filter(offer => offer.status === 'active');
 
     useEffect(() => {
         if (!hasOffers) {
