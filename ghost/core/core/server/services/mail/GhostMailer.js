@@ -33,6 +33,11 @@ function getDomain() {
  */
 function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
     if (settingsHelpers.useNewEmailAddresses()) {
+        if (!requestedFromAddress) {
+            // Use the default config
+            requestedFromAddress = emailAddress.service.defaultFromEmail;
+        }
+
         // Clean up email addresses (checks whether sending is allowed + email address is valid)
         const addresses = emailAddress.service.getAddressFromString(requestedFromAddress, requestedReplyToAddress);
 
@@ -47,8 +52,6 @@ function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
             replyTo: addresses.replyTo ? EmailAddressParser.stringify(addresses.replyTo) : null
         };
     }
-
-    const configAddress = config.get('mail') && config.get('mail').from;
 
     const address = requestedFromAddress || configAddress;
     // If we don't have a from address at all

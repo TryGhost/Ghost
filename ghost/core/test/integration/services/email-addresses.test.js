@@ -137,6 +137,7 @@ describe('Email addresses', function () {
 
     afterEach(async function () {
         mockManager.restore();
+        await configUtils.restore();
     });
 
     describe('Legacy setup', function () {
