@@ -2,13 +2,55 @@ import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {CopyLinkButton} from './offers/OffersIndex';
+import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
+import {createRedemptionFilterUrl, getOfferDiscount} from './offers/OffersIndex';
+import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+
+const OfferContainer: React.FC<{offerTitle: string, tier: Tier, cadence: string, redemptions: number, type: string, amount: number, currency: string, offerId: string, offerCode: string}> = (
+    {offerTitle, tier, cadence, redemptions, type, amount, currency, offerId, offerCode}) => {
+    const {discountColor, discountOffer} = getOfferDiscount(type, amount, cadence, currency || 'USD', tier);
+    return <div className='group flex aspect-square cursor-pointer flex-col justify-between break-words rounded-sm border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800'>
+        <span className='text-[1.65rem] font-bold leading-tight tracking-tight'>{offerTitle}</span>
+        <div className='flex flex-col'>
+            <span className={`text-sm font-semibold uppercase ${discountColor}`}>{discountOffer}</span>
+            <div className='flex gap-1 text-xs'>
+                <span className='font-semibold'>{tier.name}</span>
+                <span className='text-grey-700'>{cadence}</span>
+            </div>
+            <div className='mt-2 flex items-end justify-between'>
+                <a className='text-xs text-grey-700 hover:text-black hover:underline' href={createRedemptionFilterUrl(offerId)}>{redemptions} redemptions</a>
+                <CopyLinkButton offerCode={offerCode} />
+            </div>
+        </div>
+    </div>;
+};
 
 const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
     const {settings, config} = useGlobalData();
+
+    const {data: {offers: allOffers = []} = {}} = useBrowseOffers({
+        searchParams: {
+            limit: '3'
+        }
+    });
+
+    const {data: {tiers: allTiers} = {}} = useBrowseTiers();
+    const paidActiveTiers = getPaidActiveTiers(allTiers || []);
+
+    const activeOffers = allOffers.filter(offer => offer.status === 'active');
+
+    activeOffers.sort((a, b) => {
+        // Handle potential undefined values in created_at
+        const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+        const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+        return dateB.getTime() - dateA.getTime();
+    });
+
+    const latestThree = activeOffers.slice(0, 3);
 
     const openModal = () => {
         updateRoute('offers/edit');
@@ -25,48 +67,26 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             <div>
                 <div className='grid grid-cols-3 gap-4'>
-                    <div className='group flex aspect-square cursor-pointer flex-col justify-between break-words rounded-sm border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800'>
-                        <span className='text-[1.65rem] font-bold leading-tight tracking-tight'>Black Friday</span>
-                        <div className='flex flex-col'>
-                            <span className='text-sm font-semibold uppercase text-green'>20% off</span>
-                            <div className='flex gap-1 text-xs'>
-                                <span className='font-semibold'>Bronze</span>
-                                <span className='text-grey-700'>monthly</span>
-                            </div>
-                            <div className='mt-2 flex items-end justify-between'>
-                                <a className='text-xs text-grey-700 hover:text-black hover:underline' href="#">4 redemptions</a>
-                                <CopyLinkButton offerCode='' />
-                            </div>
-                        </div>
-                    </div>
-                    <div className='group flex aspect-square cursor-pointer flex-col justify-between break-words rounded-sm border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800'>
-                        <span className='text-[1.65rem] font-bold leading-tight tracking-tight'>Cyber Monday</span>
-                        <div className='flex flex-col'>
-                            <span className='text-sm font-semibold uppercase text-pink'>7 days free</span>
-                            <div className='flex gap-1 text-xs'>
-                                <span className='font-semibold'>Silver</span>
-                                <span className='text-grey-700'>yearly</span>
-                            </div>
-                            <div className='mt-2 flex items-end justify-between'>
-                                <a className='text-xs text-grey-700 hover:text-black hover:underline' href="#">0 redemptions</a>
-                                <CopyLinkButton offerCode='' />
-                            </div>
-                        </div>
-                    </div>
-                    <div className='group flex aspect-square cursor-pointer flex-col justify-between break-words rounded-sm border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800'>
-                        <span className='text-[1.65rem] font-bold leading-tight tracking-tight'>Great Deal</span>
-                        <div className='flex flex-col'>
-                            <span className='text-sm font-semibold uppercase text-blue'>$20 off</span>
-                            <div className='flex gap-1 text-xs'>
-                                <span className='font-semibold'>Bronze</span>
-                                <span className='text-grey-700'>yearly</span>
-                            </div>
-                            <div className='mt-2 flex items-end justify-between'>
-                                <a className='text-xs text-grey-700 hover:text-black hover:underline' href="#">3 redemptions</a>
-                                <CopyLinkButton offerCode='' />
-                            </div>
-                        </div>
-                    </div>
+                    {
+                        latestThree.map((offer) => {
+                            const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
+                            if (!offerTier) {
+                                return null;
+                            }
+                            return <OfferContainer
+                                key={offer.id}
+                                amount={offer.amount}
+                                cadence={offer.cadence}
+                                currency={offer.currency || 'USD'}
+                                offerCode={offer.code}
+                                offerId={offer.id}
+                                offerTitle={offer.name}
+                                redemptions={offer.redemption_count}
+                                tier={offerTier}
+                                type={offer.type}
+                            />;
+                        })
+                    }
                 </div>
                 <div className='mt-4 border-t border-t-grey-200 pt-2'>
                     <Button className='text-sm font-bold text-green' label='Show all' size='sm' link unstyled onClick={openModal} />

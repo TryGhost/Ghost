@@ -21,15 +21,15 @@ export const createRedemptionFilterUrl = (id: string): string => {
     return `${baseHref}?filter=${encodeURIComponent('offer_redemptions:' + id)}`;
 };
 
-const getOfferCadence = (cadence: string): string => {
+export const getOfferCadence = (cadence: string): string => {
     return cadence === 'month' ? 'monthly' : 'yearly';
 };
 
-const getOfferDuration = (duration: string): string => {
+export const getOfferDuration = (duration: string): string => {
     return (duration === 'once' ? 'First payment' : duration === 'repeating' ? 'Repeating' : 'Forever');
 };
 
-const getOfferDiscount = (type: string, amount: number, cadence: string, currency: string, tier: Tier | undefined): {discountColor: string, discountOffer: string, originalPriceWithCurrency: string, updatedPriceWithCurrency: string} => {
+export const getOfferDiscount = (type: string, amount: number, cadence: string, currency: string, tier: Tier | undefined): {discountColor: string, discountOffer: string, originalPriceWithCurrency: string, updatedPriceWithCurrency: string} => {
     let discountColor = '';
     let discountOffer = '';
     const originalPrice = cadence === 'month' ? tier?.monthly_price ?? 0 : tier?.yearly_price ?? 0;
