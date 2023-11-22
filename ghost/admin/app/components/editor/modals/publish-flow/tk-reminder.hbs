@@ -2,7 +2,7 @@
     <div>Forget something?</div>
 </div>
 <p class="gh-publish-confirmation">
-    Looks like you've got some unfinished business. There are <strong>{{@tkCount}} TK reminders</strong> left in your post.
+    Looks like you've got some unfinished business. There {{if (eq @tkCount 1) "is" "are" }} <strong>{{gh-pluralize @tkCount "TK reminder"}}</strong> left in your post.
 </p>
 
 <div class="gh-publish-cta">

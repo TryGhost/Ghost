@@ -127,21 +127,13 @@ export default class LexicalEditorController extends Controller {
 
     // koenig related properties
     wordCount = 0;
-    tkCount = this.getRandomTkCount(); // TODO: set to 0 once onCountChange is wired up
+    tkCount = 0;
 
     /* private properties ----------------------------------------------------*/
 
     _leaveConfirmed = false;
     _saveOnLeavePerformed = false;
     _previousTagNames = null; // set by setPost and _postSaved, used in hasDirtyAttributes
-
-    // TODO: remove once onCountChange is wired up
-    getRandomTkCount() {
-        if (!this.feature.tkReminders) {
-            return 0;
-        }
-        return Math.ceil(Math.random() * 10);
-    }
 
     /* computed properties ---------------------------------------------------*/
 
@@ -1090,7 +1082,7 @@ export default class LexicalEditorController extends Controller {
         this.set('shouldFocusTitle', false);
         this.set('showSettingsMenu', false);
         this.set('wordCount', 0);
-        this.set('tkCount', this.getRandomTkCount()); // TODO: set to 0 once onCountChange is wired up
+        this.set('tkCount', 0);
 
         // remove the onbeforeunload handler as it's only relevant whilst on
         // the editor route
