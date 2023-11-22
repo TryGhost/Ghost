@@ -78,7 +78,7 @@ export const LimitToolbarWidth: Story = {
 export const WithHamburger: Story = {
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         children: dummyContent
     }
 };
@@ -86,7 +86,7 @@ export const WithHamburger: Story = {
 export const WithGlobalActions: Story = {
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: dummyContent
     }
@@ -95,14 +95,32 @@ export const WithGlobalActions: Story = {
 export const CustomGlobalActions: Story = {
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: dummyContent,
         customGlobalActions: customGlobalActions
     }
 };
 
+const currentAdminExample = <ViewContainer
+    title='Members'
+    type='page'
+>
+    <DynamicTable
+        columns={testColumns}
+        rows={testRows(100)}
+    />
+</ViewContainer>;
+
+export const ExampleCurrentAdminList: Story = {
+    name: 'Example: List in Current Admin',
+    args: {
+        children: currentAdminExample
+    }
+};
+
 const simpleList = <ViewContainer
+    firstOnPage={false}
     title='Members'
     type='page'
 >
@@ -117,13 +135,14 @@ export const ExampleSimpleList: Story = {
     name: 'Example: Simple List',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: simpleList
     }
 };
 
 const stickyList = <ViewContainer
+    firstOnPage={false}
     title='Members'
     type='page'
 >
@@ -140,13 +159,14 @@ export const ExampleStickyList: Story = {
     name: 'Example: Sticky Header/Footer List',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: stickyList
     }
 };
 
 const examplePrimaryAction = <ViewContainer
+    firstOnPage={false}
     primaryAction={{
         title: 'Add member',
         color: 'black',
@@ -170,7 +190,7 @@ export const ExamplePrimaryAction: Story = {
     name: 'Example: Primary Action',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: examplePrimaryAction
     }
@@ -178,6 +198,7 @@ export const ExamplePrimaryAction: Story = {
 
 const exampleActionsContent = <ViewContainer
     actions={exampleActionButtons}
+    firstOnPage={false}
     primaryAction={{
         title: 'Add member',
         icon: 'add',
@@ -202,7 +223,7 @@ export const ExampleActions: Story = {
     name: 'Example: Custom Actions',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: exampleActionsContent
     }
@@ -233,6 +254,7 @@ const mockIdeaCards = () => {
 const exampleCardViewContent = (
     <ViewContainer
         actions={exampleActionButtons}
+        firstOnPage={false}
         primaryAction={{
             title: 'New idea',
             icon: 'add'
@@ -250,7 +272,7 @@ export const ExampleCardView: Story = {
     name: 'Example: Card View',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: exampleCardViewContent
     }
@@ -299,6 +321,7 @@ const mockPosts = () => {
 const examplePostsContent = (
     <ViewContainer
         actions={exampleActionButtons}
+        firstOnPage={false}
         primaryAction={{
             title: 'New post',
             icon: 'add'
@@ -316,7 +339,7 @@ export const ExampleAlternativeList: Story = {
     name: 'Example: Alternative List',
     args: {
         pageTabs: pageTabs,
-        showPageMenu: true,
+        showAppMenu: true,
         showGlobalActions: true,
         children: examplePostsContent
     }
@@ -325,7 +348,7 @@ export const ExampleAlternativeList: Story = {
 export const ExampleDetailScreen: Story = {
     name: 'Example: Detail Page',
     args: {
-        showPageMenu: true,
+        showAppMenu: true,
         breadCrumbs: <Breadcrumbs
             items={[
                 {
@@ -340,6 +363,7 @@ export const ExampleDetailScreen: Story = {
         showGlobalActions: true,
         children: <>
             <ViewContainer
+                firstOnPage={false}
                 headerContent={
                     <div>
                         <Avatar bgColor='#A5D5F7' label='EV' labelColor='white' size='xl' />
@@ -353,7 +377,8 @@ export const ExampleDetailScreen: Story = {
                         color: 'outline'
                     }
                 }
-                type='page'>
+                type='page'
+            >
                 <div className='grid grid-cols-4 border-b border-grey-200 pb-5'>
                     <div className='-ml-5 flex h-full flex-col px-5'>
                         <span>Last seen on <strong>22 June 2023</strong></span>

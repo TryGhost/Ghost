@@ -26,16 +26,45 @@ export interface PrimaryActionProps {
 }
 
 interface ViewContainerProps {
+    /**
+     * Use `page` if the `ViewContainer` is your main component on the page. Use
+     * `section` for individual sections on the page (e.g. blocks on a dashboard).
+     */
     type: 'page' | 'section';
+
+    /**
+     * The title of the ViewContainer. `page` type containers will use a large
+     * size that matches the rest of the page titles in the Admin.
+     */
     title?: string;
 
     /**
-     * Sticks to top: 0 instead of keeping space for page toolbar
+     * Use this if there's no toolbar on the page and you use the `ViewContainer`
+     * as the main container on a page. Technically it sticks the header to
+     * the top of the page with the actions aligned properly to match other
+     * pages in the Admin.
      */
     firstOnPage?:boolean;
 
+    /**
+     * Use this for custom content in the header.
+     */
     headerContent?: React.ReactNode;
+
+    /**
+     * Sticks the header so it's always visible. The `top` value depends on the
+     * value of `firstOnPage`:
+     *
+     * ```
+     * firstOnPage = true    -> top: 0px;
+     * firstOnPage = false   -> top: 3vmin;
+     * ```
+     */
     stickyHeader?: boolean;
+
+    /**
+     * Use this to break down the view to multiple tabs.
+     */
     tabs?: ViewTab[];
     selectedTab?: string;
     selectedView?: string;
@@ -45,19 +74,38 @@ interface ViewContainerProps {
     toolbarContainerClassName?: string;
     toolbarLeftClassName?: string;
     toolbarBorder?: boolean;
+
+    /**
+     * The primary action appears in the view container's top right usually as a solid
+     * button.
+     */
     primaryAction?: PrimaryActionProps;
+
+    /**
+     * Adds more actions by the primary action, primarily buttons and button groups.
+     */
     actions?: (React.ReactElement<ButtonProps> | React.ReactElement<ButtonGroupProps> | React.ReactNode)[];
     actionsClassName?: string;
     actionsHidden?: boolean;
     contentWrapperClassName?: string;
+
+    /**
+     * Sets the width of the view container full bleed
+     */
     contentFullBleed?: boolean;
     children?: React.ReactNode;
 }
 
+/**
+ * The `ViewContainer` component is a generic container for either the complete
+ * contents of a page (`type = 'page'`) or for individual sections on a
+ * page, like blocks on a dashboard (`type = 'section'`). It has a bunch of
+ * parameters to customise its look & feel.
+ */
 const ViewContainer: React.FC<ViewContainerProps> = ({
     type,
     title,
-    firstOnPage,
+    firstOnPage = true,
     headerContent,
     stickyHeader = true,
     tabs,
@@ -131,7 +179,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     toolbarContainerClassName = clsx(
         'flex items-end justify-between',
-        firstOnPage ? 'pb-8' : (tabs?.length ? '' : 'pb-2'),
+        (firstOnPage && type === 'page') ? 'pb-8' : (tabs?.length ? '' : 'pb-2'),
         toolbarBorder && 'border-b border-grey-200',
         toolbarContainerClassName
     );
@@ -195,7 +243,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     contentWrapperClassName = clsx(
         'relative mx-auto w-full flex-auto',
-        !contentFullBleed && 'max-w-7xl px-12',
+        (!contentFullBleed && type === 'page') && 'max-w-7xl px-12',
         contentWrapperClassName,
         (!title && !actions) && 'pt-[3vmin]'
     );

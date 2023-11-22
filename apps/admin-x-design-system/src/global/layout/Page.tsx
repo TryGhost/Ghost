@@ -1,10 +1,11 @@
 import React from 'react';
 import {TabList} from '../TabView';
 import clsx from 'clsx';
-import PageMenu from './PageMenu';
+import AppMenu from './AppMenu';
 import GlobalActions from './GlobalActions';
 import Button from '../Button';
 import {BreadcrumbsProps} from '../Breadcrumbs';
+import PageHeader from './PageHeader';
 
 export interface PageTab {
     id: string;
@@ -20,25 +21,65 @@ interface PageProps {
     mainContainerClassName?: string;
     mainClassName?: string;
     fullBleedPage?: boolean;
+
+    /**
+     * The pageToolbar is a WIP part of this component, it's unused ATM in Ghost Admin.
+     */
     pageToolbarClassName?: string;
     fullBleedToolbar?: boolean;
-    showPageMenu?: boolean;
+
+    /**
+     * TK. Part of the Page Toolbar
+     */
+    showAppMenu?: boolean;
+
+    /**
+     * Show
+     */
     showGlobalActions?: boolean;
+
+    /**
+     * TK. Part of the Page Toolbar
+     */
     customGlobalActions?: CustomGlobalAction[];
     breadCrumbs?: React.ReactElement<BreadcrumbsProps>;
+
+    /**
+     * TK. Part of the Page Toolbar
+     */
     pageTabs?: PageTab[],
+
+    /**
+     * TK. Part of the Page Toolbar
+     */
     selectedTab?: string;
+
+    /**
+     * TK. Part of the Page Toolbar
+     */
     onTabChange?: (id: string) => void;
+
     children?: React.ReactNode;
 }
 
+/**
+ * The page component is the main container in Ghost Admin. It consists of a
+ * page level toolbar (`pageToolbar` — unused ATM, it's for page level views and
+ * navigation in the future), and the main content area.
+ *
+ * ### Examples
+ * You can find several examples in the sidebar. If you're building a page for the
+ * current Admin you can use the ["List in Current Admin"](/story/global-layout-page--example-current-admin-list)
+ * example as a starting point. The rest of the examples are showing a potential direction for a
+ * future structure.
+ */
 const Page: React.FC<PageProps> = ({
     fullBleedPage = true,
     mainContainerClassName,
     mainClassName,
     pageToolbarClassName,
     fullBleedToolbar = true,
-    showPageMenu = false,
+    showAppMenu = false,
     showGlobalActions = false,
     customGlobalActions,
     breadCrumbs,
@@ -57,9 +98,9 @@ const Page: React.FC<PageProps> = ({
     }
 
     const left: React.ReactNode = (
-        (showPageMenu || breadCrumbs || pageTabs?.length) && <div className='flex items-center gap-10'>
-            {showPageMenu && (
-                <PageMenu />
+        (showAppMenu || breadCrumbs || pageTabs?.length) && <div className='flex items-center gap-10'>
+            {showAppMenu && (
+                <AppMenu />
             )}
             {breadCrumbs}
             {pageTabs?.length && (
@@ -105,10 +146,11 @@ const Page: React.FC<PageProps> = ({
     return (
         <div className={mainContainerClassName}>
             {(left || globalActions) &&
-                <header className={pageToolbarClassName}>
-                    <nav>{left}</nav>
-                    <div>{globalActions}</div>
-                </header>
+                <PageHeader
+                    containerClassName={pageToolbarClassName}
+                    left={left}
+                    right={globalActions}
+                />
             }
             <main className={mainClassName}>
                 {children}

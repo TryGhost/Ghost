@@ -18,17 +18,19 @@ const meta = {
             }}
         />;
     },
-    tags: ['autodocs']
+    argTypes: {
+        children: {
+            control: {
+                type: 'text'
+            }
+        }
+    },
+    tags: ['autodocs'],
+    excludeStories: ['exampleActions']
 } satisfies Meta<typeof ViewContainer>;
 
 export default meta;
 type Story = StoryObj<typeof ViewContainer>;
-
-const ContentContainer: React.FC<{children: React.ReactNode}> = ({
-    children
-}) => {
-    return <div className='m-auto max-w-[800px] p-5 text-center'>{children}</div>;
-};
 
 export const exampleActions = [
     <Button label='Filter' onClick={() => {
@@ -72,12 +74,12 @@ const tabs: ViewTab[] = [
     {
         id: 'steph',
         title: 'Steph Curry',
-        contents: <ContentContainer>The tabs component lets you add various datasets. It uses the <code>`TabList`</code> component to stay consistent with the simple TabView.</ContentContainer>
+        contents: 'The tabs component lets you add various datasets. It uses the <code>`TabList`</code> component to stay consistent with the simple TabView.'
     },
     {
         id: 'klay',
         title: 'Klay Thompson',
-        contents: <ContentContainer>Splash brother #11.</ContentContainer>
+        contents: 'Splash brother #11.'
     }
 ];
 
@@ -85,7 +87,7 @@ export const Default: Story = {
     args: {
         type: 'page',
         toolbarBorder: false,
-        children: <ContentContainer>The view container component is the main container of pages and/or sections on a page. Select one of the stories on the right to browse use cases.</ContentContainer>
+        children: 'The view container component is the main container of pages and/or sections on a page. Select one of the stories on the right to browse use cases.'
     }
 };
 
@@ -94,7 +96,7 @@ export const PageType: Story = {
     args: {
         type: 'page',
         title: 'Page title',
-        children: <ContentContainer>In its simplest form you can use this component as the main container of pages.</ContentContainer>
+        children: 'In its simplest form you can use this component as the main container of pages.'
     }
 };
 
@@ -103,7 +105,7 @@ export const SectionType: Story = {
     args: {
         type: 'section',
         title: 'Section title',
-        children: <ContentContainer>This example shows how to use it for sections on a page.</ContentContainer>
+        children: 'This example shows how to use it for sections on a page.'
     }
 };
 
@@ -111,7 +113,8 @@ export const PrimaryActionOnPage: Story = {
     args: {
         type: 'page',
         title: 'Page title',
-        primaryAction: primaryAction
+        primaryAction: primaryAction,
+        children: 'View contents'
     }
 };
 
