@@ -1,5 +1,6 @@
 import NiceModal, {NiceModalHocProps} from '@ebay/nice-modal-react';
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
+import {useFramework} from './FrameworkProvider';
 
 export type RouteParams = Record<string, string>
 
@@ -92,12 +93,12 @@ const matchRoute = (pathname: string, routeDefinition: string) => {
 
 export interface RoutingProviderProps {
     basePath: string;
-    externalNavigate: (link: ExternalLink) => void;
     modals?: {paths: Record<string, string>, load: () => Promise<ModalsModule>}
     children: React.ReactNode;
 }
 
-const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, externalNavigate, modals, children}) => {
+const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modals, children}) => {
+    const {externalNavigate} = useFramework();
     const [route, setRoute] = useState<string | undefined>(undefined);
     const [loadingModal, setLoadingModal] = useState(false);
     const [eventTarget] = useState(new EventTarget());
