@@ -32,6 +32,7 @@ export interface DynamicTableProps {
      * Set this parameter if the table is the main content in a viewcontainer or on a page
      */
     singlePageTable?: boolean;
+    pageHasSidebar?: boolean;
 
     border?: boolean;
     footerBorder?:boolean;
@@ -60,6 +61,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     footerBorder = true,
     stickyFooter = false,
     singlePageTable = false,
+    pageHasSidebar = true,
     containerClassName,
     tableContainerClassName,
     tableClassName,
@@ -81,7 +83,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     tableContainerClassName = clsx(
         'flex-auto overflow-x-auto',
         !horizontalScrolling && 'w-full max-w-full',
-        (singlePageTable && (stickyHeader || stickyFooter || absolute)) && 'px-12 xl:px-[calc((100%-1320px)/2+48px)]',
+        (singlePageTable && (stickyHeader || stickyFooter || absolute)) && `px-[4vw] tablet:px-12 ${pageHasSidebar ? 'min-[1640px]:px-[calc((100%-1320px)/2+48px)]' : 'xl:px-[calc((100%-1320px)/2+48px)]'}`,
         tableContainerClassName
     );
 
@@ -91,13 +93,13 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     );
 
     thClassName = clsx(
-        'last-child:pr-5 bg-white py-3 text-left [&:not(:first-child)]:pl-5',
+        'last-child:pr-5 bg-white py-3 text-left dark:bg-black [&:not(:first-child)]:pl-5',
         thClassName
     );
 
     tdClassName = clsx(
-        'w-full border-b group-hover:border-grey-200',
-        border ? 'border-grey-200' : 'border-transparent',
+        'w-full border-b group-hover:border-grey-200 dark:group-hover:border-grey-900',
+        border ? 'border-grey-200 dark:border-grey-900' : 'border-transparent',
         tdClassName
     );
 
@@ -113,11 +115,11 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     );
 
     footerClassName = clsx(
-        'bg-white',
-        (singlePageTable && stickyFooter) && 'mx-12 xl:mx-[calc((100%-1320px)/2+48px)]',
+        'bg-white dark:bg-black',
+        (singlePageTable && stickyFooter) && `mx-[4vw] tablet:mx-12 ${pageHasSidebar ? 'min-[1640px]:mx-[calc((100%-1320px)/2+48px)]' : 'xl:mx-[calc((100%-1320px)/2+48px)]'}`,
         footer && 'py-4',
         stickyFooter && 'sticky inset-x-0 bottom-0',
-        footerBorder && 'border-t border-grey-200',
+        footerBorder && 'border-t border-grey-200 dark:border-grey-900',
         footerClassName
     );
 
@@ -150,7 +152,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
                         </tr>
                         {headerBorder && (
                             <tr>
-                                <th className='h-px bg-grey-200 p-0' colSpan={columns.length}></th>
+                                <th className='h-px bg-grey-200 p-0 dark:bg-grey-900' colSpan={columns.length}></th>
                             </tr>
                         )}
                     </thead>
