@@ -7,7 +7,7 @@ import type { Preview } from "@storybook/react";
 import DesignSystemProvider from '../src/providers/DesignSystemProvider';
 import adminxTheme from './adminx-theme';
 
-import { MINIMAL_VIEWPORTS } from '@storybook/addon-viewport';
+// import { MINIMAL_VIEWPORTS } from '@storybook/addon-viewport';
 
 const customViewports = {
 	sm: {
@@ -38,8 +38,8 @@ const customViewports = {
 		height: '801px',
 		},
 	},
-	customTablet: {
-		name: 'Custom Tablet',
+	tablet: {
+		name: 'tablet',
 		styles: {
 		width: '860px',
 		height: '801px',
@@ -68,7 +68,6 @@ const preview: Preview = {
 		viewport: {
 			viewports: {
 				...customViewports,
-				...MINIMAL_VIEWPORTS,
 			},
 		},
 	},

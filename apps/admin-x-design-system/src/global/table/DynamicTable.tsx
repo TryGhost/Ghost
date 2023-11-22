@@ -32,6 +32,7 @@ export interface DynamicTableProps {
      * Set this parameter if the table is the main content in a viewcontainer or on a page
      */
     singlePageTable?: boolean;
+    pageHasSidebar?: boolean;
 
     border?: boolean;
     footerBorder?:boolean;
@@ -60,6 +61,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     footerBorder = true,
     stickyFooter = false,
     singlePageTable = false,
+    pageHasSidebar = true,
     containerClassName,
     tableContainerClassName,
     tableClassName,
@@ -81,7 +83,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
     tableContainerClassName = clsx(
         'flex-auto overflow-x-auto',
         !horizontalScrolling && 'w-full max-w-full',
-        (singlePageTable && (stickyHeader || stickyFooter || absolute)) && 'px-12 xl:px-[calc((100%-1320px)/2+48px)]',
+        (singlePageTable && (stickyHeader || stickyFooter || absolute)) && `px-[4vw] tablet:px-12 ${pageHasSidebar ? 'min-[1640px]:px-[calc((100%-1320px)/2+48px)]' : 'xl:px-[calc((100%-1320px)/2+48px)]'}`,
         tableContainerClassName
     );
 
@@ -114,7 +116,7 @@ const DynamicTable: React.FC<DynamicTableProps> = ({
 
     footerClassName = clsx(
         'bg-white',
-        (singlePageTable && stickyFooter) && 'mx-12 xl:mx-[calc((100%-1320px)/2+48px)]',
+        (singlePageTable && stickyFooter) && `mx-[4vw] tablet:mx-12 ${pageHasSidebar ? 'min-[1640px]:mx-[calc((100%-1320px)/2+48px)]' : 'xl:mx-[calc((100%-1320px)/2+48px)]'}`,
         footer && 'py-4',
         stickyFooter && 'sticky inset-x-0 bottom-0',
         footerBorder && 'border-t border-grey-200',

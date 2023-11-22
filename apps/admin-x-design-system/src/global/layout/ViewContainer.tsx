@@ -172,14 +172,15 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     toolbarWrapperClassName = clsx(
         'z-50',
-        type === 'page' && 'mx-auto w-full max-w-7xl bg-white px-12',
+        type === 'page' && 'mx-auto w-full max-w-7xl bg-white px-[4vw] tablet:px-12',
         (type === 'page' && stickyHeader) && (firstOnPage ? 'sticky top-0 pt-8' : 'sticky top-18 pt-[3vmin]'),
         toolbarContainerClassName
     );
 
     toolbarContainerClassName = clsx(
-        'flex items-end justify-between',
-        (firstOnPage && type === 'page') ? 'pb-8' : (tabs?.length ? '' : 'pb-2'),
+        'flex justify-between gap-5',
+        (type === 'page' && actions?.length) ? 'flex-col tablet:flex-row tablet:items-end' : 'items-end',
+        (firstOnPage && type === 'page') ? 'pb-3 tablet:pb-8' : (tabs?.length ? '' : 'pb-2'),
         toolbarBorder && 'border-b border-grey-200',
         toolbarContainerClassName
     );
@@ -190,7 +191,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     );
 
     actionsClassName = clsx(
-        'flex items-center gap-5 transition-all',
+        'flex items-center justify-between gap-3 transition-all tablet:justify-start tablet:gap-5',
         actionsHidden && 'opacity-0 group-hover/view-container:opacity-100',
         tabs?.length ? 'pb-2' : (type === 'page' ? 'pb-1' : ''),
         actionsClassName
@@ -243,7 +244,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     contentWrapperClassName = clsx(
         'relative mx-auto w-full flex-auto',
-        (!contentFullBleed && type === 'page') && 'max-w-7xl px-12',
+        (!contentFullBleed && type === 'page') && 'max-w-7xl px-[4vw] tablet:px-12',
         contentWrapperClassName,
         (!title && !actions) && 'pt-[3vmin]'
     );

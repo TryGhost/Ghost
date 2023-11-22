@@ -108,6 +108,7 @@ const currentAdminExample = <ViewContainer
 >
     <DynamicTable
         columns={testColumns}
+        pageHasSidebar={false}
         rows={testRows(100)}
     />
 </ViewContainer>;
@@ -127,6 +128,7 @@ const simpleList = <ViewContainer
     <DynamicTable
         columns={testColumns}
         footer={<Hint>Just a regular table footer</Hint>}
+        pageHasSidebar={false}
         rows={testRows(100)}
     />
 </ViewContainer>;
@@ -149,6 +151,7 @@ const stickyList = <ViewContainer
     <DynamicTable
         columns={testColumns}
         footer={<Hint>Sticky footer</Hint>}
+        pageHasSidebar={false}
         rows={testRows(40)}
         stickyFooter
         stickyHeader
@@ -180,6 +183,7 @@ const examplePrimaryAction = <ViewContainer
     <DynamicTable
         columns={testColumns}
         footer={<Hint>Sticky footer</Hint>}
+        pageHasSidebar={false}
         rows={testRows(40)}
         stickyFooter
         stickyHeader
@@ -213,6 +217,7 @@ const exampleActionsContent = <ViewContainer
     <DynamicTable
         columns={testColumns}
         footer={<Hint>Sticky footer</Hint>}
+        pageHasSidebar={false}
         rows={testRows(40)}
         stickyFooter
         stickyHeader

@@ -8,6 +8,9 @@ import ButtonGroup from '../ButtonGroup';
 const meta = {
     title: 'Global / Layout / View Container',
     component: ViewContainer,
+    parameters: {
+        layout: 'fullscreen'
+    },
     render: function Component(args) {
         const [, updateArgs] = useArgs();
 
