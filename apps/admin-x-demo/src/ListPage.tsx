@@ -141,7 +141,7 @@ const ListPage = () => {
         for (let i = 0; i < noOfCards; i++) {
             cards.push(
                 <div className='flex min-h-[20vh] cursor-pointer flex-col items-center gap-5 rounded-sm bg-grey-100 p-7 pt-9 transition-all hover:bg-grey-200' onClick={() => {
-                    alert('Clicked');
+                    updateRoute('detail');
                 }}>
                     <Avatar image={`https://i.pravatar.cc/150?img=${i}`} size='xl' />
                     <div className='flex flex-col items-center'>
