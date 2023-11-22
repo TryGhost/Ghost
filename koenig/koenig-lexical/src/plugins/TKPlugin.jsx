@@ -6,7 +6,7 @@ import {useLexicalTextEntity} from '../hooks/useExtendedTextEntity';
 
 const REGEX = new RegExp(/(?<!\w)TK(?!\w)/);
 
-export default function TKPlugin() {
+export default function TKPlugin(setTkCount) {
     const [editor] = useLexicalComposerContext();
     const [tkNodes, setTkNodes] = useState([]);
 
@@ -18,13 +18,30 @@ export default function TKPlugin() {
 
     const getTKNodesForIndicators = useCallback((editorState) => {
         let foundNodes = [];
+        let nodesToIndicate = [];
+
         if (!editorState) {
             return foundNodes;
         }
+
+        // this collects all nodes
         editorState.read(() => {
             foundNodes = $nodesOfType(TKNode);
         });
-        return foundNodes;
+
+        // filter down to only the first TK per parent, since that's all the ones we need indicators for
+        if (foundNodes.length > 0) {
+            const parentKeys = new Set();
+            nodesToIndicate = foundNodes.filter((node) => {
+                if (parentKeys.has(node.__parent)) {
+                    return false;
+                } 
+                parentKeys.add(node.__parent);
+                return true;
+            });
+        }
+
+        return nodesToIndicate;
     }, []);
 
     // TODO: may be some competition with the listener for clicking outside the editor since clicking on the indicator sometimes focuses the document body
