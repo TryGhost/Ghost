@@ -4,7 +4,7 @@ import React, {useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
-import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, SettingGroupContent, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
@@ -189,16 +189,28 @@ const Sidebar: React.FC<{
                 );
             } else {
                 return (
-                    <TextField
-                        error={Boolean(errors.sender_reply_to)}
-                        hint={errors.sender_reply_to}
-                        placeholder={fullEmailAddress(newsletter.sender_email || 'noreply', siteData)}
-                        title="Reply-to email"
-                        value={newsletter.sender_reply_to || ''}
-                        onBlur={validate}
-                        onChange={e => updateNewsletter({sender_reply_to: e.target.value})}
-                        onKeyDown={() => clearError('sender_reply_to')}
-                    />
+                    <>
+                        <TextField
+                            error={Boolean(errors.sender_reply_to)}
+                            hint={errors.sender_reply_to}
+                            placeholder={fullEmailAddress(newsletter.sender_email || 'noreply', siteData)}
+                            title="Reply-to email"
+                            value={newsletter.sender_reply_to || ''}
+                            onBlur={validate}
+                            onChange={e => updateNewsletter({sender_reply_to: e.target.value})}
+                            onKeyDown={() => clearError('sender_reply_to')}
+                        />
+                        <SettingGroupContent
+                            values={[
+                                {
+                                    heading: 'Sender email address',
+                                    key: 'sender-email-addresss',
+                                    value: 'rediverge@ghost.io',
+                                    hint: <span className="text-xs text-grey-700">To customize, you need to <a className="text-green" href="#">set up a custom sending domain</a></span>
+                                }
+                            ]}
+                        />
+                    </>
                 );
             }
         }
