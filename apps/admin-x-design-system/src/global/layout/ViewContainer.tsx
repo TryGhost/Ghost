@@ -173,7 +173,7 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     toolbarWrapperClassName = clsx(
         'z-50',
         type === 'page' && 'mx-auto w-full max-w-7xl bg-white px-[4vw] dark:bg-black tablet:px-12',
-        (type === 'page' && stickyHeader) && (firstOnPage ? 'sticky top-0 pt-8' : 'sticky top-18 pt-[3vmin]'),
+        (type === 'page' && stickyHeader) && (firstOnPage ? 'sticky top-0 pt-8' : 'sticky top-22 pt-[3vmin]'),
         toolbarContainerClassName
     );
 
