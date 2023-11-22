@@ -39,7 +39,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             const leftClasses = clsx(
                 'flex flex-auto items-center',
                 (right && center) && 'basis-1/3',
-                ((right && !center) || (!right && center)) && 'basis-1/2'
+                ((!right && center)) && 'basis-1/2'
             );
             left = <div className={leftClasses}>{left}</div>;
         }
@@ -55,7 +55,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             const rightClasses = clsx(
                 'flex flex-auto items-center justify-end',
                 (left && center) && 'basis-1/3',
-                ((left && !center) || (!left && center)) && 'basis-1/2'
+                ((!left && center)) && 'basis-1/2'
             );
             right = <div className={rightClasses}>{right}</div>;
         }
