@@ -1,5 +1,6 @@
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {SortMenu} from '@tryghost/admin-x-design-system';
 import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
@@ -103,6 +104,21 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
             </div>
         </div>
     );
+};
+
+const EmptyScreen: React.FC = () => {
+    const {updateRoute} = useRouting();
+
+    return <div className='flex h-full flex-col items-center justify-center text-center'>
+        <Icon colorClass='text-grey-700' name='ai-tagging-spark' size='xl' />
+        <h1 className='mt-6 text-4xl'>Provide offers to new signups</h1>
+        <div className='max-w-[420px]'>
+            <p className='mt-3 text-[1.6rem]'>Boost your subscriptions by creating targeted discounts to potential members.</p>
+            <div className='mt-8'>
+                <Button color='green' label='Create first offer' fullWidth onClick={() => updateRoute('offers/new')} />
+            </div>
+        </div>
+    </div>;
 };
 
 export const OffersIndexModal = () => {
@@ -217,13 +233,15 @@ export const OffersIndexModal = () => {
         animate={false}
         cancelLabel=''
         footer={
-            <div className='mx-8 flex w-full items-center justify-between'>
-                <a className='text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
-                <Button color='black' label='Close' onClick={() => {
-                    modal.remove();
-                    updateRoute('offers');
-                }} />
-            </div>
+            allOffers.length > 0 ?
+                <div className='mx-8 flex w-full items-center justify-between'>
+                    <a className='text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
+                    <Button color='black' label='Close' onClick={() => {
+                        modal.remove();
+                        updateRoute('offers');
+                    }} />
+                </div> :
+                false
         }
         header={false}
         height='full'
@@ -231,50 +249,53 @@ export const OffersIndexModal = () => {
         testId='offers-modal'
         stickyFooter
     >
-        <div className='pt-6'>
-            <header>
-                <div className='flex items-center justify-between'>
-                    <div>
-                        {sortedOffers.some(offer => offer.hasOwnProperty('status') && offer.status === 'archived') ?
-                            <TabView
-                                border={false}
-                                selectedTab={selectedTab}
-                                tabs={offersTabs}
-                                width='wide'
-                                onTabChange={setSelectedTab}
-                            /> :
-                            null
-                        }
+        {allOffers.length > 0 ?
+            <div className='pt-6'>
+                <header>
+                    <div className='flex items-center justify-between'>
+                        <div>
+                            {sortedOffers.some(offer => offer.hasOwnProperty('status') && offer.status === 'archived') ?
+                                <TabView
+                                    border={false}
+                                    selectedTab={selectedTab}
+                                    tabs={offersTabs}
+                                    width='wide'
+                                    onTabChange={setSelectedTab}
+                                /> :
+                                null
+                            }
+                        </div>
+                        <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
                     </div>
-                    <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
-                </div>
-                <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
-                    <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
-                    <div className='flex gap-3'>
-                        <SortMenu
-                            direction='desc'
-                            items={[
-                                {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added'},
-                                {id: 'name', label: 'Name', selected: sortOption === 'name'},
-                                {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions'}
-                            ]}
-                            position='right'
-                            onDirectionChange={(selectedDirection) => {
-                                const newDirection = selectedDirection === 'asc' ? 'desc' : 'asc';
-                                setSortDirection(newDirection);
-                            }}
-                            onSortChange={(selectedOption) => {
-                                setSortOption(selectedOption);
-                            }}
-                        />
+                    <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
+                        <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
                         <div className='flex gap-3'>
-                            <Button icon='layout-module-1' iconColorClass={selectedLayout === 'card' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('card')} />
-                            <Button icon='layout-headline' iconColorClass={selectedLayout === 'list' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('list')} />
+                            <SortMenu
+                                direction='desc'
+                                items={[
+                                    {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added'},
+                                    {id: 'name', label: 'Name', selected: sortOption === 'name'},
+                                    {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions'}
+                                ]}
+                                position='right'
+                                onDirectionChange={(selectedDirection) => {
+                                    const newDirection = selectedDirection === 'asc' ? 'desc' : 'asc';
+                                    setSortDirection(newDirection);
+                                }}
+                                onSortChange={(selectedOption) => {
+                                    setSortOption(selectedOption);
+                                }}
+                            />
+                            <div className='flex gap-3'>
+                                <Button icon='layout-module-1' iconColorClass={selectedLayout === 'card' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('card')} />
+                                <Button icon='layout-headline' iconColorClass={selectedLayout === 'list' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('list')} />
+                            </div>
                         </div>
                     </div>
-                </div>
-            </header>
-            {selectedLayout === 'card' ? cardLayoutOutput : listLayoutOutput}
-        </div>
+                </header>
+                {selectedLayout === 'card' ? cardLayoutOutput : listLayoutOutput}
+            </div> :
+            <EmptyScreen />
+        }
     </Modal>;
 };

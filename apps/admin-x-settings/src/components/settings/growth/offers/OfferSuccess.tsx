@@ -94,7 +94,7 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
                     }}
                 />
             </div>
-            <Icon name='tags-check' size='xl' />
+            <Icon colorClass='text-grey-700' name='tags-check' size='xl' />
             <h1 className='mt-6 text-4xl'>Your new offer is live!</h1>
             <p className='mt-3 max-w-[510px] text-[1.6rem]'>You can share the link anywhere. In your newsletter, social media, a podcast, or in-person. It all just works.</p>
             <div className='mt-8 flex w-full max-w-md flex-col gap-8'>
