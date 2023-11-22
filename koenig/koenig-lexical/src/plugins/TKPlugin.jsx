@@ -1,5 +1,5 @@
 import {$createTKNode, TKNode} from '@tryghost/kg-default-nodes';
-import {$getNodeByKey, $getRoot, $isElementNode, $isTextNode} from 'lexical';
+import {$getNodeByKey, $nodesOfType} from 'lexical';
 import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useLexicalTextEntity} from '../hooks/useExtendedTextEntity';
@@ -16,34 +16,13 @@ export default function TKPlugin() {
         }
     }, [editor]);
 
-    // get the first TK node for each direct child of the root element
     const getTKNodesForIndicators = useCallback((editorState) => {
         let foundNodes = [];
         if (!editorState) {
             return foundNodes;
         }
         editorState.read(() => {
-            const root = $getRoot();
-            const children = root.getChildren();
-            // need to loop over all leaf nodes and check if they are TKNodes
-
-            // TODO: right now doesn't handle children of children of children (e.g. list > listitem > text, or list > listitem > list > listitem > text)
-            for (let child of children) {
-                if ($isElementNode(child)) {
-                    // need to export children
-                    const childChildren = child.getChildren();
-                    for (let childChild of childChildren) {
-                        if (childChild instanceof TKNode) {
-                            foundNodes.push(childChild);
-                            break; // only need to find one child per parent element
-                        }
-                    }
-                } else if ($isTextNode(child)) {
-                    if (child.getType instanceof TKNode) {
-                        foundNodes.push(child);
-                    }
-                }
-            }
+            foundNodes = $nodesOfType(TKNode);
         });
         return foundNodes;
     }, []);
@@ -61,7 +40,7 @@ export default function TKPlugin() {
     const renderIndicators = useCallback((nodes) => {
         // clean up existing indicators
         document.body.querySelectorAll('.tk-indicator').forEach((el) => {
-            el.remove(); 
+            el.remove();
         });
 
         // add indicators to the dom
