@@ -4,6 +4,7 @@ import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
@@ -91,24 +92,10 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         secondaryTextColor
     } : {};
 
-    const isManagedEmail = () => {
-        return !!config?.hostSettings?.managedEmail?.enabled;
-    };
-
-    const hasSendingDomain = () => {
-        const isDomain = /[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-        const sendingDomain = config?.hostSettings?.managedEmail?.sendingDomain;
-        return typeof sendingDomain === 'string' && isDomain.test(sendingDomain);
-    };
-
-    const sendingDomain = () => {
-        return config?.hostSettings?.managedEmail?.sendingDomain;
-    };
-
     const renderSenderEmail = () => {
-        if (isManagedEmail()) {
-            if (hasSendingDomain()) {
-                return newsletter.sender_email || 'noreply@' + sendingDomain();
+        if (isManagedEmail(config)) {
+            if (hasSendingDomain(config)) {
+                return newsletter.sender_email || 'noreply@' + sendingDomain(config);
             }
         }
 

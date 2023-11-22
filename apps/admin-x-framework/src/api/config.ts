@@ -71,3 +71,19 @@ export const useBrowseConfig = createQuery<ConfigResponseType>({
     dataType,
     path: '/config/'
 });
+
+// Helpers
+
+export const isManagedEmail = (config: Config) => {
+    return !!config?.hostSettings?.managedEmail?.enabled;
+};
+
+export const hasSendingDomain = (config: Config) => {
+    const isDomain = /[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+    const sendingDomain = config?.hostSettings?.managedEmail?.sendingDomain;
+    return typeof sendingDomain === 'string' && isDomain.test(sendingDomain);
+};
+
+export const sendingDomain = (config: Config) => {
+    return config?.hostSettings?.managedEmail?.sendingDomain;
+};

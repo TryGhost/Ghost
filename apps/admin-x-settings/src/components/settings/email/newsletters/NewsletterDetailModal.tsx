@@ -9,11 +9,27 @@ import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framewor
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SiteData} from '@tryghost/admin-x-framework/api/site';
 import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+
+const renderReplyToEmail = (newsletter: Newsletter, siteData: SiteData, membersSupportAddress?: string) => {
+    if (!newsletter.sender_reply_to) {
+        return '';
+    }
+
+    if (newsletter.sender_reply_to === 'newsletter') {
+        return fullEmailAddress(newsletter.sender_email || 'noreply', siteData);
+    } else if (newsletter.sender_reply_to === 'support') {
+        return fullEmailAddress(membersSupportAddress || 'noreply', siteData);
+    } else {
+        return newsletter.sender_reply_to;
+    }
+};
 
 const Sidebar: React.FC<{
     newsletter: Newsletter;
@@ -34,9 +50,12 @@ const Sidebar: React.FC<{
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
 
+    const newsletterAddress = fullEmailAddress(newsletter.sender_email || 'noreply', siteData);
+    const supportAddress = fullEmailAddress(membersSupportAddress || 'noreply', siteData);
+
     const replyToEmails = [
-        {label: `Newsletter address (${fullEmailAddress(newsletter.sender_email || 'noreply', siteData)})`, value: 'newsletter'},
-        {label: `Support address (${fullEmailAddress(membersSupportAddress || 'noreply', siteData)})`, value: 'support'}
+        {label: `Newsletter address (${newsletterAddress})`, value: 'newsletter'},
+        {label: `Support address (${supportAddress})`, value: 'support'}
     ];
 
     const fontOptions: SelectOption[] = [
@@ -109,45 +128,40 @@ const Sidebar: React.FC<{
         }
     };
 
-    const isManagedEmail = () => {
-        return !!config?.hostSettings?.managedEmail?.enabled;
-    };
-
-    const hasSendingDomain = () => {
-        const isDomain = /[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-        const sendingDomain = config?.hostSettings?.managedEmail?.sendingDomain;
-        return typeof sendingDomain === 'string' && isDomain.test(sendingDomain);
-    };
-
-    const sendingDomain = () => {
-        return config?.hostSettings?.managedEmail?.sendingDomain;
-    };
-
     const renderSenderEmailField = () => {
-        if (isManagedEmail()) {
-            if (hasSendingDomain()) {
+        if (isManagedEmail(config)) {
+            if (hasSendingDomain(config)) {
                 const sendingEmailUsername = newsletter.sender_email?.split('@')[0];
 
                 return (
                     <TextField
                         error={Boolean(errors.sender_email)}
                         hint={errors.sender_email}
-                        rightPlaceholder={`@${sendingDomain()}`}
+                        rightPlaceholder={`@${sendingDomain(config)}`}
                         title="Sender email address"
                         value={sendingEmailUsername || ''}
                         onBlur={validate}
                         onChange={(e) => {
                             const username = e.target.value?.split('@')[0];
-                            console.log('username for sender email', username);
-                            const newEmail = username ? `${username}@${sendingDomain()}` : '';
-                            console.log('newEmail for sender email', newEmail);
+                            const newEmail = username ? `${username}@${sendingDomain(config)}` : '';
                             updateNewsletter({sender_email: newEmail});
                         }}
                         onKeyDown={() => clearError('sender_email')}
                     />
                 );
             } else {
-                return <></>;
+                return (
+                    <SettingGroupContent
+                        values={[
+                            {
+                                heading: 'Sender email address',
+                                key: 'sender-email-addresss',
+                                value: `${newsletter.sender_email}`,
+                                hint: <span className="text-xs text-grey-700">To customise, set up a <a className="text-green" href="#">custom sending domain</a></span>
+                            }
+                        ]}
+                    />
+                );
             }
         }
 
@@ -155,7 +169,7 @@ const Sidebar: React.FC<{
             <TextField
                 error={Boolean(errors.sender_email)}
                 hint={errors.sender_email}
-                placeholder={fullEmailAddress(newsletter.sender_email || 'noreply', siteData)}
+                placeholder={newsletterAddress}
                 title="Sender email address"
                 value={newsletter.sender_email || ''}
                 onBlur={validate}
@@ -166,22 +180,20 @@ const Sidebar: React.FC<{
     };
 
     const renderReplyToEmailField = () => {
-        if (isManagedEmail()) {
-            if (hasSendingDomain()) {
+        if (isManagedEmail(config)) {
+            if (hasSendingDomain(config)) {
                 const replyToEmailUsername = newsletter.sender_reply_to?.split('@')[0];
                 return (
                     <TextField
                         error={Boolean(errors.sender_reply_to)}
                         hint={errors.sender_reply_to}
-                        rightPlaceholder={`@${sendingDomain()}`}
+                        rightPlaceholder={`@${sendingDomain(config)}`}
                         title="Reply-to address"
                         value={replyToEmailUsername || ''}
                         onBlur={validate}
                         onChange={(e) => {
                             const username = e.target.value?.split('@')[0];
-                            console.log('username for reply to', username);
-                            const newEmail = username ? `${username}@${sendingDomain()}` : '';
-                            console.log('newemail for reply to', newEmail);
+                            const newEmail = username ? `${username}@${sendingDomain(config)}` : '';
                             updateNewsletter({sender_reply_to: newEmail});
                         }}
                         onKeyDown={() => clearError('sender_reply_to')}
@@ -189,28 +201,16 @@ const Sidebar: React.FC<{
                 );
             } else {
                 return (
-                    <>
-                        <TextField
-                            error={Boolean(errors.sender_reply_to)}
-                            hint={errors.sender_reply_to}
-                            placeholder={fullEmailAddress(newsletter.sender_email || 'noreply', siteData)}
-                            title="Reply-to email"
-                            value={newsletter.sender_reply_to || ''}
-                            onBlur={validate}
-                            onChange={e => updateNewsletter({sender_reply_to: e.target.value})}
-                            onKeyDown={() => clearError('sender_reply_to')}
-                        />
-                        <SettingGroupContent
-                            values={[
-                                {
-                                    heading: 'Sender email address',
-                                    key: 'sender-email-addresss',
-                                    value: 'rediverge@ghost.io',
-                                    hint: <span className="text-xs text-grey-700">To customize, you need to <a className="text-green" href="#">set up a custom sending domain</a></span>
-                                }
-                            ]}
-                        />
-                    </>
+                    <TextField
+                        error={Boolean(errors.sender_reply_to)}
+                        hint={errors.sender_reply_to}
+                        placeholder={newsletterAddress}
+                        title="Reply-to email"
+                        value={renderReplyToEmail(newsletter, siteData, membersSupportAddress)}
+                        onBlur={validate}
+                        onChange={e => updateNewsletter({sender_reply_to: e.target.value})}
+                        onKeyDown={() => clearError('sender_reply_to')}
+                    />
                 );
             }
         }
@@ -514,10 +514,11 @@ const Sidebar: React.FC<{
 
 const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: boolean;}> = ({newsletter, onlyOne}) => {
     const modal = useModal();
-    const {siteData} = useGlobalData();
+    const {siteData, settings} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
+    const [membersSupportAddress] = getSettingValues<string>(settings, ['members_support_address', 'icon']);
 
     const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError, okProps} = useForm({
         initialState: newsletter,
@@ -525,21 +526,40 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         onSave: async () => {
             const {newsletters, meta} = await editNewsletter(formState);
             if (meta?.sent_email_verification) {
-                NiceModal.show(ConfirmationModal, {
-                    title: 'Confirm newsletter email address',
-                    prompt: <>
-                        We&lsquo;ve sent a confirmation email to <strong>{formState.sender_email}</strong>.
-                        Until the address has been verified newsletters will be sent from the
-                        {newsletters[0].sender_email ? ' previous' : ' default'} email address
-                        ({fullEmailAddress(newsletters[0].sender_email || 'noreply', siteData)}).
-                    </>,
-                    cancelLabel: '',
-                    onOk: (confirmModal) => {
-                        confirmModal?.remove();
-                        modal.remove();
-                        updateRoute('newsletters');
-                    }
-                });
+                if (meta?.sent_email_verification[0] === 'sender_email') {
+                    NiceModal.show(ConfirmationModal, {
+                        title: 'Confirm newsletter email address',
+                        prompt: <>
+                            We&lsquo;ve sent a confirmation email to <strong>{formState.sender_email}</strong>.
+                            Until the address has been verified newsletters will be sent from the
+                            {newsletters[0].sender_email ? ' previous' : ' default'} email address
+                            ({fullEmailAddress(newsletters[0].sender_email || 'noreply', siteData)}).
+                        </>,
+                        cancelLabel: '',
+                        onOk: (confirmModal) => {
+                            confirmModal?.remove();
+                            modal.remove();
+                            updateRoute('newsletters');
+                        }
+                    });
+                } else if (meta?.sent_email_verification[0] === 'sender_reply_to') {
+                    const previousReplyTo = renderReplyToEmail(newsletters[0], siteData, membersSupportAddress);
+
+                    NiceModal.show(ConfirmationModal, {
+                        title: 'Confirm reply-to address',
+                        prompt: <>
+                            We&lsquo;ve sent a confirmation email to <strong>{formState.sender_reply_to}</strong>.
+                            Until the address has been verified, newsletters will use the previous reply-to address
+                            {previousReplyTo ? ` (${previousReplyTo})` : ''}.
+                        </>,
+                        cancelLabel: '',
+                        onOk: (confirmModal) => {
+                            confirmModal?.remove();
+                            modal.remove();
+                            updateRoute('newsletters');
+                        }
+                    });
+                }
             }
         },
         onSaveError: handleError,
