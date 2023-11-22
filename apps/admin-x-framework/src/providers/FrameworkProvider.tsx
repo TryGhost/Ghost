@@ -2,13 +2,11 @@ import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
 import {QueryClientProvider} from '@tanstack/react-query';
 import {ReactNode, createContext, useContext} from 'react';
 import queryClient from '../utils/queryClient';
-import RoutingProvider, {RoutingProviderProps} from './RoutingProvider';
+import {ExternalLink} from './RoutingProvider';
 
 export interface FrameworkProviderProps {
-    basePath: string;
     ghostVersion: string;
-    externalNavigate: RoutingProviderProps['externalNavigate'];
-    modals: RoutingProviderProps['modals'];
+    externalNavigate: (link: ExternalLink) => void;
     unsplashConfig: {
         Authorization: string;
         'Accept-Version': string;
@@ -24,10 +22,11 @@ export interface FrameworkProviderProps {
     children: ReactNode;
 }
 
-export type FrameworkContextType = Omit<FrameworkProviderProps, 'basePath' | 'externalNavigate' | 'modals' | 'children'>;
+export type FrameworkContextType = Omit<FrameworkProviderProps, 'children'>;
 
 const FrameworkContext = createContext<FrameworkContextType>({
     ghostVersion: '',
+    externalNavigate: () => {},
     unsplashConfig: {
         Authorization: '',
         'Accept-Version': '',
@@ -41,14 +40,12 @@ const FrameworkContext = createContext<FrameworkContextType>({
     onDelete: () => {}
 });
 
-function FrameworkProvider({externalNavigate, basePath, modals, children, ...props}: FrameworkProviderProps) {
+function FrameworkProvider({children, ...props}: FrameworkProviderProps) {
     return (
         <SentryErrorBoundary>
             <QueryClientProvider client={queryClient}>
                 <FrameworkContext.Provider value={props}>
-                    <RoutingProvider basePath={basePath} externalNavigate={externalNavigate} modals={modals}>
-                        {children}
-                    </RoutingProvider>
+                    {children}
                 </FrameworkContext.Provider>
             </QueryClientProvider>
         </SentryErrorBoundary>
