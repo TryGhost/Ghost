@@ -66,20 +66,14 @@ export default function TKPlugin(setTkCount) {
             const editorParent = editor.getRootElement().parentElement;
             const editorParentTop = editorParent.getBoundingClientRect().top;
             const tkParentTop = element.parentElement.getBoundingClientRect().top;
-            const editorWidth = editorParent.offsetWidth;
 
             // create an element
             // TODO: styles can migrated to use tailwind/themes
             const indicator = document.createElement('div');
-            indicator.style.position = 'absolute';
-            indicator.style.left = `${editorWidth + 10}px`;
-            indicator.style.top = `${tkParentTop - editorParentTop}px`;
-            indicator.style.padding = '.5rem';
+            indicator.style.top = `${tkParentTop - editorParentTop + 4}px`;
             indicator.textContent = 'TK';
-            indicator.classList.add('tk-indicator');
+            indicator.classList.add('absolute', '-right-14', 'p-1', 'text-xs', 'text-grey-600', 'font-medium', 'cursor-pointer');
             indicator.dataset.key = node.getKey();
-            indicator.style.color = 'darkgray';
-            indicator.style.fontSize = '1.3rem';
 
             indicator.onclick = indicatorOnClick;
 
