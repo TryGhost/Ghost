@@ -1,19 +1,35 @@
-import {ActionsResponseType} from '../../src/api/actions';
-import {ConfigResponseType} from '../../src/api/config';
-import {CustomThemeSettingsResponseType} from '../../src/api/customThemeSettings';
-import {InvitesResponseType} from '../../src/api/invites';
-import {LabelsResponseType} from '../../src/api/labels';
 import {Locator, Page, expect} from '@playwright/test';
-import {NewslettersResponseType} from '../../src/api/newsletters';
-import {OffersResponseType} from '../../src/api/offers';
-import {RecommendationResponseType} from '../../src/api/recommendations';
-import {RolesResponseType} from '../../src/api/roles';
-import {SettingsResponseType} from '../../src/api/settings';
-import {SiteResponseType} from '../../src/api/site';
-import {ThemesResponseType} from '../../src/api/themes';
-import {TiersResponseType} from '../../src/api/tiers';
-import {UsersResponseType} from '../../src/api/users';
-import {readFileSync} from 'fs';
+
+import actionsFixture from './responses/actions.json';
+import configFixture from './responses/config.json';
+import customThemeSettingsFixture from './responses/custom_theme_settings.json';
+import incomingRecommendationsFixture from './responses/incoming_recommendations.json';
+import invitesFixture from './responses/invites.json';
+import labelsFixture from './responses/labels.json';
+import meFixture from './responses/me.json';
+import newslettersFixture from './responses/newsletters.json';
+import offersFixture from './responses/offers.json';
+import recommendationsFixture from './responses/recommendations.json';
+import rolesFixture from './responses/roles.json';
+import settingsFixture from './responses/settings.json';
+import siteFixture from './responses/site.json';
+import themesFixture from './responses/themes.json';
+import tiersFixture from './responses/tiers.json';
+import usersFixture from './responses/users.json';
+
+import {ActionsResponseType} from '../api/actions';
+import {ConfigResponseType} from '../api/config';
+import {CustomThemeSettingsResponseType} from '../api/customThemeSettings';
+import {InvitesResponseType} from '../api/invites';
+import {LabelsResponseType} from '../api/labels';
+import {NewslettersResponseType} from '../api/newsletters';
+import {OffersResponseType} from '../api/offers';
+import {IncomingRecommendationResponseType, RecommendationResponseType} from '../api/recommendations';
+import {RolesResponseType} from '../api/roles';
+import {SettingsResponseType} from '../api/settings';
+import {ThemesResponseType} from '../api/themes';
+import {TiersResponseType} from '../api/tiers';
+import {UsersResponseType} from '../api/users';
 
 interface MockRequestConfig {
     method: string;
@@ -28,29 +44,27 @@ interface RequestRecord {
     headers?: {[key: string]: string}
 }
 
-const siteFixture = JSON.parse(readFileSync(`${__dirname}/responses/site.json`).toString()) as SiteResponseType;
-
 export const responseFixtures = {
-    settings: JSON.parse(readFileSync(`${__dirname}/responses/settings.json`).toString()) as SettingsResponseType,
-    recommendations: JSON.parse(readFileSync(`${__dirname}/responses/recommendations.json`).toString()) as RecommendationResponseType,
-    incomingRecommendations: JSON.parse(readFileSync(`${__dirname}/responses/incoming_recommendations.json`).toString()) as RecommendationResponseType,
-    config: JSON.parse(readFileSync(`${__dirname}/responses/config.json`).toString()) as ConfigResponseType,
-    users: JSON.parse(readFileSync(`${__dirname}/responses/users.json`).toString()) as UsersResponseType,
-    me: JSON.parse(readFileSync(`${__dirname}/responses/me.json`).toString()) as UsersResponseType,
-    roles: JSON.parse(readFileSync(`${__dirname}/responses/roles.json`).toString()) as RolesResponseType,
+    settings: settingsFixture as SettingsResponseType,
+    recommendations: recommendationsFixture as RecommendationResponseType,
+    incomingRecommendations: incomingRecommendationsFixture as IncomingRecommendationResponseType,
+    config: configFixture as ConfigResponseType,
+    users: usersFixture as UsersResponseType,
+    me: meFixture as UsersResponseType,
+    roles: rolesFixture as RolesResponseType,
     site: siteFixture,
-    invites: JSON.parse(readFileSync(`${__dirname}/responses/invites.json`).toString()) as InvitesResponseType,
-    customThemeSettings: JSON.parse(readFileSync(`${__dirname}/responses/custom_theme_settings.json`).toString()) as CustomThemeSettingsResponseType,
-    tiers: JSON.parse(readFileSync(`${__dirname}/responses/tiers.json`).toString()) as TiersResponseType,
-    labels: JSON.parse(readFileSync(`${__dirname}/responses/labels.json`).toString()) as LabelsResponseType,
-    offers: JSON.parse(readFileSync(`${__dirname}/responses/offers.json`).toString()) as OffersResponseType,
-    themes: JSON.parse(readFileSync(`${__dirname}/responses/themes.json`).toString()) as ThemesResponseType,
-    newsletters: JSON.parse(readFileSync(`${__dirname}/responses/newsletters.json`).toString()) as NewslettersResponseType,
-    actions: JSON.parse(readFileSync(`${__dirname}/responses/actions.json`).toString()) as ActionsResponseType,
+    invites: invitesFixture as InvitesResponseType,
+    customThemeSettings: customThemeSettingsFixture as CustomThemeSettingsResponseType,
+    tiers: tiersFixture as TiersResponseType,
+    labels: labelsFixture as LabelsResponseType,
+    offers: offersFixture as OffersResponseType,
+    themes: themesFixture as ThemesResponseType,
+    newsletters: newslettersFixture as NewslettersResponseType,
+    actions: actionsFixture as ActionsResponseType,
     latestPost: {posts: [{id: '1', url: `${siteFixture.site.url}/test-post/`}]}
 };
 
-let defaultLabFlags = {
+const defaultLabFlags = {
     audienceFeedback: false,
     collections: false,
     themeErrorsNotification: false,
@@ -213,7 +227,7 @@ export function meWithRole(name: string) {
 };
 
 export async function mockSitePreview({page, url, response}: {page: Page, url: string, response: string}) {
-    let lastRequest: {previewHeader?: string} = {};
+    const lastRequest: {previewHeader?: string} = {};
 
     await page.route(url, async (route) => {
         if (route.request().method() !== 'POST') {

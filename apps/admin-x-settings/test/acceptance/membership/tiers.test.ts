@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe} from '../../utils/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Tier settings', async () => {
     test('Supports creating a new tier', async ({page}) => {

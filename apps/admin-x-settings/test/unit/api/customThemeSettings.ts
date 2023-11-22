@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {CustomThemeSetting} from '../../../src/api/customThemeSettings';
+import {CustomThemeSetting} from '@tryghost/admin-x-framework/api/customThemeSettings';
 import {isCustomThemeSettingVisible} from '../../../src/utils/isCustomThemeSettingsVisible';
 
 describe('isCustomThemeSettingVisible', function () {

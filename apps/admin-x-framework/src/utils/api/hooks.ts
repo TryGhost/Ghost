@@ -9,11 +9,11 @@ import {RequestOptions, apiUrl, useFetchApi} from './fetchApi';
 export interface Meta {
     pagination: {
         page: number;
-        limit: number;
+        limit: number | 'all';
         pages: number;
         total: number;
-        next: number;
-        prev: number;
+        next: number | null;
+        prev: number | null;
     }
 }
 

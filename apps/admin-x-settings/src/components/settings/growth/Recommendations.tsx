@@ -32,7 +32,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 return;
             }
 
-            const newPage = limit < 100 ? 1 : (page + 1);
+            const newPage = typeof limit === 'number' && limit < 100 ? 1 : (page + 1);
 
             return {
                 ...otherParams,
@@ -65,7 +65,7 @@ const Recommendations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 return;
             }
 
-            const newPage = limit < 100 ? 1 : (page + 1);
+            const newPage = typeof limit === 'number' && limit < 100 ? 1 : (page + 1);
 
             return {
                 ...otherParams,

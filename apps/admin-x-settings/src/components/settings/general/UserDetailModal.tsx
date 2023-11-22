@@ -381,7 +381,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                     id='avatar'
                                     imageClassName='w-full h-full object-cover rounded-full shrink-0'
                                     imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px] shrink-0'
-                                    imageURL={formState.profile_image}
+                                    imageURL={formState.profile_image ?? undefined}
                                     pintura={
                                         {
                                             isEnabled: editor.isEnabled,

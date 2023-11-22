@@ -18,12 +18,12 @@ export type Action = {
         id: string;
         name: string;
         slug: string;
-        image: string;
+        image: string|null;
     },
     resource?: {
         id: string;
         slug: string;
-        name: string;
+        name?: string;
         title?: string;
     }
 
@@ -32,9 +32,13 @@ export type Action = {
 };
 
 export interface ActionsResponseType {
+    actions: Array<Omit<Action, 'context'> & {context: string}>;
+    meta: Meta;
+}
+
+export interface ActionsList {
     actions: Action[];
     meta: Meta;
-
     isEnd: boolean;
 }
 
@@ -42,7 +46,7 @@ export interface ActionsResponseType {
 
 const dataType = 'ActionsResponseType';
 
-export const useBrowseActions = createInfiniteQuery<ActionsResponseType>({
+export const useBrowseActions = createInfiniteQuery<ActionsList>({
     dataType,
     path: '/actions/',
     returnData: (originalData) => {

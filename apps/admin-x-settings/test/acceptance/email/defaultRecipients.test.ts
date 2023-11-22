@@ -1,4 +1,4 @@
-import {chooseOptionInSelect, globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/acceptance';
+import {chooseOptionInSelect, globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 
 test.describe('Default recipient settings', async () => {

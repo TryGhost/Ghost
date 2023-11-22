@@ -1,11 +1,11 @@
 import {useEffect, useState} from 'react';
 
 export interface PaginationMeta {
-    limit: number;
+    limit: number | 'all';
     pages: number;
     total: number;
-    next: number;
-    prev: number;
+    next: number | null;
+    prev: number | null;
 }
 
 export interface PaginationData {
@@ -42,7 +42,7 @@ export const usePagination = ({limit, meta, page, setPage}: {meta?: PaginationMe
         page,
         setPage,
         pages: prevMeta?.pages ?? null,
-        limit: prevMeta?.limit ?? limit,
+        limit: prevMeta?.limit && prevMeta.limit !== 'all' ? prevMeta.limit : limit,
         total: prevMeta?.total ?? null,
         nextPage: () => setPage(Math.min(page + 1, prevMeta?.pages ? prevMeta.pages : page)),
         prevPage: () => setPage(Math.max(1, page - 1))

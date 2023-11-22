@@ -1,5 +1,5 @@
-import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, mockSitePreview, responseFixtures} from '../../utils/acceptance';
+import {ElementHandle, expect, test} from '@playwright/test';
+import {globalDataRequests, mockApi, mockSitePreview, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Announcement Bar', async () => {
     test('Working with the announcement bar preview', async ({page}) => {
@@ -26,7 +26,7 @@ test.describe('Announcement Bar', async () => {
 
         await page.waitForSelector('[data-testid="announcement-bar-preview-iframe"]');
 
-        const checkTextInIframes = async (iframesHandles, textToSearch) => {
+        const checkTextInIframes = async (iframesHandles: ElementHandle[], textToSearch: string) => {
             let textExists = false;
             for (const iframeHandle of iframesHandles) {
                 const frame = await iframeHandle.contentFrame();

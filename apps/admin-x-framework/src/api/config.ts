@@ -17,7 +17,7 @@ export type Config = {
     }
     enableDeveloperExperiments: boolean;
     database: string;
-    blogUrl: string;
+    blogUrl?: string;
     labs: Record<string, boolean>;
     stripeDirect: boolean;
     mail: string;
