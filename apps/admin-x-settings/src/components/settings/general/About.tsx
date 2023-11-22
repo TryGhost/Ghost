@@ -17,11 +17,12 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
         return date.getFullYear();
     }
 
-    function hasDeveloperExperiments():string {
+    function hasDeveloperExperiments():boolean {
         if (config.enableDeveloperExperiments) {
-            return 'Enabled';
+            return true;
+        } else {
+            return false;
         }
-        return 'Disabled';
     }
 
     function showSystemInfo() : boolean {
@@ -73,7 +74,7 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
                     }
                     {
                         hasDeveloperExperiments() && (
-                            <div><strong>Developer experiments:</strong> {hasDeveloperExperiments()}</div>
+                            <div><strong>Developer experiments:</strong> Enabled</div>
                         )
                     }
 
