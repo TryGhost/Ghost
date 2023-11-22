@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.74.1",
+  "version": "5.74.2",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -103,7 +103,7 @@
     "@tryghost/kg-default-atoms": "4.0.3",
     "@tryghost/kg-default-cards": "9.1.9",
     "@tryghost/kg-default-nodes": "0.2.10",
-    "@tryghost/kg-html-to-lexical": "0.1.11",
+    "@tryghost/kg-html-to-lexical": "0.1.13",
     "@tryghost/kg-lexical-html-renderer": "0.3.49",
     "@tryghost/kg-mobiledoc-html-renderer": "6.0.15",
     "@tryghost/limit-service": "1.2.12",
