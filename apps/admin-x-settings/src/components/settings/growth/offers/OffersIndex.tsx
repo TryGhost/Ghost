@@ -141,16 +141,16 @@ export const OffersIndexModal = () => {
     };
 
     const sortedOffers = allOffers
-        .sort((a, b) => {
-            const multiplier = sortDirection === 'desc' ? 1 : -1;
+        .sort((offer1, offer2) => {
+            const multiplier = sortDirection === 'desc' ? -1 : 1;
             switch (sortOption) {
             case 'name':
-                return multiplier * a.name.localeCompare(b.name);
+                return multiplier * offer1.name.localeCompare(offer2.name);
             case 'redemptions':
-                return multiplier * (b.redemption_count - a.redemption_count);
+                return multiplier * (offer1.redemption_count - offer2.redemption_count);
             default:
                 // 'date-added' or unknown option, use default sorting
-                return multiplier * ((a.created_at ? new Date(a.created_at).getTime() : 0) - (b.created_at ? new Date(b.created_at).getTime() : 0));
+                return multiplier * ((offer1.created_at ? new Date(offer1.created_at).getTime() : 0) - (offer2.created_at ? new Date(offer2.created_at).getTime() : 0));
             }
         });
 
@@ -261,7 +261,8 @@ export const OffersIndexModal = () => {
                             ]}
                             position='right'
                             onDirectionChange={(selectedDirection) => {
-                                setSortDirection(selectedDirection);
+                                const newDirection = selectedDirection === 'asc' ? 'desc' : 'asc';
+                                setSortDirection(newDirection);
                             }}
                             onSortChange={(selectedOption) => {
                                 setSortOption(selectedOption);
