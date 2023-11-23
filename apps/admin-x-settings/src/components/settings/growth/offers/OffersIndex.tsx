@@ -133,14 +133,14 @@ export const OffersIndexModal = () => {
         }
     });
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
-    const activeOffers = allOffers.filter(offer => offer.status === 'active');
-
-    useEffect(() => {
-        if (!hasOffers) {
-            modal.remove();
-            updateRoute('');
-        }
-    }, [hasOffers, modal, updateRoute]);
+    const activeOffers = allOffers.filter((offer) => {
+        const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+        return (offer.status === 'active' && offerTier && offerTier.active === true);
+    });
+    const archivedOffers = allOffers.filter((offer) => {
+        const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+        return (offer.status === 'archived' || (offerTier && offerTier.active === false));
+    });
 
     let offersTabs: Tab[] = [
         {id: 'active', title: 'Active'},
@@ -150,6 +150,16 @@ export const OffersIndexModal = () => {
     const [selectedLayout, setSelectedLayout] = useState('card');
     const [sortOption, setSortOption] = useState('date-added');
     const [sortDirection, setSortDirection] = useState('desc');
+
+    useEffect(() => {
+        if (!hasOffers) {
+            modal.remove();
+            updateRoute('');
+        }
+        if (activeOffers.length === 0 && archivedOffers.length > 0) {
+            setSelectedTab('archived');
+        }
+    }, [hasOffers, modal, updateRoute, activeOffers, archivedOffers, setSelectedTab]);
 
     const handleOfferEdit = (id:string) => {
         // TODO: implement
@@ -247,7 +257,7 @@ export const OffersIndexModal = () => {
         animate={false}
         cancelLabel=''
         footer={
-            activeOffers.length > 0 ?
+            (activeOffers.length > 0 || archivedOffers.length > 0) ?
                 <div className='mx-8 flex w-full items-center justify-between'>
                     <a className='text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
                     <Button color='black' label='Close' onClick={() => {
@@ -263,12 +273,12 @@ export const OffersIndexModal = () => {
         testId='offers-modal'
         stickyFooter
     >
-        {activeOffers.length > 0 ?
+        {(activeOffers.length > 0 || archivedOffers.length > 0) ?
             <div className='pt-6'>
                 <header>
                     <div className='flex items-center justify-between'>
                         <div>
-                            {sortedOffers.some(offer => offer.hasOwnProperty('status') && offer.status === 'archived') ?
+                            {activeOffers.length > 0 && archivedOffers.length > 0 ?
                                 <TabView
                                     border={false}
                                     selectedTab={selectedTab}
