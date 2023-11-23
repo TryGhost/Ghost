@@ -1,4 +1,5 @@
-import {Avatar, Button, ButtonGroup, DynamicTable, DynamicTableColumn, DynamicTableRow, Heading, Hint, Page, SortMenu, ViewContainer} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, ButtonGroup, DynamicTable, DynamicTableColumn, DynamicTableRow, Heading, Hint, Page, SortMenu, Tooltip, ViewContainer, showToast} from '@tryghost/admin-x-design-system';
+import {Toaster} from 'react-hot-toast';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useState} from 'react';
 
@@ -8,7 +9,7 @@ const ListPage = () => {
 
     const dummyActions = [
         <Button label='Filter' onClick={() => {
-            alert('Clicked filter');
+            showToast({message: 'Were you really expecting a filter? 😛'});
         }} />,
         <SortMenu
             direction='desc'
@@ -31,9 +32,11 @@ const ListPage = () => {
             onDirectionChange={() => {}}
             onSortChange={() => {}}
         />,
-        <Button icon='magnifying-glass' size='sm' onClick={() => {
-            alert('Clicked search');
-        }} />,
+        <Tooltip content="Search members">
+            <Button icon='magnifying-glass' size='sm' onClick={() => {
+                alert('Clicked search');
+            }} />
+        </Tooltip>,
         <ButtonGroup buttons={[
             {
                 icon: 'listview',
@@ -141,7 +144,7 @@ const ListPage = () => {
         for (let i = 0; i < noOfCards; i++) {
             cards.push(
                 <div className='flex min-h-[20vh] cursor-pointer flex-col items-center gap-5 rounded-sm bg-grey-100 p-7 pt-9 transition-all hover:bg-grey-200' onClick={() => {
-                    alert('Clicked');
+                    updateRoute('detail');
                 }}>
                     <Avatar image={`https://i.pravatar.cc/150?img=${i}`} size='xl' />
                     <div className='flex flex-col items-center'>
@@ -221,6 +224,7 @@ const ListPage = () => {
 
     const demoPage = (
         <Page>
+            <Toaster />
             <ViewContainer
                 actions={dummyActions}
                 primaryAction={{

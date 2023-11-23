@@ -13,6 +13,7 @@ const DemoModal = NiceModal.create(() => {
             }}
             cancelLabel=''
             okLabel='Close'
+            size='sm'
             title='About'
             onOk={() => {
                 updateRoute('');

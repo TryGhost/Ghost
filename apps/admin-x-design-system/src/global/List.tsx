@@ -39,7 +39,7 @@ const List: React.FC<ListProps> = ({
 }) => {
     const listClasses = clsx(
         (borderTop || pageTitle) && 'border-t border-grey-300',
-        pageTitle && 'mt-14',
+        pageTitle && 'mt-5',
         className
     );
 
