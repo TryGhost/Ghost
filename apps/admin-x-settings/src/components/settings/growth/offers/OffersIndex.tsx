@@ -89,15 +89,15 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
 
     return (
         <div className={`group ${isTierArchived ? 'opacity-50' : ''} ${isTierArchived ? 'pointer-events-none' : ''} flex cursor-pointer flex-col gap-6 border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800`} onClick={onClick}>
-            <div className='flex items-center justify-between'>
+            <div className='flex grow items-baseline justify-between gap-2'>
                 <h2 className='text-[1.6rem] font-semibold' onClick={onClick}>{name}</h2>
-                <span className={`text-xs font-semibold uppercase ${discountColor}`}>{discountOffer}</span>
+                <span className={`-translate-y-px whitespace-nowrap text-xs font-semibold uppercase ${discountColor}`}>{discountOffer}</span>
             </div>
             <div className='flex items-baseline gap-1'>
-                <span className='text-4xl font-bold tracking-tight'>{updatedPriceWithCurrency}</span>
+                <span className='text-3xl font-bold tracking-tight'>{updatedPriceWithCurrency}</span>
                 <span className='text-[1.6rem] font-medium text-grey-700 line-through'>{originalPriceWithCurrency}</span>
             </div>
-            <div className='flex items-end justify-between'>
+            <div className='flex items-center justify-between'>
                 <div className='flex flex-col items-start text-xs'>
                     <span className='font-medium'>{tierName}</span>
                     <a className='text-grey-700 hover:underline' href={createRedemptionFilterUrl(offerId)}>{redemptionCount} redemptions</a>
@@ -212,7 +212,7 @@ export const OffersIndexModal = () => {
         })}
     </div>;
 
-    const listLayoutOutput = <table className='m-0'>
+    const listLayoutOutput = <table className='m-0 w-full'>
         <tr className='border-b border-b-grey-300'>
             <th className='px-5 py-2.5 pl-0 text-xs font-normal text-grey-700'>{sortedOffers.length} {sortedOffers.length > 1 ? 'offers' : 'offer'}</th>
             <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Tier</th>
