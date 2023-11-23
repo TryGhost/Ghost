@@ -1,4 +1,4 @@
-import {Avatar, Button, ButtonGroup, DynamicTable, DynamicTableColumn, DynamicTableRow, Heading, Hint, Page, SortMenu, ViewContainer, showToast} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, ButtonGroup, DynamicTable, DynamicTableColumn, DynamicTableRow, Heading, Hint, Page, SortMenu, Tooltip, ViewContainer, showToast} from '@tryghost/admin-x-design-system';
 import {Toaster} from 'react-hot-toast';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useState} from 'react';
@@ -32,9 +32,11 @@ const ListPage = () => {
             onDirectionChange={() => {}}
             onSortChange={() => {}}
         />,
-        <Button icon='magnifying-glass' size='sm' onClick={() => {
-            alert('Clicked search');
-        }} />,
+        <Tooltip content="Search members">
+            <Button icon='magnifying-glass' size='sm' onClick={() => {
+                alert('Clicked search');
+            }} />
+        </Tooltip>,
         <ButtonGroup buttons={[
             {
                 icon: 'listview',
