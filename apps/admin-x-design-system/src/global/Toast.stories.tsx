@@ -5,6 +5,10 @@ import {Toaster} from 'react-hot-toast';
 import Button from './Button';
 import {ShowToastProps, showToast} from './Toast';
 
+/**
+ * This component uses `react-hot-toast` which requires the `<Toaster />` component to be included in the app.
+ * The design system already does this so you don't have to — just call `showToast()` in any event and it'll work.
+ */
 const ToastContainer: React.FC<ShowToastProps> = ({...props}) => {
     return (
         <>
