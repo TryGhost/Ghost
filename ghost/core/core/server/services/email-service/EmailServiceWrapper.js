@@ -26,6 +26,7 @@ class EmailServiceWrapper {
         const membersRepository = membersService.api.members;
         const limitService = require('../limits');
         const labs = require('../../../shared/labs');
+        const emailAddressService = require('../email-address');
 
         const mobiledocLib = require('../../lib/mobiledoc');
         const lexicalLib = require('../../lib/lexical');
@@ -70,6 +71,7 @@ class EmailServiceWrapper {
             memberAttributionService: memberAttribution.service,
             audienceFeedbackService: audienceFeedback.service,
             outboundLinkTagger: memberAttribution.outboundLinkTagger,
+            emailAddressService: emailAddressService.service,
             labs,
             models: {Post}
         });

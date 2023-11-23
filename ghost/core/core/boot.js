@@ -330,6 +330,7 @@ async function initServices({config}) {
     const mailEvents = require('./server/services/mail-events');
     const donationService = require('./server/services/donations');
     const recommendationsService = require('./server/services/recommendations');
+    const emailAddressService = require('./server/services/email-address');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -340,6 +341,9 @@ async function initServices({config}) {
     // NOTE: Members service depends on these
     //       so they are initialized before it.
     await stripe.init();
+
+    // NOTE: newsletter service and email service depend on email address service
+    await emailAddressService.init(),
 
     await Promise.all([
         memberAttribution.init(),
