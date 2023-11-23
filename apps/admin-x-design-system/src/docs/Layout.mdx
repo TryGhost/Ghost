@@ -1,0 +1,31 @@
+import { Meta } from '@storybook/blocks';
+import SBPageViewContainer from './assets/page-viewcontainer.png';
+
+<Meta title="Foundations / Layout" />
+
+<div className="sb-doc">
+
+# Layout
+
+<p className='excerpt'>The goal of the layout system is to give a simple and flexible framework for pages in the Admin. It allows designs to be focused on primary functions yet stay consistent across the whole app.</p>
+
+### Structure
+
+Below you can see a the most common Admin screen structure: it consists of a [Page component](/docs/global-layout-page--docs) as the main container of a screen and a `ViewContainer` that sets the typical view boundaries and patterns for consistency.
+
+#### Page
+The purpose of this component is to set up the main container of a page. It defines/restricts scrolling and adds app/page level elements such as search, navigation or the main menu. And ofc. it also holds the contents of a screen.
+
+
+#### ViewContainer
+There's no restriction on what [component] should be used as the main contents of a page. However most pages would need similar constraints: setting a maximum width, a streamlined sticky header or the positioning of the primary action and so on. This is the main role of the [ViewContainer component](/docs/global-layout-view-container--docs).
+
+### Customisation
+
+It's not mandatory but it's advised to use this structure to maintain consistency as much as possible. The components have a bunch of documented parameters which allows customisation to be used in the current Admin and in future developments.
+
+</div>
+
+<div className="sb-wide">
+<img src={SBPageViewContainer} />
+</div>
