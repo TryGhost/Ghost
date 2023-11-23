@@ -15,7 +15,7 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
-const renderFrom = (newsletter: Newsletter, config: Config, defaultEmailAddress: string|undefined) => {
+const renderSenderEmail = (newsletter: Newsletter, config: Config, defaultEmailAddress: string|undefined) => {
     if (isManagedEmail(config) && defaultEmailAddress) {
         if (!hasSendingDomain(config)) {
             // Not changeable: sender_email is ignored
@@ -32,12 +32,23 @@ const renderReplyToEmail = (newsletter: Newsletter, config: Config, supportEmail
     }
 
     if (newsletter.sender_reply_to === 'newsletter') {
-        return renderFrom(newsletter, config, defaultEmailAddress);
-    } else if (newsletter.sender_reply_to === 'support') {
-        return supportEmailAddress || defaultEmailAddress || '';
-    } else {
-        return newsletter.sender_reply_to;
+        return renderSenderEmail(newsletter, config, defaultEmailAddress);
     }
+
+    if (newsletter.sender_reply_to === 'support') {
+        return supportEmailAddress || defaultEmailAddress || '';
+    }
+
+    if (isManagedEmail(config) && hasSendingDomain(config)) {
+        // Only return sender_reply_to if the domain names match
+        if (newsletter.sender_reply_to.split('@')[1] === sendingDomain(config)) {
+            return newsletter.sender_reply_to;
+        } else {
+            return '';
+        }
+    }
+
+    return newsletter.sender_reply_to;
 };
 
 const Sidebar: React.FC<{
@@ -59,7 +70,7 @@ const Sidebar: React.FC<{
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
 
-    let newsletterAddress = renderFrom(newsletter, config, defaultEmailAddress);
+    let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
 
     const replyToEmails = [
         {label: `Newsletter address (${newsletterAddress})`, value: 'newsletter'},
@@ -190,14 +201,15 @@ const Sidebar: React.FC<{
     const renderReplyToEmailField = () => {
         if (isManagedEmail(config)) {
             if (hasSendingDomain(config)) {
-                const replyToEmailUsername = ['newsletter', 'support'].includes(newsletter.sender_reply_to) ? '' : newsletter.sender_reply_to?.split('@')[0];
+                const replyToEmail = renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress);
+                const replyToEmailUsername = replyToEmail?.split('@')[0] || '';
                 return (
                     <TextField
                         error={Boolean(errors.sender_reply_to)}
                         hint={errors.sender_reply_to}
                         rightPlaceholder={`@${sendingDomain(config)}`}
                         title="Reply-to address"
-                        value={replyToEmailUsername || ''}
+                        value={replyToEmailUsername}
                         onBlur={validate}
                         onChange={(e) => {
                             const username = e.target.value?.split('@')[0];
@@ -535,7 +547,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
             const {newsletters, meta} = await editNewsletter(formState);
             if (meta?.sent_email_verification) {
                 if (meta?.sent_email_verification[0] === 'sender_email') {
-                    const previousFrom = renderFrom(newsletters[0], config, defaultEmailAddress);
+                    const previousFrom = renderSenderEmail(newsletters[0], config, defaultEmailAddress);
 
                     NiceModal.show(ConfirmationModal, {
                         title: 'Confirm newsletter email address',
