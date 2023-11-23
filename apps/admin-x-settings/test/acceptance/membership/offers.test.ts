@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests} from '../../utils/acceptance';
+import {mockApi, responseFixtures, settingsWithStripe, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Offers Modal', () => {
     test.beforeEach(async () => {

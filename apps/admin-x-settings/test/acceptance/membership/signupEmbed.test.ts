@@ -1,5 +1,5 @@
 import {test} from '@playwright/test';
-// import {globalDataRequests, mockApi, responseFixtures} from '../../utils/e2e';
+// import {globalDataRequests} from '../../utils/acceptance';
 
 test.describe('Signup Embed', async () => {
     // TODO - currently having difficulty rendering the iframe in the test

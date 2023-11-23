@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.38.1",
+    "@testing-library/react": "14.1.0",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
     "@types/react": "18.2.38",
@@ -68,13 +69,25 @@
       "build": {
         "dependsOn": [
           "build",
-          {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
+          {
+            "projects": [
+              "@tryghost/admin-x-design-system",
+              "@tryghost/admin-x-framework"
+            ],
+            "target": "build"
+          }
         ]
       },
       "test:acceptance": {
         "dependsOn": [
           "test:acceptance",
-          {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
+          {
+            "projects": [
+              "@tryghost/admin-x-design-system",
+              "@tryghost/admin-x-framework"
+            ],
+            "target": "build"
+          }
         ]
       }
     }
