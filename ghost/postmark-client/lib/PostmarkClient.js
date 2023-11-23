@@ -9,7 +9,7 @@ module.exports = class PostmarkClient {
     #config;
     #settings;
 
-    static DEFAULT_BATCH_SIZE = 1000;
+    static DEFAULT_BATCH_SIZE = 500;
 
     constructor({config, settings}) {
         this.#config = config;
@@ -32,7 +32,7 @@ module.exports = class PostmarkClient {
      *     }
      * }
      */
-    async send(message, recipientData, replacements) {
+    async send(message, recipientData) {
         const postmarkInstance = this.getInstance();
         if (!postmarkInstance) {
             logging.warn(`Postmark is not configured`);
@@ -46,64 +46,65 @@ module.exports = class PostmarkClient {
             });
         }
 
-        let messageData = {};
+        let emailMessages = [];
 
         let startTime;
         try {
             const bulkEmailConfig = this.#config.get('bulkEmail');
+            const config = this.#getConfig();
             const messageContent = _.pick(message, 'subject', 'html', 'plaintext');
 
-            // update content to use Mailgun variable syntax for replacements
-            replacements.forEach((replacement) => {
-                messageContent[replacement.format] = messageContent[replacement.format].replace(
-                    replacement.regexp,
-                    `%recipient.${replacement.id}%`
-                );
+            Object.keys(recipientData).forEach((recipient) => {
+                let messageData = {
+                    To: recipient,
+                    From: message.from,
+                    ReplyTo: message.replyTo || message.reply_to,
+                    Subject: messageContent.subject,
+                    HtmlBody: messageContent.html,
+                    TextBody: messageContent.plaintext,
+                    Metadata: {},
+                    TrackOpens: message.track_opens,
+                    Headers: [],
+                    MessageStream: config.streamId,
+                    Tag: 'ghost-email'
+                };
+
+                Object.keys(recipientData[recipient]).forEach((key) => {
+                    messageData.HtmlBody = messageData.HtmlBody.replaceAll(`%recipient.${key}%`, recipientData[recipient][key]);
+                    messageData.TextBody = messageData.TextBody.replaceAll(`%recipient.${key}%`, recipientData[recipient][key]);
+                    messageData.Subject = messageData.Subject.replaceAll(`%recipient.${key}%`, recipientData[recipient][key]);
+                });
+
+                // Do we have a custom List-Unsubscribe header set?
+                // (we need a variable for this, as this is a per-email setting)
+                if (recipientData[recipient].list_unsubscribe) {
+                    messageData.Headers['List-Unsubscribe'] = recipientData[recipient].list_unsubscribe;
+                    messageData.Headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+                }
+
+                if (message.id) {
+                    messageData.Metadata['email-id'] = message.id;
+                }
+
+                if (bulkEmailConfig?.mailgun?.tag) {
+                    messageData.Tag = bulkEmailConfig.mailgun.tag;
+                }
+
+                emailMessages.push(messageData);
             });
 
-            // @TODO: compose email content, so fill in the variables
-            // @TODO: loop over recipients and send the email
-
-            messageData = {
-                To: Object.keys(recipientData),
-                From: message.from,
-                ReplyTo: message.replyTo || message.reply_to,
-                Subject: messageContent.subject,
-                HtmlBody: messageContent.html,
-                TextBody: messageContent.plaintext,
-                'recipient-variables': JSON.stringify(recipientData),
-                Metadata: [],
-                TrackOpens: message.track_opens,
-                Headers: [],
-                MessageStream: this.#settings.get('postmark_stream_id') ?? 'outbound',
-                Tag: 'ghost-email'
-            };
-
-            // Do we have a custom List-Unsubscribe header set?
-            // (we need a variable for this, as this is a per-email setting)
-            if (Object.keys(recipientData)[0] && recipientData[Object.keys(recipientData)[0]].list_unsubscribe) {
-                messageData.Headers['List-Unsubscribe'] = '<%recipient.list_unsubscribe%>, <%tag_unsubscribe_email%>';
-                messageData.Headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
-            }
-
-            // add a reference to the original email record for easier mapping of mailgun event -> email
-            if (message.id) {
-                messageData.Metadata['email-id'] = message.id;
-            }
-
-            if (bulkEmailConfig?.mailgun?.tag) {
-                messageData.Tag = bulkEmailConfig.mailgun.tag;
-            }
-
             startTime = Date.now();
-            const response = await postmarkInstance.sendEmail(messageData);
+            const response = await postmarkInstance.sendEmailBatch(emailMessages);
+
+            logging.info(JSON.stringify(response));
+
             metrics.metric('postmark-send-mail', {
                 value: Date.now() - startTime,
                 statusCode: 200
             });
 
             return {
-                id: response.MessageID
+                id: message.id
             };
         } catch (error) {
             logging.error(error);
@@ -111,7 +112,7 @@ module.exports = class PostmarkClient {
                 value: Date.now() - startTime,
                 statusCode: error.status
             });
-            return Promise.reject({error, messageData});
+            return Promise.reject({error, emailMessages});
         }
     }
 
@@ -194,6 +195,7 @@ module.exports = class PostmarkClient {
     }
 
     async removeSuppression(type, email) {
+        logging.info(`Removing ${type} suppression for ${email}`);
         if (!this.isConfigured()) {
             return false;
         }
@@ -201,8 +203,11 @@ module.exports = class PostmarkClient {
         const config = this.#getConfig();
 
         try {
-            // @TODO
-            instance.suppressions.delete(config.domain, type, email);
+            await instance.deleteSuppressions(config.streamId, {
+                Suppressions: [{
+                    EmailAddress: email
+                }]
+            });
 
             return true;
         } catch (err) {
