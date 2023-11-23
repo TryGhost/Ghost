@@ -8,7 +8,8 @@ export type EmailAddresses = {
 
 export type EmailAddressesValidation = {
     allowed: boolean,
-    verificationEmailRequired: boolean
+    verificationEmailRequired: boolean,
+    reason?: string
 }
 
 export type EmailAddressType = 'from' | 'replyTo';
@@ -141,7 +142,8 @@ export class EmailAddressService {
             // Never allow an invalid email address
             return {
                 allowed: false,
-                verificationEmailRequired: false
+                verificationEmailRequired: false,
+                reason: 'invalid'
             };
         }
 
@@ -149,7 +151,7 @@ export class EmailAddressService {
             // Self hoster or legacy Ghost Pro
             return {
                 allowed: true,
-                verificationEmailRequired: type === 'from'
+                verificationEmailRequired: type === 'from' && !this.useNewEmailAddresses
             };
         }
 
@@ -162,10 +164,7 @@ export class EmailAddressService {
                 };
             }
 
-            return {
-                allowed: false,
-                verificationEmailRequired: false
-            };
+            // Use same restrictions as one without a sending domain for other addresses
         }
 
         // Only allow to edit the replyTo address, with verification
@@ -178,8 +177,9 @@ export class EmailAddressService {
 
         // Not allowed to change from
         return {
-            allowed: false,
-            verificationEmailRequired: false
+            allowed: email === this.defaultFromEmail.address,
+            verificationEmailRequired: false,
+            reason: 'not allowed'
         };
     }
 }

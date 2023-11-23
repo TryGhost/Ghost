@@ -249,10 +249,10 @@ class NewslettersService {
         const cleanedAttrs = _.cloneDeep(attrs);
         const emailsToVerify = [];
         const emailProperties = [
-            {property: 'sender_email', type: 'from'}
+            {property: 'sender_email', type: 'from', emptyable: true, error: messages.senderEmailNotAllowed}
         ];
 
-        if (!this.emailAddressService.useNewEmailAddresses) {
+        if (!this.emailAddressService.service.useNewEmailAddresses) {
             // Validate reply_to is either newsletter or support
             if (cleanedAttrs.sender_reply_to !== undefined) {
                 if (!['newsletter', 'support'].includes(cleanedAttrs.sender_reply_to)) {
@@ -264,21 +264,25 @@ class NewslettersService {
         } else {
             if (cleanedAttrs.sender_reply_to !== undefined) {
                 if (!['newsletter', 'support'].includes(cleanedAttrs.sender_reply_to)) {
-                    emailProperties.push({property: 'sender_reply_to', type: 'replyTo'});
+                    emailProperties.push({property: 'sender_reply_to', type: 'replyTo', emptyable: false, error: messages.replyToNotAllowed});
                 }
             }
         }
 
-        for (const {property, type} of emailProperties) {
+        for (const {property, type, emptyable, error} of emailProperties) {
             const email = cleanedAttrs[property];
             const hasChanged = !newsletter || newsletter.get(property) !== email;
 
-            if (hasChanged && email) {
+            if (hasChanged && email !== undefined) {
+                if (email === null || email === '' && emptyable) {
+                    continue;
+                }
+
                 const validated = this.emailAddressService.service.validate(email, type);
 
                 if (!validated.allowed) {
                     throw new errors.ValidationError({
-                        message: tpl(messages.senderEmailNotAllowed)
+                        message: tpl(error)
                     });
                 }
 
