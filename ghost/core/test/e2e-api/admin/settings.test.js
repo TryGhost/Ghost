@@ -6,6 +6,7 @@ const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
 const models = require('../../../core/server/models');
+const {mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
 const {anyErrorId} = matchers;
 
 const CURRENT_SETTINGS_COUNT = 84;
@@ -49,6 +50,7 @@ describe('Settings API', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
+        mockLabsDisabled('newEmailAddresses');
     });
 
     afterEach(function () {
@@ -102,7 +104,7 @@ describe('Settings API', function () {
             const settingsToChange = [
                 {
                     key: 'title',
-                    value: []
+                    value: ''
                 },
                 {
                     key: 'codeinjection_head',

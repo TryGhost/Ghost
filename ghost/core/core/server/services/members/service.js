@@ -89,7 +89,13 @@ const initVerificationTrigger = () => {
         isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
         sendVerificationEmail: async ({subject, message, amountTriggered}) => {
             const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
-            const fromAddress = config.get('user_email');
+            let fromAddress = config.get('user_email');
+            let replyTo = undefined;
+
+            if (settingsHelpers.useNewEmailAddresses()) {
+                replyTo = fromAddress;
+                fromAddress = settingsHelpers.getNoReplyAddress();
+            }
 
             if (escalationAddress) {
                 await ghostMailer.send({
@@ -100,6 +106,7 @@ const initVerificationTrigger = () => {
                     }),
                     forceTextContent: true,
                     from: fromAddress,
+                    replyTo,
                     to: escalationAddress
                 });
             }

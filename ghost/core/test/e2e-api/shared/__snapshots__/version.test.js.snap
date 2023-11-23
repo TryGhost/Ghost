@@ -540,6 +540,10 @@ a {
 
 exports[`API Versioning Admin API responds with error and sends email ONCE when requested version is BEHIND and CANNOT respond multiple times 3: [metadata 1] 1`] = `
 Object {
+  "encoding": "base64",
+  "from": "\\"Ghost\\" <noreply@127.0.0.1>",
+  "generateTextFromHTML": true,
+  "replyTo": null,
   "subject": "Attention required: Your Zapier integration has failed",
   "to": "jbloggs@example.com",
 }
@@ -1040,6 +1044,10 @@ a {
 
 exports[`API Versioning Admin API responds with error when requested version is BEHIND and CANNOT respond 3: [metadata 1] 1`] = `
 Object {
+  "encoding": "base64",
+  "from": "\\"Ghost\\" <noreply@127.0.0.1>",
+  "generateTextFromHTML": true,
+  "replyTo": null,
   "subject": "Attention required: Your Zapier integration has failed",
   "to": "jbloggs@example.com",
 }

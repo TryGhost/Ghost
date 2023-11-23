@@ -21,7 +21,7 @@ const urlUtils = require('../../../core/shared/url-utils');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
-const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
+const {stripeMocker, mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
 
 /**
  * Assert that haystack and needles match, ignoring the order.
@@ -194,6 +194,7 @@ describe('Members API without Stripe', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
+        mockLabsDisabled('newEmailAddresses');
     });
 
     afterEach(function () {

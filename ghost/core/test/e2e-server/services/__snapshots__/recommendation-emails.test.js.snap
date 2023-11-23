@@ -239,6 +239,10 @@ If you would no longer like to receive these notifications you can adjust your s
 
 exports[`Incoming Recommendation Emails Sends a different email if we receive a recommendation back 3: [metadata 1] 1`] = `
 Object {
+  "encoding": "base64",
+  "from": "\\"Ghost\\" <noreply@127.0.0.1>",
+  "generateTextFromHTML": true,
+  "replyTo": null,
   "subject": "👍 New recommendation: Other Ghost Site",
   "to": "jbloggs@example.com",
 }
@@ -709,6 +713,10 @@ If you would no longer like to receive these notifications you can adjust your s
 
 exports[`Incoming Recommendation Emails Sends an email if we receive a recommendation 4: [metadata 1] 1`] = `
 Object {
+  "encoding": "base64",
+  "from": "\\"Ghost\\" <noreply@127.0.0.1>",
+  "generateTextFromHTML": true,
+  "replyTo": null,
   "subject": "👍 New recommendation: Other Ghost Site",
   "to": "jbloggs@example.com",
 }

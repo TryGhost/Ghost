@@ -2,6 +2,7 @@ const {promises: fs, readFileSync} = require('fs');
 const path = require('path');
 const moment = require('moment');
 const glob = require('glob');
+const {EmailAddressParser} = require('@tryghost/email-addresses');
 
 class StaffServiceEmails {
     constructor({logging, models, mailer, settingsHelpers, settingsCache, urlUtils, labs}) {
@@ -420,6 +421,9 @@ class StaffServiceEmails {
     }
 
     get fromEmailAddress() {
+        if (this.settingsHelpers.useNewEmailAddresses()) {
+            return EmailAddressParser.stringify(this.settingsHelpers.getDefaultEmail());
+        }
         return `ghost@${this.defaultEmailDomain}`;
     }
 

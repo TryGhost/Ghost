@@ -8,7 +8,7 @@ const mail = require('../../../../../core/server/services/mail');
 // Mocked utilities
 const urlUtils = require('../../../../utils/urlUtils');
 const {mockManager} = require('../../../../utils/e2e-framework');
-
+const {EmailAddressService} = require('@tryghost/email-addresses');
 const NewslettersService = require('../../../../../core/server/services/newsletters/NewslettersService');
 
 class TestTokenProvider {
@@ -41,7 +41,30 @@ describe('NewslettersService', function () {
             mail,
             singleUseTokenProvider: tokenProvider,
             urlUtils: urlUtils.stubUrlUtilsFromConfig(),
-            limitService
+            limitService,
+            emailAddressService: {
+                service: new EmailAddressService({
+                    getManagedEmailEnabled: () => {
+                        return false;
+                    },
+                    getSendingDomain: () => {
+                        return null;
+                    },
+                    getDefaultEmail: () => {
+                        return {
+                            address: 'default@example.com'
+                        };
+                    },
+                    isValidEmailAddress: () => {
+                        return true;
+                    },
+                    labs: {
+                        isSet() {
+                            return false;
+                        }
+                    }
+                })
+            }
         });
     });
 
