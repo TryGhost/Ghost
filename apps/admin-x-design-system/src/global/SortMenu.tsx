@@ -65,7 +65,7 @@ const SortMenu: React.FC<SortMenuProps> = ({
                     }}>
                         {item.selected ? <Icon className='absolute left-2' name='check' size='xs' /> : null}
                         {item.label}
-                        {item.selected ? <button className='absolute right-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-transparent hover:bg-grey-300' title={`${localDirection === 'asc' ? 'Ascending' : 'Descending'}`} type='button' onClick={handleSortDirection}>
+                        {item.selected ? <button className='absolute right-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full hover:bg-grey-300' title={`${localDirection === 'asc' ? 'Ascending' : 'Descending'}`} type='button' onClick={handleSortDirection}>
                             {localDirection === 'asc' ? <Icon name='arrow-up' size='xs' /> : <Icon name='arrow-down' size='xs' />}
                         </button> : null}
                     </button>
