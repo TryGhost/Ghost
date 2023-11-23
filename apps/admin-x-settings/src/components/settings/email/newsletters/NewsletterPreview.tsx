@@ -2,16 +2,15 @@ import NewsletterPreviewContent from './NewsletterPreviewContent';
 import React from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
-import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
+import {hasSendingDomain, isManagedEmail} from '@tryghost/admin-x-framework/api/config';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
     const {currentUser, settings, siteData, config} = useGlobalData();
-    const [title, icon, commentsEnabled] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled']);
+    const [title, icon, commentsEnabled, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'default_email_address']);
 
     let headerTitle: string | null = null;
     if (newsletter.show_header_title) {
@@ -94,12 +93,13 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
 
     const renderSenderEmail = () => {
         if (isManagedEmail(config)) {
-            if (hasSendingDomain(config)) {
-                return newsletter.sender_email || 'noreply@' + sendingDomain(config);
+            if (!hasSendingDomain(config)) {
+                // Sender email is ignored
+                return defaultEmailAddress || '';
             }
         }
 
-        return fullEmailAddress(newsletter.sender_email || 'noreply', siteData);
+        return newsletter.sender_email || defaultEmailAddress || '';
     };
 
     return <NewsletterPreviewContent

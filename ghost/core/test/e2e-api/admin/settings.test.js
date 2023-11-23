@@ -9,7 +9,7 @@ const models = require('../../../core/server/models');
 const {mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
 const {anyErrorId} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 84;
+const CURRENT_SETTINGS_COUNT = 86;
 
 const settingsMatcher = {};
 

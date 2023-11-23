@@ -79,9 +79,8 @@ export const isManagedEmail = (config: Config) => {
 };
 
 export const hasSendingDomain = (config: Config) => {
-    const isDomain = /[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
     const sendingDomain = config?.hostSettings?.managedEmail?.sendingDomain;
-    return typeof sendingDomain === 'string' && isDomain.test(sendingDomain);
+    return typeof sendingDomain === 'string' && sendingDomain.length > 0;
 };
 
 export const sendingDomain = (config: Config) => {
