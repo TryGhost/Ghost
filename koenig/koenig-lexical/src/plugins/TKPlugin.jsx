@@ -4,7 +4,7 @@ import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useLexicalTextEntity} from '../hooks/useExtendedTextEntity';
 
-const REGEX = new RegExp(/(?<!\w)TK(?!\w)/);
+const REGEX = new RegExp(/(?<!\w)[^a-zA-Z0-9\s]?(TK)+[^a-zA-Z0-9\s]?(?!\w)/);
 
 export default function TKPlugin({setTkCount = () => {}}) {
     const [editor] = useLexicalComposerContext();
@@ -52,7 +52,7 @@ export default function TKPlugin({setTkCount = () => {}}) {
         const firstTks = nodes.filter((node) => {
             if (parentKeys.has(node.__parent)) {
                 return false;
-            } 
+            }
             parentKeys.add(node.__parent);
             return true;
         });
@@ -119,7 +119,7 @@ export default function TKPlugin({setTkCount = () => {}}) {
         }
 
         const startOffset = matchArr.index;
-        const endOffset = startOffset + 2;
+        const endOffset = startOffset + matchArr[0].length;
 
         return {
             end: endOffset,
