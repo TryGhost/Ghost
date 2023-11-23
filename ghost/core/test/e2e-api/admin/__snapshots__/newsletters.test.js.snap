@@ -115,7 +115,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the reply-to email address to this address",
+      "context": "You cannot set the reply-to email address to ",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -132,7 +132,7 @@ exports[`Newsletters API [Legacy] Cannot set newsletter clear sender_reply_to 2:
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "284",
+  "content-length": "272",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -146,7 +146,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the reply-to email address to this address",
+      "context": "You cannot set the reply-to email address to hello@acme.com",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -163,7 +163,7 @@ exports[`Newsletters API [Legacy] Cannot set newsletter reply-to to any email ad
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "284",
+  "content-length": "286",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -177,7 +177,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the sender email address to this address",
+      "context": "You cannot set the sender email address to notvalid",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -194,7 +194,7 @@ exports[`Newsletters API [Legacy] Cannot set newsletter sender_email to invalid 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "282",
+  "content-length": "278",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2926,7 +2926,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "jamie@example.com",
+      "sender_email": "noreply@127.0.0.1",
       "sender_name": "Jamie",
       "sender_reply_to": "anything@sendingdomain.com",
       "show_badge": true,
@@ -2986,7 +2986,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "jamie@example.com",
+      "sender_email": "noreply@127.0.0.1",
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
@@ -3294,7 +3294,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "jamie@example.com",
+      "sender_email": "noreply@127.0.0.1",
       "sender_name": "Jamie",
       "sender_reply_to": "anything@sendingdomain.com",
       "show_badge": true,
@@ -3349,7 +3349,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "jamie@example.com",
+      "sender_email": "noreply@127.0.0.1",
       "sender_name": "Jamie",
       "sender_reply_to": "support",
       "show_badge": true,
@@ -3404,7 +3404,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "jamie@example.com",
+      "sender_email": "noreply@127.0.0.1",
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
@@ -3505,7 +3505,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the sender email address to this address",
+      "context": "You cannot set the sender email address to hello@acme.com",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -3522,7 +3522,7 @@ exports[`Newsletters API Managed email with custom sending domain Cannot change 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "282",
+  "content-length": "284",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3536,7 +3536,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the reply-to email address to this address",
+      "context": "You cannot set the reply-to email address to ",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -3553,7 +3553,7 @@ exports[`Newsletters API Managed email with custom sending domain Cannot clear n
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "284",
+  "content-length": "272",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3567,7 +3567,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the reply-to email address to this address",
+      "context": "You cannot set the reply-to email address to notvalid",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -3584,7 +3584,7 @@ exports[`Newsletters API Managed email with custom sending domain Cannot set new
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "284",
+  "content-length": "280",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3598,7 +3598,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the sender email address to this address",
+      "context": "You cannot set the sender email address to notvalid",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -3615,7 +3615,7 @@ exports[`Newsletters API Managed email with custom sending domain Cannot set new
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "282",
+  "content-length": "278",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4226,7 +4226,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "jamie@example.com",
+      "sender_email": "noreply@127.0.0.1",
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
@@ -4272,7 +4272,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the sender email address to this address",
+      "context": "You cannot set the sender email address to hello@acme.com",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -4289,7 +4289,7 @@ exports[`Newsletters API Managed email without custom sending domain Cannot chan
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "282",
+  "content-length": "284",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4303,7 +4303,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the reply-to email address to this address",
+      "context": "You cannot set the reply-to email address to ",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -4320,7 +4320,7 @@ exports[`Newsletters API Managed email without custom sending domain Cannot clea
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "284",
+  "content-length": "272",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4334,7 +4334,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the reply-to email address to this address",
+      "context": "You cannot set the reply-to email address to notvalid",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -4351,7 +4351,7 @@ exports[`Newsletters API Managed email without custom sending domain Cannot set 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "284",
+  "content-length": "280",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4365,7 +4365,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the sender email address to this address",
+      "context": "You cannot set the sender email address to notvalid",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -4382,7 +4382,7 @@ exports[`Newsletters API Managed email without custom sending domain Cannot set 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "282",
+  "content-length": "278",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4781,7 +4781,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the reply-to email address to this address",
+      "context": "You cannot set the reply-to email address to ",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -4798,7 +4798,7 @@ exports[`Newsletters API Self hoster without managed email Cannot clear newslett
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "284",
+  "content-length": "272",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4812,7 +4812,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the reply-to email address to this address",
+      "context": "You cannot set the reply-to email address to notvalid",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -4829,7 +4829,7 @@ exports[`Newsletters API Self hoster without managed email Cannot set newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "284",
+  "content-length": "280",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4843,7 +4843,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": "You cannot set the sender email address to this address",
+      "context": "You cannot set the sender email address to notvalid",
       "details": null,
       "ghostErrorCode": null,
       "help": null,
@@ -4860,7 +4860,7 @@ exports[`Newsletters API Self hoster without managed email Cannot set newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "282",
+  "content-length": "278",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

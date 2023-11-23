@@ -6,7 +6,7 @@ const {queryStringToken} = regexes;
 const models = require('../../../core/server/models');
 const logging = require('@tryghost/logging');
 const {mockLabsDisabled, mockLabsEnabled} = require('../../utils/e2e-framework-mock-manager');
-const {config} = require('process');
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
 const assertMemberRelationCount = async (newsletterId, expectedCount) => {
     const relations = await dbUtils.knex('members_newsletters').where({newsletter_id: newsletterId}).pluck('id');
@@ -1052,7 +1052,7 @@ describe('Newsletters API', function () {
 
             const before = await models.Newsletter.findOne({id});
             assert(before.get('sender_email'), 'This test requires a non empty sender_email');
-            const defaultAddress = configUtils.config.get('mail').from;
+            const defaultAddress = settingsHelpers.getDefaultEmail().address;
 
             await agent.put(`newsletters/${id}`)
                 .body({

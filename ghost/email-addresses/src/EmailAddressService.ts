@@ -141,7 +141,7 @@ export class EmailAddressService {
         if (!this.#isValidEmailAddress(email)) {
             // Never allow an invalid email address
             return {
-                allowed: false,
+                allowed: email === this.defaultFromEmail.address, // Localhost email noreply@127.0.0.1 is marked as invalid, but we should allow it
                 verificationEmailRequired: false,
                 reason: 'invalid'
             };

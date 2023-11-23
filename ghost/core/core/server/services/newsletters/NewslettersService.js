@@ -9,8 +9,8 @@ const errors = require('@tryghost/errors');
 const messages = {
     nameAlreadyExists: 'A newsletter with the same name already exists',
     newsletterNotFound: 'Newsletter not found.',
-    senderEmailNotAllowed: 'You cannot set the sender email address to this address',
-    replyToNotAllowed: 'You cannot set the reply-to email address to this address'
+    senderEmailNotAllowed: 'You cannot set the sender email address to {email}',
+    replyToNotAllowed: 'You cannot set the reply-to email address to {email}'
 };
 
 class NewslettersService {
@@ -257,7 +257,7 @@ class NewslettersService {
             if (cleanedAttrs.sender_reply_to !== undefined) {
                 if (!['newsletter', 'support'].includes(cleanedAttrs.sender_reply_to)) {
                     throw new errors.ValidationError({
-                        message: tpl(messages.replyToNotAllowed)
+                        message: tpl(messages.replyToNotAllowed, {email: cleanedAttrs.sender_reply_to})
                     });
                 }
             }
@@ -282,7 +282,7 @@ class NewslettersService {
 
                 if (!validated.allowed) {
                     throw new errors.ValidationError({
-                        message: tpl(error)
+                        message: tpl(error, {email})
                     });
                 }
 
