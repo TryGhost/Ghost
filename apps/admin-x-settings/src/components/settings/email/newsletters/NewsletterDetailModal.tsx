@@ -155,100 +155,107 @@ const Sidebar: React.FC<{
     };
 
     const renderSenderEmailField = () => {
-        if (isManagedEmail(config)) {
-            if (hasSendingDomain(config)) {
-                const sendingEmail = renderSenderEmail(newsletter, config, defaultEmailAddress);
-                const sendingEmailUsername = sendingEmail?.split('@')[0];
-
-                return (
-                    <TextField
-                        error={Boolean(errors.sender_email)}
-                        hint={errors.sender_email}
-                        rightPlaceholder={`@${sendingDomain(config)}`}
-                        title="Sender email address"
-                        value={sendingEmailUsername || ''}
-                        onBlur={validate}
-                        onChange={(e) => {
-                            const username = e.target.value?.split('@')[0];
-                            const newEmail = username ? `${username}@${sendingDomain(config)}` : '';
-                            updateNewsletter({sender_email: newEmail});
-                        }}
-                        onKeyDown={() => clearError('sender_email')}
-                    />
-                );
-            } else {
-                return (
-                    <SettingGroupContent
-                        values={[
-                            {
-                                heading: 'Sender email address',
-                                key: 'sender-email-addresss',
-                                value: `${defaultEmailAddress}`,
-                                hint: <span className="text-xs text-grey-700">To customise, set up a <a className="text-green" href="#">custom sending domain</a></span>
-                            }
-                        ]}
-                    />
-                );
-            }
+        // Self-hosters, or legacy Pro users
+        if (!isManagedEmail(config)) {
+            return (
+                <TextField
+                    error={Boolean(errors.sender_email)}
+                    hint={errors.sender_email}
+                    placeholder={newsletterAddress || ''}
+                    title="Sender email address"
+                    value={newsletter.sender_email || ''}
+                    onBlur={validate}
+                    onChange={e => updateNewsletter({sender_email: e.target.value})}
+                    onKeyDown={() => clearError('sender_email')}
+                />
+            );
         }
 
+        // Pro users with custom sending domains
+        if (hasSendingDomain(config)) {
+            const sendingEmail = renderSenderEmail(newsletter, config, defaultEmailAddress);
+            const sendingEmailUsername = sendingEmail?.split('@')[0];
+
+            return (
+                <TextField
+                    error={Boolean(errors.sender_email)}
+                    hint={errors.sender_email}
+                    rightPlaceholder={`@${sendingDomain(config)}`}
+                    title="Sender email address"
+                    value={sendingEmailUsername || ''}
+                    onBlur={validate}
+                    onChange={(e) => {
+                        const username = e.target.value?.split('@')[0];
+                        const newEmail = username ? `${username}@${sendingDomain(config)}` : '';
+                        updateNewsletter({sender_email: newEmail});
+                    }}
+                    onKeyDown={() => clearError('sender_email')}
+                />
+            );
+        }
+
+        // Pro users without custom sending domains
         return (
-            <TextField
-                error={Boolean(errors.sender_email)}
-                hint={errors.sender_email}
-                placeholder={newsletterAddress || ''}
-                title="Sender email address"
-                value={newsletter.sender_email || ''}
-                onBlur={validate}
-                onChange={e => updateNewsletter({sender_email: e.target.value})}
-                onKeyDown={() => clearError('sender_email')}
+            <SettingGroupContent
+                values={[
+                    {
+                        heading: 'Sender email address',
+                        key: 'sender-email-addresss',
+                        value: `${defaultEmailAddress}`,
+                        hint: <span className="text-xs text-grey-700">To customise, set up a <a className="text-green" href="#">custom sending domain</a></span>
+                    }
+                ]}
             />
         );
     };
 
     const renderReplyToEmailField = () => {
-        if (isManagedEmail(config)) {
-            if (hasSendingDomain(config)) {
-                const replyToEmail = ['newsletter', 'support'].includes(newsletter.sender_reply_to) ? '' : renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress);
-                const replyToEmailUsername = replyToEmail?.split('@')[0] || '';
-                return (
-                    <TextField
-                        error={Boolean(errors.sender_reply_to)}
-                        hint={errors.sender_reply_to}
-                        rightPlaceholder={`@${sendingDomain(config)}`}
-                        title="Reply-to address"
-                        value={replyToEmailUsername}
-                        onBlur={validate}
-                        onChange={(e) => {
-                            const username = e.target.value?.split('@')[0];
-                            const newEmail = username ? `${username}@${sendingDomain(config)}` : 'newsletter';
-                            updateNewsletter({sender_reply_to: newEmail});
-                        }}
-                        onKeyDown={() => clearError('sender_reply_to')}
-                    />
-                );
-            } else {
-                return (
-                    <TextField
-                        error={Boolean(errors.sender_reply_to)}
-                        hint={errors.sender_reply_to}
-                        placeholder={newsletterAddress || ''}
-                        title="Reply-to email"
-                        value={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || ''}
-                        onBlur={validate}
-                        onChange={e => updateNewsletter({sender_reply_to: e.target.value})}
-                        onKeyDown={() => clearError('sender_reply_to')}
-                    />
-                );
-            }
+        // Self-hosters, or legacy Pro users
+        if (!isManagedEmail(config)) {
+            return (
+                <Select
+                    options={replyToEmails}
+                    selectedOption={replyToEmails.find(option => option.value === newsletter.sender_reply_to)}
+                    title="Reply-to email"
+                    onSelect={option => updateNewsletter({sender_reply_to: option?.value})}
+                />
+            );
         }
 
+        // Pro users with custom sending domains
+        if (hasSendingDomain(config)) {
+            const replyToEmail = ['newsletter', 'support'].includes(newsletter.sender_reply_to) ? '' : renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress);
+            const replyToEmailUsername = replyToEmail?.split('@')[0] || '';
+
+            return (
+                <TextField
+                    error={Boolean(errors.sender_reply_to)}
+                    hint={errors.sender_reply_to}
+                    rightPlaceholder={`@${sendingDomain(config)}`}
+                    title="Reply-to address"
+                    value={replyToEmailUsername}
+                    onBlur={validate}
+                    onChange={(e) => {
+                        const username = e.target.value?.split('@')[0];
+                        const newEmail = username ? `${username}@${sendingDomain(config)}` : 'newsletter';
+                        updateNewsletter({sender_reply_to: newEmail});
+                    }}
+                    onKeyDown={() => clearError('sender_reply_to')}
+                />
+            );
+        }
+
+        // Pro users without custom sending domains
         return (
-            <Select
-                options={replyToEmails}
-                selectedOption={replyToEmails.find(option => option.value === newsletter.sender_reply_to)}
+            <TextField
+                error={Boolean(errors.sender_reply_to)}
+                hint={errors.sender_reply_to}
+                placeholder={newsletterAddress || ''}
                 title="Reply-to email"
-                onSelect={option => updateNewsletter({sender_reply_to: option?.value})}
+                value={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || ''}
+                onBlur={validate}
+                onChange={e => updateNewsletter({sender_reply_to: e.target.value})}
+                onKeyDown={() => clearError('sender_reply_to')}
             />
         );
     };
