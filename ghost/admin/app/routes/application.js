@@ -8,6 +8,7 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Debug} from '@sentry/integrations';
+import {beforeSend} from 'ghost-admin/utils/sentry';
 import {importComponent} from '../components/admin-x/admin-x-component';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
@@ -181,39 +182,7 @@ export default Route.extend(ShortcutsRoute, {
                 dsn: this.config.sentry_dsn,
                 environment: this.config.sentry_env,
                 release: `ghost@${this.config.version}`,
-                beforeSend(event, hint) {
-                    const exception = hint.originalException;
-                    event.tags = event.tags || {};
-                    event.tags.shown_to_user = event.tags.shown_to_user || false;
-                    event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
-
-                    // Do not report "handled" errors to Sentry
-                    if (event.tags.shown_to_user === true) {
-                        return null;
-                    }
-
-                    // if the error value includes a model id then overwrite it to improve grouping
-                    if (event.exception.values && event.exception.values.length > 0) {
-                        const pattern = /<(post|page):[a-f0-9]+>/;
-                        const replacement = '<$1:ID>';
-                        event.exception.values[0].value = event.exception.values[0].value.replace(pattern, replacement);
-                    }
-
-                    // ajax errors — improve logging and add context for debugging
-                    if (isAjaxError(exception)) {
-                        const error = exception.payload.errors[0];
-                        event.exception.values[0].type = `${error.type}: ${error.context}`;
-                        event.exception.values[0].value = error.message;
-                        event.exception.values[0].context = error.context;
-                    } else {
-                        delete event.contexts.ajax;
-                        delete event.tags.ajax_status;
-                        delete event.tags.ajax_method;
-                        delete event.tags.ajax_url;
-                    }
-
-                    return event;
-                },
+                beforeSend,
                 // TransitionAborted errors surface from normal application behaviour
                 // - https://github.com/emberjs/ember.js/issues/12505
                 ignoreErrors: [/^TransitionAborted$/]
