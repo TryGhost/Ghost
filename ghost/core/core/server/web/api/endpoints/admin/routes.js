@@ -18,6 +18,8 @@ module.exports = function apiRoutes() {
     // ## Public
     router.get('/site', mw.publicAdminApi, http(api.site.read));
     router.post('/mail_events', mw.publicAdminApi, http(api.mailEvents.add));
+    router.get('/stale_cache_repro', mw.authAdminApi, http(api.staleCacheRepro.repro));
+    router.get('/stale_cache_repro/invalidate_cache', mw.publicAdminApi, http(api.staleCacheRepro.invalidateCache));
 
     // ## Collections
     router.get('/collections', mw.authAdminApi, http(api.collections.browse));

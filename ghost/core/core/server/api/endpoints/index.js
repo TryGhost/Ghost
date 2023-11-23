@@ -213,6 +213,10 @@ module.exports = {
         return apiFramework.pipeline(require('./incoming-recommendations'), localUtils);
     },
 
+    get staleCacheRepro() {
+        return apiFramework.pipeline(require('./stale-cache-repro'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *
