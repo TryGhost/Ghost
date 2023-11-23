@@ -60,7 +60,7 @@ describe('NewslettersService', function () {
                     },
                     labs: {
                         isSet() {
-                            return true;
+                            return false;
                         }
                     }
                 })
