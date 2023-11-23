@@ -1,6 +1,7 @@
 import {NewslettersResponseType} from '@tryghost/admin-x-framework/api/newsletters';
-import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {chooseOptionInSelect, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
+import {globalDataRequests} from '../../utils/acceptance';
 
 test.describe('Newsletter settings', async () => {
     test('Supports creating a new newsletter', async ({page}) => {

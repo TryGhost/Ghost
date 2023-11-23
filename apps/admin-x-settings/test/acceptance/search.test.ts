@@ -1,5 +1,6 @@
-import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi} from '@tryghost/admin-x-framework/test/acceptance';
+import { expect, test } from '@playwright/test';
+import { mockApi } from '@tryghost/admin-x-framework/test/acceptance';
+import { globalDataRequests } from '../utils/acceptance';
 
 test.describe('Search', async () => {
     test('Hiding and showing groups based on the search term', async ({page}) => {
