@@ -4,6 +4,7 @@ import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
@@ -91,6 +92,16 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         secondaryTextColor
     } : {};
 
+    const renderSenderEmail = () => {
+        if (isManagedEmail(config)) {
+            if (hasSendingDomain(config)) {
+                return newsletter.sender_email || 'noreply@' + sendingDomain(config);
+            }
+        }
+
+        return fullEmailAddress(newsletter.sender_email || 'noreply', siteData);
+    };
+
     return <NewsletterPreviewContent
         authorPlaceholder={currentUser.name || currentUser.email}
         backgroundColor={colors.backgroundColor || '#ffffff'}
@@ -100,7 +111,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}
         headerTitle={headerTitle}
-        senderEmail={fullEmailAddress(newsletter.sender_email || 'noreply', siteData)}
+        senderEmail={renderSenderEmail()}
         senderName={newsletter.sender_name || title}
         showBadge={newsletter.show_badge}
         showCommentCta={showCommentCta}
