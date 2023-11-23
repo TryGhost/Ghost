@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
-import { mockApi } from '@tryghost/admin-x-framework/test/acceptance';
-import { globalDataRequests } from '../utils/acceptance';
+import {expect, test} from '@playwright/test';
+import {globalDataRequests} from '../utils/acceptance';
+import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Routing', async () => {
     test('Reopens the opened modal when refreshing the page', async ({page}) => {
