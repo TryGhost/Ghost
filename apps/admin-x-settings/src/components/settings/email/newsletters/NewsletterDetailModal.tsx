@@ -584,7 +584,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
                 newErrors.sender_email = 'Invalid email.';
             }
 
-            if (isManagedEmail(config) && formState.sender_reply_to && (!validator.isEmail(formState.sender_reply_to))) {
+            if (formState.sender_reply_to && !validator.isEmail(formState.sender_reply_to) && !['newsletter', 'support'].includes(formState.sender_reply_to)) {
                 newErrors.sender_reply_to = 'Invalid email.';
             }
 
