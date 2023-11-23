@@ -15,11 +15,18 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
-const renderFrom = (newsletter: Newsletter, config: Config, defaultEmailAddress: string|undefined) => {
-    if (isManagedEmail(config) && defaultEmailAddress) {
-        if (!hasSendingDomain(config)) {
-            // Not changeable: sender_email is ignored
-            return defaultEmailAddress;
+const renderSenderEmail = (newsletter: Newsletter, config: Config, defaultEmailAddress: string|undefined) => {
+    if (isManagedEmail(config) && !hasSendingDomain(config) && defaultEmailAddress) {
+        // Not changeable: sender_email is ignored
+        return defaultEmailAddress;
+    }
+
+    if (isManagedEmail(config) && hasSendingDomain(config)) {
+        // Only return sender_email if the domain names match
+        if (newsletter.sender_email?.split('@')[1] === sendingDomain(config)) {
+            return newsletter.sender_email;
+        } else {
+            return '';
         }
     }
 
@@ -32,12 +39,23 @@ const renderReplyToEmail = (newsletter: Newsletter, config: Config, supportEmail
     }
 
     if (newsletter.sender_reply_to === 'newsletter') {
-        return renderFrom(newsletter, config, defaultEmailAddress);
-    } else if (newsletter.sender_reply_to === 'support') {
-        return supportEmailAddress || defaultEmailAddress || '';
-    } else {
-        return newsletter.sender_reply_to;
+        return renderSenderEmail(newsletter, config, defaultEmailAddress);
     }
+
+    if (newsletter.sender_reply_to === 'support') {
+        return supportEmailAddress || defaultEmailAddress || '';
+    }
+
+    if (isManagedEmail(config) && hasSendingDomain(config)) {
+        // Only return sender_reply_to if the domain names match
+        if (newsletter.sender_reply_to.split('@')[1] === sendingDomain(config)) {
+            return newsletter.sender_reply_to;
+        } else {
+            return '';
+        }
+    }
+
+    return newsletter.sender_reply_to;
 };
 
 const Sidebar: React.FC<{
@@ -59,7 +77,7 @@ const Sidebar: React.FC<{
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
 
-    let newsletterAddress = renderFrom(newsletter, config, defaultEmailAddress);
+    let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
 
     const replyToEmails = [
         {label: `Newsletter address (${newsletterAddress})`, value: 'newsletter'},
@@ -137,98 +155,107 @@ const Sidebar: React.FC<{
     };
 
     const renderSenderEmailField = () => {
-        if (isManagedEmail(config)) {
-            if (hasSendingDomain(config)) {
-                const sendingEmailUsername = newsletter.sender_email?.split('@')[0];
-
-                return (
-                    <TextField
-                        error={Boolean(errors.sender_email)}
-                        hint={errors.sender_email}
-                        rightPlaceholder={`@${sendingDomain(config)}`}
-                        title="Sender email address"
-                        value={sendingEmailUsername || ''}
-                        onBlur={validate}
-                        onChange={(e) => {
-                            const username = e.target.value?.split('@')[0];
-                            const newEmail = username ? `${username}@${sendingDomain(config)}` : '';
-                            updateNewsletter({sender_email: newEmail});
-                        }}
-                        onKeyDown={() => clearError('sender_email')}
-                    />
-                );
-            } else {
-                return (
-                    <SettingGroupContent
-                        values={[
-                            {
-                                heading: 'Sender email address',
-                                key: 'sender-email-addresss',
-                                value: `${defaultEmailAddress}`,
-                                hint: <span className="text-xs text-grey-700">To customise, set up a <a className="text-green" href="#">custom sending domain</a></span>
-                            }
-                        ]}
-                    />
-                );
-            }
+        // Self-hosters, or legacy Pro users
+        if (!isManagedEmail(config)) {
+            return (
+                <TextField
+                    error={Boolean(errors.sender_email)}
+                    hint={errors.sender_email}
+                    placeholder={newsletterAddress || ''}
+                    title="Sender email address"
+                    value={newsletter.sender_email || ''}
+                    onBlur={validate}
+                    onChange={e => updateNewsletter({sender_email: e.target.value})}
+                    onKeyDown={() => clearError('sender_email')}
+                />
+            );
         }
 
+        // Pro users with custom sending domains
+        if (hasSendingDomain(config)) {
+            const sendingEmail = renderSenderEmail(newsletter, config, defaultEmailAddress);
+            const sendingEmailUsername = sendingEmail?.split('@')[0];
+
+            return (
+                <TextField
+                    error={Boolean(errors.sender_email)}
+                    hint={errors.sender_email}
+                    rightPlaceholder={`@${sendingDomain(config)}`}
+                    title="Sender email address"
+                    value={sendingEmailUsername || ''}
+                    onBlur={validate}
+                    onChange={(e) => {
+                        const username = e.target.value?.split('@')[0];
+                        const newEmail = username ? `${username}@${sendingDomain(config)}` : '';
+                        updateNewsletter({sender_email: newEmail});
+                    }}
+                    onKeyDown={() => clearError('sender_email')}
+                />
+            );
+        }
+
+        // Pro users without custom sending domains
         return (
-            <TextField
-                error={Boolean(errors.sender_email)}
-                hint={errors.sender_email}
-                placeholder={newsletterAddress}
-                title="Sender email address"
-                value={newsletter.sender_email || ''}
-                onBlur={validate}
-                onChange={e => updateNewsletter({sender_email: e.target.value})}
-                onKeyDown={() => clearError('sender_email')}
+            <SettingGroupContent
+                values={[
+                    {
+                        heading: 'Sender email address',
+                        key: 'sender-email-addresss',
+                        value: `${defaultEmailAddress}`,
+                        hint: <span className="text-xs text-grey-700">To customise, set up a <a className="text-green" href="#">custom sending domain</a></span>
+                    }
+                ]}
             />
         );
     };
 
     const renderReplyToEmailField = () => {
-        if (isManagedEmail(config)) {
-            if (hasSendingDomain(config)) {
-                const replyToEmailUsername = ['newsletter', 'support'].includes(newsletter.sender_reply_to) ? '' : newsletter.sender_reply_to?.split('@')[0];
-                return (
-                    <TextField
-                        error={Boolean(errors.sender_reply_to)}
-                        hint={errors.sender_reply_to}
-                        rightPlaceholder={`@${sendingDomain(config)}`}
-                        title="Reply-to address"
-                        value={replyToEmailUsername || ''}
-                        onBlur={validate}
-                        onChange={(e) => {
-                            const username = e.target.value?.split('@')[0];
-                            const newEmail = username ? `${username}@${sendingDomain(config)}` : '';
-                            updateNewsletter({sender_reply_to: newEmail});
-                        }}
-                        onKeyDown={() => clearError('sender_reply_to')}
-                    />
-                );
-            } else {
-                return (
-                    <TextField
-                        error={Boolean(errors.sender_reply_to)}
-                        hint={errors.sender_reply_to}
-                        placeholder={newsletterAddress}
-                        title="Reply-to email"
-                        value={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
-                        onBlur={validate}
-                        onChange={e => updateNewsletter({sender_reply_to: e.target.value})}
-                        onKeyDown={() => clearError('sender_reply_to')}
-                    />
-                );
-            }
+        // Self-hosters, or legacy Pro users
+        if (!isManagedEmail(config)) {
+            return (
+                <Select
+                    options={replyToEmails}
+                    selectedOption={replyToEmails.find(option => option.value === newsletter.sender_reply_to)}
+                    title="Reply-to email"
+                    onSelect={option => updateNewsletter({sender_reply_to: option?.value})}
+                />
+            );
         }
 
+        // Pro users with custom sending domains
+        if (hasSendingDomain(config)) {
+            const replyToEmail = ['newsletter', 'support'].includes(newsletter.sender_reply_to) ? '' : renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress);
+            const replyToEmailUsername = replyToEmail?.split('@')[0] || '';
+
+            return (
+                <TextField
+                    error={Boolean(errors.sender_reply_to)}
+                    hint={errors.sender_reply_to}
+                    rightPlaceholder={`@${sendingDomain(config)}`}
+                    title="Reply-to address"
+                    value={replyToEmailUsername}
+                    onBlur={validate}
+                    onChange={(e) => {
+                        const username = e.target.value?.split('@')[0];
+                        const newEmail = username ? `${username}@${sendingDomain(config)}` : 'newsletter';
+                        updateNewsletter({sender_reply_to: newEmail});
+                    }}
+                    onKeyDown={() => clearError('sender_reply_to')}
+                />
+            );
+        }
+
+        // Pro users without custom sending domains
         return (
-            <Select
-                options={replyToEmails}
-                selectedOption={replyToEmails.find(option => option.value === newsletter.sender_reply_to)}
+            <TextField
+                error={Boolean(errors.sender_reply_to)}
+                hint={errors.sender_reply_to}
+                placeholder={newsletterAddress || ''}
                 title="Reply-to email"
-                onSelect={option => updateNewsletter({sender_reply_to: option?.value})}
+                value={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || ''}
+                onBlur={validate}
+                onChange={e => updateNewsletter({sender_reply_to: e.target.value})}
+                onKeyDown={() => clearError('sender_reply_to')}
             />
         );
     };
@@ -535,7 +562,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
             const {newsletters, meta} = await editNewsletter(formState);
             if (meta?.sent_email_verification) {
                 if (meta?.sent_email_verification[0] === 'sender_email') {
-                    const previousFrom = renderFrom(newsletters[0], config, defaultEmailAddress);
+                    const previousFrom = renderSenderEmail(newsletters[0], config, defaultEmailAddress);
 
                     NiceModal.show(ConfirmationModal, {
                         title: 'Confirm newsletter email address',
@@ -584,7 +611,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
                 newErrors.sender_email = 'Invalid email.';
             }
 
-            if (isManagedEmail(config) && formState.sender_reply_to && (!validator.isEmail(formState.sender_reply_to))) {
+            if (formState.sender_reply_to && !validator.isEmail(formState.sender_reply_to) && !['newsletter', 'support'].includes(formState.sender_reply_to)) {
                 newErrors.sender_reply_to = 'Invalid email.';
             }
 
