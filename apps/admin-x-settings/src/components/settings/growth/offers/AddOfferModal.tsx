@@ -5,6 +5,7 @@ import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getTiersCadences} from '../../../../utils/getTiersCadences';
 import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
+import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useState} from 'react';
 import {useForm} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
@@ -198,6 +199,7 @@ const parseData = (input: string): { id: string; period: string; currency: strin
 };
 
 const AddOfferModal = () => {
+    const {data: {offers: allOffers = []} = {}} = useBrowseOffers();
     const {siteData} = useGlobalData();
     const typeOptions = [
         {title: 'Discount', description: 'Offer a special reduced price', value: 'percent'},
@@ -399,7 +401,12 @@ const AddOfferModal = () => {
     }, [hasOffers, modal, updateRoute]);
 
     const cancelAddOffer = () => {
-        updateRoute('offers/edit');
+        if (allOffers.length > 0) {
+            updateRoute('offers/edit');
+        } else {
+            updateRoute('offers');
+            modal.remove();
+        }
     };
 
     useEffect(() => {
@@ -427,6 +434,14 @@ const AddOfferModal = () => {
         href={href}
     />;
     return <PreviewModalContent
+        afterClose={() => {
+            if (allOffers.length > 0) {
+                updateRoute('offers/edit');
+            } else {
+                updateRoute('offers');
+                modal.remove();
+            }
+        }}
         cancelLabel='Cancel'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
@@ -434,14 +449,25 @@ const AddOfferModal = () => {
         okColor={okProps.color}
         okLabel='Publish'
         preview={iframe}
-        previewToolbarBreadcrumbs={[{label: 'Offers', onClick: () => {
-            updateRoute('offers/edit');
-        }}, {label: 'New offer'}]}
+        previewToolbarBreadcrumbs={allOffers.length > 0 ?
+            [{label: 'Offers', onClick: () => {
+                updateRoute('offers/edit');
+            }}, {label: 'New offer'}] :
+            [{label: 'Settings', onClick: () => {
+                updateRoute('offers');
+                modal.remove();
+            }}, {label: 'New offer'}]
+        }
         sidebar={sidebar}
         size='lg'
         title='Offer'
         onBreadcrumbsBack={() => {
-            updateRoute('offers/edit');
+            if (allOffers.length > 0) {
+                updateRoute('offers/edit');
+            } else {
+                updateRoute('offers');
+                modal.remove();
+            }
         }}
         onCancel={cancelAddOffer}
         onOk={async () => {

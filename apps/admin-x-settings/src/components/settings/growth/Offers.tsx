@@ -48,7 +48,11 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const latestThree = activeOffers.slice(0, 3);
 
     const openModal = () => {
-        updateRoute('offers/edit');
+        if (allOffers.length > 0) {
+            updateRoute('offers/edit');
+        } else {
+            updateRoute('offers/new');
+        }
     };
 
     const goToOfferEdit = (offerId: string) => {
@@ -57,7 +61,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label='Manage offers' link linkWithPadding onClick={openModal}/>}
+            customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label={`${allOffers.length > 0 ? 'Manage offers' : 'Add offer'}`} link linkWithPadding onClick={openModal}/>}
             description={<>Grow your audience by providing fixed or percentage discounts. {allOffers.length === 0 && <a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">Learn more</a>}</>}
             keywords={keywords}
             navid='offers'
