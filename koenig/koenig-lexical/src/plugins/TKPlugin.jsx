@@ -41,6 +41,16 @@ export default function TKPlugin({setTkCount = () => {}}) {
         });
     };
 
+    const indicatorOnMouseEnter = (e) => {
+        const classes = editor._config.theme.tkHighlighted?.split(' ') || [];
+        editor.getElementByKey(e.target.dataset.key).classList.add(classes);
+    };
+
+    const indicatorOnMouseLeave = (e) => {
+        const classes = editor._config.theme.tkHighlighted?.split(' ') || [];
+        editor.getElementByKey(e.target.dataset.key).classList.remove(classes);
+    };
+
     const renderIndicators = useCallback((nodes) => {
         // clean up existing indicators
         document.body.querySelectorAll('[data-kg-has-tk]').forEach((el) => {
@@ -69,10 +79,12 @@ export default function TKPlugin({setTkCount = () => {}}) {
             indicator.style.top = `${tkParentTop - editorParentTop + 4}px`;
             indicator.textContent = 'TK';
             indicator.classList.add('absolute', '-right-14', 'p-1', 'text-xs', 'text-grey-600', 'font-medium', 'cursor-pointer');
-            indicator.setAttribute('data-kg-has-tk', 'true');
+            indicator.dataset.hasTk = true;
             indicator.dataset.key = node.getKey();
 
             indicator.onclick = indicatorOnClick;
+            indicator.onmouseenter = indicatorOnMouseEnter;
+            indicator.onmouseleave = indicatorOnMouseLeave;
 
             // add to the editor parent (adding to editor triggers an infinite loop)
             editorParent.appendChild(indicator);
