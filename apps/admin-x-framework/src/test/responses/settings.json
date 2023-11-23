@@ -315,6 +315,14 @@
         {
             "key": "firstpromoter_account",
             "value": null
+        },
+        {
+            "key": "default_email_address",
+            "value": "default@example.com"
+        },
+        {
+            "key": "support_email_address",
+            "value": "support@example.com"
         }
     ],
     "meta": {

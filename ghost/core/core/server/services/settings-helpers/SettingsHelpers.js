@@ -128,6 +128,10 @@ class SettingsHelpers {
      * @deprecated Use getDefaultEmail().address (without name) or EmailAddressParser.stringify(this.getDefaultEmail()) (with name) instead
      */
     getNoReplyAddress() {
+        return this.getDefaultEmailAddress();
+    }
+
+    getDefaultEmailAddress() {
         return this.getDefaultEmail().address;
     }
 

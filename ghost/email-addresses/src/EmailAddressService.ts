@@ -151,7 +151,7 @@ export class EmailAddressService {
             // Self hoster or legacy Ghost Pro
             return {
                 allowed: true,
-                verificationEmailRequired: type === 'from' && !this.useNewEmailAddresses
+                verificationEmailRequired: !this.useNewEmailAddresses // Self hosters don't need to verify email addresses
             };
         }
 

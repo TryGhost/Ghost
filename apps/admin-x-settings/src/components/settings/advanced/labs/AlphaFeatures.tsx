@@ -63,6 +63,10 @@ const features = [{
     title: 'TK Reminders',
     description: 'Enables the TK Reminders feature in the editor',
     flag: 'tkReminders'
+},{
+    title: 'New email addresses',
+    description: 'For self hosters, forces the usage of the mail.from config as from address for all outgoing emails',
+    flag: 'newEmailAddresses'
 }];
 
 const AlphaFeatures: React.FC = () => {
