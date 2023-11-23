@@ -514,7 +514,7 @@ const Sidebar: React.FC<{
 
 const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: boolean;}> = ({newsletter, onlyOne}) => {
     const modal = useModal();
-    const {siteData, settings} = useGlobalData();
+    const {siteData, settings, config} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
@@ -572,6 +572,10 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
 
             if (formState.sender_email && !validator.isEmail(formState.sender_email)) {
                 newErrors.sender_email = 'Invalid email.';
+            }
+
+            if (isManagedEmail(config) && formState.sender_reply_to && (!validator.isEmail(formState.sender_reply_to))) {
+                newErrors.sender_reply_to = 'Invalid email.';
             }
 
             return newErrors;
