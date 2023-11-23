@@ -201,7 +201,7 @@ const Sidebar: React.FC<{
     const renderReplyToEmailField = () => {
         if (isManagedEmail(config)) {
             if (hasSendingDomain(config)) {
-                const replyToEmail = renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress);
+                const replyToEmail = ['newsletter', 'support'].includes(newsletter.sender_reply_to) ? '' : renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress);
                 const replyToEmailUsername = replyToEmail?.split('@')[0] || '';
                 return (
                     <TextField
@@ -213,7 +213,7 @@ const Sidebar: React.FC<{
                         onBlur={validate}
                         onChange={(e) => {
                             const username = e.target.value?.split('@')[0];
-                            const newEmail = username ? `${username}@${sendingDomain(config)}` : '';
+                            const newEmail = username ? `${username}@${sendingDomain(config)}` : 'newsletter';
                             updateNewsletter({sender_reply_to: newEmail});
                         }}
                         onKeyDown={() => clearError('sender_reply_to')}
