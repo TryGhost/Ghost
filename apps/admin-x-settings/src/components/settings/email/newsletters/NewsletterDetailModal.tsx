@@ -16,10 +16,17 @@ import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const renderSenderEmail = (newsletter: Newsletter, config: Config, defaultEmailAddress: string|undefined) => {
-    if (isManagedEmail(config) && defaultEmailAddress) {
-        if (!hasSendingDomain(config)) {
-            // Not changeable: sender_email is ignored
-            return defaultEmailAddress;
+    if (isManagedEmail(config) && !hasSendingDomain(config) && defaultEmailAddress) {
+        // Not changeable: sender_email is ignored
+        return defaultEmailAddress;
+    }
+
+    if (isManagedEmail(config) && hasSendingDomain(config)) {
+        // Only return sender_email if the domain names match
+        if (newsletter.sender_email?.split('@')[1] === sendingDomain(config)) {
+            return newsletter.sender_email;
+        } else {
+            return '';
         }
     }
 
@@ -150,7 +157,8 @@ const Sidebar: React.FC<{
     const renderSenderEmailField = () => {
         if (isManagedEmail(config)) {
             if (hasSendingDomain(config)) {
-                const sendingEmailUsername = newsletter.sender_email?.split('@')[0];
+                const sendingEmail = renderSenderEmail(newsletter, config, defaultEmailAddress);
+                const sendingEmailUsername = sendingEmail?.split('@')[0];
 
                 return (
                     <TextField
@@ -188,7 +196,7 @@ const Sidebar: React.FC<{
             <TextField
                 error={Boolean(errors.sender_email)}
                 hint={errors.sender_email}
-                placeholder={newsletterAddress}
+                placeholder={newsletterAddress || ''}
                 title="Sender email address"
                 value={newsletter.sender_email || ''}
                 onBlur={validate}
@@ -224,9 +232,9 @@ const Sidebar: React.FC<{
                     <TextField
                         error={Boolean(errors.sender_reply_to)}
                         hint={errors.sender_reply_to}
-                        placeholder={newsletterAddress}
+                        placeholder={newsletterAddress || ''}
                         title="Reply-to email"
-                        value={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
+                        value={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || ''}
                         onBlur={validate}
                         onChange={e => updateNewsletter({sender_reply_to: e.target.value})}
                         onKeyDown={() => clearError('sender_reply_to')}
