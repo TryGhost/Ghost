@@ -536,6 +536,9 @@ const AddOfferModal = () => {
         href={href}
     />;
     return <PreviewModalContent
+        afterClose={() => {
+            updateRoute('offers');
+        }}
         cancelLabel='Cancel'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}

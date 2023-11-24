@@ -259,6 +259,9 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     />;
 
     return offerById ? <PreviewModalContent
+        afterClose={() => {
+            updateRoute('offers');
+        }}
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
         height='full'
