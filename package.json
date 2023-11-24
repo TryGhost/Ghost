@@ -6,13 +6,10 @@
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
   "license": "MIT",
-  "workspaces": {
-    "packages": [
-        "ghost/*",
-        "apps/*"
-    ],
-    "nohoist": ["**/@testing-library/react"]
-  },
+  "workspaces": [
+    "ghost/*",
+    "apps/*"
+  ],
   "monorepo": {
     "public": false,
     "internalPackages": true,

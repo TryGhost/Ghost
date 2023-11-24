@@ -1,5 +1,6 @@
-import {chooseOptionInSelect, globalDataRequests, mockApi, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {chooseOptionInSelect, mockApi, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
+import {globalDataRequests} from '../../utils/acceptance';
 
 test.describe('Time zone settings', async () => {
     test('Supports editing the time zone', async ({page}) => {

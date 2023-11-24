@@ -66,7 +66,7 @@ const PortalModal: React.FC = () => {
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
 
     const handleError = useHandleError();
-    const {settings, siteData} = useGlobalData();
+    const {settings, siteData, config} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     // const tiers = getPaidActiveTiers(allTiers || []);
@@ -141,7 +141,7 @@ const PortalModal: React.FC = () => {
                     title: 'Confirm email address',
                     prompt: <>
                         We&apos;ve sent a confirmation email to <strong>{newEmail}</strong>.
-                        Until verified, your support address will remain {fullEmailAddress(currentEmail?.toString() || 'noreply', siteData!)}.
+                        Until verified, your support address will remain {fullEmailAddress(currentEmail?.toString() || 'noreply', siteData!, config)}.
                     </>,
                     okLabel: 'Close',
                     cancelLabel: '',

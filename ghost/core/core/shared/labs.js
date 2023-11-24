@@ -49,7 +49,8 @@ const ALPHA_FEATURES = [
     'adminXOffers',
     'filterEmailDisabled',
     'adminXDemo',
-    'tkReminders'
+    'tkReminders',
+    'newEmailAddresses'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
