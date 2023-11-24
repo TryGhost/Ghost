@@ -4,7 +4,7 @@ import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useLexicalTextEntity} from '../hooks/useExtendedTextEntity';
 
-const REGEX = new RegExp(/(?<!\w)[^a-zA-Z0-9\s]?(TK)+[^a-zA-Z0-9\s]?(?!\w)/);
+const REGEX = new RegExp(/(^|.)([^a-zA-Z0-9\s]?(TK)+[^a-zA-Z0-9\s]?)($|.)/);
 
 export default function TKPlugin({setTkCount = () => {}}) {
     const [editor] = useLexicalComposerContext();
@@ -53,7 +53,7 @@ export default function TKPlugin({setTkCount = () => {}}) {
 
     const renderIndicators = useCallback((nodes) => {
         // clean up existing indicators
-        document.body.querySelectorAll('[data-kg-has-tk]').forEach((el) => {
+        document.body.querySelectorAll('[data-has-tk]').forEach((el) => {
             el.remove();
         });
 
@@ -130,8 +130,21 @@ export default function TKPlugin({setTkCount = () => {}}) {
             return null;
         }
 
-        const startOffset = matchArr.index;
-        const endOffset = startOffset + matchArr[0].length;
+        // negative lookbehind isn't supported before Safari 16.4
+        // so we capture the preceding char and test it here
+        if (matchArr[1] && /\w/.test(matchArr[1])) {
+            return null;
+        }
+
+        // we also check any following char in code to avoid an overly
+        // complex regex when looking for word-chars following the optional
+        // trailing symbol char
+        if (matchArr[4] && !/\s/.test(matchArr[4])) {
+            return null;
+        }
+
+        const startOffset = matchArr.index + matchArr[1].length;
+        const endOffset = startOffset + matchArr[2].length;
 
         return {
             end: endOffset,
