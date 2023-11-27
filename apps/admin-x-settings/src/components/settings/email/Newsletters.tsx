@@ -52,7 +52,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
                 NiceModal.show(ConfirmationModal, {
                     title: 'Email address verified',
-                    prompt: <>Success! From address for newsletter <NavigateToNewsletter id={updatedNewsletter.id}>{updatedNewsletter.name}</NavigateToNewsletter> changed to <strong>{updatedNewsletter.sender_email}</strong></>,
+                    prompt: <>Success! Email address for newsletter <NavigateToNewsletter id={updatedNewsletter.id}>{updatedNewsletter.name}</NavigateToNewsletter> has been changed.</>,
                     okLabel: 'Close',
                     cancelLabel: '',
                     onOk: confirmModal => confirmModal?.remove()

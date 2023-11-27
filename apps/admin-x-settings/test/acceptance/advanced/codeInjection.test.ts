@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests} from '../../utils/acceptance';
+import {mockApi, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 // CodeMirror takes some time to load in Playwright meaning the first few characters typed don't always
 // show up in the input. Since that lag is not consistent, this workaround ensures we type enough

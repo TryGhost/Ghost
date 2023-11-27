@@ -6,7 +6,7 @@ import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/ap
 import {getTiersCadences} from '../../../../utils/getTiersCadences';
 import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {useForm} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useModal} from '@ebay/nice-modal-react';
@@ -46,12 +46,52 @@ const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => 
     );
 };
 
+type formStateTypes = {
+    disableBackground?: boolean;
+    name: string;
+    code: {
+        isDirty: boolean;
+        value: string;
+    };
+    displayTitle: {
+        isDirty: boolean;
+        value: string;
+    };
+    displayDescription: string;
+    type: string;
+    cadence: string;
+    amount: number;
+    duration: string;
+    durationInMonths: number;
+    currency: string;
+    status: string;
+    tierId: string;
+    fixedAmount?: number;
+    trialAmount?: number;
+    percentAmount?: number;
+};
+
+const calculateAmount = (formState: formStateTypes): number => {
+    const {fixedAmount = 0, percentAmount = 0, trialAmount = 0, amount = 0} = formState;
+
+    switch (formState.type) {
+    case 'fixed':
+        return fixedAmount * 100;
+    case 'percent':
+        return percentAmount;
+    case 'trial':
+        return trialAmount;
+    default:
+        return amount;
+    }
+};
+
 type SidebarProps = {
     tierOptions: SelectOption[];
     handleTierChange: (tier: SelectOption) => void;
     selectedTier: SelectOption;
-    overrides: offerPortalPreviewUrlTypes
-    handleTextInput: (e: React.ChangeEvent<HTMLInputElement>, key: keyof offerPortalPreviewUrlTypes) => void;
+    overrides: formStateTypes;
+    // handleTextInput: (e: React.ChangeEvent<HTMLInputElement>, key: keyof offerPortalPreviewUrlTypes) => void;
     amountOptions: SelectOption[];
     typeOptions: OfferType[];
     durationOptions: SelectOption[];
@@ -60,12 +100,16 @@ type SidebarProps = {
     handleAmountTypeChange: (amountType: string) => void;
     handleNameInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleTextAreaInput: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    handleDisplayTitleInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleAmountInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleDurationInMonthsInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleCodeInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 const Sidebar: React.FC<SidebarProps> = ({tierOptions,
     handleTierChange,
     selectedTier,
-    handleTextInput,
+    // handleTextInput,
     typeOptions,
     durationOptions,
     handleTypeChange,
@@ -74,6 +118,10 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
     handleAmountTypeChange,
     handleNameInput,
     handleTextAreaInput,
+    handleDisplayTitleInput,
+    handleDurationInMonthsInput,
+    handleAmountInput,
+    handleCodeInput,
     amountOptions}) => {
     const getFilteredDurationOptions = () => {
         // Check if the selected tier's cadence is 'yearly'
@@ -118,15 +166,15 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         />
                         {
                             overrides.type !== 'trial' && <> <div className='relative'>
-                                <TextField title='Amount off' type='number' onChange={(e) => {
-                                    handleTextInput(e, 'discountAmount');
+                                <TextField title='Amount off' type='number' value={overrides.type === 'fixed' ? overrides.fixedAmount?.toString() : overrides.percentAmount?.toString()} onChange={(e) => {
+                                    handleAmountInput(e);
                                 }} />
                                 <div className='absolute bottom-0 right-1.5 z-10'>
                                     <Select
                                         clearBg={true}
                                         controlClasses={{menu: 'w-20 right-0'}}
                                         options={amountOptions}
-                                        selectedOption={overrides.amountType === 'percent' ? amountOptions[0] : amountOptions[1]}
+                                        selectedOption={overrides.type === 'percent' ? amountOptions[0] : amountOptions[1]}
                                         onSelect={(e) => {
                                             handleAmountTypeChange(e?.value || '');
                                         }}
@@ -142,7 +190,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
 
                             {
                                 overrides.duration === 'repeating' && <TextField title='Duration in months' type='number' onChange={(e) => {
-                                    handleTextInput(e, 'durationInMonths');
+                                    handleDurationInMonthsInput(e);
                                 }} />
                             }
                             </>
@@ -150,7 +198,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
 
                         {
                             overrides.type === 'trial' && <TextField title='Trial duration' type='number' value={overrides.trialAmount?.toString()} onChange={(e) => {
-                                handleTextInput(e, 'trialAmount');
+                                handleAmountInput(e);
                             }} />
                         }
 
@@ -164,7 +212,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             title='Display title'
                             value={overrides.displayTitle.value}
                             onChange={(e) => {
-                                handleTextInput(e, 'displayTitle');
+                                handleDisplayTitleInput(e);
                             }}
                         />
                         <TextField
@@ -172,7 +220,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             title='Offer code'
                             value={overrides.code.value}
                             onChange={(e) => {
-                                handleTextInput(e, 'code');
+                                handleCodeInput(e);
                             }}
                         />
                         <TextArea
@@ -228,19 +276,22 @@ const AddOfferModal = () => {
             currency: tierCadenceOptions[0]?.value ? parseData(tierCadenceOptions[0]?.value).currency : ''
         }
     });
-    const getDiscountAmount = (discount: number, dctype: string) => {
-        if (dctype === 'percent') {
-            return discount.toString();
-        }
-        if (dctype === 'fixed') {
-            let calcDiscount = discount * 100;
-            return calcDiscount.toString();
-        }
-    };
+
+    // const calculateAmount = useCallback(() => {
+    //     if (formState.type === 'fixed') {
+    //         return formState.fixedAmount;
+    //     } else if (formState.type === 'percent') {
+    //         return formState.percentAmount;
+    //     } else if (formState.type === 'trial') {
+    //         return formState.trialAmount;
+    //     } else {
+    //         return formState.amount; // default case
+    //     }
+    // }, [f;
 
     const {formState, updateForm, handleSave, saveState, okProps} = useForm({
         initialState: {
-            disableBackground: true,
+            disableBackground: false,
             name: '',
             code: {
                 isDirty: false,
@@ -253,14 +304,15 @@ const AddOfferModal = () => {
             displayDescription: '',
             type: 'percent',
             cadence: selectedTier?.dataset?.period || '',
-            trialAmount: 7,
-            discountAmount: 0,
+            amount: 0,
             duration: 'once',
             durationInMonths: 0,
-            currency: selectedTier?.dataset?.currency || '',
+            currency: selectedTier?.dataset?.currency || 'USD',
             status: 'active',
             tierId: selectedTier?.dataset?.id || '',
-            amountType: 'percent'
+            trialAmount: 7,
+            fixedAmount: 0,
+            percentAmount: 0
         },
         onSave: async () => {
             const dataset = {
@@ -269,7 +321,7 @@ const AddOfferModal = () => {
                 display_title: formState.displayTitle.value,
                 display_description: formState.displayDescription,
                 cadence: formState.cadence,
-                amount: formState.type === 'trial' ? Number(getDiscountAmount(formState.trialAmount, formState.amountType)) : Number(getDiscountAmount(formState.discountAmount, formState.amountType)),
+                amount: calculateAmount(formState) || 0,
                 duration: formState.type === 'trial' ? 'trial' : formState.duration,
                 duration_in_months: Number(formState.durationInMonths),
                 currency: formState.currency,
@@ -322,39 +374,37 @@ const AddOfferModal = () => {
     const handleAmountTypeChange = (amountType: string) => {
         updateForm(state => ({
             ...state,
-            amountType: amountType,
             type: amountType === 'percent' ? 'percent' : 'fixed' || state.type
         }));
     };
 
-    const handleTextInput = (
-        e: React.ChangeEvent<HTMLInputElement>,
-        key: keyof offerPortalPreviewUrlTypes
-    ) => {
-        const target = e.target as HTMLInputElement | HTMLTextAreaElement;
-        updateForm((state) => {
-            // Extract the current value for the key
-            const currentValue = (state as offerPortalPreviewUrlTypes)[key];
-            // Check if the current value is an object and has 'isDirty' and 'value' properties
-            if (currentValue && typeof currentValue === 'object' && 'isDirty' in currentValue && 'value' in currentValue) {
-                // Determine if the field has been modified
+    const handleAmountInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const target = e.target as HTMLInputElement;
 
-                return {
-                    ...state,
-                    [key]: {
-                        ...currentValue,
-                        isDirty: true,
-                        value: target.value
-                    }
-                };
-            } else {
-                // For simple properties, update the value directly
-                return {
-                    ...state,
-                    [key]: target.value
-                };
-            }
-        });
+        if (formState.type === 'fixed') {
+            updateForm(state => ({
+                ...state,
+                fixedAmount: Number(target.value)
+            }));
+        } else if (formState.type === 'percent') {
+            updateForm(state => ({
+                ...state,
+                percentAmount: Number(target.value)
+            }));
+        } else {
+            updateForm(state => ({
+                ...state,
+                amount: Number(target.value)
+            }));
+        }
+    };
+
+    const handleDurationInMonthsInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const target = e.target as HTMLInputElement;
+        updateForm(state => ({
+            ...state,
+            durationInMonths: Number(target.value)
+        }));
     };
 
     const handleNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -378,6 +428,18 @@ const AddOfferModal = () => {
         });
     };
 
+    const handleDisplayTitleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const target = e.target as HTMLInputElement;
+        updateForm(state => ({
+            ...state,
+            displayTitle: {
+                ...state.displayTitle,
+                isDirty: true,
+                value: target.value
+            }
+        }));
+    };
+
     const handleTextAreaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const target = e.target as HTMLTextAreaElement;
         updateForm(state => ({
@@ -390,6 +452,18 @@ const AddOfferModal = () => {
         updateForm(state => ({
             ...state,
             duration: duration
+        }));
+    };
+
+    const handleCodeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const target = e.target as HTMLInputElement;
+        updateForm(state => ({
+            ...state,
+            code: {
+                ...state.code,
+                isDirty: true,
+                value: target.value
+            }
         }));
     };
 
@@ -409,19 +483,54 @@ const AddOfferModal = () => {
         }
     };
 
+    // const overrides : offerPortalPreviewUrlTypes = {
+    //     name: formState.name,
+    //     code: formState.code.value,
+    //     displayTitle: formState.displayTitle.value,
+    //     displayDescription: formState.displayDescription,
+    //     type: formState.type,
+    //     cadence: formState.cadence,
+    //     amount: calculateAmount(),
+    //     duration: formState.type === 'trial' ? 'trial' : formState.duration,
+    //     durationInMonths: formState.durationInMonths,
+    //     currency: formState.currency,
+    //     status: formState.status,
+    //     tierId: formState.tierId
+    // };
+
+    const overrides : offerPortalPreviewUrlTypes = useMemo(() => {
+        return {
+            name: formState.name,
+            code: formState.code.value,
+            displayTitle: formState.displayTitle.value,
+            displayDescription: formState.displayDescription,
+            type: formState.type,
+            cadence: formState.cadence,
+            amount: calculateAmount(formState) || 0,
+            duration: formState.type === 'trial' ? 'trial' : formState.duration,
+            durationInMonths: formState.durationInMonths,
+            currency: formState.currency,
+            status: formState.status,
+            tierId: formState.tierId
+        };
+    }, [formState]);
+
     useEffect(() => {
-        const newHref = getOfferPortalPreviewUrl(formState, siteData.url);
+        const newHref = getOfferPortalPreviewUrl(overrides, siteData.url);
         setHref(newHref);
-    }, [formState, siteData.url]);
+    }, [formState, siteData.url, formState.type, overrides]);
 
     const sidebar = <Sidebar
         amountOptions={amountOptions as SelectOption[]}
         durationOptions={durationOptions}
+        handleAmountInput={handleAmountInput}
         handleAmountTypeChange={handleAmountTypeChange}
+        handleCodeInput={handleCodeInput}
+        handleDisplayTitleInput={handleDisplayTitleInput}
         handleDurationChange={handleDurationChange}
+        handleDurationInMonthsInput={handleDurationInMonthsInput}
         handleNameInput={handleNameInput}
         handleTextAreaInput={handleTextAreaInput}
-        handleTextInput={handleTextInput}
         handleTierChange={handleTierChange}
         handleTypeChange={handleTypeChange}
         overrides={formState}

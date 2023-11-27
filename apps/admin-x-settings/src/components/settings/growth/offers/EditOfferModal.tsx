@@ -237,23 +237,17 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     useEffect(() => {
         const dataset : offerPortalPreviewUrlTypes = {
             name: formState?.name || '',
-            code: {
-                value: formState?.code || ''
-            },
-            displayTitle: {
-                value: formState?.display_title || ''
-            },
+            code: formState?.code || '',
+            displayTitle: formState?.display_title || '',
             displayDescription: formState?.display_description || '',
             type: formState?.type || '',
             cadence: formState?.cadence || '',
-            trialAmount: formState?.amount,
-            discountAmount: formState?.amount,
+            amount: formState?.amount,
             duration: formState?.duration || '',
             durationInMonths: formState?.duration_in_months || 0,
             currency: formState?.currency || '',
             status: formState?.status || '',
-            tierId: formState?.tier.id || '',
-            amountType: formState?.type === 'percent' ? 'percent' : 'amount'
+            tierId: formState?.tier.id || ''
         };
 
         const newHref = getOfferPortalPreviewUrl(dataset, siteData.url);
@@ -265,6 +259,9 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     />;
 
     return offerById ? <PreviewModalContent
+        afterClose={() => {
+            updateRoute('offers');
+        }}
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
         height='full'

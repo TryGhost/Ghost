@@ -1,6 +1,7 @@
 import {NewslettersResponseType} from '@tryghost/admin-x-framework/api/newsletters';
-import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {chooseOptionInSelect, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
+import {globalDataRequests} from '../../utils/acceptance';
 
 test.describe('Newsletter settings', async () => {
     test('Supports creating a new newsletter', async ({page}) => {
@@ -124,7 +125,7 @@ test.describe('Newsletter settings', async () => {
 
                 await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
                 await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm newsletter email address/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/default email address \(noreply@test.com\)/);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/default email address \(default@example.com\)/);
             });
 
             test('Displays the current email when changing sender address', async ({page}) => {
@@ -245,7 +246,7 @@ test.describe('Newsletter settings', async () => {
 
                 await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
                 await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm reply-to address/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/previous reply-to address \(noreply@test.com\)/);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/previous reply-to address \(support@example.com\)/);
             });
         });
 

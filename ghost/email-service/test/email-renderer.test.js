@@ -681,6 +681,11 @@ describe('Email renderer', function () {
             },
             labs: {
                 isSet: () => false
+            },
+            emailAddressService: {
+                getAddress(addresses) {
+                    return addresses;
+                }
             }
         });
 
@@ -723,6 +728,11 @@ describe('Email renderer', function () {
     });
 
     describe('getReplyToAddress', function () {
+        let emailAddressService = {
+            getAddress(addresses) {
+                return addresses;
+            }
+        };
         let emailRenderer = new EmailRenderer({
             settingsCache: {
                 get: (key) => {
@@ -741,7 +751,8 @@ describe('Email renderer', function () {
             },
             labs: {
                 isSet: () => false
-            }
+            },
+            emailAddressService
         });
 
         it('returns support address', function () {
@@ -762,6 +773,31 @@ describe('Email renderer', function () {
             });
             const response = emailRenderer.getReplyToAddress({}, newsletter);
             response.should.equal(`"Ghost" <ghost@example.com>`);
+        });
+
+        it('returns correct custom reply to address', function () {
+            const newsletter = createModel({
+                sender_email: 'ghost@example.com',
+                sender_name: 'Ghost',
+                sender_reply_to: 'anything@iwant.com'
+            });
+            const response = emailRenderer.getReplyToAddress({}, newsletter);
+            assert.equal(response, 'anything@iwant.com');
+        });
+
+        it('handles removed replyto addresses', function () {
+            const newsletter = createModel({
+                sender_email: 'ghost@example.com',
+                sender_name: 'Ghost',
+                sender_reply_to: 'anything@iwant.com'
+            });
+            emailAddressService.getAddress = ({from}) => {
+                return {
+                    from
+                };
+            };
+            const response = emailRenderer.getReplyToAddress({}, newsletter);
+            assert.equal(response, null);
         });
     });
 

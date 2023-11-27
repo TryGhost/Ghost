@@ -1810,8 +1810,11 @@ exports[`Members API Can add and send a signup confirmation email 4: [text 1] 1`
 
 exports[`Members API Can add and send a signup confirmation email 5: [metadata 1] 1`] = `
 Object {
+  "encoding": "base64",
   "forceTextContent": true,
-  "from": "noreply@127.0.0.1",
+  "from": "\\"Ghost's Test Site\\" <noreply@127.0.0.1>",
+  "generateTextFromHTML": false,
+  "replyTo": null,
   "subject": "🙌 Complete your sign up to Ghost's Test Site!",
   "to": "member_getting_confirmation@test.com",
 }
