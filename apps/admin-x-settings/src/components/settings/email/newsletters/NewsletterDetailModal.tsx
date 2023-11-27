@@ -34,10 +34,6 @@ const renderSenderEmail = (newsletter: Newsletter, config: Config, defaultEmailA
 };
 
 const renderReplyToEmail = (newsletter: Newsletter, config: Config, supportEmailAddress: string|undefined, defaultEmailAddress: string|undefined) => {
-    if (!newsletter.sender_reply_to) {
-        return '';
-    }
-
     if (newsletter.sender_reply_to === 'newsletter') {
         return renderSenderEmail(newsletter, config, defaultEmailAddress);
     }
@@ -559,44 +555,31 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         initialState: newsletter,
         savingDelay: 500,
         onSave: async () => {
-            const {newsletters, meta} = await editNewsletter(formState);
-            if (meta?.sent_email_verification) {
-                if (meta?.sent_email_verification[0] === 'sender_email') {
-                    const previousFrom = renderSenderEmail(newsletters[0], config, defaultEmailAddress);
+            const {newsletters: [updatedNewsletter], meta: {sent_email_verification: [emailToVerify] = []} = {}} = await editNewsletter(formState); ``;
+            let title;
+            let prompt;
 
-                    NiceModal.show(ConfirmationModal, {
-                        title: 'Confirm newsletter email address',
-                        prompt: <>
-                            We&lsquo;ve sent a confirmation email to <strong>{formState.sender_email}</strong>.
-                            Until the address has been verified newsletters will be sent from the
-                            {newsletters[0].sender_email ? ' previous' : ' default'} email address
-                            ({previousFrom}).
-                        </>,
-                        cancelLabel: '',
-                        onOk: (confirmModal) => {
-                            confirmModal?.remove();
-                            modal.remove();
-                            updateRoute('newsletters');
-                        }
-                    });
-                } else if (meta?.sent_email_verification[0] === 'sender_reply_to') {
-                    const previousReplyTo = renderReplyToEmail(newsletters[0], config, supportEmailAddress, defaultEmailAddress);
+            if (emailToVerify && emailToVerify === 'sender_email') {
+                const previousFrom = renderSenderEmail(updatedNewsletter, config, defaultEmailAddress);
+                title = 'Confirm newsletter email address';
+                prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_email}</strong>. Until the address has been verified, newsletters will be sent from the {updatedNewsletter.sender_email ? ' previous' : ' default'} email address{previousFrom ? ` (${previousFrom})` : ''}.</>;
+            } else if (emailToVerify && emailToVerify === 'sender_reply_to') {
+                const previousReplyTo = renderReplyToEmail(updatedNewsletter, config, supportEmailAddress, defaultEmailAddress);
+                title = 'Confirm reply-to address';
+                prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_reply_to}</strong>. Until the address has been verified, newsletters will use the previous reply-to address{previousReplyTo ? ` (${previousReplyTo})` : ''}.</>;
+            }
 
-                    NiceModal.show(ConfirmationModal, {
-                        title: 'Confirm reply-to address',
-                        prompt: <>
-                            We&lsquo;ve sent a confirmation email to <strong>{formState.sender_reply_to}</strong>.
-                            Until the address has been verified, newsletters will use the previous reply-to address
-                            {previousReplyTo ? ` (${previousReplyTo})` : ''}.
-                        </>,
-                        cancelLabel: '',
-                        onOk: (confirmModal) => {
-                            confirmModal?.remove();
-                            modal.remove();
-                            updateRoute('newsletters');
-                        }
-                    });
-                }
+            if (title && prompt) {
+                NiceModal.show(ConfirmationModal, {
+                    title: title,
+                    prompt: prompt,
+                    cancelLabel: '',
+                    onOk: (confirmModal) => {
+                        confirmModal?.remove();
+                        modal.remove();
+                        updateRoute('newsletters');
+                    }
+                });
             }
         },
         onSaveError: handleError,

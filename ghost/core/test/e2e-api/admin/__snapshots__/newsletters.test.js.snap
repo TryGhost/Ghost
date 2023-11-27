@@ -2331,6 +2331,9 @@ exports[`Newsletters API Can verify property updates 3: [text 1] 1`] = `
 
 exports[`Newsletters API Can verify property updates 4: [body] 1`] = `
 Object {
+  "meta": Object {
+    "email_verified": "sender_email",
+  },
   "newsletters": Array [
     Object {
       "background_color": "light",
