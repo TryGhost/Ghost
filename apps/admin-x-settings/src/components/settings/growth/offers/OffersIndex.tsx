@@ -183,7 +183,7 @@ export const OffersIndexModal = () => {
             }
         });
 
-    const cardLayoutOutput = <div className='mt-8 grid grid-cols-3 gap-6'>
+    const cardLayoutOutput = <div className='mt-8 grid grid-cols-1 gap-6 min-[600px]:grid-cols-2 min-[900px]:grid-cols-3'>
         {sortedOffers.filter((offer) => {
             const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
             //Check to filter out offers with archived offerTier
@@ -215,43 +215,45 @@ export const OffersIndexModal = () => {
         })}
     </div>;
 
-    const listLayoutOutput = <table className='m-0 w-full'>
-        <tr className='border-b border-b-grey-300'>
-            <th className='px-5 py-2.5 pl-0 text-xs font-normal text-grey-700'>{sortedOffers.length} {sortedOffers.length > 1 ? 'offers' : 'offer'}</th>
-            <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Tier</th>
-            <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Terms</th>
-            <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Price</th>
-            <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Redemptions</th>
-            <th className='min-w-[80px] px-5 py-2.5 pr-0 text-xs font-normal text-grey-700'></th>
-        </tr>
-        {sortedOffers.filter((offer) => {
-            const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
-            //Check to filter out offers with archived offerTier
-            return (selectedTab === 'active' && (offer.status === 'active' && offerTier && offerTier.active === true)) ||
-            (selectedTab === 'archived' && (offer.status === 'archived' || (offerTier && offerTier.active === false)));
-        }).map((offer) => {
-            const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+    const listLayoutOutput = <div className='overflow-x-auto'>
+        <table className='m-0 w-full'>
+            <tr className='border-b border-b-grey-300'>
+                <th className='px-5 py-2.5 pl-0 text-xs font-normal text-grey-700'>{sortedOffers.length} {sortedOffers.length > 1 ? 'offers' : 'offer'}</th>
+                <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Tier</th>
+                <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Terms</th>
+                <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Price</th>
+                <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Redemptions</th>
+                <th className='min-w-[80px] px-5 py-2.5 pr-0 text-xs font-normal text-grey-700'></th>
+            </tr>
+            {sortedOffers.filter((offer) => {
+                const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+                //Check to filter out offers with archived offerTier
+                return (selectedTab === 'active' && (offer.status === 'active' && offerTier && offerTier.active === true)) ||
+                (selectedTab === 'archived' && (offer.status === 'archived' || (offerTier && offerTier.active === false)));
+            }).map((offer) => {
+                const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
 
-            if (!offerTier) {
-                return null;
-            }
+                if (!offerTier) {
+                    return null;
+                }
 
-            const isTierArchived = offerTier?.active === false;
+                const isTierArchived = offerTier?.active === false;
 
-            const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
+                const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
 
-            return (
-                <tr className={`group ${isTierArchived ? 'opacity-50' : ''} ${isTierArchived ? 'pointer-events-none' : ''} border-b border-b-grey-200`}>
-                    <td className='p-0 font-semibold'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>{offer?.name}</a></td>
-                    <td className='p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>{offerTier.name} {getOfferCadence(offer.cadence)}</a></td>
-                    <td className='p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}><span className={`font-semibold uppercase ${discountColor}`}>{discountOffer}</span> — {getOfferDuration(offer.duration)}</a></td>
-                    <td className='p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>{updatedPriceWithCurrency} <span className='text-grey-700 line-through'>{originalPriceWithCurrency}</span></a></td>
-                    <td className='p-0 text-sm'><a className='block cursor-pointer p-5 hover:underline' href={createRedemptionFilterUrl(offer.id ? offer.id : '')}>{offer.redemption_count}</a></td>
-                    <td className='min-w-[80px] p-5 pr-0 text-right text-sm leading-none'><CopyLinkButton offerCode={offer.code} /></td>
-                </tr>
-            );
-        })}
-    </table>;
+                return (
+                    <tr className={`group ${isTierArchived ? 'opacity-50' : ''} ${isTierArchived ? 'pointer-events-none' : ''} border-b border-b-grey-200`}>
+                        <td className='min-w-[200px] p-0 font-semibold'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>{offer?.name}</a></td>
+                        <td className='whitespace-nowrap p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>{offerTier.name} {getOfferCadence(offer.cadence)}</a></td>
+                        <td className='whitespace-nowrap p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}><span className={`font-semibold uppercase ${discountColor}`}>{discountOffer}</span> — {getOfferDuration(offer.duration)}</a></td>
+                        <td className='whitespace-nowrap p-0 text-sm'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}>{updatedPriceWithCurrency} <span className='text-grey-700 line-through'>{originalPriceWithCurrency}</span></a></td>
+                        <td className='whitespace-nowrap p-0 text-sm'><a className='block cursor-pointer p-5 hover:underline' href={createRedemptionFilterUrl(offer.id ? offer.id : '')}>{offer.redemption_count}</a></td>
+                        <td className='min-w-[80px] whitespace-nowrap p-5 pr-0 text-right text-sm leading-none'><CopyLinkButton offerCode={offer.code} /></td>
+                    </tr>
+                );
+            })}
+        </table>
+    </div>;
 
     return <Modal
         afterClose={() => {
