@@ -56,18 +56,24 @@ export default function TKPlugin({onCountChange = () => {}}) {
     }, [editor]);
 
     const indicatorOnMouseEnter = useCallback((e) => {
-        const classes = editor._config.theme.tkHighlighted?.split(' ') || [];
+        const standardClasses = editor._config.theme.tk?.split(' ') || [];
+        const highlightClasses = editor._config.theme.tkHighlighted?.split(' ') || [];
+
         const keys = JSON.parse(e.target.dataset.keys);
         keys.forEach((key) => {
-            editor.getElementByKey(key).classList.add(...classes);
+            editor.getElementByKey(key).classList.remove(...standardClasses);
+            editor.getElementByKey(key).classList.add(...highlightClasses);
         });
     }, [editor]);
 
     const indicatorOnMouseLeave = useCallback((e) => {
-        const classes = editor._config.theme.tkHighlighted?.split(' ') || [];
+        const standardClasses = editor._config.theme.tk?.split(' ') || [];
+        const highlightClasses = editor._config.theme.tkHighlighted?.split(' ') || [];
+
         const keys = JSON.parse(e.target.dataset.keys);
         keys.forEach((key) => {
-            editor.getElementByKey(key).classList.remove(...classes);
+            editor.getElementByKey(key).classList.add(...standardClasses);
+            editor.getElementByKey(key).classList.remove(...highlightClasses);
         });
     }, [editor]);
 

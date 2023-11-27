@@ -73,8 +73,10 @@ module.exports = {
             },
             lime: {
                 DEFAULT: '#B5FF18',
-                300: '#CFFF99',
-                500: '#B5FF18'
+                300: '#D9FFAD',
+                500: '#B5FF18',
+                800: '#FFFFFF',
+                900: '#466600'
             }
         },
         fontFamily: {

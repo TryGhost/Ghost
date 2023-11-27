@@ -16,7 +16,8 @@ export class TKNode extends TextNode {
 
     createDOM(config) {
         const element = super.createDOM(config);
-        element.classList.add(config.theme.tk);
+        const classes = config.theme.tk?.split(' ') || [];
+        element.classList.add(...classes);
         return element;
     }
 
