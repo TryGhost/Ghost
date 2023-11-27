@@ -237,7 +237,12 @@ class NewslettersService {
         const attrs = {};
         attrs[property] = value;
 
-        return this.NewsletterModel.edit(attrs, {id});
+        const updatedNewsletter = await this.NewsletterModel.edit(attrs, {id});
+
+        updatedNewsletter.meta = updatedNewsletter.meta || {};
+        updatedNewsletter.meta.email_verified = [property];
+
+        return updatedNewsletter;
     }
 
     /* Email verification Internals */
