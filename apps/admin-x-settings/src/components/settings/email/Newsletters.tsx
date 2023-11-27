@@ -48,11 +48,24 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
         const verify = async () => {
             try {
-                const {newsletters: [updatedNewsletter]} = await verifyEmail({token: verifyEmailToken});
+                const {newsletters: [updatedNewsletter], meta: {email_verified: emailVerified = []} = {}} = await verifyEmail({token: verifyEmailToken});
+                let title;
+                let prompt;
+
+                if (emailVerified && emailVerified === 'sender_email') {
+                    title = 'Newsletter email verified';
+                    prompt = <>Newsletter <NavigateToNewsletter id={updatedNewsletter.id}>{updatedNewsletter.name}</NavigateToNewsletter> will now be sent from <strong>{updatedNewsletter.sender_email}</strong>.</>;
+                } else if (emailVerified && emailVerified === 'sender_reply_to') {
+                    title = 'Reply-to address verified';
+                    prompt = <>Newsletter <NavigateToNewsletter id={updatedNewsletter.id}>{updatedNewsletter.name}</NavigateToNewsletter> will now use <strong>{updatedNewsletter.sender_reply_to}</strong> as the reply-to address.</>;
+                } else {
+                    title = 'Email address verified';
+                    prompt = <>Email address for newsletter <NavigateToNewsletter id={updatedNewsletter.id}>{updatedNewsletter.name}</NavigateToNewsletter> has been changed.</>;
+                }
 
                 NiceModal.show(ConfirmationModal, {
-                    title: 'Email address verified',
-                    prompt: <>Success! Email address for newsletter <NavigateToNewsletter id={updatedNewsletter.id}>{updatedNewsletter.name}</NavigateToNewsletter> has been changed.</>,
+                    title,
+                    prompt,
                     okLabel: 'Close',
                     cancelLabel: '',
                     onOk: confirmModal => confirmModal?.remove()
