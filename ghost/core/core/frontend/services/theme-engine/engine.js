@@ -9,12 +9,13 @@ if (config.get('env') !== 'production') {
 
 instance.escapeExpression = instance.handlebars.Utils.escapeExpression;
 
-instance.configure = function configure(partialsPath) {
+instance.configure = function configure(partialsPath, themePath) {
     const hbsOptions = {
         partialsDir: [config.get('paths').helperTemplates],
         onCompile: function onCompile(exhbs, source) {
             return exhbs.handlebars.compile(source, {preventIndent: true});
-        }
+        },
+        restrictLayoutsTo: themePath
     };
 
     if (partialsPath) {
