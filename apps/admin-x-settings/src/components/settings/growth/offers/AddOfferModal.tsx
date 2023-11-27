@@ -131,15 +131,21 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
         return durationOptions;
     };
     const filteredDurationOptions = getFilteredDurationOptions();
+
+    const [nameLength, setNameLength] = useState(0);
+    const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
+
     return (
         <div className='pt-7'>
             <Form>
                 <TextField
-                    hint='Visible to members on Stripe Checkout page.'
+                    hint={<div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={`${nameLengthColor}`}>{nameLength}</span> / 40</strong></div>}
+                    maxLength={40}
                     placeholder='Black Friday'
                     title='Name'
                     onChange={(e) => {
                         handleNameInput(e);
+                        setNameLength(e.target.value.length);
                     }}
                 />
                 <section className='mt-4'>
