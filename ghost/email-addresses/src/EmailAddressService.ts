@@ -171,7 +171,7 @@ export class EmailAddressService {
         if (type === 'replyTo') {
             return {
                 allowed: true,
-                verificationEmailRequired: true
+                verificationEmailRequired: email !== this.defaultFromEmail.address
             };
         }
 

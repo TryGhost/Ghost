@@ -2926,7 +2926,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "noreply@127.0.0.1",
+      "sender_email": "default@email.com",
       "sender_name": "Jamie",
       "sender_reply_to": "anything@sendingdomain.com",
       "show_badge": true,
@@ -2986,7 +2986,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "noreply@127.0.0.1",
+      "sender_email": "default@email.com",
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
@@ -3294,7 +3294,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "noreply@127.0.0.1",
+      "sender_email": "default@email.com",
       "sender_name": "Jamie",
       "sender_reply_to": "anything@sendingdomain.com",
       "show_badge": true,
@@ -3349,7 +3349,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "noreply@127.0.0.1",
+      "sender_email": "default@email.com",
       "sender_name": "Jamie",
       "sender_reply_to": "support",
       "show_badge": true,
@@ -3404,7 +3404,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "noreply@127.0.0.1",
+      "sender_email": "default@email.com",
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
@@ -3908,7 +3908,7 @@ exports[`Newsletters API Managed email without custom sending domain Can set new
 Object {
   "encoding": "base64",
   "forceTextContent": true,
-  "from": "\\"Ghost\\" <noreply@127.0.0.1>",
+  "from": "\\"Ghost\\" <default@email.com>",
   "generateTextFromHTML": false,
   "replyTo": "noreply@acme.com",
   "subject": "Verify email address",
@@ -4212,6 +4212,61 @@ Object {
 }
 `;
 
+exports[`Newsletters API Managed email without custom sending domain Can set newsletter reply-to to the default address without requiring verification 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Daily newsletter",
+      "sender_email": "jamie@example.com",
+      "sender_name": "Jamie",
+      "sender_reply_to": "default@email.com",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Can set newsletter reply-to to the default address without requiring verification 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "929",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Newsletters API Managed email without custom sending domain Can set sender_email to default address 1: [body] 1`] = `
 Object {
   "newsletters": Array [
@@ -4226,7 +4281,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "noreply@127.0.0.1",
+      "sender_email": "default@email.com",
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
