@@ -77,6 +77,19 @@ export default function TKPlugin({onCountChange = () => {}}) {
         });
     }, [editor]);
 
+    const positionIndicators = useCallback(() => {
+        const indicators = document.body.querySelectorAll('[data-has-tk]');
+        const editorParent = editor.getRootElement().parentElement;
+        const editorParentTop = editorParent.getBoundingClientRect().top;
+
+        indicators.forEach((indicator) => {
+            const parentKey = indicator.dataset.parentKey;
+            const element = editor.getElementByKey(parentKey);
+            const elementTop = element.getBoundingClientRect().top;
+            indicator.style.top = `${elementTop - editorParentTop + 4}px`;
+        });
+    }, [editor]);
+
     const renderIndicators = useCallback((nodes) => {
         // clean up existing indicators
         document.body.querySelectorAll('[data-has-tk]').forEach((el) => {
@@ -90,6 +103,8 @@ export default function TKPlugin({onCountChange = () => {}}) {
             nodes.forEach((node) => {
                 const parentKey = node.getParent().getKey();
 
+                // prevents duplication
+                //  adds count and key to existing indicator
                 if (tkIndicators[parentKey]) {
                     const keys = JSON.parse(tkIndicators[parentKey].dataset.keys);
                     keys.push(node.getKey());
@@ -99,19 +114,16 @@ export default function TKPlugin({onCountChange = () => {}}) {
                     return;
                 }
 
-                const element = editor.getElementByKey(node.getKey());
                 const editorParent = editor.getRootElement().parentElement;
-                const editorParentTop = editorParent.getBoundingClientRect().top;
-                const tkParentTop = element.parentElement.getBoundingClientRect().top;
 
-                // create an element
+                // create the indicator element
                 const indicator = document.createElement('div');
-                indicator.style.top = `${tkParentTop - editorParentTop + 4}px`;
                 indicator.textContent = 'TK';
                 indicator.classList.add('absolute', '-right-14', 'p-1', 'text-xs', 'text-grey-600', 'font-medium', 'cursor-pointer');
                 indicator.dataset.hasTk = true;
                 indicator.dataset.keys = JSON.stringify([node.getKey()]);
                 indicator.dataset.count = 1;
+                indicator.dataset.parentKey = parentKey;
 
                 indicator.onclick = indicatorOnClick;
                 indicator.onmouseenter = indicatorOnMouseEnter;
@@ -121,9 +133,11 @@ export default function TKPlugin({onCountChange = () => {}}) {
                 editorParent.appendChild(indicator);
 
                 tkIndicators[parentKey] = indicator;
+
+                positionIndicators();
             });
         });
-    }, [editor, indicatorOnClick, indicatorOnMouseEnter, indicatorOnMouseLeave]);
+    }, [editor, indicatorOnClick, indicatorOnMouseEnter, indicatorOnMouseLeave, positionIndicators]);
 
     // run once on mount and then let the editor state listener handle updates
     useLayoutEffect(() => {
@@ -139,19 +153,20 @@ export default function TKPlugin({onCountChange = () => {}}) {
         const removeListener = editor.registerUpdateListener(({editorState}) => {
             const foundNodes = getTKNodesForIndicators(editorState);
             // this is a simple way to check that the nodes actually changed before we re-render indicators on the dom
-            // TODO: this is a problem because it doesn't account for if the first TK node changes, but the second one doesn't
-            //  as the parent is not changed
-            if (foundNodes.toString() !== tkNodes.toString()) {
+            if (JSON.stringify(foundNodes) !== JSON.stringify(tkNodes)) {
                 setTkNodes(foundNodes);
                 onCountChange(foundNodes.length);
                 renderIndicators(foundNodes);
+            } else {
+                // we should always reposition on changes like selection changes
+                positionIndicators();
             }
         });
 
         return () => {
             removeListener();
         };
-    }, [editor, renderIndicators, getTKNodesForIndicators, setTkNodes, tkNodes, onCountChange]);
+    }, [editor, renderIndicators, getTKNodesForIndicators, setTkNodes, tkNodes, onCountChange, positionIndicators]);
 
     const createTKNode = useCallback((textNode) => {
         return $createTKNode(textNode.getTextContent());
