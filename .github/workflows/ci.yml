@@ -88,6 +88,9 @@ jobs:
             admin-x-settings:
               - *shared
               - 'apps/admin-x-settings/**'
+            admin-x-design-system:
+              - *shared
+              - 'apps/admin-x-design-system/**'
             announcement-bar:
               - *shared
               - 'apps/announcement-bar/**'
@@ -109,6 +112,7 @@ jobs:
       changed_admin: ${{ steps.changed.outputs.admin }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
+      changed_admin_x_design_system: ${{ steps.changed.outputs.admin-x-design-system }}
       changed_announcement_bar: ${{ steps.changed.outputs.announcement-bar }}
       changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
       changed_portal: ${{ steps.changed.outputs.portal }}
@@ -912,6 +916,28 @@ jobs:
           flags: e2e-tests
           move_coverage_to_trash: true
 
+  job_chromatic:
+    runs-on: ubuntu-latest
+    needs: [job_get_metadata, job_install_deps]
+    if: needs.job_get_metadata.outputs.changed_admin_x_design_system == 'true'
+    name: Chromatic
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100
+      - uses: actions/setup-node@v4
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: '18.12.1'
+
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+
+      - run: yarn workspace @tryghost/admin-x-design-system run chromatic
+
   job_required_tests:
     name: All required tests passed or skipped
     needs:
@@ -929,6 +955,7 @@ jobs:
         job_admin_x_settings,
         job_comments_ui,
         job_signup_form,
+        job_chromatic,
       ]
     if: always()
     runs-on: ubuntu-latest
