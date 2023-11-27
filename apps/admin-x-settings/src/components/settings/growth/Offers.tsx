@@ -62,40 +62,43 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label={`${allOffers.length > 0 ? 'Manage offers' : 'Add offer'}`} link linkWithPadding onClick={openModal}/>}
-            description={<>Grow your audience by providing fixed or percentage discounts. {allOffers.length === 0 && <a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">Learn more</a>}</>}
+            description={<>Grow your audience by providing fixed or percentage discounts. {allOffers.length === 0 && <><br /><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">Learn more</a></>}</>}
             keywords={keywords}
             navid='offers'
             testId='offers'
             title='Offers'
         >
-            <div>
-                <div className='grid grid-cols-3 gap-4'>
-                    {
-                        latestThree.map((offer) => {
-                            const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
-                            if (!offerTier) {
-                                return null;
-                            }
-                            return <OfferContainer
-                                key={offer.id}
-                                amount={offer.amount}
-                                cadence={offer.cadence}
-                                currency={offer.currency || 'USD'}
-                                goToOfferEdit={goToOfferEdit}
-                                offerCode={offer.code}
-                                offerId={offer.id}
-                                offerTitle={offer.name}
-                                redemptions={offer.redemption_count}
-                                tier={offerTier}
-                                type={offer.type}
-                            />;
-                        })
-                    }
-                </div>
-                {allOffers.length > 3 && <div className='mt-4 border-t border-t-grey-200 pt-2'>
-                    <Button className='text-sm font-bold text-green' label='Show all' size='sm' link unstyled onClick={openModal} />
-                </div>}
-            </div>
+            {latestThree.length > 0 ?
+                <div>
+                    <div className='grid grid-cols-3 gap-4'>
+                        {
+                            latestThree.map((offer) => {
+                                const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
+                                if (!offerTier) {
+                                    return null;
+                                }
+                                return <OfferContainer
+                                    key={offer.id}
+                                    amount={offer.amount}
+                                    cadence={offer.cadence}
+                                    currency={offer.currency || 'USD'}
+                                    goToOfferEdit={goToOfferEdit}
+                                    offerCode={offer.code}
+                                    offerId={offer.id}
+                                    offerTitle={offer.name}
+                                    redemptions={offer.redemption_count}
+                                    tier={offerTier}
+                                    type={offer.type}
+                                />;
+                            })
+                        }
+                    </div>
+                    {allOffers.length > 3 && <div className='mt-4 border-t border-t-grey-200 pt-2'>
+                        <Button className='text-sm font-bold text-green' label='Show all' size='sm' link unstyled onClick={openModal} />
+                    </div>}
+                </div> :
+                null
+            }
         </TopLevelGroup>
     );
 };
