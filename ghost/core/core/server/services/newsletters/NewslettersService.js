@@ -240,7 +240,7 @@ class NewslettersService {
         const updatedNewsletter = await this.NewsletterModel.edit(attrs, {id});
 
         updatedNewsletter.meta = updatedNewsletter.meta || {};
-        updatedNewsletter.meta.email_verified = [property];
+        updatedNewsletter.meta.email_verified = property;
 
         return updatedNewsletter;
     }

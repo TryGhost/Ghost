@@ -48,7 +48,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
         const verify = async () => {
             try {
-                const {newsletters: [updatedNewsletter], meta: {email_verified: [emailVerified] = []} = {}} = await verifyEmail({token: verifyEmailToken});
+                const {newsletters: [updatedNewsletter], meta: {email_verified: emailVerified = []} = {}} = await verifyEmail({token: verifyEmailToken});
                 let title;
                 let prompt;
 

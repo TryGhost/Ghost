@@ -88,7 +88,7 @@ export interface NewslettersEditResponseType extends NewslettersResponseType {
 }
 
 export interface NewslettersVerifyResponseType extends NewslettersResponseType {
-    meta?: Meta & {email_verified: string[]}
+    meta?: Meta & {email_verified: string}
 }
 
 export const useEditNewsletter = createMutation<NewslettersEditResponseType, Newsletter>({
