@@ -1,7 +1,7 @@
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
+import {NoValueLabel} from '@tryghost/admin-x-design-system';
 import {SortMenu} from '@tryghost/admin-x-design-system';
 import {Tier, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {Tooltip} from '@tryghost/admin-x-design-system';
@@ -111,21 +111,6 @@ const OfferCard: React.FC<{amount: number, cadence: string, currency: string, du
     );
 };
 
-const EmptyScreen: React.FC = () => {
-    const {updateRoute} = useRouting();
-
-    return <div className='flex h-full flex-col items-center justify-center text-center'>
-        <Icon colorClass='text-grey-700' name='ai-tagging-spark' size='xl' />
-        <h1 className='mt-6 text-4xl'>Provide offers to new signups</h1>
-        <div className='max-w-[420px]'>
-            <p className='mt-3 text-[1.6rem]'>Boost your subscriptions by creating targeted discounts to potential members.</p>
-            <div className='mt-8'>
-                <Button color='green' label='Create first offer' fullWidth onClick={() => updateRoute('offers/new')} />
-            </div>
-        </div>
-    </div>;
-};
-
 export const OffersIndexModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
@@ -217,14 +202,17 @@ export const OffersIndexModal = () => {
 
     const listLayoutOutput = <div className='overflow-x-auto'>
         <table className='m-0 w-full'>
-            <tr className='border-b border-b-grey-300'>
-                <th className='px-5 py-2.5 pl-0 text-xs font-normal text-grey-700'>{sortedOffers.length} {sortedOffers.length > 1 ? 'offers' : 'offer'}</th>
-                <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Tier</th>
-                <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Terms</th>
-                <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Price</th>
-                <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Redemptions</th>
-                <th className='min-w-[80px] px-5 py-2.5 pr-0 text-xs font-normal text-grey-700'></th>
-            </tr>
+            {(selectedTab === 'active' && activeOffers.length > 0) || (selectedTab === 'archived' && archivedOffers.length > 0) ?
+                <tr className='border-b border-b-grey-300'>
+                    <th className='px-5 py-2.5 pl-0 text-xs font-normal text-grey-700'>{sortedOffers.length} {sortedOffers.length > 1 ? 'offers' : 'offer'}</th>
+                    <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Tier</th>
+                    <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Terms</th>
+                    <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Price</th>
+                    <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Redemptions</th>
+                    <th className='min-w-[80px] px-5 py-2.5 pr-0 text-xs font-normal text-grey-700'></th>
+                </tr> :
+                null
+            }
             {sortedOffers.filter((offer) => {
                 const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
                 //Check to filter out offers with archived offerTier
@@ -262,15 +250,13 @@ export const OffersIndexModal = () => {
         animate={false}
         cancelLabel=''
         footer={
-            (activeOffers.length > 0 || archivedOffers.length > 0) ?
-                <div className='mx-8 flex w-full items-center justify-between'>
-                    <a className='text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
-                    <Button color='black' label='Close' onClick={() => {
-                        modal.remove();
-                        updateRoute('offers');
-                    }} />
-                </div> :
-                false
+            <div className='mx-8 flex w-full items-center justify-between'>
+                <a className='text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
+                <Button color='black' label='Close' onClick={() => {
+                    modal.remove();
+                    updateRoute('offers');
+                }} />
+            </div>
         }
         header={false}
         height='full'
@@ -278,53 +264,59 @@ export const OffersIndexModal = () => {
         testId='offers-modal'
         stickyFooter
     >
-        {(activeOffers.length > 0 || archivedOffers.length > 0) ?
-            <div className='pt-6'>
-                <header>
-                    <div className='flex items-center justify-between'>
-                        <div>
-                            {activeOffers.length > 0 && archivedOffers.length > 0 ?
-                                <TabView
-                                    border={false}
-                                    selectedTab={selectedTab}
-                                    tabs={offersTabs}
-                                    width='wide'
-                                    onTabChange={setSelectedTab}
-                                /> :
-                                null
-                            }
-                        </div>
-                        <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
+        <div className='pt-6'>
+            <header>
+                <div className='flex items-center justify-between'>
+                    <div>
+                        <TabView
+                            border={false}
+                            selectedTab={selectedTab}
+                            tabs={offersTabs}
+                            width='wide'
+                            onTabChange={setSelectedTab}
+                        />
                     </div>
-                    <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
-                        <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
+                    <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
+                </div>
+                <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
+                    <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
+                    <div className='flex gap-3'>
+                        <SortMenu
+                            direction='desc'
+                            items={[
+                                {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added'},
+                                {id: 'name', label: 'Name', selected: sortOption === 'name'},
+                                {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions'}
+                            ]}
+                            position='right'
+                            onDirectionChange={(selectedDirection) => {
+                                const newDirection = selectedDirection === 'asc' ? 'desc' : 'asc';
+                                setSortDirection(newDirection);
+                            }}
+                            onSortChange={(selectedOption) => {
+                                setSortOption(selectedOption);
+                            }}
+                        />
                         <div className='flex gap-3'>
-                            <SortMenu
-                                direction='desc'
-                                items={[
-                                    {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added'},
-                                    {id: 'name', label: 'Name', selected: sortOption === 'name'},
-                                    {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions'}
-                                ]}
-                                position='right'
-                                onDirectionChange={(selectedDirection) => {
-                                    const newDirection = selectedDirection === 'asc' ? 'desc' : 'asc';
-                                    setSortDirection(newDirection);
-                                }}
-                                onSortChange={(selectedOption) => {
-                                    setSortOption(selectedOption);
-                                }}
-                            />
-                            <div className='flex gap-3'>
-                                <Button icon='layout-module-1' iconColorClass={selectedLayout === 'card' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('card')} />
-                                <Button icon='layout-headline' iconColorClass={selectedLayout === 'list' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('list')} />
-                            </div>
+                            <Button icon='layout-module-1' iconColorClass={selectedLayout === 'card' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('card')} />
+                            <Button icon='layout-headline' iconColorClass={selectedLayout === 'list' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('list')} />
                         </div>
                     </div>
-                </header>
-                {selectedLayout === 'card' ? cardLayoutOutput : listLayoutOutput}
-            </div> :
-            <EmptyScreen />
-        }
+                </div>
+            </header>
+            {selectedTab === 'active' && activeOffers.length === 0 ?
+                <NoValueLabel icon='tags-block'>
+                    No offers found.
+                </NoValueLabel> :
+                null
+            }
+            {selectedTab === 'archived' && archivedOffers.length === 0 ?
+                <NoValueLabel icon='tags-block'>
+                    No offers found.
+                </NoValueLabel> :
+                null
+            }
+            {selectedLayout === 'card' ? cardLayoutOutput : listLayoutOutput}
+        </div>
     </Modal>;
 };
