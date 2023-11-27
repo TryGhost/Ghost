@@ -3033,7 +3033,7 @@ Object {
   "forceTextContent": true,
   "from": "\\"Ghost\\" <noreply@sendingdomain.com>",
   "generateTextFromHTML": false,
-  "replyTo": "noreply@acme.com",
+  "replyTo": null,
   "subject": "Verify email address",
   "to": "hello@acme.com",
 }
@@ -3910,7 +3910,7 @@ Object {
   "forceTextContent": true,
   "from": "\\"Ghost\\" <default@email.com>",
   "generateTextFromHTML": false,
-  "replyTo": "noreply@acme.com",
+  "replyTo": null,
   "subject": "Verify email address",
   "to": "hello@acme.com",
 }
