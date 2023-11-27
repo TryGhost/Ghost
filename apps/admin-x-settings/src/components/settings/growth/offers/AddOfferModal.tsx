@@ -476,37 +476,22 @@ const AddOfferModal = () => {
         updateRoute('offers/edit');
     };
 
-    // const overrides : offerPortalPreviewUrlTypes = {
-    //     name: formState.name,
-    //     code: formState.code.value,
-    //     displayTitle: formState.displayTitle.value,
-    //     displayDescription: formState.displayDescription,
-    //     type: formState.type,
-    //     cadence: formState.cadence,
-    //     amount: calculateAmount(),
-    //     duration: formState.type === 'trial' ? 'trial' : formState.duration,
-    //     durationInMonths: formState.durationInMonths,
-    //     currency: formState.currency,
-    //     status: formState.status,
-    //     tierId: formState.tierId
-    // };
-
     const overrides : offerPortalPreviewUrlTypes = useMemo(() => {
         return {
-            name: formState.name,
-            code: formState.code.value,
-            displayTitle: formState.displayTitle.value,
-            displayDescription: formState.displayDescription,
-            type: formState.type,
-            cadence: formState.cadence,
+            name: formState.name || '',
+            code: formState.code.value || '',
+            displayTitle: formState.displayTitle.value || '',
+            displayDescription: formState.displayDescription || '',
+            type: formState.type || 'percent',
+            cadence: formState.cadence || 'month',
             amount: calculateAmount(formState) || 0,
-            duration: formState.type === 'trial' ? 'trial' : formState.duration,
-            durationInMonths: formState.durationInMonths,
-            currency: formState.currency,
-            status: formState.status,
-            tierId: formState.tierId
+            duration: formState.type === 'trial' ? 'trial' : formState.duration || 'once',
+            durationInMonths: formState.durationInMonths || 0,
+            currency: formState.currency || 'USD',
+            status: formState.status || 'active',
+            tierId: formState.tierId || activeTiers[0]?.id
         };
-    }, [formState]);
+    }, [formState, activeTiers]);
 
     useEffect(() => {
         const newHref = getOfferPortalPreviewUrl(overrides, siteData.url);
