@@ -6,7 +6,7 @@ import {useLexicalTextEntity} from '../hooks/useExtendedTextEntity';
 
 const REGEX = new RegExp(/(^|.)([^a-zA-Z0-9\s]?(TK)+[^a-zA-Z0-9\s]?)($|.)/);
 
-export default function TKPlugin({setTkCount = () => {}}) {
+export default function TKPlugin({onCountChange = () => {}}) {
     const [editor] = useLexicalComposerContext();
     const [tkNodes, setTkNodes] = useState([]);
 
@@ -123,7 +123,7 @@ export default function TKPlugin({setTkCount = () => {}}) {
     useLayoutEffect(() => {
         const nodes = getTKNodesForIndicators(editor.getEditorState());
         setTkNodes(nodes);
-        setTkCount(nodes.length);
+        onCountChange(nodes.length);
         renderIndicators(nodes);
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
     }, []);
@@ -137,7 +137,7 @@ export default function TKPlugin({setTkCount = () => {}}) {
             //  as the parent is not changed
             if (foundNodes.toString() !== tkNodes.toString()) {
                 setTkNodes(foundNodes);
-                setTkCount(foundNodes.length);
+                onCountChange(foundNodes.length);
                 renderIndicators(foundNodes);
             }
         });
@@ -145,7 +145,7 @@ export default function TKPlugin({setTkCount = () => {}}) {
         return () => {
             removeListener();
         };
-    }, [editor, renderIndicators, getTKNodesForIndicators, setTkNodes, tkNodes, setTkCount]);
+    }, [editor, renderIndicators, getTKNodesForIndicators, setTkNodes, tkNodes, onCountChange]);
 
     const createTKNode = useCallback((textNode) => {
         return $createTKNode(textNode.getTextContent());
