@@ -10,7 +10,9 @@ test.describe('Offers Modal', () => {
     test('Offers Modal is available', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
-            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe}
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
         }});
         await page.goto('/');
         const section = page.getByTestId('offers');
