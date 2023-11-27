@@ -31,6 +31,15 @@ const Sidebar: React.FC<{
             const handleError = useHandleError();
             const {mutateAsync: editOffer} = useEditOffer();
 
+            const [nameLength, setNameLength] = useState(offer?.name.length || 0);
+            const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
+
+            useEffect(() => {
+                if (offer?.name) {
+                    setNameLength(offer?.name.length);
+                }
+            }, [offer?.name]);
+
             const offerUrl = `${getHomepageUrl(siteData!)}${offer?.code}`;
             const handleCopyClick = async () => {
                 try {
@@ -122,12 +131,16 @@ const Sidebar: React.FC<{
                             <div className='flex flex-col gap-6'>
                                 <TextField
                                     error={Boolean(errors.name)}
-                                    hint={errors.name || 'Visible to members on Stripe Checkout page'}
+                                    hint={errors.name || <div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={`${nameLengthColor}`}>{nameLength}</span> / 40</strong></div>}
+                                    maxLength={40}
                                     placeholder='Black Friday'
                                     title='Name'
                                     value={offer?.name}
                                     onBlur={validate}
-                                    onChange={e => updateOffer({name: e.target.value})}
+                                    onChange={(e) => {
+                                        setNameLength(e.target.value.length);
+                                        updateOffer({name: e.target.value});
+                                    }}
                                     onKeyDown={() => clearError('name')}
                                 />
                                 <div className='flex flex-col gap-1.5'>
