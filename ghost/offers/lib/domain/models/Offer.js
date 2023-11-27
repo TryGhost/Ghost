@@ -288,7 +288,7 @@ class Offer {
         const cadence = OfferCadence.create(data.cadence);
         const duration = OfferDuration.create(data.duration, data.duration_in_months);
         const status = OfferStatus.create(data.status || 'active');
-        const createdAt = isNew ? new Date().toISOString : OfferCreatedAt.create(data.created_at);
+        const createdAt = isNew ? new Date().toISOString() : OfferCreatedAt.create(data.created_at);
         const lastRedeemed = data.last_redeemed ? new Date(data.last_redeemed).toISOString() : null;
 
         if (isNew && data.redemptionCount !== undefined) {
