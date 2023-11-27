@@ -129,13 +129,21 @@ class ExternalMediaInliner {
         }
     }
 
-    async inlineMobiledoc(mobiledoc, domains) {
+    /**
+     * Find & inline external media from a JSON sting.
+     * This works with both Lexical & Mobiledoc, so no separate methods are needed here.
+     *
+     * @param {string} content - stringified JSON of post Lexical or Mobiledoc content
+     * @param {String[]} domains - domains to inline media from
+     * @returns {Promise<string>} - updated stringified JSON of post content
+     */
+    async inlineContent(content, domains) {
         for (const domain of domains) {
-            // NOTE: the src could end with a quote, apostrophe or double-backslash. backlashes are added to mobiledoc
+            // NOTE: the src could end with a quote, apostrophe or double-backslash. backlashes are added to content
             //       as an escape character
             const srcTerminationSymbols = `"|'|\\\\`;
             const regex = new RegExp(`(${domain}.*?)(${srcTerminationSymbols})`, 'igm');
-            const matches = mobiledoc.matchAll(regex);
+            const matches = content.matchAll(regex);
 
             for (const [,src] of matches) {
                 const response = await this.getRemoteMedia(src);
@@ -151,16 +159,16 @@ class ExternalMediaInliner {
                     if (filePath) {
                         const inlinedSrc = `__GHOST_URL__${filePath}`;
 
-                        // NOTE: does not account for duplicate images in mobiledoc
+                        // NOTE: does not account for duplicate images in content
                         //       in those cases would be processed twice
-                        mobiledoc = mobiledoc.replace(src, inlinedSrc);
+                        content = content.replace(src, inlinedSrc);
                         logging.info(`Inlined media: ${src} -> ${inlinedSrc}`);
                     }
                 }
             }
         }
 
-        return mobiledoc;
+        return content;
     }
 
     /**
@@ -250,11 +258,27 @@ class ExternalMediaInliner {
 
         for (const post of posts) {
             try {
-                const inlinedMobiledoc = await this.inlineMobiledoc(post.get('mobiledoc'), domains);
+                const mobiledocContent = post.get('mobiledoc');
+                const lexicalContent = post.get('lexical');
+
+                let theContent;
+                let contentTarget;
+
+                if (mobiledocContent) {
+                    theContent = mobiledocContent;
+                    contentTarget = 'mobiledoc';
+                } else if (lexicalContent) {
+                    theContent = lexicalContent;
+                    contentTarget = 'lexical';
+                }
+
+                const inlinedContent = await this.inlineContent(theContent, domains);
+
                 const updatedFields = await this.inlineFields(post, postsInilingFields, domains);
 
-                if (inlinedMobiledoc !== post.get('mobiledoc')) {
-                    updatedFields.mobiledoc = inlinedMobiledoc;
+                // If content has changed, update the post
+                if (inlinedContent !== theContent) {
+                    updatedFields[contentTarget] = inlinedContent;
                 }
 
                 if (Object.keys(updatedFields).length > 0) {
