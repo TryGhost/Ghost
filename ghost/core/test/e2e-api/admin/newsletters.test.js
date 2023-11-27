@@ -865,6 +865,7 @@ describe('Newsletters API', function () {
         this.beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', true);
             configUtils.set('hostSettings:managedEmail:sendingDomain', null);
+            configUtils.set('mail:from', 'default@email.com');
         });
 
         it('Can set newsletter reply-to to newsletter or support', async function () {
@@ -983,6 +984,38 @@ describe('Newsletters API', function () {
                 }]);
         });
 
+        it('Can set newsletter reply-to to the default address without requiring verification', async function () {
+            const id = fixtureManager.get('newsletters', 0).id;
+
+            const before = await models.Newsletter.findOne({id});
+            const beforeEmail = before.get('sender_reply_to');
+
+            await agent.put(`newsletters/${id}`)
+                .body({
+                    newsletters: [{
+                        sender_reply_to: 'default@email.com'
+                    }]
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    newsletters: [newsletterSnapshot]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            // No verification
+            emailMockReceiver.assertSentEmailCount(0);
+
+            await before.refresh();
+            assert.equal(before.get('sender_reply_to'), 'default@email.com');
+
+            // Revert back
+            before.set('sender_reply_to', beforeEmail);
+            await before.save();
+        });
+
         it('Cannot change sender_email', async function () {
             const id = fixtureManager.get('newsletters', 0).id;
 
@@ -1045,6 +1078,9 @@ describe('Newsletters API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+
+            // No verification
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('Can set sender_email to default address', async function () {
@@ -1068,6 +1104,9 @@ describe('Newsletters API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+
+            // No verification
+            emailMockReceiver.assertSentEmailCount(0);
         });
 
         it('Can clear sender_email', async function () {
@@ -1091,6 +1130,9 @@ describe('Newsletters API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+
+            // No verification
+            emailMockReceiver.assertSentEmailCount(0);
 
             // Revert back
             await before.refresh();
