@@ -936,7 +936,11 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn workspace @tryghost/admin-x-design-system run chromatic
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
+        with:
+          workingDir: apps/admin-x-design-system
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
   job_required_tests:
     name: All required tests passed or skipped
