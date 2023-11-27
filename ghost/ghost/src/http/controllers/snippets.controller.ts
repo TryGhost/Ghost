@@ -1,23 +1,10 @@
-import {Controller, Get, Inject, Query} from '@nestjs/common';
+import {Controller, Get, Query} from '@nestjs/common';
 import {SnippetsService} from '../../core/snippets/snippets.service';
 import {BrowseSnippetDTO} from './browse-snippet.dto';
-import {ISettingsCache} from '../../common/settings-cache.interface';
 
 @Controller('snippets')
 export class SnippetsController {
-    timezone: string;
-
-    constructor(
-        private readonly catsService: SnippetsService,
-        @Inject('settings') private readonly settings: ISettingsCache
-    ) {
-        const timezoneValue = this.settings.get('timezone');
-        if (timezoneValue === null) {
-            throw new Error('Timezone setting is required');
-        } else {
-            this.timezone = timezoneValue;
-        }
-    }
+    constructor(private readonly catsService: SnippetsService) {}
 
     @Get('')
     async browse(@Query('formats') formats?: 'mobiledoc' | 'lexical', @Query('filter') filter?: string): Promise<{snippets: BrowseSnippetDTO[], meta: any}> {
@@ -25,7 +12,7 @@ export class SnippetsController {
             filter
         });
 
-        const snippetDTOs = snippets.map(snippet => new BrowseSnippetDTO(snippet, {timezone: this.timezone, formats}));
+        const snippetDTOs = snippets.map(snippet => new BrowseSnippetDTO(snippet, {formats}));
 
         return {
             snippets: snippetDTOs,

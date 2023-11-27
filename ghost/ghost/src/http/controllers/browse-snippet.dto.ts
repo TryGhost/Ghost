@@ -9,7 +9,7 @@ export class BrowseSnippetDTO {
     created_at: Date;
     updated_at: Date|null;
 
-    constructor(data: Snippet, options: {timezone: string, formats?: 'mobiledoc'|'lexical'}) {
+    constructor(data: Snippet, options: {formats?: 'mobiledoc'|'lexical'}) {
         this.id = data.id;
         this.name = data.name;
 
