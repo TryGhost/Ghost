@@ -7823,10 +7823,10 @@
     lodash "^4.17.21"
     luxon "^3.0.0"
 
-"@tryghost/kg-default-nodes@0.2.10", "@tryghost/kg-default-nodes@^0.2.10":
-  version "0.2.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.2.10.tgz#0dc32a91131fbcaa97ca6baf1df76fc3f34652a3"
-  integrity sha512-rJN6WpoAwFNQSdU6gPGjqjXiolM+NII8dd2yfn8bHwoZnqdTWtCtiPSRxkqPwnWD/nM5JOxFn9AdPHwsnautow==
+"@tryghost/kg-default-nodes@0.2.12", "@tryghost/kg-default-nodes@^0.2.12":
+  version "0.2.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.2.12.tgz#60ba99dfdfdc719379351696c2e2e1bb9d3c93fa"
+  integrity sha512-O69l89BSa2pqrz6bgSELB3YS3CUbrzqLxkfN1XCK5X28iqWD5oBlrcfV2tyU22KrNswvoGA/r9/G7JK5nF1fqQ==
   dependencies:
     "@lexical/rich-text" "^0.12.2"
     "@tryghost/kg-clean-basic-html" "^3.0.41"
@@ -7837,35 +7837,21 @@
     lodash "^4.17.21"
     luxon "^3.3.0"
 
-"@tryghost/kg-default-nodes@^0.2.11":
-  version "0.2.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-0.2.11.tgz#cc684066131cabafd187aa095427c1bf88b048ef"
-  integrity sha512-Duf+QOtt5FGCi7WUAccpJw9041Xycw9oj/ak7qGlWnVAO9dRKdazFOu5H5q6bmV+O3Nv6E6uD99QfkqaVWL33w==
-  dependencies:
-    "@lexical/rich-text" "^0.12.2"
-    "@tryghost/kg-clean-basic-html" "^3.0.41"
-    "@tryghost/kg-markdown-html-renderer" "^6.0.15"
-    html-minifier "^4.0.0"
-    jsdom "^22.0.0"
-    lexical "^0.12.2"
-    lodash "^4.17.21"
-    luxon "^3.3.0"
-
-"@tryghost/kg-default-transforms@^0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-transforms/-/kg-default-transforms-0.0.8.tgz#5c97203786f0003da496482116836e0388a5d22b"
-  integrity sha512-4VS72ct2ut1Po/AOQIi8lcPuUgArRNGEcTHBVPZfQMm41gLfXkY82YsqujaCKg4SESSqF3oZH+vHb1WTfM5Nfg==
+"@tryghost/kg-default-transforms@^0.0.9":
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-transforms/-/kg-default-transforms-0.0.9.tgz#a2b67d9a0e3aebd673d7961287353855929d9e8f"
+  integrity sha512-qFTPBEMiOTNU14h2rCkLy0HBRPEI5EWOCYuiJnZZnV7vswe++3bDfJoDUhvjlz3cMoPQiXNl2HIN8YrbNgActw==
   dependencies:
     "@lexical/list" "^0.12.2"
     "@lexical/rich-text" "^0.12.2"
     "@lexical/utils" "^0.12.2"
-    "@tryghost/kg-default-nodes" "^0.2.11"
+    "@tryghost/kg-default-nodes" "^0.2.12"
     lexical "^0.12.2"
 
-"@tryghost/kg-html-to-lexical@0.1.13":
-  version "0.1.13"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-html-to-lexical/-/kg-html-to-lexical-0.1.13.tgz#13c20fff026de27c6dd0ec34eb15da10e3894119"
-  integrity sha512-W7IU1SyEJ0sYuIfHAoDeWIDTP1AmrJZNCKeww4AFkY95JWiZmSn18FAfl8jvjP7ZL9UeC6kuCJ4CWe84c5FNsQ==
+"@tryghost/kg-html-to-lexical@0.1.14":
+  version "0.1.14"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-html-to-lexical/-/kg-html-to-lexical-0.1.14.tgz#64f4ff84028193aaf3754f5febd2d0b8d9535ecd"
+  integrity sha512-g6gMBXJQ5fb1XyZFmF/2hPJ0TxoH67MUA6s4GYPSGJ9FAQbANUzPGkH5u/5Hr2goSGMNvB6kGK/6/lEHme0HeA==
   dependencies:
     "@lexical/clipboard" "^0.12.2"
     "@lexical/headless" "^0.12.2"
@@ -7873,15 +7859,15 @@
     "@lexical/link" "^0.12.2"
     "@lexical/list" "^0.12.2"
     "@lexical/rich-text" "^0.12.2"
-    "@tryghost/kg-default-nodes" "^0.2.11"
-    "@tryghost/kg-default-transforms" "^0.0.8"
+    "@tryghost/kg-default-nodes" "^0.2.12"
+    "@tryghost/kg-default-transforms" "^0.0.9"
     jsdom "^22.1.0"
     lexical "^0.12.2"
 
-"@tryghost/kg-lexical-html-renderer@0.3.49":
-  version "0.3.49"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.3.49.tgz#2947ce8d85987d98a4eb0d30f58776d2e6632f27"
-  integrity sha512-lyZ5XKhT5OIP6RcTuFUurRf1VSin7r9715Rttj3IGg1VOdfAjhkmNzvvMpF/Ni7kzAT+tkak+Yz8sSezxZONew==
+"@tryghost/kg-lexical-html-renderer@0.3.51":
+  version "0.3.51"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-0.3.51.tgz#c08c2d59f4ee4ba8794ae4023328e2336b1c82b4"
+  integrity sha512-9H21dvb/eTv/sdEHOSW+XQ25owgf7M1sfhNpbz5n8NoUmOW7uGBd/gXiTw9OWALYo7k+Kw+4sjBZSSegUi8Mxg==
   dependencies:
     "@lexical/clipboard" "^0.12.2"
     "@lexical/code" "^0.12.2"
@@ -7889,7 +7875,7 @@
     "@lexical/link" "^0.12.2"
     "@lexical/list" "^0.12.2"
     "@lexical/rich-text" "^0.12.2"
-    "@tryghost/kg-default-nodes" "^0.2.10"
+    "@tryghost/kg-default-nodes" "^0.2.12"
     jsdom "^22.1.0"
     lexical "^0.12.2"
     prettier "^3.0.0"
@@ -7932,10 +7918,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/koenig-lexical@0.5.24":
-  version "0.5.24"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-0.5.24.tgz#729cdae4b6c409bf0befa3259fb98b949706f82a"
-  integrity sha512-NmoxL3t2I5a+C1xkYmahAJnlBX+fjKXdLKpqBjZt5Jf8CkzShYdFI7L846RnU4ztxS7pYJEuBfn90ljKTnfSJQ==
+"@tryghost/koenig-lexical@0.5.25":
+  version "0.5.25"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-0.5.25.tgz#f4ae24f93c038708759f657d7c5553ac2420a535"
+  integrity sha512-r+z19ZJ5P/Y53X8oFQZP3fWMVZCuiev5B3XOBD+U3C+TNigm/d7IidCNlDWVlYPPE7iz9msLLLThawPFlJgHmg==
 
 "@tryghost/limit-service@1.2.12", "@tryghost/limit-service@^1.2.10":
   version "1.2.12"
