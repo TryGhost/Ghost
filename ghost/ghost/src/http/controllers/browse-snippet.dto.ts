@@ -1,8 +1,7 @@
-import ObjectID from 'bson-objectid';
 import {Snippet} from '../../core/snippets/snippet.entity';
 
 export class BrowseSnippetDTO {
-    id: ObjectID;
+    id: string;
     name: string;
     lexical?: string|null;
     mobiledoc?: string|null;
@@ -10,7 +9,7 @@ export class BrowseSnippetDTO {
     updated_at: Date|null;
 
     constructor(data: Snippet, options: {formats?: 'mobiledoc'|'lexical'}) {
-        this.id = data.id;
+        this.id = data.id.toString();
         this.name = data.name;
 
         if (options.formats === 'lexical') {

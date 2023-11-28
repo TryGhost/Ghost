@@ -2,8 +2,8 @@ import {Entity} from '../../common/entity';
 
 type SnippetData = {
     readonly name: string;
-    lexical: string;
-    mobiledoc: string;
+    lexical?: string;
+    mobiledoc?: string;
 };
 
 export class Snippet extends Entity<SnippetData> implements SnippetData {
