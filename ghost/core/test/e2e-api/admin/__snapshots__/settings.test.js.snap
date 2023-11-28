@@ -2838,7 +2838,7 @@ Object {
     },
     Object {
       "key": "members_support_address",
-      "value": "support@example.com",
+      "value": "default@email.com",
     },
     Object {
       "key": "stripe_secret_key",
@@ -3058,7 +3058,7 @@ Object {
     },
     Object {
       "key": "support_email_address",
-      "value": "support@example.com",
+      "value": "default@email.com",
     },
   ],
 }
@@ -3073,6 +3073,7 @@ Object {
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
   "x-powered-by": "Express",
 }
 `;
@@ -3203,7 +3204,7 @@ Object {
     },
     Object {
       "key": "members_support_address",
-      "value": "support@example.com",
+      "value": "support@sendingdomain.com",
     },
     Object {
       "key": "stripe_secret_key",
@@ -3423,7 +3424,7 @@ Object {
     },
     Object {
       "key": "support_email_address",
-      "value": "support@example.com",
+      "value": "support@sendingdomain.com",
     },
   ],
 }
@@ -3438,6 +3439,7 @@ Object {
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
   "x-powered-by": "Express",
 }
 `;
@@ -3572,7 +3574,7 @@ Object {
     },
     Object {
       "key": "members_support_address",
-      "value": "support@example.com",
+      "value": "default@email.com",
     },
     Object {
       "key": "stripe_secret_key",
@@ -3792,7 +3794,7 @@ Object {
     },
     Object {
       "key": "support_email_address",
-      "value": "support@example.com",
+      "value": "default@email.com",
     },
   ],
 }
@@ -3937,7 +3939,7 @@ Object {
     },
     Object {
       "key": "members_support_address",
-      "value": "support@example.com",
+      "value": "default@email.com",
     },
     Object {
       "key": "stripe_secret_key",
@@ -4157,7 +4159,7 @@ Object {
     },
     Object {
       "key": "support_email_address",
-      "value": "support@example.com",
+      "value": "default@email.com",
     },
   ],
 }
@@ -4172,6 +4174,7 @@ Object {
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
   "x-powered-by": "Express",
 }
 `;
@@ -5040,7 +5043,7 @@ Object {
     },
     Object {
       "key": "members_support_address",
-      "value": "support@example.com",
+      "value": "support@customdomain.com",
     },
     Object {
       "key": "stripe_secret_key",
@@ -5260,7 +5263,7 @@ Object {
     },
     Object {
       "key": "support_email_address",
-      "value": "support@example.com",
+      "value": "support@customdomain.com",
     },
   ],
 }
@@ -5275,6 +5278,7 @@ Object {
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
   "x-powered-by": "Express",
 }
 `;
@@ -5405,7 +5409,7 @@ Object {
     },
     Object {
       "key": "members_support_address",
-      "value": "support@example.com",
+      "value": "default@email.com",
     },
     Object {
       "key": "stripe_secret_key",
@@ -5625,7 +5629,7 @@ Object {
     },
     Object {
       "key": "support_email_address",
-      "value": "support@example.com",
+      "value": "default@email.com",
     },
   ],
 }
@@ -5640,6 +5644,7 @@ Object {
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
   "x-powered-by": "Express",
 }
 `;
