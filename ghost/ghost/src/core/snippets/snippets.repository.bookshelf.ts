@@ -1,6 +1,7 @@
 import {Inject} from '@nestjs/common';
 import {Snippet} from './snippet.entity';
 import {ISnippetsRepository} from './snippets.repository.interface';
+import {Pagination} from '../../common/pagination.type';
 
 type QueryOptions = {
     debug?: boolean;
@@ -8,7 +9,7 @@ type QueryOptions = {
 
 type BookshelfModels = {
     Snippet: {
-        findPage: (options: QueryOptions) => Promise<{data: any[]}>;
+        findPage: (options: QueryOptions) => Promise<{data: any[], meta: any}>;
     }
 };
 
@@ -17,7 +18,7 @@ export class SnippetRepositoryBookshelf implements ISnippetsRepository {
         @Inject('models') private readonly models: BookshelfModels
     ) {}
 
-    async findAll(options: QueryOptions): Promise<Snippet[]> {
+    async findAll(options: QueryOptions): Promise<{snippets: Snippet[], pagination: Pagination}> {
         const snippetsDBResponse = await this.models.Snippet.findPage(options);
 
         const snippets = snippetsDBResponse.data
@@ -30,6 +31,18 @@ export class SnippetRepositoryBookshelf implements ISnippetsRepository {
                 updatedAt: dbSnippet.get('updated_at')
             }));
 
-        return snippets;
+        const pagination = {
+            page: snippetsDBResponse.meta.pagination.page,
+            limit: snippetsDBResponse.meta.pagination.limit,
+            pages: snippetsDBResponse.meta.pagination.pages,
+            total: snippetsDBResponse.meta.pagination.total,
+            prev: null,
+            next: null
+        };
+
+        return {
+            snippets,
+            pagination
+        };
     }
 }
