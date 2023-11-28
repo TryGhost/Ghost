@@ -938,7 +938,7 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         newsletter_id: {type: 'string', maxlength: 24, nullable: false, references: 'newsletters.id', cascadeDelete: true},
         '@@INDEXES@@': [
-            ['member_id', 'newsletter_id']
+            ['newsletter_id', 'member_id']
         ]
     },
     comments: {
