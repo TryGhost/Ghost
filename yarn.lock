@@ -7918,10 +7918,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/koenig-lexical@0.5.25":
-  version "0.5.25"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-0.5.25.tgz#f4ae24f93c038708759f657d7c5553ac2420a535"
-  integrity sha512-r+z19ZJ5P/Y53X8oFQZP3fWMVZCuiev5B3XOBD+U3C+TNigm/d7IidCNlDWVlYPPE7iz9msLLLThawPFlJgHmg==
+"@tryghost/koenig-lexical@0.5.26":
+  version "0.5.26"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-0.5.26.tgz#9ad40c41e3eb59d36f646a51d43b4b4658360b56"
+  integrity sha512-6snd1GywaQ9GyKV6FcoGTIn4GlNIn45SspqYn+q0yLAArAVHEdY1tjDORFVuIaTqbR4e+BVulSg9gZOle0QtRw==
 
 "@tryghost/limit-service@1.2.12", "@tryghost/limit-service@^1.2.10":
   version "1.2.12"
@@ -17331,21 +17331,10 @@ express-brute@1.0.1, express-brute@^1.0.1:
     long-timeout "~0.1.1"
     underscore "~1.8.3"
 
-express-hbs@2.5.0:
+express-hbs@2.5.0, express-hbs@^2.4.2:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-2.5.0.tgz#28ed0b8507bb7bcceb102b63fe863585f13a4d89"
   integrity sha512-i2O1ZBwKO32KF0MePnkgYHsAAILr9H9Sp5GoGp9JWz/qhsBfTMSq9VF1pN109DHysPX6YO88y7B+f6xnEEF/mg==
-  dependencies:
-    handlebars "^4.7.7"
-    lodash "^4.17.21"
-    readdirp "^3.6.0"
-  optionalDependencies:
-    js-beautify "^1.13.11"
-
-express-hbs@^2.4.2:
-  version "2.4.2"
-  resolved "https://registry.yarnpkg.com/express-hbs/-/express-hbs-2.4.2.tgz#9bc18a08d89eea2aaea94b2e5c38859e86a99019"
-  integrity sha512-lFtWrsAGprvzPrVlfNE6WGJnyE+o/UxsTpl2CWcJt1CRYaUwht9+BkfKOWqs+xG0zhhRAm/bsYEyQ4EwA+ovSw==
   dependencies:
     handlebars "^4.7.7"
     lodash "^4.17.21"
