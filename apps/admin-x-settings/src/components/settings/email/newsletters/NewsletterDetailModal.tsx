@@ -4,7 +4,7 @@ import React, {useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
-import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, SettingGroupContent, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, Link, PreviewModalContent, Select, SelectOption, Separator, SettingGroupContent, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
 import {Config, hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
@@ -202,7 +202,7 @@ const Sidebar: React.FC<{
                         heading: 'Sender email address',
                         key: 'sender-email-addresss',
                         value: `${defaultEmailAddress}`,
-                        hint: <span className="text-xs text-grey-700">To customise, set up a <a className="text-green" href="#">custom sending domain</a></span>
+                        hint: <span className="text-xs text-grey-700">To customise, set up a <Link href="https://ghost.org/help/custom-sending-domains/">custom sending domain</Link></span>
                     }
                 ]}
             />
