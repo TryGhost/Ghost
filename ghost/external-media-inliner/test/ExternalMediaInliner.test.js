@@ -267,6 +267,59 @@ describe('ExternalMediaInliner', function () {
             });
         });
 
+        it('inlines image in the post\'s mobiledoc & lexical content', async function () {
+            const imageURL = 'https://img.stockfresh.com/files/f/image.jpg';
+            const requestMock = nock('https://img.stockfresh.com')
+                .get('/files/f/image.jpg')
+                .reply(200, GIF1x1)
+                .get('/files/f/image.jpg')
+                .reply(200, GIF1x1);
+
+            const postStub = sinon.stub();
+            postStub.withArgs('mobiledoc').returns(`{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"${imageURL}"}]]}`);
+            postStub.withArgs('lexical').returns(`{"root":{"children":[{"type":"image","version":1,"src":"${imageURL}","width":1480,"height":486,"title":"","alt":"","caption":"","cardWidth":"regular","href":""}],"direction":null,"format":"","indent":0,"type":"root","version":1}}`);
+
+            const postModelInstanceStub = {
+                id: 'inlined-post-id',
+                get: postStub
+            };
+            postModelStub = {
+                findPage: sinon.stub().returns({
+                    data: [postModelInstanceStub]
+                }),
+                edit: sinon.stub().resolves()
+            };
+
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-image.jpg')
+                .returns('unique-image.jpg');
+            const inliner = new ExternalMediaInliner({
+                PostModel: postModelStub,
+                PostMetaModel: postMetaModelStub,
+                TagModel: tagModelStub,
+                UserModel: userModelStub,
+                getMediaStorage: sinon.stub().withArgs('.jpg').returns({
+                    getTargetDir: () => '/content/images',
+                    getUniqueFileName: () => '/content/images/unique-image.jpg',
+                    saveRaw: () => '/content/images/unique-image.jpg'
+                })
+            });
+
+            await inliner.inline(['https://img.stockfresh.com']);
+
+            assert.ok(requestMock.isDone());
+            assert.ok(postModelStub.edit.calledOnce);
+            assert.ok(postModelStub.edit.calledWith({
+                mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"__GHOST_URL__/content/images/unique-image.jpg"}]]}',
+                lexical: '{"root":{"children":[{"type":"image","version":1,"src":"__GHOST_URL__/content/images/unique-image.jpg","width":1480,"height":486,"title":"","alt":"","caption":"","cardWidth":"regular","href":""}],"direction":null,"format":"","indent":0,"type":"root","version":1}}'
+            }, {
+                id: 'inlined-post-id',
+                context: {
+                    internal: true
+                }
+            }));
+        });
+
         it('logs an error when fetching an external media fails', async function () {
             const imageURL = 'https://img.stockfresh.com/files/f/image.jpg';
             const requestMock = nock('https://img.stockfresh.com')
@@ -368,11 +421,13 @@ describe('ExternalMediaInliner', function () {
                 .get('/files/f/image.jpg')
                 .reply(200, GIF1x1);
 
+            const postStub = sinon.stub();
+            postStub.withArgs('mobiledoc').returns(`{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"${imageURL}"}]]}`);
+            postStub.withArgs('lexical').returns(null);
+
             postModelStub = {
                 id: 'errored-post-id',
-                get: sinon.stub()
-                    .withArgs('mobiledoc')
-                    .returns(`{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"${imageURL}"}]]}`)
+                get: postStub
             };
             postModelStub = {
                 findPage: sinon.stub().returns({

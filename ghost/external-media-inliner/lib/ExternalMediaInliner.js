@@ -261,24 +261,24 @@ class ExternalMediaInliner {
                 const mobiledocContent = post.get('mobiledoc');
                 const lexicalContent = post.get('lexical');
 
-                let theContent;
-                let contentTarget;
-
-                if (mobiledocContent) {
-                    theContent = mobiledocContent;
-                    contentTarget = 'mobiledoc';
-                } else if (lexicalContent) {
-                    theContent = lexicalContent;
-                    contentTarget = 'lexical';
-                }
-
-                const inlinedContent = await this.inlineContent(theContent, domains);
-
                 const updatedFields = await this.inlineFields(post, postsInilingFields, domains);
 
-                // If content has changed, update the post
-                if (inlinedContent !== theContent) {
-                    updatedFields[contentTarget] = inlinedContent;
+                if (mobiledocContent) {
+                    const inlinedContent = await this.inlineContent(mobiledocContent, domains);
+
+                    // If content has changed, update the post
+                    if (inlinedContent !== mobiledocContent) {
+                        updatedFields.mobiledoc = inlinedContent;
+                    }
+                }
+
+                if (lexicalContent) {
+                    const inlinedContent = await this.inlineContent(lexicalContent, domains);
+
+                    // If content has changed, update the post
+                    if (inlinedContent !== lexicalContent) {
+                        updatedFields.lexical = inlinedContent;
+                    }
                 }
 
                 if (Object.keys(updatedFields).length > 0) {
