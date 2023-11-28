@@ -3,8 +3,10 @@ import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Icon, Link, SettingGroupContent, TextField, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const {siteData} = useGlobalData();
     const {
         localSettings,
         isEditing,
@@ -27,7 +29,7 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
     });
 
-    const [passwordEnabled, password] = getSettingValues(localSettings, ['is_private', 'password']) as [boolean, string];
+    const [passwordEnabled, password, publicHash] = getSettingValues(localSettings, ['is_private', 'password', 'public_hash']) as [boolean, string, string];
 
     const handleToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('is_private', e.target.checked);
@@ -58,8 +60,9 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
         />
     );
 
+    const privateRssUrl = `${siteData.url.replace(/\/$/, '')}/${publicHash}/rss`;
     const hint = (
-        <>A private RSS feed is available at <Link className='break-all' href="http://localhost:2368/51aa059ba6eb50c24c14047d4255ac/rss">http://localhost:2368/51aa059ba6eb50c24c14047d4255ac/rss</Link></>
+        <>A private RSS feed is available at <Link className='break-all' href={privateRssUrl}>{privateRssUrl}</Link></>
     );
 
     const inputs = (
