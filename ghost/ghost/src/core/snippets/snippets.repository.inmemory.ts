@@ -1,29 +1,29 @@
-import {Pagination} from '../../common/pagination.type';
+import ObjectID from 'bson-objectid';
 import {Snippet} from './snippet.entity';
 import {SnippetsRepository} from './snippets.repository.interface';
+import {OrderOf, Page} from '../../common/repository';
 
 export class SnippetsRepositoryInMemory implements SnippetsRepository {
-    snippets: Snippet[];
+    snippets: Map<string, Snippet>;
 
     constructor(
     ) {
-        this.snippets = [];
+        this.snippets = new Map();
     }
 
     async save(entity: Snippet): Promise<void> {
-        return;
+        this.snippets.set(entity.id.toHexString(), entity);
+    }
+    async getAll(order: OrderOf<[]>[], filter?: string | undefined): Promise<Snippet[]> {
+        return [...this.snippets.values()];
     }
 
-    async getAll(): Promise<Snippet[]> {
-        return this.snippets;
+    async getSome(page: Page, order: OrderOf<[]>[], filter?: string | undefined): Promise<Snippet[]> {
+        return [...this.snippets.values()];
     }
 
-    async getSome(): Promise<Snippet[]> {
-        return this.snippets;
-    }
-
-    async getOne() {
-        return this.snippets[0] || null;
+    async getOne(id: ObjectID) {
+        return this.snippets.get(id.toHexString()) || null;
     }
 
     async getCount(filter?: string | undefined): Promise<number> {
