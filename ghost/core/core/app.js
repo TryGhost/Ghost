@@ -31,6 +31,8 @@ const rootApp = () => {
     const app = express('root');
     app.use(sentry.requestHandler);
 
+    app.use(sentry.tracingHandler)
+
     app.enable('maintenance');
     app.use(maintenanceMiddleware);
 

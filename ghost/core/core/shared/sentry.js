@@ -61,6 +61,11 @@ if (sentryConfig && !sentryConfig.disabled) {
     const environment = config.get('env');
     Sentry.init({
         dsn: sentryConfig.dsn,
+        integrations: [
+            new Sentry.Integrations.Http({tracing: true}),
+            new Sentry.Integrations.Express()
+        ],
+        tracesSampleRate: 1.0,
         release: 'ghost@' + version,
         environment: environment,
         maxValueLength: 1000,
@@ -82,6 +87,7 @@ if (sentryConfig && !sentryConfig.disabled) {
                 return (error.statusCode === 500);
             }
         }),
+        tracingHandler: Sentry.Handlers.tracingHandler(),
         captureException: Sentry.captureException,
         beforeSend: beforeSend
     };
@@ -95,6 +101,7 @@ if (sentryConfig && !sentryConfig.disabled) {
     module.exports = {
         requestHandler: expressNoop,
         errorHandler: expressNoop,
+        tracingHandler: expressNoop,
         captureException: noop
     };
 }
