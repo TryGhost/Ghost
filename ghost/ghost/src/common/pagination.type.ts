@@ -1,8 +1,8 @@
 export type Pagination = {
     page: number;
-    limit: number;
+    limit: number | 'all';
     pages: number;
     total: number;
-    prev: null,
-    next: null
+    prev: number | null,
+    next: number | null
 };
