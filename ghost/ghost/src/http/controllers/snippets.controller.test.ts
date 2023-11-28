@@ -50,7 +50,7 @@ describe('SnippetsController', () => {
                 }
             };
 
-            snippetsService.browse = sinon.stub().returns(serviceSnippetResult);
+            snippetsService.getAll = sinon.stub().returns(serviceSnippetResult);
 
             const response = await snippetsController.browse();
             assert.equal(response.snippets.length, 1);

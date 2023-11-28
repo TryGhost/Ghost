@@ -1,6 +1,6 @@
 import {Snippet} from '../../core/snippets/snippet.entity';
 
-export class BrowseSnippetDTO {
+export class SnippetDTO {
     id: string;
     name: string;
     lexical?: string|null;

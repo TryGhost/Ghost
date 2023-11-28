@@ -1,6 +1,6 @@
 import {Snippet} from './snippet.entity';
-import {Pagination} from '../../common/pagination.type';
+import {Repository} from '../../common/repository';
 
-export interface ISnippetsRepository {
-  findAll(options: {debug?: boolean, filter?: string}): Promise<{snippets: Snippet[], pagination: Pagination}>;
+export interface SnippetsRepository extends Repository<Snippet, string, []> {
+
 }

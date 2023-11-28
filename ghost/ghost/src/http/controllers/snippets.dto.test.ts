@@ -1,7 +1,7 @@
 import {Snippet} from '../../core/snippets/snippet.entity';
 import ObjectId from 'bson-objectid';
 import assert from 'assert/strict';
-import {BrowseSnippetDTO} from './browse-snippet.dto';
+import {SnippetDTO} from './snippet.dto';
 
 describe('BrowseSnippetDTO', () => {
     it('constructs a BrowseSnippetDTO object from a Snippet object with mobiledoc field', async () => {
@@ -16,7 +16,7 @@ describe('BrowseSnippetDTO', () => {
             updatedBy: null
         });
 
-        const browseSnippetDTO = new BrowseSnippetDTO(snippet, {formats: 'mobiledoc'});
+        const browseSnippetDTO = new SnippetDTO(snippet, {formats: 'mobiledoc'});
 
         assert(browseSnippetDTO, 'BrowseSnippetDTO object is not null');
         assert.equal(browseSnippetDTO.id, snippet.id.toString());
@@ -37,7 +37,7 @@ describe('BrowseSnippetDTO', () => {
             updatedBy: null
         });
 
-        const browseSnippetDTO = new BrowseSnippetDTO(snippet, {formats: 'lexical'});
+        const browseSnippetDTO = new SnippetDTO(snippet, {formats: 'lexical'});
 
         assert(browseSnippetDTO, 'BrowseSnippetDTO object is not null');
         assert.equal(browseSnippetDTO.id, snippet.id.toString());
