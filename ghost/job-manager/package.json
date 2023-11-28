@@ -27,7 +27,7 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@breejs/later": "4.1.0",
+    "@breejs/later": "4.2.0",
     "@tryghost/errors": "1.2.26",
     "@tryghost/logging": "2.4.8",
     "bree": "6.5.0",
