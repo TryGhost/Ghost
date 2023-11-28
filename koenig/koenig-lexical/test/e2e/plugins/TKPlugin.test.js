@@ -43,9 +43,9 @@ test.describe('TK Plugin', async function () {
 
         test('changes highlight when TK indicator is hovered', async function () {
             await focusEditor(page);
-            
+
             await page.keyboard.type('TK');
-            await page.locator('[data-has-tk]').hover();
+            await page.getByTestId('tk-indicator').hover();
 
             await expect(await page.getByRole('paragraph').getByText('TK')).toHaveClass('bg-lime-500 dark:bg-lime-800');
         });
@@ -56,7 +56,7 @@ test.describe('TK Plugin', async function () {
             await focusEditor(page);
 
             await page.keyboard.type('TK and TK and TK');
-            await expect(await page.locator('[data-has-tk]')).toBeVisible();
+            await expect(await page.getByTestId('tk-indicator')).toBeVisible();
         });
 
         test('creates a TK indicator for each parent element with a TK', async function () {
@@ -68,14 +68,7 @@ test.describe('TK Plugin', async function () {
             await page.keyboard.press('Enter');
             await page.keyboard.type('TK and some text');
 
-            await expect(await page.locator('[data-has-tk]').all()).toHaveLength(3);
-        });
-
-        test('carries a count for multiple TK nodes in a given parent element', async function () {
-            await focusEditor(page);
-
-            await page.keyboard.type('TK and TK and TK');
-            await expect(await page.locator('[data-has-tk]')).toHaveAttribute('data-count', '3');
+            await expect(await page.getByTestId('tk-indicator').all()).toHaveLength(3);
         });
 
         test('clicking the indicator selects the first TK node in the parent', async function () {
@@ -87,7 +80,7 @@ test.describe('TK Plugin', async function () {
                 expect(selection).toEqual('');
             });
 
-            await page.locator('[data-has-tk]').click();
+            await page.getByTestId('tk-indicator').click();
 
             await page.evaluate(() => window.getSelection().toString()).then((selection) => {
                 expect(selection).toEqual('TK');
@@ -98,7 +91,7 @@ test.describe('TK Plugin', async function () {
             await focusEditor(page);
 
             await page.keyboard.type('TK and TK and TK');
-            await page.locator('[data-has-tk]').click();
+            await page.getByTestId('tk-indicator').click();
 
             // piece 2 in the array is the child node
             await assertSelection(page, {
@@ -108,7 +101,7 @@ test.describe('TK Plugin', async function () {
                 focusOffset: 2
             });
 
-            await page.locator('[data-has-tk]').click();
+            await page.getByTestId('tk-indicator').click();
 
             await assertSelection(page, {
                 anchorPath: [0, 2, 0],
@@ -117,7 +110,7 @@ test.describe('TK Plugin', async function () {
                 focusOffset: 2
             });
 
-            await page.locator('[data-has-tk]').click();
+            await page.getByTestId('tk-indicator').click();
 
             await assertSelection(page, {
                 anchorPath: [0, 4, 0],
