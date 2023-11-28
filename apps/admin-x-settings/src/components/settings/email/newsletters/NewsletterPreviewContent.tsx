@@ -11,7 +11,7 @@ import {useGlobalData} from '../../../providers/GlobalDataProvider';
 const NewsletterPreviewContent: React.FC<{
     senderName?: string;
     senderEmail: string;
-    senderReplyTo: string;
+    senderReplyTo: string | null;
     headerImage?: string | null;
     headerIcon?: string;
     headerTitle?: string | null;
@@ -82,13 +82,16 @@ const NewsletterPreviewContent: React.FC<{
     const backgroundColorIsDark = backgroundColor && textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
 
     let emailHeader;
-    /* Without the flag */
+
     if (!isManagedEmail(config)) {
         emailHeader = <><p className="leading-normal"><span className="font-semibold text-grey-900">{senderName}</span><span> {senderEmail}</span></p>
             <p className="leading-normal"><span className="font-semibold text-grey-900">To:</span> Jamie Larson jamie@example.com</p></>;
     } else {
         emailHeader = <><p className="leading-normal"><span className="font-semibold text-grey-900">From: </span><span>{senderName} ({senderEmail})</span></p>
-            <p className="leading-normal"><span className="font-semibold text-grey-900">Reply-to: </span>{senderReplyTo}</p></>;
+            <p className="leading-normal">
+                <span className="font-semibold text-grey-900">Reply-to: </span>{senderReplyTo ? senderReplyTo : 'Not set' }
+            </p>
+        </>;
     }
 
     return (

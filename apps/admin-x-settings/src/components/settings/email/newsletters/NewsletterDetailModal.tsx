@@ -33,7 +33,7 @@ const renderSenderEmail = (newsletter: Newsletter, config: Config, defaultEmailA
     return newsletter.sender_email || defaultEmailAddress || '';
 };
 
-const renderReplyToEmail = (newsletter: Newsletter, config: Config, supportEmailAddress: string|undefined, defaultEmailAddress: string|undefined) => {
+export const renderReplyToEmail = (newsletter: Newsletter, config: Config, supportEmailAddress: string|undefined, defaultEmailAddress: string|undefined) => {
     if (!newsletter.sender_reply_to) {
         return '';
     }

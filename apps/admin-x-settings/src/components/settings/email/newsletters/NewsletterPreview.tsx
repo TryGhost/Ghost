@@ -4,13 +4,14 @@ import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {hasSendingDomain, isManagedEmail} from '@tryghost/admin-x-framework/api/config';
+import {renderReplyToEmail} from './NewsletterDetailModal';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
     const {currentUser, settings, siteData, config} = useGlobalData();
-    const [title, icon, commentsEnabled, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'default_email_address']);
+    const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'support_email_address', 'default_email_address']);
 
     let headerTitle: string | null = null;
     if (newsletter.show_header_title) {
@@ -113,7 +114,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         headerTitle={headerTitle}
         senderEmail={renderSenderEmail()}
         senderName={newsletter.sender_name || title}
-        senderReplyTo={newsletter.sender_reply_to}
+        senderReplyTo={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
         showBadge={newsletter.show_badge}
         showCommentCta={showCommentCta}
         showFeatureImage={newsletter.show_feature_image}
