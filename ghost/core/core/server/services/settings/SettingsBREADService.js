@@ -335,6 +335,8 @@ class SettingsBREADService {
 
                     if (validated.verificationEmailRequired) {
                         emailsToVerify.push({email, key});
+                    } else {
+                        filteredSettings.push(setting);
                     }
                 } else {
                     filteredSettings.push(setting);
