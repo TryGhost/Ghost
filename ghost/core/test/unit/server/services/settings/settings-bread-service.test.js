@@ -187,6 +187,16 @@ describe('UNIT > Settings BREAD Service:', function () {
                     isSet() {
                         return false;
                     }
+                },
+                emailAddressService: {
+                    service: {
+                        validate() {
+                            return {
+                                allowed: true,
+                                verificationEmailRequired: true
+                            };
+                        }
+                    }
                 }
             });
 

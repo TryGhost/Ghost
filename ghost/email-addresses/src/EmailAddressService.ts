@@ -112,7 +112,7 @@ export class EmailAddressService {
             }
 
             // Invalid configuration: don't allow to send from this sending domain
-            logging.error(`[EmailAddresses] Invalid configuration: cannot send emails from ${preferred.from} when sending domain is ${this.sendingDomain}`);
+            logging.error(`[EmailAddresses] Invalid configuration: cannot send emails from ${preferred.from.address} when sending domain is ${this.sendingDomain}`);
         }
 
         // Only allow to send from the configured from address
