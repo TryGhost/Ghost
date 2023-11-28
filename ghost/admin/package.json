@@ -121,7 +121,7 @@
     "ember-websockets": "10.2.1",
     "eslint-plugin-babel": "5.3.1",
     "faker": "5.5.3",
-    "fs-extra": "11.1.1",
+    "fs-extra": "11.2.0",
     "glob": "8.1.0",
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
     "keymaster": "https://github.com/madrobby/keymaster.git",

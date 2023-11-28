@@ -183,7 +183,7 @@
     "express-lazy-router": "1.0.6",
     "express-query-boolean": "2.0.0",
     "express-session": "1.17.3",
-    "fs-extra": "11.1.1",
+    "fs-extra": "11.2.0",
     "ghost-storage-base": "1.0.0",
     "glob": "8.1.0",
     "got": "11.8.6",
