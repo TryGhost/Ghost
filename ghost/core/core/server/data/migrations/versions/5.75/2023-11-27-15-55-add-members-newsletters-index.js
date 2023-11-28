@@ -15,13 +15,12 @@ module.exports = createNonTransactionalMigration(
                     message: 'Error dropping index over members_newsletters(newsletter_id, member_id), re-adding index for newsletter_id'
                 });
 
-
                 await addIndex('members_newsletters', ['newsletter_id'], knex);
                 await dropIndex('members_newsletters', ['newsletter_id', 'member_id'], knex);
                 return;
-	         }
+             }
 	         
-	         throw err;
+             throw err;
         }
     }
 );
