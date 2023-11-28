@@ -4,11 +4,9 @@ const {addIndex, dropIndex} = require('../../../schema/commands');
 
 module.exports = createNonTransactionalMigration(
     async function up(knex) {
-        logging.info('Adding index over members_newsletters(newsletter_id, member_id)');
         await addIndex('members_newsletters', ['newsletter_id', 'member_id'], knex);
     },
     async function down(knex) {
-        logging.info('Dropping index over members_newsletters(newsletter_id, member_id)');
         try {
             await dropIndex('members_newsletters', ['newsletter_id', 'member_id'], knex);
         } catch (err) {
