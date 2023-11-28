@@ -10,7 +10,9 @@ class OfferCreatedAt extends ValueObject {
 
     static create(createdAt) {
         if (createdAt === null || createdAt === undefined) {
-            return new Date().toISOString();
+            const now = new Date();
+            now.setMilliseconds(0);
+            return now.toISOString();
         }
 
         if (!(createdAt instanceof Date)) {

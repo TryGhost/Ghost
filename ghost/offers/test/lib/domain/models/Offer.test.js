@@ -259,6 +259,27 @@ describe('Offer', function () {
                 should.ok(err);
             });
         });
+
+        it('Sets createdAt for new Offers', async function () {
+            const data = {
+                name: 'My Offer',
+                code: 'offer-code',
+                display_title: 'My Offer Title',
+                display_description: 'My Offer Description',
+                cadence: 'month',
+                type: 'fixed',
+                amount: 1000,
+                duration: 'forever',
+                currency: 'USD',
+                tier: {
+                    id: ObjectID()
+                }
+            };
+
+            const offer = await Offer.create(data, mockUniqueChecker);
+
+            should.equal(typeof offer.createdAt, 'string');
+        });
     });
 
     describe('#updateCode', function () {
