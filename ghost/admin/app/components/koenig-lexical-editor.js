@@ -536,7 +536,7 @@ export default class KoenigLexicalEditor extends Component {
                                 registerAPI={this.args.registerAPI}
                             />
                             <WordCountPlugin editorResource={this.editorResource} onChange={this.args.updateWordCount} />
-                            {this.feature.tkReminders && <TKPlugin editorResource={this.editorResource} setTkCount={this.args.updateTkCount} />}
+                            {this.feature.tkReminders && <TKPlugin editorResource={this.editorResource} onCountChange={this.args.updateTkCount} />}
                         </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>
