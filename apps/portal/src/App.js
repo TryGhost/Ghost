@@ -741,7 +741,11 @@ export default class App extends React.Component {
         const customOfferRegex = /^offers\/(\w+?)\/?$/;
         const site = useSite ?? this.state.site ?? {};
 
-        if (customOfferRegex.test(path)) {
+        if (path === undefined || path === '') {
+            return {
+                page: 'default'
+            };
+        } else if (customOfferRegex.test(path)) {
             return {
                 pageQuery: path
             };
@@ -822,7 +826,9 @@ export default class App extends React.Component {
                 }
             };
         }
-        return {};
+        return {
+            page: 'default'
+        };
     }
 
     /**Get Accent color from site data*/
@@ -834,7 +840,7 @@ export default class App extends React.Component {
     /**Get final page set in App context from state data*/
     getContextPage({site, page, member}) {
         /**Set default page based on logged-in status */
-        if (!page) {
+        if (!page || page === 'default') {
             const loggedOutPage = isInviteOnlySite({site}) ? 'signin' : 'signup';
             page = member ? 'accountHome' : loggedOutPage;
         }
