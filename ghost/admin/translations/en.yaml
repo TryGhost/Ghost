@@ -1,0 +1,59 @@
+admin:
+  mainNav:
+    dashboard: Dashboard
+    viewSite: View site
+    explore: Explore
+    posts: Posts
+    drafts: Drafts
+    scheduled: Scheduled
+    published: Published
+    pages: Pages
+    tags: Tags
+    members: Members
+  dashboard: Dashboard
+  days:
+    90days: 90 days
+    30days: 30 days
+    7days: 7 days
+  charts:
+    totalMembers: Total members
+    paidMembers: Paid members
+    freeMembers: Free members
+    mrr: MRR
+    PaidSubscribers: Paid subscribers
+    new: New
+    canceled: Canceled
+    paidMix: Paid mix
+    cadence: Cadence
+    tiers: Tiers
+    monthly: Monthly
+    annual: Annual
+    bronzeTier: Bronze tier
+    silverTier: Silver tier
+    goldTier: Gold Tier
+  engagement:
+    engagedInLast30Days: Engaged in the last 30 days
+    engagedInLast7Days: Engaged in the last 7 days
+    newsletterSubscribers: Newsletter subscribers
+    engagement: Engagement
+    paidMembers: Paid members
+    freeMembers: Free members
+    allMembers: All members
+  topSources:
+    topSources: Top sources
+    free: Free
+    paid: Paid
+    signups: signups
+  recentPosts:
+    recentPosts: Recent posts
+    title: Title
+    sent: Sent
+    openRate: Open rate
+    memberActivity: Member activity
+    viewAllPosts: View all posts
+  profileSettings:
+    whatsNew: What's new?
+    yourProfile: Your profile
+    helpCenter: Help center
+    resources: Resources & guides
+    signout: Sign out

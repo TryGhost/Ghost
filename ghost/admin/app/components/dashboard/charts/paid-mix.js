@@ -194,6 +194,7 @@ Chart.elements.Rectangle.prototype.draw = function () {
 
 export default class PaidMix extends Component {
     @service dashboardStats;
+    @service intl
 
     /**
      * Call this method when you need to fetch new data from the server. 
@@ -210,7 +211,13 @@ export default class PaidMix extends Component {
     }
 
     @tracked mode = 'cadence';
-    modeOptions = MODE_OPTIONS;
+    modeOptions = [{
+        name: this.intl.t('admin.charts.cadence'),
+        value: 'cadence'
+    }, {
+        name: this.intl.t('admin.charts.tiers'),
+        value: 'tiers'
+    }];
 
     get selectedModeOption() {
         return this.modeOptions.find(option => option.value === this.mode);
@@ -276,12 +283,12 @@ export default class PaidMix extends Component {
                 return {
                     labels: ['Cadence'],
                     datasets: [{
-                        label: 'Monthly',
+                        label: this.intl.t('admin.charts.monthly'),
                         data: [-50],
                         backgroundColor: '#F3F6F8',
                         barThickness
                     },{
-                        label: 'Annual',
+                        label: this.intl.t('admin.charts.annual'),
                         data: [50],
                         backgroundColor: '#EBEEF0',
                         barThickness
@@ -293,12 +300,12 @@ export default class PaidMix extends Component {
                 return {
                     labels: ['Cadence'],
                     datasets: [{
-                        label: 'Monthly',
+                        label: this.intl.t('admin.charts.monthly'),
                         data: [-40],
                         backgroundColor: '#8E42FF',
                         barThickness
                     },{
-                        label: 'Annual',
+                        label: this.intl.t('admin.charts.annual'),
                         data: [60],
                         backgroundColor: '#FB76B4',
                         barThickness
@@ -309,12 +316,12 @@ export default class PaidMix extends Component {
             return {
                 labels: ['Cadence'],
                 datasets: [{
-                    label: 'Monthly',
+                    label: this.intl.t('admin.charts.monthly'),
                     data: [-monthlyPercentage],
                     backgroundColor: '#8E42FF',
                     barThickness
                 }, {
-                    label: 'Annual',
+                    label: this.intl.t('admin.charts.annual'),
                     data: [annualPercentage],
                     backgroundColor: '#FB76B4',
                     barThickness

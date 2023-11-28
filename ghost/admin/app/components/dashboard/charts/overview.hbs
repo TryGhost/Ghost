@@ -3,7 +3,7 @@
         <div class="gh-dashboard-columns">
             <div class="gh-dashboard-column">
                 <Dashboard::Parts::Metric
-                    @label={{gh-pluralize this.totalMembers "Total member" without-count=true}}
+                    @label={{gh-pluralize this.totalMembers this.memberTypes.totalMembers without-count=true}}
                     @value={{this.totalMembersFormatted}}
                     @trends={{this.hasTrends}}
                     @percentage={{this.totalMembersTrend}}
@@ -11,7 +11,7 @@
             </div>
             <div class="gh-dashboard-column">
                 <Dashboard::Parts::Metric
-                    @label={{gh-pluralize this.paidMembers "Paid member" without-count=true}}
+                    @label={{gh-pluralize this.paidMembers this.memberTypes.paidMembers without-count=true}}
                     @value={{this.paidMembersFormatted}}
                     @trends={{this.hasTrends}}
                     @percentage={{this.paidMembersTrend}}
@@ -19,7 +19,7 @@
             </div>
             <div class="gh-dashboard-column">
                 <Dashboard::Parts::Metric
-                    @label={{gh-pluralize this.freeMembers "Free member" without-count=true}}
+                    @label={{gh-pluralize this.freeMembers this.memberTypes.freeMembers without-count=true}}
                     @value={{this.freeMembersFormatted}}
                     @trends={{this.hasTrends}}
                     @percentage={{this.freeMembersTrend}}

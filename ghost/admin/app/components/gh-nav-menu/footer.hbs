@@ -46,7 +46,7 @@
                         {{else}}
                             <li>
                                 <LinkTo @route="whatsnew" @query={{hash entry=null}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="whatsnew">
-                                    What's new?
+                                    {{t "admin.profileSettings.whatsNew"}}
                                     {{#if this.whatsNew.hasNew}}
                                         <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-green br-100"></span></div>
                                     {{/if}}
@@ -56,7 +56,7 @@
 
                         <li>
                             <LinkTo @route="settings-x.settings-x" @model="staff/{{this.session.user.slug}}" class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="user-profile">
-                                Your profile
+                                {{t "admin.profileSettings.yourProfile"}}
                             </LinkTo>
                         </li>
 
@@ -64,12 +64,12 @@
                             <li class="divider" role="separator"></li>
                             <li>
                                 <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/help?utm_source=admin&utm_campaign=help" target="_blank" rel="noopener noreferrer">
-                                    Help center
+                                    {{t "admin.profileSettings.helpCenter"}}
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources" target="_blank" rel="noopener noreferrer">
-                                    Resources & guides
+                                    {{t "admin.profileSettings.resources"}}
                                 </a>
                             </li>
 
@@ -91,7 +91,7 @@
 
                         <li>
                             <LinkTo @route="signout" class="dropdown-item user-menu-signout" @role="menuitem" tabindex="-1">
-                                Sign out
+                                {{t "admin.profileSettings.signout"}}
                             </LinkTo>
                         </li>
                     </ul>

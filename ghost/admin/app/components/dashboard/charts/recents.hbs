@@ -3,22 +3,22 @@
         <div class="gh-dashboard-tabs">
             <button type="button" class="gh-dashboard-tab {{if this.postsTabSelected 'is-selected'}}" {{on "click" this.changeTabToPosts}}>
                 <Dashboard::Parts::Metric
-                    @label="Recent posts" />
+                    @label={{t "admin.recentPosts.recentPosts"}} />
             </button>
             {{#if this.areMembersEnabled}}
                 <button type="button" class="gh-dashboard-tab {{if this.activityTabSelected 'is-selected'}}" {{on "click" this.changeTabToActivity}}>
                     <Dashboard::Parts::Metric
-                        @label="Member activity" />
+                        @label={{t "admin.recentPosts.memberActivity"}} />
                 </button>
             {{/if}}
         </div>
         {{#if this.postsTabSelected}}
             <div class="gh-dashboard-recents-posts gh-dashboard-list {{unless this.areNewslettersEnabled 'is-single'}}">
                 <div class="gh-dashboard-list-header">
-                    <div class="gh-dashboard-list-title">Title</div>
+                    <div class="gh-dashboard-list-title">{{t "admin.recentPosts.title"}}</div>
                     {{#if this.areNewslettersEnabled}}
-                        <div class="gh-dashboard-list-title">Sent</div>
-                        <div class="gh-dashboard-list-title">Open rate</div>
+                        <div class="gh-dashboard-list-title">{{t "admin.recentPosts.sent"}}</div>
+                        <div class="gh-dashboard-list-title">{{t "admin.recentPosts.openRate"}}</div>
                     {{else}}
                         <div class="gh-dashboard-list-title">Published</div>
                     {{/if}}
@@ -62,7 +62,7 @@
                     {{/each}}
                 </div>
                 <div class="gh-dashboard-list-footer">
-                    <LinkTo @route="posts" @query={{reset-query-params "posts"}}>View all posts &rarr;</LinkTo>
+                    <LinkTo @route="posts" @query={{reset-query-params "posts"}}>{{t "admin.recentPosts.viewAllPosts"}} &rarr;</LinkTo>
                 </div>
             </div>
         {{else if this.activityTabSelected}}

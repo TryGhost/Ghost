@@ -7,6 +7,7 @@ module.exports = {
         'no-inline-styles': false,
         'no-duplicate-landmark-elements': false,
         'no-pointer-down-event-binding': false,
-        'no-triple-curlies': false
+        'no-triple-curlies': false,
+        'no-bare-strings': true
     }
 };

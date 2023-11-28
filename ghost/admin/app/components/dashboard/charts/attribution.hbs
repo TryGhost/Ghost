@@ -10,7 +10,7 @@
         {{else}}
         <div class="gh-dashboard-attribution-grid">
             <div>
-                <h3 class="gh-dashboard-metric-label">Top sources</h3>
+                <h3 class="gh-dashboard-metric-label">{{t "admin.topSources.topSources"}}</h3>
                 <MemberAttribution::SourceAttributionTable
                     @sources={{this.sources}}
                     @sortColumn={{this.selectedSortColumn}}

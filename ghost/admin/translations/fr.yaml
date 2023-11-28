@@ -1,0 +1,59 @@
+admin:
+  mainNav:
+    dashboard: Tableau de bord
+    viewSite: Voir le site
+    explore: Explorer
+    posts: Des postes
+    drafts: Brouillons
+    scheduled: Programmé
+    published: Publié
+    pages: Pages
+    tags: Mots clés
+    members: Membres
+  dashboard: Tableau de bord
+  days:
+    90days: 90 jours
+    30days: 30 jours
+    7days: 7 jours
+  charts:
+    totalMembers: Nombre total de membres
+    paidMembers: Membres payants
+    freeMembers: Membres gratuits
+    mrr: MRR
+    PaidSubscribers: Abonnés payants
+    new: Nouvelle
+    canceled: Annulé
+    paidMix: Mélange payant
+    cadence: Cadence
+    tiers: Niveaux
+    monthly: Mensuelle
+    annual: Annuelle
+    bronzeTier: Bronze Tier
+    silverTier: Niveau Argent
+    goldTier: Niveau Or
+  engagement:
+    engagedInLast30Days: Engagé au cours des 30 derniers jours
+    engagedInLast7Days: Engagé au cours des 7 derniers jours
+    newsletterSubscribers: Abonnés à la newsletter
+    engagement: fiançailles
+    paidMembers: Membres payants
+    freeMembers: Membres gratuits
+    allMembers: Tous les membres
+  topSources:
+    topSources: Principales sources
+    free: Gratuite
+    paid: Payé
+    signups: inscriptions
+  recentPosts:
+    recentPosts: Messages récents
+    title: Titre
+    sent: Envoyée
+    openRate: Taux d'ouverture
+    memberActivity: Activité des membres
+    viewAllPosts: Afficher tous les messages
+  profileSettings:
+    whatsNew: Quoi de neuf?
+    yourProfile: Votre profil
+    helpCenter: Centre d'aide
+    resources: Ressources et guides
+    signout: se déconnecter

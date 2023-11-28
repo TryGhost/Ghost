@@ -19,13 +19,13 @@
                 <ul class="gh-nav-list gh-nav-main">
                     {{#if (gh-user-can-admin this.session.user)}}
                     <li class="relative">
-                        <LinkTo @route="dashboard" @alt="Dashboard" title="Dashboard" data-test-nav="dashboard">{{svg-jar "house"}} Dashboard</LinkTo>
+                        <LinkTo @route="dashboard" @alt="Dashboard" title="Dashboard" data-test-nav="dashboard">{{svg-jar "house"}} {{t "admin.mainNav.dashboard"}}</LinkTo>
                     </li>
                     {{/if}}
                     <li class="relative">
                         <span {{action "transitionToOrRefreshSite" on="click"}}>
                             <LinkTo @route="site" data-test-nav="site" @current-when={{this.isOnSite}} @preventDefault={{false}}>
-                                {{svg-jar "view-site"}} View site
+                                {{svg-jar "view-site"}} {{t "admin.mainNav.viewSite"}}
                             </LinkTo>
                         </span>
                         <a href="{{this.config.blogUrl}}/" class="gh-secondary-action" title="Open site in new tab" target="_blank" rel="noopener noreferrer">
@@ -35,14 +35,14 @@
                     {{#if (gh-user-can-admin this.session.user)}}
                     <li class="relative">
                         <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active"}} {{on "click" (fn this.toggleExploreWindow "")}} data-test-nav="explore">
-                            {{svg-jar "globe-simple"}} Explore
+                            {{svg-jar "globe-simple"}} {{t "admin.mainNav.explore"}}
                         </a>
                     </li>
                     {{/if}}
                 </ul>
                 <ul class="gh-nav-list gh-nav-manage">
                     <li class="gh-nav-list-new relative">
-                        <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts"}} data-test-nav="posts">{{svg-jar "posts"}}Posts</GhLinkToCustomViewsIndex>
+                        <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts"}} data-test-nav="posts">{{svg-jar "posts"}}{{t "admin.mainNav.posts"}}</GhLinkToCustomViewsIndex>
                         <LinkTo @route="lexical-editor.new" @model="post" class="gh-secondary-action gh-nav-new-post" @alt="New post" title="New post" data-test-nav="new-story"><span>{{svg-jar "plus"}}</span></LinkTo>
                         {{#if this.session.user.isAuthorOrContributor}}
                             {{#if this.customViews.forPosts}}
@@ -88,13 +88,13 @@
                     <li>
                         {{!-- clicking the Content link whilst on the content screen should reset the filter --}}
                         {{#if (eq this.router.currentRouteName "pages")}}
-                            <LinkTo @route="pages" @query={{reset-query-params "pages"}} class="active" data-test-nav="pages">{{svg-jar "page"}}Pages</LinkTo>
+                            <LinkTo @route="pages" @query={{reset-query-params "pages"}} class="active" data-test-nav="pages">{{svg-jar "page"}}{{t "admin.mainNav.pages"}}</LinkTo>
                         {{else}}
-                            <LinkTo @route="pages" data-test-nav="pages">{{svg-jar "page"}}Pages</LinkTo>
+                            <LinkTo @route="pages" data-test-nav="pages">{{svg-jar "page"}}{{t "admin.mainNav.pages"}}</LinkTo>
                         {{/if}}
                     </li>
                     {{#if this.showTagsNavigation}}
-                        <li><LinkTo @route="tags" @current-when="tags tag tag.new" data-test-nav="tags">{{svg-jar "tag"}}Tags</LinkTo></li>
+                        <li><LinkTo @route="tags" @current-when="tags tag tag.new" data-test-nav="tags">{{svg-jar "tag"}}{{t "admin.mainNav.tags"}}</LinkTo></li>
                     {{/if}}
                     {{#if (gh-user-can-admin this.session.user)}}
                         <li class="relative">
@@ -105,7 +105,7 @@
                                     {{/unless}}
                                 </LinkTo>
                             {{else}}
-                                <LinkTo @route="members" @current-when="members member member.new" data-test-nav="members">{{svg-jar "members"}}Members
+                                <LinkTo @route="members" @current-when="members member member.new" data-test-nav="members">{{svg-jar "members"}}{{t "admin.mainNav.members"}}
                                     {{#unless this.memberCountLoading}}
                                         <span class="gh-nav-member-count">{{format-number this.membersStats.memberCount}}</span>
                                     {{/unless}}

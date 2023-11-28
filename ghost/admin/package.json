@@ -100,6 +100,7 @@
     "ember-fetch": "8.1.2",
     "ember-in-viewport": "4.1.0",
     "ember-infinity": "2.3.0",
+    "ember-intl": "^6.2.2",
     "ember-keyboard": "8.2.1",
     "ember-load": "0.0.17",
     "ember-load-initializers": "2.1.2",

@@ -2,12 +2,12 @@
     <div class="gh-dashboard-content">
         <div class="gh-dashboard-data">
             <Dashboard::Parts::Metric
-                @label="Paid mix" />
+                @label="{{t "admin.charts.paidMix"}}" />
 
             {{#if this.isChartCadence}}
                 <div class="gh-dashboard-legend">
-                    <div class="gh-dashboard-legend-item">Monthly</div>
-                    <div class="gh-dashboard-legend-item">Annual</div>
+                    <div class="gh-dashboard-legend-item">{{t "admin.charts.monthly"}}</div>
+                    <div class="gh-dashboard-legend-item">{{t "admin.charts.annual"}}</div>
                 </div>
             {{/if}}
         </div>

@@ -4,6 +4,7 @@ import Service, {inject as service} from '@ember/service';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {isArray} from '@ember/array';
 import {task} from 'ember-concurrency';
+import { computed } from '@ember/object';
 
 const VIEW_COLORS = [
     'midgrey',
@@ -105,6 +106,38 @@ export default class CustomViewsService extends Service {
     @service router;
     @service session;
     @service settings;
+    @service intl;
+
+    @computed('intl.locale')
+    get defaultViews (){
+        return [{
+            route: 'posts',
+            name: this.intl.t('admin.mainNav.drafts'),
+            color: 'midgrey',
+            icon: 'pen',
+            filter: {
+                type: 'draft'
+            }
+        }, {
+            route: 'posts',
+            name: this.intl.t('admin.mainNav.scheduled'),
+            color: 'midgrey',
+            icon: 'clock',
+            filter: {
+                type: 'scheduled'
+            }
+        }, {
+            route: 'posts',
+            name: this.intl.t('admin.mainNav.published'),
+            color: 'midgray',
+            icon: 'published-post',
+            filter: {
+                type: 'published'
+            }
+        }].map((view) => {
+            return CustomView.create(Object.assign({}, view, {isDefault: true}));
+        });
+    }    
 
     get viewList() {
         let {settings, session} = this;
@@ -123,7 +156,7 @@ export default class CustomViewsService extends Service {
         // contributors can only see their own draft posts so it doesn't make
         // sense to show them default views which change the status/type filter
         if (!session.user.isContributor) {
-            viewList.push(...DEFAULT_VIEWS);
+            viewList.push(...this.defaultViews);
         }
 
         viewList.push(...views.map((view) => {

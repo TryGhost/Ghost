@@ -2,7 +2,7 @@
     <div class="gh-dashboard">
         <GhCanvasHeader class="gh-canvas-header sticky">
             <h2 class="gh-canvas-title" data-test-screen-title>
-                Dashboard
+                {{t "admin.dashboard"}}
             </h2>
             {{#unless this.isTotalMembersZero}}
                 <div class="gh-dashboard-select">
@@ -73,7 +73,29 @@
                         @horizontalPosition="right"
                         as |option|
                     >
-                        {{#if option.name}}{{option.name}}{{else}}<span class="red">Unknown option</span>{{/if}}
+                        {{#if option.name}}
+                            {{t option.name}}
+                        {{else}}
+                            <span class="red">Unknown option</span>
+                        {{/if}}
+                    </PowerSelect>
+                    <PowerSelect
+                        @selected={{this.selectedLanguageOption}}
+                        @options={{this.languageOptions}}
+                        @searchEnabled={{false}}
+                        @onChange={{this.onLanguageChange}}
+                        @triggerComponent={{component "gh-power-select/trigger"}}
+                        @triggerClass="gh-contentfilter-menu-trigger"
+                        @dropdownClass="gh-contentfilter-menu-dropdown is-narrow"
+                        @matchTriggerWidth={{false}}
+                        @horizontalPosition="right"
+                        as |option|
+                    >
+                        {{#if option.name}}
+                            {{option.name}}
+                        {{else}}
+                            <span class="red">Unknown option</span>
+                        {{/if}}
                     </PowerSelect>
                 </div>
             {{/unless}}

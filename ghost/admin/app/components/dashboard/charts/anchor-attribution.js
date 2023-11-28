@@ -7,6 +7,7 @@ import {getSymbol} from 'ghost-admin/utils/currency';
 import {ghPriceAmount} from '../../../helpers/gh-price-amount';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
+import { computed } from '@ember/object';
 
 const DATE_FORMAT = 'D MMM, YYYY';
 
@@ -14,13 +15,13 @@ const DISPLAY_OPTIONS = [{
     name: 'MRR',
     value: 'mrr'
 },{
-    name: 'Total members',
+    name: 'admin.charts.totalMembers',
     value: 'total'
 }, {
-    name: 'Paid members',
+    name: 'admin.charts.paidMembers',
     value: 'paid'
 }, {
-    name: 'Free members',
+    name: 'admin.charts.freeMembers',
     value: 'free'
 }];
 
@@ -52,13 +53,29 @@ Chart.controllers.hoverLine = Chart.controllers.line.extend({
 });
 
 export default class Anchor extends Component {
+    @service intl
     @service dashboardStats;
     @service feature;
     @tracked chartDisplay = 'mrr';
     @tracked resizing = false;
     @tracked resizeTimer = null;
 
-    displayOptions = DISPLAY_OPTIONS;
+    @computed('intl.locale')
+    get displayOptions (){
+        return [{
+            name: this.intl.t('admin.charts.mrr'),
+            value: 'mrr'
+        },{
+            name: this.intl.t('admin.charts.totalMembers'),
+            value: 'total'
+        }, {
+            name: this.intl.t('admin.charts.paidMembers'),
+            value: 'paid'
+        }, {
+            name: this.intl.t('admin.charts.freeMembers'),
+            value: 'free'
+        }];
+    }    
 
     willDestroy(...args) {
         super.willDestroy(...args);

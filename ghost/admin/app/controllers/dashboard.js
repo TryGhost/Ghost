@@ -3,17 +3,26 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
+import { computed } from '@ember/object';
 
 // Options 30 and 90 need an extra day to be able to distribute ticks/gridlines evenly
 const DAYS_OPTIONS = [{
-    name: '7 Days',
+    name: 'admin.days.7days',
     value: 7
 }, {
-    name: '30 Days',
+    name: 'admin.days.30days',
     value: 30 + 1
 }, {
-    name: '90 Days',
+    name: 'admin.days.90days',
     value: 90 + 1
+}];
+
+const LANGUAGE_OPTIONS = [{
+    name: 'English',
+    value: 'en'
+}, {
+    name: 'Français',
+    value: 'fr'
 }];
 
 export default class DashboardController extends Controller {
@@ -22,11 +31,14 @@ export default class DashboardController extends Controller {
     @service store;
     @service mentionUtils;
     @service feature;
+    @service intl;
 
     @tracked mentions = [];
     @tracked hasNewMentions = false;
 
     daysOptions = DAYS_OPTIONS;
+    languageOptions = LANGUAGE_OPTIONS
+    @tracked languageValue = 'en';
 
     @action
     async loadMentions() {
@@ -91,6 +103,20 @@ export default class DashboardController extends Controller {
         this.days = selected.value;
     }
 
+    @action
+    onLanguageChange(selected) {
+        this.languageValue = selected.value;
+        this.intl.setLocale([this.languageValue]);
+    }
+
+    get language() {
+        return this.languageValue;
+    }
+    
+    set language(value) {
+        this.languageValue = value;
+    }
+    
     get days() {
         return this.dashboardStats.chartDays;
     }
@@ -101,6 +127,12 @@ export default class DashboardController extends Controller {
 
     get selectedDaysOption() {
         return this.daysOptions.find(d => d.value === this.days);
+    }
+
+
+    @computed('languageValue')
+    get selectedLanguageOption() {
+        return this.languageOptions.find(d => d.value === this.languageValue);
     }
 
     get isLoading() {

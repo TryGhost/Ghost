@@ -1,26 +1,26 @@
 <section class="gh-dashboard-section gh-dashboard-engagement">
     <article {{did-insert this.loadCharts}} class="gh-dashboard-box">
         <Dashboard::Parts::Metric
-            @label="Engagement" />
+            @label={{t "admin.engagement.engagement"}} />
 
         <div class="gh-dashboard-columns">
             <div class="gh-dashboard-column gh-dashboard-engagement-30days">
                 <Dashboard::Parts::Metric
-                    @label="Engaged in the last 30 days"
+                    @label={{t "admin.engagement.engagedInLast30Days"}}
                     @value={{this.data30Days}}
                     @secondary={{true}}
                     />
             </div>
             <div class="gh-dashboard-column gh-dashboard-engagement-7days">
                 <Dashboard::Parts::Metric
-                    @label="Engaged in the last 7 days"
+                    @label={{t "admin.engagement.engagedInLast7Days"}}
                     @value={{this.data7Days}}
                     @secondary={{true}}
                     />
             </div>
             <div class="gh-dashboard-column gh-dashboard-engagement-subscribers">
                 <Dashboard::Parts::Metric
-                    @label="Newsletter subscribers"
+                    @label={{t "admin.engagement.newsletterSubscribers"}}
                     @value={{this.dataSubscribers}}
                     @secondary={{true}}
                     />

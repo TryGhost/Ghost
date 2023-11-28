@@ -177,6 +177,7 @@ Chart.controllers.hoverBar = Chart.controllers.bar.extend({
 export default class PaidBreakdown extends Component {
     @service dashboardStats;
     @service feature;
+    @service intl
 
     @action
     loadCharts() {
@@ -188,7 +189,7 @@ export default class PaidBreakdown extends Component {
     }
 
     get chartTitle() {
-        return 'Paid subscribers';
+        return this.intl.t('admin.charts.PaidSubscribers');
     }
 
     get chartType() {

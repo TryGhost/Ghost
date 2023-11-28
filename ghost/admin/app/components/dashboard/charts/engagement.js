@@ -3,6 +3,7 @@ import {action} from '@ember/object';
 import {formatNumber} from '../../../helpers/format-number';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
+import { computed } from '@ember/object';
 
 const STATUS_OPTIONS = [{
     name: 'All members',
@@ -17,6 +18,7 @@ const STATUS_OPTIONS = [{
 
 export default class Engagement extends Component {
     @service dashboardStats;
+    @service intl
 
     @action
     loadCharts() {
@@ -27,7 +29,19 @@ export default class Engagement extends Component {
     }
 
     @tracked status = 'total';
-    statusOptions = STATUS_OPTIONS;
+    @computed('intl.locale')
+    get statusOptions() {
+        return [{
+            name: this.intl.t('admin.engagement.allMembers'),
+            value: 'total'
+        }, {
+            name: this.intl.t('admin.engagement.paidMembers'),
+            value: 'paid'
+        }, {
+            name: this.intl.t('admin.engagement.freeMembers'),
+            value: 'free'
+        }];
+    }
 
     get selectedStatusOption() {
         return this.statusOptions.find(option => option.value === this.status);

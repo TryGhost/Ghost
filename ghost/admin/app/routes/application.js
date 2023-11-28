@@ -50,6 +50,7 @@ export default Route.extend(ShortcutsRoute, {
     ui: service(),
     whatsNew: service(),
     billing: service(),
+    intl: service(),
 
     shortcuts,
 
@@ -68,6 +69,7 @@ export default Route.extend(ShortcutsRoute, {
     config: inject(),
 
     async beforeModel() {
+        this.intl.setLocale(['en']);
         await this.session.setup();
         return this.prepareApp();
     },

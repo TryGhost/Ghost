@@ -2,9 +2,21 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {formatNumber} from '../../../helpers/format-number';
 import {inject as service} from '@ember/service';
+import { computed } from '@ember/object';
 
 export default class Overview extends Component {
     @service dashboardStats;
+    @service intl
+
+    @computed('intl.locale')
+    get memberTypes() {
+        return {
+            totalMembers: this.intl.t('admin.charts.totalMembers'),
+            paidMembers: this.intl.t('admin.charts.paidMembers'),
+            freeMembers: this.intl.t('admin.charts.freeMembers'),
+        };
+    }
+    
 
     @action
     loadCharts() {
