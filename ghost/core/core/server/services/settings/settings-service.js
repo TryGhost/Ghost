@@ -15,6 +15,7 @@ const urlUtils = require('../../../shared/url-utils');
 
 const ObjectId = require('bson-objectid').default;
 const settingsHelpers = require('../settings-helpers');
+const emailAddressService = require('../email-address');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
@@ -35,7 +36,8 @@ const getSettingsBREADServiceInstance = () => {
             validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
             maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
         }),
-        urlUtils
+        urlUtils,
+        emailAddressService: emailAddressService
     });
 };
 
