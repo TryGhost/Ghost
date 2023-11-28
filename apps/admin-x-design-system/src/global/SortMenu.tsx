@@ -9,6 +9,7 @@ export type SortItem = {
     id: string,
     label: string;
     selected?: boolean;
+    direction?: SortDirection;
 }
 
 export interface SortMenuProps {
@@ -31,7 +32,7 @@ const SortMenu: React.FC<SortMenuProps> = ({
     position = 'left'
 }) => {
     const [localItems, setLocalItems] = useState<SortItem[]>(items);
-    const [localDirection, setLocalDirection] = useState<string>(direction || 'desc');
+    const [localDirection, setLocalDirection] = useState<SortDirection>(direction || 'desc');
 
     useEffect(() => {
         setLocalItems(items);
@@ -44,10 +45,16 @@ const SortMenu: React.FC<SortMenuProps> = ({
         }));
         setLocalItems(updatedItems);
 
+        if (localItems.find(item => item.id === selectedValue)?.direction) {
+            setLocalDirection(localItems.find(item => item.id === selectedValue)?.direction || 'desc');
+            onDirectionChange(localDirection);
+        }
+
         onSortChange(selectedValue);
     };
 
-    const handleSortDirection = () => {
+    const handleSortDirection = (e?: React.MouseEvent<HTMLElement, MouseEvent>) => {
+        e?.stopPropagation();
         setLocalDirection(currentDirection => (currentDirection === 'desc' ? 'asc' : 'desc'));
         onDirectionChange(localDirection);
     };
