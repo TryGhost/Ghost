@@ -1,11 +1,11 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
-import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ImageUpload, SettingGroupContent, TextField, TwitterLogo, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getImageUrl, useUploadImage} from '../../../api/images';
-import {getSettingValues} from '../../../api/settings';
+import {ImageUpload, SettingGroupContent, TextField, XLogo, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -56,7 +56,7 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const inputFields = (
         <div className="flex flex-col gap-3 md:flex-row">
             <div className="pt-1">
-                <TwitterLogo className='-mb-1 h-10 w-10' />
+                <XLogo className='-mb-1 h-10 w-10' />
             </div>
             <div className="w-full md:mr-[52px]">
                 <div className="mb-2">

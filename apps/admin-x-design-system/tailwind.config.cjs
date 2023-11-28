@@ -12,7 +12,7 @@ module.exports = {
             sm: '480px',
             md: '640px',
             lg: '1024px',
-            xl: '1280px',
+            xl: '1320px',
             tablet: '860px'
         },
         colors: {
@@ -219,6 +219,7 @@ module.exports = {
                 16: '6.4rem',
                 18: '7.2rem',
                 20: '8rem',
+                22: '9.2rem',
                 24: '9.6rem',
                 28: '11.2rem',
                 32: '12.8rem',
@@ -247,7 +248,7 @@ module.exports = {
                 '4xl': '89.6rem',
                 '5xl': '102.4rem',
                 '6xl': '115.2rem',
-                '7xl': '128rem',
+                '7xl': '132rem',
                 '8xl': '140rem',
                 '9xl': '156rem',
                 full: '100%',

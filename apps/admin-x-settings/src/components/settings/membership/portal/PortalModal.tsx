@@ -4,16 +4,15 @@ import NiceModal from '@ebay/nice-modal-react';
 import PortalPreview from './PortalPreview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './SignupOptions';
-import useForm, {Dirtyable} from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
 import useQueryParams from '../../../../hooks/useQueryParams';
-import useRouting from '../../../../hooks/useRouting';
 import {ConfirmationModal, PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../../api/settings';
-import {Tier, useBrowseTiers, useEditTier} from '../../../../api/tiers';
-import {fullEmailAddress} from '../../../../api/site';
+import {Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {Setting, SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
+import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {verifyEmailToken} from '../../../../api/emailVerification';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {verifyEmailToken} from '@tryghost/admin-x-framework/api/emailVerification';
 
 const Sidebar: React.FC<{
     localSettings: Setting[]
@@ -67,7 +66,7 @@ const PortalModal: React.FC = () => {
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
 
     const handleError = useHandleError();
-    const {settings, siteData} = useGlobalData();
+    const {settings, siteData, config} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     // const tiers = getPaidActiveTiers(allTiers || []);
@@ -142,7 +141,7 @@ const PortalModal: React.FC = () => {
                     title: 'Confirm email address',
                     prompt: <>
                         We&apos;ve sent a confirmation email to <strong>{newEmail}</strong>.
-                        Until verified, your support address will remain {fullEmailAddress(currentEmail?.toString() || 'noreply', siteData!)}.
+                        Until verified, your support address will remain {fullEmailAddress(currentEmail?.toString() || 'noreply', siteData!, config)}.
                     </>,
                     okLabel: 'Close',
                     cancelLabel: '',

@@ -282,11 +282,17 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }
         },
 
-        signout() {
+        signout(all = false) {
             const url = endpointFor({type: 'members', resource: 'session'});
             return makeRequest({
                 url,
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    all
+                })
             }).then(function (res) {
                 if (res.ok) {
                     window.location.replace(siteUrl);

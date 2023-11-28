@@ -127,6 +127,7 @@ export default class LexicalEditorController extends Controller {
 
     // koenig related properties
     wordCount = 0;
+    tkCount = 0;
 
     /* private properties ----------------------------------------------------*/
 
@@ -308,6 +309,11 @@ export default class LexicalEditorController extends Controller {
     @action
     updateWordCount(count) {
         this.set('wordCount', count);
+    }
+
+    @action
+    updateTkCount(count) {
+        this.set('tkCount', count);
     }
 
     @action
@@ -1075,7 +1081,8 @@ export default class LexicalEditorController extends Controller {
         this.set('hasDirtyAttributes', false);
         this.set('shouldFocusTitle', false);
         this.set('showSettingsMenu', false);
-        this.set('wordCount', null);
+        this.set('wordCount', 0);
+        this.set('tkCount', 0);
 
         // remove the onbeforeunload handler as it's only relevant whilst on
         // the editor route

@@ -2,11 +2,20 @@ import clsx from 'clsx';
 import React, {HTMLProps} from 'react';
 import Heading from './Heading';
 
-export type TableHeadProps = HTMLProps<HTMLTableCellElement>
+export interface TableHeadProps extends HTMLProps<HTMLTableCellElement> {
+    sticky?: boolean;
+}
 
-const TableHead: React.FC<TableHeadProps> = ({className, children, colSpan, ...props}) => {
+const TableHead: React.FC<TableHeadProps> = ({
+    className,
+    children,
+    colSpan,
+    sticky = false,
+    ...props
+}) => {
     const tableCellClasses = clsx(
         '!py-2 !pl-0 !pr-6 text-left align-top',
+        sticky && 'sticky top-0 bg-white',
         props.onClick && 'hover:cursor-pointer',
         className
     );

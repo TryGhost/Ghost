@@ -10,6 +10,7 @@
                     "test",
                     "test:unit"
                 ],
+                "useDaemonProcess": false,
                 "cacheDirectory": ".nxcache"
             }
         }

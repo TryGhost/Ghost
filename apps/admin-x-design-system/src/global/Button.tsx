@@ -1,4 +1,4 @@
-import Icon from './Icon';
+import Icon, {IconSize} from './Icon';
 import React, {HTMLProps} from 'react';
 import clsx from 'clsx';
 import {LoadingIndicator, LoadingIndicatorColor, LoadingIndicatorSize} from './LoadingIndicator';
@@ -11,6 +11,7 @@ export interface ButtonProps extends Omit<HTMLProps<HTMLButtonElement>, 'label' 
     label?: React.ReactNode;
     hideLabel?: boolean;
     icon?: string;
+    iconSize?: IconSize;
     iconColorClass?: string;
     key?: string;
     color?: ButtonColor;
@@ -24,6 +25,7 @@ export interface ButtonProps extends Omit<HTMLProps<HTMLButtonElement>, 'label' 
     loading?: boolean;
     loadingIndicatorSize?: LoadingIndicatorSize;
     loadingIndicatorColor?: LoadingIndicatorColor;
+    outlineOnMobile?: boolean;
     onClick?: (e?:React.MouseEvent<HTMLElement>) => void;
 }
 
@@ -32,7 +34,8 @@ const Button: React.FC<ButtonProps> = ({
     label = '',
     hideLabel = false,
     icon = '',
-    iconColorClass = 'text-black',
+    iconSize,
+    iconColorClass,
     color = 'clear',
     fullWidth,
     link,
@@ -43,6 +46,7 @@ const Button: React.FC<ButtonProps> = ({
     tag = 'button',
     loading = false,
     loadingIndicatorColor,
+    outlineOnMobile = false,
     onClick,
     ...props
 }) => {
@@ -54,7 +58,8 @@ const Button: React.FC<ButtonProps> = ({
         className = clsx(
             'inline-flex items-center justify-center whitespace-nowrap rounded text-sm transition',
             ((link && color !== 'clear' && color !== 'black') || (!link && color !== 'clear')) ? 'font-bold' : 'font-semibold',
-            !link ? `${size === 'sm' ? ' h-7 px-3 ' : ' h-[34px] px-4 '}` : '',
+            !link ? `${size === 'sm' ? 'h-7' : 'h-[34px]'}` : '',
+            !link ? `${size === 'sm' || label && icon ? 'px-3' : 'px-4'}` : '',
             (link && linkWithPadding) && '-m-1 p-1',
             className
         );
@@ -66,6 +71,7 @@ const Button: React.FC<ButtonProps> = ({
                 className
             );
             loadingIndicatorColor = 'light';
+            iconColorClass = iconColorClass || 'text-white';
             break;
         case 'grey':
             className = clsx(
@@ -80,6 +86,7 @@ const Button: React.FC<ButtonProps> = ({
                 className
             );
             loadingIndicatorColor = 'light';
+            iconColorClass = iconColorClass || 'text-white';
             break;
         case 'red':
             className = clsx(
@@ -87,6 +94,7 @@ const Button: React.FC<ButtonProps> = ({
                 className
             );
             loadingIndicatorColor = 'light';
+            iconColorClass = iconColorClass || 'text-white';
             break;
         case 'white':
             className = clsx(
@@ -104,7 +112,8 @@ const Button: React.FC<ButtonProps> = ({
             break;
         default:
             className = clsx(
-                link ? ' text-black hover:text-grey-800 dark:text-white' : ` text-black dark:text-white dark:hover:bg-grey-900 ${!disabled && 'hover:bg-grey-200'}`,
+                link ? ' text-black hover:text-grey-800 dark:text-white' : `text-black dark:text-white dark:hover:bg-grey-900 ${!disabled && 'hover:bg-grey-200'}`,
+                (outlineOnMobile && !link) && 'border border-grey-300 hover:border-transparent md:border-transparent',
                 className
             );
             loadingIndicatorColor = 'dark';
@@ -124,8 +133,10 @@ const Button: React.FC<ButtonProps> = ({
     labelClasses += (label && hideLabel) ? 'sr-only' : '';
     labelClasses += loading ? 'invisible' : '';
 
+    iconSize = iconSize || ((size === 'sm') || (label && icon) ? 'sm' : 'md');
+
     const buttonChildren = <>
-        {icon && <Icon className={iconClasses} colorClass={iconColorClass} name={icon} size={size === 'sm' ? 'sm' : 'md'} />}
+        {icon && <Icon className={iconClasses} colorClass={iconColorClass} name={icon} size={iconSize} />}
         <span className={labelClasses}>{label}</span>
         {loading && <div className='absolute flex'><LoadingIndicator color={loadingIndicatorColor} size={size}/><span className='sr-only'>Loading...</span></div>}
     </>;

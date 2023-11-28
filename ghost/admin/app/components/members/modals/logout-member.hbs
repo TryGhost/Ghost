@@ -1,0 +1,30 @@
+<div class="modal-content" data-test-modal="logout-member">
+    <header class="modal-header">
+        <h1>Sign out member from all devices?</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" (fn @close false)}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p class="mb6">
+            <strong>{{or @data.member.name @data.member.email}}</strong> will be signed out of all active sessions, and will need to sign in again upon return.
+        </p>
+    </div>
+
+    <div class="modal-footer">
+        <button
+            type="button"
+            class="gh-btn"
+            {{on "click" (fn @close false)}}
+            data-test-button="cancel"
+        >
+            <span>Cancel</span>
+        </button>
+        <GhTaskButton
+            @buttonText="Sign out"
+            @successText="Signed out"
+            @task={{this.logoutMemberTask}}
+            @class="gh-btn gh-btn-red gh-btn-icon"
+            data-test-button="confirm"
+        />
+    </div>
+</div>

@@ -1,7 +1,7 @@
 import CustomHeader from './CustomHeader';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {SettingGroup, SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
-import {User, hasAdminAccess} from '../../../../api/users';
+import {User, hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
 
 const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     const hasWebmentions = useFeatureFlag('webmentions');

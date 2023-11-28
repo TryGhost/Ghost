@@ -1,12 +1,12 @@
 import React, {useRef, useState} from 'react';
 import UnsplashSearchModal from '../../../../unsplash/UnsplashSearchModal';
-import useHandleError from '../../../../utils/api/handleError';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {ColorPickerField, Heading, Hint, ImageUpload, SettingGroupContent, TextField, debounce} from '@tryghost/admin-x-design-system';
-import {SettingValue, getSettingValues} from '../../../../api/settings';
-import {getImageUrl, useUploadImage} from '../../../../api/images';
+import {SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {useFramework} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {useServices} from '../../../providers/ServiceProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 export interface BrandSettingValues {
     description: string
@@ -22,7 +22,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
     const {settings} = useGlobalData();
     const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
     const [showUnsplash, setShowUnsplash] = useState<boolean>(false);
-    const {unsplashConfig} = useServices();
+    const {unsplashConfig} = useFramework();
     const handleError = useHandleError();
 
     const updateDescriptionDebouncedRef = useRef(

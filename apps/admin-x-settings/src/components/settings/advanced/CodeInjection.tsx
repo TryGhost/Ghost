@@ -5,7 +5,7 @@ import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Button, CodeEditor, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {ReactCodeMirrorRef} from '@uiw/react-codemirror';
-import {getSettingValues} from '../../../api/settings';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
