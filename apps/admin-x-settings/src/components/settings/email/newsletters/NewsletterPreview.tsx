@@ -113,6 +113,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         headerTitle={headerTitle}
         senderEmail={renderSenderEmail()}
         senderName={newsletter.sender_name || title}
+        senderReplyTo={newsletter.sender_reply_to}
         showBadge={newsletter.show_badge}
         showCommentCta={showCommentCta}
         showFeatureImage={newsletter.show_feature_image}
