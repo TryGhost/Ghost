@@ -10,7 +10,7 @@ import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreviewContent: React.FC<{
     senderName?: string;
-    senderEmail: string;
+    senderEmail: string | null;
     senderReplyTo: string | null;
     headerImage?: string | null;
     headerIcon?: string;

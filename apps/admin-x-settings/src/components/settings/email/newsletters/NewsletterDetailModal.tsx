@@ -15,7 +15,7 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
-const renderSenderEmail = (newsletter: Newsletter, config: Config, defaultEmailAddress: string|undefined) => {
+export const renderSenderEmail = (newsletter: Newsletter, config: Config, defaultEmailAddress: string|undefined) => {
     if (isManagedEmail(config) && !hasSendingDomain(config) && defaultEmailAddress) {
         // Not changeable: sender_email is ignored
         return defaultEmailAddress;

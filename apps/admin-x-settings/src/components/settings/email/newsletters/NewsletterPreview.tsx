@@ -3,8 +3,7 @@ import React from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {hasSendingDomain, isManagedEmail} from '@tryghost/admin-x-framework/api/config';
-import {renderReplyToEmail} from './NewsletterDetailModal';
+import {renderReplyToEmail, renderSenderEmail} from './NewsletterDetailModal';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
@@ -92,17 +91,6 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         secondaryTextColor
     } : {};
 
-    const renderSenderEmail = () => {
-        if (isManagedEmail(config)) {
-            if (!hasSendingDomain(config)) {
-                // Sender email is ignored
-                return defaultEmailAddress || '';
-            }
-        }
-
-        return newsletter.sender_email || defaultEmailAddress || '';
-    };
-
     return <NewsletterPreviewContent
         authorPlaceholder={currentUser.name || currentUser.email}
         backgroundColor={colors.backgroundColor || '#ffffff'}
@@ -112,7 +100,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}
         headerTitle={headerTitle}
-        senderEmail={renderSenderEmail()}
+        senderEmail={renderSenderEmail(newsletter, config, defaultEmailAddress)}
         senderName={newsletter.sender_name || title}
         senderReplyTo={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
         showBadge={newsletter.show_badge}
