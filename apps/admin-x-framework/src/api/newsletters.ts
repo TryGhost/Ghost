@@ -49,10 +49,12 @@ export interface NewslettersResponseType {
 const dataType = 'NewslettersResponseType';
 export const newslettersDataType = dataType;
 
+export const browseNewslettersDefaultLimit = '50';
+
 export const useBrowseNewsletters = createInfiniteQuery<NewslettersResponseType & {isEnd: boolean}>({
     dataType,
     path: '/newsletters/',
-    defaultSearchParams: {include: 'count.active_members,count.posts', limit: '50'},
+    defaultSearchParams: {include: 'count.active_members,count.posts', limit: browseNewslettersDefaultLimit},
     defaultNextPageParams: (lastPage, otherParams) => ({
         ...otherParams,
         page: (lastPage.meta?.pagination.next || 1).toString()
