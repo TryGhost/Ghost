@@ -76,6 +76,7 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
         footer={false}
         height='full'
         size='lg'
+        testId='offer-success-modal'
         topRightContent='close'
     >
         <div className='-mt-6 flex h-full flex-col items-center justify-center text-center'>
