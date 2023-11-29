@@ -11,6 +11,7 @@ function equals(a: any, b: any) {
 
 type BaseEntityData = {
     id: ObjectID;
+    deleted: boolean;
     createdAt: Date;
     createdBy: ObjectID;
     updatedAt: Date | null;
@@ -45,6 +46,14 @@ export class Entity<Data> {
 
     get updatedBy() {
         return this.attr.updatedBy;
+    }
+
+    get deleted() {
+        return this.attr.deleted;
+    }
+
+    delete() {
+        this.attr.deleted = true;
     }
 
     protected set<K extends keyof Data>(key: K, value: Data[K], actor?: Actor) {

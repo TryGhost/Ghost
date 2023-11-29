@@ -48,6 +48,13 @@ export abstract class BaseKnexRepository<T extends Entity<unknown>, F, O extends
     }
 
     async save(entity: T): Promise<void> {
+        if (entity.deleted) {
+            await this.knex(this.table)
+                .where('id', entity.id.toHexString())
+                .del();
+            return;
+        }
+
         const rows = await this.knex(this.table)
             .where('id', entity.id.toHexString())
             .count('id', {as: 'count'});

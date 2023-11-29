@@ -7,6 +7,7 @@ describe('BrowseSnippetDTO', () => {
     it('constructs a BrowseSnippetDTO object from a Snippet object with mobiledoc field', async () => {
         const snippet = new Snippet({
             id: ObjectId(),
+            deleted: false,
             name: 'Test',
             mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Test"]]]]}',
             lexical: undefined,
@@ -27,6 +28,7 @@ describe('BrowseSnippetDTO', () => {
 
     it('constructs a BrowseSnippetDTO object from a Snippet object with lexical field', async () => {
         const snippet = new Snippet({
+            deleted: false,
             id: ObjectId(),
             name: 'Test',
             mobiledoc: undefined,
