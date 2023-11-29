@@ -12,6 +12,23 @@ export class KnexSnippetsRepository implements SnippetsRepository {
 
     readonly table = 'snippets';
 
+    private mapRowToEntity(row: any): Snippet | null {
+        try {
+            const snippet = Snippet.create({
+                id: row.id,
+                name: row.name,
+                lexical: row.lexical,
+                mobiledoc: row.mobiledoc,
+                createdAt: new Date(row.created_at),
+                updatedAt: row.updated_at ? new Date(row.updated_at) : null
+            });
+            return snippet;
+        } catch (err) {
+            // TODO: Sentry logging
+            return null;
+        }
+    }
+
     async save(entity: Snippet): Promise<void> {
         const rows = await this.knex(this.table)
             .where('id', entity.id.toHexString())
@@ -50,22 +67,7 @@ export class KnexSnippetsRepository implements SnippetsRepository {
         }
         assert(rows.length === 1, 'Found two rows with the same id');
 
-        const row = rows[0];
-
-        try {
-            const snippet = Snippet.create({
-                id: row.id,
-                name: row.name,
-                lexical: row.lexical,
-                mobiledoc: row.mobiledoc,
-                createdAt: new Date(row.created_at),
-                updatedAt: row.updated_at ? new Date(row.updated_at) : null
-            });
-            return snippet;
-        } catch (err) {
-            // TODO: Sentry logging
-            return null;
-        }
+        return this.mapRowToEntity(rows[0]);
     }
 
     async getAll(
@@ -84,20 +86,7 @@ export class KnexSnippetsRepository implements SnippetsRepository {
         }
         const rows = await query.select();
         const snippets = rows.reduce((memo, row) => {
-            let entity;
-            try {
-                entity = Snippet.create({
-                    id: row.id,
-                    name: row.name,
-                    lexical: row.lexical,
-                    mobiledoc: row.mobiledoc,
-                    createdAt: new Date(row.created_at),
-                    updatedAt: row.updated_at ? new Date(row.updated_at) : null
-                });
-            } catch (err) {
-                // TODO: Sentry logging
-                entity = null;
-            }
+            const entity = this.mapRowToEntity(row);
             if (!entity) {
                 return memo;
             }
@@ -126,20 +115,7 @@ export class KnexSnippetsRepository implements SnippetsRepository {
         }
         const rows = await query.select();
         const snippets = rows.reduce((memo, row) => {
-            let entity;
-            try {
-                entity = Snippet.create({
-                    id: row.id,
-                    name: row.name,
-                    lexical: row.lexical,
-                    mobiledoc: row.mobiledoc,
-                    createdAt: new Date(row.created_at),
-                    updatedAt: row.updated_at ? new Date(row.updated_at) : null
-                });
-            } catch (err) {
-                // TODO: Sentry logging
-                entity = null;
-            }
+            const entity = this.mapRowToEntity(row);
             if (!entity) {
                 return memo;
             }
