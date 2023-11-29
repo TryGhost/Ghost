@@ -15,9 +15,18 @@ abstract class BaseKnexRepository<T extends Entity<unknown>, F, O extends OrderO
     protected abstract mapEntityToRow(entity: T): any
     protected abstract mapRowToEntity(row: any): T | null
 
+    private safeMapRowToEntity(row: any): T | null {
+        try {
+            return this.mapRowToEntity(row);
+        } catch (err) {
+            // TODO: Sentry logging
+            return null;
+        }
+    }
+
     private mapRowsToEntities(rows: any[]): T[] {
         const entities = rows.reduce((memo: T[], row) => {
-            const entity = this.mapRowToEntity(row);
+            const entity = this.safeMapRowToEntity(row);
             if (!entity) {
                 return memo;
             }
@@ -73,7 +82,7 @@ abstract class BaseKnexRepository<T extends Entity<unknown>, F, O extends OrderO
         }
         assert(rows.length === 1, 'Found two rows with the same id');
 
-        return this.mapRowToEntity(rows[0]);
+        return this.safeMapRowToEntity(rows[0]);
     }
 
     async getAll(
@@ -131,19 +140,13 @@ export class KnexSnippetsRepository
     }
 
     protected mapRowToEntity(row: any): Snippet | null {
-        try {
-            const snippet = Snippet.create({
-                id: row.id,
-                name: row.name,
-                lexical: row.lexical,
-                mobiledoc: row.mobiledoc,
-                createdAt: new Date(row.created_at),
-                updatedAt: row.updated_at ? new Date(row.updated_at) : null
-            });
-            return snippet;
-        } catch (err) {
-            // TODO: Sentry logging
-            return null;
-        }
+        return Snippet.create({
+            id: row.id,
+            name: row.name,
+            lexical: row.lexical,
+            mobiledoc: row.mobiledoc,
+            createdAt: new Date(row.created_at),
+            updatedAt: row.updated_at ? new Date(row.updated_at) : null
+        });
     }
 }
