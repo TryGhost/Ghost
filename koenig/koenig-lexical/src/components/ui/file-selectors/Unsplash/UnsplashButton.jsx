@@ -1,5 +1,5 @@
-import {ReactComponent as DownloadIcon} from '../../../../assets/icons/kg-download.svg';
-import {ReactComponent as UnsplashHeartIcon} from '../../../../assets/icons/kg-unsplash-heart.svg';
+import DownloadIcon from '../../../../assets/icons/kg-download.svg?react';
+import UnsplashHeartIcon from '../../../../assets/icons/kg-unsplash-heart.svg?react';
 
 const BUTTON_ICONS = {
     heart: UnsplashHeartIcon,
@@ -11,8 +11,8 @@ function UnsplashButton({icon, label, ...props}) {
 
     return (
         <a className="flex h-8 shrink-0 cursor-pointer items-center rounded-md bg-white px-3 py-2 font-sans text-sm font-medium leading-6 text-grey-700 opacity-90 transition-all ease-in-out first-of-type:mr-3 hover:opacity-100"
-            type="button" 
-            onClick={e => e.stopPropagation()} 
+            type="button"
+            onClick={e => e.stopPropagation()}
             {...props}
         >
             {icon && <Icon className={`h-4 w-4 fill-red stroke-[3px] ${label && 'mr-1'}`} />}

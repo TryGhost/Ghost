@@ -1,10 +1,10 @@
 import React from 'react';
+import ToggleCardIcon from '../assets/icons/kg-card-type-toggle.svg?react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$canShowPlaceholderCurry} from '@lexical/text';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BASIC_NODES, KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {ToggleNode as BaseToggleNode} from '@tryghost/kg-default-nodes';
-import {ReactComponent as ToggleCardIcon} from '../assets/icons/kg-card-type-toggle.svg';
 import {ToggleNodeComponent} from './ToggleNodeComponent';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';

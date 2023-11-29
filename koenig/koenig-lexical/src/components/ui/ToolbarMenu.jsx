@@ -1,19 +1,19 @@
-import {ReactComponent as AddIcon} from '../../assets/icons/kg-add.svg';
-import {ReactComponent as BoldIcon} from '../../assets/icons/kg-bold.svg';
-import {ReactComponent as EditIcon} from '../../assets/icons/kg-edit.svg';
-import {ReactComponent as HeadingOneIcon} from '../../assets/icons/kg-heading-1.svg';
-import {ReactComponent as HeadingTwoIcon} from '../../assets/icons/kg-heading-2.svg';
-import {ReactComponent as ImgFullIcon} from '../../assets/icons/kg-img-full.svg';
-import {ReactComponent as ImgRegularIcon} from '../../assets/icons/kg-img-regular.svg';
-import {ReactComponent as ImgReplaceIcon} from '../../assets/icons/kg-replace.svg';
-import {ReactComponent as ImgWideIcon} from '../../assets/icons/kg-img-wide.svg';
-import {ReactComponent as ItalicIcon} from '../../assets/icons/kg-italic.svg';
-import {ReactComponent as LinkIcon} from '../../assets/icons/kg-link.svg';
-import {ReactComponent as QuoteIcon} from '../../assets/icons/kg-quote.svg';
-import {ReactComponent as QuoteOneIcon} from '../../assets/icons/kg-quote-1.svg';
-import {ReactComponent as QuoteTwoIcon} from '../../assets/icons/kg-quote-2.svg';
-import {ReactComponent as SnippetIcon} from '../../assets/icons/kg-snippet.svg';
-import {ReactComponent as TrashIcon} from '../../assets/icons/kg-trash.svg';
+import AddIcon from '../../assets/icons/kg-add.svg?react';
+import BoldIcon from '../../assets/icons/kg-bold.svg?react';
+import EditIcon from '../../assets/icons/kg-edit.svg?react';
+import HeadingOneIcon from '../../assets/icons/kg-heading-1.svg?react';
+import HeadingTwoIcon from '../../assets/icons/kg-heading-2.svg?react';
+import ImgFullIcon from '../../assets/icons/kg-img-full.svg?react';
+import ImgRegularIcon from '../../assets/icons/kg-img-regular.svg?react';
+import ImgReplaceIcon from '../../assets/icons/kg-replace.svg?react';
+import ImgWideIcon from '../../assets/icons/kg-img-wide.svg?react';
+import ItalicIcon from '../../assets/icons/kg-italic.svg?react';
+import LinkIcon from '../../assets/icons/kg-link.svg?react';
+import QuoteIcon from '../../assets/icons/kg-quote.svg?react';
+import QuoteOneIcon from '../../assets/icons/kg-quote-1.svg?react';
+import QuoteTwoIcon from '../../assets/icons/kg-quote-2.svg?react';
+import SnippetIcon from '../../assets/icons/kg-snippet.svg?react';
+import TrashIcon from '../../assets/icons/kg-trash.svg?react';
 
 export const TOOLBAR_ICONS = {
     bold: BoldIcon,

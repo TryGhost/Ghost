@@ -1,12 +1,12 @@
 /* eslint-disable react/jsx-key */
 import React from 'react';
 
+import CenterAlignIcon from '../../assets/icons/kg-align-center.svg?react';
+import ImgFullIcon from '../../assets/icons/kg-img-full.svg?react';
+import ImgRegularIcon from '../../assets/icons/kg-img-regular.svg?react';
+import ImgWideIcon from '../../assets/icons/kg-img-wide.svg?react';
+import LeftAlignIcon from '../../assets/icons/kg-align-left.svg?react';
 import {ButtonGroupSetting, ColorOptionSetting, ColorPickerSetting, DropdownSetting, InputSetting, MediaUploadSetting, MultiSelectDropdownSetting, SettingsDivider, SettingsPanel, ToggleSetting} from './SettingsPanel';
-import {ReactComponent as CenterAlignIcon} from '../../assets/icons/kg-align-center.svg';
-import {ReactComponent as ImgFullIcon} from '../../assets/icons/kg-img-full.svg';
-import {ReactComponent as ImgRegularIcon} from '../../assets/icons/kg-img-regular.svg';
-import {ReactComponent as ImgWideIcon} from '../../assets/icons/kg-img-wide.svg';
-import {ReactComponent as LeftAlignIcon} from '../../assets/icons/kg-align-left.svg';
 
 const story = {
     title: 'Settings panel/Settings panel',

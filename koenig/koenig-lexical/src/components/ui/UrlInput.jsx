@@ -1,6 +1,6 @@
+import CloseIcon from '../../assets/icons/kg-close.svg?react';
 import React from 'react';
 import {COMMAND_PRIORITY_LOW, KEY_ENTER_COMMAND} from 'lexical';
-import {ReactComponent as CloseIcon} from '../../assets/icons/kg-close.svg';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 

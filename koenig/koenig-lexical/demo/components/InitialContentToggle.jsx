@@ -1,7 +1,7 @@
+import EyeClosedIcon from './icons/eye-closed.svg?react';
+import EyeOpenIcon from './icons/eye-open.svg?react';
 import React from 'react';
 import {$createParagraphNode, $getRoot} from 'lexical';
-import {ReactComponent as EyeClosedIcon} from './icons/eye-closed.svg';
-import {ReactComponent as EyeOpenIcon} from './icons/eye-open.svg';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 const InitialContentToggle = ({defaultContent, setTitle, searchParams, setSearchParams}) => {

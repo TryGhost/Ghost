@@ -1,13 +1,13 @@
+import ImgFullIcon from '../../../assets/icons/kg-img-full.svg?react';
+import ImgRegularIcon from '../../../assets/icons/kg-img-regular.svg?react';
+import ImgWideIcon from '../../../assets/icons/kg-img-wide.svg?react';
+import PlayIcon from '../../../assets/icons/kg-play.svg?react';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {ButtonGroupSetting, MediaUploadSetting, SettingsPanel, ToggleSetting} from '../SettingsPanel';
 import {CardCaptionEditor} from '../CardCaptionEditor';
-import {ReactComponent as ImgFullIcon} from '../../../assets/icons/kg-img-full.svg';
-import {ReactComponent as ImgRegularIcon} from '../../../assets/icons/kg-img-regular.svg';
-import {ReactComponent as ImgWideIcon} from '../../../assets/icons/kg-img-wide.svg';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {MediaPlayer} from '../MediaPlayer';
-import {ReactComponent as PlayIcon} from '../../../assets/icons/kg-play.svg';
 import {ProgressBar} from '../ProgressBar';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 import {openFileSelection} from '../../../utils/openFileSelection';

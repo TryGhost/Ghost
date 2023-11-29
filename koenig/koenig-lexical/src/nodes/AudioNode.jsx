@@ -1,6 +1,6 @@
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 
-import {ReactComponent as AudioCardIcon} from '../assets/icons/kg-card-type-audio.svg';
+import AudioCardIcon from '../assets/icons/kg-card-type-audio.svg?react';
 import {AudioNodeComponent} from './AudioNodeComponent';
 import {AudioNode as BaseAudioNode} from '@tryghost/kg-default-nodes';
 import {createCommand} from 'lexical';

@@ -1,8 +1,8 @@
+import CloseIcon from '../../../../assets/icons/kg-close.svg?react';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {ReactComponent as CloseIcon} from '../../../../assets/icons/kg-close.svg';
-import {ReactComponent as SearchIcon} from '../../../../assets/icons/kg-search.svg';
-import {ReactComponent as UnsplashIcon} from '../../../../assets/icons/kg-card-type-unsplash.svg';
+import SearchIcon from '../../../../assets/icons/kg-search.svg?react';
+import UnsplashIcon from '../../../../assets/icons/kg-card-type-unsplash.svg?react';
 
 function UnsplashSelector({closeModal, handleSearch, children, galleryRef}) {
     return (

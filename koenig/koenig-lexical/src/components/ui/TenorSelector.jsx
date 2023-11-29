@@ -1,8 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
+import SearchIcon from '../../assets/icons/kg-search.svg?react';
 import {Error} from './file-selectors/Tenor/Error';
 import {Gif} from './file-selectors/Tenor/Gif';
 import {Loader} from './file-selectors/Tenor/Loader';
-import {ReactComponent as SearchIcon} from '../../assets/icons/kg-search.svg';
 
 // number of columns based on selector container width
 const TWO_COLUMN_WIDTH = 540;

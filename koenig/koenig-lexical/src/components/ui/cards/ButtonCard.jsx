@@ -1,9 +1,9 @@
+import CenterAlignIcon from '../../../assets/icons/kg-align-center.svg?react';
+import LeftAlignIcon from '../../../assets/icons/kg-align-left.svg?react';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Button} from '../Button';
 import {ButtonGroupSetting, InputSetting, InputUrlSetting, SettingsPanel} from '../SettingsPanel';
-import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
-import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
 
 export function ButtonCard({
     alignment,

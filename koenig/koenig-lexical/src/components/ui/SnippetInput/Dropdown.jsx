@@ -1,6 +1,6 @@
+import PlusIcon from '../../../assets/icons/plus.svg?react';
 import React from 'react';
-import {ReactComponent as PlusIcon} from '../../../assets/icons/plus.svg';
-import {ReactComponent as ReplaceIcon} from '../../../assets/icons/kg-sync.svg';
+import ReplaceIcon from '../../../assets/icons/kg-sync.svg?react';
 
 export const Dropdown = ({
     snippets,

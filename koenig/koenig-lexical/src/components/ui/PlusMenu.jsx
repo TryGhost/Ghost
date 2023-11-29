@@ -1,4 +1,4 @@
-import {ReactComponent as PlusIcon} from '../../assets/icons/plus.svg';
+import PlusIcon from '../../assets/icons/plus.svg?react';
 
 export function PlusButton({onClick}) {
     return (

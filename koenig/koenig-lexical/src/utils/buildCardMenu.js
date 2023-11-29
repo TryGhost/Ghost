@@ -1,5 +1,5 @@
+import SnippetCardIcon from '../assets/icons/kg-card-type-snippet.svg?react';
 import {INSERT_SNIPPET_COMMAND} from '../plugins/KoenigSnippetPlugin';
-import {ReactComponent as SnippetCardIcon} from '../assets/icons/kg-card-type-snippet.svg';
 
 export function buildCardMenu(nodes, {query, config} = {}) {
     let menu = new Map();
@@ -78,7 +78,7 @@ export function buildCardMenu(nodes, {query, config} = {}) {
             return 1;
         }
     }));
-    
+
     return {menu, maxItemIndex};
 }
 

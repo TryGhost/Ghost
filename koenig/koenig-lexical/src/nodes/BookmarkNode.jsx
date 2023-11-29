@@ -1,8 +1,8 @@
+import BookmarkCardIcon from '../assets/icons/kg-card-type-bookmark.svg?react';
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {BookmarkNode as BaseBookmarkNode} from '@tryghost/kg-default-nodes';
-import {ReactComponent as BookmarkCardIcon} from '../assets/icons/kg-card-type-bookmark.svg';
 import {BookmarkNodeComponent} from './BookmarkNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {createCommand} from 'lexical';

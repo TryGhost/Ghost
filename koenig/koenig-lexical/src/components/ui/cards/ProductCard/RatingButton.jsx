@@ -1,5 +1,5 @@
 import React from 'react';
-import {ReactComponent as StarIcon} from '../../../../assets/icons/kg-star.svg';
+import StarIcon from '../../../../assets/icons/kg-star.svg?react';
 
 export function RatingButton({rating, onRatingChange}) {
     const [hoveredStarIndex, setHoveredStarIndex] = React.useState(-1);

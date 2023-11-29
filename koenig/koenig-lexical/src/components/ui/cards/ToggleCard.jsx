@@ -1,7 +1,7 @@
+import ArrowDownIcon from '../../../assets/icons/kg-toggle-arrow.svg?react';
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {ReactComponent as ArrowDownIcon} from '../../../assets/icons/kg-toggle-arrow.svg';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 
 export function ToggleCard({

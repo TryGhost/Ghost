@@ -1,8 +1,8 @@
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
+import MarkdownCardIcon from '../assets/icons/kg-card-type-markdown.svg?react';
+import MarkdownIndicatorIcon from '../assets/icons/kg-indicator-markdown.svg?react';
 import React from 'react';
 import {MarkdownNode as BaseMarkdownNode} from '@tryghost/kg-default-nodes';
-import {ReactComponent as MarkdownCardIcon} from '../assets/icons/kg-card-type-markdown.svg';
-import {ReactComponent as MarkdownIndicatorIcon} from '../assets/icons/kg-indicator-markdown.svg';
 import {MarkdownNodeComponent} from './MarkdownNodeComponent';
 import {createCommand} from 'lexical';
 

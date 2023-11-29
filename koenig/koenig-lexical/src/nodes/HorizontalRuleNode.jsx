@@ -1,7 +1,7 @@
 import * as React from 'react';
+import DividerCardIcon from '../assets/icons/kg-card-type-divider.svg?react';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {HorizontalRuleNode as BaseHorizontalRuleNode} from '@tryghost/kg-default-nodes';
-import {ReactComponent as DividerCardIcon} from '../assets/icons/kg-card-type-divider.svg';
 import {HorizontalRuleCard} from '../components/ui/cards/HorizontalRuleCard';
 import {createCommand} from 'lexical';
 

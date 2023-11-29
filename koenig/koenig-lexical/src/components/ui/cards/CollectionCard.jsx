@@ -1,13 +1,13 @@
+import GridLayoutIcon from '../../../assets/icons/kg-layout-grid.svg?react';
+import ImgPlaceholderIcon from '../../../assets/icons/kg-img-placeholder.svg?react';
 import KoenigNestedEditor from '../../KoenigNestedEditor';
+import ListLayoutIcon from '../../../assets/icons/kg-layout-list.svg?react';
 import PropTypes from 'prop-types';
 import React from 'react';
 import clsx from 'clsx';
 import {$createParagraphNode, $createTextNode, $getRoot} from 'lexical';
 import {ButtonGroupSetting, DropdownSetting, SettingsPanel, SliderSetting} from '../SettingsPanel';
 import {DateTime} from 'luxon';
-import {ReactComponent as GridLayoutIcon} from '../../../assets/icons/kg-layout-grid.svg';
-import {ReactComponent as ImgPlaceholderIcon} from '../../../assets/icons/kg-img-placeholder.svg';
-import {ReactComponent as ListLayoutIcon} from '../../../assets/icons/kg-layout-list.svg';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 
@@ -77,7 +77,7 @@ function PostMeta({publishDate, readTime, layout, columns}) {
             (layout === 'grid' && columns === 1) && 'md:text-[1.3rem] lg:mt-4 lg:text-sm',
             (layout === 'grid' && columns === 2) && 'lg:mt-4 lg:text-[1.3rem]',
         )}>
-            {publishDate ? 
+            {publishDate ?
                 (<div>{DateTime.fromISO(publishDate).toFormat('d LLL yyyy')}</div>)
                 : (<div>{DateTime.now().toFormat('d LLL yyyy')}</div>)}
             {readTime > 0 && <div>&nbsp;&middot; {readTime} min</div>}
@@ -107,7 +107,7 @@ export function CollectionPost({
             (layout === 'grid' && columns === 4) && 'gap-4 lg:gap-3'
         )}>
             {(image || isPlaceholder || isLoading) && <PostImage columns={columns} image={image} isLoading={isLoading} layout={layout} />}
-            {(isPlaceholder || isLoading) ? 
+            {(isPlaceholder || isLoading) ?
                 <div className="col-span-2 flex flex-col items-start justify-start">
                     <div className={clsx(
                         'h-4 w-full rounded-full bg-grey-200',

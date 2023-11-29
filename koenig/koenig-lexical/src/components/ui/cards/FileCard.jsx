@@ -1,7 +1,7 @@
 import FileUploadForm from '../FileUploadForm';
+import FileUploadIcon from '../../../assets/icons/kg-file-upload.svg?react';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {ReactComponent as FileUploadIcon} from '../../../assets/icons/kg-file-upload.svg';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {ProgressBar} from '../ProgressBar';
 import {TextInput} from '../TextInput.jsx';

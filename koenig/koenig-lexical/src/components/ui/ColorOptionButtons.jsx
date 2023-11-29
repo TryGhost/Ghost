@@ -1,5 +1,5 @@
+import PlusIcon from '../../assets/icons/plus.svg?react';
 import React from 'react';
-import {ReactComponent as PlusIcon} from '../../assets/icons/plus.svg';
 import {usePreviousFocus} from '../../hooks/usePreviousFocus';
 
 export function ColorOptionButtons({buttons = [], selectedName, onClick}) {

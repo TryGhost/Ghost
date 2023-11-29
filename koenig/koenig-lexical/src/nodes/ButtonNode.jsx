@@ -1,7 +1,7 @@
+import ButtonCardIcon from '../assets/icons/kg-card-type-button.svg?react';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import React from 'react';
 import {ButtonNode as BaseButtonNode} from '@tryghost/kg-default-nodes';
-import {ReactComponent as ButtonCardIcon} from '../assets/icons/kg-card-type-button.svg';
 import {ButtonNodeComponent} from './ButtonNodeComponent';
 import {createCommand} from 'lexical';
 

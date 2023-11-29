@@ -1,6 +1,6 @@
+import CloseIcon from '../../assets/icons/kg-close.svg?react';
 import PropTypes from 'prop-types';
 import React, {useEffect, useRef} from 'react';
-import {ReactComponent as CloseIcon} from '../../assets/icons/kg-close.svg';
 
 export function LinkInput({href, update, cancel, arrowStyles}) {
     const [_href, setHref] = React.useState(href);

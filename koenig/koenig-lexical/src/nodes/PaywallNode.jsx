@@ -1,7 +1,7 @@
 import * as React from 'react';
+import DividerCardIcon from '../assets/icons/kg-card-type-preview.svg?react';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import {PaywallNode as BasePaywallNode} from '@tryghost/kg-default-nodes';
-import {ReactComponent as DividerCardIcon} from '../assets/icons/kg-card-type-preview.svg';
 import {PaywallCard} from '../components/ui/cards/PaywallCard';
 import {createCommand} from 'lexical';
 

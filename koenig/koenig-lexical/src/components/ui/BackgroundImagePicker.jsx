@@ -1,8 +1,8 @@
+import FileUploadIcon from '../../assets/icons/kg-upload-fill.svg?react';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {ReactComponent as FileUploadIcon} from '../../assets/icons/kg-upload-fill.svg';
+import TrashIcon from '../../assets/icons/kg-trash.svg?react';
 import {ProgressBar} from './ProgressBar';
-import {ReactComponent as TrashIcon} from '../../assets/icons/kg-trash.svg';
 
 function FileUploading({progress}) {
     const progressStyle = {

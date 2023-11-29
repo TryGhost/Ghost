@@ -1,5 +1,5 @@
+import GhostFavicon from './icons/ghost-favicon.svg?react';
 import React from 'react';
-import {ReactComponent as GhostFavicon} from './icons/ghost-favicon.svg';
 import {Link} from 'react-router-dom';
 
 function EditorLink({editorType}) {

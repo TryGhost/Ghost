@@ -1,9 +1,9 @@
+import AudioFileIcon from '../../../assets/icons/kg-audio-file.svg?react';
+import DeleteIcon from '../../../assets/icons/kg-trash.svg?react';
+import FilePlaceholderIcon from '../../../assets/icons/kg-file-placeholder.svg?react';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {ReactComponent as AudioFileIcon} from '../../../assets/icons/kg-audio-file.svg';
 import {AudioUploadForm} from '../AudioUploadForm';
-import {ReactComponent as DeleteIcon} from '../../../assets/icons/kg-trash.svg';
-import {ReactComponent as FilePlaceholderIcon} from '../../../assets/icons/kg-file-placeholder.svg';
 import {IconButton} from '../IconButton';
 import {ImageUploadForm} from '../ImageUploadForm';
 import {MediaPlaceholder} from '../MediaPlaceholder';

@@ -1,5 +1,5 @@
+import ArrowIcon from '../../assets/icons/kg-arrow-down.svg?react';
 import React from 'react';
-import {ReactComponent as ArrowIcon} from '../../assets/icons/kg-arrow-down.svg';
 import {DropdownContainer} from './DropdownContainer';
 import {KeyboardSelection} from './KeyboardSelection';
 
@@ -63,7 +63,7 @@ export function Dropdown({value, menu, onChange, dataTestId}) {
 
     return (
         <div className="relative z-0 font-sans text-sm font-normal" data-testid={dataTestId}>
-            <button 
+            <button
                 className={`relative w-full cursor-pointer border border-grey-300 px-3 py-2 text-left font-sans font-normal text-grey-900 focus-visible:outline-none dark:border-grey-900 dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800 ${open ? 'rounded-t' : 'rounded'}`}
                 data-testid={`${dataTestId}-value`}
                 type="button"

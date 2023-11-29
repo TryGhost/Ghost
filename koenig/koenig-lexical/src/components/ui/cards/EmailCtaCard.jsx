@@ -1,11 +1,11 @@
+import CenterAlignIcon from '../../../assets/icons/kg-align-center.svg?react';
 import KoenigNestedEditor from '../../KoenigNestedEditor';
+import LeftAlignIcon from '../../../assets/icons/kg-align-left.svg?react';
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin';
 import {Button} from '../Button';
 import {ButtonGroupSetting, DropdownSetting, InputSetting, InputUrlSetting, SettingsDivider, SettingsPanel, ToggleSetting} from '../SettingsPanel';
-import {ReactComponent as CenterAlignIcon} from '../../../assets/icons/kg-align-center.svg';
-import {ReactComponent as LeftAlignIcon} from '../../../assets/icons/kg-align-left.svg';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 
 export function EmailCtaCard({

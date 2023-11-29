@@ -1,7 +1,7 @@
+import EyedropperIcon from '../../assets/icons/kg-eyedropper.svg?react';
 import React, {Fragment, useCallback, useEffect, useRef} from 'react';
 import clsx from 'clsx';
 import {Button} from './Button';
-import {ReactComponent as EyedropperIcon} from '../../assets/icons/kg-eyedropper.svg';
 import {HexColorInput, HexColorPicker} from 'react-colorful';
 import {INPUT_CLASSES} from './Input';
 import {getAccentColor} from '../../utils/getAccentColor';

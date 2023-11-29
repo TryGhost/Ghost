@@ -1,7 +1,7 @@
+import DeleteIcon from '../../../assets/icons/kg-trash.svg?react';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {CardCaptionEditor} from '../CardCaptionEditor';
-import {ReactComponent as DeleteIcon} from '../../../assets/icons/kg-trash.svg';
 import {IconButton} from '../IconButton';
 import {MediaPlaceholder} from '../MediaPlaceholder';
 import {ProgressBar} from '../ProgressBar';

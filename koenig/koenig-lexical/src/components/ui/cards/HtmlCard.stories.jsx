@@ -1,7 +1,7 @@
+import HtmlIndicatorIcon from '../../../assets/icons/kg-indicator-html.svg?react';
 import React from 'react';
 import {CardWrapper} from '../CardWrapper';
 import {HtmlCard} from './HtmlCard.jsx';
-import {ReactComponent as HtmlIndicatorIcon} from '../../../assets/icons/kg-indicator-html.svg';
 
 const displayOptions = {
     Default: {isSelected: false, isEditing: false},

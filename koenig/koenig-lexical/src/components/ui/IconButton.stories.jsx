@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {ReactComponent as DeleteIcon} from '../../assets/icons/kg-trash.svg';
+import DeleteIcon from '../../assets/icons/kg-trash.svg?react';
 import {IconButton} from './IconButton';
 
 const story = {

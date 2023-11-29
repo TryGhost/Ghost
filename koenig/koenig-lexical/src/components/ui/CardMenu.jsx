@@ -1,7 +1,7 @@
+import ExternalLinkIcon from '../../assets/icons/kg-help.svg?react';
 import React from 'react';
+import TrashCardIcon from '../../assets/icons/kg-trash-outline.svg?react';
 import trackEvent from '../../utils/analytics';
-import {ReactComponent as ExternalLinkIcon} from '../../assets/icons/kg-help.svg';
-import {ReactComponent as TrashCardIcon} from '../../assets/icons/kg-trash-outline.svg';
 
 export const CardMenuSection = ({label, children, ...props}) => {
     let helpLink = '';

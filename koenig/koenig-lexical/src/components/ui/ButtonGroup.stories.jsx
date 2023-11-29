@@ -1,8 +1,8 @@
+import ImgFullIcon from '../../assets/icons/kg-img-full.svg?react';
+import ImgRegularIcon from '../../assets/icons/kg-img-regular.svg?react';
+import ImgWideIcon from '../../assets/icons/kg-img-wide.svg?react';
 import React from 'react';
 import {ButtonGroup, IconButton} from './ButtonGroup';
-import {ReactComponent as ImgFullIcon} from '../../assets/icons/kg-img-full.svg';
-import {ReactComponent as ImgRegularIcon} from '../../assets/icons/kg-img-regular.svg';
-import {ReactComponent as ImgWideIcon} from '../../assets/icons/kg-img-wide.svg';
 
 const story = {
     title: 'Generic/Button group',

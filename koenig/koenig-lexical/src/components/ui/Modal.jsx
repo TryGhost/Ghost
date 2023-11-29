@@ -1,7 +1,7 @@
+import CloseIcon from '../../assets/icons/kg-close.svg?react';
 import Portal from './Portal';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {ReactComponent as CloseIcon} from '../../assets/icons/kg-close.svg';
 
 export function Modal({isOpen, onClose, children}) {
     const controlByKeys = (event) => {

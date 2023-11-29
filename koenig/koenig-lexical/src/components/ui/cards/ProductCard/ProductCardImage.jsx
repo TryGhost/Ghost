@@ -1,6 +1,6 @@
+import DeleteIcon from '../../../../assets/icons/kg-trash.svg?react';
+import EditIcon from '../../../../assets/icons/kg-edit.svg?react';
 import React from 'react';
-import {ReactComponent as DeleteIcon} from '../../../../assets/icons/kg-trash.svg';
-import {ReactComponent as EditIcon} from '../../../../assets/icons/kg-edit.svg';
 import {IconButton} from '../../IconButton.jsx';
 import {MediaPlaceholder} from '../../MediaPlaceholder.jsx';
 import {ProgressBar} from '../../ProgressBar.jsx';

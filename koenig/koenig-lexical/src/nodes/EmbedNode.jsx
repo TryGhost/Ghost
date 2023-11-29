@@ -1,16 +1,16 @@
+import CodePenIcon from '../assets/icons/kg-card-type-codepen.svg?react';
+import EmbedCardIcon from '../assets/icons/kg-card-type-other.svg?react';
 import React from 'react';
+import SoundCloudIcon from '../assets/icons/kg-card-type-soundcloud.svg?react';
+import SpotifyIcon from '../assets/icons/kg-card-type-spotify.svg?react';
+import VimeoIcon from '../assets/icons/kg-card-type-vimeo.svg?react';
+import XIcon from '../assets/icons/kg-card-type-x.svg?react';
+import YouTubeIcon from '../assets/icons/kg-card-type-youtube.svg?react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {EmbedNode as BaseEmbedNode} from '@tryghost/kg-default-nodes';
-import {ReactComponent as CodePenIcon} from '../assets/icons/kg-card-type-codepen.svg';
-import {ReactComponent as EmbedCardIcon} from '../assets/icons/kg-card-type-other.svg';
 import {EmbedNodeComponent} from './EmbedNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
-import {ReactComponent as SoundCloudIcon} from '../assets/icons/kg-card-type-soundcloud.svg';
-import {ReactComponent as SpotifyIcon} from '../assets/icons/kg-card-type-spotify.svg';
-import {ReactComponent as VimeoIcon} from '../assets/icons/kg-card-type-vimeo.svg';
-import {ReactComponent as XIcon} from '../assets/icons/kg-card-type-x.svg';
-import {ReactComponent as YouTubeIcon} from '../assets/icons/kg-card-type-youtube.svg';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 

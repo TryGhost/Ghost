@@ -1,9 +1,9 @@
+import EmailIndicatorIcon from '../../../assets/icons/kg-indicator-email.svg?react';
 import React from 'react';
 import populateEditor from '../../../utils/storybook/populate-storybook-editor';
 import {BASIC_NODES} from '../../../index.js';
 import {CardWrapper} from '../CardWrapper';
 import {EmailCard} from './EmailCard';
-import {ReactComponent as EmailIndicatorIcon} from '../../../assets/icons/kg-indicator-email.svg';
 import {createEditor} from 'lexical';
 
 const displayOptions = {

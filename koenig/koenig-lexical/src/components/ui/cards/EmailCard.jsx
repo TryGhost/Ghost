@@ -1,8 +1,8 @@
+import HelpIcon from '../../../assets/icons/kg-help.svg?react';
 import KoenigNestedEditor from '../../KoenigNestedEditor';
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReplacementStringsPlugin from '../../../plugins/ReplacementStringsPlugin';
-import {ReactComponent as HelpIcon} from '../../../assets/icons/kg-help.svg';
 import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 
 export function EmailCard({htmlEditor, htmlEditorInitialState, isEditing}) {

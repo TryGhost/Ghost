@@ -1,10 +1,10 @@
+import CalloutCardIcon from '../assets/icons/kg-card-type-callout.svg?react';
 import KoenigCardWrapper from '../components/KoenigCardWrapper';
 import MINIMAL_NODES from './MinimalNodes';
 import React from 'react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {CalloutNode as BaseCalloutNode} from '@tryghost/kg-default-nodes';
-import {ReactComponent as CalloutCardIcon} from '../assets/icons/kg-card-type-callout.svg';
 import {CalloutNodeComponent} from './CalloutNodeComponent';
 import {createCommand} from 'lexical';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';

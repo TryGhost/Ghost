@@ -1,6 +1,6 @@
+import ArrowIcon from '../../assets/icons/kg-arrow-down.svg?react';
+import CloseIcon from '../../assets/icons/kg-close.svg?react';
 import React from 'react';
-import {ReactComponent as ArrowIcon} from '../../assets/icons/kg-arrow-down.svg';
-import {ReactComponent as CloseIcon} from '../../assets/icons/kg-close.svg';
 import {DropdownContainer} from './DropdownContainer';
 import {KeyboardSelection} from './KeyboardSelection';
 

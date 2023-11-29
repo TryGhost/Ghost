@@ -1,11 +1,11 @@
+import AudioPlaceholderIcon from '../../assets/icons/kg-audio-placeholder.svg?react';
+import FilePlaceholderIcon from '../../assets/icons/kg-file-placeholder.svg?react';
+import GalleryPlaceholderIcon from '../../assets/icons/kg-gallery-placeholder.svg?react';
+import ImgPlaceholderIcon from '../../assets/icons/kg-img-placeholder.svg?react';
+import ProductPlaceholderIcon from '../../assets/icons/kg-product-placeholder.svg?react';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {ReactComponent as AudioPlaceholderIcon} from '../../assets/icons/kg-audio-placeholder.svg';
-import {ReactComponent as FilePlaceholderIcon} from '../../assets/icons/kg-file-placeholder.svg';
-import {ReactComponent as GalleryPlaceholderIcon} from '../../assets/icons/kg-gallery-placeholder.svg';
-import {ReactComponent as ImgPlaceholderIcon} from '../../assets/icons/kg-img-placeholder.svg';
-import {ReactComponent as ProductPlaceholderIcon} from '../../assets/icons/kg-product-placeholder.svg';
-import {ReactComponent as VideoPlaceholderIcon} from '../../assets/icons/kg-video-placeholder.svg';
+import VideoPlaceholderIcon from '../../assets/icons/kg-video-placeholder.svg?react';
 
 export const PLACEHOLDER_ICONS = {
     image: ImgPlaceholderIcon,
