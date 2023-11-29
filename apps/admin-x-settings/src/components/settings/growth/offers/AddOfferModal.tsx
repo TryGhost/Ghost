@@ -105,6 +105,7 @@ type SidebarProps = {
     handleCodeInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
     validate: () => void;
     clearError: (field: string) => void;
+    testId: string;
     errors: ErrorMessages;
     handleTrialAmountInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
@@ -127,6 +128,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
     handleCodeInput,
     validate,
     errors,
+    testId,
     handleTrialAmountInput,
     amountOptions}) => {
     // const handleError = useHandleError();
@@ -144,7 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
     const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
 
     return (
-        <div className='pt-7'>
+        <div className='pt-7' data-testId={testId}>
             <Form>
                 <TextField
                     error={Boolean(errors.name)}
@@ -587,6 +589,7 @@ const AddOfferModal = () => {
         handleTypeChange={handleTypeChange}
         overrides={formState}
         selectedTier={selectedTier.tier}
+        testId='add-offer-sidebar'
         tierOptions={tierCadenceOptions}
         typeOptions={typeOptions}
         validate={validate}
@@ -611,6 +614,7 @@ const AddOfferModal = () => {
         }}, {label: 'New offer'}]}
         sidebar={sidebar}
         size='lg'
+        testId='add-offer-modal'
         title='Offer'
         onBreadcrumbsBack={() => {
             updateRoute('offers/edit');
