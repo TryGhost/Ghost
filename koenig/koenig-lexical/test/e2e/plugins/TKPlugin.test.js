@@ -25,6 +25,24 @@ test.describe('TK Plugin', async function () {
             await expect(await page.getByRole('paragraph').getByText('TK')).toHaveClass('bg-lime-300 dark:bg-lime-900');
         });
 
+        test('highlights a TK when surrounded by symbols', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('[TK],');
+            await expect(await page.getByRole('paragraph').getByText('[TK],')).toHaveClass('bg-lime-300 dark:bg-lime-900');
+        });
+
+        test('highlights a TK when TK is repeated', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('TKTK');
+            await expect(await page.getByRole('paragraph').getByText('TKTK')).toHaveClass('bg-lime-300 dark:bg-lime-900');
+        });
+
+        test('does not highlight TK when surrounded by letters', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('TKtest');
+            await expect(await page.getByRole('paragraph').getByText('TKtest')).not.toHaveClass('bg-lime-300 dark:bg-lime-900');
+        });
+
         test('highlights a TK node when TK is typed in a heading', async function () {
             await focusEditor(page);
 

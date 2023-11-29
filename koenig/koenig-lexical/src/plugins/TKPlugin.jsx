@@ -5,7 +5,7 @@ import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useLexicalTextEntity} from '../hooks/useExtendedTextEntity';
 
-const REGEX = new RegExp(/(^|.)([^a-zA-Z0-9\s]?(TK)+[^a-zA-Z0-9\s]?)($|.)/);
+const REGEX = new RegExp(/(^|.)([^a-zA-Z0-9\s]*(TK)+[^a-zA-Z0-9\s]*)($|.)/);
 
 function TKIndicator({editor, rootElement, containingElement, nodeKeys}) {
     const tkClasses = editor._config.theme.tk?.split(' ') || [];
@@ -156,7 +156,7 @@ export default function TKPlugin({onCountChange = () => {}}) {
         // we also check any following char in code to avoid an overly
         // complex regex when looking for word-chars following the optional
         // trailing symbol char
-        if (matchArr[4] && !/\s/.test(matchArr[4])) {
+        if (matchArr[4] && /\w/.test(matchArr[4])) {
             return null;
         }
 
