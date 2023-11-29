@@ -187,18 +187,18 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                     error={Boolean(errors.amount)}
                                     hint={errors.amount}
                                     title='Amount off'
-                                    type='number' 
+                                    type='number'
                                     value={
-                                        overrides.type === 'fixed' 
-                                            ? (overrides.fixedAmount === 0 ? '' : overrides.fixedAmount?.toString()) 
+                                        overrides.type === 'fixed'
+                                            ? (overrides.fixedAmount === 0 ? '' : overrides.fixedAmount?.toString())
                                             : (overrides.percentAmount === 0 ? '' : overrides.percentAmount?.toString())
                                     }
-                                    onBlur={validate} 
+                                    onBlur={validate}
                                     onChange={(e) => {
                                         handleAmountInput(e);
                                     }}
                                 />
-                                <div className='absolute bottom-0 right-1.5 z-10'>
+                                <div className='absolute right-1.5 top-6 z-10'>
                                     <Select
                                         clearBg={true}
                                         controlClasses={{menu: 'w-20 right-0'}}
