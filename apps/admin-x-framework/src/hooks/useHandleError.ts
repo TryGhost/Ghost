@@ -41,10 +41,6 @@ const useHandleError = () => {
 
         toast.remove();
 
-        if (error instanceof JSONError && error.response?.status === 422) {
-            return error.data;
-        }
-
         if (error instanceof APIError && error.response?.status === 418) {
             // We use this status in tests to indicate the API request was not mocked -
             // don't show a toast because it may block clicking things in the test
