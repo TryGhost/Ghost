@@ -29,6 +29,31 @@ export class KnexSnippetsRepository implements SnippetsRepository {
         }
     }
 
+    private mapRowsToEntities(rows: any[]): Snippet[] {
+        const entities = rows.reduce((memo: Snippet[], row) => {
+            const entity = this.mapRowToEntity(row);
+            if (!entity) {
+                return memo;
+            }
+            return memo.concat(entity);
+        }, []);
+        return entities;
+    }
+
+    private buildQuery(order: OrderOf<[]>[], filter?: string | undefined) {
+        const knexOrder = order.map((obj) => {
+            return {
+                column: obj.field,
+                order: obj.direction
+            };
+        });
+        const query = this.knex(this.table).orderBy(knexOrder);
+        if (filter) {
+            nql(filter).querySQL(query);
+        }
+        return query;
+    }
+
     async save(entity: Snippet): Promise<void> {
         const rows = await this.knex(this.table)
             .where('id', entity.id.toHexString())
@@ -74,25 +99,9 @@ export class KnexSnippetsRepository implements SnippetsRepository {
         order: OrderOf<[]>[],
         filter?: string | undefined
     ): Promise<Snippet[]> {
-        const knexOrder = order.map((obj) => {
-            return {
-                column: obj.field,
-                order: obj.direction
-            };
-        });
-        const query = this.knex(this.table).orderBy(knexOrder);
-        if (filter) {
-            nql(filter).querySQL(query);
-        }
+        const query = this.buildQuery(order, filter);
         const rows = await query.select();
-        const snippets = rows.reduce((memo, row) => {
-            const entity = this.mapRowToEntity(row);
-            if (!entity) {
-                return memo;
-            }
-            return memo.concat(entity);
-        }, []);
-        return snippets;
+        return this.mapRowsToEntities(rows);
     }
 
     async getSome(
@@ -100,28 +109,10 @@ export class KnexSnippetsRepository implements SnippetsRepository {
         order: OrderOf<[]>[],
         filter?: string | undefined
     ): Promise<Snippet[]> {
-        const knexOrder = order.map((obj) => {
-            return {
-                column: obj.field,
-                order: obj.direction
-            };
-        });
-        const query = this.knex(this.table)
-            .orderBy(knexOrder)
-            .limit(page.count)
-            .offset((page.page - 1) * page.count);
-        if (filter) {
-            nql(filter).querySQL(query);
-        }
+        const query = this.buildQuery(order, filter);
+        query.limit(page.count).offset((page.page - 1) * page.count);
         const rows = await query.select();
-        const snippets = rows.reduce((memo, row) => {
-            const entity = this.mapRowToEntity(row);
-            if (!entity) {
-                return memo;
-            }
-            return memo.concat(entity);
-        }, []);
-        return snippets;
+        return this.mapRowsToEntities(rows);
     }
 
     async getCount(filter?: string | undefined): Promise<number> {
