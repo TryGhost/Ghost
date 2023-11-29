@@ -12,6 +12,19 @@ export class KnexSnippetsRepository implements SnippetsRepository {
 
     readonly table = 'snippets';
 
+    private mapEntityToRow(entity: Snippet): any {
+        const row = {
+            id: entity.id,
+            name: entity.name,
+            lexical: entity.lexical,
+            mobiledoc: entity.mobiledoc,
+            created_at: entity.createdAt,
+            updated_at: entity.updatedAt
+        };
+
+        return row;
+    }
+
     private mapRowToEntity(row: any): Snippet | null {
         try {
             const snippet = Snippet.create({
@@ -67,14 +80,7 @@ export class KnexSnippetsRepository implements SnippetsRepository {
             exists = parseInt(rows[0].count) !== 0;
         }
 
-        const row = {
-            id: entity.id,
-            name: entity.name,
-            lexical: entity.lexical,
-            mobiledoc: entity.mobiledoc,
-            created_at: entity.createdAt,
-            updated_at: entity.updatedAt
-        };
+        const row = this.mapEntityToRow(entity);
 
         if (exists) {
             await this.knex(this.table)
