@@ -398,6 +398,9 @@ async function initNestDependencies() {
         provide: 'models',
         useValue: require('./server/models')
     }, {
+        provide: 'knex',
+        useValue: require('./server/data/db/connection')
+    }, {
         // @NOTE: decide if this comes in as separate values
         provide: 'settings',
         useValue: require('./shared/settings-cache')
