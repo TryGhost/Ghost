@@ -4,7 +4,7 @@ import {SnippetDTO} from './snippet.dto';
 import {Pagination} from '../../common/pagination.type';
 import ObjectID from 'bson-objectid';
 import {now} from '../../common/date';
-import {LocationHeaderInterceptor} from './interceptors/location-header.interceptor';
+import {LocationHeaderInterceptor} from '../interceptors/location-header.interceptor';
 
 @Controller('snippets')
 @UseInterceptors(LocationHeaderInterceptor)
