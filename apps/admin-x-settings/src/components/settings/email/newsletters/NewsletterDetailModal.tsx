@@ -4,7 +4,7 @@ import React, {useEffect, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
-import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, SettingGroupContent, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, Link, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
 import {Config, hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
@@ -15,7 +15,7 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
-const renderSenderEmail = (newsletter: Newsletter, config: Config, defaultEmailAddress: string|undefined) => {
+export const renderSenderEmail = (newsletter: Newsletter, config: Config, defaultEmailAddress: string|undefined) => {
     if (isManagedEmail(config) && !hasSendingDomain(config) && defaultEmailAddress) {
         // Not changeable: sender_email is ignored
         return defaultEmailAddress;
@@ -26,14 +26,14 @@ const renderSenderEmail = (newsletter: Newsletter, config: Config, defaultEmailA
         if (newsletter.sender_email?.split('@')[1] === sendingDomain(config)) {
             return newsletter.sender_email;
         } else {
-            return '';
+            return defaultEmailAddress || '';
         }
     }
 
     return newsletter.sender_email || defaultEmailAddress || '';
 };
 
-const renderReplyToEmail = (newsletter: Newsletter, config: Config, supportEmailAddress: string|undefined, defaultEmailAddress: string|undefined) => {
+export const renderReplyToEmail = (newsletter: Newsletter, config: Config, supportEmailAddress: string|undefined, defaultEmailAddress: string|undefined) => {
     if (newsletter.sender_reply_to === 'newsletter') {
         return renderSenderEmail(newsletter, config, defaultEmailAddress);
     }
@@ -169,13 +169,20 @@ const Sidebar: React.FC<{
 
         // Pro users with custom sending domains
         if (hasSendingDomain(config)) {
-            const sendingEmail = renderSenderEmail(newsletter, config, defaultEmailAddress);
-            const sendingEmailUsername = sendingEmail?.split('@')[0];
+            let sendingEmail = newsletter.sender_email || ''; // Do not use the rendered address here, because this field is editable and we otherwise can't have an empty field
+
+            // It is possible we have an invalid saved email address, in that case it won't get used
+            // so we should display as if we are using the default = an empty address
+            if (sendingEmail && sendingEmail !== newsletterAddress) {
+                sendingEmail = '';
+            }
+
+            const sendingEmailUsername = sendingEmail?.split('@')[0] || '';
 
             return (
                 <TextField
                     error={Boolean(errors.sender_email)}
-                    hint={errors.sender_email}
+                    hint={errors.sender_email || `If left empty, noreply@${sendingDomain(config)} will be used`}
                     rightPlaceholder={`@${sendingDomain(config)}`}
                     title="Sender email address"
                     value={sendingEmailUsername || ''}
@@ -190,17 +197,19 @@ const Sidebar: React.FC<{
             );
         }
 
+        const hint = (
+            <>
+                To customise, set up a <Link href="https://ghost.org/help/custom-sending-domains/" rel="noopener noreferrer" target="_blank">custom sending domain</Link>
+            </>
+        );
+
         // Pro users without custom sending domains
         return (
-            <SettingGroupContent
-                values={[
-                    {
-                        heading: 'Sender email address',
-                        key: 'sender-email-addresss',
-                        value: `${defaultEmailAddress}`,
-                        hint: <span className="text-xs text-grey-700">To customise, set up a <a className="text-green" href="#">custom sending domain</a></span>
-                    }
-                ]}
+            <TextField
+                disabled={true}
+                hint={hint}
+                title="Sender email address"
+                value={defaultEmailAddress}
             />
         );
     };
