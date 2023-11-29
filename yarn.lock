@@ -1231,17 +1231,17 @@
     lru-cache "^5.1.1"
     semver "^6.3.1"
 
-"@babel/helper-create-class-features-plugin@^7.18.6", "@babel/helper-create-class-features-plugin@^7.21.0", "@babel/helper-create-class-features-plugin@^7.22.10", "@babel/helper-create-class-features-plugin@^7.22.11", "@babel/helper-create-class-features-plugin@^7.22.15", "@babel/helper-create-class-features-plugin@^7.22.5", "@babel/helper-create-class-features-plugin@^7.5.5", "@babel/helper-create-class-features-plugin@^7.8.3":
-  version "7.22.15"
-  resolved "https://registry.yarnpkg.com/@babel/helper-create-class-features-plugin/-/helper-create-class-features-plugin-7.22.15.tgz#97a61b385e57fe458496fad19f8e63b63c867de4"
-  integrity sha512-jKkwA59IXcvSaiK2UN45kKwSC9o+KuoXsBDvHvU/7BecYIp8GQ2UwrVvFgJASUT+hBnwJx6MhvMCuMzwZZ7jlg==
+"@babel/helper-create-class-features-plugin@^7.18.6", "@babel/helper-create-class-features-plugin@^7.21.0", "@babel/helper-create-class-features-plugin@^7.22.10", "@babel/helper-create-class-features-plugin@^7.22.11", "@babel/helper-create-class-features-plugin@^7.22.5", "@babel/helper-create-class-features-plugin@^7.23.5", "@babel/helper-create-class-features-plugin@^7.5.5", "@babel/helper-create-class-features-plugin@^7.8.3":
+  version "7.23.5"
+  resolved "https://registry.yarnpkg.com/@babel/helper-create-class-features-plugin/-/helper-create-class-features-plugin-7.23.5.tgz#2a8792357008ae9ce8c0f2b78b9f646ac96b314b"
+  integrity sha512-QELlRWxSpgdwdJzSJn4WAhKC+hvw/AtHbbrIoncKHkhKKR/luAlKkgBDcri1EzWAo8f8VvYVryEHN4tax/V67A==
   dependencies:
     "@babel/helper-annotate-as-pure" "^7.22.5"
-    "@babel/helper-environment-visitor" "^7.22.5"
-    "@babel/helper-function-name" "^7.22.5"
-    "@babel/helper-member-expression-to-functions" "^7.22.15"
+    "@babel/helper-environment-visitor" "^7.22.20"
+    "@babel/helper-function-name" "^7.23.0"
+    "@babel/helper-member-expression-to-functions" "^7.23.0"
     "@babel/helper-optimise-call-expression" "^7.22.5"
-    "@babel/helper-replace-supers" "^7.22.9"
+    "@babel/helper-replace-supers" "^7.22.20"
     "@babel/helper-skip-transparent-expression-wrappers" "^7.22.5"
     "@babel/helper-split-export-declaration" "^7.22.6"
     semver "^6.3.1"
@@ -1298,7 +1298,7 @@
   dependencies:
     "@babel/types" "^7.22.5"
 
-"@babel/helper-member-expression-to-functions@^7.22.15":
+"@babel/helper-member-expression-to-functions@^7.22.15", "@babel/helper-member-expression-to-functions@^7.23.0":
   version "7.23.0"
   resolved "https://registry.yarnpkg.com/@babel/helper-member-expression-to-functions/-/helper-member-expression-to-functions-7.23.0.tgz#9263e88cc5e41d39ec18c9a3e0eced59a3e7d366"
   integrity sha512-6gfrPwh7OuT6gZyJZvd6WbTfrqAo7vm4xCzAXOusKqq/vWdKXphTpj5klHKNmRUU6/QRGlBsyU9mAIPaWHlqJA==
@@ -1344,7 +1344,7 @@
     "@babel/helper-environment-visitor" "^7.22.5"
     "@babel/helper-wrap-function" "^7.22.9"
 
-"@babel/helper-replace-supers@^7.22.20", "@babel/helper-replace-supers@^7.22.5", "@babel/helper-replace-supers@^7.22.9":
+"@babel/helper-replace-supers@^7.22.20", "@babel/helper-replace-supers@^7.22.5":
   version "7.22.20"
   resolved "https://registry.yarnpkg.com/@babel/helper-replace-supers/-/helper-replace-supers-7.22.20.tgz#e37d367123ca98fe455a9887734ed2e16eb7a793"
   integrity sha512-qsW0In3dbwQUbK8kejJ4R7IHVGwHJlV6lpG6UA7a9hSa2YEiAib+N1T2kr6PEeUT+Fl7najmSOS6SmAwCHK6Tw==
@@ -1445,12 +1445,12 @@
     "@babel/helper-create-class-features-plugin" "^7.18.6"
     "@babel/helper-plugin-utils" "^7.18.6"
 
-"@babel/plugin-proposal-decorators@7.23.3", "@babel/plugin-proposal-decorators@^7.13.5", "@babel/plugin-proposal-decorators@^7.16.7", "@babel/plugin-proposal-decorators@^7.20.13":
-  version "7.23.3"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-decorators/-/plugin-proposal-decorators-7.23.3.tgz#c609ca70be908d187ee36ff49f1250c56cc98f15"
-  integrity sha512-u8SwzOcP0DYSsa++nHd/9exlHb0NAlHCb890qtZZbSwPX2bFv8LBEztxwN7Xg/dS8oAFFidhrI9PBcLBJSkGRQ==
+"@babel/plugin-proposal-decorators@7.23.5", "@babel/plugin-proposal-decorators@^7.13.5", "@babel/plugin-proposal-decorators@^7.16.7", "@babel/plugin-proposal-decorators@^7.20.13":
+  version "7.23.5"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-decorators/-/plugin-proposal-decorators-7.23.5.tgz#eeaa49d0dc9229aec4d23378653738cdc5a3ea0a"
+  integrity sha512-6IsY8jOeWibsengGlWIezp7cuZEFzNlAghFpzh9wiZwhQ42/hRcPnY/QV9HJoKTlujupinSlnQPiEy/u2C1ZfQ==
   dependencies:
-    "@babel/helper-create-class-features-plugin" "^7.22.15"
+    "@babel/helper-create-class-features-plugin" "^7.23.5"
     "@babel/helper-plugin-utils" "^7.22.5"
     "@babel/helper-replace-supers" "^7.22.20"
     "@babel/helper-split-export-declaration" "^7.22.6"
