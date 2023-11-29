@@ -22,7 +22,9 @@
   ],
   "devDependencies": {
     "@nestjs/testing": "10.2.8",
+    "@types/node": "^20.10.0",
     "c8": "8.0.1",
+    "knex": "^3.0.1",
     "lexical": "^0.12.2",
     "mocha": "10.2.0",
     "reflect-metadata": "0.1.13",
@@ -34,6 +36,7 @@
     "@nestjs/common": "10.2.8",
     "@nestjs/core": "10.2.8",
     "@nestjs/platform-express": "10.2.8",
+    "@tryghost/nql": "^0.12.0",
     "bson-objectid": "2.0.4",
     "luxon": "3.4.4"
   }
