@@ -7,6 +7,10 @@ import {SnippetActionToolbar} from './SnippetActionToolbar';
 import {debounce} from 'lodash-es';
 import {mergeRegister} from '@lexical/utils';
 
+// don't show the toolbar until the mouse has moved a certain distance,
+// avoids accidental toolbar display when clicking buttons that select content
+const MOUSE_MOVE_THRESHOLD = 5;
+
 export const toolbarItemTypes = {
     snippet: 'snippet',
     link: 'link',
@@ -33,7 +37,7 @@ export function FloatingFormatToolbar({
 
     // toolbar opacity is 0 by default
     // shouldn't display until selection via mouse is complete to avoid toolbar re-positioning while dragging
-    const toggleVisibility = React.useCallback(() => {
+    const showToolbarIfHidden = React.useCallback((e) => {
         if (toolbarItemType && toolbarRef.current?.style.opacity === '0') {
             toolbarRef.current.style.opacity = '1';
             updateArrowStyles();
@@ -43,14 +47,30 @@ export function FloatingFormatToolbar({
     // TODO: Arrow not updating position on selection change (select all)
 
     React.useEffect(() => {
-        document.addEventListener('mouseup', toggleVisibility); // desktop
-        document.addEventListener('touchend', toggleVisibility); // mobile
+        const toggle = (e) => {
+            editor.getEditorState().read(() => {
+                const selection = $getSelection();
+                if ($isRangeSelection(selection)) {
+                    const selectedNodeMatchesTarget = selection.getNodes().find((node) => {
+                        const element = editor.getElementByKey(node.getKey());
+                        return element && (element.contains(e.target) || e.target.contains(element));
+                    });
+
+                    if (selectedNodeMatchesTarget) {
+                        showToolbarIfHidden(e);
+                    }
+                }
+            });
+        };
+
+        document.addEventListener('mouseup', toggle); // desktop
+        document.addEventListener('touchend', toggle); // mobile
 
         return () => {
-            document.removeEventListener('mouseup', toggleVisibility); // desktop
-            document.removeEventListener('touchend', toggleVisibility); // mobile
+            document.removeEventListener('mouseup', toggle); // desktop
+            document.removeEventListener('touchend', toggle); // mobile
         };
-    }, [toggleVisibility]);
+    }, [editor, showToolbarIfHidden]);
 
     // clear out toolbar when use removes selected content
     React.useEffect(() => {
@@ -67,11 +87,31 @@ export function FloatingFormatToolbar({
     }, [editor, setToolbarItemType]);
 
     React.useEffect(() => {
+        let initialPosition = null;
+
         const onMouseMove = (e) => {
             // ignore drag events
             if (e?.buttons > 0) {
                 return;
             }
+
+            // avoid toggling toolbar until mouse has moved a certain distance
+            if (!initialPosition) {
+                initialPosition = {x: e.clientX, y: e.clientY};
+            }
+
+            const distanceMoved = Math.sqrt(
+                Math.pow(e.clientX - initialPosition.x, 2) +
+                Math.pow(e.clientY - initialPosition.y, 2)
+            );
+
+            if (distanceMoved < MOUSE_MOVE_THRESHOLD) {
+                return;
+            }
+
+            // reset initial position after threshold is met
+            initialPosition = null;
+
             // should not show floating toolbar when we don't have a text selection
             editor.getEditorState().read(() => {
                 const selection = $getSelection();
@@ -79,7 +119,7 @@ export function FloatingFormatToolbar({
                     return;
                 }
                 if (selection.getTextContent() !== null) {
-                    toggleVisibility();
+                    showToolbarIfHidden();
                 }
             });
         };
@@ -88,7 +128,7 @@ export function FloatingFormatToolbar({
         return () => {
             document.removeEventListener('mousemove', debouncedOnMouseMove);
         };
-    }, [editor, toggleVisibility]);
+    }, [editor, showToolbarIfHidden]);
 
     const handleActionToolbarClose = () => {
         setToolbarItemType(null);
