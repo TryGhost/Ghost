@@ -3,7 +3,7 @@ import React from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {renderReplyToEmail, renderSenderEmail} from './NewsletterDetailModal';
+import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletterEmails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 

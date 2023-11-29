@@ -5,54 +5,16 @@ import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
 import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, Link, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
-import {Config, hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
+import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletterEmails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-
-export const renderSenderEmail = (newsletter: Newsletter, config: Config, defaultEmailAddress: string|undefined) => {
-    if (isManagedEmail(config) && !hasSendingDomain(config) && defaultEmailAddress) {
-        // Not changeable: sender_email is ignored
-        return defaultEmailAddress;
-    }
-
-    if (isManagedEmail(config) && hasSendingDomain(config)) {
-        // Only return sender_email if the domain names match
-        if (newsletter.sender_email?.split('@')[1] === sendingDomain(config)) {
-            return newsletter.sender_email;
-        } else {
-            return defaultEmailAddress || '';
-        }
-    }
-
-    return newsletter.sender_email || defaultEmailAddress || '';
-};
-
-export const renderReplyToEmail = (newsletter: Newsletter, config: Config, supportEmailAddress: string|undefined, defaultEmailAddress: string|undefined) => {
-    if (newsletter.sender_reply_to === 'newsletter') {
-        return renderSenderEmail(newsletter, config, defaultEmailAddress);
-    }
-
-    if (newsletter.sender_reply_to === 'support') {
-        return supportEmailAddress || defaultEmailAddress || '';
-    }
-
-    if (isManagedEmail(config) && hasSendingDomain(config)) {
-        // Only return sender_reply_to if the domain names match
-        if (newsletter.sender_reply_to.split('@')[1] === sendingDomain(config)) {
-            return newsletter.sender_reply_to;
-        } else {
-            return '';
-        }
-    }
-
-    return newsletter.sender_reply_to;
-};
 
 const Sidebar: React.FC<{
     newsletter: Newsletter;
