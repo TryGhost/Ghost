@@ -330,8 +330,8 @@ module.exports = function apiRoutes() {
 
     // ## Snippets
     router.get('/snippets', mw.authAdminApi, labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.browse)));
-    router.get('/snippets/:id', mw.authAdminApi, http(api.snippets.read));
-    router.post('/snippets', mw.authAdminApi, http(api.snippets.add));
+    router.get('/snippets/:id', mw.authAdminApi, labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.read)));
+    router.post('/snippets', mw.authAdminApi, labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.add)));
     router.put('/snippets/:id', mw.authAdminApi, http(api.snippets.edit));
     router.del('/snippets/:id', mw.authAdminApi, http(api.snippets.destroy));
 
