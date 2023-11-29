@@ -69,7 +69,7 @@ export class SnippetsController {
             total = result.count;
             snippets = result.data;
         }
-        const pages = limit === 'all' ? 1 : Math.ceil(total / limit);
+        const pages = limit === 'all' ? 0 : Math.ceil(total / limit);
 
         const snippetDTOs = snippets.map(snippet => new SnippetDTO(snippet, {formats}));
 

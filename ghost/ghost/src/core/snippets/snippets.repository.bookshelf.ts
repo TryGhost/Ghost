@@ -1,11 +1,11 @@
 import {Inject} from '@nestjs/common';
 import {Snippet} from './snippet.entity';
 import {SnippetsRepository} from './snippets.repository.interface';
-import {Pagination} from '../../common/pagination.type';
 import ObjectID from 'bson-objectid';
 
 type QueryOptions = {
     debug?: boolean;
+    filter?: string;
 }
 
 type BookshelfModels = {
@@ -38,7 +38,11 @@ export class SnippetRepositoryBookshelf implements SnippetsRepository {
     }
 
     async getCount(filter?: string | undefined): Promise<number> {
-        return 0;
+        const result = await this.models.Snippet.findPage({
+            filter: filter
+        });
+
+        return result.meta.pagination.total;
     }
 
     async getAll(): Promise<Snippet[]> {
