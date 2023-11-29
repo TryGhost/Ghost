@@ -43,6 +43,9 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 port: config.port,
                 username: config.username,
                 password: config.password,
+                retryStrategy: () => {
+                    return (config.storeConfig.retryConnectSeconds || 10) * 1000;
+                },
                 ...config.storeConfig,
                 clusterConfig: config.clusterConfig
             };
