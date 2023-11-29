@@ -80,7 +80,7 @@ test.describe('Offers Modal', () => {
             }]
         });
         const successModal = page.getByTestId('offer-success-modal');
-        expect(successModal).toBeVisible();
+        await expect(successModal).toBeVisible();
     });
 
     test('Errors if required fields are missing', async ({page}) => {
