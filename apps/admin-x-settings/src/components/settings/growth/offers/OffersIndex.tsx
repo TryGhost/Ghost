@@ -59,6 +59,11 @@ export const getOfferDiscount = (type: string, amount: number, cadence: string, 
         break;
     };
 
+    // Check if updatedPrice is negative, if so, set it to 0
+    if (updatedPrice < 0) {
+        updatedPrice = 0;
+    }
+
     const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(formatToTwoDecimals(currencyToDecimal(updatedPrice)));
 
     return {
