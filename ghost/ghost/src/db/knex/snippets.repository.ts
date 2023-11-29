@@ -77,7 +77,9 @@ export class KnexSnippetsRepository implements SnippetsRepository {
         };
 
         if (exists) {
-            await this.knex(this.table).update(row).where('id', entity.id.toHexString());
+            await this.knex(this.table)
+                .update(row)
+                .where('id', entity.id.toHexString());
         } else {
             await this.knex(this.table).insert(row);
         }
