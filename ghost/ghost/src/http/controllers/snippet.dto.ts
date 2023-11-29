@@ -13,12 +13,12 @@ export class SnippetDTO {
         this.name = data.name;
 
         if (options.formats === 'lexical') {
-            this.lexical = data.lexical;
+            this.lexical = data.lexical || null;
         } else {
-            this.mobiledoc = data.mobiledoc;
+            this.mobiledoc = data.mobiledoc || null;
         }
 
         this.created_at = data.createdAt;
-        this.updated_at = data.updatedAt;
+        this.updated_at = data.updatedAt || null;
     }
 }
