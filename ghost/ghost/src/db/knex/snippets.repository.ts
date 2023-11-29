@@ -3,47 +3,20 @@ import {SnippetsRepository} from '../../core/snippets/snippets.repository.interf
 import {Knex} from 'knex';
 import {Snippet} from '../../core/snippets/snippet.entity';
 import ObjectID from 'bson-objectid';
-import {OrderOf, Page} from '../../common/repository';
+import {OrderOf, Page, Repository} from '../../common/repository';
 import assert from 'assert';
 import nql from '@tryghost/nql';
+import {Entity} from '../../common/entity';
 
-export class KnexSnippetsRepository implements SnippetsRepository {
+abstract class BaseKnexRepository<T extends Entity<unknown>, F, O extends OrderOf<Fields>, Fields extends string[]> implements Repository<T, F, Fields> {
     constructor(@Inject('knex') private readonly knex: Knex) {}
+    protected abstract readonly table: string;
 
-    readonly table = 'snippets';
+    protected abstract mapEntityToRow(entity: T): any
+    protected abstract mapRowToEntity(row: any): T | null
 
-    private mapEntityToRow(entity: Snippet): any {
-        const row = {
-            id: entity.id,
-            name: entity.name,
-            lexical: entity.lexical,
-            mobiledoc: entity.mobiledoc,
-            created_at: entity.createdAt,
-            updated_at: entity.updatedAt
-        };
-
-        return row;
-    }
-
-    private mapRowToEntity(row: any): Snippet | null {
-        try {
-            const snippet = Snippet.create({
-                id: row.id,
-                name: row.name,
-                lexical: row.lexical,
-                mobiledoc: row.mobiledoc,
-                createdAt: new Date(row.created_at),
-                updatedAt: row.updated_at ? new Date(row.updated_at) : null
-            });
-            return snippet;
-        } catch (err) {
-            // TODO: Sentry logging
-            return null;
-        }
-    }
-
-    private mapRowsToEntities(rows: any[]): Snippet[] {
-        const entities = rows.reduce((memo: Snippet[], row) => {
+    private mapRowsToEntities(rows: any[]): T[] {
+        const entities = rows.reduce((memo: T[], row) => {
             const entity = this.mapRowToEntity(row);
             if (!entity) {
                 return memo;
@@ -53,7 +26,7 @@ export class KnexSnippetsRepository implements SnippetsRepository {
         return entities;
     }
 
-    private buildQuery(order: OrderOf<[]>[], filter?: string | undefined) {
+    private buildQuery(order: O[], filter?: F) {
         const knexOrder = order.map((obj) => {
             return {
                 column: obj.field,
@@ -67,7 +40,7 @@ export class KnexSnippetsRepository implements SnippetsRepository {
         return query;
     }
 
-    async save(entity: Snippet): Promise<void> {
+    async save(entity: T): Promise<void> {
         const rows = await this.knex(this.table)
             .where('id', entity.id.toHexString())
             .count('id', {as: 'count'});
@@ -91,7 +64,7 @@ export class KnexSnippetsRepository implements SnippetsRepository {
         }
     }
 
-    async getOne(id: ObjectID): Promise<Snippet | null> {
+    async getOne(id: ObjectID): Promise<T | null> {
         const rows = await this.knex(this.table)
             .where('id', id.toHexString())
             .select();
@@ -104,9 +77,9 @@ export class KnexSnippetsRepository implements SnippetsRepository {
     }
 
     async getAll(
-        order: OrderOf<[]>[],
-        filter?: string | undefined
-    ): Promise<Snippet[]> {
+        order: O[],
+        filter?: F
+    ): Promise<T[]> {
         const query = this.buildQuery(order, filter);
         const rows = await query.select();
         return this.mapRowsToEntities(rows);
@@ -114,16 +87,16 @@ export class KnexSnippetsRepository implements SnippetsRepository {
 
     async getSome(
         page: Page,
-        order: OrderOf<[]>[],
-        filter?: string | undefined
-    ): Promise<Snippet[]> {
+        order: O[],
+        filter?: F
+    ): Promise<T[]> {
         const query = this.buildQuery(order, filter);
         query.limit(page.count).offset((page.page - 1) * page.count);
         const rows = await query.select();
         return this.mapRowsToEntities(rows);
     }
 
-    async getCount(filter?: string | undefined): Promise<number> {
+    async getCount(filter?: F): Promise<number> {
         const query = this.knex(this.table);
         if (filter) {
             nql(filter).querySQL(query);
@@ -136,5 +109,41 @@ export class KnexSnippetsRepository implements SnippetsRepository {
             return count;
         }
         return parseInt(count, 10);
+    }
+}
+
+export class KnexSnippetsRepository
+    extends BaseKnexRepository<Snippet, string, OrderOf<[]>, []>
+    implements SnippetsRepository {
+    readonly table = 'snippets';
+
+    protected mapEntityToRow(entity: Snippet): any {
+        const row = {
+            id: entity.id,
+            name: entity.name,
+            lexical: entity.lexical,
+            mobiledoc: entity.mobiledoc,
+            created_at: entity.createdAt,
+            updated_at: entity.updatedAt
+        };
+
+        return row;
+    }
+
+    protected mapRowToEntity(row: any): Snippet | null {
+        try {
+            const snippet = Snippet.create({
+                id: row.id,
+                name: row.name,
+                lexical: row.lexical,
+                mobiledoc: row.mobiledoc,
+                createdAt: new Date(row.created_at),
+                updatedAt: row.updated_at ? new Date(row.updated_at) : null
+            });
+            return snippet;
+        } catch (err) {
+            // TODO: Sentry logging
+            return null;
+        }
     }
 }
