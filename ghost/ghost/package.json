@@ -38,6 +38,8 @@
     "@nestjs/platform-express": "10.2.8",
     "@tryghost/nql": "^0.12.0",
     "bson-objectid": "2.0.4",
-    "luxon": "3.4.4"
+    "express": "^4.18.2",
+    "luxon": "3.4.4",
+    "rxjs": "^7.8.1"
   }
 }
