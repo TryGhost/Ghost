@@ -25,8 +25,8 @@
     "access": "public"
   },
   "devDependencies": {
-    "@lexical/headless": "^0.12.2",
-    "@lexical/link": "^0.12.2",
+    "@lexical/headless": "0.12.2",
+    "@lexical/link": "0.12.2",
     "c8": "8.0.1",
     "mocha": "10.2.0",
     "sinon": "17.0.1",
@@ -34,10 +34,10 @@
     "typescript": "5.3.2"
   },
   "dependencies": {
-    "@lexical/list": "^0.12.2",
-    "@lexical/rich-text": "^0.12.2",
-    "@lexical/utils": "^0.12.2",
+    "@lexical/list": "0.12.2",
+    "@lexical/rich-text": "0.12.2",
+    "@lexical/utils": "0.12.2",
     "@tryghost/kg-default-nodes": "^0.2.12",
-    "lexical": "^0.12.2"
+    "lexical": "0.12.2"
   }
 }
