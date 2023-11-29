@@ -3,10 +3,9 @@ import LatestPosts1 from '../../../../assets/images/latest-posts-1.png';
 import LatestPosts2 from '../../../../assets/images/latest-posts-2.png';
 import LatestPosts3 from '../../../../assets/images/latest-posts-3.png';
 import clsx from 'clsx';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {GhostOrb, Icon} from '@tryghost/admin-x-design-system';
-import {isManagedEmail} from '@tryghost/admin-x-framework/api/config';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
-import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreviewContent: React.FC<{
     senderName?: string;
@@ -70,7 +69,7 @@ const NewsletterPreviewContent: React.FC<{
     titleColor
 }) => {
     const showHeader = headerIcon || headerTitle;
-    const {config} = useGlobalData();
+    const hasNewEmailAddresses = useFeatureFlag('newEmailAddresses');
 
     const currentDate = new Date().toLocaleDateString('default', {
         year: 'numeric',
@@ -83,15 +82,15 @@ const NewsletterPreviewContent: React.FC<{
 
     let emailHeader;
 
-    if (!isManagedEmail(config)) {
-        emailHeader = <><p className="leading-normal"><span className="font-semibold text-grey-900">{senderName}</span><span> {senderEmail}</span></p>
-            <p className="leading-normal"><span className="font-semibold text-grey-900">To:</span> Jamie Larson jamie@example.com</p></>;
-    } else {
+    if ({hasNewEmailAddresses}) {
         emailHeader = <><p className="leading-normal"><span className="font-semibold text-grey-900">From: </span><span>{senderName} ({senderEmail})</span></p>
             <p className="leading-normal">
                 <span className="font-semibold text-grey-900">Reply-to: </span>{senderReplyTo ? senderReplyTo : 'Not set' }
             </p>
         </>;
+    } else {
+        emailHeader = <><p className="leading-normal"><span className="font-semibold text-grey-900">{senderName}</span><span> {senderEmail}</span></p>
+            <p className="leading-normal"><span className="font-semibold text-grey-900">To:</span> Jamie Larson jamie@example.com</p></>;
     }
 
     return (
