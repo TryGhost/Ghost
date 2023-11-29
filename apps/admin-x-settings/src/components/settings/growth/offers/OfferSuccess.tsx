@@ -3,6 +3,7 @@ import {Button} from '@tryghost/admin-x-design-system';
 import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {Offer, useBrowseOffersById} from '@tryghost/admin-x-framework/api/offers';
+import {TextField} from '@tryghost/admin-x-design-system';
 import {currencyToDecimal} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {numberWithCommas} from '../../../../utils/helpers';
@@ -30,6 +31,26 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
 
     const [isCopied, setIsCopied] = useState(false);
 
+    const getShareText = () => {
+        let discount = '';
+
+        switch (offer?.type) {
+        case 'percent':
+            discount = offer?.amount + '% discount';
+            break;
+        case 'fixed':
+            discount = numberWithCommas(currencyToDecimal(offer?.amount)) + ' ' + offer?.currency + ' discount';
+            break;
+        case 'trial':
+            discount = offer?.amount + ' days free trial';
+            break;
+        default:
+            break;
+        };
+
+        return `${encodeURIComponent(offer?.name || '')} — Check out ${encodeURIComponent(discount)} on:`;
+    };
+
     const handleCopyClick = async () => {
         try {
             await navigator.clipboard.writeText(offerLink);
@@ -42,22 +63,7 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
     };
 
     const handleTwitter = () => {
-        let tweetText = '';
-
-        switch (offer?.type) {
-        case 'percent':
-            tweetText = offer?.amount + '% discount';
-            break;
-        case 'fixed':
-            tweetText = numberWithCommas(currencyToDecimal(offer?.amount)) + ' ' + offer?.currency + ' discount';
-            break;
-        case 'trial':
-            tweetText = offer?.amount + ' days free trial';
-            break;
-        default:
-            break;
-        };
-        window.open(`https://twitter.com/intent/tweet?url=${encodeURI(offerLink)}&text=${encodeURIComponent(offer?.name || '')} — Check out ${encodeURIComponent(tweetText)} on:`, '_blank');
+        window.open(`https://twitter.com/intent/tweet?url=${encodeURI(offerLink)}&text=${getShareText()}`, '_blank');
     };
 
     const handleFacebook = () => {
@@ -65,7 +71,7 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
     };
 
     const handleLinkedIn = () => {
-        window.open(`http://www.linkedin.com/shareArticle?mini=true&url=${encodeURI(offerLink)}&title=${encodeURIComponent(offer?.name || '')}`, '_blank');
+        window.open(`http://www.linkedin.com/shareArticle?mini=true&url=${encodeURI(offerLink)}&title=${getShareText()}`, '_blank');
     };
 
     return <Modal
@@ -99,7 +105,10 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
             <h1 className='mt-6 text-4xl'>Your new offer is live!</h1>
             <p className='mt-3 max-w-[510px] text-[1.6rem]'>You can share the link anywhere. In your newsletter, social media, a podcast, or in-person. It all just works.</p>
             <div className='mt-8 flex w-full max-w-md flex-col gap-8'>
-                <Button color='green' label={isCopied ? 'Copied!' : 'Copy link'} fullWidth onClick={handleCopyClick} />
+                <div className='flex flex-col-reverse gap-2'>
+                    <TextField type='url' value={offerLink} disabled />
+                    <Button color='green' label={isCopied ? 'Copied!' : 'Copy link'} fullWidth onClick={handleCopyClick} />
+                </div>
                 <div className='flex items-center gap-4 text-xs font-medium before:h-px before:grow before:bg-grey-300 before:content-[""] after:h-px after:grow after:bg-grey-300 after:content-[""]'>OR</div>
                 <div className='flex gap-2'>
                     <Button className='h-8 border border-grey-300' icon='twitter-x' iconColorClass='w-[14px] h-[14px]' size='sm' fullWidth onClick={handleTwitter} />
