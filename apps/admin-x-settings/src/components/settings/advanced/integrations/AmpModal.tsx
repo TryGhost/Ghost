@@ -62,7 +62,7 @@ const AmpModal = NiceModal.create(() => {
                     <Toggle
                         checked={enabled}
                         direction='rtl'
-                        hint={<>Enable <a className='text-green' href="https://amp.dev" rel="noopener noreferrer" target='_blank'>Google Accelerated Mobile Pages</a> for your posts</>}
+                        hint={<>Google AMP is <a className='text-green' href="https://en.m.wikipedia.org/wiki/Accelerated_Mobile_Pages" rel="noopener noreferrer" target='_blank'>being retired</a> — this feature will be removed in Ghost 6.0</>}
                         label='Enable AMP'
                         onChange={(e) => {
                             setEnabled(e.target.checked);
