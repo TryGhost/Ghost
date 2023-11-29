@@ -1,13 +1,16 @@
-import {Body, Controller, Get, Param, Post, Query, UseInterceptors} from '@nestjs/common';
+import {Body, Controller, Get, NotFoundException, Param, Post, Query, UseFilters, UseInterceptors} from '@nestjs/common';
 import {SnippetsService} from '../../core/snippets/snippets.service';
 import {SnippetDTO} from './snippet.dto';
 import {Pagination} from '../../common/pagination.type';
 import ObjectID from 'bson-objectid';
 import {now} from '../../common/date';
 import {LocationHeaderInterceptor} from '../interceptors/location-header.interceptor';
+import {GlobalExceptionFilter} from '../filters/global-exception.filter';
+import {NotFoundError} from '@tryghost/errors';
 
 @Controller('snippets')
 @UseInterceptors(LocationHeaderInterceptor)
+@UseFilters(GlobalExceptionFilter)
 export class SnippetsController {
     constructor(private readonly service: SnippetsService) {}
 
@@ -18,7 +21,10 @@ export class SnippetsController {
     ): Promise<{snippets: [SnippetDTO]}> {
         const snippet = await this.service.getOne(ObjectID.createFromHexString(id));
         if (snippet === null) {
-            throw new Error('Not Found');
+            throw new NotFoundError({
+                context: 'Snippet not found.',
+                message: 'Resource not found error, cannot read snippet.'
+            });
         }
         return {
             snippets: [new SnippetDTO(snippet, {formats})]
