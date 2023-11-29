@@ -1,10 +1,13 @@
-import {Controller, Get, Param, Query} from '@nestjs/common';
+import {Body, Controller, Get, Param, Post, Query, UseInterceptors} from '@nestjs/common';
 import {SnippetsService} from '../../core/snippets/snippets.service';
 import {SnippetDTO} from './snippet.dto';
 import {Pagination} from '../../common/pagination.type';
 import ObjectID from 'bson-objectid';
+import {now} from '../../common/date';
+import {LocationHeaderInterceptor} from './interceptors/location-header.interceptor';
 
 @Controller('snippets')
+@UseInterceptors(LocationHeaderInterceptor)
 export class SnippetsController {
     constructor(private readonly service: SnippetsService) {}
 
@@ -17,6 +20,21 @@ export class SnippetsController {
         if (snippet === null) {
             throw new Error('Not Found');
         }
+        return {
+            snippets: [new SnippetDTO(snippet, {formats})]
+        };
+    }
+
+    @Post('')
+    async add(
+        @Body() body: any,
+        @Query('formats') formats?: 'mobiledoc' | 'lexical'
+    ): Promise<{snippets: [SnippetDTO]}> {
+        const snippet = await this.service.create({
+            ...body.snippets[0],
+            updatedAt: now()
+        });
+
         return {
             snippets: [new SnippetDTO(snippet, {formats})]
         };

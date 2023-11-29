@@ -9,6 +9,14 @@ export class SnippetsService {
         @Inject('SnippetsRepository') private readonly repository: SnippetsRepository
     ) {}
 
+    async create(data: any): Promise<Snippet> {
+        const snippet = Snippet.create(data);
+
+        await this.repository.save(snippet);
+
+        return snippet;
+    }
+
     async getOne(id: ObjectID) {
         return this.repository.getOne(id);
     }
