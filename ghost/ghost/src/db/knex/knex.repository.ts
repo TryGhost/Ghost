@@ -13,6 +13,19 @@ export abstract class BaseKnexRepository<T extends Entity<unknown>, F, O extends
     protected abstract mapEntityToRow(entity: T): any;
     protected abstract mapRowToEntity(row: any): T | null;
 
+    protected formatDateForKnex(date: Date | null) {
+        if (!date) {
+            return null;
+        }
+        const [ISOString, YYYY, MM, DD, HH, mm, ss] = date
+            .toISOString()
+            .match(/(\d\d\d\d)-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)/) || [];
+
+        assert(ISOString, `Date ${date} could not be parsed`);
+
+        return `${YYYY}-${MM}-${DD} ${HH}:${mm}:${ss}`;
+    }
+
     private safeMapRowToEntity(row: any): T | null {
         try {
             return this.mapRowToEntity(row);

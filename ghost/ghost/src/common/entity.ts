@@ -1,5 +1,6 @@
 import {Actor} from './actor';
 import ObjectID from 'bson-objectid';
+import {now} from './date';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function equals(a: any, b: any) {
@@ -19,7 +20,27 @@ type BaseEntityData = {
 }
 
 export class Entity<Data> {
-    constructor(protected attr: Data & BaseEntityData) {}
+    constructor(protected attr: Data & BaseEntityData, actor?: Actor) {
+        this.attr = attr;
+        if (!this.attr.id) {
+            this.attr.id = new ObjectID();
+        }
+        if (!this.attr.createdAt) {
+            this.attr.createdAt = now();
+        }
+        if (actor) {
+            this.actor = actor;
+        }
+        if (!this.attr.createdBy) {
+            if (this.actor) {
+                this.attr.createdBy = this.actor.id;
+            } else {
+                // TODO - What do we do here?
+                this.attr.createdBy = new ObjectID();
+            }
+        }
+        this.attr.deleted = false;
+    }
     private actor?: Actor | null;
     setActor(actor: Actor) {
         if (this.actor !== null) {
@@ -62,10 +83,10 @@ export class Entity<Data> {
         }
         (this.attr as Data)[key] = value;
         if (actor) {
-            this.attr.updatedAt = new Date();
+            this.attr.updatedAt = now();
             this.attr.updatedBy = actor.id;
         } else if (this.actor) {
-            this.attr.updatedAt = new Date();
+            this.attr.updatedAt = now();
             this.attr.updatedBy = this.actor.id;
         } else {
             // Maybe log a warning or smth?
