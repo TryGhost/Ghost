@@ -19,6 +19,129 @@ test.describe('Offers Modal', () => {
         await expect(modal).toBeVisible();
     });
 
+    test('Offers Add Modal is available', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
+            addOffer: {method: 'POST', path: '/offers/', response: {
+                offers: [{
+                    id: 'new-offer',
+                    name: 'New offer',
+                    code: 'new-offer'
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+        const section = page.getByTestId('offers');
+        await section.getByRole('button', {name: 'Manage offers'}).click();
+        const modal = page.getByTestId('offers-modal');
+        await modal.getByRole('button', {name: 'New offer'}).click();
+        const addModal = page.getByTestId('add-offer-modal');
+        await expect(addModal).toBeVisible();
+    });
+
+    test('Can add a new offer', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
+            addOffer: {method: 'POST', path: `/offers/`, response: {
+                offers: [{
+                    name: 'Coffee Tuesdays',
+                    id: '6487ea6464fca78ec2fff5fe',
+                    code: 'coffee-tuesdays',
+                    amount: 5
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+        const section = page.getByTestId('offers');
+        await section.getByRole('button', {name: 'Manage offers'}).click();
+        const modal = page.getByTestId('offers-modal');
+        await modal.getByRole('button', {name: 'New offer'}).click();
+        const addModal = page.getByTestId('add-offer-modal');
+        expect(addModal).toBeVisible();
+        const sidebar = addModal.getByTestId('add-offer-sidebar');
+        expect(sidebar).toBeVisible();
+        await sidebar.getByPlaceholder(/^Black Friday$/).fill('Coffee Tuesdays');
+        await sidebar.getByLabel('Amount off').fill('5');
+
+        await addModal.getByRole('button', {name: 'Publish'}).click();
+        expect(lastApiRequests.addOffer?.body).toMatchObject({
+            offers: [{
+                name: 'Coffee Tuesdays',
+                code: 'coffee-tuesdays'
+            }]
+        });
+        const successModal = page.getByTestId('offer-success-modal');
+        expect(successModal).toBeVisible();
+    });
+
+    test('Errors if required fields are missing', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
+            addOffer: {method: 'POST', path: `/offers/`, response: {
+                offers: [{
+                    name: 'Coffee Tuesdays',
+                    id: '6487ea6464fca78ec2fff5fe',
+                    code: 'coffee-tuesdays',
+                    amount: 5
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+        const section = page.getByTestId('offers');
+        await section.getByRole('button', {name: 'Manage offers'}).click();
+        const modal = page.getByTestId('offers-modal');
+        await modal.getByRole('button', {name: 'New offer'}).click();
+        const addModal = page.getByTestId('add-offer-modal');
+        await addModal.getByRole('button', {name: 'Publish'}).click();
+        await expect(page.getByTestId('toast-error')).toContainText(/Can't save offer, please double check that you've filled all mandatory fields./);
+    });
+
+    test('Shows validation hints', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
+            addOffer: {method: 'POST', path: `/offers/`, response: {
+                offers: [{
+                    name: 'Coffee Tuesdays',
+                    id: '6487ea6464fca78ec2fff5fe',
+                    code: 'coffee-tuesdays',
+                    amount: 5
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+        const section = page.getByTestId('offers');
+        await section.getByRole('button', {name: 'Manage offers'}).click();
+        const modal = page.getByTestId('offers-modal');
+        await modal.getByRole('button', {name: 'New offer'}).click();
+        const addModal = page.getByTestId('add-offer-modal');
+        await addModal.getByRole('button', {name: 'Publish'}).click();
+        await expect(page.getByTestId('toast-error')).toContainText(/Can't save offer, please double check that you've filled all mandatory fields./);
+        const sidebar = addModal.getByTestId('add-offer-sidebar');
+        await expect(sidebar).toContainText(/Name is required/);
+        await expect(sidebar).toContainText(/Code is required/);
+        await expect(sidebar).toContainText(/Enter an amount greater than 0./);
+        await expect(sidebar).toContainText(/Display title is required/);
+    });
+
     test('Can view active offers', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
