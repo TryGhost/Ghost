@@ -87,6 +87,10 @@ export interface NewslettersEditResponseType extends NewslettersResponseType {
     meta?: Meta & {sent_email_verification: string[]}
 }
 
+export interface NewslettersVerifyResponseType extends NewslettersResponseType {
+    meta?: Meta & {email_verified: string}
+}
+
 export const useEditNewsletter = createMutation<NewslettersEditResponseType, Newsletter>({
     method: 'PUT',
     path: newsletter => `/newsletters/${newsletter.id}/`,
@@ -99,7 +103,7 @@ export const useEditNewsletter = createMutation<NewslettersEditResponseType, New
     }
 });
 
-export const useVerifyNewsletterEmail = createMutation<NewslettersResponseType, {token: string}>({
+export const useVerifyNewsletterEmail = createMutation<NewslettersVerifyResponseType, {token: string}>({
     method: 'PUT',
     path: () => '/newsletters/verifications/',
     body: ({token}) => ({token}),

@@ -2331,6 +2331,9 @@ exports[`Newsletters API Can verify property updates 3: [text 1] 1`] = `
 
 exports[`Newsletters API Can verify property updates 4: [body] 1`] = `
 Object {
+  "meta": Object {
+    "email_verified": "sender_email",
+  },
   "newsletters": Array [
     Object {
       "background_color": "light",
@@ -3033,7 +3036,7 @@ Object {
   "forceTextContent": true,
   "from": "\\"Ghost\\" <noreply@sendingdomain.com>",
   "generateTextFromHTML": false,
-  "replyTo": "noreply@acme.com",
+  "replyTo": null,
   "subject": "Verify email address",
   "to": "hello@acme.com",
 }
@@ -3910,7 +3913,7 @@ Object {
   "forceTextContent": true,
   "from": "\\"Ghost\\" <default@email.com>",
   "generateTextFromHTML": false,
-  "replyTo": "noreply@acme.com",
+  "replyTo": null,
   "subject": "Verify email address",
   "to": "hello@acme.com",
 }
