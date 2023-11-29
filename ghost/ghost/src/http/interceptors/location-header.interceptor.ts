@@ -51,7 +51,7 @@ export class LocationHeaderInterceptor implements NestInterceptor {
             const url = new URL('https://ghost.io');
             url.protocol = req.secure ? 'https:' : 'http:';
             url.host = (req as any).vhost ? (req as any).vhost.host : req.get('host');
-            url.pathname = req.originalUrl;
+            url.pathname = req.path;
             url.pathname += `${id}/`;
 
             return url;
