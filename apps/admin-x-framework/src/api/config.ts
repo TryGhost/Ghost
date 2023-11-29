@@ -75,14 +75,14 @@ export const useBrowseConfig = createQuery<ConfigResponseType>({
 // Helpers
 
 export const isManagedEmail = (config: Config) => {
-    return !!config?.hostSettings?.managedEmail?.enabled;
+    return !!config.hostSettings?.managedEmail?.enabled || config.labs?.newEmailAddresses;
 };
 
 export const hasSendingDomain = (config: Config) => {
-    const sendingDomain = config?.hostSettings?.managedEmail?.sendingDomain;
+    const sendingDomain = config.hostSettings?.managedEmail?.sendingDomain;
     return typeof sendingDomain === 'string' && sendingDomain.length > 0;
 };
 
 export const sendingDomain = (config: Config) => {
-    return config?.hostSettings?.managedEmail?.sendingDomain;
+    return config.hostSettings?.managedEmail?.sendingDomain;
 };
