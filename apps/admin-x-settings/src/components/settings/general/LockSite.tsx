@@ -1,7 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Icon, Link, SettingGroupContent, TextField, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Hint, Icon, Link, SettingGroupContent, TextField, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
@@ -39,15 +39,25 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateSetting('password', e.target.value);
     };
 
+    const privateRssUrl = `${siteData.url.replace(/\/$/, '')}/${publicHash}/rss`;
+    const hint = (
+        <>A private RSS feed is available at <Link className='break-all' href={privateRssUrl}>{privateRssUrl}</Link></>
+    );
+
     const values = (
         <SettingGroupContent
             values={[
                 {
                     key: 'private',
                     value: passwordEnabled ? (
-                        <div className='flex items-center gap-1'>
-                            <Icon colorClass='text-yellow' name='lock-locked' size='sm' />
-                            <span>Your site is password protected</span>
+                        <div className='flex items-center gap-2'>
+                            <div className='rounded-full border border-yellow p-2'>
+                                <Icon colorClass='text-yellow' name='lock-locked' size='sm' />
+                            </div>
+                            <div className='leading-supertight'>
+                                Your site is password protected
+                                <Hint>{hint}</Hint>
+                            </div>
                         </div>
                     ) : (
                         <div className='flex items-center gap-1 text-grey-900 dark:text-grey-400'>
@@ -58,11 +68,6 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 }
             ]}
         />
-    );
-
-    const privateRssUrl = `${siteData.url.replace(/\/$/, '')}/${publicHash}/rss`;
-    const hint = (
-        <>A private RSS feed is available at <Link className='break-all' href={privateRssUrl}>{privateRssUrl}</Link></>
     );
 
     const inputs = (
@@ -77,7 +82,7 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
             {passwordEnabled &&
                 <TextField
                     error={!!errors.password}
-                    hint={errors.password || hint}
+                    hint={errors.password}
                     placeholder="Enter password"
                     title="Site password"
                     value={password}
