@@ -1,11 +1,10 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {CopyLinkButton} from './offers/OffersIndex';
+import {CopyLinkButton, createRedemptionFilterUrl, getOfferDiscount} from './offers/OffersIndex';
+import {Offer, useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
-import {createRedemptionFilterUrl, getOfferDiscount} from './offers/OffersIndex';
-import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -37,7 +36,9 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     const paidActiveTiers = getPaidActiveTiers(allTiers || []);
 
-    const activeOffers = allOffers.filter(offer => offer.status === 'active');
+    const activeOffers = allOffers
+        .map(offer => ({...offer, tier: paidActiveTiers.find(tier => tier.id === offer.tier.id)}))
+        .filter((offer): offer is Offer & {tier: Tier} => offer.status === 'active' && !!offer.tier);
 
     activeOffers.sort((a, b) => {
         const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
@@ -66,27 +67,19 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             <div>
                 <div className='grid grid-cols-1 gap-4 min-[900px]:grid-cols-3'>
-                    {
-                        latestThree.map((offer) => {
-                            const offerTier = paidActiveTiers.find(tier => tier.id === offer?.tier.id);
-                            if (!offerTier) {
-                                return null;
-                            }
-                            return <OfferContainer
-                                key={offer.id}
-                                amount={offer.amount}
-                                cadence={offer.cadence}
-                                currency={offer.currency || 'USD'}
-                                goToOfferEdit={goToOfferEdit}
-                                offerCode={offer.code}
-                                offerId={offer.id}
-                                offerTitle={offer.name}
-                                redemptions={offer.redemption_count}
-                                tier={offerTier}
-                                type={offer.type}
-                            />;
-                        })
-                    }
+                    {latestThree.map(offer => (<OfferContainer
+                        key={offer.id}
+                        amount={offer.amount}
+                        cadence={offer.cadence}
+                        currency={offer.currency || 'USD'}
+                        goToOfferEdit={goToOfferEdit}
+                        offerCode={offer.code}
+                        offerId={offer.id}
+                        offerTitle={offer.name}
+                        redemptions={offer.redemption_count}
+                        tier={offer.tier}
+                        type={offer.type}
+                    />))}
                 </div>
                 {allOffers.length > 3 && <div className='mt-4 border-t border-t-grey-200 pt-2'>
                     <span className='text-xs text-grey-700 dark:text-grey-600'>{allOffers.length} offers in total</span>
