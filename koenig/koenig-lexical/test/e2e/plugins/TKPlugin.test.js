@@ -22,25 +22,25 @@ test.describe('TK Plugin', async function () {
 
             await page.keyboard.type('TK');
 
-            await expect(await page.getByRole('paragraph').getByText('TK')).toHaveClass('bg-lime-300 dark:bg-lime-900');
+            await expect(await page.getByRole('paragraph').getByText('TK')).toHaveAttribute('data-kg-tk', 'true');
         });
 
         test('highlights a TK when surrounded by symbols', async function () {
             await focusEditor(page);
             await page.keyboard.type('[TK],');
-            await expect(await page.getByRole('paragraph').getByText('[TK],')).toHaveClass('bg-lime-300 dark:bg-lime-900');
+            await expect(await page.getByRole('paragraph').getByText('[TK],')).toHaveAttribute('data-kg-tk', 'true');
         });
 
         test('highlights a TK when TK is repeated', async function () {
             await focusEditor(page);
             await page.keyboard.type('TKTK');
-            await expect(await page.getByRole('paragraph').getByText('TKTK')).toHaveClass('bg-lime-300 dark:bg-lime-900');
+            await expect(await page.getByRole('paragraph').getByText('TKTK')).toHaveAttribute('data-kg-tk', 'true');
         });
 
         test('does not highlight TK when surrounded by letters', async function () {
             await focusEditor(page);
             await page.keyboard.type('TKtest');
-            await expect(await page.getByRole('paragraph').getByText('TKtest')).not.toHaveClass('bg-lime-300 dark:bg-lime-900');
+            await expect(await page.getByRole('paragraph').getByText('TKtest')).not.toHaveAttribute('data-kg-tk', 'true');
         });
 
         test('highlights a TK node when TK is typed in a heading', async function () {
@@ -48,7 +48,7 @@ test.describe('TK Plugin', async function () {
 
             await page.keyboard.type('# TK');
 
-            await expect(await page.getByRole('heading').getByText('TK')).toHaveClass('bg-lime-300 dark:bg-lime-900');
+            await expect(await page.getByRole('heading').getByText('TK')).toHaveAttribute('data-kg-tk', 'true');
         });
 
         test('highlights a TK node when TK is typed in a list item', async function () {
@@ -56,7 +56,7 @@ test.describe('TK Plugin', async function () {
 
             await page.keyboard.type('- TK');
 
-            await expect(await page.getByRole('listitem').getByText('TK')).toHaveClass('bg-lime-300 dark:bg-lime-900');
+            await expect(await page.getByRole('listitem').getByText('TK')).toHaveAttribute('data-kg-tk', 'true');
         });
 
         test('changes highlight when TK indicator is hovered', async function () {
@@ -65,7 +65,7 @@ test.describe('TK Plugin', async function () {
             await page.keyboard.type('TK');
             await page.getByTestId('tk-indicator').hover();
 
-            await expect(await page.getByRole('paragraph').getByText('TK')).toHaveClass('bg-lime-500 dark:bg-lime-800');
+            await expect(await page.getByRole('paragraph').getByText('TK')).toHaveClass('bg-lime-500 dark:bg-lime-800 py-1');
         });
     });
 
