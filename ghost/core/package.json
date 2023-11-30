@@ -90,6 +90,7 @@
     "@tryghost/event-aware-cache-wrapper": "0.0.0",
     "@tryghost/express-dynamic-redirects": "0.0.0",
     "@tryghost/external-media-inliner": "0.0.0",
+    "@tryghost/ghost": "0.0.0",
     "@tryghost/helpers": "1.1.88",
     "@tryghost/html-to-plaintext": "0.0.0",
     "@tryghost/http-cache-utils": "0.1.11",
