@@ -1,7 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Hint, Icon, Link, Separator, SettingGroupContent, TextField, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Hint, Icon, Separator, SettingGroupContent, TextField, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
