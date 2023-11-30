@@ -22,25 +22,25 @@ test.describe('TK Plugin', async function () {
 
             await page.keyboard.type('TK');
 
-            await expect(await page.getByRole('paragraph').getByText('TK')).toHaveAttribute('data-kg-tk', 'true');
+            await expect(page.getByRole('paragraph').getByText('TK')).toHaveAttribute('data-kg-tk', 'true');
         });
 
         test('highlights a TK when surrounded by symbols', async function () {
             await focusEditor(page);
             await page.keyboard.type('[TK],');
-            await expect(await page.getByRole('paragraph').getByText('[TK],')).toHaveAttribute('data-kg-tk', 'true');
+            await expect(page.getByRole('paragraph').getByText('[TK],')).toHaveAttribute('data-kg-tk', 'true');
         });
 
         test('highlights a TK when TK is repeated', async function () {
             await focusEditor(page);
             await page.keyboard.type('TKTK');
-            await expect(await page.getByRole('paragraph').getByText('TKTK')).toHaveAttribute('data-kg-tk', 'true');
+            await expect(page.getByRole('paragraph').getByText('TKTK')).toHaveAttribute('data-kg-tk', 'true');
         });
 
         test('does not highlight TK when surrounded by letters', async function () {
             await focusEditor(page);
             await page.keyboard.type('TKtest');
-            await expect(await page.getByRole('paragraph').getByText('TKtest')).not.toHaveAttribute('data-kg-tk', 'true');
+            await expect(page.getByRole('paragraph').getByText('TKtest')).not.toHaveAttribute('data-kg-tk', 'true');
         });
 
         test('highlights a TK node when TK is typed in a heading', async function () {
@@ -48,7 +48,7 @@ test.describe('TK Plugin', async function () {
 
             await page.keyboard.type('# TK');
 
-            await expect(await page.getByRole('heading').getByText('TK')).toHaveAttribute('data-kg-tk', 'true');
+            await expect(page.getByRole('heading').getByText('TK')).toHaveAttribute('data-kg-tk', 'true');
         });
 
         test('highlights a TK node when TK is typed in a list item', async function () {
@@ -56,7 +56,7 @@ test.describe('TK Plugin', async function () {
 
             await page.keyboard.type('- TK');
 
-            await expect(await page.getByRole('listitem').getByText('TK')).toHaveAttribute('data-kg-tk', 'true');
+            await expect(page.getByRole('listitem').getByText('TK')).toHaveAttribute('data-kg-tk', 'true');
         });
 
         test('changes highlight when TK indicator is hovered', async function () {
@@ -65,7 +65,15 @@ test.describe('TK Plugin', async function () {
             await page.keyboard.type('TK');
             await page.getByTestId('tk-indicator').hover();
 
-            await expect(await page.getByRole('paragraph').getByText('TK')).toHaveClass('bg-lime-500 dark:bg-lime-800 py-1');
+            await expect(page.getByRole('paragraph').getByText('TK')).toHaveClass('bg-lime-500 dark:bg-lime-800 py-1');
+        });
+
+        test('highlights TK nodes following invalid TK text', async function () {
+            await focusEditor(page);
+
+            await page.keyboard.type('TKs and TK and [TK]');
+
+            await expect(page.locator('[data-kg-tk="true"]')).toHaveCount(2);
         });
     });
 
@@ -74,7 +82,7 @@ test.describe('TK Plugin', async function () {
             await focusEditor(page);
 
             await page.keyboard.type('TK and TK and TK');
-            await expect(await page.getByTestId('tk-indicator')).toBeVisible();
+            await expect(page.getByTestId('tk-indicator')).toBeVisible();
         });
 
         test('creates a TK indicator for each parent element with a TK', async function () {
@@ -86,7 +94,7 @@ test.describe('TK Plugin', async function () {
             await page.keyboard.press('Enter');
             await page.keyboard.type('TK and some text');
 
-            await expect(await page.getByTestId('tk-indicator').all()).toHaveLength(3);
+            await expect(page.getByTestId('tk-indicator')).toHaveCount(3);
         });
 
         test('clicking the indicator selects the first TK node in the parent', async function () {

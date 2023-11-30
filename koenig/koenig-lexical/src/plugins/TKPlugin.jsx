@@ -5,7 +5,8 @@ import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useLexicalTextEntity} from '../hooks/useExtendedTextEntity';
 
-const REGEX = new RegExp(/(^|.)([^a-zA-Z0-9\s]*(TK)+[^a-zA-Z0-9\s]*)($|.)/);
+const REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
+const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
 
 function TKIndicator({editor, rootElement, containingElement, nodeKeys}) {
     const tkClasses = editor._config.theme.tk?.split(' ') || [];
@@ -141,26 +142,48 @@ export default function TKPlugin({onCountChange = () => {}}) {
     }, []);
 
     const getTKMatch = useCallback((text) => {
-        const matchArr = REGEX.exec(text);
+        let matchArr = REGEX.exec(text);
 
         if (matchArr === null) {
             return null;
         }
 
-        // negative lookbehind isn't supported before Safari 16.4
-        // so we capture the preceding char and test it here
-        if (matchArr[1] && /\w/.test(matchArr[1])) {
+        function isValidMatch(match) {
+            // negative lookbehind isn't supported before Safari 16.4
+            // so we capture the preceding char and test it here
+            if (match[1] && match[1].trim() && WORD_CHAR_REGEX.test(match[1])) {
+                return false;
+            }
+
+            // we also check any following char in code to avoid an overly
+            // complex regex when looking for word-chars following the optional
+            // trailing symbol char
+            if (match[4] && match[4].trim() && WORD_CHAR_REGEX.test(match[4])) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // our regex will match invalid TKs because we can't use negative lookbehind
+        // so we need to loop through the matches discarding any that are invalid
+        // and keeping track of the original input so we have correct offsets
+        // when we find a valid match
+        let textBeforeMatch = '';
+
+        while (matchArr !== null && !isValidMatch(matchArr)) {
+            textBeforeMatch += text.slice(0, matchArr.index + matchArr[0].length - 1);
+            text = text.slice(matchArr.index + matchArr[0].length - 1);
+            matchArr = REGEX.exec(text);
+        }
+
+        if (matchArr === null) {
             return null;
         }
 
-        // we also check any following char in code to avoid an overly
-        // complex regex when looking for word-chars following the optional
-        // trailing symbol char
-        if (matchArr[4] && /\w/.test(matchArr[4])) {
-            return null;
-        }
+        const offsetAdjustment = textBeforeMatch.length;
 
-        const startOffset = matchArr.index + matchArr[1].length;
+        const startOffset = offsetAdjustment + matchArr.index + matchArr[1].length;
         const endOffset = startOffset + matchArr[2].length;
 
         return {
