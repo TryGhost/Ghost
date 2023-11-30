@@ -74,6 +74,7 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
             updateRoute('offers');
         }}
         animate={false}
+        backDropClick={false}
         footer={false}
         height='full'
         size='lg'

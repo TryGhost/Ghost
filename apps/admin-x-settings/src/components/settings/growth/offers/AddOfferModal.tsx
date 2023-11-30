@@ -614,6 +614,7 @@ const AddOfferModal = () => {
         afterClose={() => {
             updateRoute('offers');
         }}
+        backDropClick={false}
         cancelLabel='Cancel'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
