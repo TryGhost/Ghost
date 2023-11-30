@@ -1,7 +1,9 @@
 import PortalFrame from '../../membership/portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
+import {Button} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getTiersCadences} from '../../../../utils/getTiersCadences';
@@ -145,23 +147,57 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
     const [nameLength, setNameLength] = useState(0);
     const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
 
+    const {siteData} = useGlobalData();
+    const [isCopied, setIsCopied] = useState(false);
+    const homepageUrl = getHomepageUrl(siteData!);
+    const offerUrl = `${homepageUrl}${overrides.code.value}`;
+    const handleCopyClick = async () => {
+        await navigator.clipboard.writeText(offerUrl);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+    };
+
     return (
         <div className='pt-7' data-testId={testId}>
             <Form>
-                <TextField
-                    error={Boolean(errors.name)}
-                    hint={errors.name || <div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={`${nameLengthColor}`}>{nameLength}</span> / 40</strong></div>}
-                    maxLength={40}
-                    placeholder='Black Friday'
-                    title='Name'
-                    onBlur={validate}
-                    onChange={(e) => {
-                        handleNameInput(e);
-                        setNameLength(e.target.value.length);
-                    }}
-                />
+                <section>
+                    <h2 className='mb-4 text-lg'>General</h2>
+                    <div className='flex flex-col gap-6'>
+                        <TextField
+                            error={Boolean(errors.name)}
+                            hint={errors.name || <div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={`${nameLengthColor}`}>{nameLength}</span> / 40</strong></div>}
+                            maxLength={40}
+                            placeholder='Black Friday'
+                            title='Offer name'
+                            onBlur={validate}
+                            onChange={(e) => {
+                                handleNameInput(e);
+                                setNameLength(e.target.value.length);
+                            }}
+                        />
+                        <TextField
+                            error={Boolean(errors.displayTitle)}
+                            hint={errors.displayTitle}
+                            placeholder='Black Friday Special'
+                            title='Display title'
+                            value={overrides.displayTitle.value}
+                            onBlur={validate}
+                            onChange={(e) => {
+                                handleDisplayTitleInput(e);
+                            }}
+                        />
+                        <TextArea
+                            placeholder='Take advantage of this limited-time offer.'
+                            title='Display description'
+                            value={overrides.displayDescription}
+                            onChange={(e) => {
+                                handleTextAreaInput(e);
+                            }}
+                        />
+                    </div>
+                </section>
                 <section className='mt-4'>
-                    <h2 className='mb-4 text-lg'>Offer details</h2>
+                    <h2 className='mb-4 text-lg'>Details</h2>
                     <div className='flex flex-col gap-6'>
                         <div className='flex flex-col gap-4 rounded-md border border-grey-200 p-4'>
                             <ButtonSelect checked={overrides.type !== 'trial' ? true : false} type={typeOptions[0]} onClick={() => {
@@ -238,39 +274,15 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 }} />
                         }
 
-                    </div>
-                </section>
-                <section className='mt-4'>
-                    <h2 className='mb-4 text-lg'>Portal Settings</h2>
-                    <div className='flex flex-col gap-6'>
-                        <TextField
-                            error={Boolean(errors.displayTitle)}
-                            hint={errors.displayTitle}
-                            placeholder='Black Friday Special'
-                            title='Display title'
-                            value={overrides.displayTitle.value}
-                            onBlur={validate}
-                            onChange={(e) => {
-                                handleDisplayTitleInput(e);
-                            }}
-                        />
                         <TextField
                             error={Boolean(errors.code)}
-                            hint={errors.code}
+                            hint={errors.code || <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div>}
                             placeholder='black-friday'
                             title='Offer code'
                             value={overrides.code.value}
                             onBlur={validate}
                             onChange={(e) => {
                                 handleCodeInput(e);
-                            }}
-                        />
-                        <TextArea
-                            placeholder='Take advantage of this limited-time offer.'
-                            title='Display description'
-                            value={overrides.displayDescription}
-                            onChange={(e) => {
-                                handleTextAreaInput(e);
                             }}
                         />
                     </div>
