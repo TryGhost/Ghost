@@ -38,6 +38,9 @@ export class SnippetRepositoryBookshelf implements SnippetsRepository {
     }
 
     async getCount(filter?: string | undefined): Promise<number> {
+        // @NOTE: this is an inefficient way to get the count. It's here as a stopgap to get
+        //        the moving pieces working. It should be either replaced with more efficient
+        //        query or the repository would be substituted with a knex implementation.
         const result = await this.models.Snippet.findPage({
             filter: filter
         });
