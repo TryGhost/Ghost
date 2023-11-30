@@ -628,6 +628,7 @@ const AddOfferModal = () => {
         size='lg'
         testId='add-offer-modal'
         title='Offer'
+        width={1140}
         onBreadcrumbsBack={() => {
             updateRoute('offers/edit');
         }}

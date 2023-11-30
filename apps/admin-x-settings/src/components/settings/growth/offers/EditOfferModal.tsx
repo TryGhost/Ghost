@@ -95,8 +95,8 @@ const Sidebar: React.FC<{
             };
 
             return (
-                <div className='pt-7'>
-                    <Form>
+                <div className='flex grow flex-col pt-7'>
+                    <Form className=' grow'>
                         <section>
                             <h2 className='mb-4 text-lg'>Stats</h2>
                             <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5'>
@@ -164,7 +164,7 @@ const Sidebar: React.FC<{
                             </div>
                         </section>
                     </Form>
-                    <div className='mb-6'>
+                    <div className='mb-2'>
                         {offer?.status === 'active' ? <Button color='red' label='Archive offer' link onClick={confirmStatusChange} /> : <Button color='green' label='Reactivate offer' link onClick={confirmStatusChange} />}
                     </div>
                 </div>
@@ -269,6 +269,7 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         size='lg'
         testId='offer-update-modal'
         title='Offer'
+        width={1140}
         onBreadcrumbsBack={() => {
             updateRoute('offers/edit');
         }}
