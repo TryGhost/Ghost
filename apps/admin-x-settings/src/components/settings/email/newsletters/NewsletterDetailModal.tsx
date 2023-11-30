@@ -4,7 +4,7 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
-import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, Link, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
@@ -75,7 +75,7 @@ const ReplyToEmailField: React.FC<{
 
     const hint = (
         <>
-            If not set, replies go to the sender email address
+            If left empty, replies go to {newsletterAddress}
         </>
     );
 
@@ -232,21 +232,8 @@ const Sidebar: React.FC<{
             );
         }
 
-        const hint = (
-            <>
-                To customise, set up a <Link href="https://ghost.org/help/custom-sending-domains/" rel="noopener noreferrer" target="_blank">custom sending domain</Link>
-            </>
-        );
-
         // Pro users without custom sending domains
-        return (
-            <TextField
-                disabled={true}
-                hint={hint}
-                title="Sender email address"
-                value={defaultEmailAddress}
-            />
-        );
+        // We're not showing the field since it's not editable
     };
 
     const tabs: Tab[] = [
