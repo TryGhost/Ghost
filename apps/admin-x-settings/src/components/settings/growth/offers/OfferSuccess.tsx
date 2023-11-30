@@ -52,14 +52,9 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
     };
 
     const handleCopyClick = async () => {
-        try {
-            await navigator.clipboard.writeText(offerLink);
-            setIsCopied(true);
-            setTimeout(() => setIsCopied(false), 1000); // reset after 1 seconds
-        } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error('Failed to copy text: ', err);
-        }
+        await navigator.clipboard.writeText(offerLink);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
     };
 
     const handleTwitter = () => {
