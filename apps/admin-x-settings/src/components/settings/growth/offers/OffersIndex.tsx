@@ -199,6 +199,7 @@ export const OffersIndexModal = () => {
         height='full'
         size='lg'
         testId='offers-modal'
+        width={1140}
         stickyFooter
         onOk={() => {
             modal.remove();
