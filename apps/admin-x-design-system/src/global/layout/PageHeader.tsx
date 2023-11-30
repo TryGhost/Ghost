@@ -28,7 +28,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     children
 }) => {
     const containerClasses = clsx(
-        'z-50 h-[74px] p-5 px-7',
+        'z-50 h-22 min-h-[92px] p-8 px-6 tablet:px-12',
         !children && 'flex items-center justify-between gap-3',
         sticky && 'sticky top-0',
         containerClassName
@@ -39,7 +39,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             const leftClasses = clsx(
                 'flex flex-auto items-center',
                 (right && center) && 'basis-1/3',
-                ((right && !center) || (!right && center)) && 'basis-1/2'
+                ((!right && center)) && 'basis-1/2'
             );
             left = <div className={leftClasses}>{left}</div>;
         }
@@ -55,7 +55,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             const rightClasses = clsx(
                 'flex flex-auto items-center justify-end',
                 (left && center) && 'basis-1/3',
-                ((left && !center) || (!left && center)) && 'basis-1/2'
+                ((!left && center)) && 'basis-1/2'
             );
             right = <div className={rightClasses}>{right}</div>;
         }

@@ -1,22 +1,22 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
-import useForm, {ErrorMessages} from '../../../../hooks/useForm';
 import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
+import {createRedemptionFilterUrl} from './OffersIndex';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 function formatTimestamp(timestamp: string): string {
     const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('default', {
         year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+        month: 'short',
+        day: '2-digit'
     });
 }
 
@@ -31,16 +31,21 @@ const Sidebar: React.FC<{
             const handleError = useHandleError();
             const {mutateAsync: editOffer} = useEditOffer();
 
-            const offerUrl = `${getHomepageUrl(siteData!)}${offer?.code}`;
-            const handleCopyClick = async () => {
-                try {
-                    await navigator.clipboard.writeText(offerUrl);
-                    setIsCopied(true);
-                    setTimeout(() => setIsCopied(false), 1000); // reset after 1 seconds
-                } catch (err) {
-                    // eslint-disable-next-line no-console
-                    console.error('Failed to copy text: ', err);
+            const [nameLength, setNameLength] = useState(offer?.name.length || 0);
+            const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
+
+            useEffect(() => {
+                if (offer?.name) {
+                    setNameLength(offer?.name.length);
                 }
+            }, [offer?.name]);
+
+            const homepageUrl = getHomepageUrl(siteData!);
+            const offerUrl = `${homepageUrl}${offer?.code}`;
+            const handleCopyClick = async () => {
+                await navigator.clipboard.writeText(offerUrl);
+                setIsCopied(true);
+                setTimeout(() => setIsCopied(false), 2000);
             };
 
             const confirmStatusChange = async () => {
@@ -90,29 +95,30 @@ const Sidebar: React.FC<{
             };
 
             return (
-                <div className='pt-7'>
-                    <Form>
-                        <section className='mt-4'>
-                            <h2 className='mb-4 text-lg'>Stats</h2>
+                <div className='flex grow flex-col pt-2'>
+                    <Form className=' grow'>
+                        <section>
                             <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5'>
                                 <div className='flex flex-col gap-1.5'>
-                                    <span className='text-xs font-semibold leading-none text-grey-700'>Created at</span>
+                                    <span className='text-xs font-semibold leading-none text-grey-700'>Created on</span>
                                     <span>{formatTimestamp(offer?.created_at ? offer.created_at : '')}</span>
                                 </div>
-                                <div className='flex flex-col gap-1.5'>
-                                    <span className='text-xs font-semibold leading-none text-grey-700'>Total redemptions</span>
-                                    <span>{offer?.redemption_count} {offer?.redemption_count === 1 ? 'redemption' : 'redemptions'}</span>
-                                </div>
-                                {offer?.redemption_count > 0 ?
-                                    <div className='flex items-end justify-between'>
+                                <div className='flex items-end justify-between'>
+                                    <div className='flex flex-col gap-5'>
                                         <div className='flex flex-col gap-1.5'>
-                                            <span className='text-xs font-semibold leading-none text-grey-700'>Last redemption</span>
-                                            <span>August 30, 2023</span>
+                                            <span className='text-xs font-semibold leading-none text-grey-700'>Performance</span>
+                                            <span>{offer?.redemption_count} {offer?.redemption_count === 1 ? 'redemption' : 'redemptions'}</span>
                                         </div>
-                                        <a className='font-semibold text-green' href="#">See all →</a>
-                                    </div> :
-                                    null
-                                }
+                                        {offer?.redemption_count > 0 && offer?.last_redeemed ?
+                                            <div className='flex flex-col gap-1.5'>
+                                                <span className='text-xs font-semibold leading-none text-grey-700'>Last redemption</span>
+                                                <span>{formatTimestamp(offer?.last_redeemed)}</span>
+                                            </div> :
+                                            null
+                                        }
+                                    </div>
+                                    {offer?.redemption_count > 0 ? <a className='font-semibold text-green' href={createRedemptionFilterUrl(offer?.id)}>See members →</a> : null}
+                                </div>
                             </div>
                         </section>
                         <section className='mt-4'>
@@ -120,44 +126,23 @@ const Sidebar: React.FC<{
                             <div className='flex flex-col gap-6'>
                                 <TextField
                                     error={Boolean(errors.name)}
-                                    hint={errors.name || 'Visible to members on Stripe Checkout page'}
+                                    hint={errors.name || <div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={`${nameLengthColor}`}>{nameLength}</span> / 40</strong></div>}
+                                    maxLength={40}
                                     placeholder='Black Friday'
-                                    title='Name'
+                                    title='Offer name'
                                     value={offer?.name}
                                     onBlur={validate}
-                                    onChange={e => updateOffer({name: e.target.value})}
+                                    onChange={(e) => {
+                                        setNameLength(e.target.value.length);
+                                        updateOffer({name: e.target.value});
+                                    }}
                                     onKeyDown={() => clearError('name')}
                                 />
-                                <div className='flex flex-col gap-1.5'>
-                                    <TextField
-                                        disabled={Boolean(true)}
-                                        placeholder='https://www.example.com'
-                                        title='URL'
-                                        type='url'
-                                        value={offerUrl}
-                                    />
-                                    <Button color='green' label={isCopied ? 'Copied!' : 'Copy code'} onClick={handleCopyClick} />
-                                </div>
-                            </div>
-                        </section>
-                        <section className='mt-4'>
-                            <h2 className='mb-4 text-lg'>Portal settings</h2>
-                            <div className='flex flex-col gap-6'>
                                 <TextField
                                     placeholder='Black Friday Special'
                                     title='Display title'
                                     value={offer?.display_title}
                                     onChange={e => updateOffer({display_title: e.target.value})}
-                                />
-                                <TextField
-                                    error={Boolean(errors.code)}
-                                    hint={errors.code}
-                                    placeholder='black-friday'
-                                    title='Offer code'
-                                    value={offer?.code}
-                                    onBlur={validate}
-                                    onChange={e => updateOffer({code: e.target.value})}
-                                    onKeyDown={() => clearError('name')}
                                 />
                                 <TextArea
                                     placeholder='Take advantage of this limited-time offer.'
@@ -165,10 +150,20 @@ const Sidebar: React.FC<{
                                     value={offer?.display_description}
                                     onChange={e => updateOffer({display_description: e.target.value})}
                                 />
+                                <TextField
+                                    error={Boolean(errors.code)}
+                                    hint={errors.code || <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{offer?.code}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div>}
+                                    placeholder='black-friday'
+                                    title='Offer code'
+                                    value={offer?.code}
+                                    onBlur={validate}
+                                    onChange={e => updateOffer({code: e.target.value})}
+                                    onKeyDown={() => clearError('name')}
+                                />
                             </div>
                         </section>
                     </Form>
-                    <div className='mb-6'>
+                    <div className='mb-2'>
                         {offer?.status === 'active' ? <Button color='red' label='Archive offer' link onClick={confirmStatusChange} /> : <Button color='green' label='Reactivate offer' link onClick={confirmStatusChange} />}
                     </div>
                 </div>
@@ -235,23 +230,17 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     useEffect(() => {
         const dataset : offerPortalPreviewUrlTypes = {
             name: formState?.name || '',
-            code: {
-                value: formState?.code || ''
-            },
-            displayTitle: {
-                value: formState?.display_title || ''
-            },
+            code: formState?.code || '',
+            displayTitle: formState?.display_title || '',
             displayDescription: formState?.display_description || '',
             type: formState?.type || '',
             cadence: formState?.cadence || '',
-            trialAmount: formState?.amount,
-            discountAmount: formState?.amount,
+            amount: formState?.amount,
             duration: formState?.duration || '',
             durationInMonths: formState?.duration_in_months || 0,
             currency: formState?.currency || '',
             status: formState?.status || '',
-            tierId: formState?.tier.id || '',
-            amountType: formState?.type === 'percent' ? 'percent' : 'amount'
+            tierId: formState?.tier.id || ''
         };
 
         const newHref = getOfferPortalPreviewUrl(dataset, siteData.url);
@@ -263,22 +252,21 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     />;
 
     return offerById ? <PreviewModalContent
+        afterClose={() => {
+            updateRoute('offers');
+        }}
+        backDropClick={false}
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
         height='full'
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
         preview={iframe}
-        previewToolbarBreadcrumbs={[{label: 'Offers', onClick: () => {
-            updateRoute('offers/edit');
-        }}, {label: offerById[0]?.name || ''}]}
         sidebar={sidebar}
         size='lg'
         testId='offer-update-modal'
         title='Offer'
-        onBreadcrumbsBack={() => {
-            updateRoute('offers/edit');
-        }}
+        width={1140}
         onCancel={() => {
             updateRoute('offers/edit');
         }}

@@ -8,11 +8,9 @@ const errors = require('@tryghost/errors');
 
 describe('Batch Sending Service', function () {
     let errorLog;
-    let warnLog;
 
     beforeEach(function () {
         errorLog = sinon.stub(logging, 'error');
-        warnLog = sinon.stub(logging, 'warn');
         sinon.stub(logging, 'info');
     });
 
@@ -332,7 +330,7 @@ describe('Batch Sending Service', function () {
                 },
                 emailSegmenter: {
                     getMemberFilterForSegment(n) {
-                        return `newsletters.id:${n.id}`;
+                        return `newsletters.id:'${n.id}'`;
                     }
                 },
                 db
@@ -432,7 +430,7 @@ describe('Batch Sending Service', function () {
                 },
                 emailSegmenter: {
                     getMemberFilterForSegment(n, _, segment) {
-                        return `newsletters.id:${n.id}+(${segment})`;
+                        return `newsletters.id:'${n.id}'+(${segment})`;
                     }
                 },
                 db
@@ -537,7 +535,7 @@ describe('Batch Sending Service', function () {
                 },
                 emailSegmenter: {
                     getMemberFilterForSegment(n, _, segment) {
-                        return `newsletters.id:${n.id}+(${segment})`;
+                        return `newsletters.id:'${n.id}'+(${segment})`;
                     }
                 },
                 db
@@ -997,7 +995,7 @@ describe('Batch Sending Service', function () {
             assert.equal(members.length, 2);
         });
 
-        it('Truncates recipients if more than the maximum are returned in a batch', async function () {
+        it('Throws error if more than the maximum are returned in a batch', async function () {
             const EmailBatch = createModelClass({
                 findOne: {
                     id: '123_batch_id',
@@ -1081,7 +1079,7 @@ describe('Batch Sending Service', function () {
             const service = new BatchSendingService({
                 models: {EmailBatch, EmailRecipient: DoubleTheEmailRecipients},
                 sendingService,
-                BEFORE_RETRY_CONFIG: {maxRetries: 10, maxTime: 2000, sleep: 1}
+                BEFORE_RETRY_CONFIG: {maxRetries: 1, maxTime: 2000, sleep: 1}
             });
 
             const result = await service.sendBatch({
@@ -1093,25 +1091,11 @@ describe('Batch Sending Service', function () {
                 newsletter: createModel({})
             });
 
-            assert.equal(result, true);
-
-            sinon.assert.calledOnce(warnLog);
-            const firstLoggedWarn = warnLog.firstCall.args[0];
-            assert.match(firstLoggedWarn, /Email batch 123_batch_id has 4 members, which exceeds the maximum of 2 members per batch. Filtering by batch_id: 123_batch_id/);
-
-            sinon.assert.calledOnce(errorLog);
-            const firstLoggedError = errorLog.firstCall.args[0];
-
-            assert.match(firstLoggedError, /Email batch 123_batch_id has 3 members, which exceeds the maximum of 2. Truncating to 2/);
-
-            sinon.assert.calledOnce(sendingService.send);
-            const {members} = sendingService.send.firstCall.args[0];
-            assert.equal(members.length, 2);
+            assert.equal(result, false);
 
             sinon.assert.calledOnce(findOne);
             const batch = await findOne.firstCall.returnValue;
-            assert.equal(batch.get('status'), 'submitted');
-            assert.equal(batch.get('provider_id'), 'providerid@example.com');
+            assert.equal(batch.get('status'), 'failed');
         });
 
         it('Stops retrying after the email retry cut off time', async function () {

@@ -21,7 +21,7 @@ const urlUtils = require('../../../core/shared/url-utils');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
-const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
+const {stripeMocker, mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
 
 /**
  * Assert that haystack and needles match, ignoring the order.
@@ -194,6 +194,7 @@ describe('Members API without Stripe', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
+        mockLabsDisabled('newEmailAddresses');
     });
 
     afterEach(function () {
@@ -1958,7 +1959,7 @@ describe('Members API', function () {
 
         // Check activity feed
         const {body: eventsBody} = await agent
-            .get(`/members/events?filter=data.member_id:${newMember.id}`)
+            .get(`/members/events?filter=data.member_id:'${newMember.id}'`)
             .body({members: [memberChanged]})
             .expectStatus(200)
             .matchHeaderSnapshot({
@@ -3037,7 +3038,7 @@ describe('Members API Bulk operations', function () {
         should(model.relations.newsletters.models.length).equal(newsletterCount, 'This test requires a member with 2 or more newsletters');
 
         await agent
-            .put(`/members/bulk/?filter=id:${member.id}`)
+            .put(`/members/bulk/?filter=id:'${member.id}'`)
             .body({bulk: {
                 action: 'unsubscribe'
             }})
@@ -3065,7 +3066,7 @@ describe('Members API Bulk operations', function () {
 
         // When we do it again, we should still receive a count of 1, because we unsubcribed one member (who happens to be already unsubscribed)
         await agent
-            .put(`/members/bulk/?filter=id:${member.id}`)
+            .put(`/members/bulk/?filter=id:'${member.id}'`)
             .body({bulk: {
                 action: 'unsubscribe'
             }})
@@ -3303,7 +3304,7 @@ describe('Members API Bulk operations', function () {
         should(model2.relations.labels.models.map(m => m.id)).match([firstId, secondId]);
 
         await agent
-            .put(`/members/bulk/?filter=id:${member1.id}`)
+            .put(`/members/bulk/?filter=id:'${member1.id}'`)
             .body({bulk: {
                 action: 'removeLabel',
                 meta: {

@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/ember';
+import AdminXSettings from '../components/admin-x/settings';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -7,7 +8,8 @@ import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Debug} from '@sentry/integrations';
-import {importSettings} from '../components/admin-x/settings';
+import {beforeSend} from 'ghost-admin/utils/sentry';
+import {importComponent} from '../components/admin-x/admin-x-component';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
     isAjaxError,
@@ -180,34 +182,7 @@ export default Route.extend(ShortcutsRoute, {
                 dsn: this.config.sentry_dsn,
                 environment: this.config.sentry_env,
                 release: `ghost@${this.config.version}`,
-                beforeSend(event, hint) {
-                    const exception = hint.originalException;
-                    event.tags = event.tags || {};
-                    event.tags.shown_to_user = event.tags.shown_to_user || false;
-                    event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
-
-                    // Do not report "handled" errors to Sentry
-                    if (event.tags.shown_to_user === true) {
-                        return null;
-                    }
-
-                    // ajax errors — improve logging and add context for debugging
-                    if (isAjaxError(exception)) {
-                        const error = exception.payload.errors[0];
-                        event.exception.values[0].type = `${error.type}: ${error.context}`;
-                        event.exception.values[0].value = error.message;
-                        event.exception.values[0].context = error.context;
-                        event.tags.isAjaxError = true;
-                    } else {
-                        event.tags.isAjaxError = false;
-                        delete event.contexts.ajax;
-                        delete event.tags.ajaxStatus;
-                        delete event.tags.ajaxMethod;
-                        delete event.tags.ajaxUrl;
-                    }
-
-                    return event;
-                },
+                beforeSend,
                 // TransitionAborted errors surface from normal application behaviour
                 // - https://github.com/emberjs/ember.js/issues/12505
                 ignoreErrors: [/^TransitionAborted$/]
@@ -234,7 +209,9 @@ export default Route.extend(ShortcutsRoute, {
         }
 
         // Preload settings to avoid a delay when opening
-        setTimeout(importSettings, 1000);
+        setTimeout(() => {
+            importComponent(AdminXSettings.packageName);
+        }, 1000);
     }
 
 });

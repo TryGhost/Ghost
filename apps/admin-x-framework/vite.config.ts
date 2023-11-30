@@ -10,10 +10,6 @@ export default (function viteConfig() {
         plugins: [
             react()
         ],
-        define: {
-            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-            'process.env.VITEST_SEGFAULT_RETRY': 3
-        },
         preview: {
             port: 4174
         },
@@ -21,9 +17,9 @@ export default (function viteConfig() {
             reportCompressedSize: false,
             minify: false,
             sourcemap: true,
-            outDir: 'es',
+            outDir: 'dist',
             lib: {
-                formats: ['es'],
+                formats: ['es', 'cjs'],
                 entry: glob.sync(resolve(__dirname, 'src/**/*.{ts,tsx}')).reduce((entries, path) => {
                     if (path.endsWith('.d.ts')) {
                         return entries;

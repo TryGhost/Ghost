@@ -1,12 +1,14 @@
 import PortalFrame from '../../membership/portal/PortalFrame';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
-import useForm from '../../../../hooks/useForm';
+import {Button} from '@tryghost/admin-x-design-system';
+import {ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getTiersCadences} from '../../../../utils/getTiersCadences';
 import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useModal} from '@ebay/nice-modal-react';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -34,7 +36,7 @@ const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => 
         <button className='text-left' type='button' onClick={onClick}>
             <div className='flex gap-3'>
                 <div className={`mt-0.5 flex h-4 w-4 items-center justify-center rounded-full ${checkboxClass}`}>
-                    {checked ? <Icon className='w-2 stroke-[4]' name='check' size='custom' /> : null}
+                    {checked ? <Icon className='w-[7px] stroke-[4]' name='check' size='custom' /> : null}
                 </div>
                 <div className='flex flex-col'>
                     <span>{type.title}</span>
@@ -45,12 +47,52 @@ const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => 
     );
 };
 
+type formStateTypes = {
+    disableBackground?: boolean;
+    name: string;
+    code: {
+        isDirty: boolean;
+        value: string;
+    };
+    displayTitle: {
+        isDirty: boolean;
+        value: string;
+    };
+    displayDescription: string;
+    type: string;
+    cadence: string;
+    amount: number;
+    duration: string;
+    durationInMonths: number;
+    currency: string;
+    status: string;
+    tierId: string;
+    fixedAmount?: number;
+    trialAmount?: number;
+    percentAmount?: number;
+};
+
+const calculateAmount = (formState: formStateTypes): number => {
+    const {fixedAmount = 0, percentAmount = 0, trialAmount = 0, amount = 0} = formState;
+
+    switch (formState.type) {
+    case 'fixed':
+        return fixedAmount * 100;
+    case 'percent':
+        return percentAmount;
+    case 'trial':
+        return trialAmount;
+    default:
+        return amount;
+    }
+};
+
 type SidebarProps = {
     tierOptions: SelectOption[];
     handleTierChange: (tier: SelectOption) => void;
     selectedTier: SelectOption;
-    overrides: offerPortalPreviewUrlTypes
-    handleTextInput: (e: React.ChangeEvent<HTMLInputElement>, key: keyof offerPortalPreviewUrlTypes) => void;
+    overrides: formStateTypes;
+    // handleTextInput: (e: React.ChangeEvent<HTMLInputElement>, key: keyof offerPortalPreviewUrlTypes) => void;
     amountOptions: SelectOption[];
     typeOptions: OfferType[];
     durationOptions: SelectOption[];
@@ -59,12 +101,21 @@ type SidebarProps = {
     handleAmountTypeChange: (amountType: string) => void;
     handleNameInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleTextAreaInput: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    handleDisplayTitleInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleAmountInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleDurationInMonthsInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleCodeInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    validate: () => void;
+    clearError: (field: string) => void;
+    testId: string;
+    errors: ErrorMessages;
+    handleTrialAmountInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 const Sidebar: React.FC<SidebarProps> = ({tierOptions,
     handleTierChange,
     selectedTier,
-    handleTextInput,
+    // handleTextInput,
     typeOptions,
     durationOptions,
     handleTypeChange,
@@ -73,7 +124,16 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
     handleAmountTypeChange,
     handleNameInput,
     handleTextAreaInput,
+    handleDisplayTitleInput,
+    handleDurationInMonthsInput,
+    handleAmountInput,
+    handleCodeInput,
+    validate,
+    errors,
+    testId,
+    handleTrialAmountInput,
     amountOptions}) => {
+    // const handleError = useHandleError();
     const getFilteredDurationOptions = () => {
         // Check if the selected tier's cadence is 'yearly'
         if (selectedTier?.label?.includes('Yearly')) {
@@ -83,22 +143,64 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
         return durationOptions;
     };
     const filteredDurationOptions = getFilteredDurationOptions();
+
+    const [nameLength, setNameLength] = useState(0);
+    const nameLengthColor = nameLength > 40 ? 'text-red' : 'text-green';
+
+    const {siteData} = useGlobalData();
+    const [isCopied, setIsCopied] = useState(false);
+    const homepageUrl = getHomepageUrl(siteData!);
+    const offerUrl = `${homepageUrl}${overrides.code.value}`;
+    const handleCopyClick = async () => {
+        await navigator.clipboard.writeText(offerUrl);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+    };
+
     return (
-        <div className='pt-7'>
+        <div className='pt-7' data-testId={testId}>
             <Form>
-                <TextField
-                    hint='Visible to members on Stripe Checkout page.'
-                    placeholder='Black Friday'
-                    title='Name'
-                    onChange={(e) => {
-                        handleNameInput(e);
-                    }}
-                />
+                <section>
+                    <h2 className='mb-4 text-lg'>General</h2>
+                    <div className='flex flex-col gap-6'>
+                        <TextField
+                            error={Boolean(errors.name)}
+                            hint={errors.name || <div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={`${nameLengthColor}`}>{nameLength}</span> / 40</strong></div>}
+                            maxLength={40}
+                            placeholder='Black Friday'
+                            title='Offer name'
+                            onBlur={validate}
+                            onChange={(e) => {
+                                handleNameInput(e);
+                                setNameLength(e.target.value.length);
+                            }}
+                        />
+                        <TextField
+                            error={Boolean(errors.displayTitle)}
+                            hint={errors.displayTitle}
+                            placeholder='Black Friday Special'
+                            title='Display title'
+                            value={overrides.displayTitle.value}
+                            onBlur={validate}
+                            onChange={(e) => {
+                                handleDisplayTitleInput(e);
+                            }}
+                        />
+                        <TextArea
+                            placeholder='Take advantage of this limited-time offer.'
+                            title='Display description'
+                            value={overrides.displayDescription}
+                            onChange={(e) => {
+                                handleTextAreaInput(e);
+                            }}
+                        />
+                    </div>
+                </section>
                 <section className='mt-4'>
-                    <h2 className='mb-4 text-lg'>Offer details</h2>
+                    <h2 className='mb-4 text-lg'>Details</h2>
                     <div className='flex flex-col gap-6'>
                         <div className='flex flex-col gap-4 rounded-md border border-grey-200 p-4'>
-                            <ButtonSelect checked={overrides.type === 'percent' ? true : false} type={typeOptions[0]} onClick={() => {
+                            <ButtonSelect checked={overrides.type !== 'trial' ? true : false} type={typeOptions[0]} onClick={() => {
                                 handleTypeChange('percent');
                             }} />
                             <ButtonSelect checked={overrides.type === 'trial' ? true : false} type={typeOptions[1]} onClick={() => {
@@ -117,15 +219,27 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         />
                         {
                             overrides.type !== 'trial' && <> <div className='relative'>
-                                <TextField title='Amount off' type='number' onChange={(e) => {
-                                    handleTextInput(e, 'discountAmount');
-                                }} />
-                                <div className='absolute bottom-0 right-1.5 z-10 w-10'>
+                                <TextField
+                                    error={Boolean(errors.amount)}
+                                    hint={errors.amount}
+                                    title='Amount off'
+                                    type='number'
+                                    value={
+                                        overrides.type === 'fixed'
+                                            ? (overrides.fixedAmount === 0 ? '' : overrides.fixedAmount?.toString())
+                                            : (overrides.percentAmount === 0 ? '' : overrides.percentAmount?.toString())
+                                    }
+                                    onBlur={validate}
+                                    onChange={(e) => {
+                                        handleAmountInput(e);
+                                    }}
+                                />
+                                <div className='absolute right-1.5 top-6 z-10'>
                                     <Select
                                         clearBg={true}
                                         controlClasses={{menu: 'w-20 right-0'}}
                                         options={amountOptions}
-                                        selectedOption={overrides.amountType === 'percent' ? amountOptions[0] : amountOptions[1]}
+                                        selectedOption={overrides.type === 'percent' ? amountOptions[0] : amountOptions[1]}
                                         onSelect={(e) => {
                                             handleAmountTypeChange(e?.value || '');
                                         }}
@@ -141,45 +255,34 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
 
                             {
                                 overrides.duration === 'repeating' && <TextField title='Duration in months' type='number' onChange={(e) => {
-                                    handleTextInput(e, 'durationInMonths');
+                                    handleDurationInMonthsInput(e);
                                 }} />
                             }
                             </>
                         }
 
                         {
-                            overrides.type === 'trial' && <TextField title='Trial duration' type='number' value={overrides.trialAmount?.toString()} onChange={(e) => {
-                                handleTextInput(e, 'trialAmount');
-                            }} />
+                            overrides.type === 'trial' && <TextField
+                                error={Boolean(errors.amount)}
+                                hint={errors.amount}
+                                title='Trial duration'
+                                type='number'
+                                value={overrides.trialAmount?.toString()}
+                                onBlur={validate}
+                                onChange={(e) => {
+                                    handleTrialAmountInput(e);
+                                }} />
                         }
 
-                    </div>
-                </section>
-                <section className='mt-4'>
-                    <h2 className='mb-4 text-lg'>Portal Settings</h2>
-                    <div className='flex flex-col gap-6'>
                         <TextField
-                            placeholder='Black Friday Special'
-                            title='Display title'
-                            value={overrides.displayTitle.value}
-                            onChange={(e) => {
-                                handleTextInput(e, 'displayTitle');
-                            }}
-                        />
-                        <TextField
+                            error={Boolean(errors.code)}
+                            hint={errors.code || <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div>}
                             placeholder='black-friday'
                             title='Offer code'
                             value={overrides.code.value}
+                            onBlur={validate}
                             onChange={(e) => {
-                                handleTextInput(e, 'code');
-                            }}
-                        />
-                        <TextArea
-                            placeholder='Take advantage of this limited-time offer.'
-                            title='Display description'
-                            value={overrides.displayDescription}
-                            onChange={(e) => {
-                                handleTextAreaInput(e);
+                                handleCodeInput(e);
                             }}
                         />
                     </div>
@@ -226,19 +329,10 @@ const AddOfferModal = () => {
             currency: tierCadenceOptions[0]?.value ? parseData(tierCadenceOptions[0]?.value).currency : ''
         }
     });
-    const getDiscountAmount = (discount: number, dctype: string) => {
-        if (dctype === 'percent') {
-            return discount.toString();
-        }
-        if (dctype === 'fixed') {
-            let calcDiscount = discount * 100;
-            return calcDiscount.toString();
-        }
-    };
 
-    const {formState, updateForm, handleSave, saveState, okProps} = useForm({
+    const {formState, updateForm, handleSave, saveState, okProps, validate, errors, clearError} = useForm({
         initialState: {
-            disableBackground: true,
+            disableBackground: false,
             name: '',
             code: {
                 isDirty: false,
@@ -251,14 +345,15 @@ const AddOfferModal = () => {
             displayDescription: '',
             type: 'percent',
             cadence: selectedTier?.dataset?.period || '',
-            trialAmount: 7,
-            discountAmount: 0,
+            amount: 0,
             duration: 'once',
             durationInMonths: 0,
-            currency: selectedTier?.dataset?.currency || '',
+            currency: selectedTier?.dataset?.currency || 'USD',
             status: 'active',
             tierId: selectedTier?.dataset?.id || '',
-            amountType: 'percent'
+            trialAmount: 7,
+            fixedAmount: 0,
+            percentAmount: 0
         },
         onSave: async () => {
             const dataset = {
@@ -267,7 +362,7 @@ const AddOfferModal = () => {
                 display_title: formState.displayTitle.value,
                 display_description: formState.displayDescription,
                 cadence: formState.cadence,
-                amount: formState.type === 'trial' ? Number(getDiscountAmount(formState.trialAmount, formState.amountType)) : Number(getDiscountAmount(formState.discountAmount, formState.amountType)),
+                amount: calculateAmount(formState) || 0,
                 duration: formState.type === 'trial' ? 'trial' : formState.duration,
                 duration_in_months: Number(formState.durationInMonths),
                 currency: formState.currency,
@@ -287,7 +382,41 @@ const AddOfferModal = () => {
         },
         onSaveError: () => {},
         onValidate: () => {
-            return {};
+            const newErrors : Record<string, string> = {};
+
+            if (!formState.name && formState.name.length === 0) {
+                newErrors.name = 'Name is required';
+            }
+
+            if (!formState.code.value && formState.code.value.length === 0) {
+                newErrors.code = 'Code is required';
+            }
+
+            if (!formState.displayTitle.value && formState.displayTitle.value.length === 0) {
+                newErrors.displayTitle = 'Display title is required';
+            }
+
+            if (formState.type === 'percent' && formState.percentAmount === 0) {
+                newErrors.amount = 'Enter an amount greater than 0.';
+            }
+
+            if (formState.type === 'percent' && (formState.percentAmount < 0 || formState.percentAmount >= 100)) {
+                newErrors.amount = 'Amount must be between 0 and 100%.';
+            }
+
+            if (formState.type === 'fixed' && formState.fixedAmount === 0 || formState.type === 'fixed' && formState.fixedAmount < 1) {
+                newErrors.amount = 'Enter an amount greater than 0.';
+            }
+
+            if (formState.type === 'trial' && formState.trialAmount === 0) {
+                newErrors.amount = 'Enter an amount greater than 0.';
+            }
+
+            if (formState.type === 'trial' && formState.trialAmount < 1) {
+                newErrors.amount = 'Free trial must be at least 1 day.';
+            }
+
+            return newErrors;
         },
         savingDelay: 500
     });
@@ -320,38 +449,37 @@ const AddOfferModal = () => {
     const handleAmountTypeChange = (amountType: string) => {
         updateForm(state => ({
             ...state,
-            amountType: amountType
+            type: amountType === 'percent' ? 'percent' : 'fixed' || state.type
         }));
     };
 
-    const handleTextInput = (
-        e: React.ChangeEvent<HTMLInputElement>,
-        key: keyof offerPortalPreviewUrlTypes
-    ) => {
-        const target = e.target as HTMLInputElement | HTMLTextAreaElement;
-        updateForm((state) => {
-            // Extract the current value for the key
-            const currentValue = (state as offerPortalPreviewUrlTypes)[key];
-            // Check if the current value is an object and has 'isDirty' and 'value' properties
-            if (currentValue && typeof currentValue === 'object' && 'isDirty' in currentValue && 'value' in currentValue) {
-                // Determine if the field has been modified
+    const handleAmountInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const target = e.target as HTMLInputElement;
 
-                return {
-                    ...state,
-                    [key]: {
-                        ...currentValue,
-                        isDirty: true,
-                        value: target.value
-                    }
-                };
-            } else {
-                // For simple properties, update the value directly
-                return {
-                    ...state,
-                    [key]: target.value
-                };
-            }
-        });
+        if (formState.type === 'fixed') {
+            updateForm(state => ({
+                ...state,
+                fixedAmount: Number(target.value)
+            }));
+        } else if (formState.type === 'percent') {
+            updateForm(state => ({
+                ...state,
+                percentAmount: Number(target.value)
+            }));
+        } else {
+            updateForm(state => ({
+                ...state,
+                amount: Number(target.value)
+            }));
+        }
+    };
+
+    const handleDurationInMonthsInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const target = e.target as HTMLInputElement;
+        updateForm(state => ({
+            ...state,
+            durationInMonths: Number(target.value)
+        }));
     };
 
     const handleNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -375,6 +503,18 @@ const AddOfferModal = () => {
         });
     };
 
+    const handleDisplayTitleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const target = e.target as HTMLInputElement;
+        updateForm(state => ({
+            ...state,
+            displayTitle: {
+                ...state.displayTitle,
+                isDirty: true,
+                value: target.value
+            }
+        }));
+    };
+
     const handleTextAreaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const target = e.target as HTMLTextAreaElement;
         updateForm(state => ({
@@ -383,10 +523,30 @@ const AddOfferModal = () => {
         }));
     };
 
+    const handleTrialAmountInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const target = e.target as HTMLInputElement;
+        updateForm(state => ({
+            ...state,
+            trialAmount: Number(target.value)
+        }));
+    };
+
     const handleDurationChange = (duration: string) => {
         updateForm(state => ({
             ...state,
             duration: duration
+        }));
+    };
+
+    const handleCodeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const target = e.target as HTMLInputElement;
+        updateForm(state => ({
+            ...state,
+            code: {
+                ...state.code,
+                isDirty: true,
+                value: target.value
+            }
         }));
     };
 
@@ -401,31 +561,60 @@ const AddOfferModal = () => {
         updateRoute('offers/edit');
     };
 
+    const overrides : offerPortalPreviewUrlTypes = useMemo(() => {
+        return {
+            name: formState.name || '',
+            code: formState.code.value || '',
+            displayTitle: formState.displayTitle.value || '',
+            displayDescription: formState.displayDescription || '',
+            type: formState.type || 'percent',
+            cadence: formState.cadence || 'month',
+            amount: calculateAmount(formState) || 0,
+            duration: formState.type === 'trial' ? 'trial' : formState.duration || 'once',
+            durationInMonths: formState.durationInMonths || 0,
+            currency: formState.currency || 'USD',
+            status: formState.status || 'active',
+            tierId: formState.tierId || activeTiers[0]?.id
+        };
+    }, [formState, activeTiers]);
+
     useEffect(() => {
-        const newHref = getOfferPortalPreviewUrl(formState, siteData.url);
+        const newHref = getOfferPortalPreviewUrl(overrides, siteData.url);
         setHref(newHref);
-    }, [formState, siteData.url]);
+    }, [formState, siteData.url, formState.type, overrides]);
 
     const sidebar = <Sidebar
         amountOptions={amountOptions as SelectOption[]}
+        clearError={clearError}
         durationOptions={durationOptions}
+        errors={errors}
+        handleAmountInput={handleAmountInput}
         handleAmountTypeChange={handleAmountTypeChange}
+        handleCodeInput={handleCodeInput}
+        handleDisplayTitleInput={handleDisplayTitleInput}
         handleDurationChange={handleDurationChange}
+        handleDurationInMonthsInput={handleDurationInMonthsInput}
         handleNameInput={handleNameInput}
         handleTextAreaInput={handleTextAreaInput}
-        handleTextInput={handleTextInput}
         handleTierChange={handleTierChange}
+        handleTrialAmountInput={handleTrialAmountInput}
         handleTypeChange={handleTypeChange}
         overrides={formState}
         selectedTier={selectedTier.tier}
+        testId='add-offer-sidebar'
         tierOptions={tierCadenceOptions}
         typeOptions={typeOptions}
+        validate={validate}
     />;
 
     const iframe = <PortalFrame
         href={href}
     />;
     return <PreviewModalContent
+        afterClose={() => {
+            updateRoute('offers');
+        }}
+        backDropClick={false}
         cancelLabel='Cancel'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
@@ -433,18 +622,23 @@ const AddOfferModal = () => {
         okColor={okProps.color}
         okLabel='Publish'
         preview={iframe}
-        previewToolbarBreadcrumbs={[{label: 'Offers', onClick: () => {
-            updateRoute('offers/edit');
-        }}, {label: 'New offer'}]}
         sidebar={sidebar}
         size='lg'
+        testId='add-offer-modal'
         title='Offer'
-        onBreadcrumbsBack={() => {
-            updateRoute('offers/edit');
-        }}
+        width={1140}
         onCancel={cancelAddOffer}
         onOk={async () => {
-            if (!(await handleSave({fakeWhenUnchanged: true}))) {
+            validate();
+            const isErrorsEmpty = Object.keys(errors).length === 0;
+            if (!isErrorsEmpty) {
+                showToast({
+                    type: 'pageError',
+                    message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields correctly'
+                });
+                return;
+            }
+            if (!(await handleSave())) {
                 showToast({
                     type: 'pageError',
                     message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields.'

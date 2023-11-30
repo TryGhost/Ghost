@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.36.2",
+  "version": "2.36.4",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -26,7 +26,7 @@
     "test:unit": "yarn test:ci",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
-    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
+    "ship": "STATUS=$(git status --porcelain .); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; else echo \"Uncommitted changes found.\" && exit 1; fi",
     "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
     "prepublishOnly": "yarn build"
   },
@@ -80,12 +80,12 @@
   "devDependencies": {
     "@babel/eslint-parser": "7.23.3",
     "@doist/react-interpolate": "0.4.1",
-    "@sentry/react": "7.80.1",
-    "@sentry/tracing": "7.80.1",
+    "@sentry/react": "7.83.0",
+    "@sentry/tracing": "7.83.0",
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "12.1.5",
     "@tryghost/i18n": "0.0.0",
-    "@vitejs/plugin-react": "4.1.1",
+    "@vitejs/plugin-react": "4.2.0",
     "@vitest/coverage-v8": "0.34.3",
     "@vitest/ui": "0.34.3",
     "concurrently": "8.2.2",

@@ -30,7 +30,8 @@ const OfferCreatedAt = require('./OfferCreatedAt');
  * @prop {OfferStatus} status
  * @prop {OfferTier} tier
  * @prop {number} redemptionCount
- * @prop {Date} createdAt
+ * @prop {string} createdAt
+ * @prop {string|null} lastRedeemed
  */
 
 /**
@@ -49,7 +50,8 @@ const OfferCreatedAt = require('./OfferCreatedAt');
  * @prop {string} status
  * @prop {number} redemptionCount
  * @prop {TierProps|OfferTier} tier
- * @prop {Date} createdAt
+ * @prop {Date} created_at
+ * @prop {Date|null} last_redeemed
  */
 
 /**
@@ -186,6 +188,10 @@ class Offer {
         return this.props.createdAt;
     }
 
+    get lastRedeemed() {
+        return this.props.lastRedeemed;
+    }
+
     /**
      * @param {OfferCode} code
      * @param {UniqueChecker} uniqueChecker
@@ -282,7 +288,8 @@ class Offer {
         const cadence = OfferCadence.create(data.cadence);
         const duration = OfferDuration.create(data.duration, data.duration_in_months);
         const status = OfferStatus.create(data.status || 'active');
-        const createdAt = isNew ? new Date().toISOString : OfferCreatedAt.create(data.created_at);
+        const createdAt = isNew ? OfferCreatedAt.create() : OfferCreatedAt.create(data.created_at);
+        const lastRedeemed = data.last_redeemed ? new Date(data.last_redeemed).toISOString() : null;
 
         if (isNew && data.redemptionCount !== undefined) {
             // TODO correct error
@@ -349,7 +356,8 @@ class Offer {
             tier,
             redemptionCount,
             status,
-            createdAt
+            createdAt,
+            lastRedeemed
         }, {isNew});
     }
 }

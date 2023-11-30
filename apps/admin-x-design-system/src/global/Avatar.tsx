@@ -1,7 +1,7 @@
 import React from 'react';
 import {ReactComponent as UserIcon} from '../assets/icons/single-user-fill.svg';
 
-type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
+type AvatarSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
 export interface AvatarProps {
     image?: string;
@@ -33,6 +33,10 @@ const Avatar: React.FC<AvatarProps> = ({image, label, labelColor, bgColor, size,
         break;
     case 'xl':
         avatarSize = ' w-16 h-16 text-2xl ';
+        fallbackPosition = ' -mb-3 ';
+        break;
+    case '2xl':
+        avatarSize = ' w-20 h-20 text-2xl ';
         fallbackPosition = ' -mb-3 ';
         break;
     default:

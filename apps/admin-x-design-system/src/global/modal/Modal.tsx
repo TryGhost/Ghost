@@ -192,7 +192,7 @@ const Modal: React.FC<ModalProps> = ({
     );
 
     let backdropClasses = clsx(
-        'fixed inset-0 z-40 h-[100vh] w-[100vw]'
+        'fixed inset-0 z-[1000] h-[100vh] w-[100vw]'
     );
 
     let paddingClasses = '';
@@ -249,7 +249,7 @@ const Modal: React.FC<ModalProps> = ({
             backdropClasses,
             'p-4 md:p-[4vmin]'
         );
-        paddingClasses = 'p-8';
+        paddingClasses = 'p-7';
         headerClasses = clsx(
             headerClasses,
             '-inset-x-8'

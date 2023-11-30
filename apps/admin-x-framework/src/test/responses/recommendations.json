@@ -8,7 +8,7 @@
             "featured_image": "https://recommendation1.com/image.jpg",
             "favicon": "https://recommendation1.com/favicon.ico",
             "url": "https://recommendation1.com/",
-            "one_click_subscribe": "true",
+            "one_click_subscribe": true,
             "created_at": "2023-10-28T20:00:00.000Z",
             "updated_at": "2023-10-30T20:00:00.000Z",
             "count": {
@@ -24,7 +24,7 @@
             "featured_image": "https://recommendation2.com/image.jpg",
             "favicon": "https://recommendation2.com/favicon.ico",
             "url": "https://recommendation2.com/",
-            "one_click_subscribe": "false",
+            "one_click_subscribe": false,
             "created_at": "2023-10-28T20:00:00.000Z",
             "updated_at": "2023-10-30T20:00:00.000Z",
             "count": {

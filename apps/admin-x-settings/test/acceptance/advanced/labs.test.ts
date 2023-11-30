@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi} from '../../utils/acceptance';
+import {globalDataRequests} from '../../utils/acceptance';
+import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Labs', async () => {
     test('Delete all content', async ({page}) => {

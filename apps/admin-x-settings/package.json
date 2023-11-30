@@ -48,12 +48,13 @@
   },
   "devDependencies": {
     "@playwright/test": "1.38.1",
+    "@testing-library/react": "14.1.0",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
-    "@types/react": "18.2.37",
-    "@types/react-dom": "18.2.15",
-    "@types/validator": "13.11.6",
-    "@vitejs/plugin-react": "4.1.1",
+    "@types/react": "18.2.38",
+    "@types/react-dom": "18.2.17",
+    "@types/validator": "13.11.7",
+    "@vitejs/plugin-react": "4.2.0",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "eslint-plugin-tailwindcss": "3.13.0",
@@ -68,13 +69,25 @@
       "build": {
         "dependsOn": [
           "build",
-          {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
+          {
+            "projects": [
+              "@tryghost/admin-x-design-system",
+              "@tryghost/admin-x-framework"
+            ],
+            "target": "build"
+          }
         ]
       },
       "test:acceptance": {
         "dependsOn": [
           "test:acceptance",
-          {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
+          {
+            "projects": [
+              "@tryghost/admin-x-design-system",
+              "@tryghost/admin-x-framework"
+            ],
+            "target": "build"
+          }
         ]
       }
     }

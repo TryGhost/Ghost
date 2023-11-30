@@ -239,6 +239,9 @@ test@example.com [test@example.com]"
 
 exports[`Authentication API Blog setup complete setup 5: [metadata 1] 1`] = `
 Object {
+  "encoding": "base64",
+  "from": "noreply@127.0.0.1",
+  "generateTextFromHTML": true,
   "subject": "Your New Ghost Site",
   "to": "test@example.com",
 }
@@ -514,6 +517,9 @@ test@example.com [test@example.com]"
 
 exports[`Authentication API Blog setup complete setup with default theme 5: [metadata 1] 1`] = `
 Object {
+  "encoding": "base64",
+  "from": "noreply@127.0.0.1",
+  "generateTextFromHTML": true,
   "subject": "Your New Ghost Site",
   "to": "test@example.com",
 }
