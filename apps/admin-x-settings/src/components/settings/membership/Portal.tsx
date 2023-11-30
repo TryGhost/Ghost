@@ -1,17 +1,22 @@
-import Button from '../../../admin-x-ds/global/Button';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import useRouting from '../../../hooks/useRouting';
+import TopLevelGroup from '../../TopLevelGroup';
+import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
+    const {settings} = useGlobalData();
+    const [membersSignupAccess] = getSettingValues<string>(settings, ['members_signup_access']);
+
     const openPreviewModal = () => {
         updateRoute('portal/edit');
     };
 
     return (
-        <SettingGroup
-            customButtons={<Button color='green' label='Customize' link onClick={openPreviewModal}/>}
+        <TopLevelGroup
+            customButtons={<Button color='green' disabled={membersSignupAccess === 'none'} label='Customize' link linkWithPadding onClick={openPreviewModal}/>}
             description="Customize members modal signup flow"
             keywords={keywords}
             navid='portal'
@@ -21,4 +26,4 @@ const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 };
 
-export default Portal;
+export default withErrorBoundary(Portal, 'Portal settings');

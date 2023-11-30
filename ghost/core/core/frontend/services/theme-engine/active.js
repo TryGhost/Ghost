@@ -112,7 +112,7 @@ class ActiveTheme {
         siteApp.cache = {};
         // Set the views and engine
         siteApp.set('views', this.path);
-        siteApp.engine('hbs', engine.configure(this.partialsPath));
+        siteApp.engine('hbs', engine.configure(this.partialsPath, this.path));
 
         this._mounted = true;
     }

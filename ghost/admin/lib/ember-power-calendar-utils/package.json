@@ -8,7 +8,7 @@
     "ember-addon"
   ],
   "dependencies": {
-    "ember-cli-babel": "7.26.11",
+    "ember-cli-babel": "8.2.0",
     "moment-timezone": "0.5.23"
   }
 }

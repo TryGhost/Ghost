@@ -1,8 +1,10 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
-import useForm, {SaveState} from './useForm';
-import useGlobalDirtyState from './useGlobalDirtyState';
-import {Setting, SettingValue, SiteData} from '../types/api';
-import {SettingsContext} from '../components/providers/SettingsProvider';
+import React, {useEffect, useRef, useState} from 'react';
+import {ErrorMessages, OkProps, SaveHandler, SaveState, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {Setting, SettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {SiteData} from '@tryghost/admin-x-framework/api/site';
+import {showToast, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
+import {toast} from 'react-hot-toast';
+import {useGlobalData} from '../components/providers/GlobalDataProvider';
 
 interface LocalSetting extends Setting {
     dirty?: boolean;
@@ -14,27 +16,34 @@ export interface SettingGroupHook {
     saveState: SaveState;
     siteData: SiteData | null;
     focusRef: React.RefObject<HTMLInputElement>;
-    handleSave: () => Promise<void>;
+    handleSave: SaveHandler;
     handleCancel: () => void;
     updateSetting: (key: string, value: SettingValue) => void;
     handleEditingChange: (newState: boolean) => void;
+    validate: () => boolean;
+    errors: ErrorMessages;
+    clearError: (key: string) => void;
+    okProps: OkProps;
 }
 
-const useSettingGroup = (): SettingGroupHook => {
+const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onValidate?: () => ErrorMessages} = {}): SettingGroupHook => {
     // create a ref to focus the input field
     const focusRef = useRef<HTMLInputElement>(null);
 
-    // get the settings and saveSettings function from the Settings Context
-    const {siteData, settings, saveSettings} = useContext(SettingsContext) || {};
+    const {siteData, settings} = useGlobalData();
+    const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     const [isEditing, setEditing] = useState(false);
 
-    const {formState: localSettings, saveState, handleSave, updateForm, reset} = useForm<LocalSetting[]>({
+    const {formState: localSettings, saveState, handleSave, updateForm, setFormState, reset, validate, errors, clearError, okProps} = useForm<LocalSetting[]>({
         initialState: settings || [],
+        savingDelay,
         onSave: async () => {
-            await saveSettings?.(changedSettings());
-            setEditing(false);
-        }
+            await editSettings?.(changedSettings());
+        },
+        onSaveError: handleError,
+        onValidate
     });
 
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -52,7 +61,7 @@ const useSettingGroup = (): SettingGroupHook => {
     // reset the local state when there's a new settings API response, unless currently editing
     useEffect(() => {
         if (!isEditing || saveState === 'saving') {
-            reset();
+            setFormState(() => settings);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [settings]);
@@ -80,9 +89,15 @@ const useSettingGroup = (): SettingGroupHook => {
 
     // function to update the local state
     const updateSetting = (key: string, value: SettingValue) => {
-        updateForm(state => state.map(setting => (
-            setting.key === key ? {...setting, value, dirty: true} : setting
-        )));
+        updateForm((state) => {
+            if (state.some(setting => setting.key === key)) {
+                return state.map(setting => (
+                    setting.key === key ? {...setting, value, dirty: true} : setting
+                ));
+            } else {
+                return [...state, {key, value, dirty: true}];
+            }
+        });
     };
 
     return {
@@ -91,10 +106,26 @@ const useSettingGroup = (): SettingGroupHook => {
         saveState,
         focusRef,
         siteData,
-        handleSave,
+        handleSave: async () => {
+            toast.remove();
+            const result = await handleSave();
+            if (result) {
+                setEditing(false);
+            } else {
+                showToast({
+                    type: 'pageError',
+                    message: 'Can\'t save settings! One or more fields have errors, please double check that you\'ve filled all mandatory fields.'
+                });
+            }
+            return result;
+        },
         handleCancel,
         updateSetting,
-        handleEditingChange
+        handleEditingChange,
+        validate,
+        errors,
+        clearError,
+        okProps
     };
 };
 

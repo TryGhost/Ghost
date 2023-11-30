@@ -5,7 +5,10 @@ const emailSuppressionList = require('../email-suppression-list');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils');
 const spamPrevention = require('../../web/shared/middleware/api/spam-prevention');
-const {formattedMemberResponse} = require('./utils');
+const {
+    formattedMemberResponse,
+    formatNewsletterResponse
+} = require('./utils');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
@@ -16,7 +19,7 @@ const messages = {
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
 // Need to figure a way to separate these things (e.g. frontend actually talks to members API)
-const loadMemberSession = async function (req, res, next) {
+const loadMemberSession = async function loadMemberSession(req, res, next) {
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         Object.assign(req, {member});
@@ -32,7 +35,7 @@ const loadMemberSession = async function (req, res, next) {
  * Require member authentication, and make it possible to authenticate via uuid.
  * You can chain this after loadMemberSession to make it possible to authenticate via both the uuid and the session.
  */
-const authMemberByUuid = async function (req, res, next) {
+const authMemberByUuid = async function authMemberByUuid(req, res, next) {
     try {
         const uuid = req.query.uuid;
         if (!uuid) {
@@ -60,7 +63,7 @@ const authMemberByUuid = async function (req, res, next) {
     }
 };
 
-const getIdentityToken = async function (req, res) {
+const getIdentityToken = async function getIdentityToken(req, res) {
     try {
         const token = await membersService.ssr.getIdentityTokenForMemberFromSession(req, res);
         res.writeHead(200);
@@ -71,7 +74,7 @@ const getIdentityToken = async function (req, res) {
     }
 };
 
-const deleteSession = async function (req, res) {
+const deleteSession = async function deleteSession(req, res) {
     try {
         await membersService.ssr.deleteSession(req, res);
         res.writeHead(204);
@@ -87,7 +90,7 @@ const deleteSession = async function (req, res) {
     }
 };
 
-const getMemberData = async function (req, res) {
+const getMemberData = async function getMemberData(req, res) {
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         if (member) {
@@ -101,7 +104,7 @@ const getMemberData = async function (req, res) {
     }
 };
 
-const deleteSuppression = async function (req, res) {
+const deleteSuppression = async function deleteSuppression(req, res) {
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         const options = {
@@ -123,7 +126,7 @@ const deleteSuppression = async function (req, res) {
     }
 };
 
-const getMemberNewsletters = async function (req, res) {
+const getMemberNewsletters = async function getMemberNewsletters(req, res) {
     try {
         const memberUuid = req.query.uuid;
 
@@ -144,6 +147,11 @@ const getMemberNewsletters = async function (req, res) {
         }
 
         const data = _.pick(memberData.toJSON(), 'uuid', 'email', 'name', 'newsletters', 'enable_comment_notifications', 'status');
+
+        if (data.newsletters) {
+            data.newsletters = formatNewsletterResponse(data.newsletters);
+        }
+
         return res.json(data);
     } catch (err) {
         res.writeHead(400);
@@ -151,7 +159,7 @@ const getMemberNewsletters = async function (req, res) {
     }
 };
 
-const updateMemberNewsletters = async function (req, res) {
+const updateMemberNewsletters = async function updateMemberNewsletters(req, res) {
     try {
         const memberUuid = req.query.uuid;
         if (!memberUuid) {
@@ -175,6 +183,11 @@ const updateMemberNewsletters = async function (req, res) {
 
         const updatedMember = await membersService.api.members.update(data, options);
         const updatedMemberData = _.pick(updatedMember.toJSON(), ['uuid', 'email', 'name', 'newsletters', 'enable_comment_notifications', 'status']);
+
+        if (updatedMemberData.newsletters) {
+            updatedMemberData.newsletters = formatNewsletterResponse(updatedMemberData.newsletters);
+        }
+
         res.json(updatedMemberData);
     } catch (err) {
         res.writeHead(400);
@@ -182,7 +195,7 @@ const updateMemberNewsletters = async function (req, res) {
     }
 };
 
-const updateMemberData = async function (req, res) {
+const updateMemberData = async function updateMemberData(req, res) {
     try {
         const data = _.pick(req.body, 'name', 'expertise', 'subscribed', 'newsletters', 'enable_comment_notifications');
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
@@ -209,7 +222,7 @@ const updateMemberData = async function (req, res) {
     }
 };
 
-const createSessionFromMagicLink = async function (req, res, next) {
+const createSessionFromMagicLink = async function createSessionFromMagicLink(req, res, next) {
     if (!req.url.includes('token=')) {
         return next();
     }
@@ -252,26 +265,42 @@ const createSessionFromMagicLink = async function (req, res, next) {
                 const ensureEndsWith = (string, endsWith) => (string.endsWith(endsWith) ? string : string + endsWith);
                 const removeLeadingSlash = string => string.replace(/^\//, '');
 
+                // Add query parameters so the frontend can detect that the signup went fine
+
                 const redirectUrl = new URL(removeLeadingSlash(ensureEndsWith(customRedirect, '/')), ensureEndsWith(baseUrl, '/'));
+
+                if (urlUtils.isSiteUrl(redirectUrl)) {
+                    // Add only for non-external URLs
+                    redirectUrl.searchParams.set('success', 'true');
+                    redirectUrl.searchParams.set('action', 'signup');
+                }
 
                 return res.redirect(redirectUrl.href);
             }
         }
 
-        if (action === 'signin') {
-            const referrer = req.query.r;
-            const siteUrl = urlUtils.getSiteUrl();
+        // If a custom referrer/redirect was passed, redirect the user to that URL
+        const referrer = req.query.r;
+        const siteUrl = urlUtils.getSiteUrl();
 
-            if (referrer && referrer.startsWith(siteUrl)) {
-                const redirectUrl = new URL(referrer);
-                redirectUrl.searchParams.set('success', true);
+        if (referrer && referrer.startsWith(siteUrl)) {
+            const redirectUrl = new URL(referrer);
+
+            // Copy search params
+            searchParams.forEach((value, key) => {
+                redirectUrl.searchParams.set(key, value);
+            });
+            redirectUrl.searchParams.set('success', 'true');
+
+            if (action === 'signin') {
+                // Not sure if we can delete this, this is a legacy param
                 redirectUrl.searchParams.set('action', 'signin');
-                return res.redirect(redirectUrl.href);
             }
+            return res.redirect(redirectUrl.href);
         }
 
         // Do a standard 302 redirect to the homepage, with success=true
-        searchParams.set('success', true);
+        searchParams.set('success', 'true');
         res.redirect(`${urlUtils.getSubdir()}/?${searchParams.toString()}`);
     } catch (err) {
         logging.warn(err.message);

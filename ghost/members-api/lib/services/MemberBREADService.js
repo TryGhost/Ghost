@@ -99,7 +99,7 @@ module.exports = class MemberBREADService {
                     default_payment_card_last4: '****',
                     cancel_at_period_end: false,
                     cancellation_reason: null,
-                    current_period_end: moment(startDate).add(1, 'year'),
+                    current_period_end: moment(product.expiry_at),
                     price: {
                         id: '',
                         price_id: '',
@@ -242,7 +242,7 @@ module.exports = class MemberBREADService {
 
         const suppressionData = await this.emailSuppressionList.getSuppressionData(member.email);
         member.email_suppression = {
-            suppressed: suppressionData.suppressed,
+            suppressed: suppressionData.suppressed || !!model.get('email_disabled'),
             info: suppressionData.info
         };
 
@@ -325,6 +325,12 @@ module.exports = class MemberBREADService {
         let model;
 
         try {
+            // Update email_disabled based on whether the new email is suppressed
+            if (data.email) {
+                const isSuppressed = (await this.emailSuppressionList.getSuppressionData(data.email))?.suppressed;
+                data.email_disabled = !!isSuppressed;
+            }
+
             model = await this.memberRepository.update(data, options);
         } catch (error) {
             if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
@@ -357,6 +363,10 @@ module.exports = class MemberBREADService {
         }
 
         return this.read({id: model.id}, options);
+    }
+
+    async logout(options) {
+        await this.memberRepository.cycleTransientId(options);
     }
 
     async browse(options) {
@@ -395,11 +405,10 @@ module.exports = class MemberBREADService {
         const subscriptions = page.data.flatMap(model => model.related('stripeSubscriptions').slice());
         const offerMap = await this.fetchSubscriptionOffers(subscriptions);
 
-        const members = page.data.map(model => model.toJSON(options));
+        const bulkSuppressionData = await this.emailSuppressionList.getBulkSuppressionData(page.data.map(member => member.get('email')));
 
-        const bulkSuppressionData = await this.emailSuppressionList.getBulkSuppressionData(members.map(member => member.email));
-
-        const data = members.map((member, index) => {
+        const data = page.data.map((model, index) => {
+            const member = model.toJSON(options);
             member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
             this.attachSubscriptionsToMember(member);
             this.attachOffersToSubscriptions(member, offerMap);
@@ -407,7 +416,7 @@ module.exports = class MemberBREADService {
                 delete member.products;
             }
             member.email_suppression = {
-                suppressed: bulkSuppressionData[index].suppressed,
+                suppressed: bulkSuppressionData[index].suppressed || !!model.get('email_disabled'),
                 info: bulkSuppressionData[index].info
             };
             return member;

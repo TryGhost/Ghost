@@ -5,10 +5,12 @@ Object {
   "meta": Object {},
   "settings": Object {
     "accent_color": "#FF1A75",
+    "allow_self_signup": true,
     "codeinjection_foot": null,
     "codeinjection_head": null,
     "comments_enabled": "off",
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    "default_email_address": "noreply@127.0.0.1",
     "description": "Thoughts, stories and ideas",
     "facebook": "ghost",
     "firstpromoter_account": null,
@@ -46,6 +48,7 @@ Object {
     "og_description": null,
     "og_image": null,
     "og_title": null,
+    "outbound_link_tagging": true,
     "paid_members_enabled": true,
     "portal_button": true,
     "portal_button_icon": null,
@@ -57,6 +60,7 @@ Object {
     ],
     "portal_signup_checkbox_required": false,
     "portal_signup_terms_html": null,
+    "recommendations_enabled": false,
     "secondary_navigation": Array [
       Object {
         "label": "Data & privacy",
@@ -71,6 +75,7 @@ Object {
         "url": "/contribute/",
       },
     ],
+    "support_email_address": "noreply@127.0.0.1",
     "timezone": "Etc/UTC",
     "title": "Ghost",
     "twitter": "@ghost",

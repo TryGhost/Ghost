@@ -57,8 +57,8 @@ import {tracked} from '@glimmer/tracking';
 /**
  * @typedef PaidMembersByCadence
  * @type {Object}
- * @property {number} year Paid memebrs on annual plan
- * @property {number} month Paid memebrs on monthly plan
+ * @property {number} year Paid members on annual plan
+ * @property {number} month Paid members on monthly plan
  */
 
 /**
@@ -693,8 +693,8 @@ export default class DashboardStatsService extends Service {
         }
 
         const [paid, free] = yield Promise.all([
-            this.membersCountCache.count('newsletters.status:active+status:-free'),
-            this.membersCountCache.count('newsletters.status:active+status:free')
+            this.membersCountCache.count('newsletters.status:active+status:-free+email_disabled:0'),
+            this.membersCountCache.count('newsletters.status:active+status:free+email_disabled:0')
         ]);
 
         this.newsletterSubscribers = {
@@ -723,7 +723,7 @@ export default class DashboardStatsService extends Service {
         }
 
         const start30d = new Date(Date.now() - 30 * 86400 * 1000);
-        const result = yield this.store.query('email', {limit: 100, filter: 'submitted_at:>' + start30d.toISOString()});
+        const result = yield this.store.query('email', {limit: 100, filter: `submitted_at:>'${start30d.toISOString()}'`});
         this.emailsSent30d = result.reduce((c, email) => c + email.emailCount, 0);
     }
 

@@ -11,6 +11,7 @@ const Member = ghostBookshelf.Model.extend({
         return {
             status: 'free',
             uuid: uuid.v4(),
+            transient_id: uuid.v4(),
             email_count: 0,
             email_opened_count: 0,
             enable_comment_notifications: true
@@ -373,8 +374,10 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     searchQuery: function searchQuery(queryBuilder, query) {
-        queryBuilder.where('members.name', 'like', `%${query}%`);
-        queryBuilder.orWhere('members.email', 'like', `%${query}%`);
+        queryBuilder.where(function () {
+            this.where('members.name', 'like', `%${query}%`)
+                .orWhere('members.email', 'like', `%${query}%`);
+        });
     },
 
     orderRawQuery(field, direction) {

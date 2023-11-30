@@ -6,7 +6,7 @@
 .kg-bookmark-card,
 .kg-bookmark-publisher {
     position: relative;
-    width: 100%;
+    /* width: 100%; */
 }
 
 .kg-bookmark-card a.kg-bookmark-container,

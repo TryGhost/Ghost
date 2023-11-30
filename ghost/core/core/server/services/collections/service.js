@@ -12,7 +12,7 @@ class CollectionsServiceWrapper {
         const DomainEvents = require('@tryghost/domain-events');
         const postsRepository = require('./PostsRepository').getInstance();
         const models = require('../../models');
-        const collectionsRepositoryInMemory = new BookshelfCollectionsRepository(models.Collection);
+        const collectionsRepositoryInMemory = new BookshelfCollectionsRepository(models.Collection, models.CollectionPost, DomainEvents);
 
         const collectionsService = new CollectionsService({
             collectionsRepository: collectionsRepositoryInMemory,
@@ -31,12 +31,22 @@ class CollectionsServiceWrapper {
     }
 
     async init() {
-        if (inited) {
+        const config = require('../../../shared/config');
+        const labs = require('../../../shared/labs');
+
+        // CASE: emergency kill switch in case we need to disable collections outside of labs
+        if (config.get('hostSettings:collections:enabled') === false) {
             return;
         }
-        inited = true;
-        this.api.subscribeToEvents();
-        require('./intercept-events')();
+
+        if (labs.isSet('collections')) {
+            if (inited) {
+                return;
+            }
+
+            inited = true;
+            this.api.subscribeToEvents();
+        }
     }
 }
 

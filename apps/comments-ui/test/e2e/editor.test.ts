@@ -1,5 +1,5 @@
-import {Locator, expect, test} from '@playwright/test';
-import {MockedApi, getHeight, getModifierKey, initialize, selectText, setClipboard} from '../utils/e2e';
+import {MockedApi, getHeight, getModifierKey, initialize, selectText, setClipboard, waitEditorFocused} from '../utils/e2e';
+import {expect, test} from '@playwright/test';
 
 test.describe('Editor', async () => {
     test('Can comment on a post', async ({page}) => {
@@ -25,6 +25,9 @@ test.describe('Editor', async () => {
         const editorHeight = await getHeight(editor);
 
         await editor.click({force: true});
+
+        // Wait for focused
+        await waitEditorFocused(editor);
 
         // Wait for animation to finish
         await page.waitForTimeout(200);
@@ -95,6 +98,8 @@ test.describe('Editor', async () => {
         const editorHeight = await getHeight(editor);
 
         await editor.click({force: true});
+        // Wait for focused
+        await waitEditorFocused(editor);
 
         // Wait for animation to finish
         await page.waitForTimeout(200);
@@ -134,6 +139,9 @@ test.describe('Editor', async () => {
 
             await editor.click({force: true});
 
+            // Wait for focused
+            await waitEditorFocused(editor);
+
             // Type in the editor
             await editor.type('> This is a quote');
             await page.keyboard.press('Enter');
@@ -169,7 +177,9 @@ test.describe('Editor', async () => {
 
             // Check focused
             const editorEditable = frame.getByTestId('editor');
-            await expect(editorEditable).toBeFocused();
+
+            // Wait for focused
+            await waitEditorFocused(editor);
 
             // Type in the editor
             await editor.type('Click here to go to a new page');
@@ -205,9 +215,10 @@ test.describe('Editor', async () => {
 
             await editor.click({force: true});
 
-            // Check focused
+            // Wait for focused
+            await waitEditorFocused(editor);
+
             const editorEditable = frame.getByTestId('editor');
-            await expect(editorEditable).toBeFocused();
 
             // Type in the editor
             await editor.type('Click here to go to a new page');
@@ -243,9 +254,10 @@ test.describe('Editor', async () => {
 
             await editor.click({force: true});
 
-            // Check focused
+            // Wait for focused
+            await waitEditorFocused(editor);
+
             const editorEditable = frame.getByTestId('editor');
-            await expect(editorEditable).toBeFocused();
 
             // Type in the editor
             await editor.type('Click here to go to a new page');
@@ -280,9 +292,8 @@ test.describe('Editor', async () => {
 
             await editor.click({force: true});
 
-            // Check focused
-            const editorEditable = frame.getByTestId('editor');
-            await expect(editorEditable).toBeFocused();
+            // Wait for focused
+            await waitEditorFocused(editor);
 
             // Type in the editor
             await editor.type('This is line 1');

@@ -643,5 +643,6 @@ export default class GhPostSettingsMenu extends Component {
 
     setSidebarWidthVariable(width) {
         document.documentElement.style.setProperty('--editor-sidebar-width', `${width}px`);
+        document.documentElement.style.setProperty('--kg-breakout-adjustment', `${width}px`);
     }
 }

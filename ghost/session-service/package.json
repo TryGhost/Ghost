@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing c8 --all --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
     "test": "yarn test:unit",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
@@ -18,13 +18,13 @@
     "lib"
   ],
   "devDependencies": {
-    "c8": "7.14.0",
+    "c8": "8.0.1",
     "express": "4.18.2",
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/errors": "1.2.21"
+    "@tryghost/errors": "1.2.26"
   }
 }

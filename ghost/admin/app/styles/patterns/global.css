@@ -287,11 +287,9 @@
 /* Layout
 /* ---------------------------------------------------------- */
 
-
-/*Exclude the editor*/
-*:not(.__mobiledoc-editor),
-*:not(.__mobiledoc-editor):before,
-*:not(.__mobiledoc-editor):after {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
 }
 
@@ -591,10 +589,6 @@ button {
     background: transparent;
     box-shadow: none;
     line-height: inherit;
-}
-
-i {
-    display: block;
 }
 
 img,

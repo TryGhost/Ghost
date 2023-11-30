@@ -15,10 +15,15 @@ const messages = {
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 const GA_FEATURES = [
     'audienceFeedback',
+    'collections',
     'themeErrorsNotification',
     'outboundLinkTagging',
     'announcementBar',
-    'signupForm'
+    'signupForm',
+    'recommendations',
+    'editorEmojiPicker',
+    'listUnsubscribeHeader',
+    'filterEmailDisabled'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -26,8 +31,7 @@ const GA_FEATURES = [
 const BETA_FEATURES = [
     'i18n',
     'activitypub',
-    'webmentions',
-    'lexicalEditor'
+    'webmentions'
 ];
 
 const ALPHA_FEATURES = [
@@ -36,15 +40,17 @@ const ALPHA_FEATURES = [
     'websockets',
     'stripeAutomaticTax',
     'emailCustomization',
-    'collections',
-    'adminXSettings',
-    'pageImprovements',
-    'flatUrls',
     'mailEvents',
     'collectionsCard',
-    'headerUpgrade',
+    'tipsAndDonations',
     'importMemberTier',
-    'tipsAndDonations'
+    'lexicalIndicators',
+    'editorEmojiPicker',
+    'adminXOffers',
+    'filterEmailDisabled',
+    'adminXDemo',
+    'tkReminders',
+    'newEmailAddresses'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
@@ -61,6 +67,11 @@ module.exports.getAll = () => {
 
     GA_FEATURES.forEach((gaKey) => {
         labs[gaKey] = true;
+    });
+
+    const labsConfig = config.get('labs') || {};
+    Object.keys(labsConfig).forEach((key) => {
+        labs[key] = labsConfig[key];
     });
 
     labs.members = settingsCache.get('members_signup_access') !== 'none';

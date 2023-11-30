@@ -4,8 +4,12 @@ import tpl from '@tryghost/tpl';
 import nql from '@tryghost/nql';
 import {posts as postExpansions} from '@tryghost/nql-filter-expansions';
 import {CollectionPost} from './CollectionPost';
+import {CollectionPostAdded} from './events/CollectionPostAdded';
+import {CollectionPostRemoved} from './events/CollectionPostRemoved';
 
 import ObjectID from 'bson-objectid';
+
+type CollectionEvent = CollectionPostAdded | CollectionPostRemoved;
 
 const messages = {
     invalidIDProvided: 'Invalid ID provided for Collection',
@@ -18,7 +22,53 @@ const messages = {
     slugMustBeUnique: 'Slug must be unique'
 };
 
+function validateFilter(filter: string | null, type: 'manual' | 'automatic', isAllowedEmpty = false) {
+    const allowedProperties = ['featured', 'published_at', 'tag', 'tags'];
+    if (type === 'manual') {
+        if (filter !== null) {
+            throw new ValidationError({
+                message: tpl(messages.invalidFilterProvided.message),
+                context: tpl(messages.invalidFilterProvided.context)
+            });
+        }
+        return;
+    }
+
+    // type === 'automatic' now
+    if (filter === null) {
+        throw new ValidationError({
+            message: tpl(messages.invalidFilterProvided.message),
+            context: tpl(messages.invalidFilterProvided.context)
+        });
+    }
+
+    if (filter.trim() === '' && !isAllowedEmpty) {
+        throw new ValidationError({
+            message: tpl(messages.invalidFilterProvided.message),
+            context: tpl(messages.invalidFilterProvided.context)
+        });
+    }
+
+    try {
+        const parsedFilter = nql(filter);
+        const keysUsed: string[] = [];
+        nql.utils.mapQuery(parsedFilter.toJSON(), function (value: unknown, key: string) {
+            keysUsed.push(key);
+        });
+        if (keysUsed.some(key => !allowedProperties.includes(key))) {
+            throw new ValidationError({
+                message: tpl(messages.invalidFilterProvided.message)
+            });
+        }
+    } catch (err) {
+        throw new ValidationError({
+            message: tpl(messages.invalidFilterProvided.message)
+        });
+    }
+}
+
 export class Collection {
+    events: CollectionEvent[];
     id: string;
     title: string;
     private _slug: string;
@@ -40,7 +90,17 @@ export class Collection {
     }
     description: string;
     type: 'manual' | 'automatic';
-    filter: string | null;
+    _filter: string | null;
+    get filter() {
+        return this._filter;
+    }
+    set filter(value) {
+        if (this.slug === 'latest' || this.slug === 'featured') {
+            return;
+        }
+        validateFilter(value, this.type);
+        this._filter = value;
+    }
     featureImage: string | null;
     createdAt: Date;
     updatedAt: Date;
@@ -64,37 +124,6 @@ export class Collection {
         }
     }
 
-    public async edit(data: Partial<Collection>, uniqueChecker: UniqueChecker) {
-        if (this.type === 'automatic' && this.slug !== 'latest' && (data.filter === null || data.filter === '')) {
-            throw new ValidationError({
-                message: tpl(messages.invalidFilterProvided.message),
-                context: tpl(messages.invalidFilterProvided.context)
-            });
-        }
-
-        if (data.title !== undefined) {
-            this.title = data.title;
-        }
-
-        if (data.slug !== undefined) {
-            await this.setSlug(data.slug, uniqueChecker);
-        }
-
-        if (data.description !== undefined) {
-            this.description = data.description;
-        }
-
-        if (data.filter !== undefined) {
-            this.filter = data.filter;
-        }
-
-        if (data.featureImage !== undefined) {
-            this.featureImage = data.featureImage;
-        }
-
-        return this;
-    }
-
     postMatchesFilter(post: CollectionPost) {
         const filterNql = nql(this.filter, {
             expansions: postExpansions
@@ -107,6 +136,9 @@ export class Collection {
      * @param index {number} - The index to insert the post at, use negative numbers to count from the end.
      */
     addPost(post: CollectionPost, index: number = -0) {
+        if (this.slug === 'latest') {
+            return false;
+        }
         if (this.type === 'automatic') {
             const matchesFilter = this.postMatchesFilter(post);
 
@@ -117,6 +149,11 @@ export class Collection {
 
         if (this.posts.includes(post.id)) {
             this._posts = this.posts.filter(id => id !== post.id);
+        } else {
+            this.events.push(CollectionPostAdded.create({
+                post_id: post.id,
+                collection_id: this.id
+            }));
         }
 
         if (index < 0 || Object.is(index, -0)) {
@@ -130,6 +167,10 @@ export class Collection {
     removePost(id: string) {
         if (this.posts.includes(id)) {
             this._posts = this.posts.filter(postId => postId !== id);
+            this.events.push(CollectionPostRemoved.create({
+                post_id: id,
+                collection_id: this.id
+            }));
         }
     }
 
@@ -138,6 +179,12 @@ export class Collection {
     }
 
     removeAllPosts() {
+        for (const id of this._posts) {
+            this.events.push(CollectionPostRemoved.create({
+                post_id: id,
+                collection_id: this.id
+            }));
+        }
         this._posts = [];
     }
 
@@ -148,12 +195,13 @@ export class Collection {
         this._slug = data.slug;
         this.description = data.description;
         this.type = data.type;
-        this.filter = data.filter;
+        this._filter = data.filter;
         this.featureImage = data.featureImage;
         this.createdAt = data.createdAt;
         this.updatedAt = data.updatedAt;
         this.deleted = data.deleted;
         this._posts = data.posts;
+        this.events = [];
     }
 
     toJSON() {
@@ -202,13 +250,9 @@ export class Collection {
             });
         }
 
-        if (data.type === 'automatic' && (data.slug !== 'latest') && !data.filter) {
-            // @NOTE: add filter validation here
-            throw new ValidationError({
-                message: tpl(messages.invalidFilterProvided.message),
-                context: tpl(messages.invalidFilterProvided.context)
-            });
-        }
+        const type = data.type === 'automatic' ? 'automatic' : 'manual';
+        const filter = typeof data.filter === 'string' ? data.filter : null;
+        validateFilter(filter, type, data.slug === 'latest');
 
         if (!data.title) {
             throw new ValidationError({
@@ -221,13 +265,13 @@ export class Collection {
             title: data.title,
             slug: data.slug,
             description: data.description || null,
-            type: data.type || 'manual',
-            filter: data.filter || null,
+            type: type,
+            filter: filter,
             featureImage: data.feature_image || null,
             createdAt: Collection.validateDateField(data.created_at, 'created_at'),
             updatedAt: Collection.validateDateField(data.updated_at, 'updated_at'),
             deleted: data.deleted || false,
-            posts: data.posts || []
+            posts: data.slug !== 'latest' ? (data.posts || []) : []
         });
     }
 }

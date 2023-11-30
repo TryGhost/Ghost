@@ -75,14 +75,16 @@ describe('Email renderer', function () {
         let emailRenderer;
         let newsletter;
         let member;
+        let labsEnabled = false;
 
         beforeEach(function () {
+            labsEnabled = false;
             emailRenderer = new EmailRenderer({
                 urlUtils: {
                     urlFor: () => 'http://example.com/subdirectory/'
                 },
                 labs: {
-                    isSet: () => true
+                    isSet: () => labsEnabled
                 },
                 settingsCache: {
                     get: (key) => {
@@ -144,6 +146,16 @@ describe('Email renderer', function () {
             assert.equal(replacements.length, 1);
             assert.equal(replacements[0].token.toString(), '/%%\\{unsubscribe_url\\}%%/g');
             assert.equal(replacements[0].id, 'unsubscribe_url');
+            assert.equal(replacements[0].getValue(member), `http://example.com/subdirectory/unsubscribe/?uuid=myuuid&newsletter=newsletteruuid`);
+        });
+
+        it('returns correct list-unsubscribe value', function () {
+            labsEnabled = true;
+            const html = 'Hello';
+            const replacements = emailRenderer.buildReplacementDefinitions({html, newsletterUuid: newsletter.get('uuid')});
+            assert.equal(replacements.length, 1);
+            assert.equal(replacements[0].token.toString(), '/%%\\{list_unsubscribe\\}%%/g');
+            assert.equal(replacements[0].id, 'list_unsubscribe');
             assert.equal(replacements[0].getValue(member), `http://example.com/subdirectory/unsubscribe/?uuid=myuuid&newsletter=newsletteruuid`);
         });
 
@@ -316,7 +328,7 @@ describe('Email renderer', function () {
                     urlFor: () => 'http://example.com/subdirectory/'
                 },
                 labs: {
-                    isSet: () => true
+                    isSet: () => false
                 },
                 settingsCache: {
                     get: (key) => {
@@ -419,7 +431,7 @@ describe('Email renderer', function () {
                     urlFor: () => 'http://example.com/subdirectory/'
                 },
                 labs: {
-                    isSet: () => true
+                    isSet: () => false
                 },
                 settingsCache: {
                     get: (key) => {
@@ -623,7 +635,7 @@ describe('Email renderer', function () {
                 urlFor: () => 'http://example.com'
             },
             labs: {
-                isSet: () => true
+                isSet: () => false
             }
         });
 
@@ -668,7 +680,12 @@ describe('Email renderer', function () {
                 }
             },
             labs: {
-                isSet: () => true
+                isSet: () => false
+            },
+            emailAddressService: {
+                getAddress(addresses) {
+                    return addresses;
+                }
             }
         });
 
@@ -711,6 +728,12 @@ describe('Email renderer', function () {
     });
 
     describe('getReplyToAddress', function () {
+        let emailAddressService = {
+            getAddress(addresses) {
+                return addresses;
+            },
+            managedEmailEnabled: true
+        };
         let emailRenderer = new EmailRenderer({
             settingsCache: {
                 get: (key) => {
@@ -728,8 +751,9 @@ describe('Email renderer', function () {
                 }
             },
             labs: {
-                isSet: () => true
-            }
+                isSet: () => false
+            },
+            emailAddressService
         });
 
         it('returns support address', function () {
@@ -742,14 +766,52 @@ describe('Email renderer', function () {
             response.should.equal('support@example.com');
         });
 
-        it('returns correct reply to address for newsletter', function () {
+        it('[legacy] returns correct reply to address for newsletter', function () {
+            emailAddressService.managedEmailEnabled = false;
             const newsletter = createModel({
                 sender_email: 'ghost@example.com',
                 sender_name: 'Ghost',
                 sender_reply_to: 'newsletter'
             });
             const response = emailRenderer.getReplyToAddress({}, newsletter);
-            response.should.equal(`"Ghost" <ghost@example.com>`);
+            assert.equal(response, `"Ghost" <ghost@example.com>`);
+            emailAddressService.managedEmailEnabled = true;
+        });
+
+        it('returns null when set to newsletter', function () {
+            emailAddressService.managedEmailEnabled = true;
+            const newsletter = createModel({
+                sender_email: 'ghost@example.com',
+                sender_name: 'Ghost',
+                sender_reply_to: 'newsletter'
+            });
+            const response = emailRenderer.getReplyToAddress({}, newsletter);
+            assert.equal(response, null);
+        });
+
+        it('returns correct custom reply to address', function () {
+            const newsletter = createModel({
+                sender_email: 'ghost@example.com',
+                sender_name: 'Ghost',
+                sender_reply_to: 'anything@iwant.com'
+            });
+            const response = emailRenderer.getReplyToAddress({}, newsletter);
+            assert.equal(response, 'anything@iwant.com');
+        });
+
+        it('handles removed replyto addresses', function () {
+            const newsletter = createModel({
+                sender_email: 'ghost@example.com',
+                sender_name: 'Ghost',
+                sender_reply_to: 'anything@iwant.com'
+            });
+            emailAddressService.getAddress = ({from}) => {
+                return {
+                    from
+                };
+            };
+            const response = emailRenderer.getReplyToAddress({}, newsletter);
+            assert.equal(response, null);
         });
     });
 
@@ -771,7 +833,7 @@ describe('Email renderer', function () {
                 return 'http://example.com/post-id';
             },
             labs: {
-                isSet: () => true
+                isSet: () => false
             }
         });
 
@@ -810,7 +872,7 @@ describe('Email renderer', function () {
                     return 'http://example.com/post-id';
                 },
                 labs: {
-                    isSet: () => true
+                    isSet: () => false
                 }
             });
 
@@ -838,7 +900,7 @@ describe('Email renderer', function () {
                     return 'http://example.com/post-id';
                 },
                 labs: {
-                    isSet: () => true
+                    isSet: () => false
                 }
             });
 
@@ -1011,7 +1073,7 @@ describe('Email renderer', function () {
             // Unsubscribe button included
             response.plaintext.should.containEql('Unsubscribe [%%{unsubscribe_url}%%]');
             response.html.should.containEql('Unsubscribe');
-            response.replacements.length.should.eql(2);
+            response.replacements.length.should.eql(3);
             response.replacements.should.match([
                 {
                     id: 'uuid'
@@ -1019,6 +1081,9 @@ describe('Email renderer', function () {
                 {
                     id: 'unsubscribe_url',
                     token: /%%\{unsubscribe_url\}%%/g
+                },
+                {
+                    id: 'list_unsubscribe'
                 }
             ]);
 
@@ -1324,7 +1389,7 @@ describe('Email renderer', function () {
                 clickTrackingEnabled: true
             };
 
-            renderedPost = '<p>Lexical Test</p><p><a href="https://external-domain.com/?ref=123">Hello</a><a href="https://encoded-link.com?code&#x3D;test">Hello</a><a href="https://example.com/?ref=123"><img src="example" /></a></p>';
+            renderedPost = '<p>Lexical Test</p><p><a href="https://external-domain.com/?ref=123">Hello</a><a href="https://encoded-link.com?code&#x3D;test">Hello</a><a href="https://example.com/?ref=123"><img src="example" /></a><a href="#">Ignore me</a></p>';
 
             let response = await emailRenderer.renderBody(
                 post,
@@ -1339,6 +1404,10 @@ describe('Email renderer', function () {
             for (const link of $('a').toArray()) {
                 const href = $(link).attr('href');
                 links.push(href);
+
+                if (href === '#') {
+                    continue;
+                }
                 if (href.includes('unsubscribe_url')) {
                     href.should.eql('%%{unsubscribe_url}%%');
                 } else if (href.includes('feedback-link.com')) {
@@ -1357,6 +1426,7 @@ describe('Email renderer', function () {
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexternal-domain.com%2F%3Fref%3D123%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fencoded-link.com%2F%3Fcode%3Dtest%26source_tracking%3Dsite`,
                 `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fexample.com%2F%3Fref%3D123%26source_tracking%3DTest%2BNewsletter%26post_tracking%3Dadded`,
+                '#',
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
@@ -1366,11 +1436,59 @@ describe('Email renderer', function () {
             ]);
 
             // Check uuid in replacements
-            response.replacements.length.should.eql(2);
+            response.replacements.length.should.eql(3);
             response.replacements[0].id.should.eql('uuid');
             response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
             response.replacements[1].id.should.eql('unsubscribe_url');
             response.replacements[1].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+            response.replacements[2].id.should.eql('list_unsubscribe');
+        });
+
+        it('replaces all relative links if click tracking is disabled', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: true,
+                feedback_enabled: true,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {
+                clickTrackingEnabled: false
+            };
+
+            renderedPost = '<p>Lexical Test</p><p><a href="#relative-test">Hello</a><a href="#">Ignore me</a></p>';
+
+            let response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            // Check all links have domain tracked-link.com
+            const $ = cheerio.load(response.html);
+            const links = [];
+            for (const link of $('a').toArray()) {
+                const href = $(link).attr('href');
+                links.push(href);
+            }
+
+            // Update the following array when you make changes to the email template, check if replacements are correct for each newly added link.
+            assert.deepEqual(links, [
+                'http://example.com/',
+                'http://example.com/',
+                'http://example.com/',
+                'http://example.com/#relative-test',
+                '#',
+                'http://feedback-link.com/?score=1&uuid=%%{uuid}%%',
+                'http://feedback-link.com/?score=0&uuid=%%{uuid}%%',
+                'http://feedback-link.com/?score=1&uuid=%%{uuid}%%',
+                'http://feedback-link.com/?score=0&uuid=%%{uuid}%%',
+                '%%{unsubscribe_url}%%',
+                'https://ghost.org/'
+            ]);
         });
 
         it('handles encoded links', async function () {
@@ -1428,11 +1546,12 @@ describe('Email renderer', function () {
             ]);
 
             // Check uuid in replacements
-            response.replacements.length.should.eql(2);
+            response.replacements.length.should.eql(3);
             response.replacements[0].id.should.eql('uuid');
             response.replacements[0].token.should.eql(/%%\{uuid\}%%/g);
             response.replacements[1].id.should.eql('unsubscribe_url');
             response.replacements[1].token.should.eql(/%%\{unsubscribe_url\}%%/g);
+            response.replacements[2].id.should.eql('list_unsubscribe');
         });
 
         it('removes data-gh-segment and renders paywall', async function () {
@@ -1509,7 +1628,7 @@ describe('Email renderer', function () {
 
             response.html.should.containEql('Unsubscribe');
             response.html.should.containEql('http://example.com');
-            response.replacements.length.should.eql(2);
+            response.replacements.length.should.eql(3);
             response.replacements.should.match([
                 {
                     id: 'uuid'
@@ -1517,6 +1636,9 @@ describe('Email renderer', function () {
                 {
                     id: 'unsubscribe_url',
                     token: /%%\{unsubscribe_url\}%%/g
+                },
+                {
+                    id: 'list_unsubscribe'
                 }
             ]);
             response.html.should.not.containEql('members only section');

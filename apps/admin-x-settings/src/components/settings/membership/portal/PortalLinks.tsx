@@ -1,13 +1,8 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import List from '../../../../admin-x-ds/global/List';
-import ListItem from '../../../../admin-x-ds/global/ListItem';
-import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
-import React, {useContext, useEffect, useState} from 'react';
-import Select from '../../../../admin-x-ds/global/form/Select';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import {SettingsContext} from '../../../providers/SettingsProvider';
-import {getHomepageUrl, getPaidActiveTiers} from '../../../../utils/helpers';
-import {useTiers} from '../../../providers/ServiceProvider';
+import React, {useEffect, useId, useState} from 'react';
+import {Button, List, ListItem, ModalPage, Select, TextField} from '@tryghost/admin-x-design-system';
+import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
+import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 interface PortalLinkPrefs {
     name: string;
@@ -15,6 +10,8 @@ interface PortalLinkPrefs {
 }
 
 const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
+    const id = useId();
+
     return (
         <ListItem
             action={<Button color='black' label='Copy' link onClick={(e) => {
@@ -25,12 +22,11 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
                     button.innerText = 'Copy';
                 }, 1000);
             }}/>}
-            hideActions
             separator
         >
-            <div className='flex w-full grow items-center gap-5 py-3'>
-                <span className='inline-block w-[240px] whitespace-nowrap'>{name}</span>
-                <TextField className='border-b-500 grow bg-transparent p-1 text-grey-700' value={value} disabled unstyled />
+            <div className='flex w-full grow flex-col py-3 lg:flex-row lg:items-center lg:gap-2'>
+                <label className='inline-block whitespace-nowrap lg:w-[180px] lg:min-w-[180px]' htmlFor={id}>{name}:</label>
+                <TextField className='border-b-500 grow bg-transparent py-1 text-grey-700 lg:p-1' id={id} value={value} disabled unstyled />
             </div>
         </ListItem>
     );
@@ -39,9 +35,9 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
 const PortalLinks: React.FC = () => {
     const [isDataAttributes, setIsDataAttributes] = useState(false);
     const [selectedTier, setSelectedTier] = useState('');
-    const {siteData} = useContext(SettingsContext);
-    const {data: allTiers} = useTiers();
-    const tiers = getPaidActiveTiers(allTiers);
+    const {siteData} = useGlobalData();
+    const {data: {tiers: allTiers} = {}} = useBrowseTiers();
+    const tiers = getPaidActiveTiers(allTiers || []);
 
     const toggleIsDataAttributes = () => {
         setIsDataAttributes(!isDataAttributes);
@@ -77,13 +73,15 @@ const PortalLinks: React.FC = () => {
                     hideActions
                     separator
                 >
-                    <div className='flex w-full items-center gap-5 py-2 pr-6'>
-                        <span className='inline-block w-[240px] shrink-0'>Tier</span>
+                    <div className='flex w-full items-center gap-2 py-2'>
+                        <span className='inline-block w-[180px] min-w-[180px] shrink-0'>Tier:</span>
                         <Select
                             options={tierOptions}
-                            selectedOption={selectedTier}
-                            onSelect={(value) => {
-                                setSelectedTier(value);
+                            selectedOption={tierOptions.find(option => option.value === selectedTier)}
+                            onSelect={(option) => {
+                                if (option) {
+                                    setSelectedTier(option?.value);
+                                }
                             }}
                         />
                     </div>

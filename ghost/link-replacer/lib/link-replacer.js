@@ -2,10 +2,12 @@ class LinkReplacer {
     /**
      * Replaces the links in the provided HTML
      * @param {string} html
-     * @param {(url: URL): Promise<URL|string>} replaceLink
+     * @param {(url: URL, originalPath: string): Promise<URL|string|false>} replaceLink
+     * @param {object} options
+     * @param {string} [options.base] If you want to replace relative links, this will replace them to an absolute link and call the replaceLink method too
      * @returns {Promise<string>}
     */
-    async replace(html, replaceLink) {
+    async replace(html, replaceLink, options = {}) {
         const cheerio = require('cheerio');
         const entities = require('entities');
         try {
@@ -22,13 +24,14 @@ class LinkReplacer {
                 const href = $(el).attr('href');
                 if (href) {
                     let url;
+                    const path = entities.decode(href);
                     try {
-                        url = new URL(entities.decode(href));
+                        url = new URL(path, options.base);
                     } catch (e) {
                         // Ignore invalid URLs
                     }
                     if (url) {
-                        url = await replaceLink(url);
+                        url = await replaceLink(url, path);
                         const str = url.toString();
                         $(el).attr('href', str);
                     }

@@ -26,6 +26,8 @@ describe('Posts Content API', function () {
     let agent;
 
     before(async function () {
+        // NOTE: can be removed after collections -> GA
+        mockManager.mockLabsEnabled('collections');
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('owner:post', 'users', 'user:inactive', 'posts', 'tags:extra', 'api_keys', 'newsletters', 'members:newsletters');
         await agent.authenticate();
@@ -76,6 +78,15 @@ describe('Posts Content API', function () {
     it('Cannot request mobiledoc or lexical formats', async function () {
         await agent
             .get(`posts/?formats=mobiledoc,lexical`)
+            .expectStatus(200)
+            .matchBodySnapshot({
+                posts: new Array(11).fill(postMatcher)
+            });
+    });
+
+    it('Cannot request mobiledoc or lexical fields', async function () {
+        await agent
+            .get(`posts/?fields=mobiledoc,lexical,published_at,created_at,updated_at,uuid`)
             .expectStatus(200)
             .matchBodySnapshot({
                 posts: new Array(11).fill(postMatcher)

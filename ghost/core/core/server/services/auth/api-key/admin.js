@@ -44,7 +44,7 @@ const _extractTokenFromUrl = function extractTokenFromUrl(reqUrl) {
     return query.token;
 };
 
-const authenticate = (req, res, next) => {
+const authenticate = function apiKeyAdminAuth(req, res, next) {
     // CASE: we don't have an Authorization header so allow fallthrough to other
     // auth middleware or final "ensure authenticated" check
     if (!req.headers || !req.headers.authorization) {
@@ -63,7 +63,7 @@ const authenticate = (req, res, next) => {
     return authenticateWithToken(req, res, next, {token, JWT_OPTIONS: JWT_OPTIONS_DEFAULTS});
 };
 
-const authenticateWithUrl = (req, res, next) => {
+const authenticateWithUrl = function apiKeyAuthenticateWithUrl(req, res, next) {
     const token = _extractTokenFromUrl(req.originalUrl);
     if (!token) {
         return next(new errors.UnauthorizedError({
@@ -89,7 +89,7 @@ const authenticateWithUrl = (req, res, next) => {
  * - the "Audience" claim should match the requested API path
  *   https://tools.ietf.org/html/rfc7519#section-4.1.3
  */
-const authenticateWithToken = async (req, res, next, {token, JWT_OPTIONS}) => {
+const authenticateWithToken = async function apiKeyAuthenticateWithToken(req, res, next, {token, JWT_OPTIONS}) {
     const decoded = jwt.decode(token, {complete: true});
 
     if (!decoded || !decoded.header) {

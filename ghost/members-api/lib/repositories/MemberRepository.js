@@ -7,6 +7,7 @@ const {SubscriptionActivatedEvent, MemberCreatedEvent, SubscriptionCreatedEvent,
 const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
+const uuid = require('uuid');
 
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -20,6 +21,8 @@ const messages = {
     tierArchived: 'Cannot use archived Tiers',
     invalidEmail: 'Invalid Email'
 };
+
+const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
 
 /**
  * @typedef {object} ITokenService
@@ -198,7 +201,7 @@ module.exports = class MemberRepository {
             }
             return null;
         }
-        return this._Member.findOne(data, options);
+        return await this._Member.findOne(data, options);
     }
 
     async getByToken(token, options) {
@@ -207,6 +210,16 @@ module.exports = class MemberRepository {
         return this.get({
             email: data.sub
         }, options);
+    }
+
+    _generateTransientId() {
+        return uuid.v4();
+    }
+
+    async cycleTransientId({id, email}) {
+        await this.update({
+            transient_id: this._generateTransientId()
+        }, {id, email});
     }
 
     /**
@@ -250,6 +263,9 @@ module.exports = class MemberRepository {
 
         const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters', 'email_disabled']);
 
+        // Generate a random transient_id
+        memberData.transient_id = await this._generateTransientId();
+
         // Throw error if email is invalid using latest validator
         if (!validator.isEmail(memberData.email, {legacy: false})) {
             throw new errors.ValidationError({
@@ -281,7 +297,7 @@ module.exports = class MemberRepository {
             memberStatusData.status = 'comped';
         }
 
-        // Subscribe member to default newsletters
+        // Subscribe members to default newsletters
         if (memberData.subscribed !== false && !memberData.newsletters) {
             const browseOptions = _.pick(options, 'transacting');
             memberData.newsletters = await this.getSubscribeOnSignupNewsletters(browseOptions);
@@ -419,7 +435,8 @@ module.exports = class MemberRepository {
             'last_seen_at',
             'last_commented_at',
             'expertise',
-            'email_disabled'
+            'email_disabled',
+            'transient_id'
         ]);
 
         // Trim whitespaces from expertise
@@ -762,9 +779,9 @@ module.exports = class MemberRepository {
         if (data.action === 'unsubscribe') {
             const hasNewsletterSelected = (Object.prototype.hasOwnProperty.call(data, 'newsletter') && data.newsletter !== null);
             if (hasNewsletterSelected) {
-                const membersArr = memberIds.join(',');
+                const membersArr = memberIds.map(i => `'${i}'`).join(',');
                 const unsubscribeRows = await this._MemberNewsletter.getFilteredCollectionQuery({
-                    filter: `newsletter_id:${data.newsletter}+member_id:[${membersArr}]`
+                    filter: `newsletter_id:'${data.newsletter}'+member_id:[${membersArr}]`
                 });
                 const toUnsubscribe = unsubscribeRows.map(row => row.id);
 
@@ -940,8 +957,7 @@ module.exports = class MemberRepository {
             logging.error(e);
         }
 
-        const stripeCoupon = subscription.discount?.coupon;
-        const stripeCouponId = stripeCoupon ? subscription.discount.coupon.id : null;
+        let stripeCouponId = subscription.discount && subscription.discount.coupon ? subscription.discount.coupon.id : null;
 
         // For trial offers, offer id is passed from metadata as there is no stripe coupon
         let offerId = data.offerId || null;
@@ -953,21 +969,7 @@ module.exports = class MemberRepository {
             if (offer) {
                 offerId = offer.id;
             } else {
-                try {
-                    // Create an offer in our database
-                    const productId = ghostProduct.get('id');
-                    const currency = subscriptionPriceData.currency;
-                    const interval = _.get(subscriptionPriceData, 'recurring.interval', '');
-                    offer = await this._offerRepository.createFromCoupon(
-                        stripeCoupon,
-                        {productId, currency, interval, active: false},
-                        {transacting: options.transacting}
-                    );
-                    offerId = offer?.id;
-                } catch (e) {
-                    logging.error(`Error when creating an offer from stripe coupon id (${stripeCouponId}) for subscription - ${subscription.id}.`);
-                    logging.error(e);
-                }
+                logging.error(`Received an unknown stripe coupon id (${stripeCouponId}) for subscription - ${subscription.id}.`);
             }
         } else if (offerId) {
             offer = await this._offerRepository.getById(offerId, {transacting: options.transacting});
@@ -1138,28 +1140,32 @@ module.exports = class MemberRepository {
                 status = 'paid';
             }
 
-            // This is an active subscription! Add the product
-            if (ghostProduct) {
-                // memberProducts.push(ghostProduct.toJSON());
-                memberProducts = [ghostProduct.toJSON()];
-            }
             if (model) {
-                if (model.get('stripe_price_id') !== subscriptionData.stripe_price_id) {
-                    // The subscription has changed plan - we may need to update the products
+                // We might need to...
+                // 1. delete the previous product from the linked member products (in case an existing subscription changed product/price)
+                // 2. fix the list of products linked to a member (an existing subscription doesn't have a linked product to this member)
 
-                    const subscriptions = await member.related('stripeSubscriptions').fetch(options);
-                    const changedProduct = await this._productRepository.get({
-                        stripe_price_id: model.get('stripe_price_id')
-                    }, options);
+                const subscriptions = await member.related('stripeSubscriptions').fetch(options);
 
-                    let activeSubscriptionForChangedProduct = false;
+                const previousProduct = await this._productRepository.get({
+                    stripe_price_id: model.get('stripe_price_id')
+                }, options);
+
+                if (previousProduct) {
+                    let activeSubscriptionForPreviousProduct = false;
 
                     for (const subscriptionModel of subscriptions.models) {
-                        if (this.isActiveSubscriptionStatus(subscriptionModel.get('status'))) {
+                        if (this.isActiveSubscriptionStatus(subscriptionModel.get('status')) && subscriptionModel.id !== model.id) {
                             try {
                                 const subscriptionProduct = await this._productRepository.get({stripe_price_id: subscriptionModel.get('stripe_price_id')}, options);
-                                if (subscriptionProduct && changedProduct && subscriptionProduct.id === changedProduct.id) {
-                                    activeSubscriptionForChangedProduct = true;
+                                if (subscriptionProduct && previousProduct && subscriptionProduct.id === previousProduct.id) {
+                                    activeSubscriptionForPreviousProduct = true;
+                                }
+
+                                if (subscriptionProduct && !memberProducts.find(p => p.id === subscriptionProduct.id)) {
+                                    // Due to a bug in the past it is possible that this subscription's product wasn't added to the member products
+                                    // So we need to add it again
+                                    memberProducts.push(subscriptionProduct.toJSON());
                                 }
                             } catch (e) {
                                 logging.error(`Failed to attach products to member - ${data.id}`);
@@ -1168,12 +1174,20 @@ module.exports = class MemberRepository {
                         }
                     }
 
-                    if (!activeSubscriptionForChangedProduct) {
+                    if (!activeSubscriptionForPreviousProduct) {
+                        // We can safely remove the product from this member because it doesn't have any other remaining active subscription for it
                         memberProducts = memberProducts.filter((product) => {
-                            return product.id !== changedProduct.id;
+                            return product.id !== previousProduct.id;
                         });
                     }
                 }
+            }
+
+            if (ghostProduct) {
+                // Note: we add the product here
+                // We don't override the products because in an edge case a member can have multiple subscriptions
+                // We'll need to keep all the products related to those subscriptions to avoid creating other issues
+                memberProducts.push(ghostProduct.toJSON());
             }
         } else {
             const subscriptions = await member.related('stripeSubscriptions').fetch(options);
@@ -1186,6 +1200,12 @@ module.exports = class MemberRepository {
                         if (subscriptionProduct && ghostProduct && subscriptionProduct.id === ghostProduct.id) {
                             activeSubscriptionForGhostProduct = true;
                         }
+
+                        if (subscriptionProduct && !memberProducts.find(p => p.id === subscriptionProduct.id)) {
+                            // Due to a bug in the past it is possible that this subscription's product wasn't added to the member products
+                            // So we need to add it again
+                            memberProducts.push(subscriptionProduct.toJSON());
+                        }
                     } catch (e) {
                         logging.error(`Failed to attach products to member - ${data.id}`);
                         logging.error(e);
@@ -1194,12 +1214,14 @@ module.exports = class MemberRepository {
             }
 
             if (!activeSubscriptionForGhostProduct) {
+                // We don't have an active subscription for this product anymore, so we can safely unlink it from the member
                 memberProducts = memberProducts.filter((product) => {
                     return product.id !== ghostProduct.id;
                 });
             }
 
             if (memberProducts.length === 0) {
+                // If all products were removed, set the status back to 'free'
                 status = 'free';
             }
         }
@@ -1362,6 +1384,10 @@ module.exports = class MemberRepository {
                     data.subscription.price
                 );
                 updatedSubscription = await this._stripeAPIService.removeCouponFromSubscription(subscription.id);
+
+                if (subscriptionModel.get('status') === SUBSCRIPTION_STATUS_TRIALING) {
+                    updatedSubscription = await this._stripeAPIService.cancelSubscriptionTrial(subscription.id);
+                }
             }
         }
 

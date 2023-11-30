@@ -60,7 +60,6 @@ export default class FeatureService extends Service {
 
     // labs flags
     @feature('urlCache') urlCache;
-    @feature('lexicalEditor') lexicalEditor;
     @feature('lexicalMultiplayer') lexicalMultiplayer;
     @feature('audienceFeedback') audienceFeedback;
     @feature('webmentions') webmentions;
@@ -72,14 +71,16 @@ export default class FeatureService extends Service {
     @feature('signupCard') signupCard;
     @feature('signupForm') signupForm;
     @feature('collections') collections;
-    @feature('adminXSettings') adminXSettings;
-    @feature('pageImprovements') pageImprovements;
-    @feature('flatUrls') flatUrls;
     @feature('mailEvents') mailEvents;
     @feature('collectionsCard') collectionsCard;
-    @feature('headerUpgrade') headerUpgrade;
     @feature('importMemberTier') importMemberTier;
     @feature('tipsAndDonations') tipsAndDonations;
+    @feature('recommendations') recommendations;
+    @feature('lexicalIndicators') lexicalIndicators;
+    @feature('editorEmojiPicker') editorEmojiPicker;
+    @feature('filterEmailDisabled') filterEmailDisabled;
+    @feature('adminXDemo') adminXDemo;
+    @feature('tkReminders') tkReminders;
 
     _user = null;
 

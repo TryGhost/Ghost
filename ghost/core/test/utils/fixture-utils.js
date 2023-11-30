@@ -188,13 +188,15 @@ const fixtures = {
                 throw new Error('Trying to add more posts_tags than the number of posts.');
             }
 
-            return Promise.all(posts.slice(0, max).map((post) => {
-                post.tags = post.tags ? post.tags : [];
+            return models.Base.transaction((transacting) => {
+                return Promise.all(posts.slice(0, max).map((post) => {
+                    post.tags = post.tags ? post.tags : [];
 
-                return models.Post.edit({
-                    tags: post.tags.concat([_.find(DataGenerator.Content.tags, {id: injectionTagId})])
-                }, _.merge({id: post.id}, context.internal));
-            }));
+                    return models.Post.edit({
+                        tags: post.tags.concat([_.find(DataGenerator.Content.tags, {id: injectionTagId})])
+                    }, _.merge({id: post.id, transacting}, context.internal));
+                }));
+            });
         });
     },
 
@@ -485,6 +487,13 @@ const fixtures = {
         });
 
         return models.Product.add(hiddenTier, context.internal);
+    },
+
+    insertExtraTiers: async function insertExtraTiers() {
+        const extraTier = DataGenerator.forKnex.createProduct({});
+        const extraTier2 = DataGenerator.forKnex.createProduct({slug: 'silver', name: 'Silver'});
+        await models.Product.add(extraTier, context.internal);
+        await models.Product.add(extraTier2, context.internal);
     },
 
     insertProducts: async function insertProducts() {
@@ -821,6 +830,9 @@ const toDoList = {
     },
     custom_theme_settings: function insertCustomThemeSettings() {
         return fixtures.insertCustomThemeSettings();
+    },
+    'tiers:extra': function insertExtraTiers() {
+        return fixtures.insertExtraTiers();
     },
     'tiers:archived': function insertArchivedTiers() {
         return fixtures.insertArchivedTiers();

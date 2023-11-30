@@ -37,7 +37,11 @@ export default class IFrame extends Component<any> {
 
             if (this.props.onResize) {
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                (new ResizeObserver(_ => this.props.onResize(this.iframeRoot)))?.observe?.(this.iframeRoot);
+                (new ResizeObserver((_) => {
+                    window.requestAnimationFrame(() => {
+                        this.props.onResize(this.iframeRoot);
+                    });
+                }))?.observe?.(this.iframeRoot);
             }
 
             // This is a bit hacky, but prevents us to need to attach even listeners to all the iframes we have

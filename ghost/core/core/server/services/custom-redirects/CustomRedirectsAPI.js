@@ -9,7 +9,7 @@ const errors = require('@tryghost/errors');
 const messages = {
     jsonParse: 'Could not parse JSON: {context}.',
     yamlParse: 'Could not parse YAML: {context}.',
-    yamlPlainString: 'YAML input cannot be a plain string. Check the format of your YAML file.',
+    yamlInvalid: 'YAML input is invalid. Check the contents of your YAML file.',
     redirectsHelp: 'https://ghost.org/docs/themes/routing/#redirects',
     redirectsRegister: 'Could not register custom redirects.'
 };
@@ -78,13 +78,9 @@ const parseRedirectsFile = (content, ext) => {
             });
         }
 
-        // yaml.load passes almost every yaml code.
-        // Because of that, it's hard to detect if there's an error in the file.
-        // But one of the obvious errors is the plain string output.
-        // Here we check if the user made this mistake.
-        if (typeof configYaml === 'string') {
+        if (typeof configYaml !== 'object' || configYaml === null) {
             throw new errors.BadRequestError({
-                message: tpl(messages.yamlPlainString),
+                message: tpl(messages.yamlInvalid),
                 help: tpl(messages.redirectsHelp)
             });
         }
