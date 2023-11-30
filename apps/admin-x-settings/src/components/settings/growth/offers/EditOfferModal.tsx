@@ -13,10 +13,10 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 function formatTimestamp(timestamp: string): string {
     const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('default', {
         year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+        month: 'short',
+        day: '2-digit'
     });
 }
 
@@ -40,16 +40,12 @@ const Sidebar: React.FC<{
                 }
             }, [offer?.name]);
 
-            const offerUrl = `${getHomepageUrl(siteData!)}${offer?.code}`;
+            const homepageUrl = getHomepageUrl(siteData!);
+            const offerUrl = `${homepageUrl}${offer?.code}`;
             const handleCopyClick = async () => {
-                try {
-                    await navigator.clipboard.writeText(offerUrl);
-                    setIsCopied(true);
-                    setTimeout(() => setIsCopied(false), 1000); // reset after 1 seconds
-                } catch (err) {
-                    // eslint-disable-next-line no-console
-                    console.error('Failed to copy text: ', err);
-                }
+                await navigator.clipboard.writeText(offerUrl);
+                setIsCopied(true);
+                setTimeout(() => setIsCopied(false), 2000);
             };
 
             const confirmStatusChange = async () => {
@@ -105,13 +101,13 @@ const Sidebar: React.FC<{
                             <h2 className='mb-4 text-lg'>Stats</h2>
                             <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5'>
                                 <div className='flex flex-col gap-1.5'>
-                                    <span className='text-xs font-semibold leading-none text-grey-700'>Created at</span>
+                                    <span className='text-xs font-semibold leading-none text-grey-700'>Created on</span>
                                     <span>{formatTimestamp(offer?.created_at ? offer.created_at : '')}</span>
                                 </div>
                                 <div className='flex items-end justify-between'>
                                     <div className='flex flex-col gap-5'>
                                         <div className='flex flex-col gap-1.5'>
-                                            <span className='text-xs font-semibold leading-none text-grey-700'>Total redemptions</span>
+                                            <span className='text-xs font-semibold leading-none text-grey-700'>Engagement</span>
                                             <span>{offer?.redemption_count} {offer?.redemption_count === 1 ? 'redemption' : 'redemptions'}</span>
                                         </div>
                                         {offer?.redemption_count > 0 && offer?.last_redeemed ?
@@ -122,7 +118,7 @@ const Sidebar: React.FC<{
                                             null
                                         }
                                     </div>
-                                    <a className='font-semibold text-green' href={createRedemptionFilterUrl(offer?.id)}>See all →</a>
+                                    {offer?.redemption_count > 0 ? <a className='font-semibold text-green' href={createRedemptionFilterUrl(offer?.id)}>See members →</a> : null}
                                 </div>
                             </div>
                         </section>
@@ -134,7 +130,7 @@ const Sidebar: React.FC<{
                                     hint={errors.name || <div className='flex justify-between'><span>Visible to members on Stripe Checkout page</span><strong><span className={`${nameLengthColor}`}>{nameLength}</span> / 40</strong></div>}
                                     maxLength={40}
                                     placeholder='Black Friday'
-                                    title='Name'
+                                    title='Offer name'
                                     value={offer?.name}
                                     onBlur={validate}
                                     onChange={(e) => {
@@ -143,42 +139,27 @@ const Sidebar: React.FC<{
                                     }}
                                     onKeyDown={() => clearError('name')}
                                 />
-                                <div className='flex flex-col gap-1.5'>
-                                    <TextField
-                                        disabled={Boolean(true)}
-                                        placeholder='https://www.example.com'
-                                        title='URL'
-                                        type='url'
-                                        value={offerUrl}
-                                    />
-                                    <Button color='green' label={isCopied ? 'Copied!' : 'Copy URL'} onClick={handleCopyClick} />
-                                </div>
-                            </div>
-                        </section>
-                        <section className='mt-4'>
-                            <h2 className='mb-4 text-lg'>Portal settings</h2>
-                            <div className='flex flex-col gap-6'>
                                 <TextField
                                     placeholder='Black Friday Special'
                                     title='Display title'
                                     value={offer?.display_title}
                                     onChange={e => updateOffer({display_title: e.target.value})}
                                 />
+                                <TextArea
+                                    placeholder='Take advantage of this limited-time offer.'
+                                    title='Display description'
+                                    value={offer?.display_description}
+                                    onChange={e => updateOffer({display_description: e.target.value})}
+                                />
                                 <TextField
                                     error={Boolean(errors.code)}
-                                    hint={errors.code}
+                                    hint={errors.code || <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{offer?.code}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div>}
                                     placeholder='black-friday'
                                     title='Offer code'
                                     value={offer?.code}
                                     onBlur={validate}
                                     onChange={e => updateOffer({code: e.target.value})}
                                     onKeyDown={() => clearError('name')}
-                                />
-                                <TextArea
-                                    placeholder='Take advantage of this limited-time offer.'
-                                    title='Display description'
-                                    value={offer?.display_description}
-                                    onChange={e => updateOffer({display_description: e.target.value})}
                                 />
                             </div>
                         </section>
