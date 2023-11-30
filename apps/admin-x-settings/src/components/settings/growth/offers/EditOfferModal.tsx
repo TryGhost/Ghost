@@ -107,7 +107,7 @@ const Sidebar: React.FC<{
                                 <div className='flex items-end justify-between'>
                                     <div className='flex flex-col gap-5'>
                                         <div className='flex flex-col gap-1.5'>
-                                            <span className='text-xs font-semibold leading-none text-grey-700'>Engagement</span>
+                                            <span className='text-xs font-semibold leading-none text-grey-700'>Performance</span>
                                             <span>{offer?.redemption_count} {offer?.redemption_count === 1 ? 'redemption' : 'redemptions'}</span>
                                         </div>
                                         {offer?.redemption_count > 0 && offer?.last_redeemed ?
