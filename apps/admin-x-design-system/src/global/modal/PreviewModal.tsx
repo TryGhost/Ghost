@@ -281,7 +281,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                 {sidebar &&
                     <div className='relative flex h-full w-full flex-col border-l border-grey-100 dark:border-grey-900 [@media(min-width:801px)]:w-auto [@media(min-width:801px)]:basis-[400px]'>
                         {sidebarHeader ? sidebarHeader : (
-                            <div className='flex max-h-[74px] items-center justify-between gap-3 px-7 py-5'>
+                            <div className='flex max-h-[82px] items-center justify-between gap-3 px-7 py-6'>
                                 <Heading level={titleHeadingLevel}>{title}</Heading>
                                 {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
                             </div>
