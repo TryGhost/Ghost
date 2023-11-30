@@ -1,12 +1,15 @@
 import Helper from '@ember/component/helper';
 import {inject} from 'ghost-admin/decorators/inject';
+import {inject as service} from '@ember/service';
 
 export default class SenderEmailAddressHelper extends Helper {
     @inject config;
-    @inject settings;
+    @service settings;
 
-    compute([senderEmail, defaultEmail]) {
-        if (isManagedEmail(this.config) && !hasSendingDomain(this.config) && defaultEmail) {
+    compute([senderEmail]) {
+        const defaultEmail = this.settings.defaultEmailAddress;
+
+        if (isManagedEmail(this.config) && !hasSendingDomain(this.config)) {
             // Not changeable: sender_email is ignored
             return defaultEmail;
         }
@@ -16,11 +19,11 @@ export default class SenderEmailAddressHelper extends Helper {
             if (senderEmail?.split('@')[1] === sendingDomain(this.config)) {
                 return senderEmail;
             } else {
-                return defaultEmail || `noreply@${this.config.emailDomain}`;
+                return defaultEmail;
             }
         }
 
-        return senderEmail || defaultEmail || `noreply@${this.config.emailDomain}`;
+        return senderEmail || defaultEmail;
     }
 }
 
