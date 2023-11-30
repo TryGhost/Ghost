@@ -152,6 +152,9 @@ describe('StaffService', function () {
         const settingsHelpers = {
             getDefaultEmailDomain: () => {
                 return 'ghost.example';
+            },
+            useNewEmailAddresses: () => {
+                return false;
             }
         };
 
@@ -906,6 +909,27 @@ describe('StaffService', function () {
                 loggingWarningStub.calledOnce.should.be.true();
 
                 mailStub.called.should.be.false();
+            });
+        });
+
+        describe('notifyDonationReceived', function () {
+            it('send donation email', async function () {
+                const donationPaymentEvent = {
+                    amount: 1500,
+                    currency: 'eur',
+                    name: 'Simon',
+                    email: 'simon@example.com'
+                };
+
+                await service.emails.notifyDonationReceived({donationPaymentEvent});
+
+                getEmailAlertUsersStub.calledWith('donation').should.be.true();
+
+                mailStub.calledOnce.should.be.true();
+
+                mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('One-time payment received: €15.00 from Simon'))
+                ).should.be.true();
             });
         });
 

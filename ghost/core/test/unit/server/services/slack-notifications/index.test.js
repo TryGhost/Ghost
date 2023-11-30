@@ -1,5 +1,5 @@
 const {configUtils} = require('../../../../utils/e2e-framework');
-const assert = require('assert');
+const assert = require('assert/strict');
 const nock = require('nock');
 const DomainEvents = require('@tryghost/domain-events');
 const {MilestoneCreatedEvent} = require('@tryghost/milestones');
@@ -41,6 +41,6 @@ describe('Slack Notifications Service', function () {
         // Wait for the dispatched events (because this happens async)
         await DomainEvents.allSettled();
 
-        assert.strictEqual(scope.isDone(), true);
+        assert.equal(scope.isDone(), true);
     });
 });

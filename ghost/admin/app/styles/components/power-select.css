@@ -9,7 +9,7 @@
     border: var(--input-border);
 }
 
-.ember-power-select-trigger:not(.gh-setting-dropdown):not(.ember-power-select-multiple-trigger):not(.gh-preview-newsletter-trigger) svg {
+.ember-power-select-trigger:not(.ember-power-select-multiple-trigger):not(.gh-preview-newsletter-trigger) svg {
     height: 4px;
     width: 6.11px;
     margin-left: 2px;
@@ -17,7 +17,7 @@
     vertical-align: middle;
 }
 
-.ember-power-select-trigger:not(.gh-setting-dropdown):not(.ember-power-select-multiple-trigger) svg path {
+.ember-power-select-trigger:not(.ember-power-select-multiple-trigger) svg path {
     stroke: var(--darkgrey);
 }
 
@@ -38,7 +38,7 @@
 
 .ember-power-select-dropdown {
     position: absolute;
-    z-index: 9999;
+    z-index: 10001;
     box-sizing: border-box;
     margin: 0;
     border: var(--input-border);
@@ -239,7 +239,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1em;
+    line-height: 1.2em;
 }
 
 .ember-power-select-multiple-remove-btn {
@@ -332,7 +332,7 @@
     color: var(--accent-color);
     background: none;
 }
-  
+
 .tag-token:not(.tag-token--internal)::after {
     position: absolute;
     top: -1px;

@@ -1,6 +1,5 @@
 const should = require('should');
 const sinon = require('sinon');
-const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const rewire = require('rewire');
 const _ = require('lodash');

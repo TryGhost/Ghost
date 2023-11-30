@@ -1,0 +1,46 @@
+body {
+    font-family: sans-serif;
+}
+
+#demo-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 50px 0;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #eee;
+    margin: 40px 0;
+}
+
+h1 {
+    padding: 20px 0;
+    margin: 0;
+}
+
+p {
+    padding: 0 0 40px 0;
+    margin: 0;
+    line-height: 2;
+    font-size: 16px;
+}
+
+code {
+    background: #eee;
+    padding: 2px 4px;
+}
+
+nav.mode > a {
+    text-decoration: none;
+    color: black;
+    background: #eee;
+    padding: 5px 12px;
+    display: inline-block;
+    border-radius: 3px;
+}
+nav.mode > a.selected {
+    background: #ff0095;
+    color: white;
+    font-weight: bold;
+}

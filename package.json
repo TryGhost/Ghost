@@ -7,7 +7,8 @@
   "author": "Ghost Foundation",
   "license": "MIT",
   "workspaces": [
-    "ghost/*"
+    "ghost/*",
+    "apps/*"
   ],
   "monorepo": {
     "public": false,
@@ -19,36 +20,34 @@
     "**/node_modules/**"
   ],
   "scripts": {
-    "build": "lerna run build",
+    "archive": "nx run ghost:archive",
+    "build": "nx run-many -t build",
+    "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "dev:debug": "DEBUG_COLORS=true DEBUG=@tryghost*,ghost:* yarn dev",
-    "dev:admin": "node .github/dev.js --admin",
-    "dev:ghost": "node .github/dev.js --ghost",
-    "dev": "node .github/dev.js",
+    "dev:admin": "node .github/scripts/dev.js --admin",
+    "dev:ghost": "node .github/scripts/dev.js --ghost",
+    "dev": "node .github/scripts/dev.js",
     "fix": "yarn cache clean && rm -rf node_modules && yarn",
     "knex-migrator": "yarn workspace ghost run knex-migrator",
-    "setup": "yarn && yarn workspace ghost run setup && git submodule update --init",
-    "lint": "lerna run lint",
-    "test": "lerna run test",
-    "test:unit": "lerna run test:unit",
+    "setup": "yarn && git submodule update --init",
+    "lint": "nx run-many -t lint",
+    "test": "nx run-many -t test",
+    "test:unit": "nx run-many -t test:unit",
     "main": "yarn main:monorepo && yarn main:submodules",
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn",
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && yarn\"",
-    "prepare": "husky install .github/hooks && lerna run prepare"
+    "prepare": "husky install .github/hooks"
   },
   "resolutions": {
     "@elastic/elasticsearch": "8.5.0",
-    "@tryghost/errors": "1.2.24",
-    "@tryghost/logging": "2.4.4",
+    "@tryghost/errors": "1.2.26",
+    "@tryghost/logging": "2.4.8",
     "moment": "2.24.0",
     "moment-timezone": "0.5.23"
   },
   "renovate": {
     "extends": [
-      "@tryghost:quietJS",
-      "@tryghost:disableTryGhostAutomerge",
-      "@tryghost:groupTestLint",
-      "@tryghost:groupCSS",
-      "@tryghost:groupBuildTools"
+      "github>tryghost/renovate-config:quiet"
     ],
     "rebaseWhen": "never",
     "ignoreDeps": [
@@ -62,25 +61,14 @@
       "validator",
       "codemirror",
       "faker",
-      "ember-cli-code-coverage"
+      "ember-cli-code-coverage",
+      "ember-cli-terser"
     ],
     "ignorePaths": [
       "test",
       "ghost/admin/lib/koenig-editor/package.json"
     ],
     "packageRules": [
-      {
-        "packagePatterns": [
-          "@tryghost"
-        ],
-        "groupName": "@tryghost"
-      },
-      {
-        "packagePatterns": [
-          "metascraper"
-        ],
-        "groupName": "metascraper"
-      },
       {
         "groupName": "ember-basic-dropdown addons",
         "packagePatterns": [
@@ -116,17 +104,17 @@
   "lint-staged": {
     "*.js": "eslint"
   },
-  "lerna": {
-    "version": "0.0.0",
-    "npmClient": "yarn",
-    "useWorkspaces": true
-  },
   "devDependencies": {
-    "concurrently": "8.0.1",
-    "eslint-plugin-ghost": "3.0.0",
+    "chalk": "4.1.2",
+    "concurrently": "8.2.2",
+    "eslint": "8.44.0",
+    "eslint-plugin-ghost": "3.4.0",
+    "eslint-plugin-react": "7.33.0",
     "husky": "8.0.3",
-    "lerna": "6.6.2",
-    "lint-staged": "13.1.2",
-    "ts-node": "10.9.1"
+    "lint-staged": "14.0.1",
+    "nx": "16.8.1",
+    "rimraf": "5.0.5",
+    "ts-node": "10.9.1",
+    "typescript": "5.3.2"
   }
 }

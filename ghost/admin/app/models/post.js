@@ -3,7 +3,6 @@ import Model, {attr, belongsTo, hasMany} from '@ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment-timezone';
-import {BLANK_DOC as BLANK_MOBILEDOC} from 'koenig-editor/components/koenig-editor';
 import {compare, isBlank} from '@ember/utils';
 import {computed, observer} from '@ember/object';
 import {equal, filterBy, reads} from '@ember/object/computed';
@@ -101,20 +100,9 @@ export default Model.extend(Comparable, ValidationEngine, {
     visibility: attr('string'),
     metaDescription: attr('string'),
     metaTitle: attr('string'),
-    mobiledoc: attr('json-string', {defaultValue: (modelInstance) => {
-        if (modelInstance.feature.lexicalEditor) {
-            return null;
-        }
-
-        // avoid modifying any references in the original blank doc object
-        return JSON.parse(JSON.stringify(BLANK_MOBILEDOC));
-    }}),
-    lexical: attr('string', {defaultValue: (modelInstance) => {
-        if (modelInstance.feature.lexicalEditor) {
-            return BLANK_LEXICAL;
-        }
-
-        return null;
+    mobiledoc: attr('json-string'),
+    lexical: attr('string', {defaultValue: () => {
+        return BLANK_LEXICAL;
     }}),
     plaintext: attr('string'),
     publishedAtUTC: attr('moment-utc'),
@@ -131,6 +119,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     featureImage: attr('string'),
     featureImageAlt: attr('string'),
     featureImageCaption: attr('string'),
+    showTitleAndFeatureImage: attr('boolean', {defaultValue: true}),
 
     authors: hasMany('user', {embedded: 'always', async: false}),
     createdBy: belongsTo('user', {async: true}),
@@ -146,10 +135,6 @@ export default Model.extend(Comparable, ValidationEngine, {
     scratch: null,
     lexicalScratch: null,
     titleScratch: null,
-
-    // HACK: used for validation so that date/time can be validated based on
-    // eventual status rather than current status
-    statusScratch: null,
 
     // For use by date/time pickers - will be validated then converted to UTC
     // on save. Updated by an observer whenever publishedAtUTC changes.

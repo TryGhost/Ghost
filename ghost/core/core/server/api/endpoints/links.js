@@ -4,6 +4,9 @@ const INVALIDATE_ALL_REDIRECTS = '/r/*';
 module.exports = {
     docName: 'links',
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'filter'
         ],

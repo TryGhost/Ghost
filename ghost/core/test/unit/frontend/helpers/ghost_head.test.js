@@ -104,6 +104,18 @@ describe('{{ghost_head}} helper', function () {
             updated_at: new Date(0)
         }));
 
+        // User without profile image but with cover image
+        users.push(createUser({
+            name: 'Author name',
+            slug: 'AuthorName2',
+            bio: 'Author bio',
+            cover_image: '/content/images/author-cover-image.png',
+            website: 'http://authorwebsite.com',
+            facebook: 'testuser',
+            twitter: '@testuser',
+            updated_at: new Date(0)
+        }));
+
         /** AUTHORS - related to posts */
         authors.push(createUser({// Author 0
             profile_image: '/content/images/test-author-image.png',
@@ -714,7 +726,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('returns structured data and schema on first author page with cover image', async function () {
             await testGhostHead(testUtils.createHbsResponse({
-                renderObject: {author: users[0]},
+                renderObject: {author: users[2]},
                 locals: {
                     // @TODO: WHY?
                     relativeUrl: '/author/authorname/',

@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
@@ -14,6 +13,9 @@ module.exports = {
     docName: 'tags',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         cache: tagsPublicService.api?.cache,
         options: [
             'include',
@@ -38,6 +40,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',

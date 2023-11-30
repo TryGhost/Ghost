@@ -31,6 +31,7 @@ class BatchSendingService {
     #models;
     #db;
     #sentry;
+    #debugStorageFilePath;
 
     // Retry database queries happening before sending the email
     #BEFORE_RETRY_CONFIG = {maxRetries: 10, maxTime: 10 * 60 * 1000, sleep: 2000};
@@ -52,6 +53,8 @@ class BatchSendingService {
      * @param {object} [dependencies.sentry]
      * @param {object} [dependencies.BEFORE_RETRY_CONFIG]
      * @param {object} [dependencies.AFTER_RETRY_CONFIG]
+     * @param {object} [dependencies.MAILGUN_API_RETRY_CONFIG]
+     * @param {string} [dependencies.debugStorageFilePath]
      */
     constructor({
         emailRenderer,
@@ -63,7 +66,8 @@ class BatchSendingService {
         sentry,
         BEFORE_RETRY_CONFIG,
         AFTER_RETRY_CONFIG,
-        MAILGUN_API_RETRY_CONFIG
+        MAILGUN_API_RETRY_CONFIG,
+        debugStorageFilePath
     }) {
         this.#emailRenderer = emailRenderer;
         this.#sendingService = sendingService;
@@ -72,6 +76,7 @@ class BatchSendingService {
         this.#models = models;
         this.#db = db;
         this.#sentry = sentry;
+        this.#debugStorageFilePath = debugStorageFilePath;
 
         if (BEFORE_RETRY_CONFIG) {
             this.#BEFORE_RETRY_CONFIG = BEFORE_RETRY_CONFIG;
@@ -211,7 +216,7 @@ class BatchSendingService {
     async getBatches(email) {
         logging.info(`Getting batches for email ${email.id}`);
 
-        return await this.#models.EmailBatch.findAll({filter: 'email_id:' + email.id});
+        return await this.#models.EmailBatch.findAll({filter: 'email_id:\'' + email.id + '\''});
     }
 
     /**
@@ -222,7 +227,7 @@ class BatchSendingService {
     async createBatches({email, post, newsletter}) {
         logging.info(`Creating batches for email ${email.id}`);
 
-        const segments = this.#emailRenderer.getSegments(post);
+        const segments = await this.#emailRenderer.getSegments(post);
         const batches = [];
         const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
         let totalCount = 0;
@@ -242,7 +247,9 @@ class BatchSendingService {
             while (!members || lastId) {
                 logging.info(`Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId}`);
 
-                const filter = segmentFilter + `+id:<${lastId}`;
+                const filter = segmentFilter + `+id:<'${lastId}'`;
+                logging.info(`Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId} ${filter}`);
+
                 members = await this.#models.Member.getFilteredCollectionQuery({filter})
                     .orderByRaw('id DESC')
                     .select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
@@ -393,7 +400,7 @@ class BatchSendingService {
         let succeeded = false;
 
         try {
-            const members = await this.retryDb(
+            let members = await this.retryDb(
                 async () => {
                     const m = await this.getBatchMembers(batch.id);
 
@@ -492,11 +499,19 @@ class BatchSendingService {
     /**
      * We don't want to pass EmailRecipient models to the sendingService.
      * So we transform them into the MemberLike interface.
-     * That keeps the sending service nicely seperated so it isn't dependent on the batch sending data structure.
+     * That keeps the sending service nicely separated so it isn't dependent on the batch sending data structure.
      * @returns {Promise<MemberLike[]>}
      */
     async getBatchMembers(batchId) {
-        const models = await this.#models.EmailRecipient.findAll({filter: `batch_id:${batchId}`, withRelated: ['member', 'member.stripeSubscriptions', 'member.products']});
+        let models = await this.#models.EmailRecipient.findAll({filter: `batch_id:'${batchId}'`, withRelated: ['member', 'member.stripeSubscriptions', 'member.products']});
+
+        const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
+        if (models.length > BATCH_SIZE) {
+            throw new errors.EmailError({
+                message: `Email batch ${batchId} has ${models.length} members, which exceeds the maximum of ${BATCH_SIZE} members per batch.`
+            });
+        }
+
         return models.map((model) => {
             // Map subscriptions
             const subscriptions = model.related('member').related('stripeSubscriptions').toJSON();

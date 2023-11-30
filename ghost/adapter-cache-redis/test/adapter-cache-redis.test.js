@@ -1,8 +1,13 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const RedisCache = require('../index');
 
 describe('Adapter Cache Redis', function () {
+    beforeEach(function () {
+        sinon.stub(logging, 'error');
+    });
+
     afterEach(function () {
         sinon.restore();
     });
@@ -20,6 +25,20 @@ describe('Adapter Cache Redis', function () {
         });
 
         assert.ok(cache);
+    });
+
+    it('can initialize with storeConfig', async function () {
+        const cache = new RedisCache({
+            username: 'myusername',
+            storeConfig: {
+                retryStrategy: false,
+                lazyConnect: true
+            },
+            reuseConnection: false
+        });
+        assert.ok(cache);
+        assert.equal(cache.redisClient.options.username, 'myusername');
+        assert.equal(cache.redisClient.options.retryStrategy, false);
     });
 
     describe('get', function () {
@@ -80,6 +99,26 @@ describe('Adapter Cache Redis', function () {
 
             assert.equal(value, 'new value');
             assert.equal(redisCacheInstanceStub.set.args[0][0], 'testing-prefix:key-here');
+        });
+    });
+
+    describe('reset', function () {
+        it('catches an error when thrown during the reset', async function () {
+            const redisCacheInstanceStub = {
+                get: sinon.stub().resolves('value from cache'),
+                store: {
+                    getClient: sinon.stub().returns({
+                        on: sinon.stub()
+                    })
+                }
+            };
+            const cache = new RedisCache({
+                cache: redisCacheInstanceStub
+            });
+
+            await cache.reset();
+
+            assert.ok(logging.error.calledOnce, 'error was logged');
         });
     });
 });

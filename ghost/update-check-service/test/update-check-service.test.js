@@ -3,7 +3,7 @@ require('./utils');
 const sinon = require('sinon');
 const moment = require('moment');
 const uuid = require('uuid');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 const logging = require('@tryghost/logging');
 const UpdateCheckService = require('../lib/UpdateCheckService');
@@ -66,7 +66,7 @@ describe('Update Check', function () {
             requestStub.calledOnce.should.equal(true);
 
             requestStub.args[0][0].should.equal('https://updates.ghost.org');
-            requestStub.args[0][1].query.ghost_version.should.equal('0.8.0');
+            requestStub.args[0][1].searchParams.ghost_version.should.equal('0.8.0');
         });
 
         it('update check won\'t happen if it\'s too early', async function () {
@@ -125,7 +125,7 @@ describe('Update Check', function () {
             requestStub.calledOnce.should.equal(true);
 
             requestStub.args[0][0].should.equal('https://updates.ghost.org');
-            requestStub.args[0][1].query.ghost_version.should.equal('5.3.4');
+            requestStub.args[0][1].searchParams.ghost_version.should.equal('5.3.4');
         });
     });
 
@@ -174,7 +174,7 @@ describe('Update Check', function () {
 
             requestStub.args[0][0].should.equal('https://updates.ghost.org');
 
-            const data = requestStub.args[0][1].body;
+            const data = requestStub.args[0][1].json;
             data.ghost_version.should.equal('4.0.0');
             data.node_version.should.equal(process.versions.node);
             data.env.should.equal(process.env.NODE_ENV);

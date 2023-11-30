@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing TZ=UTC c8 --all --check-coverage --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
     "test": "yarn test:unit",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
@@ -20,15 +20,15 @@
     "lib"
   ],
   "devDependencies": {
-    "@types/luxon": "2.4.0",
+    "@types/luxon": "3.3.5",
     "@types/mocha": "10.0.1",
-    "@types/sinon": "10.0.15",
-    "c8": "7.13.0",
+    "@types/sinon": "10.0.16",
+    "c8": "8.0.1",
     "knex": "2.4.2",
-    "luxon": "2.5.2",
+    "luxon": "3.4.4",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "15.0.3",
+    "sinon": "15.2.0",
     "sqlite3": "5.1.6"
   },
   "dependencies": {

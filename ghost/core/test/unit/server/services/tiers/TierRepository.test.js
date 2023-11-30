@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const {Product: ProductModel} = require('../../../../../core/server/models/product');
 const TierRepository = require('../../../../../core/server/services/tiers/TierRepository');

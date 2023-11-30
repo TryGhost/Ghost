@@ -13,10 +13,16 @@ export default class PublishModalComponent extends Component {
 
     @service store;
 
-    @tracked emailErrorMessage = this.args.data.publishOptions.post.didEmailFail ? this.args.data.publishOptions.post.email.error : undefined;
+    @tracked emailErrorMessage = this.args.data.publishOptions.post.didEmailFail ? (this.args.data.publishOptions.post.email.error ?? 'Unknown error') : undefined;
     @tracked isConfirming = false;
     @tracked isComplete = false;
     @tracked postCount = null;
+
+    @tracked hasConfirmedTks = false;
+
+    get isConfirmingTks() {
+        return this.args.data.tkCount > 0 && !this.hasConfirmedTks;
+    }
 
     get recipientType() {
         const filter = this.args.data.publishOptions.recipientFilter;
@@ -38,6 +44,11 @@ export default class PublishModalComponent extends Component {
         }
 
         return 'specific';
+    }
+
+    @action
+    confirmTks() {
+        this.hasConfirmedTks = true;
     }
 
     @action

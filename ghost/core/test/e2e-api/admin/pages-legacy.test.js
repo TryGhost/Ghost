@@ -29,7 +29,7 @@ describe('Pages API', function () {
         localUtils.API.checkResponse(jsonResponse, 'pages');
         jsonResponse.pages.should.have.length(6);
 
-        localUtils.API.checkResponse(jsonResponse.pages[0], 'page');
+        localUtils.API.checkResponse(jsonResponse.pages[0], 'page', ['reading_time']);
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
         _.isBoolean(jsonResponse.pages[0].featured).should.eql(true);
 
@@ -38,7 +38,7 @@ describe('Pages API', function () {
         jsonResponse.pages[1].url.should.eql(`${config.get('url')}/contribute/`);
     });
 
-    it('Can retrieve pages with lexical format', async function () {
+    it('Can retrieve pages with just lexical format', async function () {
         const res = await request.get(localUtils.API.getApiQuery('pages/?formats=lexical'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -51,7 +51,7 @@ describe('Pages API', function () {
         localUtils.API.checkResponse(jsonResponse, 'pages');
         jsonResponse.pages.should.have.length(6);
 
-        const additionalProperties = ['lexical'];
+        const additionalProperties = ['lexical', 'reading_time'];
         const missingProperties = ['mobiledoc'];
         localUtils.API.checkResponse(jsonResponse.pages[0], 'page', additionalProperties, missingProperties);
     });
@@ -121,7 +121,7 @@ describe('Pages API', function () {
         res.body.pages.length.should.eql(1);
         const [returnedPage] = res.body.pages;
 
-        const additionalProperties = ['lexical'];
+        const additionalProperties = ['reading_time'];
         localUtils.API.checkResponse(returnedPage, 'page', additionalProperties);
 
         should.equal(returnedPage.mobiledoc, page.mobiledoc);
@@ -172,7 +172,7 @@ describe('Pages API', function () {
         res.body.pages.length.should.eql(1);
         const [returnedPage] = res.body.pages;
 
-        const additionalProperties = ['lexical', 'html', 'reading_time'];
+        const additionalProperties = ['html', 'reading_time'];
         localUtils.API.checkResponse(returnedPage, 'page', additionalProperties);
 
         should.equal(returnedPage.mobiledoc, null);
@@ -346,7 +346,7 @@ describe('Pages API', function () {
             .expect(200);
 
         should.exist(res2.headers['x-cache-invalidate']);
-        localUtils.API.checkResponse(res2.body.pages[0], 'page');
+        localUtils.API.checkResponse(res2.body.pages[0], 'page', ['reading_time']);
 
         const model = await models.Post.findOne({
             id: res2.body.pages[0].id
@@ -389,7 +389,7 @@ describe('Pages API', function () {
             .expect(200);
 
         should.exist(res2.headers['x-cache-invalidate']);
-        localUtils.API.checkResponse(res2.body.pages[0], 'page');
+        localUtils.API.checkResponse(res2.body.pages[0], 'page', ['reading_time']);
         res2.body.pages[0].tiers.length.should.eql(paidTiers.length);
 
         const model = await models.Post.findOne({

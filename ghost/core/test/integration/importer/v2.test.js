@@ -1,10 +1,9 @@
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
-const Promise = require('bluebird');
 const moment = require('moment-timezone');
 const ObjectId = require('bson-objectid').default;
-const assert = require('assert');
+const assert = require('assert/strict');
 const _ = require('lodash');
 const validator = require('@tryghost/validator');
 
@@ -115,7 +114,7 @@ describe('Importer', function () {
                     return models.Settings.findOne(_.merge({key: 'active_theme'}, testUtils.context.internal));
                 })
                 .then(function (result) {
-                    result.attributes.value.should.eql('casper');
+                    result.attributes.value.should.eql('source');
                 });
         });
 

@@ -1,0 +1,45 @@
+{
+    "custom_theme_settings": [
+        {
+            "type": "color",
+            "default": "#ff0000",
+            "id": "648047658d265b0c8b33c58f",
+            "value": "#c73333",
+            "key": "navigation_color"
+        },
+        {
+            "type": "image",
+            "id": "648047658d265b0c8b33c590",
+            "value": null,
+            "key": "navigation_background_image"
+        },
+        {
+            "type": "select",
+            "options": [
+                "Logo on cover",
+                "Logo in the middle",
+                "Stacked"
+            ],
+            "default": "Logo on cover",
+            "id": "648047658d265b0c8b33c591",
+            "value": "Stacked",
+            "key": "navigation_layout"
+        },
+        {
+            "type": "boolean",
+            "default": true,
+            "group": "homepage",
+            "id": "648047658d265b0c8b33c594",
+            "value": true,
+            "key": "show_publication_cover"
+        },
+        {
+            "type": "text",
+            "default": "Sign up for more like this.",
+            "group": "post",
+            "id": "648047658d265b0c8b33c599",
+            "value": "Sign up for more like this.",
+            "key": "email_signup_text"
+        }
+    ]
+}

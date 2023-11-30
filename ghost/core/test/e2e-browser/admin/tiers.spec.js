@@ -1,28 +1,29 @@
-const {expect, test} = require('@playwright/test');
-const {createTier, createOffer, getUniqueName, getSlug, goToMembershipPage, getTierCardById} = require('../utils');
+const {expect} = require('@playwright/test');
+const test = require('../fixtures/ghost-test');
+const {createTier, createOffer, getUniqueName, getSlug, goToMembershipPage, openTierModal} = require('../utils');
 
 test.describe('Admin', () => {
     test.describe('Tiers', () => {
-        test('Default tier should be $5mo / $50yr', async ({page}) => {
-            const defaultTierId = 'default-product';
-            await goToMembershipPage(page);
-            const tierCard = await getTierCardById(page, {id: defaultTierId});
+        test('Default tier should be $5mo / $50yr', async ({sharedPage}) => {
+            const defaultTier = 'default-product';
+            await goToMembershipPage(sharedPage);
+            const tierModal = await openTierModal(sharedPage, {slug: defaultTier});
 
             await test.step('Default tier should be $5mo / $50yr', async () => {
-                await expect(tierCard.locator('[data-test-amount-monthly-price]')).toHaveText('5');
-                await expect(tierCard.locator('[data-test-amount-yearly-price]')).toHaveText('50');
+                await expect(tierModal.getByLabel('Monthly price')).toHaveValue('5');
+                await expect(tierModal.getByLabel('Yearly price')).toHaveValue('50');
             });
         });
 
-        test('Can create a Tier and Offer', async ({page}) => {
-            await page.goto('/ghost');
+        test('Can create a Tier and Offer', async ({sharedPage}) => {
+            await sharedPage.goto('/ghost');
             const tierName = getUniqueName('New Test Tier');
-            await createTier(page, {
+            await createTier(sharedPage, {
                 name: tierName,
                 monthlyPrice: 5,
                 yearlyPrice: 50
             });
-            const offerName = await createOffer(page, {
+            const offerName = await createOffer(sharedPage, {
                 name: 'Get 5% Off!',
                 tierName,
                 offerType: 'discount',
@@ -30,67 +31,65 @@ test.describe('Admin', () => {
             });
 
             await test.step('Check that offers and tiers are available on Offers page', async () => {
-                await page.locator('[data-test-nav="offers"]').click();
-                await page.waitForSelector('[data-test-offers-list]');
-                await expect(page.locator('[data-test-offers-list]')).toContainText(tierName);
-                await expect(page.locator('[data-test-offers-list]')).toContainText(offerName);
+                await sharedPage.locator('[data-test-nav="offers"]').click();
+                await sharedPage.waitForSelector('[data-test-offers-list]');
+                await expect(sharedPage.locator('[data-test-offers-list]')).toContainText(tierName);
+                await expect(sharedPage.locator('[data-test-offers-list]')).toContainText(offerName);
             });
         });
 
-        test('Can create additional Tier', async ({page}) => {
-            await page.goto('/ghost');
+        test('Can create additional Tier', async ({sharedPage}) => {
+            await sharedPage.goto('/ghost');
             const tierName = getUniqueName('New Test Tier');
             const enableInPortal = false;
-            await createTier(page, {
+            await createTier(sharedPage, {
                 name: tierName,
                 monthlyPrice: 100, // ordered by price, this should be the most expensive so we know it's last
                 yearlyPrice: 1000
             }, enableInPortal);
 
-            await goToMembershipPage(page);
+            await goToMembershipPage(sharedPage);
 
             await test.step('Created tier should be in Portal settings and not selected', async () => {
-                await page.locator('[data-test-toggle="portal-settings"]').click();
-                // Wait until the list of tiers available at signup is visible
-                await page.waitForSelector('[data-test-tiers-at-signup]');
-                await page.locator(`[data-test-settings-tier-label="${tierName}"]`);
-                expect(await page.locator(`[data-test-settings-tier-input="${tierName}"]`).isChecked()).toBeFalsy();
+                await sharedPage.getByTestId('portal').getByRole('button', {name: 'Customize'}).click();
+
+                const portalSettings = sharedPage.getByTestId('portal-modal');
+
+                await portalSettings.getByLabel(tierName).first().waitFor();
+
+                await expect(portalSettings.getByLabel(tierName).first()).not.toBeChecked();
             });
         });
 
-        test('Can update Tier', async ({page}) => {
-            await page.goto('/ghost');
+        test('Can update Tier', async ({sharedPage}) => {
+            await sharedPage.goto('/ghost');
             const tierName = getUniqueName('New Test Tier');
-            const tierId = getSlug(tierName);
+            const slug = getSlug(tierName);
             const updatedTierName = getUniqueName('Updated Test Tier Name');
             const updatedMonthlyPrice = '66';
             const updatedYearlyPrice = '666';
             const updatedDescription = 'Updated description text';
-            await createTier(page, {
+            await createTier(sharedPage, {
                 name: tierName,
                 monthlyPrice: 5,
                 yearlyPrice: 50
             });
 
-            await goToMembershipPage(page);
-            const tierCard = await getTierCardById(page, {id: tierId});
+            await goToMembershipPage(sharedPage);
+            const tierModal = await openTierModal(sharedPage, {slug});
 
             await test.step('Open modal and edit tier information', async () => {
-                await tierCard.locator('[data-test-button="tiers-actions"]').click();
-                await tierCard.locator('[data-test-button="edit-tier"]').click();
-                const modal = page.locator('[data-test-modal="edit-tier"]');
-
-                await modal.locator('[data-test-input="tier-name"]').first().fill(updatedTierName);
-                await modal.locator('[data-test-input="tier-description"]').first().fill(updatedDescription);
-                await modal.locator('[data-test-input="monthly-price"]').fill(updatedMonthlyPrice);
-                await modal.locator('[data-test-input="yearly-price"]').fill(updatedYearlyPrice);
-                await page.locator('[data-test-button="save-tier"]').click();
+                await tierModal.getByLabel('Name').fill(updatedTierName);
+                await tierModal.getByLabel('Description').fill(updatedDescription);
+                await tierModal.getByLabel('Monthly price').fill(updatedMonthlyPrice);
+                await tierModal.getByLabel('Yearly price').fill(updatedYearlyPrice);
+                await tierModal.getByRole('button', {name: 'Save & close'}).click();
             });
 
             const portalFrame = await test.step('Go to website and open portal', async () => {
-                await page.goto('/');
-                const portalTriggerButton = page.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
-                const frame = page.frameLocator('[data-testid="portal-popup-frame"]');
+                await sharedPage.goto('/');
+                const portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+                const frame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
                 await portalTriggerButton.click();
 
                 return frame;
@@ -111,66 +110,73 @@ test.describe('Admin', () => {
 
             await test.step('Check monthly price', async () => {
                 await portalFrame.locator('[data-test-button="switch-monthly"]').click();
-                await expect(await portalTierCard.getByText('/month')).toBeVisible();
+                await expect(portalTierCard.getByText('/month')).toBeVisible();
                 await expect(portalTierCard.locator('.amount').first()).toHaveText(updatedMonthlyPrice);
             });
         });
 
-        test('Can archive and unarchive a Tier', async ({page}) => {
-            await page.goto('/ghost');
+        // TODO: Add something more useful to this, e.g. checking in the portal
+        test('Can archive and unarchive a Tier', async ({sharedPage}) => {
+            await sharedPage.goto('/ghost');
             const tierName = getUniqueName('Archive Tier');
-            const tierId = getSlug(tierName);
-            await createTier(page, {
+            const slug = getSlug(tierName);
+            await createTier(sharedPage, {
                 name: tierName,
                 monthlyPrice: 5,
                 yearlyPrice: 50
             });
 
-            await goToMembershipPage(page);
-            const tierCard = await getTierCardById(page, {id: tierId});
-
+            await goToMembershipPage(sharedPage);
             await test.step('Archive tier', async () => {
-                await tierCard.locator('[data-test-button="tiers-actions"]').click();
-                await tierCard.locator('[data-test-button="archive-tier"]').click();
-                const modal = page.locator('[data-test-modal="archive-tier"]');
-                await modal.locator('[data-test-button="archive-tier"]').click();
+                const tierModal = await openTierModal(sharedPage, {slug});
+                await tierModal.getByRole('button', {name: 'Archive tier'}).click();
+                await sharedPage.getByTestId('confirmation-modal').getByRole('button', {name: 'Archive'}).click();
+                await tierModal.getByRole('button', {name: 'Save & close'}).click();
             });
 
             await test.step('Archived tier should not be available in active tiers', async () => {
-                await expect(page.locator(`[data-test-tier-card="${tierId}"]`)).toBeHidden();
+                await expect(sharedPage.locator(`[data-testid="tier-card"][data-tier="${slug}"]`)).toBeHidden();
             });
 
             await test.step('Archived tier should be available in archived tiers', async () => {
-                const tiersSelect = await page.locator('[data-test-select-tiers-list]');
-                await tiersSelect.click();
-                await page.getByRole('option', {name: 'Archived'}).click();
-                await expect(page.locator(`[data-test-tier-card="${tierId}"]`)).toBeVisible();
+                await sharedPage.getByTestId('tiers').getByRole('tab', {name: 'Archived'}).click();
+                await expect(sharedPage.locator(`[data-testid="tier-card"][data-tier="${slug}"]`)).toBeVisible();
             });
 
             await test.step('Archived tier should not be available in portal settings', async () => {
-                await expect(page.locator(`[data-test-settings-tier-label="${tierName}"]`)).toBeHidden();
+                await sharedPage.getByTestId('portal').getByRole('button', {name: 'Customize'}).click();
+
+                const portalSettings = sharedPage.getByTestId('portal-modal');
+
+                await portalSettings.locator('input[type=checkbox]').first().waitFor();
+
+                await expect(portalSettings.getByLabel(tierName).first()).toBeHidden();
+
+                await portalSettings.getByRole('button', {name: 'Close'}).click();
             });
 
             await test.step('Unarchive tier', async () => {
-                await tierCard.locator('[data-test-button="tiers-actions"]').click();
-                await tierCard.locator('[data-test-button="unarchive-tier"]').click();
-                const modal = page.locator('[data-test-modal="unarchive-tier"]');
-                await modal.locator('[data-test-button="unarchive-tier"]').click();
+                const tierModal = await openTierModal(sharedPage, {slug});
+                await tierModal.getByRole('button', {name: 'Reactivate tier'}).click();
+                await sharedPage.getByTestId('confirmation-modal').getByRole('button', {name: 'Reactivate'}).click();
+                await tierModal.getByRole('button', {name: 'Save & close'}).click();
             });
 
             await test.step('Unarchived tier should be available in active tiers', async () => {
-                await expect(page.locator(`[data-test-tier-card="${tierId}"]`)).toBeVisible();
-            });
-
-            await test.step('Open Portal settings', async () => {
-                await page.locator('[data-test-toggle="portal-settings"]').click();
-                // Wait until the list of tiers available at signup is visible
-                await page.waitForSelector('[data-test-tiers-at-signup]');
+                await sharedPage.getByTestId('tiers').getByRole('tab', {name: 'Active'}).click();
+                await expect(sharedPage.locator(`[data-testid="tier-card"][data-tier="${slug}"]`)).toBeVisible();
             });
 
             await test.step('Unarchived tier should be available in portal settings', async () => {
-                await page.locator(`[data-test-settings-tier-label="${tierName}"]`);
-                expect(await page.locator(`[data-test-settings-tier-input="${tierName}"]`).isChecked()).toBeFalsy();
+                await sharedPage.getByTestId('portal').getByRole('button', {name: 'Customize'}).click();
+
+                const portalSettings = sharedPage.getByTestId('portal-modal');
+
+                await portalSettings.locator('input[type=checkbox]').first().waitFor();
+
+                await expect(portalSettings.getByLabel(tierName).first()).toBeVisible();
+
+                await portalSettings.getByRole('button', {name: 'Close'}).click();
             });
         });
     });

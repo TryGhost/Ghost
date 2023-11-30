@@ -1,12 +1,10 @@
 {{#if @image}}
     <div class="gh-image-uploader -with-image">
         <div><img src={{@image}}></div>
-        {{#if (feature 'imageEditor')}}
-            <KoenigImageEditor
-                @imageSrc={{@image}}
-                @saveUrl={{@update}}
-            />
-        {{/if}}
+        <KoenigImageEditor
+            @imageSrc={{@image}}
+            @saveUrl={{@update}}
+        />
         <a class="image-action image-delete" title="Delete" {{on "click" (fn @remove "")}}>
             {{svg-jar "trash"}}
             <span class="hidden">Delete</span>

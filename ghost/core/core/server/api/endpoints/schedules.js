@@ -5,7 +5,9 @@ const postSchedulingService = require('../../services/posts/post-scheduling-serv
 module.exports = {
     docName: 'schedules',
     publish: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id',
             'resource'
@@ -50,6 +52,9 @@ module.exports = {
     getScheduled: {
         // NOTE: this method is for internal use only by DefaultScheduler
         //       it is not exposed anywhere!
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: false,
         validation: {
             options: {

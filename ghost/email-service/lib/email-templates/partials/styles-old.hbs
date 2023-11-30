@@ -111,8 +111,24 @@ ul {
     list-style: disc;
 }
 
+ul ul {
+    list-style: circle;
+}
+
+ul ul ul {
+    list-style: square;
+}
+
 ol {
     list-style: decimal;
+}
+
+ol ol {
+    list-style: lower-alpha;
+}
+
+ol ol ol {
+    list-style: lower-roman;
 }
 
 ul,
@@ -252,7 +268,7 @@ figure {
 figcaption {
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
-    font-size: 14px;
+    font-size: 13px;
     padding-top: 5px;
     line-height: 1.5em;
 }
@@ -461,7 +477,7 @@ figure blockquote p {
     margin: 0;
     padding: 8px 0 16px;
     color: #15212A;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
 }
@@ -482,18 +498,8 @@ figure blockquote p {
     text-decoration: none;
 }
 
-.latest-post-img img,
-.latest-post-img-mobile img {
+.latest-post-img img {
     object-fit: cover;
-}
-
-.latest-post-img-mobile {
-    display: none;
-}
-
-.latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important; /* Make sure CSS ignores the height that is defined in HTML, but keep the aspect ratio from the width/height in HTML */
 }
 
 .latest-post-title {
@@ -503,7 +509,7 @@ figure blockquote p {
 .latest-post h4 {
     margin: 0;
     padding: 2px 0 4px;
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 700;
 }
 
@@ -621,8 +627,8 @@ a[data-flickr-embed] img {
 .kg-image-card img {
     display: block;
     margin: 0 auto;
+    height: auto;
     width: auto;
-    height: auto !important;
 }
 
 .kg-bookmark-container {
@@ -931,7 +937,7 @@ a[data-flickr-embed] img {
     margin: 0;
     padding: 8px 16px;
     text-decoration: none !important;
-    color: #15171A !important;
+    color: #15171A;
 }
 
 .kg-size-large .kg-header-card-button {
@@ -947,118 +953,163 @@ a[data-flickr-embed] img {
     color: #ffffff !important;
 }
 
+/* Header v2 */
+
+.kg-header-card.kg-v2 {
+    padding: 0;
+    text-align: inherit;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-image {
+    height: 320px;
+    background-repeat: no-repeat;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-content {
+    padding: 80px 48px;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
+    padding-top: 64px;
+    padding-bottom: 64px;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-heading {
+    margin: 0;
+    line-height: 1em;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-subheading {
+    margin: 0.75em 0 0;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-heading a,
+.kg-header-card.kg-v2 .kg-header-card-subheading a {
+    color: inherit;
+}
+
+.kg-header-card.kg-v2 .kg-header-card-button {
+    margin-top: 24px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
 .kg-product-card {
     width: 100%;
-    margin: 0 0 1.5em; 
+    margin: 0 0 1.5em;
     padding: 20px;
-    border-radius: 3px; 
+    border-radius: 3px;
     border: 1px solid #e5eff5;
+}
+.kg-product-card-image {
+    width: 100%;
 }
 .kg-product-rating img {
     width: 96px;
     border: none;
 }
 .kg-audio-card {
-    width: auto; 
+    width: auto;
     width: 100%;
     margin: 0 auto 1.5em;
-    border-radius: 3px; 
+    border-radius: 3px;
     border: 1px solid #e5eff5;
 }
 .kg-audio-title {
-    display: block; 
-    padding-right: 20px; 
-    padding-bottom: 4px; 
-    padding-top: 4px; 
-    font-size: 16px; 
-    font-weight: 600; 
-    line-height: 18px; 
-    text-decoration: none !important; 
+    display: block;
+    padding-right: 20px;
+    padding-bottom: 4px;
+    padding-top: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 18px;
+    text-decoration: none !important;
     color: #15212A !important;
 }
 .kg-audio-play-button {
-    display: block; 
-    box-sizing: border-box; 
-    width: 16px; 
-    height: 16px; 
-    color: #15212A !important; 
-    border-style: solid; 
-    border-width: 8px 0px 8px 16px; 
+    display: block;
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    color: #15212A !important;
+    border-style: solid;
+    border-width: 8px 0px 8px 16px;
     border-color: transparent transparent transparent currentColor;
 }
 .kg-audio-duration {
-    display: block; 
-    text-decoration: none !important; 
-    font-size: 13px; 
+    display: block;
+    text-decoration: none !important;
+    font-size: 13px;
     color: #15171A !important;
 }
 .kg-audio-link {
-    color: #738a94 !important; 
+    color: #738a94 !important;
 }
 .kg-file-card {
     width: auto;
     width: 100%;
     margin: 0 0 1.5em 0;
-    border-radius: 3px; 
+    border-radius: 3px;
     border: 1px solid #e5eff5;
 }
 .kg-file-title {
-    display: block; 
-    width: 100%; 
-    padding-left: 12px; 
-    padding-top: 8px; 
-    font-size: 17px; 
-    font-weight: bold; 
-    line-height: 1.3em; 
+    display: block;
+    width: 100%;
+    padding-left: 12px;
+    padding-top: 8px;
+    font-size: 17px;
+    font-weight: bold;
+    line-height: 1.3em;
     text-decoration: none !important;
-    color: #15212A !important; 
+    color: #15212A !important;
 }
 .kg-file-description {
-    display: block; 
-    width: 100%; 
-    padding-left: 12px; 
-    padding-top: 2px; 
-    font-size: 15px; 
-    line-height: 1.4em; 
+    display: block;
+    width: 100%;
+    padding-left: 12px;
+    padding-top: 2px;
+    font-size: 15px;
+    line-height: 1.4em;
     text-decoration: none !important;
-    color: #738a94 !important; 
+    color: #738a94 !important;
 }
 .kg-file-meta {
     display: block;
-    width: 100%; 
-    padding-left: 12px; 
-    padding-top: 4px; 
+    width: 100%;
+    padding-left: 12px;
+    padding-top: 4px;
     padding-bottom: 8px;
-    font-size: 13px; 
-    line-height: 1.4em; 
+    font-size: 13px;
+    line-height: 1.4em;
     text-decoration: none !important;
-    color: #738a94 !important; 
+    color: #738a94 !important;
 }
 .kg-file-name {
-    font-weight: 500; 
+    font-weight: 500;
     color: #15212A !important;
 }
 .kg-file-thumbnail {
-    position: relative; 
-    vertical-align: middle; 
-    text-align: center; 
+    position: relative;
+    vertical-align: middle;
+    text-align: center;
     border-radius: 2px;
     background-color: {{accentColor}} !important;
 }
 .kg-twitter-card {
-    width: auto; 
+    width: auto;
     width: 100%;
     margin: 0 auto;
-    border-radius: 12px; 
+    border-radius: 12px;
     border: 1px solid #e5eff5;
 }
 
 .kg-toggle-card {
     background: transparent;
-    padding: 20px; 
+    padding: 20px;
     margin-bottom: 1.5em;
-    border-radius: 4px; 
-    border: 1px solid {{secondaryBorderColor}}; 
+    border-radius: 4px;
+    border: 1px solid {{secondaryBorderColor}};
 }
 
 
@@ -1229,8 +1280,7 @@ a[data-flickr-embed] img {
     table.body p,
     table.body ul,
     table.body ol,
-    table.body td,
-    table.body span {
+    table.body td {
         font-size: 16px !important;
     }
 
@@ -1342,33 +1392,29 @@ a[data-flickr-embed] img {
     }
 
     table.body .latest-posts-header {
-        font-size: 14px !important;
-    }
-
-    table.body .latest-post-img {
-        display: none !important;
-    }
-
-    table.body .latest-post-img-mobile {
-        display: inline-block !important;
-        width: 100%;
+        font-size: 12px !important;
     }
 
     table.body .latest-post-title {
         display: inline-block !important;
         width: 100%;
-        padding-right: 0 !important;
-        padding-bottom: 8px !important;
+        padding-right: 8px !important;
     }
 
     table.body .latest-post h4, table.body .latest-post h4 span {
-        padding: 4px 0 !important;
-        font-size: 18px !important;
+        padding: 4px 0 6px !important;
+        font-size: 15px !important;
     }
 
-    table.body .latest-post p, table.body .latest-post p span {
+    table.body .latest-post-excerpt,
+    table.body .latest-post-excerpt a,
+    table.body .latest-post-excerpt span {
         font-size: 13px !important;
-        line-height: 1.25em;
+        line-height: 1.2 !important;
+    }
+
+    table.body .latest-post-excerpt span {
+        display: none !important;
     }
 
     table.body .subscription-box h3 {
@@ -1413,7 +1459,8 @@ a[data-flickr-embed] img {
         line-height: 1.3em !important;
     }
 
-    table.body h2 {
+    table.body h2,
+    table.body h2 span {
         font-size: 26px !important;
         line-height: 1.22em !important;
     }
@@ -1460,9 +1507,27 @@ a[data-flickr-embed] img {
         margin: 2em 0 !important;
     }
 
-    table.body figcaption,
-    table.body figcaption a {
-        font-size: 13px !important;
+    table.body .kg-header-card.kg-v2 span {
+        font-size: inherit !important;
+    }
+
+    table.body .kg-header-card.kg-v2 .kg-header-card-content {
+        padding-top: 64px !important;
+        padding-bottom: 64px !important;
+    }
+
+    table.body .kg-header-card.kg-v2 .kg-header-card-image + .kg-header-card-content {
+        padding-top: 52px !important;
+        padding-bottom: 52px !important;
+    }
+
+    table.body .kg-header-card.kg-v2 .kg-header-card-heading {
+        font-size: 2.2em !important;
+        line-height: 1.1 !important;
+    }
+
+    table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
+        line-height: 1.3em !important;
     }
 
 }

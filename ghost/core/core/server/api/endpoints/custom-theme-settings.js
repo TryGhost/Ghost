@@ -4,6 +4,9 @@ module.exports = {
     docName: 'custom_theme_settings',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         query() {
             return customThemeSettingsService.api.listSettings();

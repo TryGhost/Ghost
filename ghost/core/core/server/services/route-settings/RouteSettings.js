@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const fs = require('fs-extra');
 const crypto = require('crypto');
 const urlService = require('../url');
@@ -120,7 +119,9 @@ class RouteSettings {
 
         function isBlogRunning() {
             debug('waiting for blog running');
-            return Promise.delay(1000)
+            return new Promise((resolve) => {
+                setTimeout(resolve, 1000);
+            })
                 .then(() => {
                     debug('waited for blog running');
                     if (!urlService.hasFinished()) {

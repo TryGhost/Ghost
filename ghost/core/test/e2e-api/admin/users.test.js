@@ -1,6 +1,5 @@
 const should = require('should');
 const supertest = require('supertest');
-const Promise = require('bluebird');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const db = require('../../../core/server/data/db');
@@ -273,6 +272,36 @@ describe('User API', function () {
         should.exist(jsonResponse.users[0].roles);
         jsonResponse.users[0].roles.should.have.length(1);
         jsonResponse.users[0].roles[0].name.should.equal('Administrator');
+    });
+
+    it('Does not trigger cache invalidation when a private attribute on a user has been changed', async function () {
+        const res = await request.put(localUtils.API.getApiQuery('users/me/'))
+            .set('Origin', config.get('url'))
+            .send({
+                users: [{
+                    comment_notifications: false
+                }]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.equal(res.headers['x-cache-invalidate'], undefined);
+    });
+
+    it('Does not trigger cache invalidation when no attribute on a user has been changed', async function () {
+        const res = await request.put(localUtils.API.getApiQuery('users/me/'))
+            .set('Origin', config.get('url'))
+            .send({
+                users: [{
+                    facebook: null
+                }]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.equal(res.headers['x-cache-invalidate'], undefined);
     });
 
     it('Can destroy an active user and transfer posts to the owner', async function () {

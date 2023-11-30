@@ -1,7 +1,7 @@
 const {createModel, createModelClass, createDb, sleep} = require('./utils');
 const BatchSendingService = require('../lib/BatchSendingService');
 const sinon = require('sinon');
-const assert = require('assert');
+const assert = require('assert/strict');
 const logging = require('@tryghost/logging');
 const nql = require('@tryghost/nql');
 const errors = require('@tryghost/errors');
@@ -11,6 +11,7 @@ describe('Batch Sending Service', function () {
 
     beforeEach(function () {
         errorLog = sinon.stub(logging, 'error');
+        sinon.stub(logging, 'info');
     });
 
     afterEach(function () {
@@ -295,6 +296,10 @@ describe('Batch Sending Service', function () {
                 }));
 
                 const q = nql(filter);
+                // Check that the filter id:<${lastId} is a string
+                // In rare cases when the object ID is numeric, the query returns unexpected results
+                assert.equal(typeof q.toJSON().$and[1].id.$lt, 'string');
+
                 const all = members.filter((member) => {
                     return q.queryJSON(member.toJSON());
                 });
@@ -325,7 +330,7 @@ describe('Batch Sending Service', function () {
                 },
                 emailSegmenter: {
                     getMemberFilterForSegment(n) {
-                        return `newsletters.id:${n.id}`;
+                        return `newsletters.id:'${n.id}'`;
                     }
                 },
                 db
@@ -391,6 +396,10 @@ describe('Batch Sending Service', function () {
 
             Member.getFilteredCollectionQuery = ({filter}) => {
                 const q = nql(filter);
+                // Check that the filter id:<${lastId} is a string
+                // In rare cases when the object ID is numeric, the query returns unexpected results
+                assert.equal(typeof q.toJSON().$and[2].id.$lt, 'string');
+
                 const all = members.filter((member) => {
                     return q.queryJSON(member.toJSON());
                 });
@@ -421,7 +430,7 @@ describe('Batch Sending Service', function () {
                 },
                 emailSegmenter: {
                     getMemberFilterForSegment(n, _, segment) {
-                        return `newsletters.id:${n.id}+(${segment})`;
+                        return `newsletters.id:'${n.id}'+(${segment})`;
                     }
                 },
                 db
@@ -447,6 +456,111 @@ describe('Batch Sending Service', function () {
 
             // Check email_count set
             assert.equal(email.get('email_count'), 4);
+        });
+
+        // NOTE: we can't fully test this because javascript can't handle a large number (e.g. 650706040078550001536020) - it uses scientific notation
+        //  so we have to use a string
+        //  ref: https://ghost.slack.com/archives/CTH5NDJMS/p1699359241142969
+        it('sends expected emails if a batch ends on a numeric id', async function () {
+            const Member = createModelClass({});
+            const EmailBatch = createModelClass({});
+            const newsletter = createModel({});
+
+            const members = [
+                createModel({
+                    id: '61a55008a9d68c003baec6df',
+                    email: `test1@numericid.com`,
+                    uuid: 'test1',
+                    status: 'free',
+                    newsletters: [
+                        newsletter
+                    ]
+                }),
+                createModel({
+                    id: '650706040078550001536020', // numeric object id
+                    email: `test2@numericid.com`,
+                    uuid: 'test2',
+                    status: 'free',
+                    newsletters: [
+                        newsletter
+                    ]
+                }),
+                createModel({
+                    id: '65070957007855000153605b',
+                    email: `test3@numericid.com`,
+                    uuid: 'test3',
+                    status: 'free',
+                    newsletters: [
+                        newsletter
+                    ]
+                })
+            ];
+
+            const initialMembers = members.slice();
+
+            Member.getFilteredCollectionQuery = ({filter}) => {
+                const q = nql(filter);
+                // Check that the filter id:<${lastId} is a string
+                // In rare cases when the object ID is numeric, the query returns unexpected results
+                assert.equal(typeof q.toJSON().$and[2].id.$lt, 'string');
+
+                const all = members.filter((member) => {
+                    return q.queryJSON(member.toJSON());
+                });
+
+                // Sort all by id desc (string) - this is how we keep the order of members consistent (object id is a proxy for created_at)
+                all.sort((a, b) => {
+                    return b.id.localeCompare(a.id);
+                });
+
+                return createDb({
+                    all: all.map(member => member.toJSON())
+                });
+            };
+
+            const db = createDb({});
+            const insert = sinon.spy(db, 'insert');
+
+            const service = new BatchSendingService({
+                models: {Member, EmailBatch},
+                emailRenderer: {
+                    getSegments() {
+                        return ['status:free'];
+                    }
+                },
+                sendingService: {
+                    getMaximumRecipients() {
+                        return 2; // pick a batch size that ends with a numeric member object id
+                    }
+                },
+                emailSegmenter: {
+                    getMemberFilterForSegment(n, _, segment) {
+                        return `newsletters.id:'${n.id}'+(${segment})`;
+                    }
+                },
+                db
+            });
+
+            const email = createModel({});
+
+            const batches = await service.createBatches({
+                email,
+                post: createModel({}),
+                newsletter
+            });
+            assert.equal(batches.length, 2);
+
+            const calls = insert.getCalls();
+            assert.equal(calls.length, 2);
+
+            const insertedRecipients = calls.flatMap(call => call.args[0]);
+            assert.equal(insertedRecipients.length, 3);
+
+            // Check all recipients match initialMembers
+            assert.deepEqual(insertedRecipients.map(recipient => recipient.member_id).sort(), initialMembers.map(member => member.id).sort());
+
+            // Check email_count set
+            assert.equal(email.get('email_count'), 3);
         });
     });
 
@@ -646,7 +760,8 @@ describe('Batch Sending Service', function () {
                 }
             });
             const sendingService = {
-                send: sinon.stub().resolves({id: 'providerid@example.com'})
+                send: sinon.stub().resolves({id: 'providerid@example.com'}),
+                getMaximumRecipients: () => 5
             };
 
             const findOne = sinon.spy(EmailBatch, 'findOne');
@@ -683,7 +798,8 @@ describe('Batch Sending Service', function () {
                 }
             });
             const sendingService = {
-                send: sinon.stub().rejects(new Error('Test error'))
+                send: sinon.stub().rejects(new Error('Test error')),
+                getMaximumRecipients: () => 5
             };
 
             const findOne = sinon.spy(EmailBatch, 'findOne');
@@ -722,7 +838,8 @@ describe('Batch Sending Service', function () {
                 }
             });
             const sendingService = {
-                send: sinon.stub().rejects(new Error('Test error'))
+                send: sinon.stub().rejects(new Error('Test error')),
+                getMaximumRecipients: () => 5
             };
 
             const findOne = sinon.spy(EmailBatch, 'findOne');
@@ -780,7 +897,8 @@ describe('Batch Sending Service', function () {
                     context: `Mailgun Error 500: Test error`,
                     help: `https://ghost.org/docs/newsletters/#bulk-email-configuration`,
                     code: 'BULK_EMAIL_SEND_FAILED'
-                }))
+                })),
+                getMaximumRecipients: () => 5
             };
             const captureException = sinon.stub();
             const findOne = sinon.spy(EmailBatch, 'findOne');
@@ -825,7 +943,8 @@ describe('Batch Sending Service', function () {
                 }
             });
             const sendingService = {
-                send: sinon.stub().resolves({id: 'providerid@example.com'})
+                send: sinon.stub().resolves({id: 'providerid@example.com'}),
+                getMaximumRecipients: () => 5
             };
 
             const WrongEmailRecipient = createModelClass({
@@ -876,6 +995,109 @@ describe('Batch Sending Service', function () {
             assert.equal(members.length, 2);
         });
 
+        it('Throws error if more than the maximum are returned in a batch', async function () {
+            const EmailBatch = createModelClass({
+                findOne: {
+                    id: '123_batch_id',
+                    status: 'pending',
+                    member_segment: null
+                }
+            });
+            const findOne = sinon.spy(EmailBatch, 'findOne');
+
+            const DoubleTheEmailRecipients = createModelClass({
+                findAll: [
+                    {
+                        member_id: '123',
+                        member_uuid: '123',
+                        batch_id: '123_batch_id',
+                        member_email: 'example@example.com',
+                        member_name: 'Test User',
+                        loaded: ['member'],
+                        member: createModel({
+                            created_at: new Date(),
+                            loaded: ['stripeSubscriptions', 'products'],
+                            status: 'free',
+                            stripeSubscriptions: [],
+                            products: []
+                        })
+                    },
+                    {
+                        member_id: '124',
+                        member_uuid: '124',
+                        batch_id: '123_batch_id',
+                        member_email: 'example2@example.com',
+                        member_name: 'Test User 2',
+                        loaded: ['member'],
+                        member: createModel({
+                            created_at: new Date(),
+                            status: 'free',
+                            loaded: ['stripeSubscriptions', 'products'],
+                            stripeSubscriptions: [],
+                            products: []
+                        })
+                    },
+                    {
+                        member_id: '125',
+                        member_uuid: '125',
+                        batch_id: '123_batch_id',
+                        member_email: 'example3@example.com',
+                        member_name: 'Test User 3',
+                        loaded: ['member'],
+                        member: createModel({
+                            created_at: new Date(),
+                            status: 'free',
+                            loaded: ['stripeSubscriptions', 'products'],
+                            stripeSubscriptions: [],
+                            products: []
+                        })
+                    },
+                    // NOTE: one recipient from a different batch
+                    {
+                        member_id: '125',
+                        member_uuid: '125',
+                        batch_id: '124_ANOTHER_batch_id',
+                        member_email: 'example3@example.com',
+                        member_name: 'Test User 3',
+                        loaded: ['member'],
+                        member: createModel({
+                            created_at: new Date(),
+                            status: 'free',
+                            loaded: ['stripeSubscriptions', 'products'],
+                            stripeSubscriptions: [],
+                            products: []
+                        })
+                    }
+                ]
+            });
+
+            const sendingService = {
+                send: sinon.stub().resolves({id: 'providerid@example.com'}),
+                getMaximumRecipients: () => 2
+            };
+
+            const service = new BatchSendingService({
+                models: {EmailBatch, EmailRecipient: DoubleTheEmailRecipients},
+                sendingService,
+                BEFORE_RETRY_CONFIG: {maxRetries: 1, maxTime: 2000, sleep: 1}
+            });
+
+            const result = await service.sendBatch({
+                email: createModel({}),
+                batch: createModel({
+                    id: '123_batch_id'
+                }),
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+
+            assert.equal(result, false);
+
+            sinon.assert.calledOnce(findOne);
+            const batch = await findOne.firstCall.returnValue;
+            assert.equal(batch.get('status'), 'failed');
+        });
+
         it('Stops retrying after the email retry cut off time', async function () {
             const EmailBatch = createModelClass({
                 findOne: {
@@ -884,7 +1106,8 @@ describe('Batch Sending Service', function () {
                 }
             });
             const sendingService = {
-                send: sinon.stub().resolves({id: 'providerid@example.com'})
+                send: sinon.stub().resolves({id: 'providerid@example.com'}),
+                getMaximumRecipients: () => 5
             };
 
             const WrongEmailRecipient = createModelClass({
@@ -944,7 +1167,10 @@ describe('Batch Sending Service', function () {
             });
 
             const service = new BatchSendingService({
-                models: {EmailRecipient}
+                models: {EmailRecipient},
+                sendingService: {
+                    getMaximumRecipients: () => 5
+                }
             });
 
             const result = await service.getBatchMembers('id123');

@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const ProductsImporter = require('../../../../../../../core/server/data/importer/importers/data/ProductsImporter');
 
 const fakeProducts = [{

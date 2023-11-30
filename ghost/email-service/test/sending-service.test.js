@@ -1,6 +1,6 @@
 const SendingService = require('../lib/SendingService');
 const sinon = require('sinon');
-const assert = require('assert');
+const assert = require('assert/strict');
 const EmailBodyCache = require('../lib/EmailBodyCache');
 
 describe('Sending service', function () {

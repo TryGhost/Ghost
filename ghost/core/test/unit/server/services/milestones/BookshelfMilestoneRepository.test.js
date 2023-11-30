@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 
 const models = require('../../../../../core/server/models');
 const DomainEvents = require('@tryghost/domain-events');

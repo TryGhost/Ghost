@@ -129,8 +129,24 @@ ul {
     list-style: disc;
 }
 
+ul ul {
+    list-style: circle;
+}
+
+ul ul ul {
+    list-style: square;
+}
+
 ol {
     list-style: decimal;
+}
+
+ol ol {
+    list-style: lower-alpha;
+}
+
+ol ol ol {
+    list-style: lower-roman;
 }
 
 ul,
@@ -277,7 +293,7 @@ figure {
 figcaption {
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
-    font-size: 14px;
+    font-size: 13px;
     padding-top: 5px;
     line-height: 1.5em;
 }
@@ -498,7 +514,7 @@ figure blockquote p {
     margin: 0;
     padding: 8px 0 16px;
     color: {{titleColor}};
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
 }
@@ -520,18 +536,8 @@ figure blockquote p {
     text-decoration: none;
 }
 
-.latest-post-img img,
-.latest-post-img-mobile img {
+.latest-post-img img {
     object-fit: cover;
-}
-
-.latest-post-img-mobile {
-    display: none;
-}
-
-.latest-post-img-mobile img {
-    width: 100% !important;
-    height: auto !important; /* Make sure CSS ignores the height that is defined in HTML, but keep the aspect ratio from the width/height in HTML */
 }
 
 .latest-post-title {
@@ -541,7 +547,7 @@ figure blockquote p {
 .latest-post h4 {
     margin: 0;
     padding: 2px 0 4px;
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 700;
 }
 
@@ -1351,8 +1357,7 @@ a[data-flickr-embed] img {
     table.body p,
     table.body ul,
     table.body ol,
-    table.body td,
-    table.body span {
+    table.body td {
         font-size: 16px !important;
     }
 
@@ -1469,33 +1474,29 @@ a[data-flickr-embed] img {
     }
 
     table.body .latest-posts-header {
-        font-size: 14px !important;
-    }
-
-    table.body .latest-post-img {
-        display: none !important;
-    }
-
-    table.body .latest-post-img-mobile {
-        display: inline-block !important;
-        width: 100%;
+        font-size: 12px !important;
     }
 
     table.body .latest-post-title {
         display: inline-block !important;
         width: 100%;
-        padding-right: 0 !important;
-        padding-bottom: 8px !important;
+        padding-right: 8px !important;
     }
 
     table.body .latest-post h4, table.body .latest-post h4 span {
-        padding: 4px 0 !important;
-        font-size: 18px !important;
+        padding: 4px 0 6px !important;
+        font-size: 15px !important;
     }
 
-    table.body .latest-post p, table.body .latest-post p span {
+    table.body .latest-post-excerpt,
+    table.body .latest-post-excerpt a,
+    table.body .latest-post-excerpt span {
         font-size: 13px !important;
-        line-height: 1.25em;
+        line-height: 1.2 !important;
+    }
+
+    table.body .latest-post-excerpt span {
+        display: none !important;
     }
 
     table.body .subscription-box h3 {
@@ -1540,7 +1541,8 @@ a[data-flickr-embed] img {
         line-height: 1.3em !important;
     }
 
-    table.body h2 {
+    table.body h2,
+    table.body h2 span {
         font-size: 26px !important;
         line-height: 1.22em !important;
     }
@@ -1586,12 +1588,6 @@ a[data-flickr-embed] img {
     table.body hr {
         margin: 2em 0 !important;
     }
-
-    table.body figcaption,
-    table.body figcaption a {
-        font-size: 13px !important;
-    }
-
 }
 
 /* -------------------------------------

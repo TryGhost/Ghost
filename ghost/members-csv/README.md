@@ -1,7 +1,7 @@
 # Members Csv
 
 ## Usage
-There are 2 parts to this package: CSV to JSON serialization and JSON to CSV serialization. The module exposes 2 methods to fullfil these: `parse` and `unparse` respectively.
+There are 2 parts to this package: CSV to JSON serialization and JSON to CSV serialization. The module exposes 2 methods to fulfil these: `parse` and `unparse` respectively.
 
 To `parse` CSV file and convert it to JSON use `parse` method, e.g.:
 ```js

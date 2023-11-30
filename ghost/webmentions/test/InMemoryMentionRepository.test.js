@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const ObjectID = require('bson-objectid');
 const InMemoryMentionRepository = require('../lib/InMemoryMentionRepository');
 const Mention = require('../lib/Mention');
@@ -47,7 +47,7 @@ describe('InMemoryMentionRepository', function () {
         }
 
         const pageOne = await repository.getPage({
-            filter: `resource_id:${resourceId.toHexString()}`,
+            filter: `resource_id:'${resourceId.toHexString()}'`,
             limit: 2,
             page: 1
         });
@@ -57,7 +57,7 @@ describe('InMemoryMentionRepository', function () {
         assert(pageOne.meta.pagination.next === 2);
 
         const pageTwo = await repository.getPage({
-            filter: `resource_id:${resourceId.toHexString()}`,
+            filter: `resource_id:'${resourceId.toHexString()}'`,
             limit: 2,
             page: 2
         });
@@ -67,7 +67,7 @@ describe('InMemoryMentionRepository', function () {
         assert(pageTwo.meta.pagination.next === 3);
 
         const pageThree = await repository.getPage({
-            filter: `resource_id:${resourceId.toHexString()}`,
+            filter: `resource_id:'${resourceId.toHexString()}'`,
             limit: 2,
             page: 3
         });

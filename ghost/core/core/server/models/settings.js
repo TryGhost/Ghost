@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const _ = require('lodash');
 const uuid = require('uuid');
 const crypto = require('crypto');
@@ -211,8 +210,8 @@ Settings = ghostBookshelf.Model.extend({
             data = [data];
         }
 
-        return Promise.map(data, function (item) {
-            // Accept an array of models as input
+        // Accept an array of models as input
+        const promises = data.map(function (item) {
             if (item.toJSON) {
                 item = item.toJSON();
             }
@@ -254,6 +253,7 @@ Settings = ghostBookshelf.Model.extend({
                 return Promise.reject(new errors.NotFoundError({message: tpl(messages.unableToFindSetting, {key: item.key})}));
             });
         });
+        return Promise.all(promises);
     },
 
     populateDefaults: async function populateDefaults(unfilteredOptions) {

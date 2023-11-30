@@ -41,8 +41,7 @@ const expectedProperties = {
         'emailAnalytics',
         'tenor',
         'mailgunIsConfigured',
-        'editor',
-        'adminX'
+        'signupForm'
     ],
 
     post: [
@@ -51,6 +50,7 @@ const expectedProperties = {
         'title',
         'slug',
         'mobiledoc',
+        'lexical',
         'comment_id',
         'feature_image',
         'feature_image_alt',
@@ -88,7 +88,7 @@ const expectedProperties = {
         'tiers',
         'newsletter',
         'count',
-        'post_revisions'
+        'reading_time'
     ],
 
     page: [
@@ -97,6 +97,7 @@ const expectedProperties = {
         'title',
         'slug',
         'mobiledoc',
+        'lexical',
         'comment_id',
         'feature_image',
         'feature_image_alt',
@@ -128,7 +129,8 @@ const expectedProperties = {
         'meta_description',
         'frontmatter',
         'tiers',
-        'count'
+        'count',
+        'show_title_and_feature_image'
     ],
 
     user: _(schema.users)

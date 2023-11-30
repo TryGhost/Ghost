@@ -8,7 +8,7 @@ module.exports = class MailgunClient {
     #config;
     #settings;
 
-    static BATCH_SIZE = 1000;
+    static DEFAULT_BATCH_SIZE = 1000;
 
     constructor({config, settings}) {
         this.#config = config;
@@ -26,8 +26,8 @@ module.exports = class MailgunClient {
      * {
      *     'test@example.com': {
      *         name: 'Test User',
-     *         unique_id: '12345abcde',
-     *         unsubscribe_url: 'https://example.com/unsub/me'
+     *         unsubscribe_url: 'https://example.com/unsub/me',
+     *         list_unsubscribe: 'https://example.com/unsub/me'
      *     }
      * }
      */
@@ -38,9 +38,10 @@ module.exports = class MailgunClient {
             return null;
         }
 
-        if (Object.keys(recipientData).length > MailgunClient.BATCH_SIZE) {
+        const batchSize = this.getBatchSize();
+        if (Object.keys(recipientData).length > batchSize) {
             throw new errors.IncorrectUsageError({
-                message: `Mailgun only supports sending to ${MailgunClient.BATCH_SIZE} recipients at a time`
+                message: `Mailgun only supports sending to ${batchSize} recipients at a time`
             });
         }
 
@@ -68,6 +69,13 @@ module.exports = class MailgunClient {
                 text: messageContent.plaintext,
                 'recipient-variables': JSON.stringify(recipientData)
             };
+
+            // Do we have a custom List-Unsubscribe header set?
+            // (we need a variable for this, as this is a per-email setting)
+            if (Object.keys(recipientData)[0] && recipientData[Object.keys(recipientData)[0]].list_unsubscribe) {
+                messageData['h:List-Unsubscribe'] = '<%recipient.list_unsubscribe%>, <%tag_unsubscribe_email%>';
+                messageData['h:List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+            }
 
             // add a reference to the original email record for easier mapping of mailgun event -> email
             if (message.id) {
@@ -304,5 +312,14 @@ module.exports = class MailgunClient {
     isConfigured() {
         const instance = this.getInstance();
         return !!instance;
+    }
+
+    /**
+     * Returns configured batch size
+     *
+     * @returns {number}
+     */
+    getBatchSize() {
+        return this.#config.get('bulkEmail')?.batchSize ?? this.DEFAULT_BATCH_SIZE;
     }
 };

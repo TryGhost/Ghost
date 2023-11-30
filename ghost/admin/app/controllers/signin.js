@@ -58,6 +58,8 @@ export default class SigninController extends Controller.extend(ValidationEngine
                 return this.notifications.showAPIError(error);
             }
 
+            this.signin.errors.clear();
+
             if (error && error.payload && error.payload.errors) {
                 let [mainError] = error.payload.errors;
 
@@ -65,6 +67,11 @@ export default class SigninController extends Controller.extend(ValidationEngine
                 mainError.context = htmlSafe(mainError.context || '');
 
                 this.flowErrors = (mainError.context.string || mainError.message.string);
+
+                if (mainError.type === 'TooManyRequestsError') {
+                    // Prefer full message in this case
+                    this.flowErrors = mainError.message.string;
+                }
 
                 if (mainError.type === 'PasswordResetRequiredError') {
                     this.passwordResetEmailSent = true;

@@ -33,7 +33,7 @@ function serializeSettings(models, apiConfig, frame) {
     // If this is public, we already have the right data, we just need to add an Array wrapper
     if (utils.isContentAPI(frame)) {
         filteredSettings = models;
-        
+
         // Change the returned icon location to use a resized version, to prevent serving giant icon files
         const icon = filteredSettings.icon;
         if (icon) {

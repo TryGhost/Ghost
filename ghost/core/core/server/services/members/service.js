@@ -4,7 +4,7 @@ const tpl = require('@tryghost/tpl');
 const MembersSSR = require('@tryghost/members-ssr');
 const db = require('../../data/db');
 const MembersConfigProvider = require('./MembersConfigProvider');
-const MembersCSVImporter = require('@tryghost/members-importer');
+const makeMembersCSVImporter = require('@tryghost/members-importer');
 const MembersStats = require('./stats/MembersStats');
 const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
@@ -41,30 +41,43 @@ const membersStats = new MembersStats({
 });
 
 let membersApi;
-let verificationTrigger;
 
-const membersImporter = new MembersCSVImporter({
-    storagePath: config.getContentPath('data'),
-    getTimezone: () => settingsCache.get('timezone'),
-    getMembersRepository: async () => {
-        const api = await module.exports.api;
-        return api.members;
-    },
-    getDefaultTier: () => {
-        return tiersService.api.readDefaultTier();
-    },
-    sendEmail: ghostMailer.send.bind(ghostMailer),
-    isSet: flag => labsService.isSet(flag),
-    addJob: jobsService.addJob.bind(jobsService),
-    knex: db.knex,
-    urlFor: urlUtils.urlFor.bind(urlUtils),
-    context: {
-        importer: true
-    }
-});
+const initMembersCSVImporter = ({stripeAPIService}) => {
+    return makeMembersCSVImporter({
+        storagePath: config.getContentPath('data'),
+        getTimezone: () => settingsCache.get('timezone'),
+        getMembersRepository: async () => {
+            const api = await module.exports.api;
+            return api.members;
+        },
+        getDefaultTier: () => {
+            return tiersService.api.readDefaultTier();
+        },
+        getTierByName: async (name) => {
+            const tiers = await tiersService.api.browse({
+                filter: `name:'${name}'`
+            });
 
-const processImport = async (options) => {
-    return await membersImporter.process({...options, verificationTrigger});
+            if (tiers.data.length > 0) {
+                // It is possible that there are multiple tiers with the same name so return the last one in the array -
+                // `tiersService.api.browse` returns all tiers, but without any ordering applied, so we assume that
+                // the last one in the array is the most recently created
+                return tiers.data.pop();
+            }
+
+            return null;
+        },
+        sendEmail: ghostMailer.send.bind(ghostMailer),
+        isSet: flag => labsService.isSet(flag),
+        addJob: jobsService.addJob.bind(jobsService),
+        knex: db.knex,
+        urlFor: urlUtils.urlFor.bind(urlUtils),
+        context: {
+            importer: true
+        },
+        stripeAPIService,
+        productRepository: membersApi.productRepository
+    });
 };
 
 const initVerificationTrigger = () => {
@@ -76,7 +89,13 @@ const initVerificationTrigger = () => {
         isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
         sendVerificationEmail: async ({subject, message, amountTriggered}) => {
             const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
-            const fromAddress = config.get('user_email');
+            let fromAddress = config.get('user_email');
+            let replyTo = undefined;
+
+            if (settingsHelpers.useNewEmailAddresses()) {
+                replyTo = fromAddress;
+                fromAddress = settingsHelpers.getNoReplyAddress();
+            }
 
             if (escalationAddress) {
                 await ghostMailer.send({
@@ -87,6 +106,7 @@ const initVerificationTrigger = () => {
                     }),
                     forceTextContent: true,
                     from: fromAddress,
+                    replyTo,
                     to: escalationAddress
                 });
             }
@@ -133,8 +153,13 @@ module.exports = {
             getMembersApi: () => module.exports.api
         });
 
-        verificationTrigger = initVerificationTrigger();
+        const verificationTrigger = initVerificationTrigger();
         module.exports.verificationTrigger = verificationTrigger;
+
+        const membersCSVImporter = initMembersCSVImporter({stripeAPIService: stripeService.api});
+        module.exports.processImport = async (options) => {
+            return await membersCSVImporter.process({...options, verificationTrigger});
+        };
 
         if (!env?.startsWith('testing')) {
             const membersMigrationJobName = 'members-migrations';
@@ -168,7 +193,7 @@ module.exports = {
 
     stripeConnect: require('./stripe-connect'),
 
-    processImport: processImport,
+    processImport: null,
 
     stats: membersStats,
     export: require('./exporter/query')

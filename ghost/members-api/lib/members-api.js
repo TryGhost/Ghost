@@ -37,6 +37,7 @@ module.exports = function MembersAPI({
         getSubject
     },
     models: {
+        DonationPaymentEvent,
         EmailRecipient,
         StripeCustomer,
         StripeCustomerSubscription,
@@ -69,7 +70,8 @@ module.exports = function MembersAPI({
     labsService,
     newslettersService,
     memberAttributionService,
-    emailSuppressionList
+    emailSuppressionList,
+    settingsCache
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -106,6 +108,7 @@ module.exports = function MembersAPI({
     });
 
     const eventRepository = new EventRepository({
+        DonationPaymentEvent,
         EmailRecipient,
         MemberSubscribeEvent,
         MemberPaidSubscriptionEvent,
@@ -159,7 +162,8 @@ module.exports = function MembersAPI({
         StripeCustomer,
         Offer,
         offersAPI,
-        stripeAPIService
+        stripeAPIService,
+        settingsCache
     });
 
     const memberController = new MemberController({
@@ -184,7 +188,8 @@ module.exports = function MembersAPI({
         tokenService,
         sendEmailWithMagicLink,
         memberAttributionService,
-        labsService
+        labsService,
+        newslettersService
     });
 
     const wellKnownController = new WellKnownController({
@@ -270,8 +275,16 @@ module.exports = function MembersAPI({
         return memberBREADService.read({email});
     }
 
-    async function getMemberIdentityToken(email) {
-        const member = await getMemberIdentityData(email);
+    async function getMemberIdentityDataFromTransientId(transientId) {
+        return memberBREADService.read({transient_id: transientId});
+    }
+
+    async function cycleTransientId(memberId) {
+        await users.cycleTransientId({id: memberId});
+    }
+
+    async function getMemberIdentityToken(transientId) {
+        const member = await getMemberIdentityDataFromTransientId(transientId);
         if (!member) {
             return null;
         }
@@ -355,14 +368,16 @@ module.exports = function MembersAPI({
         if (!member) {
             return;
         }
-        await memberRepository.update({newsletters: []}, {id: member.id});
+        await memberRepository.update({email_disabled: true}, {id: member.id});
     });
 
     return {
         middleware,
         getMemberDataFromMagicLinkToken,
         getMemberIdentityToken,
+        getMemberIdentityDataFromTransientId,
         getMemberIdentityData,
+        cycleTransientId,
         setMemberGeolocationFromIp,
         getPublicConfig,
         bus,

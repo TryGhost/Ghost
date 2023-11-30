@@ -1,26 +1,10 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
 <div class="gh-post-history" {{did-insert this.onInsert}}>
     <div class="gh-post-history-main">
-        <div class="gh-koenig-editor-pane flex flex-column mih-100 {{if this.showDifferences "show-diff" ""}}">
-            {{#if (and this.diffHtml this.showDifferences (feature 'postDiffing'))}}
-                {{{this.diffHtml}}}
-            {{else if this.selectedHTML}}
+        <div class="gh-koenig-editor-pane flex flex-column mih-100">
+            {{#if this.selectedHTML}}
                 {{{this.selectedHTML}}}
             {{/if}}
-            <div class="gh-post-history-hidden-lexical previous">
-                <div class="gh-editor-feature-image-container">
-                    <div class="gh-editor-feature-image">
-                        {{#if this.comparisonRevision.feature_image}}
-                            <img src="{{this.comparisonRevision.feature_image}}">
-                        {{/if}}
-                        {{#if this.comparisonRevision.feature_image_caption}}
-                            <p>{{{this.comparisonRevision.feature_image_caption}}}"</p>
-                        {{/if}}
-                    </div>
-                </div>
-                <div class="gh-editor-title">{{this.previousTitle}}</div>
-                <KoenigLexicalEditor @lexical={{this.comparisonRevision.lexical}} @cardConfig={{this.cardConfig}} @registerAPI={{action "registerComparisonEditorApi"}}/>
-            </div>
             <div class="gh-post-history-hidden-lexical current">
                 <div class="gh-editor-feature-image-container">
                     <div class="gh-editor-feature-image">
@@ -50,7 +34,7 @@
                     {{svg-jar "arrow-left"}}
                     <span class="hidden">Back</span>
                 </button>
-                <h4>Post history</h4>
+                <h4>{{capitalize this.post.displayName}} history</h4>
             </div>
             <div class="settings-menu-content">
                 <ul class="nav-list">
@@ -69,7 +53,7 @@
                                 {{#if (eq revision.reason "unpublished")}}
                                     <span class="gh-post-history-version-tag unpublished">Unpublished</span>
                                 {{/if}}
-                                
+
                             </div>
                             <div class="flex items-center mt2">
                                 <span class="user-list-item-figure" style={{background-image-style revision.author.profile_image_url}}>
@@ -90,21 +74,6 @@
                     </li>
                     {{/each}}
                 </ul>
-                {{#if (feature 'postDiffing')}}
-                    <div class="gh-post-history-footer">
-                        <div class="gh-post-history-footer-inner">
-                            <div class="for-switch x-small">
-                                <label class="switch">
-                                    <span>Compare to previous version</span>
-                                    <span class="gh-toggle-featured">
-                                        <input {{on "click" (fn this.toggleDifferences '')}} type="checkbox" checked={{this.showDifferences}}>
-                                        <span class="input-toggle-component"></span>
-                                    </span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                {{/if}}
             </div>
         </div>
     </div>

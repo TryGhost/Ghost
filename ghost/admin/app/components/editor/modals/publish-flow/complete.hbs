@@ -96,9 +96,6 @@
                 </button>
             </p>
         {{else}}
-            {{#if (feature 'lexicalEditor')}}
-                <FeedbackLexical::PostCompleteForm @post={{@publishOptions.post}} />
-            {{/if}}
             <p class="gh-publish-confirmation gh-publish-confirmation-with-feedback">
                 <button
                     type="button"

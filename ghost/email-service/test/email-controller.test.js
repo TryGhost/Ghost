@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const EmailController = require('../lib/EmailController');
 const {createModel, createModelClass} = require('./utils');
 
@@ -228,7 +228,35 @@ describe('Email Controller', function () {
                     emails: ['example@example.com']
                 }
             });
-            assert.strictEqual(result, undefined);
+            assert.equal(result, undefined);
+        });
+
+        it('throw if more than one email is provided', async function () {
+            const service = {
+                sendTestEmail: () => {
+                    return Promise.resolve({id: 'mail@id'});
+                }
+            };
+
+            const controller = new EmailController(service, {
+                models: {
+                    Post: createModelClass({
+                        findOne: {
+                            title: 'Post title'
+                        }
+                    }),
+                    Newsletter: createModelClass()
+                }
+            });
+
+            await assert.rejects(controller.sendTestEmail({
+                options: {},
+                data: {
+                    id: '123',
+                    newsletter: 'newsletter-slug',
+                    emails: ['example@example.com', 'example2@example.com']
+                }
+            }), /Too many emails provided. Maximum of 1 test email can be sent at once./);
         });
     });
 
@@ -271,7 +299,7 @@ describe('Email Controller', function () {
                     id: '123'
                 }
             });
-            assert.strictEqual(result.get('status'), 'failed');
+            assert.equal(result.get('status'), 'failed');
         });
     });
 });

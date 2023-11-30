@@ -1,6 +1,7 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const configUtils = require('../../utils/configUtils');
+const errors = require('@tryghost/errors');
 
 const Sentry = require('@sentry/node');
 
@@ -49,6 +50,94 @@ describe('UNIT: sentry', function () {
             assert.match(initArgs[0].release, /ghost@\d+\.\d+\.\d+/, 'should be a valid version');
             assert.equal(initArgs[0].environment, 'testing', 'should be the testing env');
             assert.ok(initArgs[0].hasOwnProperty('beforeSend'), 'should have a beforeSend function');
+        });
+    });
+
+    describe('beforeSend', function () {
+        this.beforeEach(function () {
+            configUtils.set({sentry: {disabled: false, dsn: fakeDSN}});
+            delete require.cache[require.resolve('../../../core/shared/sentry')];
+
+            sentry = require('../../../core/shared/sentry');
+        });
+
+        it('returns the event', function () {
+            sinon.stub(errors.utils, 'isGhostError').returns(false);
+            const beforeSend = sentry.beforeSend;
+            const event = {tags: {}};
+            const hint = {};
+
+            const result = beforeSend(event, hint);
+
+            assert.deepEqual(result, event);
+        });
+
+        it('returns the event, even if an exception is thrown internally', function () {
+            // Trigger an internal exception
+            sinon.stub(errors.utils, 'isGhostError').throws(new Error('test'));
+            const beforeSend = sentry.beforeSend;
+            const event = {tags: {}};
+            const hint = {};
+
+            const result = beforeSend(event, hint);
+
+            assert.deepEqual(result, event);
+        });
+
+        it('sets sql context for mysql2 errors', function () {
+            sinon.stub(errors.utils, 'isGhostError').returns(true);
+            const beforeSend = sentry.beforeSend;
+            const event = {
+                tags: {},
+                exception: {
+                    values: [{
+                        value: 'test',
+                        type: 'test'
+                    }]
+                }
+            };
+            const exception = {
+                sql: 'SELECT * FROM test',
+                errno: 123,
+                sqlErrorCode: 456,
+                sqlMessage: 'test message',
+                sqlState: 'test state',
+                code: 'UNEXPECTED_ERROR',
+                errorType: 'InternalServerError',
+                id: 'a1b2c3d4e5f6',
+                statusCode: 500
+            };
+            const hint = {
+                originalException: exception
+            };
+
+            const result = beforeSend(event, hint);
+
+            const expected = {
+                tags: {
+                    type: 'InternalServerError',
+                    code: 'UNEXPECTED_ERROR',
+                    id: 'a1b2c3d4e5f6',
+                    status_code: 500
+                },
+                exception: {
+                    values: [{
+                        value: 'test message',
+                        type: 'SQL Error 123: 456'
+                    }]
+                },
+                contexts: {
+                    mysql: {
+                        errno: 123,
+                        code: 456,
+                        sql: 'SELECT * FROM test',
+                        message: 'test message',
+                        state: 'test state'
+                    }
+                }
+            };
+
+            assert.deepEqual(result, expected);
         });
     });
 });

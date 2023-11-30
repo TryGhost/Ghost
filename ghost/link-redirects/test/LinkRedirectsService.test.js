@@ -1,5 +1,5 @@
 const {LinkRedirectsService} = require('../index');
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const crypto = require('crypto');
 
@@ -25,14 +25,14 @@ describe('LinkRedirectsService', function () {
             // stub crypto.randomBytes to return a known value toString
             sinon.stub(crypto, 'randomBytes').returns(Buffer.from('00000000', 'hex'));
             const url = await instance.getSlugUrl();
-            assert.equal(url, 'https://localhost:2368/r/00000000');
+            assert.equal(url.href, 'https://localhost:2368/r/00000000');
         });
 
         it('works when first random slug already exists', async function () {
             const instance = new LinkRedirectsService({
                 linkRedirectRepository: {
                     getByURL: (url) => {
-                        if (url.toString() === 'https://localhost:2368/r/00000000') {
+                        if (url.href === 'https://localhost:2368/r/00000000') {
                             return Promise.resolve({});
                         }
                         return Promise.resolve(undefined);
@@ -47,7 +47,7 @@ describe('LinkRedirectsService', function () {
                 .onFirstCall().returns(Buffer.from('00000000', 'hex'))
                 .onSecondCall().returns(Buffer.from('11111111', 'hex'));
             const url = await instance.getSlugUrl();
-            assert.equal(url, 'https://localhost:2368/r/11111111');
+            assert.equal(url.href, 'https://localhost:2368/r/11111111');
         });
     });
 
@@ -64,8 +64,8 @@ describe('LinkRedirectsService', function () {
             });
             await instance.addRedirect(new URL('https://localhost:2368/a'), new URL('https://localhost:2368/b'));
             assert.equal(linkRedirectRepository.save.callCount, 1);
-            assert.equal(linkRedirectRepository.save.getCall(0).args[0].from.toString(), 'https://localhost:2368/a');
-            assert.equal(linkRedirectRepository.save.getCall(0).args[0].to.toString(), 'https://localhost:2368/b');
+            assert.equal(linkRedirectRepository.save.getCall(0).args[0].from.href, 'https://localhost:2368/a');
+            assert.equal(linkRedirectRepository.save.getCall(0).args[0].to.href, 'https://localhost:2368/b');
         });
     });
 
@@ -73,7 +73,7 @@ describe('LinkRedirectsService', function () {
         it('redirects if found', async function () {
             const linkRedirectRepository = {
                 getByURL: (url) => {
-                    if (url.toString() === 'https://localhost:2368/r/a') {
+                    if (url.href === 'https://localhost:2368/r/a') {
                         return Promise.resolve({
                             to: new URL('https://localhost:2368/b')
                         });

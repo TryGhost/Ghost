@@ -214,7 +214,7 @@ describe('Exporter', function () {
             const nonSchemaTables = ['migrations', 'migrations_lock'];
             const requiredTables = schemaTables.concat(nonSchemaTables);
             // NOTE: You should not add tables to this list unless they are temporary
-            const ignoredTables = ['temp_member_analytic_events'];
+            const ignoredTables = ['temp_member_analytic_events', 'temp_mail_events'];
 
             const expectedTables = requiredTables.filter(table => !ignoredTables.includes(table)).sort();
             const actualTables = BACKUP_TABLES.concat(TABLES_ALLOWLIST).sort();
@@ -236,7 +236,7 @@ describe('Exporter', function () {
 
             // NOTE: if default settings changed either modify the settings keys blocklist or increase allowedKeysLength
             //       This is a reminder to think about the importer/exporter scenarios ;)
-            const allowedKeysLength = 82;
+            const allowedKeysLength = 85;
             totalKeysLength.should.eql(SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
         });
     });

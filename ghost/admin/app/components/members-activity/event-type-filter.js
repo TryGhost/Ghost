@@ -18,8 +18,8 @@ export default class MembersActivityEventTypeFilter extends Component {
     @service settings;
     @service feature;
 
-    get availableEventTypes() {
-        const extended = ALL_EVENT_TYPES;
+    getAvailableEventTypes() {
+        const extended = [...ALL_EVENT_TYPES];
 
         if (this.settings.commentsEnabled !== 'off') {
             extended.push({event: 'comment_event', icon: 'filter-dropdown-comments', name: 'Comments', group: 'others'});
@@ -40,12 +40,13 @@ export default class MembersActivityEventTypeFilter extends Component {
 
     get eventTypes() {
         const excludedEvents = (this.args.excludedEvents || '').split(',');
+        const availableEventTypes = this.getAvailableEventTypes();
 
-        return this.availableEventTypes.map((type, i) => ({
+        return availableEventTypes.map((type, i) => ({
             event: type.event,
             icon: type.icon,
             name: type.name,
-            divider: this.needDivider(type, this.availableEventTypes[i - 1]),
+            divider: this.needDivider(type, availableEventTypes[i - 1]),
             isSelected: !excludedEvents.includes(type.event)
         }));
     }

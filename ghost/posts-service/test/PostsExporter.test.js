@@ -1,5 +1,5 @@
 const {PostsExporter} = require('../index');
-const assert = require('assert');
+const assert = require('assert/strict');
 const {createModelClass, createModel} = require('./utils');
 
 class SettingsCache {
@@ -179,19 +179,19 @@ describe('PostsExporter', function () {
             post.status = 'draft';
             const posts = await exporter.export({});
 
-            // No feedback columns
-            assert.equal(posts[0].feedback_more_like_this, undefined);
-            assert.equal(posts[0].feedback_less_like_this, undefined);
+            // Feedback columns are empty, but present because of global settings (newsletter with feedback enabled)
+            assert.equal(posts[0].feedback_more_like_this, null);
+            assert.equal(posts[0].feedback_less_like_this, null);
 
             // Sends etc
-            assert.equal(posts[0].sends, undefined);
-            assert.equal(posts[0].opens, undefined);
-            assert.equal(posts[0].clicks, undefined);
-            assert.equal(posts[0].newsletter_name, undefined);
+            assert.equal(posts[0].sends, null);
+            assert.equal(posts[0].opens, null);
+            assert.equal(posts[0].clicks, null);
+            assert.equal(posts[0].newsletter_name, null);
 
             // Signups
-            assert.equal(posts[0].free_signups, undefined);
-            assert.equal(posts[0].paid_conversions, undefined);
+            assert.equal(posts[0].signups, null);
+            assert.equal(posts[0].paid_conversions, null);
         });
 
         it('Hides member related columns if members disabled', async function () {
@@ -209,7 +209,7 @@ describe('PostsExporter', function () {
             assert.equal(posts[0].clicks, undefined);
 
             // Signups
-            assert.equal(posts[0].free_signups, undefined);
+            assert.equal(posts[0].signups, undefined);
             assert.equal(posts[0].paid_conversions, undefined);
         });
 
@@ -222,7 +222,7 @@ describe('PostsExporter', function () {
             assert.notEqual(posts[0].feedback_less_like_this, undefined);
             assert.notEqual(posts[0].sends, undefined);
             assert.notEqual(posts[0].opens, undefined);
-            assert.notEqual(posts[0].free_signups, undefined);
+            assert.notEqual(posts[0].signups, undefined);
             assert.notEqual(posts[0].paid_conversions, undefined);
 
             assert.equal(posts[0].clicks, undefined);
@@ -237,7 +237,7 @@ describe('PostsExporter', function () {
             assert.notEqual(posts[0].feedback_less_like_this, undefined);
             assert.notEqual(posts[0].sends, undefined);
             assert.notEqual(posts[0].clicks, undefined);
-            assert.notEqual(posts[0].free_signups, undefined);
+            assert.notEqual(posts[0].signups, undefined);
             assert.notEqual(posts[0].paid_conversions, undefined);
 
             assert.equal(posts[0].opens, undefined);
@@ -252,7 +252,7 @@ describe('PostsExporter', function () {
             assert.notEqual(posts[0].feedback_less_like_this, undefined);
             assert.notEqual(posts[0].sends, undefined);
             assert.notEqual(posts[0].clicks, undefined);
-            assert.notEqual(posts[0].free_signups, undefined);
+            assert.notEqual(posts[0].signups, undefined);
             assert.notEqual(posts[0].opens, undefined);
 
             assert.equal(posts[0].paid_conversions, undefined);
@@ -269,7 +269,7 @@ describe('PostsExporter', function () {
             assert.equal(posts.length, 1);
 
             assert.equal(posts[0].clicks, 0);
-            assert.equal(posts[0].free_signups, 0);
+            assert.equal(posts[0].signups, 0);
             assert.equal(posts[0].paid_conversions, 0);
             assert.equal(posts[0].feedback_more_like_this, 0);
             assert.equal(posts[0].feedback_less_like_this, 0);

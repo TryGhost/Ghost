@@ -78,7 +78,7 @@
 }
 
 .image-edit {
-    margin-right: 34px;
+    margin-right: 42px;
 }
 
 .image-action svg {
@@ -130,7 +130,7 @@
     color: color-mod(var(--midgrey));
 }
 
-/* TODO: remove the gh-image-uploader classes once it's using gh-progrss-bar */
+/* TODO: remove the gh-image-uploader classes once it's using gh-progress-bar */
 .gh-image-uploader .progress-container,
 .gh-progress-container {
     flex-grow: 1;

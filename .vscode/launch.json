@@ -7,11 +7,23 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Ghost core + Admin",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/.github/scripts/dev.js",
+            "autoAttachChildProcesses": true,
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Full Dev",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/.github/dev.js",
+            "program": "${workspaceFolder}/.github/scripts/dev.js",
             "args": [
                 "--all"
             ],
@@ -26,13 +38,60 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/.github/dev.js",
+            "program": "${workspaceFolder}/.github/scripts/dev.js",
             "args": [
-                "--all --offline"
+                "--all",
+                "--offline"
             ],
             "autoAttachChildProcesses": true,
             "outputCapture": "std",
             "console": "integratedTerminal",
+        },
+        {
+            "args": [
+                "--require",
+                "./test/utils/overrides.js",
+                "-u",
+                "bdd",
+                "--timeout",
+                "999999",
+                "--colors",
+                "./test/e2e-api/**/*.test.js"
+            ],
+            "cwd": "${workspaceFolder}/ghost/core",
+            "internalConsoleOptions": "openOnSessionStart",
+            "name": "E2E API Tests",
+            "program": "./node_modules/.bin/_mocha",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "env": {
+                "NODE_ENV": "testing-mysql"
+            },
+            "type": "node"
+        },
+        {
+            "args": [
+                "-u",
+                "bdd",
+                "--timeout",
+                "999999",
+                "--colors",
+                "./test/**/*.test.js"
+            ],
+            "cwd": "${workspaceFolder}/ghost/email-service/",
+            "internalConsoleOptions": "openOnSessionStart",
+            "name": "Email Service Unit Tests",
+            "program": "./node_modules/.bin/_mocha",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "env": {
+                "NODE_ENV": "testing-mysql"
+            },
+            "type": "node"
         }
     ]
 }

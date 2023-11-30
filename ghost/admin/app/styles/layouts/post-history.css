@@ -29,6 +29,27 @@
     background: var(--whitegrey-l2);
 }
 
+.user-list-item-figure {
+    position: relative;
+    display: block;
+    width: 36px;
+    height: 36px;
+    margin-right: 12px;
+    margin-left: 3px;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 100%;
+}
+
+.user-list-item-figure img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
 .gh-post-history .user-list-item-figure {
     width: 2.8rem;
     height: 2.8rem;
@@ -173,52 +194,6 @@
     margin-left: auto;
     margin-right: auto;
     color: var(--black);
-}
-
-.gh-post-history .show-diff .gh-editor-feature-image img {
-    opacity: .5;
-}
-
-.gh-post-history .show-diff .gh-editor-feature-image del img {
-    opacity: 1;
-    border: 3px solid var(--white);
-    box-shadow: 0 0 0 2px var(--red);
-}
-
-.gh-post-history .show-diff .gh-editor-feature-image ins img {
-    opacity: 1;
-    border: 3px solid var(--white);
-    box-shadow: 0 0 0 2px var(--green);
-}
-
-.gh-post-history .show-diff .gh-editor-title {
-    opacity: .4;
-}
-
-.gh-post-history-main .show-diff .koenig-lexical h1,
-.gh-post-history-main .show-diff .koenig-lexical h2,
-.gh-post-history-main .show-diff .koenig-lexical h3,
-.gh-post-history-main .show-diff .koenig-lexical h4,
-.gh-post-history-main .show-diff .koenig-lexical h5,
-.gh-post-history-main .show-diff .koenig-lexical h6,
-.gh-post-history-main .show-diff .koenig-lexical p,
-.gh-post-history-main .show-diff .koenig-lexical blockquote,
-.gh-post-history-main .show-diff .koenig-lexical aside {
-    color: rgba(21, 23, 26, 0.4);
-}
-
-.gh-post-history-main .show-diff .koenig-lexical a:not(.gh-post-history-main .koenig-lexical del a):not(.gh-post-history-main .koenig-lexical ins a) {
-    opacity: .4;
-}
-
-.gh-post-history-main .koenig-lexical del {
-    color: var(--red-d1) !important;
-}
-
-.gh-post-history-main .koenig-lexical ins {
-    color: var(--black) !important;
-    text-decoration: none !important;
-    background-color: rgba(48, 207, 67, 0.15) !important;
 }
 
 .gh-post-history-hidden-lexical {

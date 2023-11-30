@@ -1,7 +1,7 @@
 const MailgunEmailProvider = require('../lib/MailgunEmailProvider');
 const sinon = require('sinon');
 const should = require('should');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 describe('Mailgun Email Provider', function () {
     describe('send', function () {
@@ -225,9 +225,21 @@ describe('Mailgun Email Provider', function () {
     });
 
     describe('getMaximumRecipients', function () {
+        let mailgunClient;
+        let getBatchSizeStub;
+
         it('returns 1000', function () {
-            const provider = new MailgunEmailProvider({});
-            assert.strictEqual(provider.getMaximumRecipients(), 1000);
+            getBatchSizeStub = sinon.stub().returns(1000);
+
+            mailgunClient = {
+                getBatchSize: getBatchSizeStub
+            };
+            
+            const provider = new MailgunEmailProvider({
+                mailgunClient,
+                errorHandler: () => {}
+            });
+            assert.equal(provider.getMaximumRecipients(), 1000);
         });
     });
 });

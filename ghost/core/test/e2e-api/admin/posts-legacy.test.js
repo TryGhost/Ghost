@@ -85,7 +85,7 @@ describe('Posts API', function () {
     });
 
     it('Can retrieve multiple post formats', async function () {
-        const res = await request.get(localUtils.API.getApiQuery('posts/?formats=plaintext,mobiledoc&limit=3&order=title%20ASC'))
+        const res = await request.get(localUtils.API.getApiQuery('posts/?formats=plaintext,mobiledoc,lexical&limit=3&order=title%20ASC'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
@@ -120,7 +120,7 @@ describe('Posts API', function () {
             jsonResponse.posts[0],
             'post',
             null,
-            ['authors', 'primary_author', 'email', 'tiers', 'newsletter', 'count', 'post_revisions']
+            ['authors', 'primary_author', 'email', 'tiers', 'newsletter', 'count']
         );
 
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
@@ -243,7 +243,7 @@ describe('Posts API', function () {
         should.exist(jsonResponse);
         should.exist(jsonResponse.posts);
 
-        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['count']);
+        localUtils.API.checkResponse(jsonResponse.posts[0], 'post', null, ['count', 'post_revisions']);
 
         jsonResponse.posts[0].authors[0].should.be.an.Object();
         localUtils.API.checkResponse(jsonResponse.posts[0].authors[0], 'user');
@@ -259,7 +259,6 @@ describe('Posts API', function () {
     });
 
     it('Can add a post', async function () {
-        this.retries(1);
         const post = {
             title: 'My post',
             status: 'draft',
@@ -267,8 +266,8 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             published_at: '2016-05-30T07:00:00.000Z',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
-            created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
+            created_at: moment('2016-05-30T06:30:00.456Z').toDate(),
+            updated_at: moment('2016-05-30T06:30:00.456Z').toDate(),
             created_by: ObjectId().toHexString(),
             updated_by: ObjectId().toHexString()
         };

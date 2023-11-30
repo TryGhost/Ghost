@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const fetch = require('node-fetch').default;
 const {agentProvider, mockManager, fixtureManager} = require('../utils/e2e-framework');
 const urlUtils = require('../../core/shared/url-utils');
@@ -49,7 +49,7 @@ describe('Click Tracking', function () {
         await jobService.allSettled();
 
         const {body: {links}} = await agent.get(
-            `/links/?filter=post_id:${post.id}`
+            `/links/?filter=${encodeURIComponent(`post_id:'${post.id}'`)}`
         );
 
         /** @type {(url: string) => Promise<import('node-fetch').Response>} */
@@ -101,13 +101,13 @@ describe('Click Tracking', function () {
         await fetchWithoutFollowingRedirect(urlOfLinkToClick.href);
 
         const {body: {links: [clickedLink]}} = await agent.get(
-            `/links/?filter=post_id:${post.id}`
+            `/links/?filter=${encodeURIComponent(`post_id:'${post.id}'`)}`
         );
 
         const clickCount = clickedLink.count.clicks;
 
         const {body: {events: clickEvents}} = await agent.get(
-            `/members/events/?filter=data.member_id:${memberToClickLink.id}${encodeURIComponent('+')}type:click_event`
+            `/members/events/?filter=${encodeURIComponent(`data.member_id:'${memberToClickLink.id}'+type:click_event`)}`
         );
 
         const clickEvent = clickEvents.find((/** @type any */ event) => {

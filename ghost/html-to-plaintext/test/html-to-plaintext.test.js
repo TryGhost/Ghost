@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const htmlToPlaintext = require('../');
 
 describe('Html to Plaintext', function () {

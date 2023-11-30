@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
@@ -41,10 +40,46 @@ async function fetchOrCreatePersonalToken(userId) {
     return token;
 }
 
+function shouldInvalidateCacheAfterChange(model) {
+    // Model attributes that should trigger cache invalidation when changed
+    // (because they affect the frontend)
+    const publicAttrs = [
+        'name',
+        'slug',
+        'profile_image',
+        'cover_image',
+        'bio',
+        'website',
+        'location',
+        'facebook',
+        'twitter',
+        'status',
+        'visibility',
+        'meta_title',
+        'meta_description'
+    ];
+
+    if (model.wasChanged() === false) {
+        return false;
+    }
+
+    // Check if any of the changed attributes are public
+    for (const attr of Object.keys(model._changed)) {
+        if (publicAttrs.includes(attr) === true) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 module.exports = {
     docName: 'users',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -68,6 +103,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -103,7 +141,9 @@ module.exports = {
     },
 
     edit: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id',
             'include'
@@ -130,11 +170,7 @@ module.exports = {
                         }));
                     }
 
-                    if (model.wasChanged()) {
-                        this.headers.cacheInvalidate = true;
-                    } else {
-                        this.headers.cacheInvalidate = false;
-                    }
+                    this.headers.cacheInvalidate = shouldInvalidateCacheAfterChange(model);
 
                     return model;
                 });
@@ -166,6 +202,9 @@ module.exports = {
     },
 
     changePassword: {
+        headers: {
+            cacheInvalidate: false
+        },
         validation: {
             docName: 'password',
             data: {
@@ -188,6 +227,9 @@ module.exports = {
     },
 
     transferOwnership: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions(frame) {
             return models.Role.findOne({name: 'Owner'})
                 .then((ownerRole) => {
@@ -200,6 +242,9 @@ module.exports = {
     },
 
     readToken: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],
@@ -218,6 +263,9 @@ module.exports = {
     },
 
     regenerateToken: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'id'
         ],

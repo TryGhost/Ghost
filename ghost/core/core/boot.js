@@ -325,6 +325,12 @@ async function initServices({config}) {
     const postsPublic = require('./server/services/posts-public');
     const slackNotifications = require('./server/services/slack-notifications');
     const mediaInliner = require('./server/services/media-inliner');
+    const collections = require('./server/services/collections');
+    const modelToDomainEventInterceptor = require('./server/services/model-to-domain-event-interceptor');
+    const mailEvents = require('./server/services/mail-events');
+    const donationService = require('./server/services/donations');
+    const recommendationsService = require('./server/services/recommendations');
+    const emailAddressService = require('./server/services/email-address');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -335,6 +341,9 @@ async function initServices({config}) {
     // NOTE: Members service depends on these
     //       so they are initialized before it.
     await stripe.init();
+
+    // NOTE: newsletter service and email service depend on email address service
+    await emailAddressService.init(),
 
     await Promise.all([
         memberAttribution.init(),
@@ -361,7 +370,12 @@ async function initServices({config}) {
         linkTracking.init(),
         emailSuppressionList.init(),
         slackNotifications.init(),
-        mediaInliner.init()
+        collections.init(),
+        modelToDomainEventInterceptor.init(),
+        mediaInliner.init(),
+        mailEvents.init(),
+        donationService.init(),
+        recommendationsService.init()
     ]);
     debug('End: Services');
 
@@ -466,6 +480,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
     try {
         // Step 1 - require more fundamental components
+
         // Sentry must be initialized early, but requires config
         debug('Begin: Load sentry');
         require('./shared/sentry');
@@ -531,6 +546,11 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 7 - Init our background services, we don't wait for this to finish
         initBackgroundServices({config});
+
+        // If we pass the env var, kill Ghost
+        if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {
+            process.exit(0);
+        }
 
         // We return the server purely for testing purposes
         if (server) {

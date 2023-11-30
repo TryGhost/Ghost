@@ -3,6 +3,7 @@ module.exports = {
     activityFeedEvents: require('./activity-feed-events'),
     authors: require('./authors'),
     comments: require('./comments'),
+    collections: require('./collections'),
     emails: require('./emails'),
     emailBatches: require('./email-batches'),
     emailFailures: require('./email-failures'),

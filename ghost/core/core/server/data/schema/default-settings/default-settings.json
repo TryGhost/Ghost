@@ -216,7 +216,7 @@
     },
     "theme": {
         "active_theme": {
-            "defaultValue": "casper",
+            "defaultValue": "source",
             "flags": "RO",
             "type": "string"
         }
@@ -530,7 +530,7 @@
     },
     "pintura": {
         "pintura": {
-            "defaultValue": "false",
+            "defaultValue": "true",
             "validations": {
                 "isIn": [
                     [
@@ -548,6 +548,32 @@
         "pintura_css_url": {
             "defaultValue": null,
             "type": "string"
+        }
+    },
+    "donations": {
+        "donations_currency": {
+            "defaultValue": "USD",
+            "validations": {
+                "isEmpty": false
+            },
+            "type": "string"
+        },
+        "donations_suggested_amount": {
+            "defaultValue": 0,
+            "validations": {
+                "isEmpty": false
+            },
+            "type": "number"
+        }
+    },
+    "recommendations": {
+        "recommendations_enabled": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     }
 }

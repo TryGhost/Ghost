@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const extractApiKey = require('../index');
 
 describe('Extract API Key', function () {
