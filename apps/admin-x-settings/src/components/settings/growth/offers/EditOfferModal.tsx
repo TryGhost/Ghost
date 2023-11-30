@@ -95,10 +95,9 @@ const Sidebar: React.FC<{
             };
 
             return (
-                <div className='flex grow flex-col pt-7'>
+                <div className='flex grow flex-col pt-2'>
                     <Form className=' grow'>
                         <section>
-                            <h2 className='mb-4 text-lg'>Stats</h2>
                             <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5'>
                                 <div className='flex flex-col gap-1.5'>
                                     <span className='text-xs font-semibold leading-none text-grey-700'>Created on</span>

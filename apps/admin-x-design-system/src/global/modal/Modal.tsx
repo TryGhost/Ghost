@@ -249,7 +249,7 @@ const Modal: React.FC<ModalProps> = ({
             backdropClasses,
             'p-4 md:p-[4vmin]'
         );
-        paddingClasses = 'p-8';
+        paddingClasses = 'p-7';
         headerClasses = clsx(
             headerClasses,
             '-inset-x-8'
