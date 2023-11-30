@@ -136,8 +136,7 @@ const PortalModal: React.FC = () => {
             if (meta?.sent_email_verification) {
                 const newEmail = formState.settings.find(setting => setting.key === 'members_support_address')?.value;
                 const currentEmail = currentSettings.find(setting => setting.key === 'support_email_address')?.value ||
-                    currentSettings.find(setting => setting.key === 'members_support_address')?.value ||
-                    fullEmailAddress('noreply', siteData!, config);
+                    fullEmailAddress(currentSettings.find(setting => setting.key === 'members_support_address')?.value?.toString() || 'noreply', siteData!, config);
 
                 NiceModal.show(ConfirmationModal, {
                     title: 'Confirm email address',
