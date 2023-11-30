@@ -189,35 +189,13 @@ const Sidebar: React.FC<{
             );
         }
 
-        // Pro users with custom sending domains
-        if (hasSendingDomain(config)) {
-            const replyToEmail = ['newsletter', 'support'].includes(newsletter.sender_reply_to) ? '' : renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress);
-            const replyToEmailUsername = replyToEmail?.split('@')[0] || '';
-
-            return (
-                <TextField
-                    error={Boolean(errors.sender_reply_to)}
-                    hint={errors.sender_reply_to}
-                    rightPlaceholder={`@${sendingDomain(config)}`}
-                    title="Reply-to address"
-                    value={replyToEmailUsername}
-                    onBlur={validate}
-                    onChange={(e) => {
-                        const username = e.target.value?.split('@')[0];
-                        const newEmail = username ? `${username}@${sendingDomain(config)}` : 'newsletter';
-                        updateNewsletter({sender_reply_to: newEmail});
-                    }}
-                    onKeyDown={() => clearError('sender_reply_to')}
-                />
-            );
-        }
-
+        const replyToRequired = !hasSendingDomain(config);
         // Pro users without custom sending domains
         return (
             <TextField
                 error={Boolean(errors.sender_reply_to)}
                 hint={errors.sender_reply_to}
-                placeholder={newsletterAddress || ''}
+                placeholder={replyToRequired ? (newsletterAddress || '') : ''}
                 title="Reply-to email"
                 value={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || ''}
                 onBlur={validate}

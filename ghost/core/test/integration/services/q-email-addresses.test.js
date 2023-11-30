@@ -269,7 +269,7 @@ describe('Email addresses', function () {
                 sender_reply_to: 'newsletter'
             });
             await sendNewsletter();
-            await assertFromAddressNewsletter('"Anything Possible" <default@sendingdomain.com>', '"Anything Possible" <default@sendingdomain.com>');
+            await assertFromAddressNewsletter('"Anything Possible" <default@sendingdomain.com>');
         });
 
         it('[NEWSLETTER] Does allow to send a newsletter from a custom sending domain', async function () {
@@ -279,7 +279,7 @@ describe('Email addresses', function () {
                 sender_reply_to: 'newsletter'
             });
             await sendNewsletter();
-            await assertFromAddressNewsletter('"Anything Possible" <anything@sendingdomain.com>', '"Anything Possible" <anything@sendingdomain.com>');
+            await assertFromAddressNewsletter('"Anything Possible" <anything@sendingdomain.com>');
         });
 
         it('[NEWSLETTER] Does allow to set the replyTo address to any address', async function () {
@@ -309,7 +309,7 @@ describe('Email addresses', function () {
                 sender_reply_to: 'newsletter'
             });
             await sendNewsletter();
-            await assertFromAddressNewsletter('"Example Site" <default@sendingdomain.com>', '"Example Site" <default@sendingdomain.com>');
+            await assertFromAddressNewsletter('"Example Site" <default@sendingdomain.com>');
         });
     });
 
@@ -365,7 +365,7 @@ describe('Email addresses', function () {
                 sender_reply_to: 'newsletter'
             });
             await sendNewsletter();
-            await assertFromAddressNewsletter('"Anything Possible" <default@sendingdomain.com>', '"Anything Possible" <default@sendingdomain.com>');
+            await assertFromAddressNewsletter('"Anything Possible" <default@sendingdomain.com>');
         });
 
         it('[NEWSLETTER] Does allow to set the replyTo address to any address', async function () {
@@ -395,7 +395,7 @@ describe('Email addresses', function () {
                 sender_reply_to: 'newsletter'
             });
             await sendNewsletter();
-            await assertFromAddressNewsletter('"Example Site" <default@sendingdomain.com>', '"Example Site" <default@sendingdomain.com>');
+            await assertFromAddressNewsletter('"Example Site" <default@sendingdomain.com>');
         });
     });
 
