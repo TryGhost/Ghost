@@ -1,7 +1,7 @@
 import {Entity} from '../../common/entity';
 
 type SnippetData = {
-    readonly name: string;
+    name: string;
     lexical?: string;
     mobiledoc?: string;
 };
@@ -9,6 +9,10 @@ type SnippetData = {
 export class Snippet extends Entity<SnippetData> implements SnippetData {
     get name() {
         return this.attr.name;
+    }
+
+    set name(value) {
+        this.set('name', value);
     }
 
     get lexical() {
