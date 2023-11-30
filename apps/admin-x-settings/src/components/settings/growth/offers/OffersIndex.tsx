@@ -194,6 +194,7 @@ export const OffersIndexModal = () => {
             updateRoute('offers');
         }}
         animate={false}
+        backDropClick={false}
         cancelLabel=''
         header={false}
         height='full'
