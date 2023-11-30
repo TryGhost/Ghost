@@ -1,0 +1,14 @@
+{{#if showFeatured}}
+    {{#get "posts" filter="featured:true" include="authors" limit=limit as |featured|}}
+        <section class="gh-featured gh-outer">
+            <div class="gh-featured-inner gh-inner">
+                <h2 class="gh-featured-title">Featured</h2>
+                <div class="gh-featured-feed">
+                    {{#foreach featured}}
+                        {{> "post-card" imageSizes="80px"}}
+                    {{/foreach}}
+                </div>
+            </div>
+        </section>
+    {{/get}}
+{{/if}}

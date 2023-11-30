@@ -51,7 +51,9 @@ const BACKUP_TABLES = [
     'milestones',
     'collections',
     'collections_posts',
-    'recommendations'
+    'recommendations',
+    'recommendation_click_events',
+    'recommendation_subscribe_events'
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file

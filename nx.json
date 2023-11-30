@@ -4,11 +4,13 @@
             "runner": "nx/tasks-runners/default",
             "options": {
                 "cacheableOperations": [
+                    "build",
                     "build:ts",
                     "lint",
                     "test",
                     "test:unit"
                 ],
+                "useDaemonProcess": false,
                 "cacheDirectory": ".nxcache"
             }
         }

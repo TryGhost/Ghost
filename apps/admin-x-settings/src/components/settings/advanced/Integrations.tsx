@@ -1,22 +1,19 @@
-import Button from '../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
-import Icon from '../../../admin-x-ds/global/Icon';
-import List from '../../../admin-x-ds/global/List';
-import ListItem from '../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import TabView from '../../../admin-x-ds/global/TabView';
-import useRouting from '../../../hooks/useRouting';
+import TopLevelGroup from '../../TopLevelGroup';
+import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import {ReactComponent as AmpIcon} from '../../../assets/icons/amp.svg';
+import {Button, ConfirmationModal, Icon, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {ReactComponent as FirstPromoterIcon} from '../../../assets/icons/firstpromoter.svg';
-import {Integration, useBrowseIntegrations, useDeleteIntegration} from '../../../api/integrations';
+import {Integration, useBrowseIntegrations, useDeleteIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {ReactComponent as PinturaIcon} from '../../../assets/icons/pintura.svg';
 import {ReactComponent as SlackIcon} from '../../../assets/icons/slack.svg';
 import {ReactComponent as UnsplashIcon} from '../../../assets/icons/unsplash.svg';
 import {ReactComponent as ZapierIcon} from '../../../assets/icons/zapier.svg';
-import {showToast} from '../../../admin-x-ds/global/Toast';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface IntegrationItemProps {
     icon?: React.ReactNode,
@@ -24,6 +21,7 @@ interface IntegrationItemProps {
     detail: string,
     action: () => void;
     onDelete?: () => void;
+    active?: boolean;
     disabled?: boolean;
     testId?: string;
     custom?: boolean;
@@ -35,6 +33,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
     detail,
     action,
     onDelete,
+    active,
     disabled,
     testId,
     custom = false
@@ -64,7 +63,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
         detail={detail}
         hideActions={!disabled}
         testId={testId}
-        title={title}
+        title={active ? <span className='inline-flex items-center gap-1'>{title} <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wide text-green'>Active</span></span> : title}
         onClick={handleClick}
     />;
 };
@@ -78,6 +77,11 @@ const BuiltInIntegrations: React.FC = () => {
     };
 
     const zapierDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
+
+    const pinturaEditor = usePinturaEditor();
+
+    const {settings} = useGlobalData();
+    const [ampEnabled, unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, ['amp', 'unsplash', 'pintura', 'firstpromoter', 'slack_url', 'slack_username']);
 
     return (
         <List titleSeparator={false}>
@@ -95,6 +99,7 @@ const BuiltInIntegrations: React.FC = () => {
                 action={() => {
                     openModal('integrations/slack');
                 }}
+                active={slackUrl && slackUsername}
                 detail='A messaging app for teams'
                 icon={<SlackIcon className='h-8 w-8' />}
                 title='Slack' />
@@ -103,7 +108,8 @@ const BuiltInIntegrations: React.FC = () => {
                 action={() => {
                     openModal('integrations/amp');
                 }}
-                detail='Google Accelerated Mobile Pages'
+                active={ampEnabled}
+                detail='Google AMP will be removed in Ghost 6.0'
                 icon={<AmpIcon className='h-8 w-8' />}
                 title='AMP' />
 
@@ -111,6 +117,7 @@ const BuiltInIntegrations: React.FC = () => {
                 action={() => {
                     openModal('integrations/unsplash');
                 }}
+                active={unsplashEnabled}
                 detail='Beautiful, free photos'
                 icon={<UnsplashIcon className='h-8 w-8' />}
                 title='Unsplash' />
@@ -119,6 +126,7 @@ const BuiltInIntegrations: React.FC = () => {
                 action={() => {
                     openModal('integrations/firstpromoter');
                 }}
+                active={firstPromoterEnabled}
                 detail='Launch your member referral program'
                 icon={<FirstPromoterIcon className='h-8 w-8' />}
                 title='FirstPromoter' />
@@ -127,6 +135,7 @@ const BuiltInIntegrations: React.FC = () => {
                 action={() => {
                     openModal('integrations/pintura');
                 }}
+                active={pinturaEditor.isEnabled}
                 detail='Advanced image editing' icon=
                     {<PinturaIcon className='h-8 w-8' />} title
                     ='Pintura' />
@@ -137,40 +146,51 @@ const BuiltInIntegrations: React.FC = () => {
 const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integrations}) => {
     const {updateRoute} = useRouting();
     const {mutateAsync: deleteIntegration} = useDeleteIntegration();
+    const handleError = useHandleError();
 
-    return (
-        <List>
-            {integrations.map(integration => (
-                <IntegrationItem
-                    action={() => updateRoute({route: `integrations/show/${integration.id}`})}
-                    detail={integration.description || 'No description'}
-                    icon={
-                        integration.icon_image ?
-                            <img className='h-8 w-8 object-cover' role='presentation' src={integration.icon_image} /> :
-                            <Icon className='w-8' name='integration' />
-                    }
-                    title={integration.name}
-                    custom
-                    onDelete={() => {
-                        NiceModal.show(ConfirmationModal, {
-                            title: 'Are you sure?',
-                            prompt: 'Deleting this integration will remove all webhooks and api keys associated with it.',
-                            okColor: 'red',
-                            okLabel: 'Delete Integration',
-                            onOk: async (confirmModal) => {
-                                await deleteIntegration(integration.id);
-                                confirmModal?.remove();
-                                showToast({
-                                    message: 'Integration deleted',
-                                    type: 'success'
-                                });
-                            }
-                        });
-                    }}
-                />)
-            )}
-        </List>
-    );
+    if (integrations.length) {
+        return (
+            <List borderTop={false}>
+                {integrations.map(integration => (
+                    <IntegrationItem
+                        action={() => updateRoute({route: `integrations/${integration.id}`})}
+                        detail={integration.description || 'No description'}
+                        icon={
+                            integration.icon_image ?
+                                <img className='h-8 w-8 object-cover' role='presentation' src={integration.icon_image} /> :
+                                <Icon className='w-8' name='integration' />
+                        }
+                        title={integration.name}
+                        custom
+                        onDelete={() => {
+                            NiceModal.show(ConfirmationModal, {
+                                title: 'Are you sure?',
+                                prompt: 'Deleting this integration will remove all webhooks and api keys associated with it.',
+                                okColor: 'red',
+                                okLabel: 'Delete Integration',
+                                onOk: async (confirmModal) => {
+                                    try {
+                                        await deleteIntegration(integration.id);
+                                        confirmModal?.remove();
+                                        showToast({
+                                            message: 'Integration deleted',
+                                            type: 'success'
+                                        });
+                                    } catch (e) {
+                                        handleError(e);
+                                    }
+                                }
+                            });
+                        }}
+                    />)
+                )}
+            </List>
+        );
+    } else {
+        return <NoValueLabel icon='integration'>
+        No custom integration.
+        </NoValueLabel>;
+    }
 };
 
 const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -192,14 +212,14 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ] as const;
 
     const buttons = (
-        <Button className='hidden md:!visible md:!block' color='green' label='Add custom integration' link={true} onClick={() => {
-            updateRoute('integrations/add');
+        <Button className='hidden md:!visible md:!block' color='green' label='Add custom integration' link linkWithPadding onClick={() => {
+            updateRoute('integrations/new');
             setSelectedTab('custom');
         }} />
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={buttons}
             description="Make Ghost work with apps and tools"
             keywords={keywords}
@@ -209,13 +229,13 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             <div className='flex justify-center rounded border border-green px-4 py-2 md:hidden'>
                 <Button color='green' label='Add custom integration' link onClick={() => {
-                    updateRoute('integrations/add');
+                    updateRoute('integrations/new');
                     setSelectedTab('custom');
                 }} />
             </div>
             <TabView<'built-in' | 'custom'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 
-export default Integrations;
+export default withErrorBoundary(Integrations, 'Integrations');

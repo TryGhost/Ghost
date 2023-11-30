@@ -1,21 +1,18 @@
 import APIKeys from './APIKeys';
-import Button from '../../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import IntegrationHeader from './IntegrationHeader';
-import List from '../../../../admin-x-ds/global/List';
-import ListItem from '../../../../admin-x-ds/global/ListItem';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import useRouting from '../../../../hooks/useRouting';
-import {ReactComponent as ArrowRightIcon} from '../../../../admin-x-ds/assets/icons/arrow-right.svg';
-import {ReactComponent as Icon} from '../../../../assets/icons/zapier.svg';
+import {Button, ConfirmationModal, Icon, List, ListItem, Modal} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Logo} from '../../../../assets/images/zapier-logo.svg';
-import {getGhostPaths, resolveAsset} from '../../../../utils/helpers';
-import {useBrowseIntegrations} from '../../../../api/integrations';
+import {ReactComponent as ZapierIcon} from '../../../../assets/icons/zapier.svg';
+import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {resolveAsset} from '../../../../utils/helpers';
+import {useBrowseIntegrations} from '@tryghost/admin-x-framework/api/integrations';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {useRefreshAPIKey} from '../../../../api/apiKeys';
-import {useServices} from '../../../providers/ServiceProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRefreshAPIKey} from '@tryghost/admin-x-framework/api/apiKeys';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSettingsApp} from '../../../providers/SettingsAppProvider';
 
 export interface ZapierTemplate {
     ghostImage: string;
@@ -27,12 +24,13 @@ export interface ZapierTemplate {
 const ZapierModal = NiceModal.create(() => {
     const modal = NiceModal.useModal();
     const {updateRoute} = useRouting();
-    const {zapierTemplates} = useServices();
+    const {zapierTemplates} = useSettingsApp();
     const {data: {integrations} = {integrations: []}} = useBrowseIntegrations();
     const {config} = useGlobalData();
     const {adminRoot} = getGhostPaths();
 
     const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
+    const handleError = useHandleError();
     const [regenerated, setRegenerated] = useState(false);
 
     const zapierDisabled = config.hostSettings?.limits?.customIntegrations?.disabled;
@@ -57,9 +55,13 @@ const ZapierModal = NiceModal.create(() => {
             prompt: 'You will need to locate the Ghost App within your Zapier account and click on "Reconnect" to enter the new Admin API Key.',
             okLabel: 'Regenerate Admin API Key',
             onOk: async (confirmModal) => {
-                await refreshAPIKey({integrationId: integration.id, apiKeyId: adminApiKey.id});
-                setRegenerated(true);
-                confirmModal?.remove();
+                try {
+                    await refreshAPIKey({integrationId: integration.id, apiKeyId: adminApiKey.id});
+                    setRegenerated(true);
+                    confirmModal?.remove();
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -70,17 +72,33 @@ const ZapierModal = NiceModal.create(() => {
                 updateRoute('integrations');
             }}
             cancelLabel=''
+            footer={
+                <div className='mx-8 flex w-full items-center justify-between'>
+                    <a
+                        className='mt-1 self-baseline text-sm font-bold'
+                        href='https://zapier.com/apps/ghost/integrations?utm_medium=partner_api&utm_source=widget&utm_campaign=Widget'
+                        rel='noopener noreferrer'
+                        target='_blank'>
+                        View more Ghost integrations powered by <span><Logo className='relative top-[-2px] inline-block h-6' /></span>
+                    </a>
+                    <Button color='black' label='Close' onClick={() => {
+                        modal.remove();
+                    }} />
+                </div>
+            }
             okColor='black'
             okLabel='Close'
             testId='zapier-modal'
             title=''
+            stickyFooter
             onOk={() => {
+                updateRoute('integrations');
                 modal.remove();
             }}
         >
             <IntegrationHeader
                 detail='Automation for your favorite apps'
-                extra={<APIKeys keys={[
+                extra={<div className='-mb-4 mt-1'><APIKeys keys={[
                     {
                         label: 'Admin API key',
                         text: adminApiKey?.secret,
@@ -88,22 +106,22 @@ const ZapierModal = NiceModal.create(() => {
                         onRegenerate: handleRegenerate
                     },
                     {label: 'API URL', text: window.location.origin + getGhostPaths().subdir}
-                ]} />}
-                icon={<Icon className='h-14 w-14' />}
+                ]} /></div>}
+                icon={<ZapierIcon className='h-14 w-14' />}
                 title='Zapier'
             />
 
-            <List className='mt-6'>
+            <List>
                 {zapierTemplates.map(template => (
                     <ListItem
                         action={<Button className='whitespace-nowrap text-sm font-semibold text-[#FF4A00]' href={template.url} label='Use this Zap' tag='a' target='_blank' link unstyled />}
                         bgOnHover={false}
-                        className='flex items-center gap-3 py-2'
+                        className='flex items-center gap-3 py-2 pl-3'
                         title={
                             <div className='flex flex-col gap-4 md:flex-row md:items-center'>
                                 <div className='flex shrink-0 flex-nowrap items-center gap-2'>
                                     <img className='h-8 w-8 object-contain dark:invert' role='presentation' src={resolveAsset(template.ghostImage, adminRoot)} />
-                                    <ArrowRightIcon className='h-3 w-3' />
+                                    <Icon name="arrow-right" size="xs" />
                                     <img className='h-8 w-8 object-contain' role='presentation' src={resolveAsset(template.appImage, adminRoot)} />
                                 </div>
                                 <span className='text-sm'>{template.title}</span>
@@ -113,16 +131,6 @@ const ZapierModal = NiceModal.create(() => {
                     />
                 ))}
             </List>
-
-            <div className='mt-6'>
-                <a
-                    className='mt-6 self-baseline text-sm font-bold'
-                    href='https://zapier.com/apps/ghost/integrations?utm_medium=partner_api&utm_source=widget&utm_campaign=Widget'
-                    rel='noopener noreferrer'
-                    target='_blank'>
-                    View more Ghost integrations powered by <span><Logo className='relative top-[-2px] inline-block h-6' /></span>
-                </a>
-            </div>
         </Modal>
     );
 });

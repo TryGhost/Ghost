@@ -1,11 +1,10 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Icon from '../../../../admin-x-ds/global/Icon';
 import React, {useState} from 'react';
+import clsx from 'clsx';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
+import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
 import {TierFormState} from './TierDetailModal';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {getSettingValues} from '../../../../api/settings';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {numberWithCommas} from '../../../../utils/helpers';
 
 interface TierDetailPreviewProps {
@@ -13,14 +12,20 @@ interface TierDetailPreviewProps {
     isFreeTier: boolean;
 }
 
-const TrialDaysLabel: React.FC<{trialDays: number}> = ({trialDays}) => {
+export const TrialDaysLabel: React.FC<{size?: 'sm' | 'md'; trialDays: number;}> = ({size = 'md', trialDays}) => {
     if (!trialDays) {
         return null;
     }
+
+    const containerClassName = clsx(
+        size === 'sm' ? 'px-1.5 py-0.5 text-xs' : 'px-2.5 py-1.5 text-sm',
+        'relative -mr-1 -mt-1 whitespace-nowrap rounded-full font-semibold leading-none tracking-wide text-grey-900'
+    );
+
     return (
-        <span className="relative -mr-1 -mt-1 whitespace-nowrap rounded-full px-2.5 py-1.5 text-sm font-semibold leading-none tracking-wide text-grey-900">
+        <span className={containerClassName}>
             <span className="absolute inset-0 block rounded-full bg-pink opacity-20"></span>
-            {trialDays} days free
+            <span className='dark:text-pink'>{trialDays} days free</span>
         </span>
     );
 };
@@ -82,7 +87,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
         : 0;
 
     return (
-        <div>
+        <div data-testid="tier-preview">
             <div className="flex items-baseline justify-between">
                 <Heading className="pb-2" level={6} grey>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Heading>
                 {!isFreeTier && <div className="flex gap-1">

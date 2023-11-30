@@ -1,21 +1,19 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
-import LimitModal from '../../../../admin-x-ds/global/modal/LimitModal';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import useRouting from '../../../../hooks/useRouting';
+import {Form, LimitModal, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {useCreateIntegration} from '../../../../api/integrations';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useCreateIntegration} from '@tryghost/admin-x-framework/api/integrations';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
-interface AddIntegrationModalProps {}
-
-const AddIntegrationModal: React.FC<AddIntegrationModalProps> = () => {
+const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const [name, setName] = useState('');
+    const [errors, setErrors] = useState({name: ''});
     const {mutateAsync: createIntegration} = useCreateIntegration();
     const limiter = useLimiter();
+    const handleError = useHandleError();
 
     useEffect(() => {
         if (limiter?.isLimited('customIntegrations')) {
@@ -41,9 +39,18 @@ const AddIntegrationModal: React.FC<AddIntegrationModalProps> = () => {
         testId='add-integration-modal'
         title='Add integration'
         onOk={async () => {
-            const data = await createIntegration({name});
-            modal.remove();
-            updateRoute({route: `integrations/show/${data.integrations[0].id}`});
+            if (!name) {
+                setErrors({name: 'Please enter a name'});
+                return;
+            }
+
+            try {
+                const data = await createIntegration({name});
+                modal.remove();
+                updateRoute({route: `integrations/${data.integrations[0].id}`});
+            } catch (e) {
+                handleError(e);
+            }
         }}
     >
         <div className='mt-5'>
@@ -52,10 +59,18 @@ const AddIntegrationModal: React.FC<AddIntegrationModalProps> = () => {
                 marginTop={false}
             >
                 <TextField
+                    autoFocus={true}
+                    error={!!errors.name}
+                    hint={errors.name}
                     placeholder='Custom integration'
                     title='Name'
                     value={name}
                     onChange={e => setName(e.target.value)}
+                    onInput={() => {
+                        if (errors.name) {
+                            setErrors({name: ''});
+                        }
+                    }}
                 />
             </Form>
         </div>

@@ -157,6 +157,79 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
 }
 
 /**
+ * @param {string} tableName
+ * @param {string} from
+ * @param {string} to
+ * @param {import('knex').Knex.Transaction} [transaction]
+ */
+async function renameColumn(tableName, from, to, transaction = db.knex) {
+    logging.info(`Renaming column '${from}' to '${to}' in table '${tableName}'`);
+
+    if (DatabaseInfo.isMySQL(transaction)) {
+        // The knex helper does a lot of interesting things with foreign keys that are slow on bigger MySQL clusters
+        return await transaction.raw(`ALTER TABLE \`${tableName}\` RENAME COLUMN \`${from}\` TO \`${to}\`;`);
+    }
+
+    return await transaction.schema.table(tableName, function (table) {
+        table.renameColumn(from, to);
+    });
+}
+
+/**
+ * Adds an non-unique index to a table over the given columns.
+ *
+ * @param {string} tableName - name of the table to add indexes to
+ * @param {string|string[]} columns - column(s) to add indexes for
+ * @param {import('knex').Knex} [transaction] - connection object containing knex reference
+ */
+async function addIndex(tableName, columns, transaction = db.knex) {
+    try {
+        logging.info(`Adding index for '${columns}' in table '${tableName}'`);
+
+        return await transaction.schema.table(tableName, function (table) {
+            table.index(columns);
+        });
+    } catch (err) {
+        if (err.code === 'SQLITE_ERROR') {
+            logging.warn(`Index for '${columns}' already exists for table '${tableName}'`);
+            return;
+        }
+        if (err.code === 'ER_DUP_KEYNAME') {
+            logging.warn(`Index for '${columns}' already exists for table '${tableName}'`);
+            return;
+        }
+        throw err;
+    }
+}
+
+/**
+ * Drops a non-unique index from a table over the given columns.
+ *
+ * @param {string} tableName - name of the table to remove indexes from
+ * @param {string|string[]} columns - column(s) to remove indexes for
+ * @param {import('knex').Knex} [transaction] - connection object containing knex reference
+ */
+async function dropIndex(tableName, columns, transaction = db.knex) {
+    try {
+        logging.info(`Dropping index for '${columns}' in table '${tableName}'`);
+
+        return await transaction.schema.table(tableName, function (table) {
+            table.dropIndex(columns);
+        });
+    } catch (err) {
+        if (err.code === 'SQLITE_ERROR') {
+            logging.warn(`Constraint for '${columns}' does not exist for table '${tableName}'`);
+            return;
+        }
+        if (err.code === 'ER_CANT_DROP_FIELD_OR_KEY') {
+            logging.warn(`Constraint for '${columns}' does not exist for table '${tableName}'`);
+            return;
+        }
+        throw err;
+    }
+}
+
+/**
  * Adds an unique index to a table over the given columns.
  *
  * @param {string} tableName - name of the table to add unique constraint to
@@ -516,10 +589,13 @@ module.exports = {
     getIndexes,
     addUnique,
     dropUnique,
+    addIndex,
+    dropIndex,
     addPrimaryKey,
     addForeign,
     dropForeign,
     addColumn,
+    renameColumn,
     dropColumn,
     setNullable,
     dropNullable,

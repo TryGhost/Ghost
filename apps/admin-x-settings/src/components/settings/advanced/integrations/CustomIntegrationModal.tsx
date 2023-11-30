@@ -1,21 +1,15 @@
 import APIKeys from './APIKeys';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import Form from '../../../../admin-x-ds/global/form/Form';
-import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
 import WebhooksTable from './WebhooksTable';
-import useForm from '../../../../hooks/useForm';
-import useRouting from '../../../../hooks/useRouting';
-import {APIKey, useRefreshAPIKey} from '../../../../api/apiKeys';
-import {Integration, useBrowseIntegrations, useEditIntegration} from '../../../../api/integrations';
-import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {getGhostPaths} from '../../../../utils/helpers';
-import {getImageUrl, useUploadImage} from '../../../../api/images';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {APIKey, useRefreshAPIKey} from '@tryghost/admin-x-framework/api/apiKeys';
+import {ConfirmationModal, Form, ImageUpload, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Integration, useBrowseIntegrations, useEditIntegration} from '@tryghost/admin-x-framework/api/integrations';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {toast} from 'react-hot-toast';
+import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({integration}) => {
     const modal = useModal();
@@ -24,12 +18,20 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
     const {mutateAsync: editIntegration} = useEditIntegration();
     const {mutateAsync: refreshAPIKey} = useRefreshAPIKey();
     const {mutateAsync: uploadImage} = useUploadImage();
+    const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, saveState, errors, clearError, validate} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors, clearError, validate, okProps} = useForm({
         initialState: integration,
+        savingDelay: 500,
+        savedDelay: 500,
         onSave: async () => {
             await editIntegration(formState);
         },
+        onSavedStateReset: () => {
+            modal.remove();
+            updateRoute('integrations');
+        },
+        onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
 
@@ -64,9 +66,13 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             prompt: `You can regenerate ${name} API Key any time, but any scripts or applications using it will need to be updated.`,
             okLabel: `Regenerate ${name} API Key`,
             onOk: async (confirmModal) => {
-                await refreshAPIKey({integrationId: integration.id, apiKeyId: apiKey.id});
-                setRegenerated(true);
-                confirmModal?.remove();
+                try {
+                    await refreshAPIKey({integrationId: integration.id, apiKeyId: apiKey.id});
+                    setRegenerated(true);
+                    confirmModal?.remove();
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
@@ -75,22 +81,20 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
         afterClose={() => {
             updateRoute('integrations');
         }}
+        buttonsDisabled={okProps.disabled}
         dirty={saveState === 'unsaved'}
-        okColor='black'
-        okLabel='Save & close'
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save & close'}
         size='md'
         testId='custom-integration-modal'
         title={formState.name}
         stickyFooter
         onOk={async () => {
             toast.remove();
-            if (await handleSave()) {
-                modal.remove();
-                updateRoute('integrations');
-            } else {
+            if (!(await handleSave({fakeWhenUnchanged: true}))) {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save integration, please double check that you\'ve filled in all mandatory fields.'
+                    message: 'Can\'t save integration, please double check that you\'ve filled all mandatory fields.'
                 });
             }
         }}
@@ -104,8 +108,12 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                     width='100px'
                     onDelete={() => updateForm(state => ({...state, icon_image: null}))}
                     onUpload={async (file) => {
-                        const imageUrl = getImageUrl(await uploadImage({file}));
-                        updateForm(state => ({...state, icon_image: imageUrl}));
+                        try {
+                            const imageUrl = getImageUrl(await uploadImage({file}));
+                            updateForm(state => ({...state, icon_image: imageUrl}));
+                        } catch (e) {
+                            handleError(e);
+                        }
                     }}
                 >
                     Upload icon
@@ -123,26 +131,24 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                         onKeyDown={() => clearError('name')}
                     />
                     <TextField title='Description' value={formState.description || ''} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
-                    <div>
-                        <APIKeys keys={[
-                            {
-                                label: 'Content API key',
-                                text: contentApiKey?.secret,
-                                hint: contentKeyRegenerated ? <div className='text-green'>Content API Key was successfully regenerated</div> : undefined,
-                                onRegenerate: () => contentApiKey && handleRegenerate(contentApiKey, setContentKeyRegenerated)
-                            },
-                            {
-                                label: 'Admin API key',
-                                text: adminApiKey?.secret,
-                                hint: adminKeyRegenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
-                                onRegenerate: () => adminApiKey && handleRegenerate(adminApiKey, setAdminKeyRegenerated)
-                            },
-                            {
-                                label: 'API URL',
-                                text: window.location.origin + getGhostPaths().subdir
-                            }
-                        ]} />
-                    </div>
+                    <APIKeys keys={[
+                        {
+                            label: 'Content API key',
+                            text: contentApiKey?.secret,
+                            hint: contentKeyRegenerated ? <div className='text-green'>Content API Key was successfully regenerated</div> : undefined,
+                            onRegenerate: () => contentApiKey && handleRegenerate(contentApiKey, setContentKeyRegenerated)
+                        },
+                        {
+                            label: 'Admin API key',
+                            text: adminApiKey?.secret,
+                            hint: adminKeyRegenerated ? <div className='text-green'>Admin API Key was successfully regenerated</div> : undefined,
+                            onRegenerate: () => adminApiKey && handleRegenerate(adminApiKey, setAdminKeyRegenerated)
+                        },
+                        {
+                            label: 'API URL',
+                            text: window.location.origin + getGhostPaths().subdir
+                        }
+                    ]} />
                 </Form>
             </div>
         </div>

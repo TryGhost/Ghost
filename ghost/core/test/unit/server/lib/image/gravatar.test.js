@@ -69,7 +69,7 @@ describe('lib/image: gravatar', function () {
                 } : null;
             }
         }, request: (url, options) => {
-            options.timeout.should.eql(delay);
+            options.timeout.request.should.eql(delay);
         }});
 
         gravatar.lookup({email: 'exists@example.com'}, delay);

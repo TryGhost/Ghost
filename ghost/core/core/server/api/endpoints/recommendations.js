@@ -9,12 +9,29 @@ module.exports = {
         },
         options: [
             'limit',
-            'page'
+            'page',
+            'include',
+            'filter',
+            'order'
         ],
         permissions: true,
         validation: {},
         async query(frame) {
-            return await recommendations.controller.listRecommendations(frame);
+            return await recommendations.controller.browse(frame);
+        }
+    },
+
+    read: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        permissions: true,
+        validation: {},
+        async query(frame) {
+            return await recommendations.controller.read(frame);
         }
     },
 
@@ -27,7 +44,25 @@ module.exports = {
         validation: {},
         permissions: true,
         async query(frame) {
-            return await recommendations.controller.addRecommendation(frame);
+            return await recommendations.controller.add(frame);
+        }
+    },
+
+    /**
+     * Fetch metadata for a recommendation URL
+     */
+    check: {
+        headers: {
+            cacheInvalidate: true
+        },
+        options: [],
+        validation: {},
+        permissions: {
+            // Everyone who has add permissions, can 'check'
+            method: 'add'
+        },
+        async query(frame) {
+            return await recommendations.controller.check(frame);
         }
     },
 
@@ -47,7 +82,7 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
-            return await recommendations.controller.editRecommendation(frame);
+            return await recommendations.controller.edit(frame);
         }
     },
 
@@ -68,7 +103,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return recommendations.controller.deleteRecommendation(frame);
+            return recommendations.controller.destroy(frame);
         }
     }
 };

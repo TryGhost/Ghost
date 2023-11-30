@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyObjectId, anyLocationFor, anyErrorId} = matchers;
+const {anyContentVersion, anyEtag, anyObjectId, anyLocationFor, anyErrorId, anyISODateTime} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');
 const sinon = require('sinon');
@@ -76,7 +76,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 }]
             });
         savedOffer = body.offers[0];
@@ -109,7 +110,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 }]
             });
     });
@@ -141,7 +143,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 }]
             })
             .expect(({body}) => {
@@ -177,7 +180,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 }]
             });
     });
@@ -210,7 +214,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 }]
             });
         trialOffer = body.offers[0];
@@ -322,7 +327,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 })
             });
     });
@@ -340,7 +346,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 })
             });
     });
@@ -360,7 +367,8 @@ describe('Offers API', function () {
                     duration: 'trial',
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 })
             });
     });
@@ -387,7 +395,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 })
             })
             .expect(({body}) => {
@@ -484,7 +493,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 })
             })
             .expect(({body}) => {
@@ -506,7 +516,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 })
             });
     });
@@ -525,7 +536,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 })
             });
     });
@@ -549,7 +561,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 })
             })
             .expect(({body}) => {
@@ -577,7 +590,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 })
             })
             .expect(({body}) => {
@@ -608,7 +622,8 @@ describe('Offers API', function () {
                     id: anyObjectId,
                     tier: {
                         id: anyObjectId
-                    }
+                    },
+                    created_at: anyISODateTime
                 })
             })
             .expect(({body}) => {

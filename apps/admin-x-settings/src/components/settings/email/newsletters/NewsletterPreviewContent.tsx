@@ -1,15 +1,18 @@
 import CoverImage from '../../../../assets/images/user-cover.png';
-import Icon from '../../../../admin-x-ds/global/Icon';
 import LatestPosts1 from '../../../../assets/images/latest-posts-1.png';
 import LatestPosts2 from '../../../../assets/images/latest-posts-2.png';
 import LatestPosts3 from '../../../../assets/images/latest-posts-3.png';
 import clsx from 'clsx';
-import {ReactComponent as GhostOrb} from '../../../../admin-x-ds/assets/images/ghost-orb.svg';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
+import {GhostOrb, Icon} from '@tryghost/admin-x-design-system';
+import {isManagedEmail} from '@tryghost/admin-x-framework/api/config';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreviewContent: React.FC<{
     senderName?: string;
-    senderEmail: string;
+    senderEmail: string | null;
+    senderReplyTo: string | null;
     headerImage?: string | null;
     headerIcon?: string;
     headerTitle?: string | null;
@@ -39,6 +42,7 @@ const NewsletterPreviewContent: React.FC<{
 }> = ({
     senderName,
     senderEmail,
+    senderReplyTo,
     headerImage,
     headerIcon,
     headerTitle,
@@ -67,6 +71,8 @@ const NewsletterPreviewContent: React.FC<{
     titleColor
 }) => {
     const showHeader = headerIcon || headerTitle;
+    const {config} = useGlobalData();
+    const hasNewEmailAddresses = useFeatureFlag('newEmailAddresses');
 
     const currentDate = new Date().toLocaleDateString('default', {
         year: 'numeric',
@@ -77,14 +83,26 @@ const NewsletterPreviewContent: React.FC<{
 
     const backgroundColorIsDark = backgroundColor && textColorForBackgroundColor(backgroundColor).hex().toLowerCase() === '#ffffff';
 
+    let emailHeader;
+
+    if ({hasNewEmailAddresses} || isManagedEmail(config)) {
+        emailHeader = <><p className="leading-normal"><span className="font-semibold text-grey-900">From: </span><span>{senderName} ({senderEmail})</span></p>
+            <p className="leading-normal">
+                <span className="font-semibold text-grey-900">Reply-to: </span>{senderReplyTo ? senderReplyTo : senderEmail}
+            </p>
+        </>;
+    } else {
+        emailHeader = <><p className="leading-normal"><span className="font-semibold text-grey-900">{senderName}</span><span> {senderEmail}</span></p>
+            <p className="leading-normal"><span className="font-semibold text-grey-900">To:</span> Jamie Larson jamie@example.com</p></>;
+    }
+
     return (
         <div className="relative flex grow flex-col">
             <div className="absolute inset-0 m-5 flex items-center justify-center">
                 <div className="mx-auto my-0 flex max-h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
                     {/* Email header */}
                     <div className="flex-column flex min-h-[77px] justify-center rounded-t-sm border-b border-grey-200 bg-white px-6 text-sm text-grey-700">
-                        <p className="leading-normal"><span className="font-semibold text-grey-900">{senderName}</span><span> {senderEmail}</span></p>
-                        <p className="leading-normal"><span className="font-semibold text-grey-900">To:</span> Jamie Larson jamie@example.com</p>
+                        {emailHeader}
                     </div>
 
                     {/* Email content */}
@@ -124,7 +142,7 @@ const NewsletterPreviewContent: React.FC<{
                                                 </span>
                                             )}
                                         </p>
-                                        <p className="pb-2 underline" style={{color: secondaryTextColor}}><span>View in browser</span></p>
+                                        <p className="pb-2" style={{color: secondaryTextColor}}><span>View in browser</span></p>
                                     </div>
                                 </div>
                             )}

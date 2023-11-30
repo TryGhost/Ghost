@@ -51,7 +51,7 @@ module.exports = function setupMembersApp() {
 
     // Manage session
     membersApp.get('/api/session', middleware.getIdentityToken);
-    membersApp.delete('/api/session', middleware.deleteSession);
+    membersApp.delete('/api/session', bodyParser.json({limit: '5mb'}), middleware.deleteSession);
 
     // NOTE: this is wrapped in a function to ensure we always go via the getter
     membersApp.post(
@@ -86,6 +86,20 @@ module.exports = function setupMembersApp() {
         labs.enabledMiddleware('announcementBar'),
         middleware.loadMemberSession,
         announcementRouter()
+    );
+
+    // Recommendations
+    membersApp.post(
+        '/api/recommendations/:id/clicked',
+        middleware.loadMemberSession,
+        http(api.recommendationsPublic.trackClicked)
+    );
+
+    // Recommendations
+    membersApp.post(
+        '/api/recommendations/:id/subscribed',
+        middleware.loadMemberSession,
+        http(api.recommendationsPublic.trackSubscribed)
     );
 
     // Allow external systems to read public settings via the members api

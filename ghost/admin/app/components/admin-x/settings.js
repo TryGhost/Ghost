@@ -1,26 +1,31 @@
-import * as Sentry from '@sentry/ember';
-import Component from '@glimmer/component';
-import React, {Suspense} from 'react';
-import config from 'ghost-admin/config/environment';
-import {action} from '@ember/object';
-import {inject} from 'ghost-admin/decorators/inject';
+import AdminXComponent from './admin-x-component';
 import {inject as service} from '@ember/service';
-import {tracked} from '@glimmer/tracking';
 
 // TODO: Long term move asset management directly in AdminX
 const officialThemes = [{
+    name: 'Source',
+    category: 'News',
+    previewUrl: 'https://source.ghost.io/',
+    ref: 'default',
+    image: 'assets/img/themes/Source.png',
+    variants: [
+        {
+            category: 'Magazine',
+            previewUrl: 'https://source-magazine.ghost.io/',
+            image: 'assets/img/themes/Source-Magazine.png'
+        },
+        {
+            category: 'Newsletter',
+            previewUrl: 'https://source-newsletter.ghost.io/',
+            image: 'assets/img/themes/Source-Newsletter.png'
+        }
+    ]
+}, {
     name: 'Casper',
     category: 'Blog',
     previewUrl: 'https://demo.ghost.io/',
-    ref: 'default',
+    ref: 'TryGhost/Casper',
     image: 'assets/img/themes/Casper.png'
-}, {
-    name: 'Headline',
-    category: 'News',
-    url: 'https://github.com/TryGhost/Headline',
-    previewUrl: 'https://headline.ghost.io',
-    ref: 'TryGhost/Headline',
-    image: 'assets/img/themes/Headline.png'
 }, {
     name: 'Edition',
     category: 'Newsletter',
@@ -106,6 +111,13 @@ const officialThemes = [{
     ref: 'TryGhost/Ease',
     image: 'assets/img/themes/Ease.png'
 }, {
+    name: 'Headline',
+    category: 'News',
+    url: 'https://github.com/TryGhost/Headline',
+    previewUrl: 'https://headline.ghost.io',
+    ref: 'TryGhost/Headline',
+    image: 'assets/img/themes/Headline.png'
+}, {
     name: 'Ruby',
     category: 'Magazine',
     url: 'https://github.com/TryGhost/Ruby',
@@ -175,133 +187,14 @@ const zapierTemplates = [{
     url: 'https://zapier.com/webintent/create-zap?template=359342'
 }];
 
-class ErrorHandler extends React.Component {
-    state = {
-        hasError: false
-    };
+export default class AdminXSettings extends AdminXComponent {
+    @service upgradeStatus;
 
-    static getDerivedStateFromError() {
-        return {hasError: true};
-    }
+    static packageName = '@tryghost/admin-x-settings';
 
-    render() {
-        if (this.state.hasError) {
-            return (
-                <p className="admin-x-settings-container-error">Loading has failed. Try refreshing the browser!</p>
-            );
-        }
-
-        return this.props.children;
-    }
-}
-
-export const importSettings = async () => {
-    if (window['@tryghost/admin-x-settings']) {
-        return window['@tryghost/admin-x-settings'];
-    }
-
-    // the manual specification of the protocol in the import template string is
-    // required to work around ember-auto-import complaining about an unknown dynamic import
-    // during the build step
-    const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-    const urlTemplate = GhostAdmin.__container__.lookup('config:main').adminX?.url;
-    const urlVersion = GhostAdmin.__container__.lookup('config:main').adminX?.version;
-
-    const url = new URL(urlTemplate.replace('{version}', urlVersion));
-
-    if (url.protocol === 'http:') {
-        window['@tryghost/admin-x-settings'] = await import(`http://${url.host}${url.pathname}`);
-    } else {
-        window['@tryghost/admin-x-settings'] = await import(`https://${url.host}${url.pathname}`);
-    }
-
-    return window['@tryghost/admin-x-settings'];
-};
-
-const fetchSettings = function () {
-    let status = 'pending';
-    let response;
-
-    const suspender = importSettings().then(
-        (res) => {
-            status = 'success';
-            response = res;
-        },
-        (err) => {
-            status = 'error';
-            response = err;
-        }
-    );
-
-    const read = () => {
-        switch (status) {
-        case 'pending':
-            throw suspender;
-        case 'error':
-            throw response;
-        default:
-            return response;
-        }
-    };
-
-    return {read};
-};
-
-export default class AdminXSettings extends Component {
-    @service ajax;
-    @service feature;
-    @service ghostPaths;
-    @service session;
-    @service store;
-    @service settings;
-    @service router;
-
-    @inject config;
-
-    @tracked display = 'none';
-
-    @action
-    onError(error) {
-        // ensure we're still showing errors in development
-        console.error(error); // eslint-disable-line
-
-        if (this.config.sentry_dsn) {
-            Sentry.captureException(error, {
-                tags: {
-                    adminx: true
-                }
-            });
-        }
-
-        // don't rethrow, app should attempt to gracefully recover
-    }
-
-    externalNavigate = ({route, models = []}) => {
-        this.router.transitionTo(route, ...models);
-    };
-
-    editorResource = fetchSettings();
-
-    AdminXApp = (props) => {
-        const {AdminXApp: _AdminXApp} = this.editorResource.read();
-        return <_AdminXApp {...props} />;
-    };
-
-    ReactComponent = () => {
-        return (
-            <div className={['admin-x-settings-container-', this.args.className].filter(Boolean).join(' ')}>
-                <ErrorHandler>
-                    <Suspense fallback={<p className="admin-x-settings-container--loading">Loading settings...</p>}>
-                        <this.AdminXApp
-                            ghostVersion={config.APP.version}
-                            officialThemes={officialThemes}
-                            zapierTemplates={zapierTemplates}
-                            externalNavigate={this.externalNavigate}
-                            darkMode={this.feature.nightShift}
-                        />
-                    </Suspense>
-                </ErrorHandler>
-            </div>
-        );
-    };
+    additionalProps = () => ({
+        officialThemes,
+        zapierTemplates,
+        upgradeStatus: this.upgradeStatus
+    });
 }

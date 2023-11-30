@@ -1,15 +1,11 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
-import Select from '../../../../admin-x-ds/global/form/Select';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
 import toast from 'react-hot-toast';
-import useForm from '../../../../hooks/useForm';
 import validator from 'validator';
 import webhookEventOptions from './webhookEventOptions';
-import {Webhook, useCreateWebhook, useEditWebhook} from '../../../../api/webhooks';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {Form, Modal, Select, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Webhook, useCreateWebhook, useEditWebhook} from '@tryghost/admin-x-framework/api/webhooks';
+import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 interface WebhookModalProps {
     webhook?: Webhook;
@@ -20,6 +16,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
     const modal = useModal();
     const {mutateAsync: createWebhook} = useCreateWebhook();
     const {mutateAsync: editWebhook} = useEditWebhook();
+    const handleError = useHandleError();
 
     const {formState, updateForm, handleSave, errors, clearError, validate} = useForm<Partial<Webhook>>({
         initialState: webhook || {},
@@ -30,6 +27,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                 await createWebhook({...formState, integration_id: integrationId});
             }
         },
+        onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
 
@@ -67,7 +65,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save webhook, please double check that you\'ve filled in all mandatory fields.'
+                    message: 'Can\'t save webhook, please double check that you\'ve filled all mandatory fields.'
                 });
             }
         }}
@@ -92,11 +90,12 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                     hint={errors.event}
                     options={webhookEventOptions}
                     prompt='Select an event'
-                    selectedOption={formState.event}
+                    selectedOption={webhookEventOptions.flatMap(group => group.options).find(option => option.value === formState.event)}
+                    testId='event-select'
                     title='Event'
                     hideTitle
-                    onSelect={(event) => {
-                        updateForm(state => ({...state, event}));
+                    onSelect={(option) => {
+                        updateForm(state => ({...state, event: option?.value}));
                         clearError('event');
                     }}
                 />
@@ -112,7 +111,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                     onKeyDown={() => clearError('target_url')}
                 />
                 <TextField
-                    placeholder='Psst...'
+                    placeholder='https://example.com'
                     title='Secret'
                     value={formState.secret || undefined}
                     onChange={e => updateForm(state => ({...state, secret: e.target.value}))}

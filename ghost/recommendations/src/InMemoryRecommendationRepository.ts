@@ -6,4 +6,15 @@ export class InMemoryRecommendationRepository extends InMemoryRepository<string,
     toPrimitive(entity: Recommendation): object {
         return entity;
     }
+
+    async getByUrl(url: URL): Promise<Recommendation | null > {
+        //  Find URL based on the hostname and pathname.
+        //  Query params, hash fragements, protocol and www are ignored.
+        const existing = this.store.find((r) => {
+            return r.url.hostname.replace('www.', '') === url.hostname.replace('www.', '') &&
+                   r.url.pathname === url.pathname;
+        }) || null;
+
+        return existing;
+    }
 }

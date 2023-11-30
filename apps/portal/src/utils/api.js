@@ -163,6 +163,18 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         }
     };
 
+    api.recommendations = {
+        trackClicked({recommendationId}) {
+            let url = endpointFor({type: 'members', resource: 'recommendations/' + recommendationId + '/clicked'});
+            navigator.sendBeacon(url);
+        },
+
+        trackSubscribed({recommendationId}) {
+            let url = endpointFor({type: 'members', resource: 'recommendations/' + recommendationId + '/subscribed'});
+            navigator.sendBeacon(url);
+        }
+    };
+
     api.member = {
         identity() {
             const url = endpointFor({type: 'members', resource: 'session'});
@@ -231,7 +243,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, customUrlHistory, autoRedirect = true}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -241,9 +253,10 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 emailType,
                 labels,
                 requestSrc: 'portal',
-                redirect
+                redirect,
+                autoRedirect
             };
-            const urlHistory = getUrlHistory();
+            const urlHistory = customUrlHistory ?? getUrlHistory();
             if (urlHistory) {
                 body.urlHistory = urlHistory;
             }
@@ -269,11 +282,17 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }
         },
 
-        signout() {
+        signout(all = false) {
             const url = endpointFor({type: 'members', resource: 'session'});
             return makeRequest({
                 url,
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    all
+                })
             }).then(function (res) {
                 if (res.ok) {
                     window.location.replace(siteUrl);

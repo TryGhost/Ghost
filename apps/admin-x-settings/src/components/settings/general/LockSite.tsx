@@ -1,14 +1,12 @@
-import Icon from '../../../admin-x-ds/global/Icon';
-import Link from '../../../admin-x-ds/global/Link';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/form/TextField';
-import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getSettingValues} from '../../../api/settings';
+import {Hint, Icon, Separator, SettingGroupContent, TextField, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const {siteData} = useGlobalData();
     const {
         localSettings,
         isEditing,
@@ -31,7 +29,7 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
     });
 
-    const [passwordEnabled, password] = getSettingValues(localSettings, ['is_private', 'password']) as [boolean, string];
+    const [passwordEnabled, password, publicHash] = getSettingValues(localSettings, ['is_private', 'password', 'public_hash']) as [boolean, string, string];
 
     const handleToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting('is_private', e.target.checked);
@@ -41,15 +39,30 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateSetting('password', e.target.value);
     };
 
+    const privateRssUrl = `${siteData.url.replace(/\/$/, '')}/${publicHash}/rss`;
+    const hint = (
+        <>A private RSS feed is available at <a className='break-all text-green' href={privateRssUrl} rel="noopener noreferrer" target='_blank'>{privateRssUrl}</a></>
+    );
+
     const values = (
         <SettingGroupContent
             values={[
                 {
                     key: 'private',
                     value: passwordEnabled ? (
-                        <div className='flex items-center gap-1'>
-                            <Icon colorClass='text-yellow' name='lock-locked' size='sm' />
-                            <span>Your site is password protected</span>
+                        <div className='w-full'>
+                            <div className='flex items-center gap-1'>
+                                {/* <div className='rounded-full border border-yellow p-2'> */}
+                                <Icon colorClass='text-yellow' name='lock-locked' size='sm' />
+                                {/* </div> */}
+                                <div className='leading-supertight'>
+                                Your site is password protected
+                                </div>
+                            </div>
+                            {hint && <div className='mt-7 w-full'>
+                                <Separator />
+                                <Hint>{hint}</Hint>
+                            </div>}
                         </div>
                     ) : (
                         <div className='flex items-center gap-1 text-grey-900 dark:text-grey-400'>
@@ -60,10 +73,6 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 }
             ]}
         />
-    );
-
-    const hint = (
-        <>A private RSS feed is available at <Link className='break-all' href="http://localhost:2368/51aa059ba6eb50c24c14047d4255ac/rss">http://localhost:2368/51aa059ba6eb50c24c14047d4255ac/rss</Link></>
     );
 
     const inputs = (
@@ -78,7 +87,7 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
             {passwordEnabled &&
                 <TextField
                     error={!!errors.password}
-                    hint={errors.password || hint}
+                    hint={errors.password}
                     placeholder="Enter password"
                     title="Site password"
                     value={password}
@@ -91,7 +100,7 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Enable protection with a simple shared password.'
             isEditing={isEditing}
             keywords={keywords}
@@ -104,8 +113,8 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? inputs : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 
-export default LockSite;
+export default withErrorBoundary(LockSite, 'Make site private');

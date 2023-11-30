@@ -1,20 +1,31 @@
-import Breadcrumbs from '../../../../admin-x-ds/global/Breadcrumbs';
-import Button from '../../../../admin-x-ds/global/Button';
-import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import DesktopChrome from '../../../../admin-x-ds/global/chrome/DesktopChrome';
-import MobileChrome from '../../../../admin-x-ds/global/chrome/MobileChrome';
 import NiceModal from '@ebay/nice-modal-react';
-import PageHeader from '../../../../admin-x-ds/global/layout/PageHeader';
 import React, {useState} from 'react';
-import {OfficialTheme} from '../../../providers/ServiceProvider';
-import {Theme} from '../../../../api/themes';
+import {Breadcrumbs, Button, ButtonGroup, ConfirmationModal, DesktopChrome, MobileChrome, PageHeader, Select, SelectOption} from '@tryghost/admin-x-design-system';
+import {OfficialTheme, ThemeVariant} from '../../../providers/SettingsAppProvider';
+import {Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
+
+const hasVariants = (theme: OfficialTheme) => theme.variants && theme.variants.length > 0;
+
+const getAllVariants = (theme: OfficialTheme) : ThemeVariant[] => {
+    const variants = [{
+        image: theme.image,
+        category: theme.category,
+        previewUrl: theme.previewUrl
+    }];
+
+    if (theme.variants && theme.variants.length > 0) {
+        variants.push(...theme.variants);
+    }
+
+    return variants;
+};
+
+const generateVariantOptionValue = (variant: ThemeVariant) => variant.category.toLowerCase();
 
 const ThemePreview: React.FC<{
     selectedTheme?: OfficialTheme;
     isInstalling?: boolean;
     installedTheme?: Theme;
-    installButtonLabel?: string;
     onBack: () => void;
     onClose: () => void;
     onInstall?: () => void | Promise<void>;
@@ -22,19 +33,46 @@ const ThemePreview: React.FC<{
     selectedTheme,
     isInstalling,
     installedTheme,
-    installButtonLabel,
     onBack,
     onClose,
     onInstall
 }) => {
     const [previewMode, setPreviewMode] = useState('desktop');
+    const [selectedVariant, setSelectedVariant] = useState<SelectOption | undefined>(undefined);
 
     if (!selectedTheme) {
         return null;
     }
 
+    let previewUrl = selectedTheme.previewUrl;
+
+    const variantOptions = getAllVariants(selectedTheme).map((variant) => {
+        return {
+            label: variant.category,
+            value: generateVariantOptionValue(variant)
+        };
+    });
+
+    if (hasVariants(selectedTheme)) {
+        if (selectedVariant === undefined) {
+            setSelectedVariant(variantOptions[0]);
+        }
+
+        previewUrl = getAllVariants(selectedTheme).find(variant => generateVariantOptionValue(variant) === selectedVariant?.value)?.previewUrl || previewUrl;
+    }
+
+    let installButtonLabel = `Install ${selectedTheme.name}`;
+
+    if (isInstalling) {
+        installButtonLabel = 'Installing...';
+    } else if (isDefaultOrLegacyTheme(selectedTheme) && !installedTheme?.active) {
+        installButtonLabel = `Activate ${selectedTheme.name}`;
+    } else if (installedTheme) {
+        installButtonLabel = `Update ${selectedTheme.name}`;
+    }
+
     const handleInstall = () => {
-        if (installedTheme) {
+        if (installedTheme && !isDefaultOrLegacyTheme(selectedTheme)) {
             NiceModal.show(ConfirmationModal, {
                 title: 'Overwrite theme',
                 prompt: (
@@ -60,6 +98,7 @@ const ThemePreview: React.FC<{
         <div className='flex items-center gap-2'>
             <Breadcrumbs
                 activeItemClassName='hidden md:!block md:!visible'
+                containerClassName='whitespace-nowrap'
                 itemClassName='hidden md:!block md:!visible'
                 items={[
                     {label: 'Design', onClick: onClose},
@@ -70,6 +109,23 @@ const ThemePreview: React.FC<{
                 backIcon
                 onBack={onBack}
             />
+            {hasVariants(selectedTheme) ?
+                <>
+                    <span className='hidden md:!visible md:!block'>–</span>
+                    <Select
+                        border={false}
+                        containerClassName='text-sm font-bold'
+                        controlClasses={{menu: 'w-24'}}
+                        fullWidth={false}
+                        options={variantOptions}
+                        selectedOption={selectedVariant}
+                        clearBg
+                        onSelect={(option) => {
+                            setSelectedVariant(option || undefined);
+                        }}
+                    />
+                </> : null
+            }
         </div>;
 
     const right =
@@ -110,13 +166,19 @@ const ThemePreview: React.FC<{
             <div className='flex h-[calc(100%-74px)] grow flex-col items-center justify-center bg-grey-50 dark:bg-black'>
                 {previewMode === 'desktop' ?
                     <DesktopChrome>
-                        <iframe className='h-full w-full'
-                            src={selectedTheme?.previewUrl} title='Theme preview' />
+                        <iframe
+                            className='h-full w-full'
+                            src={previewUrl}
+                            title='Theme preview'
+                        />
                     </DesktopChrome>
                     :
                     <MobileChrome>
-                        <iframe className='h-full w-full'
-                            src={selectedTheme?.previewUrl} title='Theme preview' />
+                        <iframe
+                            className='h-full w-full'
+                            src={previewUrl}
+                            title='Theme preview'
+                        />
                     </MobileChrome>
                 }
             </div>

@@ -1,17 +1,14 @@
-import Avatar from '../../../admin-x-ds/global/Avatar';
-import Button from '../../../admin-x-ds/global/Button';
-import List from '../../../admin-x-ds/global/List';
-import ListItem from '../../../admin-x-ds/global/ListItem';
-import NoValueLabel from '../../../admin-x-ds/global/NoValueLabel';
 import React, {useState} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import TabView from '../../../admin-x-ds/global/TabView';
-import useRouting from '../../../hooks/useRouting';
+import TopLevelGroup from '../../TopLevelGroup';
+import clsx from 'clsx';
 import useStaffUsers from '../../../hooks/useStaffUsers';
-import {User} from '../../../api/users';
-import {UserInvite, useAddInvite, useDeleteInvite} from '../../../api/invites';
+import {Avatar, Button, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
+import {UserInvite, useAddInvite, useDeleteInvite} from '@tryghost/admin-x-framework/api/invites';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
-import {showToast} from '../../../admin-x-ds/global/Toast';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface OwnerProps {
     user: User;
@@ -20,6 +17,7 @@ interface OwnerProps {
 
 interface UsersListProps {
     users: User[];
+    groupname?: string;
     updateUser?: (user: User) => void;
 }
 
@@ -30,9 +28,12 @@ interface InviteListProps {
 
 const Owner: React.FC<OwnerProps> = ({user}) => {
     const {updateRoute} = useRouting();
+    const {currentUser} = useGlobalData();
 
     const showDetailModal = () => {
-        updateRoute({route: `users/show/${user.slug}`});
+        if (hasAdminAccess(currentUser)) {
+            updateRoute({route: `staff/${user.slug}`});
+        }
     };
 
     if (!user) {
@@ -40,27 +41,28 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
     }
 
     return (
-        <div className='group flex gap-3 hover:cursor-pointer' data-testid='owner-user' onClick={showDetailModal}>
-            <Avatar bgColor={generateAvatarColor((user.name ? user.name : user.email))} image={user.profile_image} label={getInitials(user.name)} labelColor='white' size='lg' />
+        <div className={clsx('group flex gap-3', hasAdminAccess(currentUser) && 'cursor-pointer')} data-testid='owner-user' onClick={showDetailModal}>
+            <Avatar bgColor={generateAvatarColor((user.name ? user.name : user.email))} image={user.profile_image ?? undefined} label={getInitials(user.name)} labelColor='white' size='lg' />
             <div className='flex flex-col'>
-                <span>{user.name} &mdash; <strong>Owner</strong> <button className='ml-2 inline-block text-sm font-bold text-green group-hover:visible md:invisible' type='button'>Edit</button></span>
+                <span>{user.name} &mdash; <strong>Owner</strong> {hasAdminAccess(currentUser) && <button className='ml-2 inline-block text-sm font-bold text-green group-hover:visible md:invisible' type='button'>View profile</button>}</span>
                 <span className='text-xs text-grey-700'>{user.email}</span>
             </div>
         </div>
     );
 };
 
-const UsersList: React.FC<UsersListProps> = ({users}) => {
+const UsersList: React.FC<UsersListProps> = ({users, groupname}) => {
     const {updateRoute} = useRouting();
+    const {currentUser} = useGlobalData();
 
     const showDetailModal = (user: User) => {
-        updateRoute({route: `users/show/${user.slug}`});
+        updateRoute({route: `staff/${user.slug}`});
     };
 
     if (!users || !users.length) {
         return (
             <NoValueLabel icon='single-user-block'>
-                No users found.
+                No {groupname} found.
             </NoValueLabel>
         );
     }
@@ -72,11 +74,17 @@ const UsersList: React.FC<UsersListProps> = ({users}) => {
                 if (user.status === 'inactive') {
                     title = `${title} (Suspended)`;
                 }
+
+                const canEdit = hasAdminAccess(currentUser) ||
+                    (isEditorUser(currentUser) && isContributorUser(user)) ||
+                    currentUser.id === user.id;
+
                 return (
                     <ListItem
                         key={user.id}
-                        action={<Button color='green' label='Edit' link={true} onClick={() => showDetailModal(user)}/>}
-                        avatar={(<Avatar bgColor={generateAvatarColor((user.name ? user.name : user.email))} image={user.profile_image} label={getInitials(user.name)} labelColor='white' />)}
+                        action={canEdit && <Button color='green' label='Edit' link={true} onClick={() => showDetailModal(user)}/>}
+                        avatar={(<Avatar bgColor={generateAvatarColor((user.name ? user.name : user.email))} image={user.profile_image ?? undefined} label={getInitials(user.name)} labelColor='white' />)}
+                        bgOnHover={canEdit}
                         className='min-h-[64px]'
                         detail={user.email}
                         hideActions={true}
@@ -84,7 +92,7 @@ const UsersList: React.FC<UsersListProps> = ({users}) => {
                         separator={false}
                         testId='user-list-item'
                         title={title}
-                        onClick={() => showDetailModal(user)} />
+                        onClick={() => canEdit && showDetailModal(user)} />
                 );
             })}
         </List>
@@ -97,6 +105,7 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
 
     const {mutateAsync: deleteInvite} = useDeleteInvite();
     const {mutateAsync: addInvite} = useAddInvite();
+    const handleError = useHandleError();
 
     let revokeActionLabel = 'Revoke';
     if (revokeState === 'progress') {
@@ -113,13 +122,18 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                 label={revokeActionLabel}
                 link={true}
                 onClick={async () => {
-                    setRevokeState('progress');
-                    await deleteInvite(invite.id);
-                    setRevokeState('');
-                    showToast({
-                        message: `Invitation revoked (${invite.email})`,
-                        type: 'success'
-                    });
+                    try {
+                        setRevokeState('progress');
+                        await deleteInvite(invite.id);
+                        showToast({
+                            message: `Invitation revoked (${invite.email})`,
+                            type: 'success'
+                        });
+                    } catch (e) {
+                        handleError(e);
+                    } finally {
+                        setRevokeState('');
+                    }
                 }}
             />
             <Button
@@ -128,17 +142,22 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                 label={resendActionLabel}
                 link={true}
                 onClick={async () => {
-                    setResendState('progress');
-                    await deleteInvite(invite.id);
-                    await addInvite({
-                        email: invite.email,
-                        roleId: invite.role_id
-                    });
-                    setResendState('');
-                    showToast({
-                        message: `Invitation resent! (${invite.email})`,
-                        type: 'success'
-                    });
+                    try {
+                        setResendState('progress');
+                        await deleteInvite(invite.id);
+                        await addInvite({
+                            email: invite.email,
+                            roleId: invite.role_id
+                        });
+                        showToast({
+                            message: `Invitation resent! (${invite.email})`,
+                            type: 'success'
+                        });
+                    } catch (e) {
+                        handleError(e);
+                    } finally {
+                        setResendState('');
+                    }
                 }}
             />
         </div>
@@ -149,7 +168,7 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
     if (!users || !users.length) {
         return (
             <NoValueLabel icon='single-user-block'>
-                No users found.
+                No invitations found.
             </NoValueLabel>
         );
     }
@@ -179,24 +198,27 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
     );
 };
 
-const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
+const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords, highlight = true}) => {
     const {
+        totalUsers,
+        users,
         ownerUser,
         adminUsers,
         editorUsers,
         authorUsers,
         contributorUsers,
-        invites
+        invites,
+        hasNextPage,
+        fetchNextPage
     } = useStaffUsers();
-
     const {updateRoute} = useRouting();
 
     const showInviteModal = () => {
-        updateRoute('users/invite');
+        updateRoute('staff/invite');
     };
 
     const buttons = (
-        <Button color='green' label='Invite users' link={true} onClick={() => {
+        <Button color='green' label='Invite people' link={true} linkWithPadding onClick={() => {
             showInviteModal();
         }} />
     );
@@ -207,22 +229,22 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'users-admins',
             title: 'Administrators',
-            contents: (<UsersList users={adminUsers} />)
+            contents: (<UsersList groupname='administrators' users={adminUsers} />)
         },
         {
             id: 'users-editors',
             title: 'Editors',
-            contents: (<UsersList users={editorUsers} />)
+            contents: (<UsersList groupname='editors' users={editorUsers} />)
         },
         {
             id: 'users-authors',
             title: 'Authors',
-            contents: (<UsersList users={authorUsers} />)
+            contents: (<UsersList groupname='authors' users={authorUsers} />)
         },
         {
             id: 'users-contributors',
             title: 'Contributors',
-            contents: (<UsersList users={contributorUsers} />)
+            contents: (<UsersList groupname='contributors' users={contributorUsers} />)
         },
         {
             id: 'users-invited',
@@ -232,17 +254,23 @@ const Users: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ];
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={buttons}
+            highlightOnModalClose={highlight}
             keywords={keywords}
-            navid='users'
+            navid='staff'
             testId='users'
-            title='Users and permissions'
+            title='Staff'
         >
             <Owner user={ownerUser} />
             <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
-        </SettingGroup>
+            {hasNextPage && <Button
+                label={`Load more (showing ${users.length}/${totalUsers} users)`}
+                link
+                onClick={() => fetchNextPage()}
+            />}
+        </TopLevelGroup>
     );
 };
 
-export default Users;
+export default withErrorBoundary(Users, 'Staff');

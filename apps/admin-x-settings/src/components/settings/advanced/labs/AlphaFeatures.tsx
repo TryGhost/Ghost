@@ -1,7 +1,7 @@
 import FeatureToggle from './FeatureToggle';
 import LabItem from './LabItem';
-import List from '../../../../admin-x-ds/global/List';
 import React from 'react';
+import {List} from '@tryghost/admin-x-design-system';
 
 const features = [{
     title: 'URL cache',
@@ -17,7 +17,7 @@ const features = [{
     flag: 'webmentions'
 },{
     title: 'Websockets',
-    description: 'Test out Websockets functionality at <code>/ghost/#/websockets</code>.',
+    description: <>Test out Websockets functionality at <code>/ghost/#/websockets</code>.</>,
     flag: 'websockets'
 },{
     title: 'Stripe Automatic Tax',
@@ -36,10 +36,6 @@ const features = [{
     description: 'Enables the Collections Card for pages - requires Collections and the beta Editor to be enabled',
     flag: 'collectionsCard'
 },{
-    title: 'Admin X',
-    description: 'Enables Admin X, the new admin UI for Ghost',
-    flag: 'adminXSettings'
-},{
     title: 'Mail Events',
     description: 'Enables processing of mail events',
     flag: 'mailEvents'
@@ -52,9 +48,25 @@ const features = [{
     description: 'Enables publishers to collect one-time payments',
     flag: 'tipsAndDonations'
 },{
-    title: 'Recommendations',
-    description: 'Enables publishers to recommend sites to their audience',
-    flag: 'recommendations'
+    title: 'AdminX Offers',
+    description: 'Enables the new offers UI in AdminX settings',
+    flag: 'adminXOffers'
+},{
+    title: 'Filter by email disabled',
+    description: 'Allows filtering members by email disabled',
+    flag: 'filterEmailDisabled'
+},{
+    title: 'AdminX Demo',
+    description: 'Adds a navigation link to the AdminX demo app',
+    flag: 'adminXDemo'
+},{
+    title: 'TK Reminders',
+    description: 'Enables the TK Reminders feature in the editor',
+    flag: 'tkReminders'
+},{
+    title: 'New email addresses',
+    description: 'For self hosters, forces the usage of the mail.from config as from address for all outgoing emails',
+    flag: 'newEmailAddresses'
 }];
 
 const AlphaFeatures: React.FC = () => {
@@ -62,7 +74,7 @@ const AlphaFeatures: React.FC = () => {
         <List titleSeparator={false}>
             {features.map(feature => (
                 <LabItem
-                    action={<FeatureToggle flag={feature.flag} />}
+                    action={<FeatureToggle flag={feature.flag} label={feature.title} />}
                     detail={feature.description}
                     title={feature.title} />
             ))}

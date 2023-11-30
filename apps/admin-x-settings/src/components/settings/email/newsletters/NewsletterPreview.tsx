@@ -1,16 +1,16 @@
 import NewsletterPreviewContent from './NewsletterPreviewContent';
 import React from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
-import {Newsletter} from '../../../../api/newsletters';
-import {fullEmailAddress} from '../../../../api/site';
-import {getSettingValues} from '../../../../api/settings';
+import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletterEmails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
     const {currentUser, settings, siteData, config} = useGlobalData();
-    const [title, icon, commentsEnabled] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled']);
+    const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'support_email_address', 'default_email_address']);
 
     let headerTitle: string | null = null;
     if (newsletter.show_header_title) {
@@ -84,23 +84,25 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
 
     const colors = hasEmailCustomization ? {
         backgroundColor: backgroundColor(),
-        borderColor: borderColor(),
+        borderColor: borderColor() || undefined,
         secondaryBorderColor,
-        titleColor: titleColor(),
+        titleColor: titleColor() || undefined,
         textColor,
         secondaryTextColor
     } : {};
 
     return <NewsletterPreviewContent
         authorPlaceholder={currentUser.name || currentUser.email}
+        backgroundColor={colors.backgroundColor || '#ffffff'}
         bodyFontCategory={newsletter.body_font_category}
         footerContent={newsletter.footer_content}
         headerIcon={newsletter.show_header_icon ? icon : undefined}
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}
         headerTitle={headerTitle}
-        senderEmail={fullEmailAddress(newsletter.sender_email || 'noreply', siteData)}
+        senderEmail={renderSenderEmail(newsletter, config, defaultEmailAddress)}
         senderName={newsletter.sender_name || title}
+        senderReplyTo={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
         showBadge={newsletter.show_badge}
         showCommentCta={showCommentCta}
         showFeatureImage={newsletter.show_feature_image}

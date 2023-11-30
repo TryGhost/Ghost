@@ -1,19 +1,13 @@
 import AnnouncementBarPreview from './announcementBar/AnnouncementBarPreview';
-import CheckboxGroup from '../../../admin-x-ds/global/form/CheckboxGroup';
-import ColorIndicator from '../../../admin-x-ds/global/form/ColorIndicator';
-import Form from '../../../admin-x-ds/global/form/Form';
-import HtmlField from '../../../admin-x-ds/global/form/HtmlField';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useState} from 'react';
-import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {PreviewModalContent} from '../../../admin-x-ds/global/modal/PreviewModal';
-import {Tab} from '../../../admin-x-ds/global/TabView';
-import {getHomepageUrl} from '../../../api/site';
-import {getSettingValues} from '../../../api/settings';
-import {showToast} from '../../../admin-x-ds/global/Toast';
-import {useBrowsePosts} from '../../../api/posts';
+import {CheckboxGroup, ColorIndicator, Form, HtmlField, PreviewModalContent, Tab, showToast} from '@tryghost/admin-x-design-system';
+import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type SidebarProps = {
     announcementContent?: string;
@@ -38,8 +32,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     paidMembersEnabled,
     onBlur
 }) => {
-    const {config} = useGlobalData();
-
     const visibilityCheckboxes = [
         {
             label: 'Logged out visitors',
@@ -70,7 +62,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     return (
         <Form>
             <HtmlField
-                config={config}
                 nodes='MINIMAL_NODES'
                 placeholder='Highlight breaking news, offers or updates'
                 title='Announcement'
@@ -118,8 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 const AnnouncementBarModal: React.FC = () => {
     const {siteData} = useGlobalData();
-    const modal = NiceModal.useModal();
-    const {localSettings, updateSetting, handleSave} = useSettingGroup();
+    const {localSettings, updateSetting, handleSave, okProps} = useSettingGroup({savingDelay: 500});
     const [announcementContent] = getSettingValues<string>(localSettings, ['announcement_content']);
     const [accentColor] = getSettingValues<string>(localSettings, ['accent_color']);
     const [announcementBackgroundColor] = getSettingValues<string>(localSettings, ['announcement_background']);
@@ -201,22 +191,23 @@ const AnnouncementBarModal: React.FC = () => {
         break;
     }
 
-    const preview = <AnnouncementBarPreview 
-        announcementBackgroundColor={announcementBackgroundColor} 
-        announcementContent={announcementContent} 
-        url={selectedTabURL} 
+    const preview = <AnnouncementBarPreview
+        announcementBackgroundColor={announcementBackgroundColor}
+        announcementContent={announcementContent}
+        url={selectedTabURL}
         visibility={visibilitySettings}
     />;
 
     return <PreviewModalContent
         afterClose={() => {
-            modal.remove();
             updateRoute('announcement-bar');
         }}
+        buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
-        deviceSelector={false}
+        deviceSelector={true}
         dirty={false}
-        okLabel='Save'
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save'}
         preview={preview}
         previewBgColor='greygradient'
         previewToolbarTabs={previewTabs}
@@ -226,10 +217,7 @@ const AnnouncementBarModal: React.FC = () => {
         title='Announcement'
         titleHeadingLevel={5}
         onOk={async () => {
-            if (await handleSave()) {
-                modal.remove();
-                updateRoute('announcement-bar');
-            } else {
+            if (!(await handleSave({fakeWhenUnchanged: true}))) {
                 showToast({
                     type: 'pageError',
                     message: 'An error occurred while saving your changes. Please try again.'

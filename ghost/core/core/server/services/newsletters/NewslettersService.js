@@ -8,7 +8,9 @@ const errors = require('@tryghost/errors');
 
 const messages = {
     nameAlreadyExists: 'A newsletter with the same name already exists',
-    newsletterNotFound: 'Newsletter not found.'
+    newsletterNotFound: 'Newsletter not found.',
+    senderEmailNotAllowed: 'You cannot set the sender email address to {email}',
+    replyToNotAllowed: 'You cannot set the reply-to email address to {email}'
 };
 
 class NewslettersService {
@@ -21,9 +23,10 @@ class NewslettersService {
      * @param {Object} options.singleUseTokenProvider
      * @param {Object} options.urlUtils
      * @param {ILimitService} options.limitService
+     * @param {Object} options.emailAddressService
      * @param {Object} options.labs
      */
-    constructor({NewsletterModel, MemberModel, mail, singleUseTokenProvider, urlUtils, limitService, labs}) {
+    constructor({NewsletterModel, MemberModel, mail, singleUseTokenProvider, urlUtils, limitService, labs, emailAddressService}) {
         this.NewsletterModel = NewsletterModel;
         this.MemberModel = MemberModel;
         this.urlUtils = urlUtils;
@@ -31,6 +34,8 @@ class NewslettersService {
         this.limitService = limitService;
         /** @private */
         this.labs = labs;
+        /** @private */
+        this.emailAddressService = emailAddressService;
 
         /* email verification setup */
 
@@ -154,8 +159,7 @@ class NewslettersService {
             throw error;
         }
 
-        // Load relations correctly
-        newsletter = await this.NewsletterModel.findOne({id: newsletter.id}, {...options, require: true});
+        let optedInMemberCount = undefined;
 
         // subscribe existing members if opt_in_existing=true
         if (options.opt_in_existing) {
@@ -164,14 +168,21 @@ class NewslettersService {
             // subscribe members that have an existing subscription to an active newsletter
             const memberIds = await this.MemberModel.fetchAllSubscribed(_.pick(options, 'transacting'));
 
-            newsletter.meta = newsletter.meta || {};
-            newsletter.meta.opted_in_member_count = memberIds.length;
+            optedInMemberCount = memberIds.length;
 
             if (memberIds.length) {
                 debug(`Found ${memberIds.length} members to subscribe`);
 
                 await newsletter.subscribeMembersById(memberIds, options);
             }
+        }
+
+        // Load relations correctly
+        newsletter = await this.NewsletterModel.findOne({id: newsletter.id}, {...options, require: true});
+
+        if (optedInMemberCount !== undefined) {
+            newsletter.meta = newsletter.meta || {};
+            newsletter.meta.opted_in_member_count = optedInMemberCount;
         }
 
         // send any verification emails and respond with the appropriate meta added
@@ -199,7 +210,7 @@ class NewslettersService {
         }
 
         let updatedNewsletter;
-        
+
         try {
             updatedNewsletter = await this.NewsletterModel.edit(cleanedAttrs, options);
         } catch (error) {
@@ -215,7 +226,7 @@ class NewslettersService {
 
         // Load relations correctly in the response
         updatedNewsletter = await this.NewsletterModel.findOne({id: updatedNewsletter.id}, {...options, require: true});
-        
+
         await this.respondWithEmailVerification(updatedNewsletter, emailsToVerify);
         return updatedNewsletter;
     }
@@ -232,7 +243,12 @@ class NewslettersService {
         const attrs = {};
         attrs[property] = value;
 
-        return this.NewsletterModel.edit(attrs, {id});
+        const updatedNewsletter = await this.NewsletterModel.edit(attrs, {id});
+
+        updatedNewsletter.meta = updatedNewsletter.meta || {};
+        updatedNewsletter.meta.email_verified = property;
+
+        return updatedNewsletter;
     }
 
     /* Email verification Internals */
@@ -243,14 +259,48 @@ class NewslettersService {
     async prepAttrsForEmailVerification(attrs, newsletter) {
         const cleanedAttrs = _.cloneDeep(attrs);
         const emailsToVerify = [];
+        const emailProperties = [
+            {property: 'sender_email', type: 'from', emptyable: true, error: messages.senderEmailNotAllowed}
+        ];
 
-        for (const property of ['sender_email']) {
+        if (!this.emailAddressService.service.useNewEmailAddresses) {
+            // Validate reply_to is either newsletter or support
+            if (cleanedAttrs.sender_reply_to !== undefined) {
+                if (!['newsletter', 'support'].includes(cleanedAttrs.sender_reply_to)) {
+                    throw new errors.ValidationError({
+                        message: tpl(messages.replyToNotAllowed, {email: cleanedAttrs.sender_reply_to})
+                    });
+                }
+            }
+        } else {
+            if (cleanedAttrs.sender_reply_to !== undefined) {
+                if (!['newsletter', 'support'].includes(cleanedAttrs.sender_reply_to)) {
+                    emailProperties.push({property: 'sender_reply_to', type: 'replyTo', emptyable: false, error: messages.replyToNotAllowed});
+                }
+            }
+        }
+
+        for (const {property, type, emptyable, error} of emailProperties) {
             const email = cleanedAttrs[property];
             const hasChanged = !newsletter || newsletter.get(property) !== email;
 
-            if (await this.requiresEmailVerification({email, hasChanged})) {
-                delete cleanedAttrs[property];
-                emailsToVerify.push({email, property});
+            if (hasChanged && email !== undefined) {
+                if (email === null || email === '' && emptyable) {
+                    continue;
+                }
+
+                const validated = this.emailAddressService.service.validate(email, type);
+
+                if (!validated.allowed) {
+                    throw new errors.ValidationError({
+                        message: tpl(error, {email})
+                    });
+                }
+
+                if (validated.verificationEmailRequired) {
+                    delete cleanedAttrs[property];
+                    emailsToVerify.push({email, property});
+                }
             }
         }
 
@@ -262,19 +312,6 @@ class NewslettersService {
         }
 
         return {cleanedAttrs, emailsToVerify};
-    }
-
-    /**
-     * @private
-     */
-    async requiresEmailVerification({email, hasChanged}) {
-        if (!email || !hasChanged) {
-            return false;
-        }
-
-        // TODO: check other newsletters for known/verified email
-
-        return true;
     }
 
     /**
@@ -302,6 +339,13 @@ class NewslettersService {
         let fromEmail = `noreply@${toDomain}`;
         if (fromEmail === email) {
             fromEmail = `no-reply@${toDomain}`;
+        }
+
+        if (this.emailAddressService.service.useNewEmailAddresses) {
+            // Gone with the old logic: always use the default email address here
+            // We don't need to validate the FROM address, only the to address
+            // Also because we are not only validating FROM addresses, but also possible REPLY-TO addresses, which we won't send FROM
+            fromEmail = this.emailAddressService.service.defaultFromAddress;
         }
 
         const {ghostMailer} = this;

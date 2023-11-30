@@ -1,13 +1,11 @@
-import Button from '../../../admin-x-ds/global/Button';
-import CodeEditor from '../../../admin-x-ds/global/form/CodeEditor';
 import CodeModal from './code/CodeModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useMemo, useRef, useState} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import TabView from '../../../admin-x-ds/global/TabView';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {Button, CodeEditor, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {ReactCodeMirrorRef} from '@uiw/react-codemirror';
-import {getSettingValues} from '../../../api/settings';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -47,17 +45,17 @@ const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'header',
             title: 'Site header',
-            contents: (<CodeEditor {...headerProps} ref={headerEditorRef} data-testid='header-code' autoFocus />)
+            contents: (<CodeEditor {...headerProps} ref={headerEditorRef} className='mt-2' data-testid='header-code' autoFocus />)
         },
         {
             id: 'footer',
             title: 'Site footer',
-            contents: (<CodeEditor {...footerProps} ref={footerEditorRef} data-testid='footer-code' />)
+            contents: (<CodeEditor {...footerProps} ref={footerEditorRef} className='mt-2' data-testid='footer-code' />)
         }
     ] as const;
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description="Add custom code to your publication"
             isEditing={isEditing}
             keywords={keywords}
@@ -89,8 +87,8 @@ const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     />
                 </div>
             )}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 
-export default CodeInjection;
+export default withErrorBoundary(CodeInjection, 'Code injection');

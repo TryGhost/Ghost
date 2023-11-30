@@ -1,12 +1,11 @@
-import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/form/TextField';
+import TopLevelGroup from '../../TopLevelGroup';
+import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as FacebookLogo} from '../../../admin-x-ds/assets/images/facebook-logo.svg';
-import {getImageUrl, useUploadImage} from '../../../api/images';
-import {getSettingValues} from '../../../api/settings';
+import {FacebookLogo, ImageUpload, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -21,6 +20,11 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     } = useSettingGroup();
 
     const {mutateAsync: uploadImage} = useUploadImage();
+    // const [unsplashEnabled] = getSettingValues<boolean>(localSettings, ['unsplash']);
+    // const [showUnsplash, setShowUnsplash] = useState<boolean>(false);
+    const handleError = useHandleError();
+
+    const editor = usePinturaEditor();
 
     const [
         facebookTitle, facebookDescription, facebookImage, siteTitle, siteDescription
@@ -35,8 +39,12 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const handleImageUpload = async (file: File) => {
-        const imageUrl = getImageUrl(await uploadImage({file}));
-        updateSetting('og_image', imageUrl);
+        try {
+            const imageUrl = getImageUrl(await uploadImage({file}));
+            updateSetting('og_image', imageUrl);
+        } catch (e) {
+            handleError(e);
+        }
     };
 
     const handleImageDelete = () => {
@@ -67,6 +75,18 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         height='300px'
                         id='facebook-image'
                         imageURL={facebookImage}
+                        pintura={
+                            {
+                                isEnabled: editor.isEnabled,
+                                openEditor: async () => editor.openEditor({
+                                    image: facebookImage || '',
+                                    handleSave: async (file:File) => {
+                                        const imageUrl = getImageUrl(await uploadImage({file}));
+                                        updateSetting('og_image', imageUrl);
+                                    }
+                                })
+                            }
+                        }
                         onDelete={handleImageDelete}
                         onUpload={handleImageUpload}
                     >
@@ -74,7 +94,6 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     </ImageUpload>
                     <div className="flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
                         <TextField
-                            clearBg={true}
                             inputRef={focusRef}
                             placeholder={siteTitle}
                             title="Facebook title"
@@ -82,7 +101,6 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             onChange={handleTitleChange}
                         />
                         <TextField
-                            clearBg={true}
                             placeholder={siteDescription}
                             title="Facebook description"
                             value={facebookDescription}
@@ -95,7 +113,7 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Customize structured data of your site'
             isEditing={isEditing}
             keywords={keywords}
@@ -109,8 +127,8 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             {values}
             {isEditing ? inputFields : null}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 
-export default Facebook;
+export default withErrorBoundary(Facebook, 'Facebook card');

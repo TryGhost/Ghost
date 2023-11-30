@@ -287,6 +287,10 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     line-height: 1.5em;
 }
 
+.gh-portal-signup-terms-content p {
+    margin-bottom: 0;
+}
+
 .gh-portal-error .gh-portal-signup-terms-content {
     line-height: 1.5em;
 }

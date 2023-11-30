@@ -4,7 +4,7 @@ exports[`API Versioning Admin API Does an internal rewrite for canary URLs with 
 Object {
   "site": Object {
     "accent_color": "#FF1A75",
-    "allow_self_signup": true,
+    "allow_external_signup": true,
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "icon": null,
@@ -83,7 +83,7 @@ exports[`API Versioning Admin API allows invalid accept-version header 1: [body]
 Object {
   "site": Object {
     "accent_color": "#FF1A75",
-    "allow_self_signup": true,
+    "allow_external_signup": true,
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "icon": null,
@@ -231,7 +231,7 @@ exports[`API Versioning Admin API responds with content version header even when
 Object {
   "site": Object {
     "accent_color": "#FF1A75",
-    "allow_self_signup": true,
+    "allow_external_signup": true,
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "icon": null,
@@ -261,7 +261,7 @@ exports[`API Versioning Admin API responds with current content version header w
 Object {
   "site": Object {
     "accent_color": "#FF1A75",
-    "allow_self_signup": true,
+    "allow_external_signup": true,
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "icon": null,
@@ -291,7 +291,7 @@ exports[`API Versioning Admin API responds with current content version header w
 Object {
   "site": Object {
     "accent_color": "#FF1A75",
-    "allow_self_signup": true,
+    "allow_external_signup": true,
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "icon": null,
@@ -540,6 +540,10 @@ a {
 
 exports[`API Versioning Admin API responds with error and sends email ONCE when requested version is BEHIND and CANNOT respond multiple times 3: [metadata 1] 1`] = `
 Object {
+  "encoding": "base64",
+  "from": "\\"Ghost\\" <noreply@127.0.0.1>",
+  "generateTextFromHTML": true,
+  "replyTo": null,
   "subject": "Attention required: Your Zapier integration has failed",
   "to": "jbloggs@example.com",
 }
@@ -1040,6 +1044,10 @@ a {
 
 exports[`API Versioning Admin API responds with error when requested version is BEHIND and CANNOT respond 3: [metadata 1] 1`] = `
 Object {
+  "encoding": "base64",
+  "from": "\\"Ghost\\" <noreply@127.0.0.1>",
+  "generateTextFromHTML": true,
+  "replyTo": null,
   "subject": "Attention required: Your Zapier integration has failed",
   "to": "jbloggs@example.com",
 }
@@ -1354,6 +1362,7 @@ Object {
     "codeinjection_head": null,
     "comments_enabled": "off",
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    "default_email_address": "noreply@127.0.0.1",
     "description": "Thoughts, stories and ideas",
     "facebook": "ghost",
     "firstpromoter_account": null,
@@ -1391,6 +1400,7 @@ Object {
     "og_description": null,
     "og_image": null,
     "og_title": null,
+    "outbound_link_tagging": true,
     "paid_members_enabled": true,
     "portal_button": true,
     "portal_button_icon": null,
@@ -1417,6 +1427,7 @@ Object {
         "url": "/contribute/",
       },
     ],
+    "support_email_address": "noreply@127.0.0.1",
     "timezone": "Etc/UTC",
     "title": "Ghost",
     "twitter": "@ghost",
@@ -1452,6 +1463,7 @@ Object {
     "codeinjection_head": null,
     "comments_enabled": "off",
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+    "default_email_address": "noreply@127.0.0.1",
     "description": "Thoughts, stories and ideas",
     "facebook": "ghost",
     "firstpromoter_account": null,
@@ -1489,6 +1501,7 @@ Object {
     "og_description": null,
     "og_image": null,
     "og_title": null,
+    "outbound_link_tagging": true,
     "paid_members_enabled": true,
     "portal_button": true,
     "portal_button_icon": null,
@@ -1515,6 +1528,7 @@ Object {
         "url": "/contribute/",
       },
     ],
+    "support_email_address": "noreply@127.0.0.1",
     "timezone": "Etc/UTC",
     "title": "Ghost",
     "twitter": "@ghost",

@@ -1,8 +1,10 @@
-import {Config, useBrowseConfig} from '../../api/config';
+import SpinningOrb from '../../assets/videos/logo-loader.mp4';
+import {Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {ReactNode, createContext, useContext} from 'react';
-import {Setting, useBrowseSettings} from '../../api/settings';
-import {SiteData, useBrowseSite} from '../../api/site';
-import {User, useCurrentUser} from '../../api/users';
+import {Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
+import {SiteData, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {User} from '@tryghost/admin-x-framework/api/users';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 
 interface GlobalData {
     settings: Setting[]
@@ -34,8 +36,20 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
 
     if (requests.some(request => request.isLoading)) {
         return (
-            <div className="flex h-full flex-col items-center justify-center">
-                <div className="text-center text-2xl font-bold">Loading...</div>
+            <div className='gh-loading-orb-container' style={{
+                width: '100vw',
+                height: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingBottom: '8vh'
+            }}>
+                <video autoPlay={true} className='gh-loading-orb' height="100" preload="metadata" style={{
+                    width: '100px',
+                    height: '100px'
+                }} width="100" loop muted playsInline>
+                    <source src={SpinningOrb} type="video/mp4" />
+                </video>
             </div>
         );
     }

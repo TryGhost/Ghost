@@ -104,7 +104,7 @@
 }
 
 .post-view-link:hover {
-    color: var(--darkgrey);
+    color: var(--midgrey-d2);
 }
 
 .post-view-link svg {
@@ -112,12 +112,11 @@
     width: 12px;
     height: 12px;
     vertical-align: middle;
-    margin-bottom: 2px;
-    fill: var(--midgrey);
+    transition: all .15s ease;
 }
 
 .post-view-link:hover svg {
-    fill: var(--darkgrey);
+    transform: translateY(-1px);
 }
 
 
@@ -594,6 +593,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 1em;
     height: 1em;
     margin-left: 24px;
+    margin-bottom: 2px;
     line-height: 1.2;
 }
 
@@ -623,12 +623,14 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor-feature-image-alttext,
 .gh-editor-feature-image-caption {
     width: 100%;
+    height: 24px;
     margin: 0 0 1.7em 0;
+    padding: 0;
     outline: none;
     border-width: 0;
     border-style: none;
     font-size: 1.4rem;
-    line-height: 1.65;
+    line-height: 24px;
     letter-spacing: .04rem;
     background-color: transparent !important;
     transition: border-color .15s linear;
@@ -639,6 +641,13 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor-feature-image-caption p::placeholder {
     color: var(--midlightgrey);
     opacity: 1 !important;
+}
+
+.gh-editor-feature-image-caption :is(.koenig-lexical *) {
+    font-size: inherit !important;
+    font-family: inherit !important;
+    line-height: inherit !important;
+    letter-spacing: inherit !important;
 }
 
 .gh-editor-feature-image-caption p {
@@ -742,6 +751,29 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     margin-left: 1rem;
 }
 
+.gh-editor-post-status .view-post {
+    display: inline-flex;
+    align-items: center;
+    color: var(--midgrey-l2);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.gh-editor-post-status .view-post:hover {
+    color: var(--midgrey-d1);
+}
+
+.gh-editor-post-status .view-post svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin: 1px 0 0 .6rem;
+    transition: all .15s ease;
+}
+
+.gh-editor-post-status .view-post:hover svg {
+    transform: translateY(-1px);
+}
+
 @media (max-width: 720px) {
     .gh-editor-post-status .newsletter-failed {
         display: none;
@@ -799,14 +831,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     }
 }
 
-/* SimpleMDE editor
-/* ---------------------------------------------------------- */
-
-/* ensure there's no flash of unstyled textarea while initializing */
-.gh-markdown-editor textarea {
-    opacity: 0;
-}
-
 .gh-editor-title {
     padding: 0 0 4px;
 }
@@ -816,158 +840,6 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     font-weight: 700;
     opacity: 1;
 }
-
-.gh-markdown-editor {
-    position: relative;
-    z-index: 0;
-    width: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
-.gh-editor > .gh-markdown-editor {
-    height: 100vh;
-}
-
-.gh-markdown-editor-pane,
-.gh-markdown-editor-preview {
-    padding: 10vw 4vw;
-}
-
-@media (max-width: 500px) {
-    .gh-markdown-editor-pane,
-    .gh-markdown-editor-preview {
-        padding: 15vw 4vw;
-    }
-}
-
-.gh-markdown-editor-side-by-side .gh-markdown-editor-pane,
-.gh-markdown-editor-side-by-side .gh-markdown-editor-preview {
-    padding: 4vw;
-}
-
-.gh-markdown-editor-side-by-side {
-    display: flex;
-    flex-direction: row;
-    overflow-y: hidden;
-    margin-top: 43px;
-}
-
-.gh-markdown-editor-side-by-side .gh-markdown-editor-pane,
-.gh-markdown-editor-side-by-side .gh-markdown-editor-preview {
-    width: 50%;
-    height: 100%;
-    overflow-y: auto;
-}
-
-.gh-markdown-editor-preview {
-    border-left: var(--lightgrey) 1px solid;
-}
-
-.gh-markdown-editor-preview a {
-    text-decoration: underline;
-}
-
-.gh-editor-footer {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    height: 46px;
-    min-height: 46px;
-    border-top: var(--lightgrey) 1px solid;
-}
-
-@media (max-width: 800px) {
-    .gh-editor-footer {
-        display: none;
-    }
-}
-
-.gh-editor-footer .editor-toolbar {
-    border: none;
-    background: transparent;
-    border-radius: 0;
-    opacity: 1;
-}
-
-.gh-editor-footer .editor-toolbar:before,
-.gh-editor-footer .editor-toolbar:after {
-    content: none;
-}
-
-.gh-editor-footer .editor-toolbar a:focus {
-    outline: none;
-}
-
-.gh-markdown-editor .CodeMirror {
-    overflow: visible;
-    padding: 0;
-    background: transparent;
-}
-
-/* Prevent confusing select behaviour, see https://github.com/TryGhost/Ghost/issues/9356 */
-.gh-markdown-editor .CodeMirror-code:not([contenteditable="true"]) {
-    user-select: none;
-}
-
-.gh-markdown-editor .CodeMirror-cursor {
-    border-width: 3px;
-    border-color: var(--blue);
-}
-
-/* fix visible scrollbars when OSX is set to show them */
-.gh-markdown-editor .CodeMirror-scroll {
-    overflow: visible !important;
-}
-
-.gh-markdown-editor .CodeMirror-scroll:hover {
-    cursor: text;
-}
-
-/* prevent markdown content showing after the preview if the preview is shorter */
-.gh-editor-preview .CodeMirror-scroll {
-    display: none;
-}
-
-.gh-editor .gh-editor-title,
-.gh-markdown-editor .CodeMirror-wrap {
-    max-width: 740px;
-    margin-right: auto;
-    margin-left: auto;
-    border: none;
-    background: transparent;
-}
-
-.gh-markdown-editor .CodeMirror-wrap > div > textarea {
-    top: 0;
-    height: 26px;
-    min-height: 26px;
-    margin-bottom: -26px;
-    min-width: 0;
-}
-
-.gh-markdown-editor .CodeMirror pre {
-    padding: 0;
-    color: color-mod(var(--darkgrey) l(+5%));
-    font-family: "Consolas", monaco, monospace;
-    font-size: 1.6rem;
-}
-
-@media (max-width: 960px) {
-    .gh-markdown-editor .CodeMirror pre {
-        font-size: 1.4rem;
-    }
-}
-
-.gh-markdown-editor .CodeMirror .cm-strong {
-    color: var(--darkgrey);
-}
-
-.gh-markdown-editor .CodeMirror .cm-url {
-    text-decoration: underline;
-}
-
 .gh-editor .editor-preview {
     height: auto;
     margin-top: 4px;
@@ -975,25 +847,18 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     background: transparent;
 }
 
-.gh-editor .editor-preview,
-.gh-markdown-editor-preview {
+.gh-editor .editor-preview {
     color: color-mod(var(--darkgrey) l(+5%));
     font-family: Georgia, Times, Serif;
     font-size: 1.9rem;
 }
 
 .gh-editor .editor-preview h1,
-.gh-markdown-editor-preview h1,
 .gh-editor .editor-preview h2,
-.gh-markdown-editor-preview h2,
 .gh-editor .editor-preview h3,
-.gh-markdown-editor-preview h3,
 .gh-editor .editor-preview h4,
-.gh-markdown-editor-preview h4,
 .gh-editor .editor-preview h5,
-.gh-markdown-editor-preview h5,
-.gh-editor .editor-preview h6,
-.gh-markdown-editor-preview h6 {
+.gh-editor .editor-preview h6, {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
@@ -1194,14 +1059,6 @@ figure {
     padding-right: 8px; /* extra padding used for dynamic positioning with js */
 }
 
-.gh-announcement-editor {
-    width: 100%;
-}
-
-.gh-announcement-editor div {
-    width: 100%;
-}
-
 /* Labs
 /* ---------------------------------------------------------- */
 
@@ -1246,4 +1103,12 @@ figure {
 
 .gh-editor-hidden-indicator svg {
     height: 2.4rem;
+}
+
+.gh-setting-error {
+    margin-top: 1em;
+    line-height: 1.3em;
+    color: var(--red);
+    font-weight: 300;
+    letter-spacing: 0.3px;
 }

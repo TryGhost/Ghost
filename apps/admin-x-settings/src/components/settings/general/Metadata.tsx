@@ -1,12 +1,8 @@
-import Heading from '../../../admin-x-ds/global/Heading';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/form/TextField';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {ReactComponent as GoogleLogo} from '../../../admin-x-ds/assets/images/google-logo.svg';
-import {ReactComponent as MagnifyingGlass} from '../../../admin-x-ds/assets/icons/magnifying-glass.svg';
-import {getSettingValues} from '../../../api/settings';
+import {GoogleLogo, Heading, Icon, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 interface SearchEnginePreviewProps {
     title: string;
@@ -33,7 +29,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
                 </div>
                 <div className='grow'>
                     <div className='flex w-full items-center justify-end rounded-full bg-white p-3 px-4 shadow dark:bg-grey-900'>
-                        <MagnifyingGlass className='h-4 w-4 text-blue-600' style={{strokeWidth: '2px'}} />
+                        <Icon className='stroke-[2px] text-blue-600' name='magnifying-glass' size='sm' />
                     </div>
                 </div>
             </div>
@@ -99,27 +95,31 @@ const Metadata: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Extra content for search engines'
             isEditing={isEditing}
             keywords={keywords}
             navid='metadata'
             saveState={saveState}
             testId='metadata'
-            title='Metadata'
+            title='Meta data'
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >
-            <SearchEnginePreview
-                description={metaDescription ? metaDescription : siteDescription}
-                icon={siteData?.icon}
-                title={metaTitle ? metaTitle : siteTitle}
-                url={siteData?.url}
-            />
-            {isEditing ? inputFields : null}
-        </SettingGroup>
+            {isEditing &&
+            <>
+                <SearchEnginePreview
+                    description={metaDescription ? metaDescription : siteDescription}
+                    icon={siteData?.icon}
+                    title={metaTitle ? metaTitle : siteTitle}
+                    url={siteData?.url}
+                />
+                {inputFields}
+            </>
+            }
+        </TopLevelGroup>
     );
 };
 
-export default Metadata;
+export default withErrorBoundary(Metadata, 'Meta data');

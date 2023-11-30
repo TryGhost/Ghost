@@ -5,7 +5,10 @@ const emailSuppressionList = require('../email-suppression-list');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils');
 const spamPrevention = require('../../web/shared/middleware/api/spam-prevention');
-const {formattedMemberResponse} = require('./utils');
+const {
+    formattedMemberResponse,
+    formatNewsletterResponse
+} = require('./utils');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
@@ -144,6 +147,11 @@ const getMemberNewsletters = async function getMemberNewsletters(req, res) {
         }
 
         const data = _.pick(memberData.toJSON(), 'uuid', 'email', 'name', 'newsletters', 'enable_comment_notifications', 'status');
+
+        if (data.newsletters) {
+            data.newsletters = formatNewsletterResponse(data.newsletters);
+        }
+
         return res.json(data);
     } catch (err) {
         res.writeHead(400);
@@ -175,6 +183,11 @@ const updateMemberNewsletters = async function updateMemberNewsletters(req, res)
 
         const updatedMember = await membersService.api.members.update(data, options);
         const updatedMemberData = _.pick(updatedMember.toJSON(), ['uuid', 'email', 'name', 'newsletters', 'enable_comment_notifications', 'status']);
+
+        if (updatedMemberData.newsletters) {
+            updatedMemberData.newsletters = formatNewsletterResponse(updatedMemberData.newsletters);
+        }
+
         res.json(updatedMemberData);
     } catch (err) {
         res.writeHead(400);
@@ -252,7 +265,15 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
                 const ensureEndsWith = (string, endsWith) => (string.endsWith(endsWith) ? string : string + endsWith);
                 const removeLeadingSlash = string => string.replace(/^\//, '');
 
+                // Add query parameters so the frontend can detect that the signup went fine
+
                 const redirectUrl = new URL(removeLeadingSlash(ensureEndsWith(customRedirect, '/')), ensureEndsWith(baseUrl, '/'));
+
+                if (urlUtils.isSiteUrl(redirectUrl)) {
+                    // Add only for non-external URLs
+                    redirectUrl.searchParams.set('success', 'true');
+                    redirectUrl.searchParams.set('action', 'signup');
+                }
 
                 return res.redirect(redirectUrl.href);
             }

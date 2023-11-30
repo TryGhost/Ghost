@@ -126,6 +126,27 @@ describe('Mention', function () {
         });
     });
 
+    describe('undelete', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('can undelete a verified mention', async function () {
+            const mention = await Mention.create({
+                ...validInput,
+                id: new ObjectID(),
+                deleted: true,
+                verified: true
+            });
+            assert(mention.verified);
+            assert(mention.deleted);
+
+            mention.verify('{"url": "https://target.com/"}', 'application/json');
+            assert(mention.verified);
+            assert(!mention.isDeleted());
+        });
+    });
+
     describe('create', function () {
         it('Will error with invalid inputs', async function () {
             const invalidInputs = [

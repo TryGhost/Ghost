@@ -1,19 +1,14 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Icon from '../../../../admin-x-ds/global/Icon';
-import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
 import React, {useState} from 'react';
-import Select from '../../../../admin-x-ds/global/form/Select';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
 import clsx from 'clsx';
+import {Form, Heading, Icon, ImageUpload, Select, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {ReactComponent as PortalIcon1} from '../../../../assets/icons/portal-icon-1.svg';
 import {ReactComponent as PortalIcon2} from '../../../../assets/icons/portal-icon-2.svg';
 import {ReactComponent as PortalIcon3} from '../../../../assets/icons/portal-icon-3.svg';
 import {ReactComponent as PortalIcon4} from '../../../../assets/icons/portal-icon-4.svg';
 import {ReactComponent as PortalIcon5} from '../../../../assets/icons/portal-icon-5.svg';
-import {Setting, SettingValue, getSettingValues} from '../../../../api/settings';
-import {getImageUrl, useUploadImage} from '../../../../api/images';
+import {Setting, SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const defaultButtonIcons = [
     {
@@ -43,6 +38,7 @@ const LookAndFeel: React.FC<{
     updateSetting: (key: string, setting: SettingValue) => void
 }> = ({localSettings, updateSetting}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
+    const handleError = useHandleError();
 
     const [portalButton, portalButtonStyle, portalButtonIcon, portalButtonSignupText] = getSettingValues(localSettings, ['portal_button', 'portal_button_style', 'portal_button_icon', 'portal_button_signup_text']);
 
@@ -52,9 +48,13 @@ const LookAndFeel: React.FC<{
     const [uploadedIcon, setUploadedIcon] = useState(isDefaultIcon ? undefined : currentIcon);
 
     const handleImageUpload = async (file: File) => {
-        const imageUrl = getImageUrl(await uploadImage({file}));
-        updateSetting('portal_button_icon', imageUrl);
-        setUploadedIcon(imageUrl);
+        try {
+            const imageUrl = getImageUrl(await uploadImage({file}));
+            updateSetting('portal_button_icon', imageUrl);
+            setUploadedIcon(imageUrl);
+        } catch (e) {
+            handleError(e);
+        }
     };
 
     const handleImageDelete = () => {
@@ -62,7 +62,13 @@ const LookAndFeel: React.FC<{
         setUploadedIcon(undefined);
     };
 
-    return <Form marginTop>
+    const portalButtonOptions = [
+        {value: 'icon-and-text', label: 'Icon and text'},
+        {value: 'icon-only', label: 'Icon only'},
+        {value: 'text-only', label: 'Text only'}
+    ];
+
+    return <div className='mt-7'><Form>
         <Toggle
             checked={Boolean(portalButton)}
             label='Show portal button'
@@ -70,14 +76,10 @@ const LookAndFeel: React.FC<{
             onChange={e => updateSetting('portal_button', e.target.checked)}
         />
         <Select
-            options={[
-                {value: 'icon-and-text', label: 'Icon and text'},
-                {value: 'icon-only', label: 'Icon only'},
-                {value: 'text-only', label: 'Text only'}
-            ]}
-            selectedOption={portalButtonStyle as string}
+            options={portalButtonOptions}
+            selectedOption={portalButtonOptions.find(option => option.value === portalButtonStyle)}
             title='Portal button style'
-            onSelect={option => updateSetting('portal_button_style', option)}
+            onSelect={option => updateSetting('portal_button_style', option?.value || null)}
         />
         {portalButtonStyle?.toString()?.includes('icon') &&
             <div className='flex flex-col gap-2'>
@@ -116,7 +118,7 @@ const LookAndFeel: React.FC<{
                 onChange={e => updateSetting('portal_button_signup_text', e.target.value)}
             />
         }
-    </Form>;
+    </Form></div>;
 };
 
 export default LookAndFeel;

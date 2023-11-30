@@ -25,81 +25,43 @@ class ErrorHandler extends React.Component {
     }
 }
 
-const fetchKoenig = function () {
-    let status = 'pending';
-    let response;
-
-    const fetchPackage = async () => {
-        if (window['@tryghost/koenig-lexical']) {
-            return window['@tryghost/koenig-lexical'];
-        }
-
-        // the manual specification of the protocol in the import template string is
-        // required to work around ember-auto-import complaining about an unknown dynamic import
-        // during the build step
-        const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const urlTemplate = GhostAdmin.__container__.lookup('config:main').editor?.url;
-        const urlVersion = GhostAdmin.__container__.lookup('config:main').editor?.version;
-
-        const url = new URL(urlTemplate.replace('{version}', urlVersion));
-
-        if (url.protocol === 'http:') {
-            await import(`http://${url.host}${url.pathname}`);
-        } else {
-            await import(`https://${url.host}${url.pathname}`);
-        }
-
-        return window['@tryghost/koenig-lexical'];
-    };
-
-    const suspender = fetchPackage().then(
-        (res) => {
-            status = 'success';
-            response = res;
-        },
-        (err) => {
-            status = 'error';
-            response = err;
-        }
-    );
-
-    const read = () => {
-        switch (status) {
-        case 'pending':
-            throw suspender;
-        case 'error':
-            throw response;
-        default:
-            return response;
-        }
-    };
-
-    return {read};
-};
-
-const editorResource = fetchKoenig();
-
-const KoenigComposer = (props) => {
+const KoenigComposer = ({editorResource, ...props}) => {
     const {KoenigComposer: _KoenigComposer, MINIMAL_NODES: _MINIMAL_NODES} = editorResource.read();
     return <_KoenigComposer nodes={_MINIMAL_NODES} {...props} />;
 };
 
-const KoenigComposableEditor = (props) => {
+const KoenigComposableEditor = ({editorResource, ...props}) => {
     const {KoenigComposableEditor: _KoenigComposableEditor, MINIMAL_TRANSFORMERS: _MINIMAL_TRANSFORMERS} = editorResource.read();
     return <_KoenigComposableEditor markdownTransformers={_MINIMAL_TRANSFORMERS} {...props} />;
 };
 
-const HtmlOutputPlugin = (props) => {
+const HtmlOutputPlugin = ({editorResource, ...props}) => {
     const {HtmlOutputPlugin: _HtmlOutputPlugin} = editorResource.read();
     return <_HtmlOutputPlugin {...props} />;
+};
+
+const EmojiPickerPlugin = ({editorResource, ...props}) => {
+    const {EmojiPickerPlugin: _EmojiPickerPlugin} = editorResource.read();
+    return <_EmojiPickerPlugin {...props} />;
 };
 
 export default class KoenigLexicalEditorInput extends Component {
     @service ajax;
     @service feature;
+    @service koenig;
     @service session;
 
     @inject config;
+
+    editorResource = this.koenig.resource;
+
+    get emojiPicker() {
+        if (!this.feature.editorEmojiPicker) {
+            return false;
+        }
+
+        return this.args.emojiPicker ?? true;
+    }
 
     @action
     onError(error) {
@@ -123,20 +85,24 @@ export default class KoenigLexicalEditorInput extends Component {
                 <ErrorHandler>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigComposer
+                            editorResource={this.editorResource}
                             initialEditorState={this.args.lexical}
                             onError={this.onError}
                         >
                             <KoenigComposableEditor
+                                editorResource={this.editorResource}
                                 darkMode={this.feature.nightShift}
                                 onChange={props.onChange}
                                 onBlur={props.onBlur}
+                                onFocus={props.onFocus}
                                 isSnippetsEnabled={false}
                                 singleParagraph={true}
-                                className="koenig-lexical-editor-input"
+                                className={`koenig-lexical-editor-input ${this.feature.nightShift ? 'dark' : ''}`}
                                 placeholderText={props.placeholderText}
                                 placeholderClassName="koenig-lexical-editor-input-placeholder"
                             >
-                                <HtmlOutputPlugin html={props.html} setHtml={props.onChangeHtml} />
+                                <HtmlOutputPlugin editorResource={this.editorResource} html={props.html} setHtml={props.onChangeHtml} />
+                                {this.emojiPicker ? <EmojiPickerPlugin editorResource={this.editorResource} /> : null}
                             </KoenigComposableEditor>
                         </KoenigComposer>
                     </Suspense>

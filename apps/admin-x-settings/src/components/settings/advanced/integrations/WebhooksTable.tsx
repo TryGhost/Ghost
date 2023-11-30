@@ -1,18 +1,14 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import NiceModal from '@ebay/nice-modal-react';
-import Table from '../../../../admin-x-ds/global/Table';
-import TableCell from '../../../../admin-x-ds/global/TableCell';
-import TableHead from '../../../../admin-x-ds/global/TableHead';
-import TableRow from '../../../../admin-x-ds/global/TableRow';
 import WebhookModal from './WebhookModal';
-import {Integration} from '../../../../api/integrations';
+import {Button, ConfirmationModal, Table, TableCell, TableHead, TableRow, showToast} from '@tryghost/admin-x-design-system';
+import {Integration} from '@tryghost/admin-x-framework/api/integrations';
 import {getWebhookEventLabel} from './webhookEventOptions';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
-import {useDeleteWebhook} from '../../../../api/webhooks';
+import {useDeleteWebhook} from '@tryghost/admin-x-framework/api/webhooks';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
     const {mutateAsync: deleteWebhook} = useDeleteWebhook();
+    const handleError = useHandleError();
 
     const handleDelete = (id: string) => {
         NiceModal.show(ConfirmationModal, {
@@ -21,12 +17,16 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
             okColor: 'red',
             okLabel: 'Delete Webhook',
             onOk: async (confirmModal) => {
-                await deleteWebhook(id);
-                confirmModal?.remove();
-                showToast({
-                    message: 'Webhook deleted',
-                    type: 'success'
-                });
+                try {
+                    await deleteWebhook(id);
+                    confirmModal?.remove();
+                    showToast({
+                        message: 'Webhook deleted',
+                        type: 'success'
+                    });
+                } catch (e) {
+                    handleError(e);
+                }
             }
         });
     };
