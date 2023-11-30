@@ -144,7 +144,7 @@ const Sidebar: React.FC<{
             return (
                 <TextField
                     error={Boolean(errors.sender_email)}
-                    hint={errors.sender_email || `If left empty, noreply@${sendingDomain(config)} will be used`}
+                    hint={errors.sender_email || `If left empty, ${defaultEmailAddress} will be used`}
                     rightPlaceholder={`@${sendingDomain(config)}`}
                     title="Sender email address"
                     value={sendingEmailUsername || ''}
