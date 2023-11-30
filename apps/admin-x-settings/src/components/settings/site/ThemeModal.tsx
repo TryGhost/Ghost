@@ -1,13 +1,14 @@
 import AdvancedThemeSettings from './theme/AdvancedThemeSettings';
-import InvalidThemeModal from './theme/InvalidThemeModal';
+import InvalidThemeModal, {FatalErrors} from './theme/InvalidThemeModal';
 import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
 import {Breadcrumbs, Button, ConfirmationModal, FileUpload, LimitModal, Modal, PageHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {InstalledTheme, Theme, ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
+import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {OfficialTheme} from '../../providers/SettingsAppProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -60,14 +61,6 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const [uploadConfig, setUploadConfig] = useState<{enabled: boolean; error?: string}>();
 
     const [isUploading, setUploading] = useState(false);
-
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const handleRetry = () => {
-        if (fileInputRef?.current) {
-            fileInputRef.current.click();
-        }
-    };
 
     useEffect(() => {
         if (limiter) {
@@ -132,7 +125,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         onActivate?: () => void
     }) => {
         let data: ThemesInstallResponseType | undefined;
-        let fatalErrors = null;
+        let fatalErrors: FatalErrors | null = null;
 
         try {
             setUploading(true);
@@ -140,9 +133,11 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             setUploading(false);
         } catch (e) {
             setUploading(false);
-            const errorsJson = await handleError(e) as {errors?: []};
-            if (errorsJson?.errors) {
-                fatalErrors = errorsJson.errors;
+
+            if (e instanceof JSONError && e.response?.status === 422 && e.data?.errors) {
+                fatalErrors = (e.data.errors as any) as FatalErrors;
+            } else {
+                handleError(e);
             }
         }
 
@@ -155,7 +150,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 fatalErrors,
                 onRetry: async (modal) => {
                     modal?.remove();
-                    handleRetry();
+                    handleUpload();
                 }
             });
         }
