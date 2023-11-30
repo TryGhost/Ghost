@@ -621,17 +621,11 @@ const AddOfferModal = () => {
         okColor={okProps.color}
         okLabel='Publish'
         preview={iframe}
-        previewToolbarBreadcrumbs={[{label: 'Offers', onClick: () => {
-            updateRoute('offers/edit');
-        }}, {label: 'New offer'}]}
         sidebar={sidebar}
         size='lg'
         testId='add-offer-modal'
         title='Offer'
         width={1140}
-        onBreadcrumbsBack={() => {
-            updateRoute('offers/edit');
-        }}
         onCancel={cancelAddOffer}
         onOk={async () => {
             validate();
