@@ -19,7 +19,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     });
 
     const {mutateAsync: addNewsletter} = useAddNewsletter();
-    const {formState, updateForm, handleSave, errors, clearError} = useForm({
+    const {formState, updateForm, saveState, handleSave, errors, clearError} = useForm({
         initialState: {
             name: '',
             description: '',
@@ -72,6 +72,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         backDropClick={false}
         okColor='black'
         okLabel='Create'
+        okLoading={saveState === 'saving'}
         size='sm'
         testId='add-newsletter-modal'
         title='Create newsletter'
