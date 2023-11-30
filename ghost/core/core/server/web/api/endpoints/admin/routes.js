@@ -334,8 +334,10 @@ module.exports = function apiRoutes() {
     router.get('/snippets/:id', mw.authAdminApi, labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.read)));
     //router.post('/snippets', mw.authAdminApi, http(api.snippets.add));
     router.post('/snippets', mw.authAdminApi, labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.add)));
-    router.put('/snippets/:id', mw.authAdminApi, http(api.snippets.edit));
-    router.del('/snippets/:id', mw.authAdminApi, http(api.snippets.destroy));
+    //router.put('/snippets/:id', mw.authAdminApi, http(api.snippets.edit));
+    router.put('/snippets/:id', mw.authAdminApi, labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.edit)));
+    //router.del('/snippets/:id', mw.authAdminApi, http(api.snippets.destroy));
+    router.del('/snippets/:id', mw.authAdminApi, labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.destroy)));
 
     // ## Custom theme settings
     router.get('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.browse));

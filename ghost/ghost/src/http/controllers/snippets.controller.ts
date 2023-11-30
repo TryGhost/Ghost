@@ -1,4 +1,4 @@
-import {Body, Controller, Get, NotFoundException, Param, Post, Query, UseFilters, UseInterceptors} from '@nestjs/common';
+import {Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseFilters, UseInterceptors} from '@nestjs/common';
 import {SnippetsService} from '../../core/snippets/snippets.service';
 import {SnippetDTO} from './snippet.dto';
 import {Pagination} from '../../common/pagination.type';
@@ -20,6 +20,39 @@ export class SnippetsController {
         @Query('formats') formats?: 'mobiledoc' | 'lexical'
     ): Promise<{snippets: [SnippetDTO]}> {
         const snippet = await this.service.getOne(ObjectID.createFromHexString(id));
+        if (snippet === null) {
+            throw new NotFoundError({
+                context: 'Snippet not found.',
+                message: 'Resource not found error, cannot read snippet.'
+            });
+        }
+        return {
+            snippets: [new SnippetDTO(snippet, {formats})]
+        };
+    }
+
+    @Delete(':id')
+    @HttpCode(204)
+    async destroy(
+        @Param('id') id: 'string'
+    ) {
+        const snippet = await this.service.delete(ObjectID.createFromHexString(id));
+        if (snippet === null) {
+            throw new NotFoundError({
+                context: 'Resource could not be found.',
+                message: 'Resource not found error, cannot delete snippet.'
+            });
+        }
+        return {};
+    }
+
+    @Put(':id')
+    async edit(
+        @Param('id') id: 'string',
+        @Body() body: any,
+        @Query('formats') formats?: 'mobiledoc' | 'lexical'
+    ): Promise<{snippets: [SnippetDTO]}> {
+        const snippet = await this.service.update(ObjectID.createFromHexString(id), body.snippets[0]);
         if (snippet === null) {
             throw new NotFoundError({
                 context: 'Snippet not found.',

@@ -9,8 +9,46 @@ export class SnippetsService {
         @Inject('SnippetsRepository') private readonly repository: SnippetsRepository
     ) {}
 
-    async create(data: any): Promise<Snippet> {
+    async create(data: {name: string, lexical: string, mobiledoc: string}): Promise<Snippet> {
         const snippet = Snippet.create(data);
+
+        await this.repository.save(snippet);
+
+        return snippet;
+    }
+
+    async delete(id: ObjectID) {
+        const snippet = await this.repository.getOne(id);
+
+        if (!snippet) {
+            return null;
+        }
+
+        snippet.delete();
+
+        await this.repository.save(snippet);
+
+        return snippet;
+    }
+
+    async update(id: ObjectID, data: {name?: string, lexical?: string, mobiledoc?: string}) {
+        const snippet = await this.repository.getOne(id);
+
+        if (!snippet) {
+            return null;
+        }
+
+        if (data.name) {
+            snippet.name = data.name;
+        }
+
+        if (data.lexical) {
+            snippet.lexical = data.lexical;
+        }
+
+        if (data.mobiledoc) {
+            snippet.mobiledoc = data.mobiledoc;
+        }
 
         await this.repository.save(snippet);
 
