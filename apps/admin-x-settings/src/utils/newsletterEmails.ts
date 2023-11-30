@@ -21,7 +21,7 @@ export const renderSenderEmail = (newsletter: Newsletter, config: Config, defaul
 
 export const renderReplyToEmail = (newsletter: Newsletter, config: Config, supportEmailAddress: string|undefined, defaultEmailAddress: string|undefined) => {
     if (newsletter.sender_reply_to === 'newsletter') {
-        if (isManagedEmail(config) && hasSendingDomain(config)) {
+        if (isManagedEmail(config) || !!config.labs.newEmailAddresses) {
             // No reply-to set
             // sender_reply_to currently doesn't allow empty values, we need to set it to 'newsletter'
             return '';

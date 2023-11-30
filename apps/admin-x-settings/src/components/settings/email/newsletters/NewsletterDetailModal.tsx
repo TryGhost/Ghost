@@ -1,6 +1,6 @@
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
@@ -15,6 +15,78 @@ import {hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x
 import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletterEmails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+
+const ReplyToEmailField: React.FC<{
+    newsletter: Newsletter;
+    updateNewsletter: (fields: Partial<Newsletter>) => void;
+    errors: ErrorMessages;
+    validate: () => void;
+    clearError: (field: string) => void;
+}> = ({newsletter, updateNewsletter, errors, clearError, validate}) => {
+    const {settings, config} = useGlobalData();
+    const [defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(settings, ['default_email_address', 'support_email_address']);
+    const newEmailAddressesFlag = useFeatureFlag('newEmailAddresses');
+
+    // When editing the senderReplyTo, we use a state, so we don't cause jumps when the 'rendering' method decides to change the value
+    // Because 'newsletter' 'support' or an empty value can be mapped to a default value, we don't want those changes to happen when entering text
+    const [senderReplyTo, setSenderReplyTo] = useState(renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || '');
+
+    let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
+    const replyToEmails = useMemo(() => [
+        {label: `Newsletter address (${newsletterAddress})`, value: 'newsletter'},
+        {label: `Support address (${supportEmailAddress})`, value: 'support'}
+    ], [newsletterAddress, supportEmailAddress]);
+
+    useEffect(() => {
+        if (!isManagedEmail(config) && !newEmailAddressesFlag) {
+            // Autocorrect invalid values
+            const foundValue = replyToEmails.find(option => option.value === newsletter.sender_reply_to);
+            if (!foundValue) {
+                updateNewsletter({sender_reply_to: 'newsletter'});
+            }
+        }
+    }, [config, replyToEmails, updateNewsletter, newsletter.sender_reply_to, newEmailAddressesFlag]);
+
+    const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setSenderReplyTo(e.target.value);
+        updateNewsletter({sender_reply_to: e.target.value || 'newsletter'});
+    }, [updateNewsletter, setSenderReplyTo]);
+
+    // Self-hosters, or legacy Pro users
+    if (!isManagedEmail(config) && !newEmailAddressesFlag) {
+        // Only allow some choices
+        return (
+            <Select
+                options={replyToEmails}
+                selectedOption={replyToEmails.find(option => option.value === newsletter.sender_reply_to)}
+                title="Reply-to email"
+                onSelect={option => updateNewsletter({sender_reply_to: option?.value})}
+            />
+        );
+    }
+
+    const onBlur = () => {
+        validate();
+
+        // Update the senderReplyTo to the rendered value again
+        const rendered = renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || '';
+        setSenderReplyTo(rendered);
+    };
+
+    // Pro users without custom sending domains
+    return (
+        <TextField
+            error={Boolean(errors.sender_reply_to)}
+            hint={errors.sender_reply_to}
+            placeholder={''}
+            title="Reply-to email"
+            value={senderReplyTo}
+            onBlur={onBlur}
+            onChange={onChange}
+            onKeyDown={() => clearError('sender_reply_to')}
+        />
+    );
+};
 
 const Sidebar: React.FC<{
     newsletter: Newsletter;
@@ -36,11 +108,6 @@ const Sidebar: React.FC<{
     const handleError = useHandleError();
 
     let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
-
-    const replyToEmails = useMemo(() => [
-        {label: `Newsletter address (${newsletterAddress})`, value: 'newsletter'},
-        {label: `Support address (${supportEmailAddress})`, value: 'support'}
-    ], [newsletterAddress, supportEmailAddress]);
 
     const fontOptions: SelectOption[] = [
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
@@ -176,45 +243,6 @@ const Sidebar: React.FC<{
         );
     };
 
-    useEffect(() => {
-        if (!isManagedEmail(config)) {
-            // Autocorrect invalid values
-            const foundValue = replyToEmails.find(option => option.value === newsletter.sender_reply_to);
-            if (!foundValue) {
-                updateNewsletter({sender_reply_to: 'newsletter'});
-            }
-        }
-    }, [config, replyToEmails, updateNewsletter, newsletter.sender_reply_to]);
-
-    const renderReplyToEmailField = () => {
-        // Self-hosters, or legacy Pro users
-        if (!isManagedEmail(config)) {
-            return (
-                <Select
-                    options={replyToEmails}
-                    selectedOption={replyToEmails.find(option => option.value === newsletter.sender_reply_to)}
-                    title="Reply-to email"
-                    onSelect={option => updateNewsletter({sender_reply_to: option?.value})}
-                />
-            );
-        }
-
-        const replyToRequired = !hasSendingDomain(config);
-        // Pro users without custom sending domains
-        return (
-            <TextField
-                error={Boolean(errors.sender_reply_to)}
-                hint={errors.sender_reply_to}
-                placeholder={replyToRequired ? (newsletterAddress || '') : ''}
-                title="Reply-to email"
-                value={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || ''}
-                onBlur={validate}
-                onChange={e => updateNewsletter({sender_reply_to: e.target.value})}
-                onKeyDown={() => clearError('sender_reply_to')}
-            />
-        );
-    };
-
     const tabs: Tab[] = [
         {
             id: 'generalSettings',
@@ -237,7 +265,7 @@ const Sidebar: React.FC<{
                 <Form className='mt-6' gap='sm' margins='lg' title='Email addresses'>
                     <TextField placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
                     {renderSenderEmailField()}
-                    {renderReplyToEmailField()}
+                    <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
                 </Form>
                 <Form className='mt-6' gap='sm' margins='lg' title='Member settings'>
                     <Toggle
