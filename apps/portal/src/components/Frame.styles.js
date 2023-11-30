@@ -362,6 +362,10 @@ const FrameStyles = `
     animation: none !important;
 }
 
+.gh-portal-popup-container.preview.offer {
+    max-width: 420px;
+}
+
 @keyframes popup {
     0% {
         transform: translateY(-30px);
