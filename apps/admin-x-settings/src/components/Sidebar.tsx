@@ -40,6 +40,11 @@ const Sidebar: React.FC = () => {
     // Focus in on search field when pressing "/"
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
+            // ensures it doesn't fire when typing in a text field, particularly useful for the Koenig Editor.
+            if (e.target instanceof HTMLElement &&
+                (e.target.nodeName === 'INPUT' || e.target.nodeName === 'TEXTAREA' || e.target.isContentEditable)) {
+                return;
+            }
             if (e.key === '/' && !isAnyTextFieldFocused) {
                 e?.preventDefault();
                 if (searchInputRef.current) {
