@@ -69,6 +69,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         afterClose={() => {
             updateRoute('newsletters');
         }}
+        backDropClick={false}
         okColor='black'
         okLabel='Create'
         size='sm'
