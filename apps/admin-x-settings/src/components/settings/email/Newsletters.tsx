@@ -27,7 +27,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateRoute('newsletters/new');
     };
     const [selectedTab, setSelectedTab] = useState('active-newsletters');
-    const {data: {newsletters: apiNewsletters, meta, isEnd} = {}, fetchNextPage} = useBrowseNewsletters();
+    const {data: {newsletters: apiNewsletters, meta, isEnd} = {}, isLoading, fetchNextPage} = useBrowseNewsletters();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const queryClient = useQueryClient();
 
@@ -138,12 +138,12 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             id: 'active-newsletters',
             title: 'Active',
-            contents: (<NewslettersList newsletters={sortedActiveNewsletters} isSortable onSort={onSort} />)
+            contents: (<NewslettersList isLoading={isLoading} newsletters={sortedActiveNewsletters} isSortable onSort={onSort} />)
         },
         {
             id: 'archived-newsletters',
             title: 'Archived',
-            contents: (<NewslettersList newsletters={archivedNewsletters} />)
+            contents: (<NewslettersList isLoading={isLoading} newsletters={archivedNewsletters} />)
         }
     ];
 

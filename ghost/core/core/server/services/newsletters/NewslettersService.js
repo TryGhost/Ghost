@@ -159,8 +159,7 @@ class NewslettersService {
             throw error;
         }
 
-        // Load relations correctly
-        newsletter = await this.NewsletterModel.findOne({id: newsletter.id}, {...options, require: true});
+        let optedInMemberCount = undefined;
 
         // subscribe existing members if opt_in_existing=true
         if (options.opt_in_existing) {
@@ -169,14 +168,21 @@ class NewslettersService {
             // subscribe members that have an existing subscription to an active newsletter
             const memberIds = await this.MemberModel.fetchAllSubscribed(_.pick(options, 'transacting'));
 
-            newsletter.meta = newsletter.meta || {};
-            newsletter.meta.opted_in_member_count = memberIds.length;
+            optedInMemberCount = memberIds.length;
 
             if (memberIds.length) {
                 debug(`Found ${memberIds.length} members to subscribe`);
 
                 await newsletter.subscribeMembersById(memberIds, options);
             }
+        }
+
+        // Load relations correctly
+        newsletter = await this.NewsletterModel.findOne({id: newsletter.id}, {...options, require: true});
+
+        if (optedInMemberCount !== undefined) {
+            newsletter.meta = newsletter.meta || {};
+            newsletter.meta.opted_in_member_count = optedInMemberCount;
         }
 
         // send any verification emails and respond with the appropriate meta added

@@ -6,6 +6,7 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface NewslettersListProps {
     newsletters: Newsletter[];
+    isLoading: boolean;
     isSortable?: boolean;
     onSort?: (activeId: string, overId?: string) => void;
 }
@@ -78,8 +79,10 @@ const NewsletterItem: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     );
 };
 
-const NewslettersList: React.FC<NewslettersListProps> = ({newsletters, isSortable, onSort}) => {
-    if (newsletters.length && isSortable) {
+const NewslettersList: React.FC<NewslettersListProps> = ({newsletters, isLoading, isSortable, onSort}) => {
+    if (isLoading) {
+        return <Table isLoading />;
+    } else if (newsletters.length && isSortable) {
         return <SortableList
             container={props => <NewsletterItemContainer {...props} />}
             items={newsletters}
