@@ -26,7 +26,7 @@
     "test:unit": "yarn test:ci",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
-    "ship": "STATUS=$(git status --porcelain .); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; else exit 1; fi",
+    "ship": "STATUS=$(git status --porcelain .); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; else echo \"Uncommitted changes found.\" && exit 1; fi",
     "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
     "prepublishOnly": "yarn build"
   },
