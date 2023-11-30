@@ -44,6 +44,7 @@ export interface PreviewModalProps {
     sidebarPadding?: boolean;
     sidebarContentClasses?: string;
     enableCMDS?: boolean;
+    backDropClick?: boolean;
 
     onCancel?: () => void;
     onOk?: () => void;
@@ -83,6 +84,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     sidebarPadding = true,
     sidebarContentClasses,
     enableCMDS = true,
+    backDropClick,
 
     onCancel,
     onOk,
@@ -262,6 +264,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         <Modal
             afterClose={afterClose}
             animate={false}
+            backDropClick={backDropClick}
             footer={false}
             height={height}
             padding={false}
