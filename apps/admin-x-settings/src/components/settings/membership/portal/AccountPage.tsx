@@ -8,14 +8,13 @@ const AccountPage: React.FC<{
     updateSetting: (key: string, setting: SettingValue) => void
 }> = ({updateSetting}) => {
     const {siteData, settings, config} = useGlobalData();
-    const [membersSupportAddress] = getSettingValues(settings, ['members_support_address']);
+    const [membersSupportAddress, supportEmailAddress] = getSettingValues(settings, ['members_support_address', 'support_email_address']);
+    const calculatedSupportAddress = supportEmailAddress?.toString() || fullEmailAddress(membersSupportAddress?.toString() || '', siteData!, config);
     const emailDomain = getEmailDomain(siteData!, config);
-
-    const [value, setValue] = useState(fullEmailAddress(membersSupportAddress?.toString() || '', siteData!, config));
+    const [value, setValue] = useState(calculatedSupportAddress);
 
     const updateSupportAddress: FocusEventHandler<HTMLInputElement> = (e) => {
         let supportAddress = e.target.value;
-
         let settingValue = emailDomain && supportAddress === `noreply@${emailDomain}` ? 'noreply' : supportAddress;
 
         updateSetting('members_support_address', settingValue);
@@ -23,8 +22,8 @@ const AccountPage: React.FC<{
     };
 
     useEffect(() => {
-        setValue(fullEmailAddress(membersSupportAddress?.toString() || '', siteData!, config));
-    }, [membersSupportAddress, siteData]);
+        setValue(calculatedSupportAddress);
+    }, [calculatedSupportAddress]);
 
     return <div className='mt-7'><Form>
         <TextField title='Support email address' value={value} onBlur={updateSupportAddress} onChange={e => setValue(e.target.value)} />

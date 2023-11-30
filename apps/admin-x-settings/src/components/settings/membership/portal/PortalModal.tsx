@@ -84,8 +84,8 @@ const PortalModal: React.FC = () => {
                 let {settings: verifiedSettings} = await verifyToken({token});
                 const [supportEmail] = getSettingValues<string>(verifiedSettings, ['members_support_address']);
                 NiceModal.show(ConfirmationModal, {
-                    title: 'Verifying email address',
-                    prompt: <>Success! The support email address has changed to <strong>{supportEmail}</strong></>,
+                    title: 'Support address verified',
+                    prompt: <>Your support email address has been changed to <strong>{supportEmail}</strong>.</>,
                     okLabel: 'Close',
                     cancelLabel: '',
                     onOk: confirmModal => confirmModal?.remove()
@@ -98,7 +98,7 @@ const PortalModal: React.FC = () => {
                     prompt = 'The verification link has expired. Please try again.';
                 }
                 NiceModal.show(ConfirmationModal, {
-                    title: 'Error verifying email address',
+                    title: 'Error verifying support address',
                     prompt: prompt,
                     okLabel: 'Close',
                     cancelLabel: '',
@@ -135,13 +135,14 @@ const PortalModal: React.FC = () => {
 
             if (meta?.sent_email_verification) {
                 const newEmail = formState.settings.find(setting => setting.key === 'members_support_address')?.value;
-                const currentEmail = currentSettings.find(setting => setting.key === 'members_support_address')?.value;
+                const currentEmail = currentSettings.find(setting => setting.key === 'support_email_address')?.value ||
+                    fullEmailAddress(currentSettings.find(setting => setting.key === 'members_support_address')?.value?.toString() || 'noreply', siteData!, config);
 
                 NiceModal.show(ConfirmationModal, {
                     title: 'Confirm email address',
                     prompt: <>
                         We&apos;ve sent a confirmation email to <strong>{newEmail}</strong>.
-                        Until verified, your support address will remain {fullEmailAddress(currentEmail?.toString() || 'noreply', siteData!, config)}.
+                        Until verified, your support email address will remain {currentEmail}.
                     </>,
                     okLabel: 'Close',
                     cancelLabel: '',
