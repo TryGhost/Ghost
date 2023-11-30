@@ -130,6 +130,10 @@ module.exports = class AdapterManager {
             });
         }
 
+        if (Adapter.default) {
+            Adapter = Adapter.default;
+        }
+
         const adapter = new Adapter(config);
 
         if (!(adapter instanceof this.baseClasses[adapterType])) {
