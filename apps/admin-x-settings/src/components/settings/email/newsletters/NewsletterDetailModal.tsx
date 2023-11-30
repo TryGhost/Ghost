@@ -73,11 +73,17 @@ const ReplyToEmailField: React.FC<{
         setSenderReplyTo(rendered);
     };
 
+    const hint = (
+        <>
+            If not set, replies go to the sender email address
+        </>
+    );
+
     // Pro users without custom sending domains
     return (
         <TextField
             error={Boolean(errors.sender_reply_to)}
-            hint={errors.sender_reply_to}
+            hint={errors.sender_reply_to || hint}
             placeholder={''}
             title="Reply-to email"
             value={senderReplyTo}
