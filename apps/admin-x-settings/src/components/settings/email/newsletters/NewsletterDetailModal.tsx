@@ -1,6 +1,6 @@
 import NewsletterPreview from './NewsletterPreview';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
@@ -37,10 +37,10 @@ const Sidebar: React.FC<{
 
     let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
 
-    const replyToEmails = [
+    const replyToEmails = useMemo(() => [
         {label: `Newsletter address (${newsletterAddress})`, value: 'newsletter'},
         {label: `Support address (${supportEmailAddress})`, value: 'support'}
-    ];
+    ], [newsletterAddress, supportEmailAddress]);
 
     const fontOptions: SelectOption[] = [
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
@@ -175,6 +175,16 @@ const Sidebar: React.FC<{
             />
         );
     };
+
+    useEffect(() => {
+        if (!isManagedEmail(config)) {
+            // Autocorrect invalid values
+            const foundValue = replyToEmails.find(option => option.value === newsletter.sender_reply_to);
+            if (!foundValue) {
+                updateNewsletter({sender_reply_to: 'newsletter'});
+            }
+        }
+    }, [config, replyToEmails, updateNewsletter, newsletter.sender_reply_to]);
 
     const renderReplyToEmailField = () => {
         // Self-hosters, or legacy Pro users
