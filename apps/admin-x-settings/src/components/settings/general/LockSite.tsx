@@ -1,7 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Hint, Icon, Link, SettingGroupContent, TextField, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Hint, Icon, Link, Separator, SettingGroupContent, TextField, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
@@ -41,7 +41,7 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const privateRssUrl = `${siteData.url.replace(/\/$/, '')}/${publicHash}/rss`;
     const hint = (
-        <>A private RSS feed is available at <Link className='break-all' href={privateRssUrl}>{privateRssUrl}</Link></>
+        <>A private RSS feed is available at <a className='break-all text-green' href={privateRssUrl} rel="noopener noreferrer" target='_blank'>{privateRssUrl}</a></>
     );
 
     const values = (
@@ -50,14 +50,19 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 {
                     key: 'private',
                     value: passwordEnabled ? (
-                        <div className='flex items-center gap-2'>
-                            <div className='rounded-full border border-yellow p-2'>
+                        <div className='w-full'>
+                            <div className='flex items-center gap-1'>
+                                {/* <div className='rounded-full border border-yellow p-2'> */}
                                 <Icon colorClass='text-yellow' name='lock-locked' size='sm' />
-                            </div>
-                            <div className='leading-supertight'>
+                                {/* </div> */}
+                                <div className='leading-supertight'>
                                 Your site is password protected
-                                <Hint>{hint}</Hint>
+                                </div>
                             </div>
+                            {hint && <div className='mt-7 w-full'>
+                                <Separator />
+                                <Hint>{hint}</Hint>
+                            </div>}
                         </div>
                     ) : (
                         <div className='flex items-center gap-1 text-grey-900 dark:text-grey-400'>
