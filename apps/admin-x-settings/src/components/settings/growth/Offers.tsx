@@ -18,7 +18,7 @@ const OfferContainer: React.FC<{offerTitle: string, tier: Tier, cadence: string,
             <span className={`text-sm font-semibold uppercase ${discountColor}`}>{discountOffer}</span>
             <div className='flex gap-1 text-xs'>
                 <span className='font-semibold'>{tier.name}</span>
-                <span className='text-grey-700'>{cadence}</span>
+                <span className='text-grey-700'>{cadence === 'month' ? 'monthly' : 'yearly'}</span>
             </div>
             <div className='mt-2 flex items-end justify-between'>
                 <a className='text-xs text-grey-700 hover:text-black hover:underline' href={createRedemptionFilterUrl(offerId)}>{redemptions} redemptions</a>
@@ -58,7 +58,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label='Manage offers' link linkWithPadding onClick={openModal}/>}
-            description={<>Grow your audience by providing fixed or percentage discounts. {allOffers.length === 0 && <a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">Learn more</a>}</>}
+            description={<>Create discounts & coupons to boost new subscriptions. {allOffers.length === 0 && <a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">Learn more</a>}</>}
             keywords={keywords}
             navid='offers'
             testId='offers'
@@ -89,7 +89,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     }
                 </div>
                 {allOffers.length > 3 && <div className='mt-4 border-t border-t-grey-200 pt-2'>
-                    <Button className='text-sm font-bold text-green' label='Show all' size='sm' link unstyled onClick={openModal} />
+                    <span className='text-xs text-grey-700 dark:text-grey-600'>{allOffers.length} offers in total</span>
                 </div>}
             </div>
         </TopLevelGroup>
