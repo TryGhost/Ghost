@@ -99,7 +99,7 @@ const Sidebar: React.FC<{
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
     const {settings, siteData, config} = useGlobalData();
-    const [icon, defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(settings, ['icon', 'default_email_address', 'support_email_address']);
+    const [icon, defaultEmailAddress] = getSettingValues<string>(settings, ['icon', 'default_email_address', 'support_email_address']);
     const {mutateAsync: uploadImage} = useUploadImage();
     const [selectedTab, setSelectedTab] = useState('generalSettings');
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
