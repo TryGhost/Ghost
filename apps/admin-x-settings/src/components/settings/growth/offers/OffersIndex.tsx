@@ -1,5 +1,6 @@
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {ButtonGroup, ButtonProps} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {NoValueLabel} from '@tryghost/admin-x-design-system';
 import {SortMenu} from '@tryghost/admin-x-design-system';
@@ -189,6 +190,24 @@ export const OffersIndexModal = () => {
         </table>
     </div>;
 
+    const buttons: ButtonProps[] = [
+        {
+            key: 'cancel-modal',
+            label: 'Cancel',
+            onClick: () => {
+                modal.remove();
+                updateRoute('offers');
+            }
+        },
+        {
+            key: 'new-offer',
+            icon: 'add',
+            label: 'New offer',
+            color: 'green',
+            onClick: () => updateRoute('offers/new')
+        }
+    ];
+
     return <Modal
         afterClose={() => {
             updateRoute('offers');
@@ -196,16 +215,12 @@ export const OffersIndexModal = () => {
         animate={false}
         backDropClick={false}
         cancelLabel=''
+        footer={false}
         header={false}
         height='full'
         size='lg'
         testId='offers-modal'
         width={1140}
-        stickyFooter
-        onOk={() => {
-            modal.remove();
-            updateRoute('offers');
-        }}
     >
         <div className='pt-6'>
             <header>
@@ -219,7 +234,7 @@ export const OffersIndexModal = () => {
                             onTabChange={setSelectedTab}
                         />
                     </div>
-                    <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
+                    <ButtonGroup buttons={buttons} />
                 </div>
                 <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
                     <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
