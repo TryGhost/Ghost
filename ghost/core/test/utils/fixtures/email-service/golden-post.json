@@ -8,7 +8,7 @@
                         "format": 0,
                         "mode": "normal",
                         "style": "",
-                        "text": "Here's a paragraph",
+                        "text": "This is just a simple paragraph, no frills.",
                         "type": "extended-text",
                         "version": 1
                     }
@@ -26,7 +26,7 @@
                         "format": 0,
                         "mode": "normal",
                         "style": "",
-                        "text": "Here's a block quote",
+                        "text": "This is block quote",
                         "type": "extended-text",
                         "version": 1
                     }
@@ -44,7 +44,7 @@
                         "format": 0,
                         "mode": "normal",
                         "style": "",
-                        "text": "Here's some text.",
+                        "text": "This is a...different block quote",
                         "type": "extended-text",
                         "version": 1
                     }
@@ -62,7 +62,7 @@
                         "format": 0,
                         "mode": "normal",
                         "style": "",
-                        "text": "Images",
+                        "text": "This is a heading!",
                         "type": "extended-text",
                         "version": 1
                     }
@@ -73,85 +73,47 @@
                 "type": "heading",
                 "version": 1,
                 "tag": "h2"
+            },
+            {
+                "children": [
+                    {
+                        "detail": 0,
+                        "format": 0,
+                        "mode": "normal",
+                        "style": "",
+                        "text": "Here's a smaller heading.",
+                        "type": "extended-text",
+                        "version": 1
+                    }
+                ],
+                "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "heading",
+                "version": 1,
+                "tag": "h3"
             },
             {
                 "type": "image",
                 "version": 1,
-                "src": "__GHOST_URL__/content/images/2023/11/IMG_1873-1.jpeg",
+                "src": "https://main.ghost.org/content/images/2023/11/IMG_1952-1.jpeg",
                 "width": 4032,
                 "height": 3024,
                 "title": "",
-                "alt": "A small dog.",
-                "caption": "<span style=\"white-space: pre-wrap;\">A small dog playing in the grass.</span>",
+                "alt": "A beautiful tree, indeed.",
+                "caption": "<span style=\"white-space: pre-wrap;\">A beautiful tree.</span>",
                 "cardWidth": "regular",
                 "href": ""
             },
             {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Markdown",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
-            },
-            {
                 "type": "markdown",
                 "version": 1,
-                "markdown": "# A heading!\nAnd a paragraph"
-            },
-            {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "HTML",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
+                "markdown": "# A heading\nand a paragraph (in markdown!)"
             },
             {
                 "type": "html",
                 "version": 1,
-                "html": "<p>A paragraph!</p>\n<p>And another paragraph, with <em>bold</em> test.</p>"
-            },
-            {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Gallery",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
+                "html": "<p>A paragraph inside an HTML card.</p>\n<p>And another one, with some <b>bold</b> text.</p>"
             },
             {
                 "type": "gallery",
@@ -159,76 +121,45 @@
                 "images": [
                     {
                         "row": 0,
-                        "src": "__GHOST_URL__/content/images/2023/11/IMG_1873-2.jpeg",
+                        "src": "https://main.ghost.org/content/images/2023/11/IMG_1952-6.jpeg",
+                        "width": 4032,
+                        "height": 3024,
+                        "fileName": "IMG_1952.jpeg"
+                    },
+                    {
+                        "row": 0,
+                        "src": "https://main.ghost.org/content/images/2023/11/IMG_1873.jpeg",
                         "width": 4032,
                         "height": 3024,
                         "fileName": "IMG_1873.jpeg"
                     },
                     {
                         "row": 0,
-                        "src": "__GHOST_URL__/content/images/2023/11/IMG_1865.jpeg",
+                        "src": "https://main.ghost.org/content/images/2023/11/IMG_1868-2.jpeg",
                         "width": 4032,
                         "height": 3024,
-                        "fileName": "IMG_1865.jpeg"
-                    },
-                    {
-                        "row": 0,
-                        "src": "__GHOST_URL__/content/images/2023/11/IMG_1861.jpeg",
-                        "width": 3024,
-                        "height": 4032,
-                        "fileName": "IMG_1861.jpeg"
+                        "fileName": "IMG_1868.jpeg"
                     },
                     {
                         "row": 1,
-                        "src": "__GHOST_URL__/content/images/2023/11/IMG_1862.jpeg",
-                        "width": 4032,
-                        "height": 3024,
-                        "fileName": "IMG_1862.jpeg"
-                    }
-                ],
-                "caption": "<p><span style=\"white-space: pre-wrap;\">A small dog playing and sitting in the grass.</span></p>"
-            },
-            {
-                "children": [
+                        "src": "https://main.ghost.org/content/images/2023/11/IMG_1478.jpeg",
+                        "width": 3024,
+                        "height": 4032,
+                        "fileName": "IMG_1478.jpeg"
+                    },
                     {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Divider",
-                        "type": "extended-text",
-                        "version": 1
+                        "row": 1,
+                        "src": "https://main.ghost.org/content/images/2023/11/IMG_3917.jpeg",
+                        "width": 5184,
+                        "height": 3456,
+                        "fileName": "IMG_3917.jpeg"
                     }
                 ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
+                "caption": "<p><span style=\"white-space: pre-wrap;\">A tree, a meerkat, and a terrier.</span></p>"
             },
             {
                 "type": "horizontalrule",
                 "version": 1
-            },
-            {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Bookmark",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
             },
             {
                 "type": "bookmark",
@@ -242,26 +173,7 @@
                     "publisher": "Ghost - The Professional Publishing Platform",
                     "thumbnail": "https://ghost.org/images/meta/ghost.png"
                 },
-                "caption": "<p><span style=\"white-space: pre-wrap;\">Ghost's homepage</span></p>"
-            },
-            {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Email content",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
+                "caption": "<p><span style=\"white-space: pre-wrap;\">My favorite website.</span></p>"
             },
             {
                 "type": "email",
@@ -269,277 +181,79 @@
                 "html": "<p><span style=\"white-space: pre-wrap;\">Hey </span><code spellcheck=\"false\" style=\"white-space: pre-wrap;\"><span>{first_name, \"there\"}</span></code><span style=\"white-space: pre-wrap;\">,</span></p>"
             },
             {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Email call to action",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
-            },
-            {
                 "type": "email-cta",
                 "version": 1,
                 "alignment": "left",
                 "buttonText": "",
                 "buttonUrl": "",
-                "html": "<p><span style=\"white-space: pre-wrap;\">Subscribe now!</span></p>",
+                "html": "<p><span style=\"white-space: pre-wrap;\">Hello there, fellow users of electronic mail.</span></p>",
                 "segment": "status:free",
                 "showButton": false,
                 "showDividers": true
-            },
-            {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Public preview",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
             },
             {
                 "type": "paywall",
                 "version": 1
             },
             {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Button",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
-            },
-            {
                 "type": "button",
                 "version": 1,
-                "buttonText": "Click me!",
+                "buttonText": "Click me, I'm a button!",
                 "alignment": "center",
-                "buttonUrl": "__GHOST_URL__/"
-            },
-            {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Callout",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
+                "buttonUrl": "https://ghost.org"
             },
             {
                 "type": "callout",
                 "version": 1,
-                "calloutText": "<p><span style=\"white-space: pre-wrap;\">Don't forget!</span></p>",
+                "calloutText": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">I had an idea...</span></p>",
                 "calloutEmoji": "💡",
-                "backgroundColor": "purple"
-            },
-            {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Toggle",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
+                "backgroundColor": "blue"
             },
             {
                 "type": "toggle",
                 "version": 1,
-                "heading": "<span style=\"white-space: pre-wrap;\">Here's a spoiler!</span>",
-                "content": "<p><span style=\"white-space: pre-wrap;\">Jk jk no spoilers here</span></p>"
-            },
-            {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Audio",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
+                "heading": "<span style=\"white-space: pre-wrap;\">Spoiler alert!</span>",
+                "content": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">Just kidding</span></p>"
             },
             {
                 "type": "audio",
                 "version": 1,
                 "duration": 105.822041,
                 "mimeType": "audio/mpeg",
-                "src": "__GHOST_URL__/content/media/2023/11/sample.mp3",
+                "src": "https://main.ghost.org/content/media/2023/11/sample.mp3",
                 "title": "Sample",
                 "thumbnailSrc": ""
             },
             {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Video",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
-            },
-            {
                 "type": "video",
                 "version": 1,
-                "src": "__GHOST_URL__/content/media/2023/11/video.mp4",
-                "caption": "",
-                "fileName": "video.mp4",
+                "src": "https://main.ghost.org/content/media/2023/11/sample_640x360.mp4",
+                "caption": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">A video card.</span></p>",
+                "fileName": "sample_640x360.mp4",
                 "mimeType": "video/mp4",
-                "width": 158,
-                "height": 162,
-                "duration": 4.066667,
-                "thumbnailSrc": "__GHOST_URL__/content/media/2023/11/video_thumb.jpg",
+                "width": 640,
+                "height": 360,
+                "duration": 13.346667,
+                "thumbnailSrc": "https://main.ghost.org/content/media/2023/11/sample_640x360_thumb.jpg",
                 "customThumbnailSrc": "",
-                "thumbnailWidth": 158,
-                "thumbnailHeight": 162,
+                "thumbnailWidth": 640,
+                "thumbnailHeight": 360,
                 "cardWidth": "regular",
                 "loop": false
             },
             {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "File",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
-            },
-            {
-                "type": "file",
-                "src": "__GHOST_URL__/content/files/2023/11/package.json",
-                "fileTitle": "package",
-                "fileCaption": "",
-                "fileName": "package.json",
-                "fileSize": 3
-            },
-            {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Product",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
-            },
-            {
                 "type": "product",
                 "version": 1,
-                "productImageSrc": "__GHOST_URL__/content/images/2023/11/IMG_1870.jpeg",
-                "productImageWidth": 4032,
-                "productImageHeight": 3024,
-                "productTitle": "<span style=\"white-space: pre-wrap;\">Free dog</span>",
-                "productDescription": "<p><span style=\"white-space: pre-wrap;\">He's cute but he's mean</span></p>",
+                "productImageSrc": "https://main.ghost.org/content/images/2023/11/71124418043__F5E7A067-CA69-4E5F-91D8-938EC4A12B20.jpeg",
+                "productImageWidth": 3024,
+                "productImageHeight": 4032,
+                "productTitle": "<span style=\"white-space: pre-wrap;\">Care for a refreshment?</span>",
+                "productDescription": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">It's what plants crave.</span></p>",
                 "productRatingEnabled": true,
-                "productStarRating": 3,
+                "productStarRating": 5,
                 "productButtonEnabled": true,
-                "productButton": "Buy now",
-                "productUrl": "http://localhost:2368/"
-            },
-            {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Header",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
+                "productButton": "$98 at Amazon",
+                "productUrl": "https://ghost.org"
             },
             {
                 "type": "header",
@@ -550,9 +264,9 @@
                 "buttonUrl": "",
                 "buttonText": "",
                 "header": "<span style=\"white-space: pre-wrap;\">Good news everyone!</span>",
-                "subheader": "<span style=\"white-space: pre-wrap;\">We're going to be okay.</span>",
+                "subheader": "<span style=\"white-space: pre-wrap;\">This header renders properly in </span><i><em class=\"italic\" style=\"white-space: pre-wrap;\">all</em></i><span style=\"white-space: pre-wrap;\"> email clients!</span>",
                 "backgroundImageSrc": "",
-                "accentColor": "#FF1A75",
+                "accentColor": "#14171b",
                 "alignment": "center",
                 "backgroundColor": "#000000",
                 "backgroundImageWidth": null,
@@ -563,25 +277,6 @@
                 "buttonTextColor": "#000000",
                 "layout": "full",
                 "swapped": false
-            },
-            {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Embeds",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
             },
             {
                 "type": "embed",
@@ -607,25 +302,6 @@
                 "caption": ""
             },
             {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "Signup Card",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
-            },
-            {
                 "type": "signup",
                 "version": 1,
                 "alignment": "left",
@@ -637,10 +313,10 @@
                 "buttonTextColor": "#FFFFFF",
                 "buttonText": "Subscribe",
                 "disclaimer": "<span style=\"white-space: pre-wrap;\">No spam. Unsubscribe anytime.</span>",
-                "header": "<span style=\"white-space: pre-wrap;\">Sign up for Dev</span>",
+                "header": "<span style=\"white-space: pre-wrap;\">Sign up for This Is The Main</span>",
                 "labels": [],
                 "layout": "wide",
-                "subheader": "<span style=\"white-space: pre-wrap;\">Thoughts, stories and ideas.</span>",
+                "subheader": "<span style=\"white-space: pre-wrap;\">The testing and tweaking of Ghost, now with extra long description for the same price of epic staging</span>",
                 "successMessage": "Email sent! Check your inbox to complete your signup.",
                 "swapped": false
             },
@@ -651,52 +327,7 @@
                         "format": 0,
                         "mode": "normal",
                         "style": "",
-                        "text": "Codeblock",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h2"
-            },
-            {
-                "type": "codeblock",
-                "version": 1,
-                "code": "const fs = require('fs-extra');",
-                "language": "javascript",
-                "caption": ""
-            },
-            {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "The aside element",
-                        "type": "extended-text",
-                        "version": 1
-                    }
-                ],
-                "direction": "ltr",
-                "format": "",
-                "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h1"
-            },
-            {
-                "children": [
-                    {
-                        "detail": 0,
-                        "format": 0,
-                        "mode": "normal",
-                        "style": "",
-                        "text": "My family and I visited The Epcot center this summer. The weather was nice, and Epcot was amazing! I had a great summer together with my family!",
+                        "text": "Some text.",
                         "type": "extended-text",
                         "version": 1
                     }
@@ -714,7 +345,7 @@
                         "format": 0,
                         "mode": "normal",
                         "style": "",
-                        "text": "Epcot Center",
+                        "text": "A blockquote",
                         "type": "extended-text",
                         "version": 1
                     }
@@ -722,9 +353,8 @@
                 "direction": "ltr",
                 "format": "",
                 "indent": 0,
-                "type": "heading",
-                "version": 1,
-                "tag": "h4"
+                "type": "extended-quote",
+                "version": 1
             },
             {
                 "children": [
@@ -733,12 +363,35 @@
                         "format": 0,
                         "mode": "normal",
                         "style": "",
-                        "text": "Epcot is a theme park at Walt Disney World Resort featuring exciting attractions, international pavilions, award-winning fireworks and seasonal special events.",
+                        "text": "Some more text.",
                         "type": "extended-text",
                         "version": 1
                     }
                 ],
                 "direction": "ltr",
+                "format": "",
+                "indent": 0,
+                "type": "paragraph",
+                "version": 1
+            },
+            {
+                "type": "codeblock",
+                "version": 1,
+                "code": "console.log('Hello world!');",
+                "language": "javascript",
+                "caption": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">A tiny little script.</span></p>"
+            },
+            {
+                "type": "file",
+                "src": "https://main.ghost.org/content/files/2023/11/test.txt",
+                "fileTitle": "test",
+                "fileCaption": "A tiny text file.",
+                "fileName": "test.txt",
+                "fileSize": 16
+            },
+            {
+                "children": [],
+                "direction": null,
                 "format": "",
                 "indent": 0,
                 "type": "paragraph",

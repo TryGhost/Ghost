@@ -154,6 +154,12 @@ describe('Can send cards via email', function () {
     });
 
     it('renders all of the default nodes in the golden post', async function () {
+        // This test checks that all of the default nodes from @tryghost/kg-default-nodes are present in the golden post
+        // This is to ensure that if we add new cards to Koenig, they will be included in the golden post
+        // This is important because the golden post is used to test the email rendering of the cards after
+        // they have gone through the Email Renderer, which can change the HTML/CSS of the cards
+        // See the README.md in this same directory for more information.
+
         const cardsInGoldenPost = goldenPost.root.children.map((child) => {
             return child.type;
         });
@@ -162,7 +168,8 @@ describe('Can send cards via email', function () {
             'collection', // only used in pages, will never be emailed
             'extended-text', // not a card
             'extended-quote', // not a card
-            'extended-heading' // not a card
+            'extended-heading', // not a card
+            'tk' // shouldn't be present in published posts / emails
         ];
 
         const cardsInDefaultNodes = DEFAULT_NODES.map((node) => {
