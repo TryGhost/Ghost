@@ -7,38 +7,60 @@
   "private": true,
   "exports": {
     ".": {
-        "import": "./es/index.js",
-        "types": "./types/index.d.ts"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./types/index.d.ts"
     },
     "./errors": {
-        "import": "./es/errors.js",
-        "types": "./types/errors.d.ts"
+      "import": "./dist/errors.js",
+      "require": "./dist/errors.cjs",
+      "types": "./types/errors.d.ts"
     },
     "./helpers": {
-        "import": "./es/helpers.js",
-        "types": "./types/helpers.d.ts"
+      "import": "./dist/helpers.js",
+      "require": "./dist/helpers.cjs",
+      "types": "./types/helpers.d.ts"
     },
     "./hooks": {
-        "import": "./es/hooks.js",
-        "types": "./types/hooks.d.ts"
+      "import": "./dist/hooks.js",
+      "require": "./dist/hooks.cjs",
+      "types": "./types/hooks.d.ts"
     },
     "./routing": {
-        "import": "./es/routing.js",
-        "types": "./types/routing.d.ts"
+      "import": "./dist/routing.js",
+      "require": "./dist/routing.cjs",
+      "types": "./types/routing.d.ts"
     },
     "./api/*": {
-        "import": "./es/api/*.js",
-        "types": "./types/api/*.d.ts"
+      "import": "./dist/api/*.js",
+      "require": "./dist/api/*.cjs",
+      "types": "./types/api/*.d.ts"
+    },
+    "./vite": {
+      "import": "./dist/vite.js",
+      "require": "./dist/vite.cjs",
+      "types": "./types/vite.d.ts"
+    },
+    "./playwright": {
+      "import": "./dist/playwright.js",
+      "require": "./dist/playwright.cjs",
+      "types": "./types/playwright.d.ts"
+    },
+    "./test/*": {
+      "import": "./dist/test/*.js",
+      "require": "./dist/test/*.cjs",
+      "types": "./types/test/*.d.ts"
     }
   },
   "sideEffects": false,
   "scripts": {
     "build": "vite build && tsc -p tsconfig.declaration.json",
     "prepare": "yarn build",
-    "test": "yarn test:types",
+    "test": "yarn test:types && yarn test:unit",
     "test:types": "tsc --noEmit",
+    "test:unit": "vitest run --coverage",
     "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
-    "lint": "yarn lint:code && (yarn lint:test || echo \"TODO ADD TESTS TO LINT\")",
+    "lint": "yarn lint:code && yarn lint:test",
     "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache"
   },
   "files": [
@@ -46,22 +68,31 @@
     "types"
   ],
   "devDependencies": {
-    "@vitejs/plugin-react": "4.1.1",
+    "@testing-library/react": "14.1.0",
+    "@types/mocha": "10.0.1",
     "c8": "8.0.1",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "mocha": "10.2.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
     "sinon": "17.0.0",
     "ts-node": "10.9.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "typescript": "5.2.2",
-    "vite": "4.5.0"
+    "typescript": "5.3.2"
   },
   "dependencies": {
-    "@sentry/react": "7.78.0",
+    "@sentry/react": "7.84.0",
     "@tanstack/react-query": "4.36.1",
-    "@tryghost/admin-x-design-system": "0.0.0"
+    "@tryghost/admin-x-design-system": "0.0.0",
+    "@types/react": "18.2.38",
+    "@types/react-dom": "18.2.17",
+    "@vitejs/plugin-react": "4.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "vite": "4.5.0",
+    "vite-plugin-css-injected-by-js": "^3.3.0",
+    "vite-plugin-svgr": "3.3.0",
+    "vitest": "0.34.3"
   },
   "peerDependencies": {
     "react": "^18.2.0",
@@ -72,6 +103,12 @@
       "build": {
         "dependsOn": [
           "build",
+          {"projects": ["@tryghost/admin-x-design-system"], "target": "build"}
+        ]
+      },
+      "test:unit": {
+        "dependsOn": [
+          "test:unit",
           {"projects": ["@tryghost/admin-x-design-system"], "target": "build"}
         ]
       }

@@ -27,7 +27,7 @@ const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
         <div className='relative shrink-0'>
             <Avatar
                 bgColor={generateAvatarColor(action.actor?.name || action.actor?.slug || '')}
-                image={action.actor?.image}
+                image={action.actor?.image ?? undefined}
                 label={getInitials(action.actor?.name || action.actor?.slug)}
                 labelColor='white'
                 size='md'
@@ -174,7 +174,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
             filter: [
                 excludedEvents.length && `event:-[${excludedEvents.join(',')}]`,
                 excludedResources.length && `resource_type:-[${excludedResources.join(',')}]`,
-                params?.user && `actor_id:${params.user}`
+                params?.user && `actor_id:'${params.user}'`
             ].filter(Boolean).join('+')
         },
         getNextPageParams: (lastPage, otherParams) => ({

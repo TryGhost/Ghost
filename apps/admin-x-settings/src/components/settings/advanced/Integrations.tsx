@@ -109,7 +109,7 @@ const BuiltInIntegrations: React.FC = () => {
                     openModal('integrations/amp');
                 }}
                 active={ampEnabled}
-                detail='Google Accelerated Mobile Pages'
+                detail='Google AMP will be removed in Ghost 6.0'
                 icon={<AmpIcon className='h-8 w-8' />}
                 title='AMP' />
 

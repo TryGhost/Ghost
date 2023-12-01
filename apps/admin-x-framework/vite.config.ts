@@ -1,27 +1,25 @@
 import react from '@vitejs/plugin-react';
 import glob from 'glob';
-import { resolve } from 'path';
-import { defineConfig } from 'vitest/config';
+import {resolve} from 'path';
+import {defineConfig} from 'vitest/config';
 
 // https://vitejs.dev/config/
 export default (function viteConfig() {
     return defineConfig({
+        logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
             react()
         ],
-        define: {
-            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-            'process.env.VITEST_SEGFAULT_RETRY': 3
-        },
         preview: {
             port: 4174
         },
         build: {
+            reportCompressedSize: false,
             minify: false,
             sourcemap: true,
-            outDir: 'es',
+            outDir: 'dist',
             lib: {
-                formats: ['es'],
+                formats: ['es', 'cjs'],
                 entry: glob.sync(resolve(__dirname, 'src/**/*.{ts,tsx}')).reduce((entries, path) => {
                     if (path.endsWith('.d.ts')) {
                         return entries;

@@ -22,6 +22,10 @@ export interface ToastProps {
     props?: ShowToastProps;
 }
 
+/**
+ * This component uses `react-hot-toast` which requires the `<Toaster />` component to be included in the app.
+ * The design system already does this so you don't have to — just call `showToast()` in any event and it'll work.
+ */
 const Toast: React.FC<ToastProps> = ({
     t,
     children,

@@ -1,5 +1,6 @@
 import NiceModal, {NiceModalHocProps} from '@ebay/nice-modal-react';
 import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
+import {useFramework} from './FrameworkProvider';
 
 export type RouteParams = Record<string, string>
 
@@ -92,12 +93,12 @@ const matchRoute = (pathname: string, routeDefinition: string) => {
 
 export interface RoutingProviderProps {
     basePath: string;
-    externalNavigate: (link: ExternalLink) => void;
     modals?: {paths: Record<string, string>, load: () => Promise<ModalsModule>}
     children: React.ReactNode;
 }
 
-const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, externalNavigate, modals, children}) => {
+const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modals, children}) => {
+    const {externalNavigate} = useFramework();
     const [route, setRoute] = useState<string | undefined>(undefined);
     const [loadingModal, setLoadingModal] = useState(false);
     const [eventTarget] = useState(new EventTarget());
@@ -115,13 +116,13 @@ const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, externalNavi
         if (newPath === route) {
             // No change
         } else if (newPath) {
-            window.location.hash = `/settings/${newPath}`;
+            window.location.hash = `/${basePath}/${newPath}`;
         } else {
-            window.location.hash = `/settings`;
+            window.location.hash = `/${basePath}`;
         }
 
         eventTarget.dispatchEvent(new CustomEvent('routeChange', {detail: {newPath, oldPath: route}}));
-    }, [eventTarget, externalNavigate, route]);
+    }, [basePath, eventTarget, externalNavigate, route]);
 
     useEffect(() => {
         // Preload all the modals after initial render to avoid a delay when opening them

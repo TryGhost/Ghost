@@ -3,7 +3,7 @@ import {MATCH_RELATION_OPTIONS} from './relation-options';
 export const SUBSCRIBED_FILTER = ({newsletters, feature, group}) => {
     if (feature.filterEmailDisabled) {
         return {
-            label: newsletters.length > 1 ? 'Newsletter subscriptions' : 'Newsletter subscription',
+            label: newsletters.length > 1 ? 'All newsletters' : 'Newsletter subscription',
             name: 'subscribed',
             columnLabel: 'Subscribed',
             relationOptions: MATCH_RELATION_OPTIONS,
@@ -76,7 +76,7 @@ export const SUBSCRIBED_FILTER = ({newsletters, feature, group}) => {
                 };
             },
             options: [
-                {label: newsletters.length > 1 ? 'Subscribed to one or more' : 'Subscribed', name: 'subscribed'},
+                {label: newsletters.length > 1 ? 'Subscribed to at least one' : 'Subscribed', name: 'subscribed'},
                 {label: newsletters.length > 1 ? 'Unsubscribed from all' : 'Unsubscribed', name: 'unsubscribed'},
                 {label: 'Email disabled', name: 'email-disabled'}
             ],

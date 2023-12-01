@@ -11,6 +11,7 @@ const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/'
 // https://vitejs.dev/config/
 export default (function viteConfig() {
     return defineConfig({
+        logLevel: process.env.CI ? 'info' : 'warn',
         plugins: [
             svgr(),
             react(),
@@ -31,6 +32,7 @@ export default (function viteConfig() {
             port: 5368
         },
         build: {
+            reportCompressedSize: false,
             outDir: resolve(__dirname, 'umd'),
             emptyOutDir: true,
             minify: true,

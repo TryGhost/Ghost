@@ -4,6 +4,7 @@ import React, {useEffect, useState} from 'react';
 import useGlobalDirtyState from '../../hooks/useGlobalDirtyState';
 import {confirmIfDirty} from '../../utils/modals';
 import {ButtonColor, ButtonProps} from '../Button';
+import Breadcrumbs, {BreadcrumbItem} from '../Breadcrumbs';
 import ButtonGroup from '../ButtonGroup';
 import Heading, {HeadingLevel} from '../Heading';
 import Icon from '../Icon';
@@ -33,6 +34,7 @@ export interface PreviewModalProps {
     deviceSelector?: boolean;
     siteLink?: string;
     previewToolbarURLs?: SelectOption[];
+    previewToolbarBreadcrumbs?: BreadcrumbItem[];
     previewBgColor?: 'grey' | 'white' | 'greygradient';
     selectedURL?: string;
     previewToolbarTabs?: Tab[];
@@ -42,6 +44,7 @@ export interface PreviewModalProps {
     sidebarPadding?: boolean;
     sidebarContentClasses?: string;
     enableCMDS?: boolean;
+    backDropClick?: boolean;
 
     onCancel?: () => void;
     onOk?: () => void;
@@ -49,6 +52,7 @@ export interface PreviewModalProps {
     onSelectURL?: (url: string) => void;
     onSelectDesktopView?: () => void;
     onSelectMobileView?: () => void;
+    onBreadcrumbsBack?: () => void;
 }
 
 export const PreviewModalContent: React.FC<PreviewModalProps> = ({
@@ -73,19 +77,22 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     previewBgColor = 'grey',
     selectedURL,
     previewToolbarTabs,
+    previewToolbarBreadcrumbs,
     buttonsDisabled,
     sidebarButtons,
     sidebarHeader,
     sidebarPadding = true,
     sidebarContentClasses,
     enableCMDS = true,
+    backDropClick,
 
     onCancel,
     onOk,
     afterClose,
     onSelectURL,
     onSelectDesktopView,
-    onSelectMobileView
+    onSelectMobileView,
+    onBreadcrumbsBack
 }) => {
     const modal = useModal();
     const {setGlobalDirtyState} = useGlobalDirtyState();
@@ -144,6 +151,16 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                 tabs={previewToolbarTabs}
                 width='wide'
                 onTabChange={onSelectURL!}
+            />;
+        } else if (previewToolbarBreadcrumbs) {
+            toolbarLeft = <Breadcrumbs
+                activeItemClassName='hidden md:!block md:!visible'
+                containerClassName='whitespace-nowrap'
+                itemClassName='hidden md:!block md:!visible'
+                items={previewToolbarBreadcrumbs}
+                separatorClassName='hidden md:!block md:!visible'
+                backIcon
+                onBack={onBreadcrumbsBack}
             />;
         }
 
@@ -247,6 +264,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         <Modal
             afterClose={afterClose}
             animate={false}
+            backDropClick={backDropClick}
             footer={false}
             height={height}
             padding={false}
@@ -257,13 +275,13 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             hideXOnMobile
         >
             <div className='flex h-full grow'>
-                <div className={`hidden grow flex-col md:!visible md:!flex ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
+                <div className={`hidden grow flex-col [@media(min-width:801px)]:!visible [@media(min-width:801px)]:!flex ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
                     {preview}
                 </div>
                 {sidebar &&
-                    <div className='relative flex h-full w-full flex-col border-l border-grey-100 dark:border-grey-900 md:w-auto md:basis-[400px]'>
+                    <div className='relative flex h-full w-full flex-col border-l border-grey-100 dark:border-grey-900 [@media(min-width:801px)]:w-auto [@media(min-width:801px)]:basis-[400px]'>
                         {sidebarHeader ? sidebarHeader : (
-                            <div className='flex max-h-[74px] items-center justify-between gap-3 px-7 py-5'>
+                            <div className='flex max-h-[82px] items-center justify-between gap-3 px-7 py-6'>
                                 <Heading level={titleHeadingLevel}>{title}</Heading>
                                 {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
                             </div>

@@ -1,5 +1,5 @@
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
-import {updateQueryCache} from '../utils/api/updateQueries';
+import {updateQueryCache, insertToQueryCache} from '../utils/api/updateQueries';
 
 export type Offer = {
     id: string;
@@ -18,17 +18,27 @@ export type Offer = {
     redemption_count: number;
     tier: {
         id: string;
-        name: string;
-    }
+        name?: string;
+    },
+    created_at?: string;
+    last_redeemed? : string;
 }
+
+export type PartialNewOffer = Omit<Offer, 'redemption_count'>;
+export type NewOffer = Partial<Pick<PartialNewOffer, 'id'>> & Omit<PartialNewOffer, 'id'>;
 
 export interface OffersResponseType {
     meta?: Meta
-    offers: Offer[]
+    offers?: Offer[]
 }
 
 export interface OfferEditResponseType extends OffersResponseType {
     meta?: Meta
+}
+
+export interface OfferAddResponseType {
+    meta?: Meta,
+    offers: NewOffer[]
 }
 
 const dataType = 'OffersResponseType';
@@ -40,7 +50,7 @@ export const useBrowseOffers = createQuery<OffersResponseType>({
 
 export const useBrowseOffersById = createQueryWithId<OffersResponseType>({
     dataType,
-    path: `/offers/`
+    path: id => `/offers/${id}/`
 });
 
 export const useEditOffer = createMutation<OfferEditResponseType, Offer>({
@@ -51,5 +61,16 @@ export const useEditOffer = createMutation<OfferEditResponseType, Offer>({
         dataType,
         emberUpdateType: 'createOrUpdate',
         update: updateQueryCache('offers')
+    }
+});
+
+export const useAddOffer = createMutation<OfferAddResponseType, NewOffer>({
+    method: 'POST',
+    path: () => '/offers/',
+    body: offer => ({offers: [offer]}),
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: insertToQueryCache('offers')
     }
 });

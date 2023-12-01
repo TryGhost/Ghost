@@ -381,7 +381,7 @@ exports[`Members API - member attribution Returns sign up attributions of all ty
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "9604",
+  "content-length": "8054",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1810,8 +1810,11 @@ exports[`Members API Can add and send a signup confirmation email 4: [text 1] 1`
 
 exports[`Members API Can add and send a signup confirmation email 5: [metadata 1] 1`] = `
 Object {
+  "encoding": "base64",
   "forceTextContent": true,
-  "from": "noreply@127.0.0.1",
+  "from": "\\"Ghost's Test Site\\" <noreply@127.0.0.1>",
+  "generateTextFromHTML": false,
+  "replyTo": null,
   "subject": "🙌 Complete your sign up to Ghost's Test Site!",
   "to": "member_getting_confirmation@test.com",
 }
@@ -4279,6 +4282,19 @@ Object {
 }
 `;
 
+exports[`Members API Can log out 1: [body] 1`] = `Object {}`;
+
+exports[`Members API Can log out 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Members API Can order by email_open_rate 1: [body] 1`] = `
 Object {
   "members": Array [
@@ -5275,7 +5291,7 @@ exports[`Members API Can subscribe to a newsletter 5: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5778",
+  "content-length": "4538",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
