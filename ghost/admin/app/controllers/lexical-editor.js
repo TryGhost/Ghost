@@ -128,6 +128,8 @@ export default class LexicalEditorController extends Controller {
     // koenig related properties
     wordCount = 0;
     tkCount = 0;
+    postTkCount = 0;
+    titleHasTk = false;
 
     /* private properties ----------------------------------------------------*/
 
@@ -227,6 +229,10 @@ export default class LexicalEditorController extends Controller {
 
     @action
     updateTitleScratch(title) {
+        // maybe update TK count here if regex is matched?
+        if (this.feature.get('tkReminders')) {
+            this.setTitleHasTk(title);
+        }
         this.set('post.titleScratch', title);
     }
 
@@ -312,8 +318,25 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    updateTkCount(count) {
-        this.set('tkCount', count);
+    updatePostTkCount(count) {
+        this.set('postTkCount', count);
+        this.updateTkCount();
+    }
+
+    @action
+    setTitleHasTk(text) {
+        const REGEX = new RegExp(/(^|.)([^a-zA-Z0-9\s]?(TK)+[^a-zA-Z0-9\s]?)($|.)/);
+        if (REGEX.exec(text)) {
+            this.set('titleHasTk', true);
+        } else {
+            this.set('titleHasTk', false);
+        }
+        this.updateTkCount();
+    }
+
+    @action
+    updateTkCount() {
+        this.set('tkCount',this.get('postTkCount') + (this.get('titleHasTk') ? 1 : 0));
     }
 
     @action
@@ -927,7 +950,12 @@ export default class LexicalEditorController extends Controller {
         // need to set scratch values because they won't be present on first
         // edit of the post
         // TODO: can these be `boundOneWay` on the model as per the other attrs?
+        console.log(`setting title scratch`);
         post.set('titleScratch', post.get('title'));
+        if (this.feature.get('tkReminders')) {
+            console.log(`has tk flag`,post.get('title'));
+            this.setTitleHasTk(post.get('title'));
+        }
         post.set('lexicalScratch', post.get('lexical'));
 
         this._previousTagNames = this._tagNames;

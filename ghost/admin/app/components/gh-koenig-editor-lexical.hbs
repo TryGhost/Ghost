@@ -28,6 +28,15 @@
                 </span>
             {{/if}}
 
+            {{#if this.args.titleHasTk}}
+                <div 
+                    class="absolute -right-14 cursor-pointer p-1 text-xs font-medium text-grey-600" data-testid="tk-indicator"
+                    {{on "click" this.focusTitle}}
+                >
+                    TK
+                </div>
+            {{/if}}
+
             <GhTextarea
                 @class="gh-editor-title {{if (and (not @cardOptions.post.showTitleAndFeatureImage) (not this.titleIsFocused)) "faded"}}"
                 @placeholder={{@titlePlaceholder}}
@@ -56,7 +65,7 @@
             @registerAPI={{this.registerEditorAPI}}
             @cursorDidExitAtTop={{this.focusTitle}}
             @updateWordCount={{@updateWordCount}}
-            @updateTkCount={{@updateTkCount}}
+            @updatePostTkCount={{@updatePostTkCount}}
         />
     </div>
 </div>
