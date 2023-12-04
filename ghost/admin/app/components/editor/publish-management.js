@@ -52,7 +52,8 @@ export default class PublishManagement extends Component {
                 publishOptions: this.publishOptions,
                 saveTask: this.publishTask,
                 togglePreviewPublish: this.togglePreviewPublish,
-                skipAnimation
+                skipAnimation,
+                tkCount: this.args.tkCount
             });
 
             const result = await this.publishFlowModal;
@@ -169,7 +170,7 @@ export default class PublishManagement extends Component {
         const willEmailImmediately = this.publishOptions.willEmailImmediately;
 
         // clean up blank editor cards
-        // apply cloned mobiledoc
+        // apply cloned lexical
         // apply scratch values
         // generate slug if needed (should never happen - publish flow can't be opened on new posts)
         yield this.args.beforePublish();

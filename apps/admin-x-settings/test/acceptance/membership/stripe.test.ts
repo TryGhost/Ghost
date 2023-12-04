@@ -1,12 +1,13 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '../../utils/acceptance';
+import {globalDataRequests} from '../../utils/acceptance';
+import {mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Stripe settings', async () => {
     test('Supports the Stripe Connect flow', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
             editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
-                {key: 'stripe_connect_account_name', value: 'Dummy'},
+                {key: 'stripe_connect_display_name', value: 'Dummy'},
                 {key: 'stripe_connect_livemode', value: false},
                 {key: 'stripe_connect_account_id', value: 'acct_123'},
                 {key: 'stripe_connect_publishable_key', value: 'pk_test_123'},

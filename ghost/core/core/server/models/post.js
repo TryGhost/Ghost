@@ -392,6 +392,11 @@ Post = ghostBookshelf.Model.extend({
             const html = await lexicalLib.render(model.get('lexical'));
             const plaintext = htmlToPlaintext.excerpt(html);
 
+            // avoid a DB query if we have no html - knex will set it to an empty string rather than NULL
+            if (!html && !model.get('plaintext')) {
+                return model;
+            }
+
             // set model attributes so they are available immediately in code that uses the returned model
             model.set('html', html);
             model.set('plaintext', plaintext);
@@ -613,6 +618,7 @@ Post = ghostBookshelf.Model.extend({
         // an exception for ?source=html which always sets both when the lexical editor is enabled.
         // That's necessary because at the input serializer layer we don't have access to the
         // actual model to check if this would result in a change of format
+
         if (this.previous('mobiledoc') && this.get('lexical')) {
             this.set('lexical', null);
         } else if (this.get('mobiledoc') && this.get('lexical')) {
@@ -715,7 +721,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (!this.get('mobiledoc') && !this.get('lexical')) {
-            this.set('mobiledoc', JSON.stringify(mobiledocLib.blankDocument));
+            this.set('lexical', JSON.stringify(lexicalLib.blankDocument));
         }
 
         // If we're force re-rendering we want to make sure that all image cards
@@ -898,7 +904,7 @@ Post = ghostBookshelf.Model.extend({
             ops.push(function updateRevisions() {
                 return ghostBookshelf.model('MobiledocRevision')
                     .findAll(Object.assign({
-                        filter: `post_id:${model.id}`,
+                        filter: `post_id:'${model.id}'`,
                         columns: ['id']
                     }, _.pick(options, 'transacting')))
                     .then((revisions) => {
@@ -952,7 +958,7 @@ Post = ghostBookshelf.Model.extend({
             ops.push(async function updateRevisions() {
                 const revisionModels = await ghostBookshelf.model('PostRevision')
                     .findAll(Object.assign({
-                        filter: `post_id:${model.id}`,
+                        filter: `post_id:'${model.id}'`,
                         columns: ['id', 'lexical', 'created_at', 'author_id', 'title', 'reason', 'post_status', 'created_at_ts', 'feature_image']
                     }, _.pick(options, 'transacting')));
 
@@ -983,12 +989,14 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // CASE: Convert post to lexical on the fly
-        if (labs.isSet('lexicalEditor') && options.convert_to_lexical) {
+        if (options.convert_to_lexical) {
             ops.push(async function convertToLexical() {
                 const mobiledoc = model.get('mobiledoc');
-                const lexical = mobiledocToLexical(mobiledoc);
-                model.set('lexical', lexical);
-                model.set('mobiledoc', null);
+                if (mobiledoc !== null) { // only run conversion when there is a mobiledoc string
+                    const lexical = mobiledocToLexical(mobiledoc);
+                    model.set('lexical', lexical);
+                    model.set('mobiledoc', null);
+                }
             });
         }
 

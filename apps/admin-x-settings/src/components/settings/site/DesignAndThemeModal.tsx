@@ -1,14 +1,14 @@
 import ChangeThemeModal from './ThemeModal';
 import DesignModal from './DesignModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import {RoutingModalProps} from '../../providers/RoutingProvider';
+import {RoutingModalProps} from '@tryghost/admin-x-framework/routing';
 
 const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
     const modal = useModal();
 
     if (pathName === 'design/edit') {
         return <DesignModal />;
-    } else if (pathName === 'design/edit/themes') {
+    } else if (pathName === 'design/change-theme') {
         return <ChangeThemeModal />;
     } else if (pathName === 'design/change-theme/install') {
         const url = window.location.href;

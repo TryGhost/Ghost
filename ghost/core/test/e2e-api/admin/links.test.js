@@ -50,7 +50,7 @@ describe('Links API', function () {
         });
         const postId = siteLink.post_id;
         const originalTo = siteLink.link.to;
-        const filter = `post_id:${postId}+to:'${originalTo}'`;
+        const filter = `post_id:'${postId}'+to:'${originalTo}'`;
 
         // Wait minimum 2 seconds
         clock.tick(2 * 1000);
@@ -122,7 +122,7 @@ describe('Links API', function () {
         });
         const postId = siteLink.post_id;
         const originalTo = siteLink.link.to;
-        const filter = `post_id:${postId}+to:'${originalTo}'`;
+        const filter = `post_id:'${postId}'+to:'${originalTo}'`;
 
         // Wait minimum 2 seconds
         clock.tick(2 * 1000);
@@ -187,7 +187,7 @@ describe('Links API', function () {
         });
         const postId = siteLink.post_id;
         const originalTo = 'https://empty.example.com';
-        const filter = `post_id:${postId}+to:'${originalTo}'`;
+        const filter = `post_id:'${postId}'+to:'${originalTo}'`;
         await agent
             .put(`links/bulk/?filter=${encodeURIComponent(filter)}`)
             .body({

@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, mockSitePreview} from '../../utils/acceptance';
-import {responseFixtures} from '../../utils/acceptance';
+import {globalDataRequests} from '../../utils/acceptance';
+import {mockApi, mockSitePreview, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Portal Settings', async () => {
     test('Loads Portal Preview Modal', async ({page}) => {
@@ -25,7 +25,9 @@ test.describe('Portal Settings', async () => {
     test('can toggle portal signup options', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            editSettings: {method: 'PUT', path: '/settings/', response: responseFixtures.settings}
+            tiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
+            // the tiers id is from the responseFixtures.tiers, free tier id
+            editTiers: {method: 'PUT', path: '/tiers/645453f4d254799990dd0e21/', response: responseFixtures.tiers}
         }});
 
         await mockSitePreview({
@@ -43,17 +45,14 @@ test.describe('Portal Settings', async () => {
         const modal = await page.getByTestId('portal-modal');
 
         await modal.getByRole('switch').click();
-
-        // get input checkbox
         await modal.getByRole('checkbox').click();
-
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.editSettings?.body).toEqual({
-            settings: [
-                {key: 'portal_name', value: false},
-                {key: 'portal_plans', value: '["monthly","yearly"]'}
-            ]
+        expect(lastApiRequests.editTiers?.body).toMatchObject({
+            tiers: [{
+                name: 'Free',
+                visibility: 'none'
+            }]
         });
     });
 
@@ -113,7 +112,7 @@ test.describe('Portal Settings', async () => {
         await page.waitForSelector('[data-testid="portal-modal"]');
 
         const modal = page.getByTestId('portal-modal');
-        
+
         // since account page occurs twice on the page, we need to grab it by ID instead.
         const accountTab = await page.$('#accountPage');
         await accountTab?.click();

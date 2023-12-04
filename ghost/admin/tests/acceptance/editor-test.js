@@ -1,12 +1,10 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import moment from 'moment-timezone';
 import sinon from 'sinon';
-import {Response} from 'miragejs';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
-import {disableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
 import {setupApplicationTest} from 'ember-mocha';
@@ -30,8 +28,6 @@ describe('Acceptance: Editor', function () {
 
         await invalidateSession();
         await visit('/editor/post/1');
-
-        disableLabsFlag(this.server, 'lexicalEditor');
 
         expect(currentURL(), 'currentURL').to.equal('/signin');
     });
@@ -185,74 +181,7 @@ describe('Acceptance: Editor', function () {
                 await datepickerSelect('[data-test-date-time-picker-datepicker]', validTime.toDate());
 
                 expect(moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD HH:mm:ss')).to.equal('2017-04-09 12:00:00');
-
-                // go to settings to change the timezone
-                await visit('/settings/general');
-                await click('[data-test-toggle-timezone]');
-
-                expect(currentURL(), 'currentURL for settings')
-                    .to.equal('/settings/general');
-                expect(find('#timezone option:checked').textContent.trim(), 'default timezone')
-                    .to.equal('(GMT) UTC');
-
-                // select a new timezone
-                find('#timezone option[value="Pacific/Kwajalein"]').selected = true;
-
-                await triggerEvent('#timezone', 'change');
-                // save the settings
-                await click('[data-test-button="save"]');
-
-                expect(find('#timezone option:checked').textContent.trim(), 'new timezone after saving')
-                    .to.equal('(GMT +12:00) International Date Line West');
-
-                // and now go back to the editor
-                await visit('/editor/post/1');
-
-                await click('[data-test-psm-trigger]');
-                expect(
-                    find('[data-test-date-time-picker-date-input]').value,
-                    'date after timezone change'
-                ).to.equal('2017-04-10');
-
-                expect(
-                    find('[data-test-date-time-picker-time-input]').value,
-                    'time after timezone change'
-                ).to.equal('00:00');
             });
-        });
-
-        it.skip('handles validation errors when scheduling', async function () {
-            this.server.put('/posts/:id/', function () {
-                return new Response(422, {}, {
-                    errors: [{
-                        type: 'ValidationError',
-                        message: 'Error test'
-                    }]
-                });
-            });
-
-            let post = this.server.create('post', 1, {authors: [author], status: 'draft'});
-            let plusTenMin = moment().utc().add(10, 'minutes');
-
-            await visit(`/editor/post/${post.id}`);
-
-            await click('[data-test-publishmenu-trigger]');
-            await click('[data-test-publishmenu-scheduled-option]');
-            await datepickerSelect('[data-test-publishmenu-draft] [data-test-date-time-picker-datepicker]', plusTenMin.toDate());
-            await fillIn('[data-test-publishmenu-draft] [data-test-date-time-picker-time-input]', plusTenMin.format('HH:mm'));
-            await blur('[data-test-publishmenu-draft] [data-test-date-time-picker-time-input]');
-
-            await click('[data-test-publishmenu-save]');
-
-            expect(
-                findAll('.gh-alert').length,
-                'number of alerts after failed schedule'
-            ).to.equal(1);
-
-            expect(
-                find('.gh-alert').textContent,
-                'alert text after failed schedule'
-            ).to.match(/Error test/);
         });
 
         it.skip('handles title validation errors correctly', async function () {
@@ -278,45 +207,6 @@ describe('Acceptance: Editor', function () {
                 'alert text after invalid title'
             ).to.match(/Title cannot be longer than 255 characters/);
         });
-
-        // NOTE: these tests are specific to the mobiledoc editor
-        // it('inserts a placeholder if the title is blank', async function () {
-        //     this.server.createList('post', 1);
-        //
-        //     // post id 1 is a draft, checking for draft behaviour now
-        //     await visit('/editor/post/1');
-        //
-        //     expect(currentURL(), 'currentURL')
-        //         .to.equal('/editor/post/1');
-        //
-        //     await titleRendered();
-        //
-        //     let title = find('#koenig-title-input div');
-        //     expect(title.data('placeholder')).to.equal('Your Post Title');
-        //     expect(title.hasClass('no-content')).to.be.false;
-        //
-        //     await replaceTitleHTML('');
-        //     expect(title.hasClass('no-content')).to.be.true;
-        //
-        //     await replaceTitleHTML('test');
-        //     expect(title.hasClass('no-content')).to.be.false;
-        // });
-        //
-        // it('removes HTML from the title.', async function () {
-        //     this.server.createList('post', 1);
-        //
-        //     // post id 1 is a draft, checking for draft behaviour now
-        //     await visit('/editor/post/1');
-        //
-        //     expect(currentURL(), 'currentURL')
-        //         .to.equal('/editor/post/1');
-        //
-        //     await titleRendered();
-        //
-        //     let title = find('#koenig-title-input div');
-        //     await replaceTitleHTML('<div>TITLE&nbsp;&#09;&nbsp;&thinsp;&ensp;&emsp;TEST</div>&nbsp;');
-        //     expect(title.html()).to.equal('TITLE      TEST ');
-        // });
 
         it('renders first countdown notification before scheduled time', async function () {
             let clock = sinon.useFakeTimers(moment().valueOf());
@@ -345,7 +235,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('shows author token input and allows changing of authors in PSM', async function () {
-            let adminRole = this.server.create('role', {name: 'Adminstrator'});
+            let adminRole = this.server.create('role', {name: 'Administrator'});
             let authorRole = this.server.create('role', {name: 'Author'});
             let user1 = this.server.create('user', {name: 'Primary', roles: [adminRole]});
             this.server.create('user', {name: 'Waldo', roles: [authorRole]});
@@ -639,77 +529,6 @@ describe('Acceptance: Editor', function () {
             await blur('[data-test-token-input] input');
 
             // no expects, will throw with an error and fail when it hits the bug
-        });
-
-        // https://github.com/TryGhost/Team/issues/2702
-        // NOTE: Skip as we're moving to Lexical, and we have tests in place to cover converting Mobiledoc to Lexical
-        it.skip('removes unknown cards instead of crashing', async function () {
-            let post = this.server.create('post', {authors: [author], status: 'published', title: 'Title', mobiledoc: JSON.stringify({
-                version: '0.3.1',
-                atoms: [],
-                cards: [
-                    [
-                        'asdfadsfasdfasdfadsf',
-                        {
-                            cardWidth: 'wide',
-                            startingPosition: 50,
-                            caption: 'Salmon On The Grill: BEFORE / AFTER'
-                        }
-                    ]
-                ],
-                markups: [],
-                sections: [
-                    [
-                        1,
-                        'p',
-                        [
-                            [
-                                0,
-                                [],
-                                0,
-                                'Paragraph 1'
-                            ]
-                        ]
-                    ],
-                    [
-                        10,
-                        0
-                    ]
-                ],
-                ghostVersion: '4.0'
-            })});
-
-            await visit(`/editor/post/${post.id}`);
-
-            expect(currentURL(), 'currentURL').to.equal(`/editor/post/${post.id}`);
-
-            // Make an edit and save
-            await fillIn('[data-test-editor-title-input]', 'Title 2');
-            await click('[data-test-button="publish-save"]');
-
-            // Check that the unknown card has been removed
-            expect(
-                this.server.db.posts.find(post.id).mobiledoc,
-                'removed unknown card from mobiledoc'
-            ).to.deep.equal(JSON.stringify({version: '0.3.1',
-                atoms: [],
-                cards: [],
-                markups: [],
-                sections: [
-                    [
-                        1,
-                        'p',
-                        [
-                            [
-                                0,
-                                [],
-                                0,
-                                'Paragraph 1'
-                            ]
-                        ]
-                    ]
-                ],
-                ghostVersion: '4.0'}));
         });
 
         it('renders a breadcrumb back to the post list', async function () {

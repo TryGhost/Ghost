@@ -17,7 +17,7 @@ module.exports = {
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         sender_name: {type: 'string', maxlength: 191, nullable: true},
         sender_email: {type: 'string', maxlength: 191, nullable: true},
-        sender_reply_to: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'newsletter', validations: {isIn: [['newsletter', 'support']]}},
+        sender_reply_to: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'newsletter'},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active', validations: {isIn: [['active', 'archived']]}},
         visibility: {
             type: 'string',
@@ -417,6 +417,7 @@ module.exports = {
     members: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         uuid: {type: 'string', maxlength: 36, nullable: true, unique: true, validations: {isUUID: true}},
+        transient_id: {type: 'string', maxlength: 191, nullable: false, unique: true},
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         status: {
             type: 'string', maxlength: 50, nullable: false, defaultTo: 'free', validations: {
@@ -523,7 +524,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         created_at: {type: 'dateTime', nullable: false},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
-        attribution_id: {type: 'string', maxlength: 24, nullable: true},
+        attribution_id: {type: 'string', maxlength: 24, nullable: true, index: true},
         attribution_type: {
             type: 'string', maxlength: 50, nullable: true, validations: {
                 isIn: [['url', 'post', 'page', 'author', 'tag']]
@@ -709,7 +710,7 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         subscription_id: {type: 'string', maxlength: 24, nullable: false, references: 'members_stripe_customers_subscriptions.id', cascadeDelete: true},
-        attribution_id: {type: 'string', maxlength: 24, nullable: true},
+        attribution_id: {type: 'string', maxlength: 24, nullable: true, index: true},
         attribution_type: {
             type: 'string', maxlength: 50, nullable: true, validations: {
                 isIn: [['url', 'post', 'page', 'author', 'tag']]
@@ -935,7 +936,10 @@ module.exports = {
     members_newsletters: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
-        newsletter_id: {type: 'string', maxlength: 24, nullable: false, references: 'newsletters.id', cascadeDelete: true}
+        newsletter_id: {type: 'string', maxlength: 24, nullable: false, references: 'newsletters.id', cascadeDelete: true},
+        '@@INDEXES@@': [
+            ['newsletter_id', 'member_id']
+        ]
     },
     comments: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -1076,7 +1080,7 @@ module.exports = {
         excerpt: {type: 'string', maxlength: 2000, nullable: true},
         featured_image: {type: 'string', maxlength: 2000, nullable: true},
         favicon: {type: 'string', maxlength: 2000, nullable: true},
-        reason: {type: 'string', maxlength: 2000, nullable: true},
+        description: {type: 'string', maxlength: 2000, nullable: true},
         one_click_subscribe: {type: 'boolean', nullable: false, defaultTo: false},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}

@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../../utils/acceptance';
+import {globalDataRequests} from '../../../utils/acceptance';
+import {meWithRole, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User roles', async () => {
     test('Shows users under their role', async ({page}) => {
@@ -91,5 +92,61 @@ test.describe('User roles', async () => {
                 }]
             }]
         });
+    });
+
+    test('Editors can only manage lower roles', async ({page}) => {
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'contributor@test.com')!;
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseMe: {...globalDataRequests.browseMe, response: meWithRole('Editor')},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                users: [{
+                    ...userToEdit,
+                    name: 'New name'
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+        const modal = page.getByTestId('user-detail-modal');
+
+        // Cannot edit owner, administrators, other editors or authors
+
+        await section.getByTestId('owner-user').hover();
+        await expect(section.getByTestId('owner-user').getByRole('button')).toBeHidden();
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        await activeTab.getByTestId('user-list-item').last().click();
+        await expect(modal).toBeHidden();
+
+        await section.getByRole('tab', {name: 'Editors'}).click();
+
+        await activeTab.getByTestId('user-list-item').last().click();
+        await expect(modal).toBeHidden();
+
+        await section.getByRole('tab', {name: 'Authors'}).click();
+
+        await activeTab.getByTestId('user-list-item').last().click();
+        await expect(modal).toBeHidden();
+
+        // Can edit contributors
+
+        await section.getByRole('tab', {name: 'Contributors'}).click();
+
+        await activeTab.getByTestId('user-list-item').last().click();
+        await expect(modal).toBeVisible();
+
+        await expect(modal).not.toContainText('Role');
+
+        await modal.getByLabel('Full name').fill('New name');
+        await modal.getByRole('button', {name: 'Save'}).click();
+
+        await expect(modal).toBeHidden();
     });
 });

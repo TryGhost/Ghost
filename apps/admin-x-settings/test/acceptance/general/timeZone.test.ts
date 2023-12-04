@@ -1,5 +1,6 @@
-import {chooseOptionInSelect, globalDataRequests, mockApi, updatedSettingsResponse} from '../../utils/acceptance';
+import {chooseOptionInSelect, mockApi, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
+import {globalDataRequests} from '../../utils/acceptance';
 
 test.describe('Time zone settings', async () => {
     test('Supports editing the time zone', async ({page}) => {
@@ -14,7 +15,7 @@ test.describe('Time zone settings', async () => {
 
         const section = page.getByTestId('timezone');
 
-        await expect(section.getByText('Etc/UTC')).toHaveCount(1);
+        await expect(section.getByText('(GMT) UTC')).toHaveCount(1);
 
         await section.getByRole('button', {name: 'Edit'}).click();
 
@@ -24,7 +25,7 @@ test.describe('Time zone settings', async () => {
 
         await expect(section.getByTestId('timezone-select')).toHaveCount(0);
 
-        await expect(section.getByText('America/Anchorage')).toHaveCount(1);
+        await expect(section.getByText('(GMT -9:00) Alaska')).toHaveCount(1);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [

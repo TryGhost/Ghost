@@ -1,11 +1,7 @@
-import CheckboxGroup from '../../../../admin-x-ds/global/form/CheckboxGroup';
-import Form from '../../../../admin-x-ds/global/form/Form';
-import HtmlField from '../../../../admin-x-ds/global/form/HtmlField';
 import React, {useCallback, useEffect, useMemo} from 'react';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import {CheckboxProps} from '../../../../admin-x-ds/global/form/Checkbox';
-import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '../../../../api/settings';
-import {Tier} from '../../../../api/tiers';
+import {CheckboxGroup, CheckboxProps, Form, HtmlField, Toggle} from '@tryghost/admin-x-design-system';
+import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {Tier, getPaidActiveTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const SignupOptions: React.FC<{
@@ -60,20 +56,38 @@ const SignupOptions: React.FC<{
 
     const isStripeEnabled = checkStripeEnabled(localSettings, config!);
 
-    let tiersCheckboxes: CheckboxProps[] = [
-        {
-            checked: (portalPlans.includes('free')),
-            disabled: isDisabled,
-            label: 'Free',
-            value: 'free',
-            onChange: () => {
-                togglePlan('free');
-            }
-        }
-    ];
+    let tiersCheckboxes: CheckboxProps[] = [];
 
-    if (isStripeEnabled) {
+    if (localTiers) {
         localTiers.forEach((tier) => {
+            if (tier.name === 'Free') {
+                tiersCheckboxes.push({
+                    checked: (portalPlans.includes('free')),
+                    disabled: isDisabled,
+                    label: 'Free',
+                    value: 'free',
+                    onChange: (checked) => {
+                        if (portalPlans.includes('free') && !checked) {
+                            portalPlans.splice(portalPlans.indexOf('free'), 1);
+                        }
+
+                        if (!portalPlans.includes('free') && checked) {
+                            portalPlans.push('free');
+                        }
+
+                        updateSetting('portal_plans', JSON.stringify(portalPlans));
+
+                        updateTier({...tier, visibility: checked ? 'public' : 'none'});
+                    }
+                });
+            }
+        });
+    }
+
+    const paidActiveTiersResult = getPaidActiveTiers(localTiers) || [];
+
+    if (paidActiveTiersResult.length > 0 && isStripeEnabled) {
+        paidActiveTiersResult.forEach((tier) => {
             tiersCheckboxes.push({
                 checked: (tier.visibility === 'public'),
                 label: tier.name,

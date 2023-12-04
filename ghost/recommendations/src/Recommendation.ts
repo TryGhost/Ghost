@@ -8,7 +8,7 @@ import {UnsafeData} from './UnsafeData';
 export type RecommendationPlain = {
     id: string,
     title: string
-    reason: string|null
+    description: string|null
     excerpt: string|null // Fetched from the site meta data
     featuredImage: URL|null // Fetched from the site meta data
     favicon: URL|null // Fetched from the site meta data
@@ -27,7 +27,7 @@ export type RecommendationPlain = {
 export type RecommendationCreateData = {
     id?: string
     title: string
-    reason: string|null
+    description: string|null
     excerpt: string|null // Fetched from the site meta data
     featuredImage: URL|string|null // Fetched from the site meta data
     favicon: URL|string|null // Fetched from the site meta data
@@ -49,7 +49,7 @@ export type EditRecommendation = Partial<AddRecommendation>
 export class Recommendation {
     id: string;
     title: string;
-    reason: string|null;
+    description: string|null;
     excerpt: string|null; // Fetched from the site meta data
     featuredImage: URL|null; // Fetched from the site meta data
     favicon: URL|null; // Fetched from the site meta data
@@ -77,7 +77,7 @@ export class Recommendation {
     private constructor(data: RecommendationPlain) {
         this.id = data.id;
         this.title = data.title;
-        this.reason = data.reason;
+        this.description = data.description;
         this.excerpt = data.excerpt;
         this.featuredImage = data.featuredImage;
         this.favicon = data.favicon;
@@ -103,9 +103,9 @@ export class Recommendation {
             });
         }
 
-        if (properties.reason && properties.reason.length > 2000) {
+        if (properties.description && properties.description.length > 2000) {
             throw new errors.ValidationError({
-                message: 'Reason must be less than 2000 characters'
+                message: 'Description must be less than 2000 characters'
             });
         }
 
@@ -117,8 +117,8 @@ export class Recommendation {
     }
 
     clean() {
-        if (this.reason !== null && this.reason.length === 0) {
-            this.reason = null;
+        if (this.description !== null && this.description.length === 0) {
+            this.description = null;
         }
 
         this.url = this.cleanURL(this.url);
@@ -139,7 +139,7 @@ export class Recommendation {
         const d = {
             id,
             title: data.title,
-            reason: data.reason,
+            description: data.description,
             excerpt: data.excerpt,
             featuredImage: new UnsafeData(data.featuredImage, {field: ['featuredImage']}).nullable.url,
             favicon: new UnsafeData(data.favicon, {field: ['favicon']}).nullable.url,
@@ -162,7 +162,7 @@ export class Recommendation {
         return {
             id: this.id,
             title: this.title,
-            reason: this.reason,
+            description: this.description,
             excerpt: this.excerpt,
             featuredImage: this.featuredImage,
             favicon: this.favicon,
@@ -181,13 +181,18 @@ export class Recommendation {
     edit(properties: EditRecommendation) {
         // Delete undefined properties
         const newProperties = this.plain;
+        let didChange = false;
 
         for (const key of Object.keys(properties) as (keyof EditRecommendation)[]) {
-            if (Object.prototype.hasOwnProperty.call(properties, key) && properties[key] !== undefined) {
+            if (Object.prototype.hasOwnProperty.call(properties, key) && properties[key] !== undefined && properties[key] !== newProperties[key]) {
                 (newProperties as Record<string, unknown>)[key] = properties[key] as unknown;
+                didChange = true;
             }
         }
 
+        if (!didChange) {
+            return;
+        }
         newProperties.updatedAt = new Date();
 
         const created = Recommendation.create(newProperties);

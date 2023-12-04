@@ -9,6 +9,7 @@ const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const tpl = require('@tryghost/tpl');
 const cheerio = require('cheerio');
+const {EmailAddressParser} = require('@tryghost/email-addresses');
 
 const messages = {
     subscriptionStatus: {
@@ -108,6 +109,7 @@ class EmailRenderer {
     #memberAttributionService;
     #outboundLinkTagger;
     #audienceFeedbackService;
+    #emailAddressService;
     #labs;
     #models;
 
@@ -126,6 +128,7 @@ class EmailRenderer {
      * @param {object} dependencies.linkTracking
      * @param {object} dependencies.memberAttributionService
      * @param {object} dependencies.audienceFeedbackService
+     * @param {object} dependencies.emailAddressService
      * @param {object} dependencies.outboundLinkTagger
      * @param {object} dependencies.labs
      * @param {{Post: object}} dependencies.models
@@ -142,6 +145,7 @@ class EmailRenderer {
         linkTracking,
         memberAttributionService,
         audienceFeedbackService,
+        emailAddressService,
         outboundLinkTagger,
         labs,
         models
@@ -157,6 +161,7 @@ class EmailRenderer {
         this.#linkTracking = linkTracking;
         this.#memberAttributionService = memberAttributionService;
         this.#audienceFeedbackService = audienceFeedbackService;
+        this.#emailAddressService = emailAddressService;
         this.#outboundLinkTagger = outboundLinkTagger;
         this.#labs = labs;
         this.#models = models;
@@ -166,7 +171,7 @@ class EmailRenderer {
         return post.related('posts_meta')?.get('email_subject') || post.get('title');
     }
 
-    getFromAddress(_post, newsletter) {
+    #getRawFromAddress(post, newsletter) {
         let senderName = this.#settingsCache.get('title') ? this.#settingsCache.get('title').replace(/"/g, '\\"') : '';
         if (newsletter.get('sender_name')) {
             senderName = newsletter.get('sender_name');
@@ -185,8 +190,19 @@ class EmailRenderer {
                 fromAddress = localAddress;
             }
         }
+        return {
+            address: fromAddress,
+            name: senderName || undefined
+        };
+    }
 
-        return senderName ? `"${senderName}" <${fromAddress}>` : fromAddress;
+    getFromAddress(post, newsletter) {
+        // Clean from address to ensure DMARC alignment
+        const addresses = this.#emailAddressService.getAddress({
+            from: this.#getRawFromAddress(post, newsletter)
+        });
+
+        return EmailAddressParser.stringify(addresses.from);
     }
 
     /**
@@ -198,7 +214,25 @@ class EmailRenderer {
         if (newsletter.get('sender_reply_to') === 'support') {
             return this.#settingsHelpers.getMembersSupportAddress();
         }
-        return this.getFromAddress(post, newsletter);
+        if (newsletter.get('sender_reply_to') === 'newsletter') {
+            if (this.#emailAddressService.managedEmailEnabled) {
+                // Don't duplicate the same replyTo addres if it already in the FROM address
+                return null;
+            }
+            return this.getFromAddress(post, newsletter);
+        }
+
+        const addresses = this.#emailAddressService.getAddress({
+            from: this.#getRawFromAddress(post, newsletter),
+            replyTo: {
+                address: newsletter.get('sender_reply_to')
+            }
+        });
+
+        if (addresses.replyTo) {
+            return EmailAddressParser.stringify(addresses.replyTo);
+        }
+        return null;
     }
 
     /**
@@ -368,14 +402,40 @@ class EmailRenderer {
             }, {base});
         }
 
+        // Record the original image width and height attributes before inlining the styles with juice
+        // If any images have `width: auto` or `height: auto` set via CSS,
+        // juice will explicitly set the width/height attributes to `auto` on the <img /> tag
+        // This is not supported by Outlook, so we need to reset the width/height attributes to the original values
+        // Other clients will ignore the width/height attributes and use the inlined CSS instead
+        $ = cheerio.load(html);
+        const originalImageSizes = $('img').get().map((image) => {
+            const src = image.attribs.src;
+            const width = image.attribs.width;
+            const height = image.attribs.height;
+            return {src, width, height};
+        });
+
         // Juice HTML (inline CSS)
         const juice = require('juice');
-        juice.heightElements = ['TABLE', 'TD', 'TH'];
-        juice.widthElements = ['TABLE', 'TD', 'TH'];
         html = juice(html, {inlinePseudoElements: true, removeStyleTags: true});
 
         // happens after inlining of CSS so we can change element types without worrying about styling
         $ = cheerio.load(html);
+
+        // Reset any `height="auto"` or `width="auto"` attributes to their original values before inlining CSS
+        const imageTags = $('img').get();
+        for (let i = 0; i < imageTags.length; i += 1) {
+            // There shouldn't be any issues with consistency between these two lists, but just in case...
+            if (imageTags[i].attribs.src === originalImageSizes[i].src) {
+                // if the image width or height is set to 'auto', reset to its original value
+                if (imageTags[i].attribs.width === 'auto' && originalImageSizes[i].width) {
+                    imageTags[i].attribs.width = originalImageSizes[i].width;
+                }
+                if (imageTags[i].attribs.height === 'auto' && originalImageSizes[i].height) {
+                    imageTags[i].attribs.height = originalImageSizes[i].height;
+                }
+            }
+        }
 
         // force all links to open in new tab
         $('a').attr('target', '_blank');
@@ -622,6 +682,19 @@ class EmailRenderer {
             }
         ];
 
+        if (this.#labs.isSet('listUnsubscribeHeader')) {
+            baseDefinitions.push(
+                {
+                    id: 'list_unsubscribe',
+                    getValue: (member) => {
+                        // Same URL
+                        return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
+                    },
+                    required: true // Used in email headers
+                }
+            );
+        }
+
         // Now loop through all the definenitions to see which ones are actually used + to add fallbacks if needed
         const EMAIL_REPLACEMENT_REGEX = /%%\{(.*?)\}%%/g;
         const REPLACEMENT_STRING_REGEX = /^(?<recipientProperty>\w+?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?$/;
@@ -651,6 +724,18 @@ class EmailRenderer {
                         getValue: fallback ? (member => definition.getValue(member) || fallback) : definition.getValue
                     });
                 }
+            }
+        }
+
+        // Add all required replacements
+        for (const definition of baseDefinitions) {
+            if (definition.required && !replacements.find(r => r.id === definition.id)) {
+                replacements.push({
+                    id: definition.id,
+                    originalId: definition.id,
+                    token: new RegExp(`%%\\{${definition.id}\\}%%`, 'g'),
+                    getValue: definition.getValue
+                });
             }
         }
 
@@ -933,7 +1018,7 @@ class EmailRenderer {
         if (newsletter.get('show_latest_posts')) {
             // Fetch last 3 published posts
             const {data} = await this.#models.Post.findPage({
-                filter: 'status:published+id:-' + post.id,
+                filter: `status:published+id:-'${post.id}'`,
                 order: 'published_at DESC',
                 limit: 3
             });

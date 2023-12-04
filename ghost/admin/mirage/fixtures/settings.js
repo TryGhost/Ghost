@@ -49,7 +49,7 @@ export default [
     setting('site', 'twitter_description', null),
 
     // THEME
-    setting('theme', 'active_theme', 'Source'),
+    setting('theme', 'active_theme', 'source'),
 
     // PRIVATE
     setting('private', 'is_private', false),
@@ -111,7 +111,6 @@ export default [
     // LABS
     setting('labs', 'labs', JSON.stringify({
         // Keep the GA flags that are not yet cleaned up in frontend code here
-        lexicalEditor: true
     })),
 
     // SLACK

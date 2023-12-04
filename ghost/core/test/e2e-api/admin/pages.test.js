@@ -23,7 +23,6 @@ const matchPageShallowIncludes = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     published_at: anyISODateTime,
-    post_revisions: anyArray,
     show_title_and_feature_image: anyBoolean
 };
 
@@ -81,30 +80,6 @@ describe('Pages API', function () {
 
     describe('Create', function () {
         it('Can create a page with html', async function () {
-            mockManager.mockLabsDisabled('lexicalEditor');
-
-            const page = {
-                title: 'HTML test',
-                html: '<p>Testing page creation with html</p>'
-            };
-
-            await agent
-                .post('/pages/?source=html&formats=mobiledoc,lexical,html')
-                .body({pages: [page]})
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    pages: [Object.assign({}, matchPageShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('pages')
-                });
-        });
-
-        it('Can create a page with html (labs.lexicalEditor)', async function () {
-            mockManager.mockLabsEnabled('lexicalEditor');
-
             const page = {
                 title: 'HTML test',
                 html: '<p>Testing page creation with html</p>'
@@ -408,12 +383,27 @@ describe('Pages API', function () {
 
             const [pageResponse] = pageBody.pages;
 
-            await agent
+            const convertedResponse = await agent
                 .put(`/pages/${pageResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
                 .body({pages: [Object.assign({}, pageResponse)]})
                 .expectStatus(200)
                 .matchBodySnapshot({
                     pages: [Object.assign({}, matchPageShallowIncludes, {lexical: expectedLexical, mobiledoc: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            // rerunning the conversion against a converted post should not change it
+            const convertedPage = convertedResponse.body.pages[0];
+            const expectedConvertedLexical = convertedPage.lexical;
+            await agent
+                .put(`/pages/${pageResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
+                .body({pages: [Object.assign({}, convertedPage)]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    pages: [Object.assign({}, matchPageShallowIncludes, {lexical: expectedConvertedLexical, mobiledoc: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,

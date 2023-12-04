@@ -1,316 +1,89 @@
-import APIKeys from '../advanced/integrations/APIKeys';
 import ChangePasswordForm from './users/ChangePasswordForm';
-import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
-import Heading from '../../../admin-x-ds/global/Heading';
-import Icon from '../../../admin-x-ds/global/Icon';
-import ImageUpload from '../../../admin-x-ds/global/form/ImageUpload';
-import LimitModal from '../../../admin-x-ds/global/modal/LimitModal';
-import Menu, {MenuItem} from '../../../admin-x-ds/global/Menu';
-import Modal from '../../../admin-x-ds/global/modal/Modal';
+import EmailNotifications from './users/EmailNotifications';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import Radio from '../../../admin-x-ds/global/form/Radio';
-import React, {useCallback, useEffect, useState} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../admin-x-ds/global/form/TextField';
-import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import ProfileBasics from './users/ProfileBasics';
+import ProfileDetails from './users/ProfileDetails';
+import React, {useCallback, useEffect} from 'react';
+import StaffToken from './users/StaffToken';
 import clsx from 'clsx';
-import useFeatureFlag from '../../../hooks/useFeatureFlag';
-import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
-import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
-import {DetailsInputs} from './DetailsInputs';
+import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {RoutingModalProps} from '../../providers/RoutingProvider';
-import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '../../../api/users';
-import {genStaffToken, getStaffToken} from '../../../api/staffToken';
-import {getImageUrl, useUploadImage} from '../../../api/images';
-import {getSettingValues} from '../../../api/settings';
-import {showToast} from '../../../admin-x-ds/global/Toast';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {toast} from 'react-hot-toast';
-import {useBrowseRoles} from '../../../api/roles';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
 
-interface CustomHeadingProps {
-    children?: React.ReactNode;
-}
+const validators: Record<string, (u: Partial<User>) => string> = {
+    name: ({name}) => {
+        let error = '';
+
+        if (!name) {
+            error = 'Please enter a name';
+        }
+
+        if (name && name.length > 191) {
+            error = 'Name is too long';
+        }
+
+        return error;
+    },
+    email: ({email}) => {
+        const valid = validator.isEmail(email || '');
+        return valid ? '' : 'Please enter a valid email address';
+    },
+    url: ({url}) => {
+        const valid = !url || validator.isURL(url);
+        return valid ? '' : 'Please enter a valid URL';
+    },
+    bio: ({bio}) => {
+        const valid = !bio || bio.length <= 200;
+        return valid ? '' : 'Bio is too long';
+    },
+    location: ({location}) => {
+        const valid = !location || location.length <= 150;
+        return valid ? '' : 'Location is too long';
+    },
+    website: ({website}) => {
+        const valid = !website || (validator.isURL(website) && website.length <= 2000);
+        return valid ? '' : 'Website is not a valid url';
+    },
+    facebook: ({facebook}) => {
+        try {
+            validateFacebookUrl(facebook || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    },
+    twitter: ({twitter}) => {
+        try {
+            validateTwitterUrl(twitter || '');
+            return '';
+        } catch (e) {
+            if (e instanceof Error) {
+                return e.message;
+            }
+            return '';
+        }
+    }
+};
 
 export interface UserDetailProps {
     user: User;
-    setUserData?: (user: User) => void;
-    errors?: {
-        name?: string;
-        url?: string;
-        email?: string;
-    };
-    validators?: {
-        name: (name: string) => boolean,
-        email: (email: string) => boolean,
-        url: (url: string) => boolean
-    }
+    setUserData: (user: User) => void;
+    errors: {[key in keyof User]?: string};
+    validateField: <K extends keyof User>(key: K, value: User[K]) => boolean;
+    clearError: (key: keyof User) => void;
 }
-
-const CustomHeader: React.FC<CustomHeadingProps> = ({children}) => {
-    return (
-        <Heading level={4}>{children}</Heading>
-    );
-};
-
-const RoleSelector: React.FC<UserDetailProps> = ({user, setUserData}) => {
-    const {data: {roles} = {}} = useBrowseRoles();
-
-    if (isOwnerUser(user)) {
-        return (
-            <>
-                <Heading level={6}>Role</Heading>
-                <div className='flex h-[295px] flex-col items-center justify-center gap-3 bg-grey-75 px-10 py-20 text-center text-sm text-grey-800 dark:bg-grey-950 dark:text-white'>
-                    <Icon colorClass='text-grey-800 dark:text-white' name='crown' size='lg' />
-                    This user is the owner of the site. To change their role, you need to transfer the ownership first.
-                </div>
-            </>
-        );
-    }
-
-    return (
-        <Radio
-            id='role'
-            options={[
-                {
-                    hint: 'Can create and edit their own posts, but cannot publish. An Editor needs to approve and publish for them.',
-                    label: 'Contributor',
-                    value: 'contributor'
-                },
-                {
-                    hint: 'A trusted user who can create, edit and publish their own posts, but can’t modify others.',
-                    label: 'Author',
-                    value: 'author'
-                },
-                {
-                    hint: 'Can invite and manage other Authors and Contributors, as well as edit and publish any posts on the site.',
-                    label: 'Editor',
-                    value: 'editor'
-                },
-                {
-                    hint: 'Trusted staff user who should be able to manage all content and users, as well as site settings and options.',
-                    label: 'Administrator',
-                    value: 'administrator'
-                }
-            ]}
-            selectedOption={user.roles[0].name.toLowerCase()}
-            title="Role"
-            onSelect={(value) => {
-                const role = roles?.find(r => r.name.toLowerCase() === value.toLowerCase());
-                if (role) {
-                    setUserData?.({...user, roles: [role]});
-                }
-            }}
-        />
-    );
-};
-
-const BasicInputs: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
-    const {currentUser} = useGlobalData();
-
-    return (
-        <SettingGroupContent>
-            <TextField
-                error={!!errors?.name}
-                hint={errors?.name || 'Use real name so people can recognize you'}
-                title="Full name"
-                value={user.name}
-                onBlur={(e) => {
-                    validators?.name(e.target.value);
-                }}
-                onChange={(e) => {
-                    setUserData?.({...user, name: e.target.value});
-                }}
-            />
-            <TextField
-                error={!!errors?.email}
-                hint={errors?.email || 'Used for notifications'}
-                title="Email"
-                value={user.email}
-                onBlur={(e) => {
-                    validators?.email(e.target.value);
-                }}
-                onChange={(e) => {
-                    setUserData?.({...user, email: e.target.value});
-                }}
-            />
-            <TextField
-                hint="https://example.com/author"
-                title="Slug"
-                value={user.slug}
-                onChange={(e) => {
-                    setUserData?.({...user, slug: e.target.value});
-                }}
-            />
-            {hasAdminAccess(currentUser) && <RoleSelector setUserData={setUserData} user={user} />}
-        </SettingGroupContent>
-    );
-};
-
-const Basic: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
-    return (
-        <SettingGroup
-            border={false}
-            customHeader={<CustomHeader>Basic info</CustomHeader>}
-            title='Basic'
-        >
-            <BasicInputs errors={errors} setUserData={setUserData} user={user} validators={validators} />
-        </SettingGroup>
-    );
-};
-
-const Details: React.FC<UserDetailProps> = ({errors, validators, user, setUserData}) => {
-    return (
-        <SettingGroup
-            border={false}
-            customHeader={<CustomHeader>Details</CustomHeader>}
-            title='Details'
-        >
-            <DetailsInputs errors={errors} setUserData={setUserData} user={user} validators={validators} />
-        </SettingGroup>
-    );
-};
-
-const EmailNotificationsInputs: React.FC<UserDetailProps> = ({user, setUserData}) => {
-    const hasWebmentions = useFeatureFlag('webmentions');
-    const hasRecommendations = useFeatureFlag('recommendations');
-    const {currentUser} = useGlobalData();
-
-    return (
-        <SettingGroupContent>
-            <Toggle
-                checked={user.comment_notifications}
-                direction='rtl'
-                hint='Every time a member comments on one of your posts'
-                label='Comments'
-                onChange={(e) => {
-                    setUserData?.({...user, comment_notifications: e.target.checked});
-                }}
-            />
-            {hasAdminAccess(currentUser) && <>
-                {hasWebmentions && <Toggle
-                    checked={user.mention_notifications}
-                    direction='rtl'
-                    hint='Every time another site links to your work'
-                    label='Mentions'
-                    onChange={(e) => {
-                        setUserData?.({...user, mention_notifications: e.target.checked});
-                    }}
-                />}
-                {hasRecommendations && <Toggle
-                    checked={user.recommendation_notifications}
-                    direction='rtl'
-                    hint='Every time another publisher recommends you to their audience'
-                    label='Recommendations'
-                    onChange={(e) => {
-                        setUserData?.({...user, recommendation_notifications: e.target.checked});
-                    }}
-                />}
-                <Toggle
-                    checked={user.free_member_signup_notification}
-                    direction='rtl'
-                    hint='Every time a new free member signs up'
-                    label='New signups'
-                    onChange={(e) => {
-                        setUserData?.({...user, free_member_signup_notification: e.target.checked});
-                    }}
-                />
-                <Toggle
-                    checked={user.paid_subscription_started_notification}
-                    direction='rtl'
-                    hint='Every time a member starts a new paid subscription'
-                    label='New paid members'
-                    onChange={(e) => {
-                        setUserData?.({...user, paid_subscription_started_notification: e.target.checked});
-                    }}
-                />
-                <Toggle
-                    checked={user.paid_subscription_canceled_notification}
-                    direction='rtl'
-                    hint='Every time a member cancels their paid subscription'
-                    label='Paid member cancellations'
-                    onChange={(e) => {
-                        setUserData?.({...user, paid_subscription_canceled_notification: e.target.checked});
-                    }}
-                />
-                <Toggle
-                    checked={user.milestone_notifications}
-                    direction='rtl'
-                    hint='Occasional summaries of your audience & revenue growth'
-                    label='Milestones'
-                    onChange={(e) => {
-                        setUserData?.({...user, milestone_notifications: e.target.checked});
-                    }}
-                />
-            </>}
-        </SettingGroupContent>
-    );
-};
-
-const EmailNotifications: React.FC<UserDetailProps> = ({user, setUserData}) => {
-    return (
-        <SettingGroup
-            border={false}
-            customHeader={<CustomHeader>Email notifications</CustomHeader>}
-            title='Email notifications'
-
-        >
-            <EmailNotificationsInputs setUserData={setUserData} user={user} />
-        </SettingGroup>
-    );
-};
-
-const StaffToken: React.FC<UserDetailProps> = () => {
-    const {refetch: apiKey} = getStaffToken({
-        enabled: false
-    });
-    const handleError = useHandleError();
-    const [token, setToken] = useState('');
-    const {mutateAsync: newApiKey} = genStaffToken();
-
-    useEffect(() => {
-        const getApiKey = async () => {
-            const newAPI = await apiKey();
-            if (newAPI) {
-                setToken(newAPI?.data?.apiKey?.secret || '');
-            }
-        };
-        getApiKey();
-    } , [apiKey]);
-
-    const genConfirmation = () => {
-        NiceModal.show(ConfirmationModal, {
-            title: 'Regenerate your Staff Access Token',
-            prompt: 'You can regenerate your Staff Access Token any time, but any scripts or applications using it will need to be updated.',
-            okLabel: 'Regenerate your Staff Access Token',
-            okColor: 'red',
-            onOk: async (modal) => {
-                try {
-                    const newAPI = await newApiKey([]);
-                    setToken(newAPI?.apiKey?.secret || '');
-                    modal?.remove();
-                } catch (e) {
-                    handleError(e);
-                }
-            }
-        });
-    };
-    return (
-        <div>
-            <Heading className='mb-2' level={6} grey>Staff access token</Heading>
-            <APIKeys hasLabel={false} keys={[
-                {
-                    text: token || '',
-                    onRegenerate: genConfirmation
-                }]} />
-        </div>
-    );
-};
 
 const UserMenuTrigger = () => (
     <button className='flex h-8 cursor-pointer items-center justify-center rounded bg-[rgba(0,0,0,0.75)] px-3 opacity-80 hover:opacity-100' type='button'>
@@ -323,17 +96,39 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {updateRoute} = useRouting();
     const {ownerUser} = useStaffUsers();
     const {currentUser} = useGlobalData();
-    const [userData, _setUserData] = useState(user);
-    const [saveState, setSaveState] = useState<'' | 'unsaved' | 'saving' | 'saved'>('');
-    const [errors, setErrors] = useState<{
-        name?: string;
-        email?: string;
-        url?: string;
-    }>({});
-
-    const setUserData = (newUserData: User | ((current: User) => User)) => {
-        _setUserData(newUserData);
-        setSaveState('unsaved');
+    const handleError = useHandleError();
+    const {formState, setFormState, saveState, handleSave, updateForm, errors, setErrors, clearError, okProps} = useForm({
+        initialState: user,
+        savingDelay: 500,
+        savedDelay: 500,
+        onValidate: (values) => {
+            return Object.entries(validators).reduce<ErrorMessages>((newErrors, [key, validate]) => {
+                const error = validate(values);
+                if (error) {
+                    newErrors[key] = error;
+                }
+                return newErrors;
+            }, {});
+        },
+        onSave: async (values) => {
+            await updateUser?.(values);
+        },
+        onSavedStateReset: () => {
+            mainModal.remove();
+            navigateOnClose();
+        },
+        onSaveError: handleError
+    });
+    const setUserData = (newData: User) => updateForm(() => newData);
+    const validateField = <K extends keyof User>(key: K, value: User[K]) => {
+        const error = validators[key]?.({[key]: value});
+        if (error) {
+            setErrors({...errors, [key]: error});
+            return false;
+        } else {
+            clearError(key);
+            return true;
+        }
     };
 
     const mainModal = useModal();
@@ -342,36 +137,17 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {mutateAsync: deleteUser} = useDeleteUser();
     const {mutateAsync: makeOwner} = useMakeOwner();
     const limiter = useLimiter();
-    const handleError = useHandleError();
 
     // Pintura integration
-    const {settings} = useGlobalData();
-    const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
-    const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
-
-    const editor = usePinturaEditor(
-        {config: {
-            jsUrl: pinturaJsUrl || '',
-            cssUrl: pinturaCssUrl || ''
-        }}
-    );
+    const editor = usePinturaEditor();
 
     const navigateOnClose = useCallback(() => {
         if (canAccessSettings(currentUser)) {
-            updateRoute('users');
+            updateRoute('staff');
         } else {
             updateRoute({isExternal: true, route: 'dashboard'});
         }
     }, [currentUser, updateRoute]);
-
-    useEffect(() => {
-        if (saveState === 'saved') {
-            setTimeout(() => {
-                mainModal.remove();
-                navigateOnClose();
-            }, 300);
-        }
-    }, [mainModal, navigateOnClose, saveState, updateRoute]);
 
     const confirmSuspend = async (_user: User) => {
         if (_user.status === 'inactive' && _user.roles[0].name !== 'Contributor') {
@@ -411,7 +187,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 };
                 try {
                     await updateUser(updatedUserData);
-                    setUserData(updatedUserData);
+                    setFormState(() => updatedUserData);
                     modal?.remove();
                     showToast({
                         message: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
@@ -440,6 +216,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     await deleteUser(_user?.id);
                     modal?.remove();
                     mainModal?.remove();
+                    navigateOnClose();
                     showToast({
                         message: 'User deleted',
                         type: 'success'
@@ -478,12 +255,12 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 
             switch (image) {
             case 'cover_image':
-                setUserData?.((_user) => {
+                updateForm((_user) => {
                     return {..._user, cover_image: imageUrl};
                 });
                 break;
             case 'profile_image':
-                setUserData?.((_user) => {
+                updateForm((_user) => {
                     return {..._user, profile_image: imageUrl};
                 });
                 break;
@@ -496,12 +273,12 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const handleImageDelete = (image: string) => {
         switch (image) {
         case 'cover_image':
-            setUserData?.((_user) => {
+            updateForm((_user) => {
                 return {..._user, cover_image: ''};
             });
             break;
         case 'profile_image':
-            setUserData?.((_user) => {
+            updateForm((_user) => {
                 return {..._user, profile_image: ''};
             });
             break;
@@ -511,7 +288,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const showMenu = hasAdminAccess(currentUser) || (isEditorUser(currentUser) && isAuthorOrContributor(user));
     let menuItems: MenuItem[] = [];
 
-    if (isOwnerUser(currentUser) && isAdminUser(userData) && userData.status !== 'inactive') {
+    if (isOwnerUser(currentUser) && isAdminUser(formState) && formState.status !== 'inactive') {
         menuItems.push({
             id: 'make-owner',
             label: 'Make owner',
@@ -519,11 +296,11 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         });
     }
 
-    if (userData.id !== currentUser.id && (
+    if (formState.id !== currentUser.id && (
         (hasAdminAccess(currentUser) && !isOwnerUser(user)) ||
         (isEditorUser(currentUser) && isAuthorOrContributor(user))
     )) {
-        let suspendUserLabel = userData.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
+        let suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
         menuItems.push({
             id: 'delete-user',
@@ -535,7 +312,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             id: 'suspend-user',
             label: suspendUserLabel,
             onClick: () => {
-                confirmSuspend(userData);
+                confirmSuspend(formState);
             }
         });
     }
@@ -545,17 +322,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         label: 'View user activity',
         onClick: () => {
             mainModal.remove();
-            updateRoute(`history/view/${userData.id}`);
+            updateRoute(`history/view/${formState.id}`);
         }
     });
-
-    let okLabel = saveState === 'saved' ? 'Saved' : 'Save & close';
-
-    if (saveState === 'saving') {
-        okLabel = 'Saving...';
-    } else if (saveState === 'saved') {
-        okLabel = 'Saved';
-    }
 
     const coverEditButtonBaseClasses = 'bg-[rgba(0,0,0,0.75)] rounded text-sm text-white flex items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 transition-all cursor-pointer font-medium nowrap';
 
@@ -571,67 +340,35 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         coverEditButtonBaseClasses
     );
 
-    const suspendedText = userData.status === 'inactive' ? ' (Suspended)' : '';
-
-    const validators = {
-        name: (name: string) => {
-            setErrors?.((_errors) => {
-                return {..._errors, name: name ? '' : 'Please enter a name'};
-            });
-            return !!name;
-        },
-        email: (email: string) => {
-            const valid = validator.isEmail(email);
-            setErrors?.((_errors) => {
-                return {..._errors, email: valid ? '' : 'Please enter a valid email address'};
-            });
-            return valid;
-        },
-        url: (url: string) => {
-            const valid = !url || validator.isURL(url);
-            setErrors?.((_errors) => {
-                return {..._errors, url: valid ? '' : 'Please enter a valid URL'};
-            });
-            return valid;
-        }
-    };
+    const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 
     return (
         <Modal
             afterClose={navigateOnClose}
             animate={canAccessSettings(currentUser)}
             backDrop={canAccessSettings(currentUser)}
+            buttonsDisabled={okProps.disabled}
             dirty={saveState === 'unsaved'}
-            okLabel={okLabel}
+            okColor={okProps.color}
+            okLabel={okProps.label || 'Save & close'}
             size={canAccessSettings(currentUser) ? 'lg' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
             onOk={async () => {
-                setSaveState('saving');
-                let error = false;
-                if (!validators.name(userData.name) || !validators.email(userData.email) || !validators.url(userData.website)) {
-                    error = true;
-                }
+                toast.remove();
 
-                if (error) {
+                if (!(await handleSave({fakeWhenUnchanged: true}))) {
                     showToast({
                         type: 'pageError',
                         message: 'Can\'t save user, please double check that you\'ve filled all mandatory fields.'
                     });
-                    setSaveState('');
-                    return;
                 }
-
-                toast.dismiss();
-
-                await updateUser?.(userData);
-                setSaveState('saved');
             }}
         >
             <div>
                 <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'} bg-gradient-to-tr from-grey-900 to-black`}>
                     <div className='flex min-h-[40vmin] flex-wrap items-end justify-between bg-cover bg-center' style={{
-                        backgroundImage: `url(${userData.cover_image})`
+                        backgroundImage: `url(${formState.cover_image})`
                     }}>
                         <div className='flex w-full max-w-[620px] flex-col gap-5 p-8 md:max-w-[auto] md:flex-row md:items-center'>
                             <div>
@@ -640,15 +377,16 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                     deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                                     editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:!visible z-20'
                                     fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
+                                    fileUploadProps={{dragIndicatorClassName: 'rounded-full'}}
                                     id='avatar'
                                     imageClassName='w-full h-full object-cover rounded-full shrink-0'
                                     imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px] shrink-0'
-                                    imageURL={userData.profile_image}
+                                    imageURL={formState.profile_image ?? undefined}
                                     pintura={
                                         {
                                             isEnabled: editor.isEnabled,
                                             openEditor: async () => editor.openEditor({
-                                                image: userData.profile_image || '',
+                                                image: formState.profile_image || '',
                                                 handleSave: async (file:File) => {
                                                     handleImageUpload('profile_image', file);
                                                 }
@@ -681,12 +419,12 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                 fileUploadClassName={fileUploadButtonClasses}
                                 id='cover-image'
                                 imageClassName='hidden'
-                                imageURL={userData.cover_image || ''}
+                                imageURL={formState.cover_image || ''}
                                 pintura={
                                     {
                                         isEnabled: editor.isEnabled,
                                         openEditor: async () => editor.openEditor({
-                                            image: userData.cover_image || '',
+                                            image: formState.cover_image || '',
                                             handleSave: async (file:File) => {
                                                 handleImageUpload('cover_image', file);
                                             }
@@ -708,13 +446,13 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     </div>
                 </div>
                 <div className={`${!canAccessSettings(currentUser) && 'mx-auto max-w-4xl'} mt-10 grid grid-cols-1 gap-x-12 gap-y-20 md:grid-cols-2`}>
-                    <Basic errors={errors} setUserData={setUserData} user={userData} validators={validators} />
+                    <ProfileBasics clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
                     <div className='flex flex-col justify-between gap-10'>
-                        <Details errors={errors} setUserData={setUserData} user={userData} validators={validators} />
-                        <StaffToken user={userData} />
+                        <ProfileDetails clearError={clearError} errors={errors} setUserData={setUserData} user={formState} validateField={validateField} />
+                        {user.id === currentUser.id && <StaffToken />}
                     </div>
-                    <EmailNotifications setUserData={setUserData} user={userData} />
-                    <ChangePasswordForm user={userData} />
+                    <EmailNotifications setUserData={setUserData} user={formState} />
+                    <ChangePasswordForm user={formState} />
                 </div>
             </div>
         </Modal>
@@ -723,10 +461,11 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 
 const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
     const {users, hasNextPage, fetchNextPage} = useStaffUsers();
-    const user = users.find(({slug}) => slug === params?.slug);
+    const {currentUser} = useGlobalData();
+    const user = currentUser.slug === params?.slug ? currentUser : users.find(({slug}) => slug === params?.slug);
 
     useEffect(() => {
-        if (!user && !hasNextPage) {
+        if (!user && hasNextPage) {
             fetchNextPage();
         }
     }, [fetchNextPage, hasNextPage, user]);

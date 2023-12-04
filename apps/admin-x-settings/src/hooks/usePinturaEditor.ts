@@ -1,15 +1,9 @@
 import * as Sentry from '@sentry/react';
-import {Config} from '../api/config';
-import {Setting} from '../api/settings';
-import {getGhostPaths} from '../utils/helpers';
-import {getSettingValues} from '../api/settings';
-import {useCallback, useEffect, useState} from 'react';
+import {Config} from '@tryghost/admin-x-framework/api/config';
+import {Setting, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {useGlobalData} from '../components/providers/GlobalDataProvider';
-
-interface PinturaEditorConfig {
-    jsUrl?: string;
-    cssUrl?: string;
-}
 
 interface OpenEditorParams {
     image: string;
@@ -42,6 +36,7 @@ declare global {
                     labelButtonExport: string;
                 };
                 previewPad: boolean;
+                willClose: () => boolean;
             }) => {
                 on: (event: string, callback: (result: { dest: File }) => void) => void;
             };
@@ -49,27 +44,27 @@ declare global {
     }
 }
 
-export default function usePinturaEditor({
-    config
-}: {
-        config: PinturaEditorConfig;
-    }) {
+export default function usePinturaEditor() {
     const {config: globalConfig, settings} = useGlobalData() as { config: Config, settings: Setting[] };
     const [pintura] = getSettingValues<boolean>(settings, ['pintura']);
     const [scriptLoaded, setScriptLoaded] = useState<boolean>(false);
     const [cssLoaded, setCssLoaded] = useState<boolean>(false);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const allowClose = useRef<boolean>(false);
+    const [pinturaJsUrl] = getSettingValues<string>(settings, ['pintura_js_url']);
+    const [pinturaCssUrl] = getSettingValues<string>(settings, ['pintura_css_url']);
 
     let isEnabled = pintura && scriptLoaded && cssLoaded || false;
     const pinturaConfig = globalConfig?.pintura as { js?: string; css?: string };
 
     useEffect(() => {
-        const pinturaJsUrl = () => {
+        const jsPath = () => {
             if (pinturaConfig?.js) {
                 return pinturaConfig?.js;
             }
-            return config?.jsUrl || null;
+            return pinturaJsUrl || null;
         };
-        let jsUrl = pinturaJsUrl();
+        let jsUrl = jsPath();
 
         // load the script from admin root if relative
         if (!jsUrl) {
@@ -102,16 +97,16 @@ export default function usePinturaEditor({
             Sentry.captureException(e);
             // Log script loading error
         }
-    }, [config?.jsUrl, pinturaConfig?.js]);
+    }, [pinturaJsUrl, pinturaConfig?.js]);
 
     useEffect(() => {
-        const pinturaCssUrl = () => {
+        const cssPath = () => {
             if (pinturaConfig?.css) {
                 return pinturaConfig?.css;
             }
-            return config?.cssUrl;
+            return pinturaCssUrl || null;
         };
-        let cssUrl = pinturaCssUrl();
+        let cssUrl = cssPath();
         if (!cssUrl) {
             return;
         }
@@ -140,7 +135,7 @@ export default function usePinturaEditor({
             Sentry.captureException(e);
             // wire up to sentry
         }
-    }, [config?.cssUrl, pinturaConfig?.css]);
+    }, [pinturaCssUrl, pinturaConfig?.css]);
 
     const openEditor = useCallback(
         ({image, handleSave}: OpenEditorParams) => {
@@ -163,7 +158,8 @@ export default function usePinturaEditor({
                         'redact',
                         'annotate',
                         'trim',
-                        'frame'
+                        'frame',
+                        'resize'
                     ],
                     frameOptions: [
                         // No frame
@@ -204,20 +200,58 @@ export default function usePinturaEditor({
                     locale: {
                         labelButtonExport: 'Save and close'
                     },
-                    previewPad: true
+                    previewPad: true,
+                    // Skip default Escape to close behaviour, only allow when the close button is clicked
+                    willClose: () => {
+                        if (allowClose.current) {
+                            setIsOpen(false);
+                            return true;
+                        }
+
+                        return false;
+                    }
                 });
 
                 editor.on('loaderror', () => {
-                    // TODO: log error message
+                    // TODO: log error message on Sentry
+                    Sentry.captureMessage('Pintura editor failed to load');
                 });
 
                 editor.on('process', (result) => {
                     handleSave(result.dest);
                 });
+
+                setIsOpen(true);
             }
         },
         [isEnabled]
     );
+
+    // Only allow closing the modal if the close button was clicked
+    useEffect(() => {
+        const handleEscapePress = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                event.stopPropagation();
+            }
+        };
+        if (!isOpen) {
+            return;
+        }
+
+        const handleCloseClick = (event: MouseEvent) => {
+            if (event.target instanceof Element && event.target.closest('.PinturaModal button[title="Close"]')) {
+                allowClose.current = true;
+            }
+        };
+
+        window.addEventListener('click', handleCloseClick, {capture: true});
+        window.addEventListener('keydown', handleEscapePress, {capture: true});
+
+        return () => {
+            window.removeEventListener('click', handleCloseClick, {capture: true});
+            window.removeEventListener('keydown', handleEscapePress, {capture: true});
+        };
+    }, [isOpen]);
 
     return {
         isEnabled,

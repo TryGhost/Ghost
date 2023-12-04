@@ -1,5 +1,7 @@
-import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../utils/acceptance';
+import {NewslettersResponseType} from '@tryghost/admin-x-framework/api/newsletters';
+import {chooseOptionInSelect, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
+import {globalDataRequests} from '../../utils/acceptance';
 
 test.describe('Newsletter settings', async () => {
     test('Supports creating a new newsletter', async ({page}) => {
@@ -90,31 +92,267 @@ test.describe('Newsletter settings', async () => {
         });
     });
 
-    test('Displays a prompt when email verification is required', async ({page}) => {
-        await mockApi({page, requests: {
-            ...globalDataRequests,
-            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
-            editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[0].id}/?include=count.active_members%2Ccount.posts`, response: {
-                newsletters: [responseFixtures.newsletters.newsletters[0]],
-                meta: {
-                    sent_email_verification: ['sender_email']
-                }
-            }}
-        }});
+    test.describe('Email addresses', async () => {
+        test.describe('For self-hosters', async () => {
+            test('Displays a prompt when email verification is required', async ({page}) => {
+                await mockApi({page, requests: {
+                    ...globalDataRequests,
+                    browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
+                    editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[0].id}/?include=count.active_members%2Ccount.posts`, response: {
+                        newsletters: [responseFixtures.newsletters.newsletters[0]],
+                        meta: {
+                            sent_email_verification: ['sender_email']
+                        }
+                    }}
+                }});
 
-        await page.goto('/');
+                await page.goto('/');
 
-        const section = page.getByTestId('newsletters');
+                const section = page.getByTestId('newsletters');
 
-        await section.getByText('Awesome newsletter').click();
+                await section.getByText('Awesome newsletter').click();
 
-        const modal = page.getByTestId('newsletter-modal');
+                const modal = page.getByTestId('newsletter-modal');
 
-        await modal.getByLabel('Sender email').fill('test@test.com');
-        await modal.getByRole('button', {name: 'Save'}).click();
+                await modal.getByLabel('Sender email').fill('not-an-email');
+                await modal.getByRole('button', {name: 'Save'}).click();
 
-        await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
-        await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm newsletter email address/);
+                await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
+                await expect(modal).toHaveText(/Invalid email/);
+
+                await modal.getByLabel('Sender email').fill('test@test.com');
+                await modal.getByRole('button', {name: 'Save'}).click();
+
+                await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm newsletter email address/);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/default email address \(default@example.com\)/);
+            });
+
+            test('Displays the current email when changing sender address', async ({page}) => {
+                const response = {
+                    ...responseFixtures.newsletters,
+                    newsletters: [{
+                        ...responseFixtures.newsletters.newsletters[0],
+                        sender_email: 'current@test.com'
+                    }]
+                } satisfies NewslettersResponseType;
+
+                await mockApi({page, requests: {
+                    ...globalDataRequests,
+                    browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response},
+                    editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[0].id}/?include=count.active_members%2Ccount.posts`, response: {
+                        newsletters: response.newsletters,
+                        meta: {
+                            sent_email_verification: ['sender_email']
+                        }
+                    }}
+                }});
+
+                await page.goto('/');
+
+                const section = page.getByTestId('newsletters');
+
+                await section.getByText('Awesome newsletter').click();
+
+                const modal = page.getByTestId('newsletter-modal');
+
+                await modal.getByLabel('Sender email').fill('not-an-email');
+                await modal.getByRole('button', {name: 'Save'}).click();
+
+                await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
+                await expect(modal).toHaveText(/Invalid email/);
+
+                await modal.getByLabel('Sender email').fill('test@test.com');
+                await modal.getByRole('button', {name: 'Save'}).click();
+
+                await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm newsletter email address/);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/previous email address \(current@test.com\)/);
+            });
+        });
+
+        test.describe('For Ghost (Pro) users without custom domain', () => {
+            test('Does not allow the Sender email address to be edited', async ({page}) => {
+                await mockApi({page, requests: {
+                    ...globalDataRequests,
+                    browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
+                    browseConfig: {
+                        ...globalDataRequests.browseConfig,
+                        response: {
+                            config: {
+                                ...responseFixtures.config.config,
+                                hostSettings: {
+                                    managedEmail: {
+                                        enabled: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }});
+
+                await page.goto('/');
+                const section = page.getByTestId('newsletters');
+                await section.getByText('Awesome newsletter').click();
+                const modal = page.getByTestId('newsletter-modal');
+                const senderEmailField = modal.getByLabel('Sender email');
+
+                // Test that there is no input field near "Sender email"
+                const parentElementLocator = senderEmailField.locator('xpath=..');
+                const inputElementsNearby = await parentElementLocator.locator('input').count();
+
+                expect(inputElementsNearby).toBe(0);
+            });
+
+            test('Allow full customisation of the reply-to address', async ({page}) => {
+                await mockApi({page, requests: {
+                    ...globalDataRequests,
+                    browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
+                    editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[0].id}/?include=count.active_members%2Ccount.posts`, response: {
+                        newsletters: [responseFixtures.newsletters.newsletters[0]],
+                        meta: {
+                            sent_email_verification: ['sender_reply_to']
+                        }
+                    }},
+                    browseConfig: {
+                        ...globalDataRequests.browseConfig,
+                        response: {
+                            config: {
+                                ...responseFixtures.config.config,
+                                hostSettings: {
+                                    managedEmail: {
+                                        enabled: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }});
+
+                await page.goto('/');
+                const section = page.getByTestId('newsletters');
+                await section.getByText('Awesome newsletter').click();
+                const modal = page.getByTestId('newsletter-modal');
+                const replyToEmail = modal.getByLabel('Reply-to email');
+
+                await replyToEmail.fill('not-an-email');
+                await modal.getByRole('button', {name: 'Save'}).click();
+
+                await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
+                await expect(modal).toHaveText(/Invalid email/);
+
+                await replyToEmail.fill('test@test.com');
+                await modal.getByRole('button', {name: 'Save'}).click();
+
+                await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm reply-to address/);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/sent a confirmation email to test@test.com/);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/previous reply-to address \(support@example.com\)/);
+            });
+        });
+
+        test.describe('For Ghost (Pro) users with custom domain', () => {
+            test('Allow sender and reply-to addresses to be changed without verification, but not their domain name', async ({page}) => {
+                await mockApi({page, requests: {
+                    ...globalDataRequests,
+                    browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
+                    editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[0].id}/?include=count.active_members%2Ccount.posts`, response: {
+                        newsletters: [responseFixtures.newsletters.newsletters[0]],
+                        meta: {
+                            sent_email_verification: []
+                        }
+                    }},
+                    browseConfig: {
+                        ...globalDataRequests.browseConfig,
+                        response: {
+                            config: {
+                                ...responseFixtures.config.config,
+                                hostSettings: {
+                                    managedEmail: {
+                                        enabled: true,
+                                        sendingDomain: 'customdomain.com'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }});
+
+                await page.goto('/');
+                const section = page.getByTestId('newsletters');
+                await section.getByText('Awesome newsletter').click();
+                const modal = page.getByTestId('newsletter-modal');
+                const senderEmail = modal.getByLabel('Sender email');
+                const replyToEmail = modal.getByLabel('Reply-to email');
+
+                // The sending domain is rendered as placeholder text
+                expect(modal).toHaveText(/@customdomain\.com/);
+
+                // The sender email field should keep the username part of the email address
+                await senderEmail.fill('harry@potter.com');
+                expect(await senderEmail.inputValue()).toBe('harry');
+
+                // Full flexibility for the reply-to address
+                await replyToEmail.fill('hermione@customdomain.com');
+                expect(await replyToEmail.inputValue()).toBe('hermione@customdomain.com');
+
+                // The new username is saved without a confirmation popup
+                await modal.getByRole('button', {name: 'Save'}).click();
+                await expect(page.getByTestId('confirmation-modal')).toHaveCount(0);
+            });
+
+            test('Reply-To addresses without a matching domain require verification', async ({page}) => {
+                await mockApi({page, requests: {
+                    ...globalDataRequests,
+                    browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
+                    editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[0].id}/?include=count.active_members%2Ccount.posts`, response: {
+                        newsletters: [responseFixtures.newsletters.newsletters[0]],
+                        meta: {
+                            sent_email_verification: ['sender_reply_to']
+                        }
+                    }},
+                    browseConfig: {
+                        ...globalDataRequests.browseConfig,
+                        response: {
+                            config: {
+                                ...responseFixtures.config.config,
+                                hostSettings: {
+                                    managedEmail: {
+                                        enabled: true,
+                                        sendingDomain: 'customdomain.com'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }});
+
+                await page.goto('/');
+                const section = page.getByTestId('newsletters');
+                await section.getByText('Awesome newsletter').click();
+                const modal = page.getByTestId('newsletter-modal');
+                const senderEmail = modal.getByLabel('Sender email');
+                const replyToEmail = modal.getByLabel('Reply-to email');
+
+                // The sending domain is rendered as placeholder text
+                expect(modal).toHaveText(/@customdomain\.com/);
+
+                // The sender email field should keep the username part of the email address
+                await senderEmail.fill('harry@potter.com');
+                expect(await senderEmail.inputValue()).toBe('harry');
+
+                // Full flexibility for the reply-to address
+                await replyToEmail.fill('hermione@granger.com');
+                expect(await replyToEmail.inputValue()).toBe('hermione@granger.com');
+
+                // The new username is saved without a confirmation popup
+                await modal.getByRole('button', {name: 'Save'}).click();
+                await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm reply-to address/);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/sent a confirmation email to hermione@granger.com/);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/previous reply-to address \(support@example.com\)/);
+            });
+        });
     });
 
     test('Supports archiving newsletters', async ({page}) => {
@@ -228,5 +466,31 @@ test.describe('Newsletter settings', async () => {
         await newsletterModal.getByRole('button', {name: 'Reactivate newsletter'}).click();
 
         await expect(page.getByTestId('limit-modal')).toHaveText(/Your plan supports up to 1 newsletters/);
+    });
+
+    test('Warns when leaving without saving', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
+            editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[1].id}/?include=count.active_members%2Ccount.posts`, response: responseFixtures.newsletters}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('newsletters');
+        await section.getByText('Awesome newsletter').click();
+
+        const modal = page.getByTestId('newsletter-modal');
+
+        await modal.getByPlaceholder('Weekly Roundup').fill('New title');
+
+        await modal.getByRole('button', {name: 'Close'}).click();
+
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
+
+        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Leave'}).click();
+
+        await expect(modal).toBeHidden();
+        expect(lastApiRequests.editNewsletter).toBeUndefined();
     });
 });

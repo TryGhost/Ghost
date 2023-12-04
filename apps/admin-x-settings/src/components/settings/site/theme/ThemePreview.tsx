@@ -1,21 +1,26 @@
-import Breadcrumbs from '../../../../admin-x-ds/global/Breadcrumbs';
-import Button from '../../../../admin-x-ds/global/Button';
-import ButtonGroup from '../../../../admin-x-ds/global/ButtonGroup';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import DesktopChrome from '../../../../admin-x-ds/global/chrome/DesktopChrome';
-import MobileChrome from '../../../../admin-x-ds/global/chrome/MobileChrome';
 import NiceModal from '@ebay/nice-modal-react';
-import PageHeader from '../../../../admin-x-ds/global/layout/PageHeader';
 import React, {useState} from 'react';
-import Select, {SelectOption} from '../../../../admin-x-ds/global/form/Select';
-import {OfficialTheme} from '../../../providers/ServiceProvider';
-import {Theme} from '../../../../api/themes';
+import {Breadcrumbs, Button, ButtonGroup, ConfirmationModal, DesktopChrome, MobileChrome, PageHeader, Select, SelectOption} from '@tryghost/admin-x-design-system';
+import {OfficialTheme, ThemeVariant} from '../../../providers/SettingsAppProvider';
+import {Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
 
-const sourceDemos = [
-    {label: 'News', value: 'news', url: 'https://source.ghost.io'},
-    {label: 'Magazine', value: 'magazine', url: 'https://source-magazine.ghost.io'},
-    {label: 'Newsletter', value: 'newsletter', url: 'https://source-newsletter.ghost.io'}
-];
+const hasVariants = (theme: OfficialTheme) => theme.variants && theme.variants.length > 0;
+
+const getAllVariants = (theme: OfficialTheme) : ThemeVariant[] => {
+    const variants = [{
+        image: theme.image,
+        category: theme.category,
+        previewUrl: theme.previewUrl
+    }];
+
+    if (theme.variants && theme.variants.length > 0) {
+        variants.push(...theme.variants);
+    }
+
+    return variants;
+};
+
+const generateVariantOptionValue = (variant: ThemeVariant) => variant.category.toLowerCase();
 
 const ThemePreview: React.FC<{
     selectedTheme?: OfficialTheme;
@@ -33,24 +38,41 @@ const ThemePreview: React.FC<{
     onInstall
 }) => {
     const [previewMode, setPreviewMode] = useState('desktop');
-    const [currentSourceDemo, setCurrentSourceDemo] = useState<SelectOption>(sourceDemos[0]);
+    const [selectedVariant, setSelectedVariant] = useState<SelectOption | undefined>(undefined);
 
     if (!selectedTheme) {
         return null;
+    }
+
+    let previewUrl = selectedTheme.previewUrl;
+
+    const variantOptions = getAllVariants(selectedTheme).map((variant) => {
+        return {
+            label: variant.category,
+            value: generateVariantOptionValue(variant)
+        };
+    });
+
+    if (hasVariants(selectedTheme)) {
+        if (selectedVariant === undefined) {
+            setSelectedVariant(variantOptions[0]);
+        }
+
+        previewUrl = getAllVariants(selectedTheme).find(variant => generateVariantOptionValue(variant) === selectedVariant?.value)?.previewUrl || previewUrl;
     }
 
     let installButtonLabel = `Install ${selectedTheme.name}`;
 
     if (isInstalling) {
         installButtonLabel = 'Installing...';
-    } else if (selectedTheme.ref === 'default') {
+    } else if (isDefaultOrLegacyTheme(selectedTheme) && !installedTheme?.active) {
         installButtonLabel = `Activate ${selectedTheme.name}`;
     } else if (installedTheme) {
         installButtonLabel = `Update ${selectedTheme.name}`;
     }
 
     const handleInstall = () => {
-        if (installedTheme && selectedTheme.ref !== 'default') {
+        if (installedTheme && !isDefaultOrLegacyTheme(selectedTheme)) {
             NiceModal.show(ConfirmationModal, {
                 title: 'Overwrite theme',
                 prompt: (
@@ -87,7 +109,7 @@ const ThemePreview: React.FC<{
                 backIcon
                 onBack={onBack}
             />
-            {selectedTheme.name === 'Source' ?
+            {hasVariants(selectedTheme) ?
                 <>
                     <span className='hidden md:!visible md:!block'>–</span>
                     <Select
@@ -95,12 +117,11 @@ const ThemePreview: React.FC<{
                         containerClassName='text-sm font-bold'
                         controlClasses={{menu: 'w-24'}}
                         fullWidth={false}
-                        options={sourceDemos}
-                        selectedOption={currentSourceDemo}
+                        options={variantOptions}
+                        selectedOption={selectedVariant}
+                        clearBg
                         onSelect={(option) => {
-                            if (option) {
-                                setCurrentSourceDemo(option);
-                            }
+                            setSelectedVariant(option || undefined);
                         }}
                     />
                 </> : null
@@ -147,7 +168,7 @@ const ThemePreview: React.FC<{
                     <DesktopChrome>
                         <iframe
                             className='h-full w-full'
-                            src={selectedTheme.name !== 'Source' ? selectedTheme?.previewUrl : sourceDemos.find(demo => demo.label === currentSourceDemo.label)?.url}
+                            src={previewUrl}
                             title='Theme preview'
                         />
                     </DesktopChrome>
@@ -155,7 +176,7 @@ const ThemePreview: React.FC<{
                     <MobileChrome>
                         <iframe
                             className='h-full w-full'
-                            src={selectedTheme.name !== 'Source' ? selectedTheme?.previewUrl : sourceDemos.find(demo => demo.label === currentSourceDemo.label)?.url}
+                            src={previewUrl}
                             title='Theme preview'
                         />
                     </MobileChrome>

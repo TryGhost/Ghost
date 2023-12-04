@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/acceptance';
+import {globalDataRequests} from '../../../utils/acceptance';
+import {limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User invitations', async () => {
     test('Supports inviting a user', async ({page}) => {
@@ -34,6 +35,31 @@ test.describe('User invitations', async () => {
         await section.getByRole('button', {name: 'Invite people'}).click();
 
         const modal = page.getByTestId('invite-user-modal');
+
+        // Validation failures
+
+        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await expect(modal).toContainText('Please enter a valid email address');
+
+        // Reset error with keydown event
+        await modal.getByLabel('Email address').focus();
+        await page.keyboard.press('Backspace');
+
+        await modal.getByLabel('Email address').fill('test');
+        await expect(modal).not.toContainText('Please enter a valid email address');
+        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await expect(modal).toContainText('Please enter a valid email address');
+
+        await modal.getByLabel('Email address').fill('author@test.com');
+        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await expect(modal).toContainText('A user with that email address already exists.');
+
+        await modal.getByLabel('Email address').fill('invitee@test.com');
+        await modal.getByRole('button', {name: 'Send invitation now'}).click();
+        await expect(modal).toContainText('A user with that email address was already invited.');
+
+        // Successful invitation
+
         await modal.getByLabel('Email address').fill('newuser@test.com');
         await modal.locator('input[value=author]').check();
         await modal.getByRole('button', {name: 'Send invitation now'}).click();

@@ -12,3 +12,4 @@ export * from './BookshelfSubscribeEventRepository';
 export * from './IncomingRecommendationController';
 export * from './IncomingRecommendationService';
 export * from './IncomingRecommendationEmailRenderer';
+export * from './RecommendationMetadataService';

@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../utils/acceptance';
+import {globalDataRequests} from '../../utils/acceptance';
+import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Navigation settings', async () => {
     test('Editing primary and secondary navigation', async ({page}) => {
@@ -122,5 +123,39 @@ test.describe('Navigation settings', async () => {
         await expect(primaryNavigationTab.getByTestId('navigation-item-editor').last().getByLabel('URL')).toHaveValue('https://google.com/');
         await expect(newItem.getByLabel('Label')).toHaveValue('');
         await expect(newItem.getByLabel('URL')).toHaveValue('http://test.com/');
+    });
+
+    test('Warns when leaving without saving', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: responseFixtures.settings}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('navigation');
+        await section.getByRole('button', {name: 'Customize'}).click();
+
+        const modal = page.getByTestId('navigation-modal');
+
+        const primaryNavigationTab = modal.getByRole('tabpanel').first();
+
+        await expect(primaryNavigationTab.getByTestId('navigation-item-editor')).toHaveCount(2);
+
+        const newItem = primaryNavigationTab.getByTestId('new-navigation-item');
+
+        await newItem.getByLabel('Label').fill('Label');
+        await newItem.getByLabel('URL').fill('https://google.com');
+
+        await newItem.getByTestId('add-button').click();
+
+        await modal.getByRole('button', {name: 'Cancel'}).click();
+
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
+
+        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Leave'}).click();
+
+        await expect(modal).toBeHidden();
+        expect(lastApiRequests.editSettings).toBeUndefined();
     });
 });

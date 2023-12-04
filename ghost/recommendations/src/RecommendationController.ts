@@ -18,7 +18,7 @@ const RecommendationIncludesMap = {
 
 const RecommendationOrderMap = {
     title: 'title' as const,
-    reason: 'reason' as const,
+    description: 'description' as const,
     excerpt: 'excerpt' as const,
     one_click_subscribe: 'oneClickSubscribe' as const,
     created_at: 'createdAt' as const,
@@ -54,7 +54,7 @@ export class RecommendationController {
 
             // Optional fields
             oneClickSubscribe: recommendation.optionalKey('one_click_subscribe')?.boolean ?? false,
-            reason: recommendation.optionalKey('reason')?.nullable.string ?? null,
+            description: recommendation.optionalKey('description')?.nullable.string ?? null,
             excerpt: recommendation.optionalKey('excerpt')?.nullable.string ?? null,
             featuredImage: recommendation.optionalKey('featured_image')?.nullable.url ?? null,
             favicon: recommendation.optionalKey('favicon')?.nullable.url ?? null
@@ -62,6 +62,22 @@ export class RecommendationController {
 
         return this.#serialize(
             [await this.service.addRecommendation(plain)]
+        );
+    }
+
+    /**
+     * Given a recommendation URL, returns either an existing recommendation with that url and updated metadata,
+     * or the metadata from that URL as if it would create a new one (without creating a new one)
+     *
+     * This can be used in the frontend when creating a new recommendation (duplication checking + showing a preview before saving)
+     */
+    async check(frame: Frame) {
+        const data = new UnsafeData(frame.data);
+        const recommendation = data.key('recommendations').index(0);
+        const url = recommendation.key('url').url;
+
+        return this.#serialize(
+            [await this.service.checkRecommendation(url)]
         );
     }
 
@@ -75,7 +91,7 @@ export class RecommendationController {
             title: recommendation.optionalKey('title')?.string,
             url: recommendation.optionalKey('url')?.url,
             oneClickSubscribe: recommendation.optionalKey('one_click_subscribe')?.boolean,
-            reason: recommendation.optionalKey('reason')?.nullable.string,
+            description: recommendation.optionalKey('description')?.nullable.string,
             excerpt: recommendation.optionalKey('excerpt')?.nullable.string,
             featuredImage: recommendation.optionalKey('featured_image')?.nullable.url,
             favicon: recommendation.optionalKey('favicon')?.nullable.url
@@ -201,19 +217,19 @@ export class RecommendationController {
         return null;
     }
 
-    #serialize(recommendations: RecommendationPlain[], meta?: any) {
+    #serialize(recommendations: Partial<RecommendationPlain>[], meta?: any) {
         return {
             data: recommendations.map((entity) => {
                 const d = {
-                    id: entity.id,
-                    title: entity.title,
-                    reason: entity.reason,
-                    excerpt: entity.excerpt,
+                    id: entity.id ?? null,
+                    title: entity.title ?? null,
+                    description: entity.description ?? null,
+                    excerpt: entity.excerpt ?? null,
                     featured_image: entity.featuredImage?.toString() ?? null,
                     favicon: entity.favicon?.toString() ?? null,
-                    url: entity.url.toString(),
-                    one_click_subscribe: entity.oneClickSubscribe,
-                    created_at: entity.createdAt.toISOString(),
+                    url: entity.url?.toString() ?? null,
+                    one_click_subscribe: entity.oneClickSubscribe ?? null,
+                    created_at: entity.createdAt?.toISOString() ?? null,
                     updated_at: entity.updatedAt?.toISOString() ?? null,
                     count: entity.clickCount !== undefined || entity.subscriberCount !== undefined ? {
                         clicks: entity.clickCount,

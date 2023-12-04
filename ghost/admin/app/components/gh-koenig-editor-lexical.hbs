@@ -1,4 +1,4 @@
-<div class="gh-koenig-editor relative w-100 vh-100 overflow-x-hidden overflow-y-auto z-0" {{did-insert this.registerElement}} ...attributes>
+<div class="gh-koenig-editor relative z-0" {{did-insert this.registerElement}} ...attributes>
     {{!-- full height content pane --}}
     {{!-- template-lint-disable no-invalid-interactive no-passed-in-event-handlers --}}
     <div
@@ -16,6 +16,7 @@
             @updateAlt={{@setFeatureImageAlt}}
             @caption={{@featureImageCaption}}
             @updateCaption={{@setFeatureImageCaption}}
+            @handleCaptionBlur={{@handleFeatureImageCaptionBlur}}
             @forceButtonDisplay={{or (not @title) (eq @title "(Untitled)") this.titleIsHovered this.titleIsFocused}}
             @isHidden={{or (not @cardOptions.post.showTitleAndFeatureImage) false}}
         />
@@ -55,6 +56,7 @@
             @registerAPI={{this.registerEditorAPI}}
             @cursorDidExitAtTop={{this.focusTitle}}
             @updateWordCount={{@updateWordCount}}
+            @updateTkCount={{@updateTkCount}}
         />
     </div>
 </div>

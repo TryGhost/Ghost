@@ -2,6 +2,7 @@ const {promises: fs, readFileSync} = require('fs');
 const path = require('path');
 const moment = require('moment');
 const glob = require('glob');
+const {EmailAddressParser} = require('@tryghost/email-addresses');
 
 class StaffServiceEmails {
     constructor({logging, models, mailer, settingsHelpers, settingsCache, urlUtils, labs}) {
@@ -36,10 +37,6 @@ class StaffServiceEmails {
             }
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
-
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
 
             const templateData = {
                 memberData,
@@ -97,10 +94,6 @@ class StaffServiceEmails {
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
 
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
-
             const templateData = {
                 memberData,
                 attributionTitle,
@@ -154,10 +147,6 @@ class StaffServiceEmails {
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
 
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
-
             const templateData = {
                 memberData,
                 tierData,
@@ -189,10 +178,6 @@ class StaffServiceEmails {
      */
     async getSharedData(recipient) {
         let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${recipient.slug}`);
-
-        if (this.labs.isSet('adminXSettings')) {
-            staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${recipient.slug}`);
-        }
 
         return {
             siteTitle: this.settingsCache.get('title'),
@@ -237,9 +222,7 @@ class StaffServiceEmails {
             const to = user.email;
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
+
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
                 siteUrl: this.urlUtils.getSiteUrl(),
@@ -294,9 +277,6 @@ class StaffServiceEmails {
             const to = user.email;
 
             let staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${user.slug}`);
-            if (this.labs.isSet('adminXSettings')) {
-                staffUrl = this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings-x/users/show/${user.slug}`);
-            }
 
             const templateData = {
                 siteTitle: this.settingsCache.get('title'),
@@ -440,12 +420,10 @@ class StaffServiceEmails {
         return this.settingsHelpers.getDefaultEmailDomain();
     }
 
-    get membersAddress() {
-        // TODO: get from address of default newsletter?
-        return `noreply@${this.defaultEmailDomain}`;
-    }
-
     get fromEmailAddress() {
+        if (this.settingsHelpers.useNewEmailAddresses()) {
+            return EmailAddressParser.stringify(this.settingsHelpers.getDefaultEmail());
+        }
         return `ghost@${this.defaultEmailDomain}`;
     }
 

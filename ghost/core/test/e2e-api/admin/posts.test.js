@@ -25,8 +25,7 @@ const matchPostShallowIncludes = {
     tiers: Array(2).fill(tierSnapshot),
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
-    published_at: anyISODateTime,
-    post_revisions: anyArray
+    published_at: anyISODateTime
 };
 
 const buildMatchPostShallowIncludes = (tiersCount = 2) => {
@@ -42,8 +41,7 @@ const buildMatchPostShallowIncludes = (tiersCount = 2) => {
         tiers: Array(tiersCount).fill(tierSnapshot),
         created_at: anyISODateTime,
         updated_at: anyISODateTime,
-        published_at: anyISODateTime,
-        post_revisions: anyArray
+        published_at: anyISODateTime
     };
 };
 
@@ -326,30 +324,6 @@ describe('Posts API', function () {
         });
 
         it('Can create a post with html', async function () {
-            mockManager.mockLabsDisabled('lexicalEditor');
-
-            const post = {
-                title: 'HTML test',
-                html: '<p>Testing post creation with html</p>'
-            };
-
-            await agent
-                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
-                .body({posts: [post]})
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('posts')
-                });
-        });
-
-        it('Can create a post with html (labs.lexicalEditor)', async function () {
-            mockManager.mockLabsEnabled('lexicalEditor');
-
             const post = {
                 title: 'HTML test',
                 html: '<p>Testing post creation with html</p>'
@@ -639,7 +613,7 @@ describe('Posts API', function () {
                             // collectionToRemove
                             collectionMatcher,
                             // automatic "latest" collection which cannot be removed
-                            buildCollectionMatcher(22)
+                            buildCollectionMatcher(21)
                         ]})]
                 })
                 .matchHeaderSnapshot({
@@ -657,7 +631,7 @@ describe('Posts API', function () {
                             // collectionToAdd
                             collectionMatcher,
                             // automatic "latest" collection which cannot be removed
-                            buildCollectionMatcher(22)
+                            buildCollectionMatcher(21)
                         ]})]
                 })
                 .matchHeaderSnapshot({
@@ -836,12 +810,26 @@ describe('Posts API', function () {
 
             const [postResponse] = body.posts;
 
-            await agent
+            const conversionResponse = await agent
                 .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
                 .body({posts: [Object.assign({}, postResponse)]})
                 .expectStatus(200)
                 .matchBodySnapshot({
                     posts: [Object.assign({}, matchPostShallowIncludes, {lexical: expectedLexical, mobiledoc: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+                
+            const convertedPost = conversionResponse.body.posts[0];
+            const expectedConvertedLexical = convertedPost.lexical;
+            await agent
+                .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
+                .body({posts: [Object.assign({}, convertedPost)]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    posts: [Object.assign({}, matchPostShallowIncludes, {lexical: expectedConvertedLexical, mobiledoc: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,

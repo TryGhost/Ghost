@@ -1,15 +1,12 @@
-import Button from '../../../admin-x-ds/global/Button';
 import React, {useState} from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import StripeButton from '../../../admin-x-ds/settings/StripeButton';
-import TabView from '../../../admin-x-ds/global/TabView';
 import TiersList from './tiers/TiersList';
+import TopLevelGroup from '../../TopLevelGroup';
 import clsx from 'clsx';
-import useRouting from '../../../hooks/useRouting';
-import {Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '../../../api/tiers';
-import {checkStripeEnabled} from '../../../api/settings';
+import {Button, StripeButton, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Tier, getActiveTiers, getArchivedTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}> = ({className, onClick}) => {
     className = clsx(
@@ -17,7 +14,7 @@ const StripeConnectedButton: React.FC<{className?: string; onClick: () => void;}
         className
     );
     return (
-        <button className={className} type='button' onClick={onClick}>
+        <button className={className} data-testid='stripe-connected' type='button' onClick={onClick}>
             <span className="inline-flex h-2 w-2 rounded-full bg-green transition-all group-hover:bg-[#625BF6]"></span>
             <span className='ml-2'>Connected to Stripe</span>
         </button>
@@ -61,7 +58,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     }
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             customButtons={checkStripeEnabled(settings, config) ?
                 <StripeConnectedButton className='hidden tablet:!visible tablet:!block' onClick={openConnectModal} />
                 :
@@ -86,7 +83,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 link
                 onClick={() => fetchNextPage()}
             />}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 

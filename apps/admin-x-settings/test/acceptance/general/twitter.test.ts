@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../utils/acceptance';
+import {globalDataRequests} from '../../utils/acceptance';
+import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Twitter settings', async () => {
     test('Supports editing the twitter card', async ({page}) => {
@@ -22,7 +23,7 @@ test.describe('Twitter settings', async () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(`${__dirname}/../../utils/images/image.png`);
 
-        await expect(section.getByRole('img')).toBeVisible();
+        await expect(section.locator('img[src="http://example.com/image.png"]')).toBeVisible();
 
         await section.getByLabel('X title').fill('Twititle');
         await section.getByLabel('X description').fill('Twitscription');

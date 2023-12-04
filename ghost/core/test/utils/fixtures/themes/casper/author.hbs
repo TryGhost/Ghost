@@ -1,57 +1,76 @@
 {{!< default}}
 {{!-- The tag above means - insert everything in this file into the {body} of the default.hbs template --}}
 
+<main id="site-main" class="site-main outer">
+<div class="inner posts">
 
-<section class="outer">
-    <div class="inner posts">
+    <div class="post-feed">
 
-        <header class="author-profile">
-            {{#author}}
-            {{!-- Everything inside the #author tags pulls data from the author --}}
+        {{#author}}
+        <section class="post-card post-card-large">
 
-            <div class="author-profile-content">
+            {{#if cover_image}}
+            <div class="post-card-image-link">
+                {{!-- This is a responsive image, it loads different sizes depending on device
+                https://medium.freecodecamp.org/a-guide-to-responsive-images-with-ready-to-use-templates-c400bd65c433 --}}
+                <img class="post-card-image"
+                    srcset="{{img_url cover_image size="s"}} 300w,
+                            {{img_url cover_image size="m"}} 600w,
+                            {{img_url cover_image size="l"}} 1000w,
+                            {{img_url cover_image size="xl"}} 2000w"
+                    sizes="(max-width: 1000px) 400px, 800px"
+                    src="{{img_url cover_image size="m"}}"
+                    alt="{{title}}"
+                />
+            </div>
+            {{/if}}
+
+            <div class="post-card-content">
+            <div class="post-card-content-link">
 
                 {{#if profile_image}}
-                <img class="author-profile-pic" src="{{profile_image}}" alt="{{name}}" />
-                {{else}}
-                <span class="author-profile-pic">{{> "icons/avatar"}}</span>
+                    <img class="author-profile-pic" src="{{profile_image}}" alt="{{name}}" />
                 {{/if}}
 
-                <h1>{{name}}</h1>
-                <p>
-                    {{#if bio}}
-                        {{bio}}
-                    {{else}}
-                        {{plural ../pagination.total empty='No posts' singular='% post' plural='% posts'}} published
-                    {{/if}}
-                </p>
+                <header class="post-card-header">
+                    <h2 class="post-card-title">{{name}}</h2>
+                </header>
 
-                <div class="author-profile-meta">
+                {{#if bio}}
+                    <div class="post-card-excerpt">{{bio}}</div>
+                {{/if}}
+
+                <footer class="author-profile-footer">
                     {{#if location}}
-                    <div class="author-profile-location">📍 {{location}}</div>
+                        <div class="author-profile-location">{{location}}</div>
                     {{/if}}
-                    {{#if website}}
-                    <span><a class="author-profile-social-link" href="{{website}}" target="_blank" rel="noopener">{{website}}</a></span>
-                    {{/if}}
-                    {{#if twitter}}
-                    <span><a class="author-profile-social-link" href="{{twitter_url}}" target="_blank" rel="noopener">{{twitter_url}}</a></span>
-                    {{/if}}
-                    {{#if facebook}}
-                    <span><a class="author-profile-social-link" href="{{facebook_url}}" target="_blank" rel="noopener">{{facebook_url}}</a></span>
-                    {{/if}}
-                </div>
+                    <div class="author-profile-meta">
+                        {{#if website}}
+                            <a class="author-profile-social-link" href="{{website}}" target="_blank" rel="noopener">{{website}}</a>
+                        {{/if}}
+                        {{#if twitter}}
+                            <a class="author-profile-social-link" href="{{twitter_url}}" target="_blank" rel="noopener">{{> "icons/twitter"}}</a>
+                        {{/if}}
+                        {{#if facebook}}
+                            <a class="author-profile-social-link" href="{{facebook_url}}" target="_blank" rel="noopener">{{> "icons/facebook"}}</a>
+                        {{/if}}
+                    </div>
+                </footer>
 
             </div>
+            </div>
 
-            {{/author}}
-        </header>
+        </section>
+        {{/author}}
 
-        <div class="post-feed">
-            {{#foreach posts}}
-                {{!-- The tag below includes the markup for each post - partials/post-card.hbs --}}
-                {{> "post-card"}}
-            {{/foreach}}
-        </div>
+        {{#foreach posts}}
+            {{!-- The tag below includes the markup for each post - partials/post-card.hbs --}}
+            {{> "post-card"}}
+        {{/foreach}}
 
     </div>
-</section>
+
+    {{pagination}}
+    
+</div>
+</main>

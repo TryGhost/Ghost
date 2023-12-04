@@ -3,15 +3,15 @@ import EnableNewsletters from './EnableNewsletters';
 import MailGun from './Mailgun';
 import Newsletters from './Newsletters';
 import React from 'react';
-import SettingSection from '../../../admin-x-ds/settings/SettingSection';
-import {getSettingValues} from '../../../api/settings';
+import SearchableSection from '../../SearchableSection';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 export const searchKeywords = {
-    enableNewsletters: ['newsletter', 'enable', 'disable', 'turn on'],
-    newsletters: ['newsletter', 'email'],
-    defaultRecipients: ['newsletter', 'default recipients', 'email'],
-    mailgun: ['mailgun', 'email']
+    enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
+    newsletters: ['newsletters', 'emails'],
+    defaultRecipients: ['newsletters', 'default recipients', 'emails'],
+    mailgun: ['mailgun', 'emails', 'newsletters']
 };
 
 const EmailSettings: React.FC = () => {
@@ -19,7 +19,7 @@ const EmailSettings: React.FC = () => {
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     return (
-        <SettingSection keywords={Object.values(searchKeywords).flat()} title='Email newsletter'>
+        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Email newsletter'>
             <EnableNewsletters keywords={searchKeywords.enableNewsletters} />
             {newslettersEnabled !== 'disabled' && (
                 <>
@@ -28,7 +28,7 @@ const EmailSettings: React.FC = () => {
                     {!config.mailgunIsConfigured && <MailGun keywords={searchKeywords.mailgun} />}
                 </>
             )}
-        </SettingSection>
+        </SearchableSection>
     );
 };
 

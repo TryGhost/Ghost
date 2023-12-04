@@ -4,7 +4,7 @@
 <main class="gh-main gh-outer">
 
     {{#tag}}
-        <section class="gh-archive{{#if feature_image}} has-image{{/if}}{{#if @custom.show_site_in_sidebar}} has-sidebar{{/if}} gh-inner">
+        <section class="gh-archive{{#if feature_image}} has-image{{/if}}{{#if @custom.show_publication_info_sidebar}} has-sidebar{{/if}} gh-inner">
             <div class="gh-archive-inner">
                 <header class="gh-archive-wrapper">
                     <h1 class="gh-article-title is-title">{{name}}</h1>
@@ -17,6 +17,6 @@
         </section>
     {{/tag}}
 
-    {{> "components/post-list" feed="archive" postFeedStyle=@custom.post_feed_style showTitle=false showSidebar=@custom.show_site_in_sidebar}}
+    {{> "components/post-list" feed="archive" postFeedStyle=@custom.post_feed_style showTitle=false showSidebar=@custom.show_publication_info_sidebar}}
 
 </main>

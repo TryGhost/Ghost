@@ -47,7 +47,7 @@ describe('Acceptance: Error Handling', function () {
                 // try navigating back to the content list
                 await click('[data-test-link="posts"]');
 
-                expect(currentRouteName()).to.equal('editor.edit');
+                expect(currentRouteName()).to.equal('lexical-editor.edit');
             });
 
             it('displays alert and aborts the transition when navigating', async function () {
@@ -103,22 +103,22 @@ describe('Acceptance: Error Handling', function () {
 
             expect(findAll('.gh-alert').length).to.equal(1);
             expect(find('.gh-alert').textContent).to.not.match(/html>/);
-            expect(find('.gh-alert').textContent).to.match(/Request was rejected due to server error/);
+            expect(find('.gh-alert').textContent).to.match(/An unexpected error occurred, please try again./);
         });
 
         it('handles ember-ajax HTML response', async function () {
-            this.server.del('/themes/foo/', htmlErrorResponse);
+            const tag = this.server.create('tag', {slug: 'test'});
 
-            await visit('/settings/design/change-theme');
+            this.server.del(`/tags/${tag.id}/`, htmlErrorResponse);
 
-            await click('[data-test-button="toggle-advanced"]');
-            await click('[data-test-theme-id="foo"] [data-test-button="actions"]');
-            await click('[data-test-actions-for="foo"] [data-test-button="delete"]');
-            await click('[data-test-modal="delete-theme"] [data-test-button="confirm"]');
+            await visit('/tags/test');
+
+            await click('[data-test-button="delete-tag"]');
+            await click('[data-test-modal="confirm-delete-tag"] [data-test-button="confirm"]');
 
             expect(findAll('.gh-alert').length).to.equal(1);
             expect(find('.gh-alert').textContent).to.not.match(/html>/);
-            expect(find('.gh-alert').textContent).to.match(/Request was rejected due to server error/);
+            expect(find('.gh-alert').textContent).to.match(/An unexpected error occurred, please try again./);
         });
     });
 });

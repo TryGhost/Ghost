@@ -1,12 +1,10 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Icon from '../../../../admin-x-ds/global/Icon';
 import React, {useState} from 'react';
 import clsx from 'clsx';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
+import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
 import {TierFormState} from './TierDetailModal';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {getSettingValues} from '../../../../api/settings';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {numberWithCommas} from '../../../../utils/helpers';
 
 interface TierDetailPreviewProps {
@@ -89,7 +87,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
         : 0;
 
     return (
-        <div>
+        <div data-testid="tier-preview">
             <div className="flex items-baseline justify-between">
                 <Heading className="pb-2" level={6} grey>{isFreeTier ? 'Free membership preview' : 'Tier preview'}</Heading>
                 {!isFreeTier && <div className="flex gap-1">

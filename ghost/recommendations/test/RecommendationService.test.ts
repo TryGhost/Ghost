@@ -1,5 +1,5 @@
 import assert from 'assert/strict';
-import {ClickEvent, InMemoryRecommendationRepository, Recommendation, RecommendationService, SubscribeEvent, WellknownService} from '../src';
+import {ClickEvent, InMemoryRecommendationRepository, Recommendation, RecommendationService, SubscribeEvent, WellknownService, RecommendationMetadata, RecommendationMetadataService} from '../src';
 import {InMemoryRepository} from '@tryghost/in-memory-repository';
 import sinon from 'sinon';
 
@@ -12,9 +12,18 @@ class InMemoryClickEventRepository<T extends ClickEvent|SubscribeEvent> extends 
 describe('RecommendationService', function () {
     let service: RecommendationService;
     let enabled = false;
+    let clock: sinon.SinonFakeTimers;
+    let fetchMetadataStub: sinon.SinonStub<any[], Promise<RecommendationMetadata>>;
 
     beforeEach(function () {
         enabled = false;
+        fetchMetadataStub = sinon.stub().resolves({
+            title: 'Test',
+            excerpt: null,
+            featuredImage: null,
+            favicon: null,
+            oneClickSubscribe: false
+        });
         service = new RecommendationService({
             repository: new InMemoryRecommendationRepository(),
             clickEventRepository: new InMemoryClickEventRepository<ClickEvent>(),
@@ -43,8 +52,17 @@ describe('RecommendationService', function () {
                     enabled = e === 'true';
                     return Promise.resolve();
                 }
-            }
+            },
+            recommendationMetadataService: {
+                fetch: fetchMetadataStub
+            } as unknown as RecommendationMetadataService
         });
+        clock = sinon.useFakeTimers();
+    });
+
+    afterEach(function () {
+        sinon.restore();
+        clock.restore();
     });
 
     describe('init', function () {
@@ -52,6 +70,215 @@ describe('RecommendationService', function () {
             const updateWellknown = sinon.stub(service.wellknownService, 'set').resolves();
             await service.init();
             assert(updateWellknown.calledOnce);
+        });
+
+        it('should update recommendations on boot', async function () {
+            const recommendation = Recommendation.create({
+                id: '2',
+                url: 'http://localhost/1',
+                title: 'Test',
+                description: null,
+                excerpt: null,
+                featuredImage: null,
+                favicon: null,
+                oneClickSubscribe: false
+            });
+            await service.repository.save(recommendation);
+
+            // Sandbox time
+            const saved = process.env.NODE_ENV;
+            try {
+                process.env.NODE_ENV = 'development';
+                const spy = sinon.spy(service, 'updateAllRecommendationsMetadata');
+                await service.init();
+                await clock.tick(1000 * 60 * 60 * 24);
+                assert(spy.calledOnce);
+            } finally {
+                process.env.NODE_ENV = saved;
+            }
+        });
+
+        it('ignores errors when update recommendations on boot', async function () {
+            // Sandbox time
+            const saved = process.env.NODE_ENV;
+            try {
+                process.env.NODE_ENV = 'development';
+                const spy = sinon.stub(service, 'updateAllRecommendationsMetadata');
+                spy.rejects(new Error('test'));
+                await service.init();
+                clock.tick(1000 * 60 * 60 * 24);
+                assert(spy.calledOnce);
+            } finally {
+                process.env.NODE_ENV = saved;
+            }
+        });
+
+        it('should errors when update recommendations on boot (invidiual)', async function () {
+            const recommendation = Recommendation.create({
+                id: '2',
+                url: 'http://localhost/1',
+                title: 'Test',
+                description: null,
+                excerpt: null,
+                featuredImage: null,
+                favicon: null,
+                oneClickSubscribe: false
+            });
+            await service.repository.save(recommendation);
+
+            // Sandbox time
+            const saved = process.env.NODE_ENV;
+            try {
+                process.env.NODE_ENV = 'development';
+                const spy = sinon.stub(service, '_updateRecommendationMetadata');
+                spy.rejects(new Error('This is a test'));
+                await service.init();
+                clock.tick(1000 * 60 * 60 * 24);
+                clock.restore();
+                // This assert doesn't work without a timeout because the timeout in boot is async
+                // eslint-disable-next-line no-promise-executor-return
+                await new Promise((resolve) => {
+                    setTimeout(() => resolve(true), 50);
+                });
+                assert(!!spy.calledOnce);
+            } finally {
+                process.env.NODE_ENV = saved;
+            }
+        });
+    });
+
+    describe('checkRecommendation', function () {
+        it('Returns existing recommendation if found', async function () {
+            const recommendation = Recommendation.create({
+                id: '2',
+                url: 'http://localhost/existing',
+                title: 'Test',
+                description: null,
+                excerpt: null,
+                featuredImage: null,
+                favicon: null,
+                oneClickSubscribe: false
+            });
+            await service.repository.save(recommendation);
+
+            const response = await service.checkRecommendation(new URL('http://localhost/existing'));
+            assert.deepEqual(response, recommendation.plain);
+        });
+
+        it('Returns updated recommendation if found', async function () {
+            const recommendation = Recommendation.create({
+                id: '2',
+                url: 'http://localhost/existing',
+                title: 'Test',
+                description: null,
+                excerpt: null,
+                featuredImage: null,
+                favicon: null,
+                oneClickSubscribe: false
+            });
+            // Force an empty title (shouldn't be possible)
+            recommendation.title = '';
+            await service.repository.save(recommendation);
+
+            fetchMetadataStub.resolves({
+                title: 'Test 2',
+                excerpt: 'Test excerpt',
+                featuredImage: new URL('https://example.com/image.png'),
+                favicon: new URL('https://example.com/favicon.ico'),
+                oneClickSubscribe: true
+            });
+
+            const response = await service.checkRecommendation(new URL('http://localhost/existing'));
+            assert.deepEqual(response, {
+                ...recommendation.plain,
+                // Note: Title only changes if it was empty
+                title: 'Test 2',
+                description: null,
+                excerpt: 'Test excerpt',
+                featuredImage: new URL('https://example.com/image.png'),
+                favicon: new URL('https://example.com/favicon.ico'),
+                oneClickSubscribe: true
+            });
+        });
+
+        it('Returns updated recommendation if found but keeps empty title if no title found', async function () {
+            const recommendation = Recommendation.create({
+                id: '2',
+                url: 'http://localhost/existing',
+                title: 'Test',
+                description: null,
+                excerpt: null,
+                featuredImage: null,
+                favicon: null,
+                oneClickSubscribe: false
+            });
+            // Force an empty title (shouldn't be possible)
+            recommendation.title = '';
+            await service.repository.save(recommendation);
+
+            fetchMetadataStub.resolves({
+                title: null,
+                excerpt: 'Test excerpt',
+                featuredImage: new URL('https://example.com/image.png'),
+                favicon: new URL('https://example.com/favicon.ico'),
+                oneClickSubscribe: true
+            });
+
+            const response = await service.checkRecommendation(new URL('http://localhost/existing'));
+
+            // No changes here, because validation failed with an empty title
+            assert.deepEqual(response, {
+                ...recommendation.plain
+            });
+        });
+
+        it('Returns existing recommendation if found and fetch failes', async function () {
+            const recommendation = Recommendation.create({
+                id: '2',
+                url: 'http://localhost/existing',
+                title: 'Outdated title',
+                description: null,
+                excerpt: null,
+                featuredImage: null,
+                favicon: null,
+                oneClickSubscribe: false
+            });
+            await service.repository.save(recommendation);
+
+            fetchMetadataStub.rejects(new Error('Test'));
+            const response = await service.checkRecommendation(new URL('http://localhost/existing'));
+            assert.deepEqual(response, recommendation.plain);
+        });
+
+        it('Returns recommendation metadata if not found', async function () {
+            const response = await service.checkRecommendation(new URL('http://localhost/newone'));
+            assert.deepEqual(response, {
+                title: 'Test',
+                excerpt: undefined,
+                featuredImage: undefined,
+                favicon: undefined,
+                oneClickSubscribe: false,
+                url: new URL('http://localhost/newone')
+            });
+        });
+
+        it('Returns recommendation metadata if not found with all data except title', async function () {
+            fetchMetadataStub.resolves({
+                title: null,
+                excerpt: 'Test excerpt',
+                featuredImage: new URL('https://example.com/image.png'),
+                favicon: new URL('https://example.com/favicon.ico'),
+                oneClickSubscribe: true
+            });
+            const response = await service.checkRecommendation(new URL('http://localhost/newone'));
+            assert.deepEqual(response, {
+                title: undefined,
+                excerpt: 'Test excerpt',
+                featuredImage: new URL('https://example.com/image.png'),
+                favicon: new URL('https://example.com/favicon.ico'),
+                oneClickSubscribe: true,
+                url: new URL('http://localhost/newone')
+            });
         });
     });
 
@@ -62,7 +289,7 @@ describe('RecommendationService', function () {
                 Recommendation.create({
                     url: 'http://localhost/1',
                     title: 'Test',
-                    reason: null,
+                    description: null,
                     excerpt: null,
                     featuredImage: null,
                     favicon: null,
@@ -78,7 +305,7 @@ describe('RecommendationService', function () {
                 Recommendation.create({
                     url: 'http://localhost/1',
                     title: 'Test',
-                    reason: null,
+                    description: null,
                     excerpt: null,
                     featuredImage: null,
                     favicon: null,
@@ -114,7 +341,7 @@ describe('RecommendationService', function () {
                 id: '2',
                 url: 'http://localhost/1',
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -136,7 +363,7 @@ describe('RecommendationService', function () {
                 id: '2',
                 url: 'http://localhost/1',
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -147,7 +374,7 @@ describe('RecommendationService', function () {
             await assert.rejects(() => service.addRecommendation({
                 url: 'http://localhost/1',
                 title: 'Test 2',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -162,7 +389,7 @@ describe('RecommendationService', function () {
             const response = await service.addRecommendation({
                 url: 'http://localhost/1',
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -170,7 +397,7 @@ describe('RecommendationService', function () {
             });
             assert.deepEqual(response, {
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -198,7 +425,7 @@ describe('RecommendationService', function () {
                 id: '2',
                 url: 'http://localhost/1',
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -211,7 +438,7 @@ describe('RecommendationService', function () {
             await assert.doesNotReject(() => service.addRecommendation({
                 url: 'http://localhost/2',
                 title: 'Test 2',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -237,7 +464,7 @@ describe('RecommendationService', function () {
                 id: '2',
                 url: 'http://localhost/1',
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -250,7 +477,7 @@ describe('RecommendationService', function () {
             });
             assert.deepEqual(response, {
                 title: 'Test 2',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -289,7 +516,7 @@ describe('RecommendationService', function () {
                 id: '2',
                 url: 'http://localhost/1',
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -309,7 +536,7 @@ describe('RecommendationService', function () {
                 id: '2',
                 url: 'http://localhost/1',
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -327,7 +554,7 @@ describe('RecommendationService', function () {
                 id: '2',
                 url: 'http://localhost/1',
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -339,7 +566,7 @@ describe('RecommendationService', function () {
                 id: '3',
                 url: 'http://localhost/2',
                 title: 'Test 2',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -366,7 +593,7 @@ describe('RecommendationService', function () {
                 id: '2',
                 url: 'http://localhost/1',
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -378,7 +605,7 @@ describe('RecommendationService', function () {
                 id: '3',
                 url: 'http://localhost/2',
                 title: 'Test 2',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -399,7 +626,7 @@ describe('RecommendationService', function () {
                 id: '2',
                 url: 'http://localhost/1',
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,
@@ -431,7 +658,7 @@ describe('RecommendationService', function () {
                 id: '2',
                 url: 'http://localhost/1',
                 title: 'Test',
-                reason: null,
+                description: null,
                 excerpt: null,
                 featuredImage: null,
                 favicon: null,

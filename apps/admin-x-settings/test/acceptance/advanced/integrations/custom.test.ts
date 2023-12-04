@@ -1,7 +1,8 @@
-import {Integration, IntegrationsResponseType} from '../../../../src/api/integrations';
-import {Webhook, WebhooksResponseType} from '../../../../src/api/webhooks';
-import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/acceptance';
+import {Integration, IntegrationsResponseType} from '@tryghost/admin-x-framework/api/integrations';
+import {Webhook, WebhooksResponseType} from '@tryghost/admin-x-framework/api/webhooks';
+import {chooseOptionInSelect, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
+import {globalDataRequests} from '../../../utils/acceptance';
 
 test.describe('Custom integrations', async () => {
     test('Supports creating an integration and adding webhooks', async ({page}) => {
@@ -123,10 +124,27 @@ test.describe('Custom integrations', async () => {
 
         const createModal = page.getByTestId('add-integration-modal');
 
-        createModal.getByLabel('Name').fill('My integration');
-        createModal.getByRole('button', {name: 'Add'}).click();
+        // Validation
+
+        await createModal.getByRole('button', {name: 'Add'}).click();
+        await expect(createModal).toHaveText(/Please enter a name/);
+
+        // Successful creation
+
+        await createModal.getByLabel('Name').fill('My integration');
+        await createModal.getByRole('button', {name: 'Add'}).click();
 
         const modal = page.getByTestId('custom-integration-modal');
+
+        // Warns when leaving without saving
+
+        await modal.getByLabel('Description').fill('Test description');
+
+        await modal.getByRole('button', {name: 'Cancel'}).click();
+
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/leave/i);
+
+        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Stay'}).click();
 
         // Regenerate API key
 

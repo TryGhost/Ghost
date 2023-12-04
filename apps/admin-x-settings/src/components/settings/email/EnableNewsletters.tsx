@@ -1,14 +1,10 @@
-import Banner from '../../../admin-x-ds/global/Banner';
-import Icon from '../../../admin-x-ds/global/Icon';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import Toggle from '../../../admin-x-ds/global/form/Toggle';
-import useHandleError from '../../../utils/api/handleError';
-import useRouting from '../../../hooks/useRouting';
-import {Setting, getSettingValues, useEditSettings} from '../../../api/settings';
+import TopLevelGroup from '../../TopLevelGroup';
+import {Banner, Icon, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {withErrorBoundary} from '../../../admin-x-ds/global/ErrorBoundary';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
@@ -46,7 +42,7 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         </>
     );
 
-    return (<SettingGroup
+    return (<TopLevelGroup
         customButtons={enableToggle}
         description='Newsletter features are active, posts can be sent by email'
         keywords={keywords}
@@ -67,7 +63,7 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         {isDisabled &&
                         <Banner className='mt-6 text-sm' color='grey'>
                             Your <button className='!underline' type="button" onClick={() => {
-                                updateRoute('access');
+                                updateRoute('members');
                             }}>Subscription access</button> is set to &lsquo;Nobody&rsquo;, only existing members will receive newsletters.
                         </Banner>
                         }
@@ -79,7 +75,7 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 }
             ]}
         />
-    </SettingGroup>);
+    </TopLevelGroup>);
 };
 
 export default withErrorBoundary(EnableNewsletters, 'Newsletter sending');

@@ -1,11 +1,7 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import Heading from '../../../../admin-x-ds/global/Heading';
-import List from '../../../../admin-x-ds/global/List';
-import ListItem from '../../../../admin-x-ds/global/ListItem';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {ReactNode, useState} from 'react';
-import {ConfirmationModalContent} from '../../../../admin-x-ds/global/modal/ConfirmationModal';
-import {ThemeProblem} from '../../../../api/themes';
+import {Button, ConfirmationModalContent, Heading, List, ListItem} from '@tryghost/admin-x-design-system';
+import {ThemeProblem} from '@tryghost/admin-x-framework/api/themes';
 
 type FatalError = {
     details: {
@@ -13,7 +9,7 @@ type FatalError = {
     };
   };
 
-type FatalErrors = FatalError[];
+export type FatalErrors = FatalError[];
 
 export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);
@@ -67,8 +63,7 @@ const InvalidThemeModal: React.FC<{
     if (fatalErrors) {
         warningPrompt = <div className="mt-10">
             <List title="Errors">
-                {fatalErrors?.map((error: any) => error?.details?.errors?.map((err: any) => <ThemeProblemView problem={err} />
-                ))}
+                {fatalErrors?.map(error => error?.details?.errors?.map(err => <ThemeProblemView problem={err} />))}
             </List>
         </div>;
     }

@@ -265,8 +265,17 @@
                                     <div class="gh-shortcut">
                                         <div><s>Strike through</s></div>
                                         <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrSymbol />
+                                            <GhPostSettingsMenu::OptionOrAlt />
+                                            <span class="gh-key mono">U</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div><mark>Highlight</mark></div>
+                                        <div class="gh-keys">
                                             <GhPostSettingsMenu::CtrlOrCmd />
-                                            <span class="gh-key mono">X</span>
+                                            <GhPostSettingsMenu::OptionOrAlt />
+                                            <span class="gh-key mono">H</span>
                                         </div>
                                     </div>
                                     <div class="gh-shortcut">
@@ -310,15 +319,16 @@
                                         <div>H2</div>
                                         <div class="gh-keys">
                                             <GhPostSettingsMenu::CtrlOrSymbol />
-                                            <span class="gh-key mono">H</span>
+                                            <GhPostSettingsMenu::OptionOrAlt />
+                                            <span class="gh-key mono">2</span>
                                         </div>
                                     </div>
                                     <div class="gh-shortcut">
                                         <div>H3</div>
                                         <div class="gh-keys">
                                             <GhPostSettingsMenu::CtrlOrSymbol />
-                                            <span class="gh-key mono">H</span>
-                                            <span class="gh-key mono clear">2x</span>
+                                            <GhPostSettingsMenu::OptionOrAlt />
+                                            <span class="gh-key mono">3</span>
                                         </div>
                                     </div>
                                 </GhFormGroup>
@@ -330,6 +340,14 @@
                                         <div class="gh-keys">
                                             <GhPostSettingsMenu::CtrlOrCmd />
                                             <span class="gh-key" data-tooltip="Return">&#8617;</span>
+                                        </div>
+                                    </div>
+                                    <div class="gh-shortcut">
+                                        <div>Paste without formatting</div>
+                                        <div class="gh-keys">
+                                            <GhPostSettingsMenu::CtrlOrCmd />
+                                            <span class="gh-key" data-tooltip="Shift">&#8679;</span>
+                                            <span class="gh-key mono">V</span>
                                         </div>
                                     </div>
                                     <div class="gh-shortcut">
@@ -411,6 +429,14 @@
                                             <span class="gh-key" data-tooltip="Return">&#8617;</span>
                                         </div>
                                     </div>
+                                    {{#if (feature "editorEmojiPicker")}}
+                                        <div class="gh-shortcut">
+                                            <div>Emoji</div>
+                                            <div class="gh-keys">
+                                                <span class="gh-key mono">:emoji_name:</span>
+                                            </div>
+                                        </div>
+                                    {{/if}}
                                     <div class="gh-shortcut">
                                         <div>Image</div>
                                         <div class="gh-keys">

@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures} from '../../utils/acceptance';
+import {globalDataRequests} from '../../utils/acceptance';
+import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Facebook settings', async () => {
     test('Supports editing the facebook card', async ({page}) => {
@@ -22,7 +23,7 @@ test.describe('Facebook settings', async () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(`${__dirname}/../../utils/images/image.png`);
 
-        await expect(section.getByRole('img')).toBeVisible();
+        await expect(section.locator('img[src="http://example.com/image.png"]')).toBeVisible();
 
         await section.getByLabel('Facebook title').fill('Facetitle');
         await section.getByLabel('Facebook description').fill('Facescription');

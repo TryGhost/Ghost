@@ -10,8 +10,10 @@ export default class KoenigImageEditor extends Component {
     @service feature;
     @service settings;
     @service ghostPaths;
+
     @tracked scriptLoaded = false;
     @tracked cssLoaded = false;
+    @tracked allowClose = false;
 
     @inject config;
 
@@ -128,6 +130,11 @@ export default class KoenigImageEditor extends Component {
         this.loadImageEditorCSS();
     }
 
+    willDestroy() {
+        super.willDestroy(...arguments);
+        this.removeCloseHandler();
+    }
+
     @action
     async onUploadComplete(urlList) {
         if (this.args.saveUrl) {
@@ -137,8 +144,22 @@ export default class KoenigImageEditor extends Component {
     }
 
     @action
+    willClose() {
+        if (this.allowClose) {
+            this.allowClose = false;
+            this.removeCloseHandler();
+            return true;
+        }
+
+        return false;
+    }
+
+    @action
     async handleClick(uploader) {
         if (this.isEditorEnabled && this.args.imageSrc) {
+            this.allowClose = false;
+            this.addCloseHandler();
+
             // add a timestamp to the image src to bypass cache
             // avoids cors issues with cached images
             const imageUrl = new URL(this.args.imageSrc);
@@ -158,7 +179,8 @@ export default class KoenigImageEditor extends Component {
                     'redact',
                     'annotate',
                     'trim',
-                    'frame'
+                    'frame',
+                    'resize'
                 ],
                 frameOptions: [
                     // No frame
@@ -198,7 +220,8 @@ export default class KoenigImageEditor extends Component {
                 ],
                 locale: {
                     labelButtonExport: 'Save and close'
-                }
+                },
+                willClose: this.willClose
             });
 
             editor.on('loaderror', () => {
@@ -220,5 +243,20 @@ export default class KoenigImageEditor extends Component {
                 }
             });
         }
+    }
+
+    @action
+    handleCloseClick(event) {
+        if (event.target.closest('.PinturaModal button[title="Close"]')) {
+            this.allowClose = true;
+        }
+    }
+
+    addCloseHandler() {
+        window.addEventListener('click', this.handleCloseClick, {capture: true});
+    }
+
+    removeCloseHandler() {
+        window.removeEventListener('click', this.handleCloseClick, {capture: true});
     }
 }

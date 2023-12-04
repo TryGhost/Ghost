@@ -6,13 +6,13 @@ const {Recommendation} = require('@tryghost/recommendations');
 
 async function testClicked({recommendationId, memberId}, test) {
     const before = await recommendationsService.clickEventRepository.getAll({
-        filter: 'recommendationId:' + recommendationId
+        filter: `recommendationId:'${recommendationId}'`
     });
 
     await test();
 
     const after = await recommendationsService.clickEventRepository.getAll({
-        filter: 'recommendationId:' + recommendationId
+        filter: `recommendationId:'${recommendationId}'`
     });
 
     assert.equal(after.length, before.length + 1);
@@ -40,11 +40,11 @@ async function testNotSubscribed(test) {
 
 async function testSubscribed({recommendationId, memberId}, test) {
     const before = await recommendationsService.subscribeEventRepository.getAll({
-        filter: 'recommendationId:' + recommendationId
+        filter: `recommendationId:'${recommendationId}'`
     });
     await test();
     const after = await recommendationsService.subscribeEventRepository.getAll({
-        filter: 'recommendationId:' + recommendationId
+        filter: `recommendationId:'${recommendationId}'`
     });
 
     assert.equal(after.length, before.length + 1);
@@ -74,7 +74,7 @@ describe('Recommendation Event Tracking', function () {
         // Add recommendation
         const recommendation = Recommendation.create({
             title: `Recommendation`,
-            reason: `Reason`,
+            description: `Description`,
             url: new URL(`https://recommendation.com`),
             favicon: null,
             featuredImage: null,
