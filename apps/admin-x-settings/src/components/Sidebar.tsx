@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import useFeatureFlag from '../hooks/useFeatureFlag';
 import {Button, Icon, SettingNavItem, SettingNavItemProps, SettingNavSection, TextField, useFocusContext} from '@tryghost/admin-x-design-system';
 import {searchKeywords as advancedSearchKeywords} from './settings/advanced/AdvancedSettings';
+import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
 import {searchKeywords as emailSearchKeywords} from './settings/email/EmailSettings';
 import {searchKeywords as generalSearchKeywords} from './settings/general/GeneralSettings';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -35,7 +36,7 @@ const Sidebar: React.FC = () => {
     const {updateRoute} = useRouting();
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const {isAnyTextFieldFocused} = useFocusContext();
-    const hasOffers = useFeatureFlag('adminXOffers');
+    const hasOffersLabs = useFeatureFlag('adminXOffers');
 
     // Focus in on search field when pressing "/"
     useEffect(() => {
@@ -67,6 +68,7 @@ const Sidebar: React.FC = () => {
 
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
+    const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
     const handleSectionClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
         if (e) {
@@ -128,7 +130,7 @@ const Sidebar: React.FC = () => {
                 <SettingNavSection isVisible={checkVisible(Object.values(growthSearchKeywords).flat())} title="Growth">
                     {hasRecommendations && <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />}
                     <NavItem icon='emailfield' keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Embeddable signup form" onClick={handleSectionClick} />
-                    {hasOffers && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
+                    {hasOffersLabs && hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
                     {hasTipsAndDonations && <NavItem icon='piggybank' keywords={growthSearchKeywords.tips} navid='tips-or-donations' title="Tips or donations" onClick={handleSectionClick} />}
                 </SettingNavSection>
 
