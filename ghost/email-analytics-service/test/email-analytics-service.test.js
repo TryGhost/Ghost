@@ -7,7 +7,7 @@ const sinon = require('sinon');
 const {
     EmailAnalyticsService
 } = require('..');
-const EventProcessingResult = require('../lib/event-processing-result');
+const EventProcessingResult = require('../lib/EventProcessingResult');
 
 describe('EmailAnalyticsService', function () {
     let eventProcessor;

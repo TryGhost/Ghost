@@ -1,5 +1,5 @@
 const nock = require('nock');
-const GeolocationService = require('../../../lib/services/geolocation');
+const GeolocationService = require('../../../lib/services/GeolocationService');
 
 const RESPONSE = {
     longitude: '-2.2417',

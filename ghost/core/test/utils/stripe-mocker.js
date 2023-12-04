@@ -18,6 +18,7 @@ class StripeMocker {
     coupons = [];
     prices = [];
     products = [];
+    checkoutSessions = [];
 
     nockInterceptors = [];
 
@@ -39,6 +40,7 @@ class StripeMocker {
         this.coupons = [];
         this.prices = [];
         this.products = [];
+        this.checkoutSessions = [];
 
         // Fix for now, because of importing order breaking some things when they are not initialized
         members = require('../../core/server/services/members');
@@ -76,6 +78,10 @@ class StripeMocker {
      */
     async getPriceForTier(tierSlug, cadence) {
         const product = await models.Product.findOne({slug: tierSlug});
+
+        if (!product) {
+            throw new Error('Product not found with slug ' + tierSlug);
+        }
         const tier = await tiers.api.read(product.id);
         const payments = members.api.paymentsService;
         const {id} = await payments.createPriceForTierCadence(tier, cadence);
@@ -92,12 +98,15 @@ class StripeMocker {
      * @returns
      */
     async createTier({name, currency, monthly_price, yearly_price}) {
-        return await models.Product.add({
+        const result = await tiers.api.add({
             name: name ?? ('Tier ' + this.#generateRandomId()),
             type: 'paid',
             currency: currency.toUpperCase(),
-            monthly_price,
-            yearly_price
+            monthlyPrice: monthly_price,
+            yearlyPrice: yearly_price
+        });
+        return await models.Product.findOne({
+            id: result.id.toHexString()
         });
     }
 
@@ -220,6 +229,17 @@ class StripeMocker {
                         data: []
                     },
                     ...decoded
+                };
+            }
+        }
+
+        if (resource === 'checkout') {
+            if (!id) {
+                // Add default fields
+                decoded = {
+                    object: 'checkout.session',
+                    ...decoded,
+                    url: 'https://checkout.stripe.com/c/pay/fake-data'
                 };
             }
         }
@@ -376,6 +396,10 @@ class StripeMocker {
 
                 if (resource === 'products') {
                     return this.#postData(this.products, id, body, resource);
+                }
+
+                if (resource === 'checkout' && id === 'sessions') {
+                    return this.#postData(this.checkoutSessions, null, body, resource);
                 }
 
                 return [500];

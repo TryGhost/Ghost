@@ -1,6 +1,6 @@
 const should = require('should');
 const find = require('lodash/find');
-const PostsImporter = require('../../../../../../../core/server/data/importer/importers/data/posts');
+const PostsImporter = require('../../../../../../../core/server/data/importer/importers/data/PostsImporter');
 
 describe('PostsImporter', function () {
     describe('#beforeImport', function () {
@@ -119,6 +119,22 @@ describe('PostsImporter', function () {
             should.not.exist(post.send_email_when_published);
             // @TODO: need to check this mapping
             //post.newsletter_id.should.eql();
+        });
+
+        it('Doesn\'t populate the mobiledoc column if it is a lexical post', function () {
+            const fakePosts = [{
+                slug: 'post-with-newsletter',
+                lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Bananas!","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}',
+                html: '<p>Bananas!</p>'
+            }];
+
+            const importer = new PostsImporter({posts: fakePosts});
+
+            importer.beforeImport();
+
+            const post = find(importer.dataToImport, {slug: 'post-with-newsletter'});
+            should.exist(post);
+            should.equal(post.mobiledoc, null);
         });
     });
 });

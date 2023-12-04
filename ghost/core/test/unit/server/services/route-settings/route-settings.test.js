@@ -3,7 +3,7 @@ const should = require('should');
 const fs = require('fs-extra');
 const path = require('path');
 const bridge = require('../../../../../core/bridge');
-const RouteSettings = require('../../../../../core/server/services/route-settings/route-settings');
+const RouteSettings = require('../../../../../core/server/services/route-settings/RouteSettings');
 
 describe('UNIT > Settings Service DefaultSettingsManager:', function () {
     beforeEach(function () {

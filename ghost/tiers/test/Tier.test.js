@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const ObjectID = require('bson-objectid');
 const Tier = require('../lib/Tier');
 const TierActivatedEvent = require('../lib/TierActivatedEvent');
@@ -266,7 +266,7 @@ describe('Tier', function () {
 
             tier.description = 'Updated description';
 
-            assert.strictEqual('Updated description', tier.description);
+            assert.equal('Updated description', tier.description);
         });
     });
 });

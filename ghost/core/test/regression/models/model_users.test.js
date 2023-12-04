@@ -2,7 +2,6 @@ const errors = require('@tryghost/errors');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
-const Promise = require('bluebird');
 const _ = require('lodash');
 
 // Stuff we are testing
@@ -213,7 +212,7 @@ describe('User Model', function run() {
         it('can findOne by role name', function () {
             return testUtils.fixtures.createExtraUsers().then(function () {
                 return Promise.all([
-                    UserModel.findOne({role: 'Owner'}), 
+                    UserModel.findOne({role: 'Owner'}),
                     UserModel.findOne({role: 'Editor'})
                 ]);
             }).then(function (results) {

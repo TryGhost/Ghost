@@ -4,9 +4,9 @@ const _ = require('lodash');
 const events = require('../../../core/server/lib/common/events');
 
 // Testing  the Private API
-let CacheManager = require('../../../core/shared/settings-cache/cache');
+let CacheManager = require('../../../core/shared/settings-cache/CacheManager');
 const publicSettings = require('../../../core/shared/settings-cache/public');
-const InMemoryCache = require('../../../core/server/adapters/cache/Memory');
+const InMemoryCache = require('../../../core/server/adapters/cache/MemoryCache');
 
 should.equal(true, true);
 

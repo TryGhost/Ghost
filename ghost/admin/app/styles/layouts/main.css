@@ -5,7 +5,6 @@
     --mainmenu-color-active-bg: var(--whitegrey);
     --mainmenu-width: 320px;
     --mainmenu-padding: var(--main-layout-area-padding);
-    --contextualmenu-width: 360px;
 }
 
 /* Utils */
@@ -216,9 +215,7 @@
 }
 
 .gh-nav-main-enter-active,
-.gh-nav-main-leave-active,
-.gh-nav-contextual-enter-active,
-.gh-nav-contextual-leave-active {
+.gh-nav-main-leave-active {
     position: absolute;
     top: 0;
     height: 100%;
@@ -233,29 +230,6 @@
 .gh-nav-main-enter,
 .gh-nav-main-leave-to {
     transform: translateX(-100%);
-}
-
-.gh-nav-contextual-enter-active,
-.gh-nav-contextual-leave-active {
-    width: calc(var(--contextualmenu-width) - 1px);
-}
-
-/* For some reason the animate-in transition wasn't working with pure transforms */
-/* Using `left` correctly positioned the starting state so we could then use opposite transforms */
-.gh-nav-contextual-enter-active {
-    left: calc(var(--contextualmenu-width) - 1px);
-}
-
-.gh-nav-contextual-enter-to {
-    transform: translateX(-100%);
-}
-
-.gh-nav-contextual-leave {
-    transform: translateX(0);
-}
-
-.gh-nav-contextual-leave-to {
-    transform: translateX(calc(var(--mainmenu-width) - 1px));
 }
 
 .gh-account-menu-header {
@@ -1431,7 +1405,8 @@
 
 .gh-expandable-content input:not(:focus),
 .gh-expandable-content .gh-input:not(:focus),
-.gh-expandable-content .ember-power-select-multiple-trigger {
+.gh-expandable-content .ember-power-select-multiple-trigger,
+.gh-expandable-content select:not(:focus) {
     border-color: var(--whitegrey-d1);
 }
 
@@ -1469,11 +1444,11 @@
     display: flex;
     align-items: center;
     overflow: hidden;
-    margin: -3px 0 0 0;
+    margin: -8px 0 0 0;
     padding: 0;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 3.2rem;
+    font-size: 3.6rem;
     line-height: 1.3em;
     font-weight: 700;
     letter-spacing: -0.021em;
@@ -2043,14 +2018,6 @@ section.gh-ds h2 {
     line-height: 1.45em;
 }
 
-.gh-done .gh-setting-desc {
-    padding-right: 2rem;
-}
-
-.gh-done .gh-nav-design .gh-setting-action {
-    margin-bottom: 12px;
-}
-
 .gh-done-panel {
     margin: 8px 0 24px;
     padding: 52px var(--main-layout-area-padding) 16px;
@@ -2242,4 +2209,41 @@ section.gh-ds h2 {
     text-align-last: center;
     height: 40px;
     line-height: 40px;
+}
+
+.admin-x-container-error {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: var(--whitegrey-l2);
+}
+
+.admin-x-error {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    background: var(--white);
+    box-shadow: var(--box-shadow-m);
+    border-radius: 20px;
+    padding: 5vmin;
+    max-width: 640px;
+    color: var(--darkgrey);
+}
+
+.admin-x-container-error p,
+.admin-x-container-error h1 {
+    margin: 0;
+    padding: 0;
+}
+
+.admin-x-container-error a {
+    display: inline-block;
+    padding: 6px 10px;
+    border: 1px solid var(--green);
+    border-radius: 4px;
+    margin-top: 8px;
 }

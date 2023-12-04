@@ -1,11 +1,25 @@
 const nock = require('nock');
-const assert = require('assert');
+const assert = require('assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId} = matchers;
 
 const {tokens} = require('@tryghost/security');
 const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
+
+async function waitForEmailSent(emailMockReceiver, number = 1) {
+    let sentEmailCount = 0;
+    while (sentEmailCount === 0) {
+        try {
+            emailMockReceiver.assertSentEmailCount(number);
+            sentEmailCount = number;
+        } catch (e) {
+            await new Promise((resolve) => {
+                setTimeout(resolve, 100);
+            });
+        }
+    }
+}
 
 describe('Authentication API', function () {
     let emailMockReceiver;
@@ -70,6 +84,8 @@ describe('Authentication API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+
+            await waitForEmailSent(emailMockReceiver);
 
             // Test our side effects
             emailMockReceiver.matchHTMLSnapshot();
@@ -179,7 +195,7 @@ describe('Authentication API', function () {
             const password = 'thisissupersafe';
 
             const requestMock = nock('https://api.github.com')
-                .get('/repos/tryghost/casper/zipball')
+                .get('/repos/tryghost/source/zipball')
                 .query(true)
                 .replyWithFile(200, fixtureManager.getPathForFixture('themes/valid.zip'));
 
@@ -191,7 +207,7 @@ describe('Authentication API', function () {
                         email,
                         password,
                         blogTitle: 'a test blog',
-                        theme: 'TryGhost/Casper',
+                        theme: 'TryGhost/Source',
                         accentColor: '#85FF00',
                         description: 'Custom Site Description on Setup &mdash; great for everyone'
                     }]
@@ -208,6 +224,8 @@ describe('Authentication API', function () {
                     etag: anyEtag
                 });
 
+            await waitForEmailSent(emailMockReceiver);
+
             // Test our side effects
             emailMockReceiver.matchHTMLSnapshot();
             emailMockReceiver.matchPlaintextSnapshot();
@@ -218,7 +236,7 @@ describe('Authentication API', function () {
             const activeTheme = await settingsCache.get('active_theme');
             const accentColor = await settingsCache.get('accent_color');
             const description = await settingsCache.get('description');
-            assert.equal(activeTheme, 'casper', 'The theme casper should have been installed');
+            assert.equal(activeTheme, 'source', 'The theme Source should have been installed');
             assert.equal(accentColor, '#85FF00', 'The accent color should have been set');
             assert.equal(description, 'Custom Site Description on Setup &mdash; great for everyone', 'The site description should have been set');
 

@@ -10,7 +10,7 @@ const models = require('../../../../core/server/models');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 
 const {mockManager} = require('../../../utils/e2e-framework');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 let request;
 
@@ -340,6 +340,10 @@ describe('Members Importer API', function () {
         await awaitCompletion;
 
         assert(!!settingsCache.get('email_verification_required'), 'Email verification should now be required');
+
+        mockManager.assert.sentEmail({
+            subject: 'Your member import is complete'
+        });
 
         mockManager.assert.sentEmail({
             subject: 'Email needs verification'

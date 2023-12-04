@@ -7,26 +7,28 @@
   "main": "index.js",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --100 --reporter text --reporter cobertura mocha './test/**/*.test.js'",
+    "test:unit": "NODE_ENV=testing c8 --all --check-coverage --100 --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
     "test": "yarn test:unit",
-    "lint": "eslint . --ext .js --cache"
+    "lint:code": "eslint *.js lib/ --ext .js --cache",
+    "lint": "yarn lint:code && yarn lint:test",
+    "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache"
   },
   "files": [
     "index.js",
     "lib"
   ],
   "devDependencies": {
-    "c8": "7.13.0",
+    "c8": "8.0.1",
     "mocha": "10.2.0",
     "should": "13.2.3",
-    "sinon": "15.0.3"
+    "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/debug": "0.1.24",
-    "@tryghost/errors": "1.2.24",
-    "@tryghost/http-cache-utils": "0.1.9",
-    "@tryghost/tpl": "0.1.24",
+    "@tryghost/debug": "0.1.26",
+    "@tryghost/errors": "1.2.26",
+    "@tryghost/http-cache-utils": "0.1.11",
+    "@tryghost/tpl": "0.1.26",
     "lodash": "4.17.21",
-    "semver": "7.5.0"
+    "semver": "7.5.4"
   }
 }

@@ -1,8 +1,8 @@
+{{!-- template-lint-disable no-invalid-interactive --}}
 <div
     class="gh-editor-feature-image-container"
-    {{on "mouseover" (fn (mut this.isHovered) true)}}
-    {{on "mouseleave" (fn (mut this.isHovered) false)}}
 >
+{{!-- template-lint-enable no-invalid-interactive --}}
     <GhUploader
         @extensions={{this.imageExtensions}}
         @onComplete={{this.setUploadedImage}}
@@ -34,19 +34,20 @@
             {{/each}}
         {{else if @image}}
             {{!-- image is present --}}
-            <span class="gh-editor-feature-image-indicator" data-tooltip="A feature image is publicly visible to anyone">
-                {{svg-jar "feature-image"}}
-            </span>
+            {{#if @isHidden}}
+                <span class="gh-editor-hidden-indicator" data-tooltip="Feature image and post title are hidden on page">
+                    {{svg-jar "eye-closed"}}
+                </span>
+            {{/if}}
             <div class="gh-editor-feature-image">
-                <img src={{@image}}>
-                {{#if (feature 'imageEditor')}}
-                    <KoenigImageEditor
-                        @imageSrc={{@image}}
-                        @saveImage={{fn this.saveImage uploader.setFiles}}
-                    />
-                {{/if}}
+                <img src={{@image}} alt={{@alt}} role={{if @alt "img" "presentation"}} class="{{if @isHidden "faded"}}">
+                <div class="gh-editor-feature-image-overlay"></div>
+                <KoenigImageEditor
+                    @imageSrc={{@image}}
+                    @saveImage={{fn this.saveImage uploader.setFiles}}
+                />
                 <button type="button" class="image-action image-delete" title="Delete image" {{on "click" @clearImage}}>
-                    {{svg-jar "trash"}}
+                    {{svg-jar "koenig/kg-trash"}}
                 </button>
             </div>
             <div class="flex justify-between align-center">
@@ -54,21 +55,21 @@
                     <input
                         type="text"
                         placeholder="Add alt text to the feature image"
-                        class="gh-editor-feature-image-alttext"
+                        class="gh-editor-feature-image-alttext {{if @isHidden "faded"}}"
                         name="alt"
                         value={{@alt}}
                         {{autofocus}}
                         {{on "input" this.onAltInput}}
+                        aria-label="Alt text for feature image"
                     >
                 {{else}}
-                    <KoenigBasicHtmlInput
-                        @html={{@caption}}
-                        @placeholder={{if this.captionInputFocused "" "Add a caption to the feature image"}}
-                        @class="gh-editor-feature-image-caption"
-                        @name="caption"
-                        @onChange={{@updateCaption}}
+                    <KoenigLexicalEditorInput
+                        class="gh-editor-feature-image-caption {{if (and @isHidden (not this.captionInputFocused)) "faded"}}"
+                        @html={{this.caption}}
+                        @onChangeHtml={{this.setCaption}}
+                        @placeholderText={{if this.captionInputFocused "" "Add a caption to the feature image"}}
                         @onFocus={{fn (mut this.captionInputFocused) true}}
-                        @onBlur={{fn (mut this.captionInputFocused) false}}
+                        @onBlur={{this.handleCaptionBlur}}
                     />
                 {{/if}}
                 <button
@@ -80,7 +81,7 @@
             </div>
         {{else}}
             {{!-- no-image state --}}
-            <div class="flex flex-row items-center {{if this.hideButton "invisible"}}">
+            <div class="flex flex-row items-center">
                 {{#if this.canDrop}}
                     <div class="gh-editor-feature-image-add-button"><span>Drop to upload feature image</span></div>
                 {{else}}

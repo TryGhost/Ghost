@@ -1,1 +1,1 @@
-module.exports = require('./lib/verification-trigger');
+module.exports = require('./lib/VerificationTrigger');

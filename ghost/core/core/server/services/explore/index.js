@@ -1,4 +1,4 @@
-const ExploreService = require('./service');
+const ExploreService = require('./ExploreService');
 
 const MembersService = require('../members');
 const PostsService = require('../posts/posts-service')();

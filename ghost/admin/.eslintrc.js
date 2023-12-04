@@ -27,6 +27,8 @@ module.exports = {
         'plugin:ghost/ember'
     ],
     rules: {
+        'ghost/filenames/match-exported-class': ['off'],
+        'ghost/filenames/match-regex': ['off'],
         'no-shadow': ['error'],
 
         // TODO: migrate away from accessing controller in routes

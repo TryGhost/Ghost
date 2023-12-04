@@ -3,6 +3,8 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {mapQuery} = require('@tryghost/mongo-utils');
 const postsPublicService = require('../../services/posts-public');
+const getPostServiceInstance = require('../../services/posts/posts-service');
+const postsService = getPostServiceInstance();
 
 const allowedIncludes = ['tags', 'authors', 'tiers', 'sentiment'];
 
@@ -21,11 +23,60 @@ const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value,
     };
 });
 
+function generateOptionsData(frame, options) {
+    return options.reduce((memo, option) => {
+        let value = frame.options?.[option];
+
+        if (['include', 'fields', 'formats'].includes(option) && typeof value === 'string') {
+            value = value.split(',').sort();
+        }
+
+        if (option === 'page') {
+            value = value || 1;
+        }
+
+        return {
+            ...memo,
+            [option]: value
+        };
+    }, {});
+}
+
+function generateAuthData(frame) {
+    if (frame.options?.context?.member) {
+        return {
+            free: frame.options?.context?.member.status === 'free',
+            tiers: frame.options?.context?.member.products?.map((product) => {
+                return product.slug;
+            }).sort()
+        };
+    }
+}
 module.exports = {
     docName: 'posts',
 
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         cache: postsPublicService.api?.cache,
+        generateCacheKeyData(frame) {
+            return {
+                options: generateOptionsData(frame, [
+                    'include',
+                    'filter',
+                    'fields',
+                    'formats',
+                    'limit',
+                    'order',
+                    'page',
+                    'absolute_urls',
+                    'collection'
+                ]),
+                auth: generateAuthData(frame),
+                method: 'browse'
+            };
+        },
         options: [
             'include',
             'filter',
@@ -35,7 +86,8 @@ module.exports = {
             'order',
             'page',
             'debug',
-            'absolute_urls'
+            'absolute_urls',
+            'collection'
         ],
         validation: {
             options: {
@@ -53,11 +105,32 @@ module.exports = {
                 ...frame.options,
                 mongoTransformer: rejectPrivateFieldsTransformer
             };
-            return models.Post.findPage(options);
+            return postsService.browsePosts(options);
         }
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
+        cache: postsPublicService.api?.cache,
+        generateCacheKeyData(frame) {
+            return {
+                options: generateOptionsData(frame, [
+                    'include',
+                    'fields',
+                    'formats',
+                    'absolute_urls'
+                ]),
+                auth: generateAuthData(frame),
+                method: 'read',
+                identifier: {
+                    id: frame.data.id,
+                    slug: frame.data.slug,
+                    uuid: frame.data.uuid
+                }
+            };
+        },
         options: [
             'include',
             'fields',

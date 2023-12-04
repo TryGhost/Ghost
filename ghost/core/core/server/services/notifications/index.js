@@ -1,5 +1,5 @@
 const settingsCache = require('../../../shared/settings-cache');
-const Notifications = require('./notifications');
+const Notifications = require('./Notifications');
 const models = require('../../models');
 
 module.exports.notifications = new Notifications({

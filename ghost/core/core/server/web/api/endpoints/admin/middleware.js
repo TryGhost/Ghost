@@ -8,9 +8,13 @@ const messages = {
     notImplemented: 'The server does not support the functionality required to fulfill the request.'
 };
 
-const notImplemented = function (req, res, next) {
+const notImplemented = function notImplemented(req, res, next) {
     // CASE: user is logged in, allow
     if (!req.api_key) {
+        return next();
+    }
+
+    if (req.query.god_mode && process.env.NODE_ENV === 'development') {
         return next();
     }
 
@@ -25,6 +29,8 @@ const notImplemented = function (req, res, next) {
         tags: ['GET', 'PUT', 'DELETE', 'POST'],
         labels: ['GET', 'PUT', 'DELETE', 'POST'],
         users: ['GET'],
+        roles: ['GET'],
+        invites: ['POST'],
         themes: ['POST', 'PUT'],
         members: ['GET', 'PUT', 'DELETE', 'POST'],
         tiers: ['GET', 'PUT', 'POST'],

@@ -1,7 +1,10 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import {ALL_POST_INCLUDES} from '../../adapters/post';
 import {pluralize} from 'ember-inflector';
-
+import {inject as service} from '@ember/service';
 export default class EditRoute extends AuthenticatedRoute {
+    @service feature;
+
     beforeModel(transition) {
         super.beforeModel(...arguments);
 
@@ -25,14 +28,18 @@ export default class EditRoute extends AuthenticatedRoute {
 
         let query = {
             // eslint-disable-next-line camelcase
-            id: post_id
+            id: post_id,
+            // we need to explicitly request post_revisions which means we need
+            // to specify every post include option
+            include: ALL_POST_INCLUDES
         };
 
         const records = await this.store.query(modelName, query);
-        const post = records.firstObject;
+        let post = records.firstObject;
 
+        // CASE: Post is in mobiledoc — convert to lexical or redirect
         if (post.mobiledoc) {
-            return this.router.transitionTo('editor.edit', post);
+            post = await post.save({adapterOptions: {convertToLexical: 1}});
         }
 
         return post;

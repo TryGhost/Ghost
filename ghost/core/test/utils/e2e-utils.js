@@ -1,6 +1,5 @@
 // Utility Packages
 const debug = require('@tryghost/debug')('test');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
@@ -37,7 +36,7 @@ let totalBoots = 0;
  */
 const exposeFixtures = async () => {
     const fixturePromises = {
-        roles: models.Role.findAll({columns: ['id']}),
+        roles: models.Role.findAll({columns: ['id', 'name']}),
         users: models.User.findAll({columns: ['id', 'email', 'slug']}),
         tags: models.Tag.findAll({columns: ['id']}),
         apiKeys: models.ApiKey.findAll({withRelated: 'integration'})
@@ -76,12 +75,12 @@ const prepareContentFolder = (options) => {
     fs.ensureDirSync(path.join(contentFolderForTests, 'settings'));
 
     if (options.copyThemes) {
-        // Copy all themes into the new test content folder. Default active theme is always casper. If you want to use a different theme, you have to set the active theme (e.g. stub)
+        // Copy all themes into the new test content folder. Default active theme is always source. If you want to use a different theme, you have to set the active theme (e.g. stub)
         fs.copySync(path.join(__dirname, 'fixtures', 'themes'), path.join(contentFolderForTests, 'themes'));
     }
 
-    // Copy theme even if frontend is disabled, as admin can use casper when viewing themes section
-    fs.copySync(path.join(__dirname, 'fixtures', 'themes', 'casper'), path.join(contentFolderForTests, 'themes', 'casper'));
+    // Copy theme even if frontend is disabled, as admin can use source when viewing themes section
+    fs.copySync(path.join(__dirname, 'fixtures', 'themes', 'source'), path.join(contentFolderForTests, 'themes', 'source'));
 
     if (options.redirectsFile) {
         redirects.setupFile(contentFolderForTests, options.redirectsFileExt);
@@ -235,8 +234,8 @@ const startGhost = async (options) => {
     totalStartTime += totalTime;
     totalBoots += 1;
     const averageBootTime = Math.round(totalStartTime / totalBoots);
-    debug(`Started Ghost in ${totalTime / 1000}s`);
-    debug(`Accumulated start time across ${totalBoots} boots is ${totalStartTime / 1000}s (average = ${averageBootTime}ms)`);
+    debug(`[e2e-utils] Started Ghost in ${totalTime / 1000}s`);
+    debug(`[e2e-utils] Accumulated start time across ${totalBoots} boots is ${totalStartTime / 1000}s (average = ${averageBootTime}ms)`);
     return ghostServer;
 };
 

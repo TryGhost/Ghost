@@ -33,7 +33,7 @@ function SiteRouter(req, res, next) {
 
 /**
  *
- * @param {import('../services/routing/router-manager').RouterConfig} routerConfig
+ * @param {import('../services/routing/RouterManager').RouterConfig} routerConfig
  * @returns {import('express').Application}
  */
 module.exports = function setupSiteApp(routerConfig) {
@@ -98,6 +98,9 @@ module.exports = function setupSiteApp(routerConfig) {
         (req, res, next) => membersService.api.middleware.wellKnown(req, res, next)
     );
 
+    // Recommendations well-known
+    siteApp.use(mw.servePublicFile('built', '.well-known/recommendations.json', 'application/json', config.get('caching:publicAssets:maxAge'), {disableServerCache: true}));
+
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal apps
     config.get('apps:internal').forEach((appName) => {
@@ -129,7 +132,7 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(shared.middleware.prettyUrls);
 
     // ### Caching
-    siteApp.use(function (req, res, next) {
+    siteApp.use(function frontendCaching(req, res, next) {
         // Site frontend is cacheable UNLESS request made by a member or site is in private mode
         if (req.member || res.isPrivateBlog) {
             return shared.middleware.cacheControl('private')(req, res, next);
@@ -138,7 +141,7 @@ module.exports = function setupSiteApp(routerConfig) {
         }
     });
 
-    siteApp.use(function (req, res, next) {
+    siteApp.use(function memberPageViewMiddleware(req, res, next) {
         if (req.member) {
             // This event needs memberLastSeenAt to avoid doing un-necessary database queries when updating `last_seen_at`
             DomainEvents.dispatch(MemberPageViewEvent.create({url: req.url, memberId: req.member.id, memberLastSeenAt: req.member.last_seen_at}, new Date()));
@@ -172,7 +175,7 @@ module.exports = function setupSiteApp(routerConfig) {
 
 /**
  * see https://github.com/expressjs/express/issues/2596
- * @param {import('../services/routing/router-manager').RouterConfig} routerConfig
+ * @param {import('../services/routing/RouterManager').RouterConfig} routerConfig
  */
 module.exports.reload = (routerConfig) => {
     debug('reloading');

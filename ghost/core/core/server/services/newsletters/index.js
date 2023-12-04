@@ -1,10 +1,11 @@
-const NewslettersService = require('./service.js');
+const NewslettersService = require('./NewslettersService.js');
 const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
 const mail = require('../mail');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils');
 const limitService = require('../limits');
 const labs = require('../../../shared/labs');
+const emailAddressService = require('../email-address');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
@@ -22,5 +23,6 @@ module.exports = new NewslettersService({
     }),
     urlUtils,
     limitService,
-    labs
+    labs,
+    emailAddressService: emailAddressService
 });

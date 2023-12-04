@@ -21,7 +21,7 @@ const messages = {
     pageNotFound: 'Page not found"'
 };
 
-const uncapitalise = (req, res, next) => {
+const uncapitalise = function uncapitalise(req, res, next) {
     let pathToTest = (req.baseUrl ? req.baseUrl : '') + req.path;
     let redirectPath;
     let decodedURI;

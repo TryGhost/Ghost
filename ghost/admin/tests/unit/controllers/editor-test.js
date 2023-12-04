@@ -7,12 +7,12 @@ import {settled} from '@ember/test-helpers';
 import {setupTest} from 'ember-mocha';
 import {task} from 'ember-concurrency';
 
-describe('Unit: Controller: editor', function () {
+describe('Unit: Controller: lexical-editor', function () {
     setupTest();
 
     describe('generateSlug', function () {
         it('should generate a slug and set it on the post', async function () {
-            let controller = this.owner.lookup('controller:editor');
+            let controller = this.owner.lookup('controller:lexical-editor');
 
             controller.set('slugGenerator', EmberObject.create({
                 generateSlug(slugType, str) {
@@ -32,7 +32,7 @@ describe('Unit: Controller: editor', function () {
         });
 
         it('should not set the destination if the title is "(Untitled)" and the post already has a slug', async function () {
-            let controller = this.owner.lookup('controller:editor');
+            let controller = this.owner.lookup('controller:lexical-editor');
 
             controller.set('slugGenerator', EmberObject.create({
                 generateSlug(slugType, str) {
@@ -52,7 +52,7 @@ describe('Unit: Controller: editor', function () {
 
     describe('saveTitleTask', function () {
         beforeEach(function () {
-            this.controller = this.owner.lookup('controller:editor');
+            this.controller = this.owner.lookup('controller:lexical-editor');
             this.controller.set('target', {send() {}});
         });
 
@@ -94,6 +94,27 @@ describe('Unit: Controller: editor', function () {
             await controller.saveTitleTask.perform();
 
             expect(controller.get('post.titleScratch')).to.equal('New Title');
+            expect(controller.get('post.slug')).to.equal('test-slug');
+        });
+
+        it('should invoke generateSlug if the post is a duplicated post', async function () {
+            let {controller} = this;
+
+            controller.set('target', {send() {}});
+            defineProperty(controller, 'generateSlugTask', task(function * () {
+                this.set('post.slug', 'test-slug');
+                yield RSVP.resolve();
+            }));
+            controller.set('post', EmberObject.create({isNew: false, title: 'Some Title (Copy)'}));
+
+            expect(controller.get('post.isNew')).to.be.false;
+            expect(controller.get('post.titleScratch')).to.not.be.ok;
+
+            controller.set('post.titleScratch', 'Some Title');
+
+            await controller.saveTitleTask.perform();
+
+            expect(controller.get('post.titleScratch')).to.equal('Some Title');
             expect(controller.get('post.slug')).to.equal('test-slug');
         });
 

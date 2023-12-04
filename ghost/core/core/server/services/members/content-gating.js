@@ -8,18 +8,22 @@ const BLOCK_ACCESS = false;
 
 // TODO: better place to store this?
 const MEMBER_NQL_EXPANSIONS = [{
-    key: 'labels',
-    replacement: 'labels.slug'
-}, {
-    key: 'label',
-    replacement: 'labels.slug'
-}, {
     key: 'products',
     replacement: 'products.slug'
 }, {
     key: 'product',
     replacement: 'products.slug'
 }];
+
+const rejectUnknownKeys = input => nql.utils.mapQuery(input, function (value, key) {
+    if (!['product', 'products', 'status'].includes(key.toLowerCase())) {
+        return;
+    }
+
+    return {
+        [key]: value
+    };
+});
 
 /**
  * @param {object} post - A post object to check access to
@@ -46,11 +50,11 @@ function checkPostAccess(post, member) {
             return BLOCK_ACCESS;
         }
         visibility = post.tiers.map((product) => {
-            return `product:${product.slug}`;
+            return `product:'${product.slug}'`;
         }).join(',');
     }
 
-    if (visibility && member.status && nql(visibility, {expansions: MEMBER_NQL_EXPANSIONS}).queryJSON(member)) {
+    if (visibility && member.status && nql(visibility, {expansions: MEMBER_NQL_EXPANSIONS, transformer: rejectUnknownKeys}).queryJSON(member)) {
         return PERMIT_ACCESS;
     }
 

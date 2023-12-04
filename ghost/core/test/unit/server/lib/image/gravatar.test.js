@@ -1,5 +1,5 @@
 const should = require('should');
-const Gravatar = require('../../../../../core/server/lib/image/gravatar');
+const Gravatar = require('../../../../../core/server/lib/image/Gravatar');
 
 describe('lib/image: gravatar', function () {
     const gravatarUrl = 'https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}';
@@ -69,7 +69,7 @@ describe('lib/image: gravatar', function () {
                 } : null;
             }
         }, request: (url, options) => {
-            options.timeout.should.eql(delay);
+            options.timeout.request.should.eql(delay);
         }});
 
         gravatar.lookup({email: 'exists@example.com'}, delay);

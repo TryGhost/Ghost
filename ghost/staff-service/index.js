@@ -1,1 +1,1 @@
-module.exports = require('./lib/staff-service');
+module.exports = require('./lib/StaffService');

@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Disable scrolling inside iframe */
+body, html {
+    overflow: hidden;
+}
+
+:host {
+    /* Reset all CSS properties */
+    all: initial !important;
+}
+
+html {
+    font-size: 62.5%;
+}
+
+body {
+    font-size: 1.5rem;
+}
+
+/* Comment HTML styles */
+
+/* This makes sure we can have empty lines in comments (= <p></p>) */
+.gh-comment-content p:empty::after {
+    content: "\00A0";
+}
+
+/* Links */
+.gh-comment-content a {
+    word-break: break-word;
+    text-decoration: underline;
+    color: var(--gh-accent-color);
+}
+
+/* Blockquotes */
+.gh-comment-content blockquote {
+    border-left: 3px solid rgba(13,13,13,.1);
+    padding-left: 1rem;
+    margin: 0 0 1.2rem;
+}
+
+/* Paragraphs */
+.gh-comment-content p {
+    margin: 0 0 1.2rem;
+}
+
+.gh-comment-content p:last-child,
+.gh-comment-content blockquote:last-child {
+    margin: 0;
+}
+
+/* The following lines are needed for the editor */
+
+/* Placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+    --tw-text-opacity: 1;
+    color: rgb(212 212 212 / var(--tw-text-opacity));
+}
+
+.ProseMirror * {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+[contenteditable]:focus {
+    outline: 0px solid transparent;
+}
+
+.ghost-display {
+    display: block !important;
+}

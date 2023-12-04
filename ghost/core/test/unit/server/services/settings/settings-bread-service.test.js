@@ -1,7 +1,7 @@
 const sinon = require('sinon');
-const assert = require('assert');
+const assert = require('assert/strict');
 const mail = require('../../../../../core/server/services/mail');
-const SettingsBreadService = require('../../../../../core/server/services/settings/settings-bread-service');
+const SettingsBreadService = require('../../../../../core/server/services/settings/SettingsBREADService');
 const urlUtils = require('../../../../../core/shared/url-utils.js');
 const {mockManager} = require('../../../../utils/e2e-framework');
 const should = require('should');
@@ -183,7 +183,21 @@ describe('UNIT > Settings BREAD Service:', function () {
                         return 'test';
                     }
                 },
-                labsService: {}
+                labsService: {
+                    isSet() {
+                        return false;
+                    }
+                },
+                emailAddressService: {
+                    service: {
+                        validate() {
+                            return {
+                                allowed: true,
+                                verificationEmailRequired: true
+                            };
+                        }
+                    }
+                }
             });
 
             const settings = await defaultSettingsManager.edit([

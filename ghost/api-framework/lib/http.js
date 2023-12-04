@@ -1,7 +1,7 @@
 const url = require('url');
 const debug = require('@tryghost/debug')('http');
 
-const Frame = require('./frame');
+const Frame = require('./Frame');
 const headers = require('./headers');
 
 /**
@@ -14,7 +14,7 @@ const headers = require('./headers');
  * @return {Function}
  */
 const http = (apiImpl) => {
-    return async (req, res, next) => {
+    return async function Http(req, res, next) {
         debug(`External API request to ${req.url}`);
         let apiKey = null;
         let integration = null;

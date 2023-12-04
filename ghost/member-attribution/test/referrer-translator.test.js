@@ -1,7 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
-const ReferrerTranslator = require('../lib/referrer-translator');
+const ReferrerTranslator = require('../lib/ReferrerTranslator');
 
 describe('ReferrerTranslator', function () {
     describe('Constructor', function () {
@@ -157,8 +157,22 @@ describe('ReferrerTranslator', function () {
                     referrerUrl: null
                 }
             ])).eql({
-                referrerSource: 'twitter',
-                referrerMedium: null,
+                referrerSource: 'Twitter',
+                referrerMedium: 'social',
+                referrerUrl: null
+            });
+        });
+
+        it('returns known source for ref source if exists', async function () {
+            should(translator.getReferrerDetails([
+                {
+                    referrerSource: 'facebook',
+                    referrerMedium: null,
+                    referrerUrl: null
+                }
+            ])).eql({
+                referrerSource: 'Facebook',
+                referrerMedium: 'social',
                 referrerUrl: null
             });
         });

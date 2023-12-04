@@ -19,12 +19,10 @@ export default function () {
     let adminRoot = `${subdir}/ghost/`;
     let assetRoot = `${subdir}/ghost/assets/`;
     let apiRoot = `${subdir}/ghost/api/admin`;
-
-    function assetUrl(src) {
-        return subdir + src;
-    }
+    let assetRootWithHost = `${window.location.protocol}//${window.location.host}${assetRoot}`;
 
     return {
+        assetRootWithHost,
         adminRoot,
         assetRoot,
         apiRoot,
@@ -48,9 +46,7 @@ export default function () {
                     return arg.slice(-1) === '/' ? arg : `${arg}/`;
                 }
                 return '/';
-            },
-
-            asset: assetUrl
+            }
         }
     };
 }

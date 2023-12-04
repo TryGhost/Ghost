@@ -12,7 +12,10 @@ const FORMAT_PATH_REGEX = /^\/format\/([^./]+)\//;
 
 const TRAILING_SLASH_REGEX = /\/+$/;
 
-module.exports = function (req, res, next) {
+module.exports = function handleImageSizes(req, res, next) {
+    // In admin we need to read images and calculate the average color (blocked by CORS otherwise)
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
     if (!SIZE_PATH_REGEX.test(req.url)) {
         return next();
     }

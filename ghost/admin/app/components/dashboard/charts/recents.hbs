@@ -93,13 +93,23 @@
                                     {{#let (parse-member-event event eventsFetcher.hasMultipleNewsletters) as |parsedEvent|}}
                                         <div class="gh-dashboard-list-item member-details">
                                             <div class="gh-dashboard-list-item-sub">
-                                                <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w8 h8 mr3 flex-shrink-0" />
-                                                <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" data-test-dashboard-member-activity-item>{{parsedEvent.subject}}</LinkTo>
+                                                {{#if parsedEvent.member}}
+                                                    <GhMemberAvatar @member={{parsedEvent.member}} @containerClass="w8 h8 mr3 flex-shrink-0" />
+                                                    <LinkTo class="gh-dashboard-list-text" @route="member" @model="{{parsedEvent.memberId}}" data-test-dashboard-member-activity-item>{{parsedEvent.subject}}</LinkTo>
+                                                {{else}}
+                                                    {{#if parsedEvent.email}}
+                                                        <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w8 h8 mr3 flex-shrink-0" />
+                                                        <a class="gh-dashboard-list-text" href="mailto:{{parsedEvent.email}}" target="_blank" rel="noopener noreferrer" title="{{parsedEvent.email}}">{{parsedEvent.subject}}</a>
+                                                    {{else}}
+                                                        <GhMemberAvatar @name={{parsedEvent.subject}} @containerClass="w8 h8 mr3 flex-shrink-0" />
+                                                        <span class="gh-dashboard-list-text">{{parsedEvent.subject}}</span>
+                                                    {{/if}}
+                                                {{/if}}
                                             </div>
                                             <div class="gh-dashboard-list-item-sub">
                                                 {{svg-jar parsedEvent.icon }}
                                                 <span class="gh-dashboard-list-subtext">
-                                                    <span class="gh-members-activity-description {{if (feature "memberAttribution") 'feature-memberAttribution'}}">
+                                                    <span class="gh-members-activity-description feature-memberAttribution">
                                                         <span class="gh-members-activity-event-text">{{capitalize-first-letter parsedEvent.action}}</span>
                                                         {{#if parsedEvent.info}}
                                                             <span class="highlight">({{parsedEvent.info}})</span>

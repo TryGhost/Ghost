@@ -1,8 +1,8 @@
 /* Global
 /* ----------------------------------------- */
 :root {
-    --member-import-table-outline: color-mod(var(--darkgrey) a(12%) s(+40%));
-    --member-import-table-border: color-mod(var(--darkgrey) a(7%) s(+40%));
+    --member-import-table-outline: var(--whitegrey-d2);
+    --member-import-table-border: var(--whitegrey-d1);
 }
 
 /* Members avatar
@@ -1500,6 +1500,7 @@ p.gh-members-import-errordetailtext {
 .gh-members-import-table {
     position: relative;
     margin-bottom: 1px;
+    border-collapse: separate;
 }
 
 .gh-members-import-table::before {
@@ -1527,8 +1528,10 @@ p.gh-members-import-errordetailtext {
 }
 
 .gh-members-import-table th {
+    position: sticky;
+    top: 0;
     padding: 3px 8px;
-    background: color-mod(var(--darkgrey) a(5%) s(+50%));
+    background: var(--whitegrey-l2);
     border-left: 1px solid var(--member-import-table-border);
     border-top: 1px solid var(--member-import-table-outline);
     border-bottom: 1px solid var(--member-import-table-border);
@@ -1743,71 +1746,63 @@ p.gh-members-import-errordetail:first-of-type {
     overflow: hidden;
     padding: 4px;
     margin-right: -4px;
-}
-
-.gh-email-design-color-picker .gh-btn-group p {
-    opacity: 1;
-    margin: 0;
-    color: var(--midgrey);
-    font-size: 1.2rem;
-    font-weight: 500;
-    transition: all .15s ease-in-out;
-    transition-delay: .03s;
-}
-
-.gh-email-design-color-picker .gh-btn-group:hover p {
-    opacity: 0;
-    transition: all .15s ease-in-out;
-    transition-delay: .03s;
+    background: none;
 }
 
 .gh-btn-group .gh-email-design-color {
     display: block;
-    opacity: 0;
+    opacity: 1;
     position: relative;
     z-index: 2;
-    width: 0;
-    height: 0;
-    margin: 0;
-    border: none;
+    width: 20px;
+    height: 20px;
+    margin: 0 0 0 8px;
+    border: 1px solid var(--lightgrey-l1);
     border-radius: 999px;
-    box-shadow: inset 0 0 0 1px var(--lightgrey-l1);
-    transition: all .15s ease-in-out;
-    transition-delay: .03s;
 }
 
-.gh-btn-group:hover .gh-email-design-color {
-    opacity: 1;
-    width: 22px;
-    height: 22px;
-    margin: 0 0 0 6px;
-    transition: all .15s ease-in-out;
-    transition-delay: .03s;
+.gh-btn-group .gh-email-design-color.gh-btn-group-selected {
+    outline: 2px solid var(--green);
 }
 
-.gh-email-design-color.gh-btn-group-selected {
-    opacity: 1;
-    width: 22px;
-    height: 22px;
-    margin: 0 0 0 6px;
+.gh-btn-group .gh-email-design-color.gh-btn-group-selected.custom {
+    outline: none;
 }
 
-.gh-email-design-color.gh-btn-group-selected::before {
+.gh-btn-group .gh-email-design-color > div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 999px;
+    z-index: 1;
+}
+
+.gh-btn-group .gh-email-design-color.custom {
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.gh-btn-group .gh-email-design-color.gh-btn-group-selected.custom > div {
+    top: 1px;
+    left: 1px;
+    right: 1px;
+    bottom: 1px;
+    border: 1px solid var(--white);
+}
+
+.gh-btn-group .gh-email-design-color.custom::before {
+    /* Always visible, even when selected */
     content: "";
     position: absolute;
-    top: -4px;
-    left: -4px;
-    right: -4px;
-    bottom: -4px;
-    opacity: 0;
-    border: 2px solid var(--green);
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: conic-gradient(yellow, red, magenta, blue, aqua, lime, yellow) !important;
+    border: none;
     border-radius: 999px;
-    transition: all .15s ease-in-out;
-    transition-delay: .03s;
-}
-
-.gh-btn-group:hover .gh-email-design-color.gh-btn-group-selected::before {
-    opacity: 1;
     transition: all .15s ease-in-out;
     transition-delay: .03s;
 }
@@ -1842,13 +1837,6 @@ p.gh-members-import-errordetail:first-of-type {
     background: var(--accent-color) !important;
 }
 
-.gh-btn-group .gh-email-design-color.custom {
-    background: conic-gradient(yellow, red, magenta, blue, aqua, lime, yellow) !important;
-    display: inline-block;
-    cursor: pointer;
-    touch-action: manipulation;
-}
-
 .gh-email-design-color.custom svg {
     width: 10px;
     height: 10px;
@@ -1874,22 +1862,8 @@ p.gh-members-import-errordetail:first-of-type {
     width: 100%;
 }
 
-.gh-email-design-typography .gh-setting-dropdown {
-    margin: 0;
-    padding: 0 8px 0 8px;
-}
-
-.gh-email-design-typography-wrapper.header .gh-setting-dropdown {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-}
-
 .gh-email-design-typography-wrapper.header .ember-power-select-status-icon {
     right: 16px !important;
-}
-
-.gh-email-design-typography .gh-setting-dropdown-list .ember-power-select-option {
-    padding: 2px 8px;
 }
 
 .gh-email-design-typography-wrapper.header .gh-btn-group {
@@ -2754,6 +2728,16 @@ a.gh-members-emailpreview-subscription-link {
 
 .gh-cp-membertier:not(.multiple-subs) .gh-tier-card-price {
     padding: 15px 18px;
+}
+
+.gh-cp-membertier-duration {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 8px;
+}
+
+.gh-cp-membertier-duration .gh-select {
+    grid-column: 1;
 }
 
 .tier-actions-menu {

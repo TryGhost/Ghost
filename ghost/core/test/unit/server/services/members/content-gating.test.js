@@ -44,6 +44,15 @@ describe('Members Service - Content gating', function () {
             should(access).be.true();
         });
 
+        it('should not error out if the slug associated with a tier is only 1 character in length', async function () {
+            post = {visibility: 'tiers', tiers: [{slug: 'x'}]};
+            member = {id: 'test', status: 'paid', products: [{
+                slug: 'x'
+            }]};
+
+            (() => checkPostAccess(post, member)).should.not.throw();
+        });
+
         it('should block access to members only post without member', async function () {
             post = {visibility: 'members'};
             member = null;

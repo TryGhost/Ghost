@@ -1,1 +1,1 @@
-module.exports = require('./lib/adapter-cache-redis');
+module.exports = require('./lib/AdapterCacheRedis');

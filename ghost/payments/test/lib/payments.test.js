@@ -1,8 +1,8 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const knex = require('knex');
 const {Tier} = require('@tryghost/tiers');
-const PaymentsService = require('../../lib/payments');
+const PaymentsService = require('../../lib/PaymentsService');
 
 describe('PaymentsService', function () {
     let Bookshelf;
@@ -294,8 +294,8 @@ describe('PaymentsService', function () {
             });
 
             // assert trialDays should not be set when coupon is present for checkout session
-            assert.strictEqual(stripeAPIService.createCheckoutSession.getCall(0).args[2].coupon, 'stripe_coupon_1');
-            assert.strictEqual(stripeAPIService.createCheckoutSession.getCall(0).args[2].trialDays, undefined);
+            assert.equal(stripeAPIService.createCheckoutSession.getCall(0).args[2].coupon, 'stripe_coupon_1');
+            assert.equal(stripeAPIService.createCheckoutSession.getCall(0).args[2].trialDays, undefined);
         });
     });
 });

@@ -2,7 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 const {OutboundLinkTagger} = require('../');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 describe('OutboundLinkTagger', function () {
     describe('Constructor', function () {
@@ -117,6 +117,17 @@ describe('OutboundLinkTagger', function () {
             const url = new URL('https://example.com/?source=hello');
             const updatedUrl = await service.addToUrl(url);
             should(updatedUrl.toString()).equal('https://example.com/?source=hello');
+        });
+
+        it('does not add ref if the protocol is not http(s)', async function () {
+            const service = new OutboundLinkTagger({
+                getSiteUrl: () => 'https://blog.com',
+                isEnabled: () => true
+            });
+            const urlStr = 'javascript:alert("Hello, World!")';
+            const url = new URL(urlStr);
+            const updatedUrl = await service.addToUrl(url);
+            should(updatedUrl.toString()).equal(urlStr);
         });
     });
 

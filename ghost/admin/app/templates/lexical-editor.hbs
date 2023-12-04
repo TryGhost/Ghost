@@ -9,6 +9,7 @@
                 <Editor::PublishManagement
                     @post={{this.post}}
                     @hasUnsavedChanges={{this.hasDirtyAttributes}}
+                    @tkCount={{this.tkCount}}
                     @beforePublish={{perform this.beforeSaveTask}}
                     @afterPublish={{this.afterSave}}
                     @saveTask={{this.saveTask}}
@@ -17,14 +18,14 @@
                     <div class="flex items-center pe-auto h-100">
                         {{#if this.ui.isFullScreen}}
                             {{#if this.fromAnalytics }}
-                                <LinkTo @route="posts.analytics" @model={{this.post}} class="gh-btn-editor gh-editor-back-button">
+                                <LinkTo @route="posts.analytics" @model={{this.post}} class="gh-btn-editor gh-editor-back-button" data-test-breadcrumb>
                                     <span>
                                         {{svg-jar "arrow-left"}}
                                         Analytics
                                     </span>
                                 </LinkTo>
                             {{else}}
-                                <LinkTo @route={{pluralize this.post.displayName }} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}}>
+                                <LinkTo @route={{pluralize this.post.displayName }} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}} data-test-breadcrumb>
                                     <span>
                                         {{svg-jar "arrow-left"}}
                                         {{capitalize (pluralize this.post.displayName)}}
@@ -75,17 +76,20 @@
                 @scrollContainerSelector=".gh-koenig-editor"
                 @scrollOffsetBottomSelector=".gh-mobile-nav-bar"
                 @onEditorCreated={{this.setKoenigEditor}}
-                @onWordCountChange={{this.updateWordCount}}
+                @updateWordCount={{this.updateWordCount}}
+                @updateTkCount={{this.updateTkCount}}
                 @featureImage={{this.post.featureImage}}
                 @featureImageAlt={{this.post.featureImageAlt}}
                 @featureImageCaption={{this.post.featureImageCaption}}
                 @setFeatureImage={{this.setFeatureImage}}
                 @setFeatureImageAlt={{this.setFeatureImageAlt}}
                 @setFeatureImageCaption={{this.setFeatureImageCaption}}
+                @handleFeatureImageCaptionBlur={{this.handleFeatureImageCaptionBlur}}
                 @clearFeatureImage={{this.clearFeatureImage}}
                 @cardOptions={{hash
                     post=this.post
                     snippets=this.snippets
+                    collections=this.collections
                     deleteSnippet=(if this.canManageSnippets this.confirmDeleteSnippet)
                     createSnippet=(if this.canManageSnippets this.createSnippet)
                 }}
@@ -95,10 +99,9 @@
 
             <div class="gh-editor-wordcount-container">
                 <div class="gh-editor-wordcount">
-                    {{gh-pluralize this.wordCount.wordCount "word"}}
+                    {{gh-pluralize this.wordCount "word"}}
                 </div>
-                <a href="https://github.com/TryGhost/Koenig/tree/main/packages/koenig-lexical" target="_blank" rel="noopener noreferrer" class="gh-lexical-indicator">Lexical</a>
-                {{!-- <a href="https://ghost.org/help/using-the-editor/" class="flex" target="_blank" rel="noopener noreferrer">{{svg-jar "help"}}</a> --}}
+                <a href="https://ghost.org/help/using-the-editor/" class="flex" target="_blank" rel="noopener noreferrer">{{svg-jar "help"}}</a>
             </div>
 
         </GhEditor>
@@ -123,19 +126,12 @@
         {{/if}}
     </button>
 
-    {{#if this.showReAuthenticateModal}}
-        <GhFullscreenModal @modal="re-authenticate"
-            @close={{this.toggleReAuthenticateModal}}
-            @modifier="action wide" />
-    {{/if}}
-    {{#if (feature 'postHistory')}}
-        {{#if this.showPostHistory}}
-            <GhFullscreenModal
-                @modal="post-history"
-                @model={{this.post}}
-                @close={{this.closePostHistory}}
-                @modifier="total-overlay post-history" />
-        {{/if}}
+    {{#if this.showPostHistory}}
+        <GhFullscreenModal
+            @modal="post-history"
+            @model={{this.post}}
+            @close={{this.closePostHistory}}
+            @modifier="total-overlay post-history" />
     {{/if}}
 {{/if}}
 

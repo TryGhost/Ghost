@@ -3,14 +3,14 @@ const lexicalLib = require('../../../../core/server/lib/lexical');
 
 describe('lib/lexical', function () {
     describe('render()', function () {
-        it('renders', function () {
+        it('renders', async function () {
             const lexical = `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Lexical is ","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"rendering.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`;
 
-            lexicalLib.render(lexical)
-                .should.eql('<p>Lexical is <strong><em>rendering.</em></strong></p>');
+            const renderedHtml = await lexicalLib.render(lexical);
+            renderedHtml.should.eql('<p>Lexical is <strong><em>rendering.</em></strong></p>');
         });
 
-        it('renders all default cards', function () {
+        it('renders all default cards', async function () {
             const lexicalState = JSON.stringify({
                 root: {
                     children: [
@@ -39,9 +39,9 @@ describe('lib/lexical', function () {
                 }
             });
 
-            const rendered = lexicalLib.render(lexicalState);
+            const rendered = await lexicalLib.render(lexicalState);
 
-            rendered.should.containEql('<figure class="kg-card kg-image-card kg-width-wide">');
+            rendered.should.containEql('<figure class="kg-card kg-image-card kg-width-wide kg-card-hascaption">');
             rendered.should.containEql('<div class="kg-card kg-audio-card">');
         });
     });

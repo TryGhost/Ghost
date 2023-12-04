@@ -19,7 +19,7 @@
             <div class="gh-members-activity-container">
                 <div class="gh-members-activity-icon">{{svg-jar event.icon}}</div>
                 <div class="gh-members-activity-event">
-                    <span class="gh-members-activity-description {{if (feature "memberAttribution") 'feature-memberAttribution'}}">
+                    <span class="gh-members-activity-description feature-memberAttribution">
                         <span class="gh-members-activity-event-text">{{capitalize-first-letter event.action}}</span>
                         {{#if event.info}}
                             <span class="highlight">({{event.info}})</span>
@@ -36,7 +36,7 @@
                         {{/if}}
                     </span>
                     {{#if event.description}}
-                        <div class="ghost-members-activity-event-description {{if (feature "memberAttribution") 'feature-memberAttribution'}}">
+                        <div class="ghost-members-activity-event-description feature-memberAttribution">
                             <div class="ghost-members-activity-event-url" {{on "mouseenter" this.enterLinkURL}} {{on "mouseleave" this.leaveLinkURL}}>
                                 <span>{{event.description}}</span>
                             </div>

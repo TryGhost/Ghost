@@ -1,8 +1,8 @@
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const assert = require('assert');
+const assert = require('assert/strict');
 const nock = require('nock');
-const MailgunClient = require('@tryghost/mailgun-client/lib/mailgun-client');
+const MailgunClient = require('@tryghost/mailgun-client');
 
 // Helper services
 const configUtils = require('./configUtils');
@@ -15,7 +15,7 @@ let emailCount = 0;
 
 // Mockable services
 const mailService = require('../../core/server/services/mail/index');
-const originalMailServiceSend = mailService.GhostMailer.prototype.send;
+const originalMailServiceSendMail = mailService.GhostMailer.prototype.sendMail;
 const labs = require('../../core/shared/labs');
 const events = require('../../core/server/lib/common/events');
 const settingsCache = require('../../core/shared/settings-cache');
@@ -80,6 +80,7 @@ const allowStripe = () => {
 
 const mockStripe = () => {
     disableNetwork();
+    stripeMocker.reset();
     stripeMocker.stub();
 };
 
@@ -105,19 +106,24 @@ const mockMail = (response = 'Mail is disabled') => {
         sendResponse: response
     });
 
-    mailService.GhostMailer.prototype.send = mockMailReceiver.send.bind(mockMailReceiver);
-    mocks.mail = sinon.spy(mailService.GhostMailer.prototype, 'send');
+    mailService.GhostMailer.prototype.sendMail = mockMailReceiver.send.bind(mockMailReceiver);
+    mocks.mail = sinon.spy(mailService.GhostMailer.prototype, 'sendMail');
     mocks.mockMailReceiver = mockMailReceiver;
 
     return mockMailReceiver;
 };
+
+/**
+ * A reference to the send method when MailGun is mocked (required for some tests)
+ */
+let mailgunCreateMessageStub;
 
 const mockMailgun = (customStubbedSend) => {
     mockSetting('mailgun_api_key', 'test');
     mockSetting('mailgun_domain', 'example.com');
     mockSetting('mailgun_base_url', 'test');
 
-    const stubbedSend = customStubbedSend ?? sinon.fake.resolves({
+    mailgunCreateMessageStub = customStubbedSend ? sinon.stub().callsFake(customStubbedSend) : sinon.fake.resolves({
         id: `<${new Date().getTime()}.${0}.5817@samples.mailgun.org>`
     });
 
@@ -126,7 +132,7 @@ const mockMailgun = (customStubbedSend) => {
         // @ts-ignore
         messages: {
             create: async function () {
-                return await stubbedSend.call(this, ...arguments);
+                return await mailgunCreateMessageStub.call(this, ...arguments);
             }
         }
     });
@@ -275,7 +281,7 @@ const restore = () => {
         mocks.webhookMockReceiver.reset();
     }
 
-    mailService.GhostMailer.prototype.send = originalMailServiceSend;
+    mailService.GhostMailer.prototype.sendMail = originalMailServiceSendMail;
 
     // Disable network again after restoring sinon
     disableNetwork();
@@ -300,5 +306,6 @@ module.exports = {
         sentEmailCount,
         sentEmail,
         emittedEvent
-    }
+    },
+    getMailgunCreateMessageStub: () => mailgunCreateMessageStub
 };

@@ -1,1 +1,1 @@
-module.exports = require('./lib/version-notifications-data-service');
+module.exports = require('./lib/VersionNotificationsDataService');

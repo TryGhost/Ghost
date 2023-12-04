@@ -4,7 +4,7 @@ const nock = require('nock');
 const path = require('path');
 const errors = require('@tryghost/errors');
 const fs = require('fs');
-const ImageSize = require('../../../../../core/server/lib/image/image-size');
+const ImageSize = require('../../../../../core/server/lib/image/ImageSize');
 
 describe('lib/image: image size', function () {
     // use a 1x1 gif in nock responses because it's really small and easy to work with

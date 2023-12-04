@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const http = require('http');
 const request = require('supertest');
 const vhost = require('..');

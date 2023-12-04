@@ -39,6 +39,10 @@ const messages = {
     tagAdded: {
         single: 'Tag added successfully',
         multiple: 'Tag added successfully to {count} {type}s'
+    },
+    duplicated: {
+        single: '{Type} duplicated successfully',
+        multiple: '{count} {type}s duplicated successfully'
     }
 };
 
@@ -114,6 +118,11 @@ export default class PostsContextMenu extends Component {
             selectionList: this.selectionList,
             confirm: this.editPostsAccessTask
         });
+    }
+
+    @action
+    async copyPosts() {
+        this.menu.performTask(this.copyPostsTask);
     }
 
     @task
@@ -366,6 +375,29 @@ export default class PostsContextMenu extends Component {
         return true;
     }
 
+    @task
+    *copyPostsTask() {
+        try {
+            const result = yield this.performCopy();
+
+            // Add to the store and retrieve model
+            this.store.pushPayload(result);
+
+            const data = result[this.type === 'post' ? 'posts' : 'pages'][0];
+            const model = this.store.peekRecord(this.type, data.id);
+
+            // Update infinity list
+            this.selectionList.infinityModel.content.unshiftObject(model);
+
+            // Show notification
+            this.notifications.showNotification(this.#getToastMessage('duplicated'), {type: 'success'});
+        } catch (error) {
+            this.notifications.showAPIError(error, {key: `${this.type}.copy.failed`});
+        }
+
+        return true;
+    }
+
     async performBulkDestroy() {
         const filter = this.selectionList.filter;
         let bulkUpdateUrl = this.ghostPaths.url.api(this.type === 'post' ? 'posts' : 'pages') + `?filter=${encodeURIComponent(filter)}`;
@@ -383,6 +415,12 @@ export default class PostsContextMenu extends Component {
                 }
             }
         });
+    }
+
+    async performCopy() {
+        const id = this.selectionList.availableModels[0].id;
+        const copyUrl = this.ghostPaths.url.api(`${this.type === 'post' ? 'posts' : 'pages'}/${id}/copy`) + '?formats=mobiledoc,lexical';
+        return await this.ajax.post(copyUrl);
     }
 
     get shouldFeatureSelection() {
@@ -411,5 +449,9 @@ export default class PostsContextMenu extends Component {
             }
         }
         return false;
+    }
+
+    get canCopySelection() {
+        return this.selectionList.availableModels.length === 1;
     }
 }

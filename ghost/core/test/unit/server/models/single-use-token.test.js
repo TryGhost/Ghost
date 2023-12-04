@@ -1,7 +1,7 @@
 const models = require('../../../../core/server/models');
 const should = require('should');
 const sinon = require('sinon');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 let clock;
 let sandbox;

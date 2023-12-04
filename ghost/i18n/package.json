@@ -5,17 +5,19 @@
   "author": "Ghost Foundation",
   "private": true,
   "main": "index.js",
+  "types": "./build/i18n.d.ts",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit:base": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura mocha './test/**/*.test.js'",
-    "test:unit": "yarn test:unit:base && yarn translate",
-    "test": "yarn test:unit",
+    "test:base": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
+    "test": "yarn test:base && yarn translate",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
-    "translate": "yarn translate:ghost && yarn translate:portal && node generate-context.js",
+    "translate": "yarn translate:ghost && yarn translate:portal && yarn translate:signup-form && yarn translate:comments && node generate-context.js",
     "translate:ghost": "NAMESPACE=ghost i18next '../core/core/{frontend,server,shared}/**/*.{js,jsx}'",
-    "translate:portal": "NAMESPACE=portal i18next '../portal/src/**/*.{js,jsx}'"
+    "translate:portal": "NAMESPACE=portal i18next '../../apps/portal/src/**/*.{js,jsx}'",
+    "translate:signup-form": "NAMESPACE=signup-form i18next '../../apps/signup-form/src/**/*.{ts,tsx}'",
+    "translate:comments": "NAMESPACE=comments i18next '../../apps/comments-ui/src/**/*.{ts,tsx}'"
   },
   "files": [
     "index.js",
@@ -23,11 +25,11 @@
     "locales"
   ],
   "devDependencies": {
-    "c8": "7.13.0",
-    "i18next-parser": "7.7.0",
+    "c8": "8.0.1",
+    "i18next-parser": "8.8.0",
     "mocha": "10.2.0"
   },
   "dependencies": {
-    "i18next": "22.4.14"
+    "i18next": "23.7.7"
   }
 }

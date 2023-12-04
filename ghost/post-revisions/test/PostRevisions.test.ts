@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'assert/strict';
 import sinon from 'sinon';
 import {PostRevisions} from '../src';
 
@@ -25,7 +25,7 @@ function makePostLike(data: any = {}) {
 function makeRevision(data: any = {}) {
     return Object.assign({
         post_id: 'fakeid',
-        created_at_ts: Date.now(),
+        created_at_ts: data.created_at_ts || Date.now(),
         lexical: 'blah',
         html: 'blah',
         author_id: 'fakeauthorid',
@@ -181,13 +181,16 @@ describe('PostRevisions', function () {
     describe('getRevisions', function () {
         it('returns the original revisions if there is no previous', async function () {
             const postRevisions = new PostRevisions({config, model: {}});
+            const now = Date.now();
 
             const expected = [{
-                lexical: 'blah'
+                lexical: 'blah',
+                created_at_ts: now
             }].map(makeRevision);
 
             const actual = await postRevisions.getRevisions(makePostLike({}), [{
-                lexical: 'blah'
+                lexical: 'blah',
+                created_at_ts: now
             }].map(makeRevision));
 
             assert.deepEqual(actual, expected);
@@ -195,16 +198,19 @@ describe('PostRevisions', function () {
 
         it('returns the original revisions if the current and previous', async function () {
             const postRevisions = new PostRevisions({config, model: {}});
+            const now = Date.now();
 
             const expected = [{
-                lexical: 'revision'
+                lexical: 'revision',
+                created_at_ts: now
             }].map(makeRevision);
 
             const actual = await postRevisions.getRevisions(makePostLike({
                 lexical: 'blah',
                 html: 'blah'
             }), [{
-                lexical: 'revision'
+                lexical: 'revision',
+                created_at_ts: now
             }].map(makeRevision));
 
             assert.deepEqual(actual, expected);

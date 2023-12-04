@@ -8,7 +8,7 @@ const signinEmail = require('./emails/signin');
 const signupEmail = require('./emails/signup');
 const signupPaidEmail = require('./emails/signup-paid');
 const subscribeEmail = require('./emails/subscribe');
-const updateEmail = require('./emails/updateEmail');
+const updateEmail = require('./emails/update-email');
 const SingleUseTokenProvider = require('./SingleUseTokenProvider');
 const urlUtils = require('../../../shared/url-utils');
 const labsService = require('../../../shared/labs');
@@ -47,7 +47,7 @@ function createApiInstance(config) {
                         logging.warn(message.text);
                     }
                     let msg = Object.assign({
-                        from: config.getAuthEmailFromAddress(),
+                        from: config.getEmailSupportAddress(),
                         subject: 'Signin',
                         forceTextContent: true
                     }, message);
@@ -182,6 +182,7 @@ function createApiInstance(config) {
             }
         },
         models: {
+            DonationPaymentEvent: models.DonationPaymentEvent,
             EmailRecipient: models.EmailRecipient,
             StripeCustomer: models.MemberStripeCustomer,
             StripeCustomerSubscription: models.StripeCustomerSubscription,
@@ -214,7 +215,8 @@ function createApiInstance(config) {
         labsService: labsService,
         newslettersService: newslettersService,
         memberAttributionService: memberAttributionService.service,
-        emailSuppressionList
+        emailSuppressionList,
+        settingsCache
     });
 
     return membersApiInstance;

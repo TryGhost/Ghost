@@ -2,7 +2,7 @@ const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const getPostServiceInstance = require('../../services/posts/posts-service');
-const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions'];
+const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions', 'post_revisions', 'post_revisions.author'];
 const UNSAFE_ATTRS = ['status', 'authors', 'visibility'];
 
 const messages = {
@@ -14,6 +14,9 @@ const postsService = getPostServiceInstance();
 module.exports = {
     docName: 'pages',
     browse: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'filter',
@@ -45,6 +48,9 @@ module.exports = {
     },
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'fields',
@@ -90,7 +96,9 @@ module.exports = {
 
     add: {
         statusCode: 201,
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'formats',
@@ -113,9 +121,7 @@ module.exports = {
         query(frame) {
             return models.Post.add(frame.data.pages[0], frame.options)
                 .then((model) => {
-                    if (model.get('status') !== 'published') {
-                        this.headers.cacheInvalidate = false;
-                    } else {
+                    if (model.get('status') === 'published') {
                         this.headers.cacheInvalidate = true;
                     }
 
@@ -125,13 +131,17 @@ module.exports = {
     },
 
     edit: {
-        headers: {},
+        headers: {
+            cacheInvalidate: false
+        },
         options: [
             'include',
             'id',
             'formats',
             'source',
             'force_rerender',
+            'save_revision',
+            'convert_to_lexical',
             // NOTE: only for internal context
             'forUpdate',
             'transacting'
@@ -237,6 +247,32 @@ module.exports = {
         },
         query(frame) {
             return models.Post.destroy({...frame.options, require: true});
+        }
+    },
+
+    copy: {
+        statusCode: 201,
+        headers: {
+            location: {
+                resolve: postsService.generateCopiedPostLocationFromUrl
+            },
+            cacheInvalidate: false
+        },
+        options: [
+            'id',
+            'formats'
+        ],
+        validation: {
+            id: {
+                required: true
+            }
+        },
+        permissions: {
+            docName: 'posts',
+            method: 'add'
+        },
+        async query(frame) {
+            return postsService.copyPost(frame);
         }
     }
 };

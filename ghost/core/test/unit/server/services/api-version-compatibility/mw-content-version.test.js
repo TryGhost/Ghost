@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert');
+const assert = require('assert/strict');
 
 const {contentVersion} = require('../../../../../core/server/services/api-version-compatibility/');
 

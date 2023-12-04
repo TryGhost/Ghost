@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const {agentProvider, fixtureManager} = require('../../../utils/e2e-framework');
-const assert = require('assert');
+const assert = require('assert/strict');
 const MailgunClient = require('@tryghost/mailgun-client');
 const DomainEvents = require('@tryghost/domain-events');
 const emailAnalytics = require('../../../../core/server/services/email-analytics');
@@ -268,7 +268,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(permanentFailures.length, 1);
 
@@ -364,7 +364,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(permanentFailures.length, 1);
 
@@ -455,14 +455,14 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(permanentFailures.length, 1);
 
         // Message and code not changed
         assert.equal(permanentFailures.models[0].get('message'), 'Not delivering to previously bounced address');
         assert.equal(permanentFailures.models[0].get('code'), 605);
-        assert.equal(permanentFailures.models[0].get('enhanded_code'), null);
+        assert.equal(permanentFailures.models[0].get('enhanced_code'), null);
         assert.notEqual(permanentFailures.models[0].get('failed_at').toUTCString(), timestamp.toUTCString());
     });
 
@@ -544,7 +544,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored permanent failure
         const permanentFailures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(permanentFailures.length, 1);
 
@@ -661,7 +661,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored temporary failure
         const failures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(failures.length, 1);
 
@@ -763,7 +763,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored temporary failure
         const failures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(failures.length, 1);
 
@@ -865,7 +865,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored temporary failure
         const failures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(failures.length, 1);
 
@@ -967,7 +967,7 @@ describe('EmailEventStorage', function () {
 
         // Check we have a stored temporary failure
         const failures = await models.EmailRecipientFailure.findAll({
-            filter: `email_recipient_id:${emailRecipient.id}`
+            filter: `email_recipient_id:'${emailRecipient.id}'`
         });
         assert.equal(failures.length, 1);
 
@@ -991,13 +991,13 @@ describe('EmailEventStorage', function () {
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
         const eventsURI = '/members/events/?' + encodeURIComponent(
-            `filter=type:-[comment_event,aggregated_click_event]+data.member_id:${memberId}`
+            `filter=type:-[comment_event,aggregated_click_event]+data.member_id:'${memberId}'`
         );
 
         // Check not unsubscribed
         const {body: {events: eventsBefore}} = await agent.get(eventsURI);
         const existingSpamEvent = eventsBefore.find(event => event.type === 'email_complaint_event');
-        assert.equal(existingSpamEvent, null, 'This test requires a member that does not have a spam event');
+        assert.equal(existingSpamEvent, undefined, 'This test requires a member that does not have a spam event');
 
         events = [{
             event: 'complained',
@@ -1028,31 +1028,41 @@ describe('EmailEventStorage', function () {
     });
 
     it('Can handle unsubscribe events', async function () {
+        const newsletterToRemove = fixtureManager.get('newsletters', 0).id;
+        const newsletterToKeep = fixtureManager.get('newsletters', 1).id;
+
+        const email = fixtureManager.get('emails', 0);
+        await models.Email.edit({newsletter_id: newsletterToRemove}, {id: email.id});
+
         const emailBatch = fixtureManager.get('email_batches', 0);
-        const emailId = emailBatch.email_id;
+        assert(emailBatch.email_id === email.id);
 
         const emailRecipient = fixtureManager.get('email_recipients', 0);
         assert(emailRecipient.batch_id === emailBatch.id);
+
         const memberId = emailRecipient.member_id;
         const providerId = emailBatch.provider_id;
         const timestamp = new Date(2000, 0, 1);
 
-        // Reset
+        // Initialise member with 2 newsletters
         await membersService.api.members.update({newsletters: [
             {
-                id: fixtureManager.get('newsletters', 0).id
+                id: newsletterToRemove
+            },
+            {
+                id: newsletterToKeep
             }
         ]}, {id: memberId});
 
-        // Check not unsubscribed
+        // Check that the member is subscribed to 2 newsletters
         const memberInitial = await membersService.api.members.get({id: memberId}, {withRelated: ['newsletters']});
-        assert.notEqual(memberInitial.related('newsletters').length, 0, 'This test requires a member that is subscribed to at least one newsletter');
+        assert.equal(memberInitial.related('newsletters').length, 2, 'This test requires a member that is subscribed to at least one newsletter');
 
         events = [{
             event: 'unsubscribed',
             recipient: emailRecipient.member_email,
             'user-variables': {
-                'email-id': emailId
+                'email-id': email.id
             },
             message: {
                 headers: {
@@ -1070,9 +1080,17 @@ describe('EmailEventStorage', function () {
         // Since this is all event based we should wait for all dispatched events to be completed.
         await DomainEvents.allSettled();
 
-        // Check if unsubscribed
+        // The member should be unsubscribed from the specific newsletter
         const member = await membersService.api.members.get({id: memberId}, {withRelated: ['newsletters']});
-        assert.equal(member.related('newsletters').length, 0);
+
+        // The member is now subscribed to 1 newsletter
+        assert.equal(member.related('newsletters').length, 1);
+
+        // The member is now unsubscribed from newsletter 0
+        assert(!member.related('newsletters').models.some(newsletter => newsletter.id === newsletterToRemove));
+
+        // But the member is still subscribed to newsletter 1
+        assert(member.related('newsletters').models.some(newsletter => newsletter.id === newsletterToKeep));
     });
 
     it('Can handle unknown events', async function () {

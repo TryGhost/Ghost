@@ -1,1 +1,1 @@
-module.exports = require('./lib/oembed-service');
+module.exports = require('./lib/OEmbedService');

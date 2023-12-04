@@ -102,7 +102,7 @@ describe('Headers', function () {
     });
 
     describe('location header', function () {
-        it('adds header when all needed data is present', function () {
+        it('adds header when all needed data is present and method is add', function () {
             const apiResult = {
                 posts: [{
                     id: 'id_value'
@@ -126,6 +126,41 @@ describe('Headers', function () {
                     result.should.eql({
                         // NOTE: the backslash in the end is important to avoid unecessary 301s using the header
                         Location: 'https://example.com/api/content/posts/id_value/'
+                    });
+                });
+        });
+
+        it('adds header when a location resolver is provided', function () {
+            const apiResult = {
+                posts: [{
+                    id: 'id_value'
+                }]
+            };
+
+            const resolvedLocationUrl = 'resolved location';
+
+            const apiConfigHeaders = {
+                location: {
+                    resolve() {
+                        return resolvedLocationUrl;
+                    }
+                }
+            };
+            const frame = {
+                docName: 'posts',
+                method: 'copy',
+                original: {
+                    url: {
+                        host: 'example.com',
+                        pathname: `/api/content/posts/existing_post_id_value/copy`
+                    }
+                }
+            };
+
+            return shared.headers.get(apiResult, apiConfigHeaders, frame)
+                .then((result) => {
+                    result.should.eql({
+                        Location: resolvedLocationUrl
                     });
                 });
         });

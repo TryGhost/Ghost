@@ -11,6 +11,9 @@ module.exports = {
     docName: 'email_post',
 
     read: {
+        headers: {
+            cacheInvalidate: false
+        },
         permissions: true,
         options: [
             'include'

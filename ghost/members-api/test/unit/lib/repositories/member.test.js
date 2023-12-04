@@ -1,7 +1,7 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
-const MemberRepository = require('../../../../lib/repositories/member');
+const MemberRepository = require('../../../../lib/repositories/MemberRepository');
 const {SubscriptionCreatedEvent} = require('@tryghost/member-events');
 
 const mockOfferRedemption = {
@@ -191,14 +191,14 @@ describe('MemberRepository', function () {
 
             Member = {
                 findOne: sinon.stub().resolves({
-                    related: () => {
+                    related: (relation) => {
                         return {
                             query: sinon.stub().returns({
                                 fetchOne: sinon.stub().resolves({})
                             }),
-                            toJSON: sinon.stub().returns([]),
+                            toJSON: sinon.stub().returns(relation === 'products' ? [] : {}),
                             fetch: sinon.stub().resolves({
-                                toJSON: sinon.stub().returns({})
+                                toJSON: sinon.stub().returns(relation === 'products' ? [] : {})
                             })
                         };
                     },

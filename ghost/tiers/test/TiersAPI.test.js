@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const TiersAPI = require('../lib/TiersAPI');
 const InMemoryTierRepository = require('../lib/InMemoryTierRepository');
 

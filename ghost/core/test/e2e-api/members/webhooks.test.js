@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const assert = require('assert');
+const assert = require('assert/strict');
 const nock = require('nock');
 const should = require('should');
 const stripe = require('stripe');
@@ -1645,7 +1645,6 @@ describe('Members API', function () {
         });
 
         beforeEach(function () {
-            mockManager.mockLabsEnabled('memberAttribution');
             mockManager.mockMail();
         });
 
@@ -1966,7 +1965,7 @@ describe('Members API', function () {
             await testWithAttribution(attribution, {
                 id: null,
                 url: null,
-                type: 'url',
+                type: null,
                 title: null,
                 referrer_source: null,
                 referrer_medium: null,
@@ -1980,7 +1979,7 @@ describe('Members API', function () {
             await testWithAttribution(attribution, {
                 id: null,
                 url: null,
-                type: 'url',
+                type: null,
                 title: null,
                 referrer_source: null,
                 referrer_medium: null,
@@ -2001,7 +2000,6 @@ describe('Members API', function () {
                 })
                 .matchBodySnapshot({
                     events: new Array(subscriptionAttributions.length).fill({
-                        type: anyString,
                         data: anyObject
                     })
                 })

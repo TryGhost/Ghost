@@ -44,18 +44,19 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             frame.options.filter.should.eql('(tag:eins)+type:page');
         });
 
-        it('remove mobiledoc option from formats', function () {
+        it('remove mobiledoc and lexical option from formats', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
                 options: {
-                    formats: ['html', 'mobiledoc', 'plaintext'],
+                    formats: ['html', 'mobiledoc', 'lexical', 'plaintext'],
                     context: {}
                 }
             };
 
             serializers.input.pages.browse(apiConfig, frame);
             frame.options.formats.should.not.containEql('mobiledoc');
+            frame.options.formats.should.not.containEql('lexical');
             frame.options.formats.should.containEql('html');
             frame.options.formats.should.containEql('plaintext');
         });
@@ -142,7 +143,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             const frame = {
                 apiType: 'content',
                 options: {
-                    formats: ['html', 'mobiledoc', 'plaintext'],
+                    formats: ['html', 'mobiledoc', 'lexical', 'plaintext'],
                     context: {}
                 },
                 data: {
@@ -153,6 +154,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
             serializers.input.pages.read(apiConfig, frame);
             frame.options.formats.should.not.containEql('mobiledoc');
+            frame.options.formats.should.not.containEql('lexical');
             frame.options.formats.should.containEql('html');
             frame.options.formats.should.containEql('plaintext');
         });
@@ -222,6 +224,28 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
             frame.data.pages[0].authors.should.eql([{email: 'email1'}, {email: 'email2'}]);
             frame.data.pages[0].tags.should.eql([{name: 'name1'}, {name: 'name2'}]);
+        });
+    });
+
+    describe('copy', function () {
+        it('adds default formats if no formats are specified', function () {
+            const frame = {
+                options: {}
+            };
+
+            serializers.input.pages.copy({}, frame);
+
+            frame.options.formats.should.eql('mobiledoc,lexical');
+        });
+
+        it('adds default relations if no relations are specified', function () {
+            const frame = {
+                options: {}
+            };
+
+            serializers.input.pages.copy({}, frame);
+
+            frame.options.withRelated.should.eql(['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions']);
         });
     });
 });

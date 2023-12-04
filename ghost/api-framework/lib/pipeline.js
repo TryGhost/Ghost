@@ -1,9 +1,10 @@
 const debug = require('@tryghost/debug')('pipeline');
 const _ = require('lodash');
+const stringify = require('json-stable-stringify');
 const errors = require('@tryghost/errors');
 const {sequence} = require('@tryghost/promise');
 
-const Frame = require('./frame');
+const Frame = require('./Frame');
 const serializers = require('./serializers');
 const validators = require('./validators');
 
@@ -229,7 +230,13 @@ const pipeline = (apiController, apiUtils, apiType) => {
             frame.docName = docName;
             frame.method = method;
 
-            let cacheKey = JSON.stringify(frame.options);
+            let cacheKeyData = frame.options;
+            if (apiImpl.generateCacheKeyData) {
+                cacheKeyData = await apiImpl.generateCacheKeyData(frame);
+            }
+
+            const cacheKey = stringify(cacheKeyData);
+
             if (apiImpl.cache) {
                 const response = await apiImpl.cache.get(cacheKey);
 

@@ -1,7 +1,7 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 
 describe('Hello world', function () {
     it('Runs a test', function () {
-        assert.equal('hello', 'hello');
+        assert.ok(require('../index'));
     });
 });

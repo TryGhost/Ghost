@@ -5,6 +5,10 @@ const activeTheme = require('../../../../../core/frontend/services/theme-engine/
 const handleImageSizes = require('../../../../../core/frontend/web/middleware/handle-image-sizes.js');
 const imageTransform = require('@tryghost/image-transform');
 
+const fakeResBase = {
+    setHeader() {}
+};
+
 // @TODO make these tests lovely and non specific to implementation
 describe('handleImageSizes middleware', function () {
     this.afterEach(function () {
@@ -19,7 +23,7 @@ describe('handleImageSizes middleware', function () {
         fakeReq.url.match = function () {
             throw new Error('Should have exited immediately');
         };
-        handleImageSizes(fakeReq, {}, function next() {
+        handleImageSizes(fakeReq, fakeResBase, function next() {
             done();
         });
     });
@@ -32,7 +36,7 @@ describe('handleImageSizes middleware', function () {
         fakeReq.url.match = function () {
             throw new Error('Should have exited immediately');
         };
-        handleImageSizes(fakeReq, {}, function next() {
+        handleImageSizes(fakeReq, fakeResBase, function next() {
             done();
         });
     });
@@ -45,7 +49,7 @@ describe('handleImageSizes middleware', function () {
         fakeReq.url.match = function () {
             throw new Error('Should have exited immediately');
         };
-        handleImageSizes(fakeReq, {}, function next() {
+        handleImageSizes(fakeReq, fakeResBase, function next() {
             done();
         });
     });
@@ -58,7 +62,7 @@ describe('handleImageSizes middleware', function () {
         fakeReq.url.match = function () {
             throw new Error('Should have exited immediately');
         };
-        handleImageSizes(fakeReq, {}, function next() {
+        handleImageSizes(fakeReq, fakeResBase, function next() {
             done();
         });
     });
@@ -71,7 +75,7 @@ describe('handleImageSizes middleware', function () {
         fakeReq.url.match = function () {
             throw new Error('Should have exited immediately');
         };
-        handleImageSizes(fakeReq, {}, function next() {
+        handleImageSizes(fakeReq, fakeResBase, function next() {
             done();
         });
     });
@@ -139,7 +143,8 @@ describe('handleImageSizes middleware', function () {
                         return done(e);
                     }
                     done();
-                }
+                },
+                setHeader() {}
             };
             handleImageSizes(fakeReq, fakeRes, function next(err) {
                 if (err) {
@@ -162,7 +167,8 @@ describe('handleImageSizes middleware', function () {
                         return done(e);
                     }
                     done();
-                }
+                },
+                setHeader() {}
             };
             handleImageSizes(fakeReq, fakeRes, function next(err) {
                 if (err) {
@@ -185,7 +191,8 @@ describe('handleImageSizes middleware', function () {
                         return done(e);
                     }
                     done();
-                }
+                },
+                setHeader() {}
             };
             handleImageSizes(fakeReq, fakeRes, function next(err) {
                 if (err) {
@@ -220,7 +227,8 @@ describe('handleImageSizes middleware', function () {
                         return done(e);
                     }
                     done();
-                }
+                },
+                setHeader() {}
             };
 
             handleImageSizes(fakeReq, fakeRes, function next(err) {
@@ -246,7 +254,8 @@ describe('handleImageSizes middleware', function () {
                         return done(e);
                     }
                     done();
-                }
+                },
+                setHeader() {}
             };
 
             handleImageSizes(fakeReq, fakeRes, function next(err) {
@@ -272,7 +281,8 @@ describe('handleImageSizes middleware', function () {
                         return done(e);
                     }
                     done();
-                }
+                },
+                setHeader() {}
             };
 
             handleImageSizes(fakeReq, fakeRes, function next(err) {
@@ -297,7 +307,8 @@ describe('handleImageSizes middleware', function () {
             const fakeRes = {
                 redirect() {
                     done(new Error('Should not have called redirect'));
-                }
+                },
+                setHeader() {}
             };
 
             handleImageSizes(fakeReq, fakeRes, function next(err) {
@@ -323,7 +334,8 @@ describe('handleImageSizes middleware', function () {
             const fakeRes = {
                 redirect() {
                     done(new Error('Should not have called redirect'));
-                }
+                },
+                setHeader() {}
             };
 
             handleImageSizes(fakeReq, fakeRes, function next(err) {
@@ -355,7 +367,8 @@ describe('handleImageSizes middleware', function () {
                 redirect() {
                     done(new Error('Should not have called redirect'));
                 },
-                type: function () {}
+                type: function () {},
+                setHeader() {}
             };
             const typeStub = sinon.spy(fakeRes, 'type');
 
@@ -390,7 +403,8 @@ describe('handleImageSizes middleware', function () {
                         return done(e);
                     }
                     done();
-                }
+                },
+                setHeader() {}
             };
 
             handleImageSizes(fakeReq, fakeRes, function next(err) {
@@ -418,7 +432,8 @@ describe('handleImageSizes middleware', function () {
                         return done(e);
                     }
                     done();
-                }
+                },
+                setHeader() {}
             };
 
             handleImageSizes(fakeReq, fakeRes, function next(err) {
@@ -446,7 +461,8 @@ describe('handleImageSizes middleware', function () {
                         return done(e);
                     }
                     done();
-                }
+                },
+                setHeader() {}
             };
 
             handleImageSizes(fakeReq, fakeRes, function next(err) {
@@ -474,7 +490,8 @@ describe('handleImageSizes middleware', function () {
                         return done(e);
                     }
                     done();
-                }
+                },
+                setHeader() {}
             };
 
             handleImageSizes(fakeReq, fakeRes, function next(err) {
@@ -498,6 +515,7 @@ describe('handleImageSizes middleware', function () {
                 redirect() {
                     done(new Error('Should not have called redirect'));
                 },
+                setHeader() {},
                 type: function () {}
             };
             const typeStub = sinon.spy(fakeRes, 'type');
@@ -532,6 +550,7 @@ describe('handleImageSizes middleware', function () {
                 redirect() {
                     done(new Error('Should not have called redirect'));
                 },
+                setHeader() {},
                 type: function () {}
             };
             const typeStub = sinon.spy(fakeRes, 'type');
@@ -566,6 +585,7 @@ describe('handleImageSizes middleware', function () {
                 redirect() {
                     done(new Error('Should not have called redirect'));
                 },
+                setHeader() {},
                 type: function () {}
             };
             const typeStub = sinon.spy(fakeRes, 'type');
@@ -600,6 +620,7 @@ describe('handleImageSizes middleware', function () {
                 redirect() {
                     done(new Error('Should not have called redirect'));
                 },
+                setHeader() {},
                 type: function () {}
             };
             const typeStub = sinon.spy(fakeRes, 'type');
@@ -634,6 +655,7 @@ describe('handleImageSizes middleware', function () {
                 redirect() {
                     done(new Error('Should not have called redirect'));
                 },
+                setHeader() {},
                 type: function () {}
             };
             const typeStub = sinon.spy(fakeRes, 'type');

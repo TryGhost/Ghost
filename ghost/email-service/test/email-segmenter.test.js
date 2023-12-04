@@ -1,4 +1,4 @@
-const EmailSegmenter = require('../lib/email-segmenter');
+const EmailSegmenter = require('../lib/EmailSegmenter');
 const sinon = require('sinon');
 
 describe('Email segmenter', function () {
@@ -37,7 +37,7 @@ describe('Email segmenter', function () {
             );
             listStub.calledOnce.should.be.true();
             listStub.calledWith({
-                filter: 'newsletters.id:newsletter-123'
+                filter: 'newsletters.id:\'newsletter-123\'+email_disabled:0'
             }).should.be.true();
             response.should.eql(12);
         });
@@ -94,7 +94,7 @@ describe('Email segmenter', function () {
 
             listStub.calledOnce.should.be.true();
             listStub.calledWith({
-                filter: 'newsletters.id:newsletter-123+(labels:test)+status:-free'
+                filter: 'newsletters.id:\'newsletter-123\'+email_disabled:0+(labels:test)+status:-free'
             }).should.be.true();
             response.should.eql(12);
         });
@@ -118,7 +118,7 @@ describe('Email segmenter', function () {
 
             listStub.calledOnce.should.be.true();
             listStub.calledWith({
-                filter: 'newsletters.id:newsletter-123+(labels:test)+(status:free)'
+                filter: 'newsletters.id:\'newsletter-123\'+email_disabled:0+(labels:test)+(status:free)'
             }).should.be.true();
             response.should.eql(12);
         });

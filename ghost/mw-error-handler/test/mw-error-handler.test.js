@@ -3,7 +3,7 @@
 require('./utils');
 const path = require('path');
 const should = require('should');
-const assert = require('assert');
+const assert = require('assert/strict');
 const {InternalServerError, NotFoundError} = require('@tryghost/errors');
 const {cacheControlValues} = require('@tryghost/http-cache-utils');
 const {
@@ -101,6 +101,29 @@ describe('Prepare Error', function () {
             err.name.should.eql('IncorrectUsageError');
             err.message.should.eql('obscure express-hbs message!');
             err.stack.should.startWith('Error: obscure express-hbs message!');
+            done();
+        });
+    });
+
+    it('Correctly prepares a mysql2 error', function (done) {
+        let error = new Error('select anything from anywhere where something = anything;');
+
+        error.stack += '\n';
+        error.stack += path.join('node_modules', 'mysql2', 'lib');
+        error.code = 'ER_WRONG_VALUE';
+        error.sql = 'select anything from anywhere where something = anything;';
+        error.sqlMessage = 'Incorrect DATETIME value: 3234234234';
+
+        prepareError(error, {}, {
+            set: () => {}
+        }, (err) => {
+            err.statusCode.should.eql(500);
+            err.name.should.eql('InternalServerError');
+            err.message.should.eql('An unexpected error occurred, please try again.');
+            err.code.should.eql('UNEXPECTED_ERROR');
+            err.sqlErrorCode.should.eql('ER_WRONG_VALUE');
+            err.sql.should.eql('select anything from anywhere where something = anything;');
+            err.sqlMessage.should.eql('Incorrect DATETIME value: 3234234234');
             done();
         });
     });

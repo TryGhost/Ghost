@@ -298,7 +298,7 @@ export default class PublishOptions {
 
         // newsletters
         if (!this.user.isContributor) {
-            promises.push(this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.members'}));
+            promises.push(this.store.query('newsletter', {status: 'active', limit: 'all', include: 'count.active_members'}));
         }
 
         yield Promise.all(promises);
@@ -340,6 +340,7 @@ export default class PublishOptions {
             }
 
             this.post.status = 'draft';
+            this.post.emailOnly = false;
 
             return yield this.post.save();
         } catch (e) {

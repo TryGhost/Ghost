@@ -1,5 +1,5 @@
 const should = require('should');
-const EventRepository = require('../../../../lib/repositories/event');
+const EventRepository = require('../../../../lib/repositories/EventRepository');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 

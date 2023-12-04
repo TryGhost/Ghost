@@ -1,5 +1,5 @@
-const assert = require('assert');
-const linkReplacer = require('../lib/LinkReplacer');
+const assert = require('assert/strict');
+const linkReplacer = require('../lib/link-replacer');
 const cheerio = require('cheerio');
 const sinon = require('sinon');
 
@@ -18,6 +18,30 @@ describe('LinkReplacementService', function () {
             const expected = '<a href="https://google.com/test-dir?test-query">link</a>';
 
             const replaced = await linkReplacer.replace(html, () => new URL('https://google.com/test-dir?test-query'));
+            assert.equal(replaced, expected);
+        });
+
+        it('Can replace relative URLs', async function () {
+            const html = '<a href="dir/path">link</a>';
+            const expected = '<a href="https://google.com/test-dir/dir/path">link</a>';
+
+            const replaced = await linkReplacer.replace(html, u => u, {base: 'https://google.com/test-dir/'});
+            assert.equal(replaced, expected);
+        });
+
+        it('Can replace relative URLs relative to root domain', async function () {
+            const html = '<a href="/dir/path">link</a>';
+            const expected = '<a href="https://google.com/dir/path">link</a>';
+
+            const replaced = await linkReplacer.replace(html, u => u, {base: 'https://google.com/test-dir/'});
+            assert.equal(replaced, expected);
+        });
+
+        it('Can replace fragments relative to base', async function () {
+            const html = '<a href="#support">link</a>';
+            const expected = '<a href="https://google.com/test-dir/#support">link</a>';
+
+            const replaced = await linkReplacer.replace(html, u => u, {base: 'https://google.com/test-dir/'});
             assert.equal(replaced, expected);
         });
 

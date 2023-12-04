@@ -1,6 +1,8 @@
-const assert = require('assert');
+const assert = require('assert/strict');
 const ObjectID = require('bson-objectid');
 const Mention = require('../lib/Mention');
+const cheerio = require('cheerio');
+const sinon = require('sinon');
 
 const validInput = {
     source: 'https://source.com',
@@ -35,15 +37,40 @@ describe('Mention', function () {
     });
 
     describe('verify', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('can handle invalid HTML', async function () {
+            const mention = await Mention.create(validInput);
+            assert(!mention.verified);
+
+            sinon.stub(cheerio, 'load').throws(new Error('Invalid HTML'));
+
+            mention.verify('irrelevant', 'text/html');
+            assert(!mention.verified);
+            assert(!mention.isDeleted());
+        });
+
         it('Does basic check for the target URL and updates verified property', async function () {
             const mention = await Mention.create(validInput);
             assert(!mention.verified);
 
-            mention.verify('<a href="https://target.com/">');
+            mention.verify('<a href="https://target.com/">', 'text/html');
             assert(mention.verified);
+            assert(!mention.isDeleted());
 
-            mention.verify('<a href="https://not-da-target.com">');
+            mention.verify('something else', 'text/html');
+            assert(mention.verified);
+            assert(mention.isDeleted());
+        });
+        it('detects differences', async function () {
+            const mention = await Mention.create(validInput);
             assert(!mention.verified);
+
+            mention.verify('<a href="https://not-target.com/">', 'text/html');
+            assert(!mention.verified);
+            assert(!mention.isDeleted());
         });
         it('Does check for Image targets', async function () {
             const mention = await Mention.create({
@@ -52,11 +79,13 @@ describe('Mention', function () {
             });
             assert(!mention.verified);
 
-            mention.verify('<img src="https://target.com/image.jpg">');
+            mention.verify('<img src="https://target.com/image.jpg">', 'text/html');
             assert(mention.verified);
+            assert(!mention.isDeleted());
 
-            mention.verify('<img src="https://not-da-target.com/image.jpg">');
-            assert(!mention.verified);
+            mention.verify('something else', 'text/html');
+            assert(mention.verified);
+            assert(mention.isDeleted());
         });
         it('Does check for Video targets', async function () {
             const mention = await Mention.create({
@@ -65,11 +94,56 @@ describe('Mention', function () {
             });
             assert(!mention.verified);
 
-            mention.verify('<video src="https://target.com/video.mp4">');
+            mention.verify('<video src="https://target.com/video.mp4">', 'text/html');
             assert(mention.verified);
+            assert(!mention.isDeleted());
 
-            mention.verify('<video src="https://not-da-target.com/video.mp4">');
+            mention.verify('something else', 'text/html');
+            assert(mention.verified);
+            assert(mention.isDeleted());
+        });
+
+        it('can verify links in JSON', async function () {
+            const mention = await Mention.create(validInput);
             assert(!mention.verified);
+
+            mention.verify('{"url": "https://target.com/"}', 'application/json');
+            assert(mention.verified);
+            assert(!mention.isDeleted());
+
+            mention.verify('{}', 'application/json');
+            assert(mention.verified);
+            assert(mention.isDeleted());
+        });
+
+        it('can handle invalid JSON', async function () {
+            const mention = await Mention.create(validInput);
+            assert(!mention.verified);
+
+            mention.verify('{"url": "ht', 'application/json');
+            assert(!mention.verified);
+            assert(!mention.isDeleted());
+        });
+    });
+
+    describe('undelete', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('can undelete a verified mention', async function () {
+            const mention = await Mention.create({
+                ...validInput,
+                id: new ObjectID(),
+                deleted: true,
+                verified: true
+            });
+            assert(mention.verified);
+            assert(mention.deleted);
+
+            mention.verify('{"url": "https://target.com/"}', 'application/json');
+            assert(mention.verified);
+            assert(!mention.isDeleted());
         });
     });
 

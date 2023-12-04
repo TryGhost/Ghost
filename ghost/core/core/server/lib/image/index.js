@@ -5,7 +5,7 @@ const storageUtils = require('../../adapters/storage/utils');
 const validator = require('@tryghost/validator');
 const config = require('../../../shared/config');
 const settingsCache = require('../../../shared/settings-cache');
-const ImageUtils = require('./image-utils');
+const ImageUtils = require('./ImageUtils');
 
 const adapterManager = require('../../services/adapter-manager');
 

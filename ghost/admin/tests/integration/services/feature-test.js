@@ -143,7 +143,7 @@ describe('Integration: Service: feature', function () {
         });
     });
 
-    it('returns true for set flag with config false and labs true', async function () {
+    it('returns true for set flag with config is an object and labs true', async function () {
         stubSettings(server, {testFlag: true});
         stubUser(server, {});
 
@@ -153,7 +153,7 @@ describe('Integration: Service: feature', function () {
         await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
-        service.config.testFlag = false;
+        service.config.testFlag = {key: 'value'};
 
         return service.fetch().then(() => {
             expect(service.get('labs.testFlag')).to.be.true;
@@ -223,7 +223,7 @@ describe('Integration: Service: feature', function () {
         await session.populateUser();
 
         let service = this.owner.lookup('service:feature');
-        service.config.testFlag = false;
+        service.config.testFlag = {key: 'value'};
 
         return service.fetch().then(() => {
             expect(service.get('testFlag')).to.be.false;

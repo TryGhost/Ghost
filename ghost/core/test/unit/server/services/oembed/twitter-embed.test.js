@@ -1,5 +1,5 @@
-const assert = require('assert');
-const TwitterOEmbedProvider = require('../../../../../core/server/services/oembed/twitter-embed');
+const assert = require('assert/strict');
+const TwitterOEmbedProvider = require('../../../../../core/server/services/oembed/TwitterOEmbedProvider');
 const externalRequest = require('../../../../../core/server/lib/request-external');
 const nock = require('nock');
 const {mockManager} = require('../../../../utils/e2e-framework');
@@ -18,16 +18,24 @@ describe('TwitterOEmbedProvider', function () {
         mockManager.restore();
     });
 
-    it('Can support requests for Tweet URLs', async function () {
+    it('Can support requests for Twitter URLs', async function () {
         const provider = new TwitterOEmbedProvider();
-
         const tweetURL = new URL(
             'https://twitter.com/Ghost/status/1630581157568839683'
         );
 
         const supportsRequest = await provider.canSupportRequest(tweetURL);
+        assert(supportsRequest, 'Should support Twitter URL');
+    });
 
-        assert(supportsRequest, 'Should support Tweet URL');
+    it('Can support requests for X.com URLs', async function () {
+        const provider = new TwitterOEmbedProvider();
+        const tweetURL = new URL(
+            'https://x.com/Ghost/status/1630581157568839683'
+        );
+
+        const supportsRequest = await provider.canSupportRequest(tweetURL);
+        assert(supportsRequest, 'Should support X (Twitter) URL');
     });
 
     it('Receives JSON from external request to Twitter API', async function () {

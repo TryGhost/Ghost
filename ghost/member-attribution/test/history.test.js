@@ -1,7 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
-const UrlHistory = require('../lib/history');
+const UrlHistory = require('../lib/UrlHistory');
 
 describe('UrlHistory', function () {
     it('sets history to empty array if invalid', function () {
@@ -82,6 +82,12 @@ describe('UrlHistory', function () {
                 time: Date.now(),
                 type: 'post',
                 id: '123',
+                referrerSource: 'ghost-explore',
+                referrerMedium: null,
+                referrerUrl: 'https://ghost.org'
+            }],
+            [{
+                time: Date.now(),
                 referrerSource: 'ghost-explore',
                 referrerMedium: null,
                 referrerUrl: 'https://ghost.org'

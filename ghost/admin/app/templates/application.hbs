@@ -30,10 +30,18 @@
 
         <GhContentCover />
 
-        {{#unless this.session.user.isContributor}}
-            <GhMobileNavBar />
-        {{/unless}}
+        {{#if this.session.user}}
+            {{#unless this.session.user.isContributor}}
+                <GhMobileNavBar />
+            {{/unless}}
+        {{/if}}
     </div>
+
+    {{#if this.showScriptExtension}}
+        {{{this.showScriptExtension.container}}}
+        {{!-- template-lint-disable no-forbidden-elements --}}
+        <script src="{{this.showScriptExtension.src}}"></script>
+    {{/if}}
 
     {{#if this.settings.accentColor}}
         <style>
@@ -41,12 +49,6 @@
                 --accent-color: {{this.settings.accentColor}};
                 --adjusted-accent-color: {{this.ui.adjustedAccentColor}};
                 --kg-accent-color: {{this.settings.accentColor}};
-            }
-            .koenig-editor__editor a:not([class]) {
-                color: var(--adjusted-accent-color);
-            }
-            .koenig-editor__editor blockquote {
-                border-left: 0.25rem solid var(--adjusted-accent-color);
             }
 
             .gh-btn-accent {
