@@ -51,7 +51,7 @@
     "@testing-library/react": "14.1.0",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
-    "@types/react": "18.2.38",
+    "@types/react": "18.2.41",
     "@types/react-dom": "18.2.17",
     "@types/validator": "13.11.7",
     "@vitejs/plugin-react": "4.2.0",
@@ -59,7 +59,7 @@
     "eslint-plugin-react-refresh": "0.4.3",
     "eslint-plugin-tailwindcss": "3.13.0",
     "stylelint": "15.10.3",
-    "vite": "4.5.0",
+    "vite": "4.5.1",
     "vite-plugin-css-injected-by-js": "^3.3.0",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "0.34.3"

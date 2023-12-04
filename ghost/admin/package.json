@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.74.5",
+  "version": "5.75.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -39,8 +39,8 @@
     "@embroider/macros": "1.13.3",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
-    "@sentry/ember": "7.83.0",
-    "@sentry/integrations": "7.83.0",
+    "@sentry/ember": "7.84.0",
+    "@sentry/integrations": "7.84.0",
     "@tryghost/color-utils": "0.2.0",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.88",
