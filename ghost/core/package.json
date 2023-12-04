@@ -249,7 +249,7 @@
     "mock-knex": "TryGhost/mock-knex#d8b93b1c20d4820323477f2c60db016ab3e73192",
     "nock": "13.3.3",
     "papaparse": "5.3.2",
-    "postcss": "8.4.31",
+    "postcss": "8.4.32",
     "postcss-cli": "10.1.0",
     "rewire": "6.0.0",
     "should": "13.2.3",
