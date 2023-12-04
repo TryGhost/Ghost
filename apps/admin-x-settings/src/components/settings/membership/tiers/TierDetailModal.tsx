@@ -189,7 +189,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         <div className='-mb-8 mt-8 flex items-start gap-8'>
             <div className='flex grow flex-col gap-8'>
                 <Form marginBottom={false} title='Basic' grouped>
-                    {!isFreeTier && <TextField
+                    {<TextField
                         autoComplete='off'
                         error={Boolean(errors.name)}
                         hint={errors.name}

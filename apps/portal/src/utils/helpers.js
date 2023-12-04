@@ -450,11 +450,8 @@ export function getFreeProductBenefits({site}) {
 }
 
 export function getFreeTierTitle({site}) {
-    if (hasOnlyFreeProduct({site})) {
-        return 'Free membership';
-    } else {
-        return 'Free';
-    }
+    const freeProduct = getFreeProduct({site});
+    return freeProduct?.name || 'Free';
 }
 
 export function getFreeTierDescription({site}) {
