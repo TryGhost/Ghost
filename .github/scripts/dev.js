@@ -45,7 +45,7 @@ const COMMAND_ADMIN = {
 
 const COMMAND_TYPESCRIPT = {
     name: 'ts',
-    command: 'nx watch --projects=ghost/collections,ghost/in-memory-repository,ghost/bookshelf-repository,ghost/mail-events,ghost/model-to-domain-event-interceptor,ghost/post-revisions,ghost/nql-filter-expansions,ghost/post-events,ghost/donations,ghost/recommendations,ghost/email-addresses -- nx run \\$NX_PROJECT_NAME:build:ts',
+    command: 'nx watch --projects=ghost/collections,ghost/in-memory-repository,ghost/bookshelf-repository,ghost/mail-events,ghost/model-to-domain-event-interceptor,ghost/post-revisions,ghost/nql-filter-expansions,ghost/post-events,ghost/donations,ghost/recommendations,ghost/email-addresses,ghost/ghost -- nx run \\$NX_PROJECT_NAME:build:ts',
     cwd: path.resolve(__dirname, '../../'),
     prefixColor: 'cyan',
     env: {}
