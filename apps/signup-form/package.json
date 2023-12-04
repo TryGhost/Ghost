@@ -51,7 +51,7 @@
         "@tailwindcss/line-clamp": "0.4.4",
         "@types/react": "18.2.41",
         "@types/react-dom": "18.2.17",
-        "@vitejs/plugin-react": "4.2.0",
+        "@vitejs/plugin-react": "4.2.1",
         "autoprefixer": "10.4.16",
         "concurrently": "8.2.2",
         "eslint-plugin-react-hooks": "4.6.0",
