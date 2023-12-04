@@ -108,7 +108,7 @@
     "lodash-es": "^4.17.21",
     "luxon": "^3.3.0",
     "pluralize": "^8.0.0",
-    "postcss": "8.4.31",
+    "postcss": "8.4.32",
     "postcss-import": "15.1.0",
     "prettier": "^3.0.1",
     "react": "^18.2.0",
