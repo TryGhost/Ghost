@@ -7666,15 +7666,15 @@
   dependencies:
     axios "^1.0.0"
 
-"@tryghost/database-info@0.3.17":
-  version "0.3.17"
-  resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.17.tgz#e7344d9f9675dfc572a71eeace97ea0527a4a7c5"
-  integrity sha512-9wFXQVsOlLlq+6lMx2P165mCjIT/4qjDqoeAt6ct5Uag6Yjy5TRqrtqMJ09Lo3XjIUCs5vERPZPTxtCNJQCGwQ==
-
 "@tryghost/database-info@0.3.20":
   version "0.3.20"
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.20.tgz#89bc878c2f8f5d31da55bf607f0c0c4aeaef503a"
   integrity sha512-HDM6ateszdBdh0D2BDXG7UeDRrPv1a+es4jB9UgijLe+GRa/gM09plDFVX63HC/dDeN+apuwH5S6PCBvLY8n2g==
+
+"@tryghost/database-info@0.3.21":
+  version "0.3.21"
+  resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.21.tgz#19343a7b193c744dce6e7d1d3bcb5fbcf5f1064f"
+  integrity sha512-7VKjozKwJAQLkNoz68wZ1pmBI0E8zv1wDak16CiMMy/EKA0Akw+WxOhoOfeB5BurMZTrSWfSdsm+umGniaR24w==
 
 "@tryghost/debug@0.1.26":
   version "0.1.26"
@@ -7722,7 +7722,7 @@
     focus-trap "^6.7.2"
     postcss-preset-env "^7.3.1"
 
-"@tryghost/errors@1.2.25", "@tryghost/errors@1.2.26", "@tryghost/errors@^1.2.26", "@tryghost/errors@^1.2.27", "@tryghost/errors@^1.2.3":
+"@tryghost/errors@1.2.26", "@tryghost/errors@1.2.27", "@tryghost/errors@^1.2.26", "@tryghost/errors@^1.2.27", "@tryghost/errors@^1.2.3":
   version "1.2.26"
   resolved "https://registry.yarnpkg.com/@tryghost/errors/-/errors-1.2.26.tgz#0d0503a51e681998421548fbddbdd7376384c457"
   integrity sha512-s/eynvVUiAhHP0HB7CPQs7qH7Pm1quJ2iUMTCuH7HV8LqiGoQFNc21/5R4lRv+2Jt3yf69UPCs/6G+kAgZipNw==
@@ -7933,7 +7933,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.4.5", "@tryghost/logging@2.4.8", "@tryghost/logging@^2.4.7":
+"@tryghost/logging@2.4.8", "@tryghost/logging@2.4.9", "@tryghost/logging@^2.4.7":
   version "2.4.8"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.4.8.tgz#a9e9abdbec823f0c6a009aa2f6847ce454b35475"
   integrity sha512-/pIeTcw9jpqWJ5/VyUn5sa3rsUxUHortykB4oYd5vKr16KgnrVOuGPCg4JqmdGfz2zrkgKaGd9cAsTNE++0Deg==
@@ -8030,6 +8030,11 @@
     lodash "^4.17.21"
     moment "^2.29.1"
     prettyjson "^1.2.5"
+
+"@tryghost/promise@0.3.4":
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.3.4.tgz#b5437eb14a3d06e7d32f277e10975ff77061e16e"
+  integrity sha512-D8zxDpLuPfPjakMTj7o2dpcdi+luwC6ibQLDy6Z0ImQtBt4wZEbmAH1eAsYpk4JVviuGWzwkOM1cURmMEJO5Ig==
 
 "@tryghost/promise@0.3.6":
   version "0.3.6"
@@ -11154,7 +11159,7 @@ blank-object@^1.0.1:
   resolved "https://registry.yarnpkg.com/blank-object/-/blank-object-1.0.2.tgz#f990793fbe9a8c8dd013fb3219420bec81d5f4b9"
   integrity sha512-kXQ19Xhoghiyw66CUiGypnuRpWlbHAzY/+NyvqTEdTfhfQGH1/dbEMYiXju7fYKIFePpzp/y9dsu5Cu/PkmawQ==
 
-bluebird@3.7.2, bluebird@^3.1.1, bluebird@^3.4.1, bluebird@^3.4.6, bluebird@^3.5.0, bluebird@^3.5.5, bluebird@^3.7.2:
+bluebird@^3.1.1, bluebird@^3.4.1, bluebird@^3.4.6, bluebird@^3.5.0, bluebird@^3.5.5, bluebird@^3.7.2:
   version "3.7.2"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
   integrity sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==
@@ -20133,7 +20138,7 @@ is-color-stop@^1.0.0:
     rgb-regex "^1.0.1"
     rgba-regex "^1.0.0"
 
-is-core-module@^2.12.0, is-core-module@^2.12.1, is-core-module@^2.13.0, is-core-module@^2.5.0, is-core-module@^2.9.0:
+is-core-module@^2.12.1, is-core-module@^2.13.0, is-core-module@^2.5.0, is-core-module@^2.9.0:
   version "2.13.0"
   resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.13.0.tgz#bb52aa6e2cbd49a30c2ba68c42bf3435ba6072db"
   integrity sha512-Z7dk6Qo8pOCp3l4tsX2C5ZVas4V+UxwQodwZhLopL91TX8UyyHEXafPcyoeeWuLrwzHcr3igO78wNLwHJHsMCQ==
@@ -21505,15 +21510,15 @@ klona@^2.0.4, klona@^2.0.6:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.6.tgz#85bffbf819c03b2f53270412420a4555ef882e22"
   integrity sha512-dhG34DXATL5hSxJbIexCft8FChFXtmskoZYnoPWjXQuebWYCNkVeV3KkGegCK9CP1oswI/vQibS2GY7Em/sJJA==
 
-knex-migrator@5.1.5:
-  version "5.1.5"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.1.5.tgz#8130fcc627bfcf5bc693719708d0213c497929ee"
-  integrity sha512-swHy7sOqdzcSldP6FxVTjz2vmz/I46HPbBDUZny+9eVcVmsREFzGPg1DL8q0yBJkbSfc+7aOTyqm4LJ+UwMo9g==
+knex-migrator@5.1.6:
+  version "5.1.6"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.1.6.tgz#fa7f6e5da4140613424f5995edf0e104f0a91f40"
+  integrity sha512-Yw1Abq3Q4sovWnHuOSJ6oi/X2P8mwT+L6jWfdojz4BcVYLRlc8iYJCyVu7UOQhGz1QPTsePqsQRdAwgubH9wJw==
   dependencies:
-    "@tryghost/database-info" "0.3.17"
-    "@tryghost/errors" "1.2.25"
-    "@tryghost/logging" "2.4.5"
-    bluebird "3.7.2"
+    "@tryghost/database-info" "0.3.21"
+    "@tryghost/errors" "1.2.27"
+    "@tryghost/logging" "2.4.9"
+    "@tryghost/promise" "0.3.4"
     commander "5.1.0"
     compare-ver "2.0.2"
     debug "4.3.4"
@@ -21521,8 +21526,8 @@ knex-migrator@5.1.5:
     lodash "4.17.21"
     moment "2.24.0"
     mysql2 "3.2.0"
-    nconf "0.12.0"
-    resolve "1.22.3"
+    nconf "0.12.1"
+    resolve "1.22.8"
   optionalDependencies:
     sqlite3 "5.1.6"
 
@@ -23725,16 +23730,6 @@ natural-compare@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
-
-nconf@0.12.0:
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/nconf/-/nconf-0.12.0.tgz#9cf70757aae4d440d43ed53c42f87da18471b8bf"
-  integrity sha512-T3fZPw3c7Dfrz8JBQEbEcZJ2s8f7cUMpKuyBtsGQe0b71pcXx6gNh4oti2xh5dxB+gO9ufNfISBlGvvWtfyMcA==
-  dependencies:
-    async "^3.0.0"
-    ini "^2.0.0"
-    secure-keys "^1.0.0"
-    yargs "^16.1.1"
 
 nconf@0.12.1, nconf@^0.12.0:
   version "0.12.1"
@@ -27679,19 +27674,10 @@ resolve-url@^0.2.1:
   resolved "https://registry.yarnpkg.com/resolve-url/-/resolve-url-0.2.1.tgz#2c637fe77c893afd2a663fe21aa9080068e2052a"
   integrity sha512-ZuF55hVUQaaczgOIwqWzkEcEidmlD/xl44x1UZnhOXcYuFN2S6+rcxpG+C1N3So0wvNI3DmJICUFfu2SxhBmvg==
 
-resolve@1.22.3:
-  version "1.22.3"
-  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.22.3.tgz#4b4055349ffb962600972da1fdc33c46a4eb3283"
-  integrity sha512-P8ur/gp/AmbEzjr729bZnLjXK5Z+4P0zhIJgBgzqRih7hL7BOukHGtSTA3ACMY467GRFz3duQsi0bDZdR7DKdw==
-  dependencies:
-    is-core-module "^2.12.0"
-    path-parse "^1.0.7"
-    supports-preserve-symlinks-flag "^1.0.0"
-
-resolve@^1.1.6, resolve@^1.1.7, resolve@^1.10.0, resolve@^1.10.1, resolve@^1.11.1, resolve@^1.12.0, resolve@^1.13.1, resolve@^1.14.2, resolve@^1.15.1, resolve@^1.17.0, resolve@^1.19.0, resolve@^1.20.0, resolve@^1.22.0, resolve@^1.22.1, resolve@^1.22.2, resolve@^1.22.3, resolve@^1.3.3, resolve@^1.4.0, resolve@^1.5.0, resolve@^1.8.1:
-  version "1.22.4"
-  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.22.4.tgz#1dc40df46554cdaf8948a486a10f6ba1e2026c34"
-  integrity sha512-PXNdCiPqDqeUou+w1C2eTQbNfxKSuMxqTCuvlmmMsk1NWHL5fRrhY6Pl0qEYYc6+QqGClco1Qj8XnjPego4wfg==
+resolve@1.22.8, resolve@^1.1.6, resolve@^1.1.7, resolve@^1.10.0, resolve@^1.10.1, resolve@^1.11.1, resolve@^1.12.0, resolve@^1.13.1, resolve@^1.14.2, resolve@^1.15.1, resolve@^1.17.0, resolve@^1.19.0, resolve@^1.20.0, resolve@^1.22.0, resolve@^1.22.1, resolve@^1.22.2, resolve@^1.22.3, resolve@^1.3.3, resolve@^1.4.0, resolve@^1.5.0, resolve@^1.8.1:
+  version "1.22.8"
+  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.22.8.tgz#b6c87a9f2aa06dfab52e3d70ac8cde321fa5a48d"
+  integrity sha512-oKWePCxqpd6FlLvGV1VU0x7bkPmmCNolxzjMf4NczoDnQcIWrAF+cPtZn5i6n+RfD2d9i0tzpKnG6Yk168yIyw==
   dependencies:
     is-core-module "^2.13.0"
     path-parse "^1.0.7"
