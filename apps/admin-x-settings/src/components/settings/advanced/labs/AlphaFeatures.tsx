@@ -67,6 +67,10 @@ const features = [{
     title: 'New email addresses',
     description: 'For self hosters, forces the usage of the mail.from config as from address for all outgoing emails',
     flag: 'newEmailAddresses'
+},{
+    title: 'Portal improvements',
+    description: 'Adds a bunch of improvements to portal and portal settings',
+    flag: 'portalImprovements'
 }];
 
 const AlphaFeatures: React.FC = () => {
