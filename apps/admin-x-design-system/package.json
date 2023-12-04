@@ -62,7 +62,7 @@
     "@uiw/react-codemirror": "^4.21.9",
     "autoprefixer": "10.4.16",
     "clsx": "2.0.0",
-    "postcss": "8.4.31",
+    "postcss": "8.4.32",
     "postcss-import": "15.1.0",
     "react-colorful": "^5.1.2",
     "react-hot-toast": "2.4.1",
