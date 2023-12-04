@@ -1,4 +1,4 @@
-<div class="modal-content">
+<div class="modal-content" data-test-modal="tk-reminder">
     <header class="modal-header">
         <h1>Forget something?</h1>
     </header>
@@ -7,12 +7,12 @@
     <div class="modal-body">
         <p>
             Looks like you've got some unfinished business.
-            There {{if (eq @tkCount 1) "is" "are" }} <strong>{{gh-pluralize @tkCount "TK reminder"}}</strong> left in your post.
+            There {{if (eq @data.tkCount 1) "is" "are" }} <strong>{{gh-pluralize @data.tkCount "TK reminder"}}</strong> left in your post.
         </p>
     </div>
 
     <div class="modal-footer">
-        <button type="button" class="gh-btn" {{on "click" @confirm}}><span>Continue to publish</span></button>
+        <button type="button" class="gh-btn" {{on "click" (fn @close true)}}><span>Continue to publish</span></button>
         <button type="button" class="gh-btn gh-btn-black" {{on "click" @close}}><span>Back to editor</span></button>
     </div>
 </div>
