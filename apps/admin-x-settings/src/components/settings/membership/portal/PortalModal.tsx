@@ -5,7 +5,7 @@ import PortalPreview from './PortalPreview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './SignupOptions';
 import useQueryParams from '../../../../hooks/useQueryParams';
-import {ConfirmationModal, PreviewModalContent, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, PreviewModalContent, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Setting, SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
@@ -45,7 +45,7 @@ const Sidebar: React.FC<{
         {
             id: 'accountPage',
             title: 'Account page',
-            contents: <AccountPage updateSetting={updateSetting} />
+            contents: <AccountPage errors={errors} setError={setError} updateSetting={updateSetting} />
         }
     ];
 
@@ -154,6 +154,12 @@ const PortalModal: React.FC = () => {
         onSaveError: handleError
     });
 
+    useEffect(() => {
+        if (!formState.tiers.length && allTiers?.length) {
+            setFormState(state => ({...state, tiers: allTiers}));
+        }
+    }, [allTiers, formState.tiers, setFormState]);
+
     const [errors, setErrors] = useState<Record<string, string | undefined>>({});
 
     const updateSetting = (key: string, value: SettingValue) => {
@@ -223,7 +229,12 @@ const PortalModal: React.FC = () => {
         testId='portal-modal'
         title='Portal'
         onOk={async () => {
-            if (!Object.values(errors).filter(Boolean).length) {
+            if (Object.values(errors).filter(Boolean).length) {
+                showToast({
+                    type: 'pageError',
+                    message: 'Can\'t save settings, please double check that you\'ve filled all mandatory fields.'
+                });
+            } else {
                 await handleSave({force: true});
             }
         }}

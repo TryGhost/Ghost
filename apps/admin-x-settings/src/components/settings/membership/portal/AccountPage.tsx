@@ -6,7 +6,9 @@ import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const AccountPage: React.FC<{
     updateSetting: (key: string, setting: SettingValue) => void
-}> = ({updateSetting}) => {
+    errors: Record<string, string | undefined>
+    setError: (key: string, error: string | undefined) => void
+}> = ({updateSetting, errors, setError}) => {
     const {siteData, settings, config} = useGlobalData();
     const [membersSupportAddress, supportEmailAddress] = getSettingValues(settings, ['members_support_address', 'support_email_address']);
     const calculatedSupportAddress = supportEmailAddress?.toString() || fullEmailAddress(membersSupportAddress?.toString() || '', siteData!, config);
@@ -15,6 +17,12 @@ const AccountPage: React.FC<{
 
     const updateSupportAddress: FocusEventHandler<HTMLInputElement> = (e) => {
         let supportAddress = e.target.value;
+
+        if (!supportAddress) {
+            setError('members_support_address', 'Please enter an email address');
+            return;
+        }
+
         let settingValue = emailDomain && supportAddress === `noreply@${emailDomain}` ? 'noreply' : supportAddress;
 
         updateSetting('members_support_address', settingValue);
@@ -26,7 +34,14 @@ const AccountPage: React.FC<{
     }, [calculatedSupportAddress]);
 
     return <div className='mt-7'><Form>
-        <TextField title='Support email address' value={value} onBlur={updateSupportAddress} onChange={e => setValue(e.target.value)} />
+        <TextField
+            error={!!errors.members_support_address}
+            hint={errors.members_support_address}
+            title='Support email address'
+            value={value}
+            onBlur={updateSupportAddress}
+            onChange={e => setValue(e.target.value)}
+        />
     </Form></div>;
 };
 
