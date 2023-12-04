@@ -80,8 +80,8 @@
   "devDependencies": {
     "@babel/eslint-parser": "7.23.3",
     "@doist/react-interpolate": "0.4.1",
-    "@sentry/react": "7.83.0",
-    "@sentry/tracing": "7.83.0",
+    "@sentry/react": "7.84.0",
+    "@sentry/tracing": "7.84.0",
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "12.1.5",
     "@tryghost/i18n": "0.0.0",
@@ -94,7 +94,7 @@
     "jsdom": "22.1.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "vite": "4.5.0",
+    "vite": "4.5.1",
     "vite-plugin-css-injected-by-js": "3.3.0",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "0.34.3"
