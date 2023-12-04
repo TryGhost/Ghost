@@ -145,7 +145,7 @@ const SignupOptions: React.FC<{
                     ]}
                     title='Prices available at signup'
                 />
-                {hasPortalImprovements && <Select options={selectOptions} selectedOption={selectOptions.find(option => option.value === 'default-yearly')} title='Price shown by default' onSelect={(value) => {
+                {hasPortalImprovements && <Select disabled={(portalPlans.includes('yearly') && portalPlans.includes('monthly')) ? false : true} options={selectOptions} selectedOption={selectOptions.find(option => option.value === (portalPlans.includes('yearly') ? 'default-yearly' : 'default-monthly'))} title='Price shown by default' onSelect={(value) => {
                     alert(value);
                 }} />}
             </>
