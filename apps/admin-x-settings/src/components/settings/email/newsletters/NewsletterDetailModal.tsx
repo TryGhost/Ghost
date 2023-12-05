@@ -102,6 +102,7 @@ const Sidebar: React.FC<{
     errors: ErrorMessages;
     clearError: (field: string) => void;
 }> = ({newsletter, onlyOne, updateNewsletter, validate, errors, clearError}) => {
+    const {updateRoute} = useRouting();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const limiter = useLimiter();
     const {settings, siteData, config} = useGlobalData();
@@ -159,7 +160,8 @@ const Sidebar: React.FC<{
             } catch (error) {
                 if (error instanceof HostLimitError) {
                     NiceModal.show(LimitModal, {
-                        prompt: error.message || `Your current plan doesn't support more newsletters.`
+                        prompt: error.message || `Your current plan doesn't support more newsletters.`,
+                        onOk: () => updateRoute({route: '/pro', isExternal: true})
                     });
                     return;
                 } else {
