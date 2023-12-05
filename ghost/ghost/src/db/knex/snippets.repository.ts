@@ -21,8 +21,21 @@ interface UrlTransformHelpers {
     lexicalToTransformReady(lexical: string): string
     transformReadyToAbsolute(value: string): string
 }
+
+type Nullable<T> = T | null;
+
+type SnippetsTableRow = {
+    id: string;
+    name: string;
+    lexical: Nullable<string>;
+    mobiledoc: Nullable<string>;
+    created_at: string;
+    created_by: string;
+    updated_at: Nullable<string>;
+    updated_by: Nullable<string>;
+};
 export class KnexSnippetsRepository
-    extends BaseKnexRepository<Snippet, string, OrderOf<[]>, []>
+    extends BaseKnexRepository<Snippet, string, OrderOf<[]>, [], SnippetsTableRow>
     implements SnippetsRepository {
     readonly table = 'snippets';
 
@@ -33,7 +46,7 @@ export class KnexSnippetsRepository
         this.urlUtils = urlUtils;
     }
 
-    protected mapEntityToRow(entity: Snippet): any {
+    protected mapEntityToRow(entity: Snippet): SnippetsTableRow {
         let mobiledoc = entity.mobiledoc;
 
         if (mobiledoc) {
@@ -48,23 +61,23 @@ export class KnexSnippetsRepository
         const row = {
             id: entity.id.toHexString(),
             name: entity.name,
-            lexical: lexical,
-            mobiledoc: mobiledoc,
+            lexical: lexical || null,
+            mobiledoc: mobiledoc || null,
             created_at: this.formatDateForKnex(entity.createdAt),
             created_by: entity.createdBy.toHexString(),
             updated_at: this.formatDateForKnex(entity.updatedAt),
-            updated_by: entity.updatedBy?.toHexString()
+            updated_by: entity.updatedBy?.toHexString() || null
         };
 
         return row;
     }
 
-    protected mapRowToEntity(row: any): Snippet | null {
+    protected mapRowToEntity(row: SnippetsTableRow): Snippet | null {
         return Snippet.create({
             id: ObjectID.createFromHexString(row.id),
             name: row.name,
-            lexical: this.urlUtils.transformReadyToAbsolute(row.lexical),
-            mobiledoc: this.urlUtils.transformReadyToAbsolute(row.mobiledoc),
+            lexical: row.lexical ? this.urlUtils.transformReadyToAbsolute(row.lexical) : row.lexical,
+            mobiledoc: row.mobiledoc ? this.urlUtils.transformReadyToAbsolute(row.mobiledoc) : row.mobiledoc,
             createdAt: new Date(row.created_at),
             createdBy: {
                 toHexString() {

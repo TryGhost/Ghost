@@ -6,14 +6,18 @@ import assert from 'assert';
 import nql from '@tryghost/nql';
 import {Entity} from '../../common/entity';
 
-export abstract class BaseKnexRepository<T extends Entity<unknown>, F, O extends OrderOf<Fields>, Fields extends string[]> implements Repository<T, F, Fields> {
+export abstract class BaseKnexRepository<T extends Entity<unknown>, F, O extends OrderOf<Fields>, Fields extends string[], Row> implements Repository<T, F, Fields> {
     constructor(@Inject('knex') private readonly knex: Knex) {}
     protected abstract readonly table: string;
 
-    protected abstract mapEntityToRow(entity: T): any;
-    protected abstract mapRowToEntity(row: any): T | null;
+    protected abstract mapEntityToRow(entity: T): Row;
+    protected abstract mapRowToEntity(row: Row): T | null;
 
-    protected formatDateForKnex(date: Date | null) {
+    protected formatDateForKnex(date: Date): string;
+    protected formatDateForKnex(date: null): null;
+    protected formatDateForKnex(date: Date | null): string | null;
+
+    protected formatDateForKnex(date: Date | null): string | null {
         if (!date) {
             return null;
         }
@@ -26,7 +30,7 @@ export abstract class BaseKnexRepository<T extends Entity<unknown>, F, O extends
         return `${YYYY}-${MM}-${DD} ${HH}:${mm}:${ss}`;
     }
 
-    private safeMapRowToEntity(row: any): T | null {
+    private safeMapRowToEntity(row: Row): T | null {
         try {
             return this.mapRowToEntity(row);
         } catch (err) {
@@ -35,7 +39,7 @@ export abstract class BaseKnexRepository<T extends Entity<unknown>, F, O extends
         }
     }
 
-    private mapRowsToEntities(rows: any[]): T[] {
+    private mapRowsToEntities(rows: Row[]): T[] {
         const entities = rows.reduce((memo: T[], row) => {
             const entity = this.safeMapRowToEntity(row);
             if (!entity) {
