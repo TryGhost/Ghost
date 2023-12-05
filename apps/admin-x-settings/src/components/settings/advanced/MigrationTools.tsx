@@ -27,7 +27,7 @@ const MigrationTools: React.FC<{ keywords: string[] }> = ({keywords}) => {
         <TopLevelGroup
             customHeader={
                 <div className='flex items-start justify-between'>
-                    <SettingGroupHeader description='Import content, members and subscriptions from other platforms.' title='Migration tools' />
+                    <SettingGroupHeader description='Import content, members and subscriptions from other platforms or export your Ghost data.' title='Migration tools' />
                     {
                         !isOpen ?
                             <Button color='green' label='Open' link linkWithPadding onClick={() => {
@@ -41,7 +41,7 @@ const MigrationTools: React.FC<{ keywords: string[] }> = ({keywords}) => {
             }
             isEditing={isOpen}
             keywords={keywords}
-            navid='migrationtools'
+            navid='migration'
             testId='migrationtools'
         >
             {isOpen && <TabView<'import' | 'export'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />}
