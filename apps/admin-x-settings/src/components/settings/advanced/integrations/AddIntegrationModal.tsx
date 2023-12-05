@@ -20,7 +20,8 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
             limiter.errorIfWouldGoOverLimit('customIntegrations').catch((error) => {
                 if (error instanceof HostLimitError) {
                     NiceModal.show(LimitModal, {
-                        prompt: error.message || `Your current plan doesn't support more custom integrations.`
+                        prompt: error.message || `Your current plan doesn't support more custom integrations.`,
+                        onOk: () => updateRoute({route: '/pro', isExternal: true})
                     });
                     modal.remove();
                     updateRoute('integrations');
