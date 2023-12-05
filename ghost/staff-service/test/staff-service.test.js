@@ -152,6 +152,9 @@ describe('StaffService', function () {
         const settingsHelpers = {
             getDefaultEmailDomain: () => {
                 return 'ghost.example';
+            },
+            useNewEmailAddresses: () => {
+                return false;
             }
         };
 

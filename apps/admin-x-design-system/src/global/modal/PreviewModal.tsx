@@ -44,6 +44,7 @@ export interface PreviewModalProps {
     sidebarPadding?: boolean;
     sidebarContentClasses?: string;
     enableCMDS?: boolean;
+    backDropClick?: boolean;
 
     onCancel?: () => void;
     onOk?: () => void;
@@ -83,6 +84,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
     sidebarPadding = true,
     sidebarContentClasses,
     enableCMDS = true,
+    backDropClick,
 
     onCancel,
     onOk,
@@ -262,6 +264,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         <Modal
             afterClose={afterClose}
             animate={false}
+            backDropClick={backDropClick}
             footer={false}
             height={height}
             padding={false}
@@ -272,13 +275,13 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             hideXOnMobile
         >
             <div className='flex h-full grow'>
-                <div className={`hidden grow flex-col md:!visible md:!flex ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
+                <div className={`hidden grow flex-col [@media(min-width:801px)]:!visible [@media(min-width:801px)]:!flex ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
                     {preview}
                 </div>
                 {sidebar &&
-                    <div className='relative flex h-full w-full flex-col border-l border-grey-100 dark:border-grey-900 md:w-auto md:basis-[400px]'>
+                    <div className='relative flex h-full w-full flex-col border-l border-grey-100 dark:border-grey-900 [@media(min-width:801px)]:w-auto [@media(min-width:801px)]:basis-[400px]'>
                         {sidebarHeader ? sidebarHeader : (
-                            <div className='flex max-h-[74px] items-center justify-between gap-3 px-7 py-5'>
+                            <div className='flex max-h-[82px] items-center justify-between gap-3 px-7 py-6'>
                                 <Heading level={titleHeadingLevel}>{title}</Heading>
                                 {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
                             </div>

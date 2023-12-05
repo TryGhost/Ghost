@@ -9,7 +9,7 @@ type FatalError = {
     };
   };
 
-type FatalErrors = FatalError[];
+export type FatalErrors = FatalError[];
 
 export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
     const [isExpanded, setExpanded] = useState(false);
@@ -63,8 +63,7 @@ const InvalidThemeModal: React.FC<{
     if (fatalErrors) {
         warningPrompt = <div className="mt-10">
             <List title="Errors">
-                {fatalErrors?.map((error: any) => error?.details?.errors?.map((err: any) => <ThemeProblemView problem={err} />
-                ))}
+                {fatalErrors?.map(error => error?.details?.errors?.map(err => <ThemeProblemView problem={err} />))}
             </List>
         </div>;
     }

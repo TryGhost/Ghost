@@ -18,6 +18,12 @@ export default class PublishModalComponent extends Component {
     @tracked isComplete = false;
     @tracked postCount = null;
 
+    @tracked hasConfirmedTks = false;
+
+    get isConfirmingTks() {
+        return this.args.data.tkCount > 0 && !this.hasConfirmedTks;
+    }
+
     get recipientType() {
         const filter = this.args.data.publishOptions.recipientFilter;
 
@@ -38,6 +44,11 @@ export default class PublishModalComponent extends Component {
         }
 
         return 'specific';
+    }
+
+    @action
+    confirmTks() {
+        this.hasConfirmedTks = true;
     }
 
     @action

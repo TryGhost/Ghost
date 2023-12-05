@@ -15,7 +15,6 @@ const queryClient = new QueryClient({
 
 const wrapper: React.FC<{ children: ReactNode }> = ({children}) => (
     <FrameworkProvider
-        basePath=''
         externalNavigate={() => {}}
         ghostVersion='5.x'
         sentryDSN=''

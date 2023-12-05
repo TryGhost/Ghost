@@ -4,9 +4,9 @@ import clsx from 'clsx';
 import useFeatureFlag from '../hooks/useFeatureFlag';
 import {Button, Icon, SettingNavItem, SettingNavItemProps, SettingNavSection, TextField, useFocusContext} from '@tryghost/admin-x-design-system';
 import {searchKeywords as advancedSearchKeywords} from './settings/advanced/AdvancedSettings';
+import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {searchKeywords as emailSearchKeywords} from './settings/email/EmailSettings';
 import {searchKeywords as generalSearchKeywords} from './settings/general/GeneralSettings';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {searchKeywords as growthSearchKeywords} from './settings/growth/GrowthSettings';
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/MembershipSettings';
 import {searchKeywords as siteSearchKeywords} from './settings/site/SiteSettings';
@@ -35,11 +35,16 @@ const Sidebar: React.FC = () => {
     const {updateRoute} = useRouting();
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const {isAnyTextFieldFocused} = useFocusContext();
-    const hasOffers = useFeatureFlag('adminXOffers');
+    const hasOffersLabs = useFeatureFlag('adminXOffers');
 
     // Focus in on search field when pressing "/"
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
+            // ensures it doesn't fire when typing in a text field, particularly useful for the Koenig Editor.
+            if (e.target instanceof HTMLElement &&
+                (e.target.nodeName === 'INPUT' || e.target.nodeName === 'TEXTAREA' || e.target.isContentEditable)) {
+                return;
+            }
             if (e.key === '/' && !isAnyTextFieldFocused) {
                 e?.preventDefault();
                 if (searchInputRef.current) {
@@ -62,6 +67,7 @@ const Sidebar: React.FC = () => {
 
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
+    const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
     const handleSectionClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
         if (e) {
@@ -89,9 +95,22 @@ const Sidebar: React.FC = () => {
         <div data-testid="sidebar">
             <div className='relative flex content-stretch items-end tablet:h-[36px]'>
                 <Icon className='absolute left-2 top-[10px] z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
-                <TextField autoComplete="off" className='-mx-1 flex h-9 w-[calc(100%+8px)] items-center rounded-full border border-transparent bg-grey-150 px-[33px] py-1.5 text-sm transition-all hover:bg-grey-100 focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:bg-grey-900 dark:text-white dark:focus:bg-black' containerClassName='w-100' inputRef={searchInputRef} placeholder="Search settings" title="Search" value={filter} clearBg hideTitle unstyled onChange={updateSearch} />
+                <TextField
+                    autoComplete="off"
+                    className='-mx-1 flex h-9 w-[calc(100%+8px)] items-center rounded-full border border-transparent bg-grey-150 px-[33px] py-1.5 text-sm transition-all hover:bg-grey-100 focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:bg-grey-900 dark:text-white dark:focus:bg-black'
+                    containerClassName='w-100'
+                    inputRef={searchInputRef}
+                    placeholder="Search settings"
+                    title="Search"
+                    value={filter}
+                    clearBg
+                    hideTitle
+                    unstyled
+                    onChange={updateSearch}
+                />
                 {filter ? <Button className='absolute right-3 top-[10px] p-1' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
                     setFilter('');
+                    searchInputRef.current?.focus();
                 }} /> : <div className='absolute right-0 top-[20px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:right-3 tablet:top-[7px] tablet:!block'>/</div>}
             </div>
             <div className={navClasses} id='admin-x-settings-sidebar'>
@@ -123,7 +142,7 @@ const Sidebar: React.FC = () => {
                 <SettingNavSection isVisible={checkVisible(Object.values(growthSearchKeywords).flat())} title="Growth">
                     {hasRecommendations && <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />}
                     <NavItem icon='emailfield' keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Embeddable signup form" onClick={handleSectionClick} />
-                    {hasOffers && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
+                    {hasOffersLabs && hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
                     {hasTipsAndDonations && <NavItem icon='piggybank' keywords={growthSearchKeywords.tips} navid='tips-or-donations' title="Tips or donations" onClick={handleSectionClick} />}
                 </SettingNavSection>
 

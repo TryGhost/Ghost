@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {CheckboxGroup, CheckboxProps, Form, HtmlField, Toggle} from '@tryghost/admin-x-design-system';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
+import {CheckboxGroup, CheckboxProps, Form, HtmlField, Select, SelectOption, Toggle} from '@tryghost/admin-x-design-system';
 import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {Tier, getPaidActiveTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
@@ -85,6 +86,14 @@ const SignupOptions: React.FC<{
     }
 
     const paidActiveTiersResult = getPaidActiveTiers(localTiers) || [];
+    const hasPortalImprovements = useFeatureFlag('portalImprovements');
+
+    // TODO: Hook up with actual values and then delete this
+    const selectOptions: SelectOption[] = [
+        {value: 'default-yearly', label: 'Yearly'},
+        {value: 'default-monthly', label: 'Monthly'}
+
+    ];
 
     if (paidActiveTiersResult.length > 0 && isStripeEnabled) {
         paidActiveTiersResult.forEach((tier) => {
@@ -112,29 +121,34 @@ const SignupOptions: React.FC<{
         />
 
         {isStripeEnabled && localTiers.some(tier => tier.visibility === 'public') && (
-            <CheckboxGroup
-                checkboxes={[
-                    {
-                        checked: portalPlans.includes('monthly'),
-                        disabled: isDisabled,
-                        label: 'Monthly',
-                        value: 'monthly',
-                        onChange: () => {
-                            togglePlan('monthly');
+            <>
+                <CheckboxGroup
+                    checkboxes={[
+                        {
+                            checked: portalPlans.includes('monthly'),
+                            disabled: isDisabled,
+                            label: 'Monthly',
+                            value: 'monthly',
+                            onChange: () => {
+                                togglePlan('monthly');
+                            }
+                        },
+                        {
+                            checked: portalPlans.includes('yearly'),
+                            disabled: isDisabled,
+                            label: 'Yearly',
+                            value: 'yearly',
+                            onChange: () => {
+                                togglePlan('yearly');
+                            }
                         }
-                    },
-                    {
-                        checked: portalPlans.includes('yearly'),
-                        disabled: isDisabled,
-                        label: 'Yearly',
-                        value: 'yearly',
-                        onChange: () => {
-                            togglePlan('yearly');
-                        }
-                    }
-                ]}
-                title='Prices available at signup'
-            />
+                    ]}
+                    title='Prices available at signup'
+                />
+                {hasPortalImprovements && <Select disabled={(portalPlans.includes('yearly') && portalPlans.includes('monthly')) ? false : true} options={selectOptions} selectedOption={selectOptions.find(option => option.value === (portalPlans.includes('yearly') ? 'default-yearly' : 'default-monthly'))} title='Price shown by default' onSelect={(value) => {
+                    alert(value);
+                }} />}
+            </>
         )}
 
         <HtmlField

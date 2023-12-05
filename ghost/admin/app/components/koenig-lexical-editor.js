@@ -75,6 +75,11 @@ const WordCountPlugin = ({editorResource, ...props}) => {
     return <_WordCountPlugin {...props} />;
 };
 
+const TKPlugin = ({editorResource, ...props}) => {
+    const {TKPlugin: _TKPlugin} = editorResource.read();
+    return <_TKPlugin {...props} />;
+};
+
 export default class KoenigLexicalEditor extends Component {
     @service ajax;
     @service feature;
@@ -293,8 +298,7 @@ export default class KoenigLexicalEditor extends Component {
             feature: {
                 collectionsCard: this.feature.get('collectionsCard'),
                 collections: this.feature.get('collections'),
-                emojiPicker: this.feature.get('editorEmojiPicker'),
-                tkReminders: this.feature.get('tkReminders')
+                emojiPicker: this.feature.get('editorEmojiPicker')
             },
             depreciated: {
                 headerV1: true // if false, shows header v1 in the menu
@@ -532,6 +536,7 @@ export default class KoenigLexicalEditor extends Component {
                                 registerAPI={this.args.registerAPI}
                             />
                             <WordCountPlugin editorResource={this.editorResource} onChange={this.args.updateWordCount} />
+                            {this.feature.tkReminders && <TKPlugin editorResource={this.editorResource} onCountChange={this.args.updateTkCount} />}
                         </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>

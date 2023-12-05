@@ -3,6 +3,7 @@ import React, {useEffect} from 'react';
 import {Form, LimitModal, Modal, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {numberWithCommas} from '../../../../utils/helpers';
 import {toast} from 'react-hot-toast';
 import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
@@ -18,7 +19,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     });
 
     const {mutateAsync: addNewsletter} = useAddNewsletter();
-    const {formState, updateForm, handleSave, errors, clearError} = useForm({
+    const {formState, updateForm, saveState, handleSave, errors, clearError} = useForm({
         initialState: {
             name: '',
             description: '',
@@ -62,12 +63,16 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         });
     }, [limiter, modal, updateRoute]);
 
+    const subscriberCount = members?.meta?.pagination.total;
+
     return <Modal
         afterClose={() => {
             updateRoute('newsletters');
         }}
+        backDropClick={false}
         okColor='black'
         okLabel='Create'
+        okLoading={saveState === 'saving'}
         size='sm'
         testId='add-newsletter-modal'
         title='Create newsletter'
@@ -106,7 +111,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 checked={formState.optInExistingSubscribers}
                 direction='rtl'
                 hint={formState.optInExistingSubscribers ?
-                    `This newsletter will be available to all members. Your ${members?.meta?.pagination.total} existing subscriber${members?.meta?.pagination.total === 1 ? '' : 's'} will also be opted-in to receive it.` :
+                    `This newsletter will be available to all members. Your ${subscriberCount === undefined ? '' : numberWithCommas(subscriberCount)} existing subscriber${members?.meta?.pagination.total === 1 ? '' : 's'} will also be opted-in to receive it.` :
                     'The newsletter will be available to all new members. Existing members won’t be subscribed, but may visit their account area to opt-in to future emails.'
                 }
                 label='Opt-in existing subscribers'

@@ -17,7 +17,7 @@ module.exports = {
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         sender_name: {type: 'string', maxlength: 191, nullable: true},
         sender_email: {type: 'string', maxlength: 191, nullable: true},
-        sender_reply_to: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'newsletter', validations: {isIn: [['newsletter', 'support']]}},
+        sender_reply_to: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'newsletter'},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'active', validations: {isIn: [['active', 'archived']]}},
         visibility: {
             type: 'string',
@@ -936,7 +936,10 @@ module.exports = {
     members_newsletters: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
-        newsletter_id: {type: 'string', maxlength: 24, nullable: false, references: 'newsletters.id', cascadeDelete: true}
+        newsletter_id: {type: 'string', maxlength: 24, nullable: false, references: 'newsletters.id', cascadeDelete: true},
+        '@@INDEXES@@': [
+            ['newsletter_id', 'member_id']
+        ]
     },
     comments: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

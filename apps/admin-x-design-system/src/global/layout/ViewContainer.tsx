@@ -21,12 +21,50 @@ export interface PrimaryActionProps {
     title?: string;
     icon?: string;
     color?: ButtonColor;
+    className?: string;
     onClick?: () => void;
 }
 
 interface ViewContainerProps {
+    /**
+     * Use `page` if the `ViewContainer` is your main component on the page. Use
+     * `section` for individual sections on the page (e.g. blocks on a dashboard).
+     */
     type: 'page' | 'section';
+
+    /**
+     * The title of the ViewContainer. `page` type containers will use a large
+     * size that matches the rest of the page titles in the Admin.
+     */
     title?: string;
+
+    /**
+     * Use this if there's no toolbar on the page and you use the `ViewContainer`
+     * as the main container on a page. Technically it sticks the header to
+     * the top of the page with the actions aligned properly to match other
+     * pages in the Admin.
+     */
+    firstOnPage?:boolean;
+
+    /**
+     * Use this for custom content in the header.
+     */
+    headerContent?: React.ReactNode;
+
+    /**
+     * Sticks the header so it's always visible. The `top` value depends on the
+     * value of `firstOnPage`:
+     *
+     * ```
+     * firstOnPage = true    -> top: 0px;
+     * firstOnPage = false   -> top: 3vmin;
+     * ```
+     */
+    stickyHeader?: boolean;
+
+    /**
+     * Use this to break down the view to multiple tabs.
+     */
     tabs?: ViewTab[];
     selectedTab?: string;
     selectedView?: string;
@@ -36,18 +74,40 @@ interface ViewContainerProps {
     toolbarContainerClassName?: string;
     toolbarLeftClassName?: string;
     toolbarBorder?: boolean;
+
+    /**
+     * The primary action appears in the view container's top right usually as a solid
+     * button.
+     */
     primaryAction?: PrimaryActionProps;
-    actions?: (React.ReactElement<ButtonProps> | React.ReactElement<ButtonGroupProps>)[];
+
+    /**
+     * Adds more actions by the primary action, primarily buttons and button groups.
+     */
+    actions?: (React.ReactElement<ButtonProps> | React.ReactElement<ButtonGroupProps> | React.ReactNode)[];
     actionsClassName?: string;
     actionsHidden?: boolean;
     contentWrapperClassName?: string;
+
+    /**
+     * Sets the width of the view container full bleed
+     */
     contentFullBleed?: boolean;
     children?: React.ReactNode;
 }
 
+/**
+ * The `ViewContainer` component is a generic container for either the complete
+ * contents of a page (`type = 'page'`) or for individual sections on a
+ * page, like blocks on a dashboard (`type = 'section'`). It has a bunch of
+ * parameters to customise its look & feel.
+ */
 const ViewContainer: React.FC<ViewContainerProps> = ({
     type,
     title,
+    firstOnPage = true,
+    headerContent,
+    stickyHeader = true,
     tabs,
     selectedTab,
     onTabChange,
@@ -112,13 +172,16 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     toolbarWrapperClassName = clsx(
         'z-50',
-        type === 'page' && 'sticky top-18 mx-auto w-full max-w-7xl bg-white px-12 pt-[3vmin]',
+        type === 'page' && 'mx-auto w-full max-w-7xl bg-white px-[4vw] dark:bg-black tablet:px-12',
+        (type === 'page' && stickyHeader) && (firstOnPage ? 'sticky top-0 pt-8' : 'sticky top-22 pt-[3vmin]'),
         toolbarContainerClassName
     );
 
     toolbarContainerClassName = clsx(
-        'flex justify-between',
-        toolbarBorder && 'border-b border-grey-200',
+        'flex justify-between gap-5',
+        (type === 'page' && actions?.length) ? 'flex-col md:flex-row md:items-end' : 'items-end',
+        (firstOnPage && type === 'page') ? 'pb-3 tablet:pb-8' : (tabs?.length ? '' : 'pb-2'),
+        toolbarBorder && 'border-b border-grey-200 dark:border-grey-900',
         toolbarContainerClassName
     );
 
@@ -128,27 +191,29 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
     );
 
     actionsClassName = clsx(
-        'flex items-center gap-10 transition-all',
+        'flex items-center justify-between gap-3 transition-all tablet:justify-start tablet:gap-5',
         actionsHidden && 'opacity-0 group-hover/view-container:opacity-100',
-        tabs?.length ? 'pb-2' : 'pb-3',
+        tabs?.length ? 'pb-1' : (type === 'page' ? 'pb-1' : ''),
         actionsClassName
     );
 
-    if (primaryAction) {
-        primaryAction!.color = 'black';
-    }
-
     const primaryActionContents = <>
-        {primaryAction?.title && (
-            <Button color={primaryAction.color} icon={primaryAction.icon} iconColorClass='text-white' label={primaryAction.title} size={type === 'page' ? 'md' : 'sm'} onClick={primaryAction.onClick} />
+        {(primaryAction?.title || primaryAction?.icon) && (
+            <Button className={primaryAction.className} color={primaryAction.color || 'black'} icon={primaryAction.icon} label={primaryAction.title} size={type === 'page' ? 'md' : 'sm'} onClick={primaryAction.onClick} />
         )}
     </>;
+
+    const headingClassName = clsx(
+        tabs?.length && 'pb-3',
+        type === 'page' && '-mt-2'
+    );
 
     toolbar = (
         <div className={toolbarWrapperClassName}>
             <div className={toolbarContainerClassName}>
                 <div className={toolbarLeftClassName}>
-                    {title && <Heading className={tabs?.length ? 'pb-3' : 'pb-2'} level={type === 'page' ? 1 : 4}>{title}</Heading>}
+                    {headerContent}
+                    {title && <Heading className={headingClassName} level={type === 'page' ? 1 : 4}>{title}</Heading>}
                     {tabs?.length && (
                         <TabList
                             border={false}
@@ -179,14 +244,14 @@ const ViewContainer: React.FC<ViewContainerProps> = ({
 
     contentWrapperClassName = clsx(
         'relative mx-auto w-full flex-auto',
-        !contentFullBleed && 'max-w-7xl px-12',
+        (!contentFullBleed && type === 'page') && 'max-w-7xl px-[4vw] tablet:px-12',
         contentWrapperClassName,
         (!title && !actions) && 'pt-[3vmin]'
     );
 
     return (
         <section className={mainContainerClassName}>
-            {(title || actions) && toolbar}
+            {(title || actions || headerContent) && toolbar}
             <div className={contentWrapperClassName}>
                 {mainContent}
             </div>

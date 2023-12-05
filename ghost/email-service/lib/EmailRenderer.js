@@ -9,6 +9,7 @@ const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const tpl = require('@tryghost/tpl');
 const cheerio = require('cheerio');
+const {EmailAddressParser} = require('@tryghost/email-addresses');
 
 const messages = {
     subscriptionStatus: {
@@ -108,6 +109,7 @@ class EmailRenderer {
     #memberAttributionService;
     #outboundLinkTagger;
     #audienceFeedbackService;
+    #emailAddressService;
     #labs;
     #models;
 
@@ -126,6 +128,7 @@ class EmailRenderer {
      * @param {object} dependencies.linkTracking
      * @param {object} dependencies.memberAttributionService
      * @param {object} dependencies.audienceFeedbackService
+     * @param {object} dependencies.emailAddressService
      * @param {object} dependencies.outboundLinkTagger
      * @param {object} dependencies.labs
      * @param {{Post: object}} dependencies.models
@@ -142,6 +145,7 @@ class EmailRenderer {
         linkTracking,
         memberAttributionService,
         audienceFeedbackService,
+        emailAddressService,
         outboundLinkTagger,
         labs,
         models
@@ -157,6 +161,7 @@ class EmailRenderer {
         this.#linkTracking = linkTracking;
         this.#memberAttributionService = memberAttributionService;
         this.#audienceFeedbackService = audienceFeedbackService;
+        this.#emailAddressService = emailAddressService;
         this.#outboundLinkTagger = outboundLinkTagger;
         this.#labs = labs;
         this.#models = models;
@@ -166,7 +171,7 @@ class EmailRenderer {
         return post.related('posts_meta')?.get('email_subject') || post.get('title');
     }
 
-    getFromAddress(_post, newsletter) {
+    #getRawFromAddress(post, newsletter) {
         let senderName = this.#settingsCache.get('title') ? this.#settingsCache.get('title').replace(/"/g, '\\"') : '';
         if (newsletter.get('sender_name')) {
             senderName = newsletter.get('sender_name');
@@ -185,8 +190,19 @@ class EmailRenderer {
                 fromAddress = localAddress;
             }
         }
+        return {
+            address: fromAddress,
+            name: senderName || undefined
+        };
+    }
 
-        return senderName ? `"${senderName}" <${fromAddress}>` : fromAddress;
+    getFromAddress(post, newsletter) {
+        // Clean from address to ensure DMARC alignment
+        const addresses = this.#emailAddressService.getAddress({
+            from: this.#getRawFromAddress(post, newsletter)
+        });
+
+        return EmailAddressParser.stringify(addresses.from);
     }
 
     /**
@@ -198,7 +214,25 @@ class EmailRenderer {
         if (newsletter.get('sender_reply_to') === 'support') {
             return this.#settingsHelpers.getMembersSupportAddress();
         }
-        return this.getFromAddress(post, newsletter);
+        if (newsletter.get('sender_reply_to') === 'newsletter') {
+            if (this.#emailAddressService.managedEmailEnabled) {
+                // Don't duplicate the same replyTo addres if it already in the FROM address
+                return null;
+            }
+            return this.getFromAddress(post, newsletter);
+        }
+
+        const addresses = this.#emailAddressService.getAddress({
+            from: this.#getRawFromAddress(post, newsletter),
+            replyTo: {
+                address: newsletter.get('sender_reply_to')
+            }
+        });
+
+        if (addresses.replyTo) {
+            return EmailAddressParser.stringify(addresses.replyTo);
+        }
+        return null;
     }
 
     /**
