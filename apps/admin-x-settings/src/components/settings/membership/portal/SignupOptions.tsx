@@ -61,7 +61,7 @@ const SignupOptions: React.FC<{
 
     if (localTiers) {
         localTiers.forEach((tier) => {
-            if (tier.name === 'Free') {
+            if (tier.type === 'free') {
                 tiersCheckboxes.push({
                     checked: (portalPlans.includes('free')),
                     disabled: isDisabled,
