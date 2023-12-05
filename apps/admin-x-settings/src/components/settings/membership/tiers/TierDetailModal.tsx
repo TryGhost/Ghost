@@ -35,8 +35,6 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         yearly_price: () => (formState.type !== 'free' ? validateCurrencyAmount(formState.yearly_price || 0, formState.currency, {allowZero: false}) : undefined)
     };
 
-    const hasPortalImprovements = useFeatureFlag('portalImprovements');
-
     const {formState, saveState, updateForm, handleSave, errors, setErrors, clearError, okProps} = useForm<TierFormState>({
         initialState: {
             ...(tier || {}),
