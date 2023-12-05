@@ -28,8 +28,8 @@
                 </span>
             {{/if}}
 
-            {{#if this.args.titleHasTk}}
-                <div 
+            {{#if (and (feature "tkReminders") @titleHasTk)}}
+                <div
                     class="tk-indicator" data-testid="tk-indicator"
                     {{on "click" this.focusTitle}}
                 >
