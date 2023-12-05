@@ -1406,6 +1406,7 @@ Object {
     "portal_button_icon": null,
     "portal_button_signup_text": "Subscribe",
     "portal_button_style": "icon-and-text",
+    "portal_default_plan": "yearly",
     "portal_name": true,
     "portal_plans": Array [
       "free",
@@ -1507,6 +1508,7 @@ Object {
     "portal_button_icon": null,
     "portal_button_signup_text": "Subscribe",
     "portal_button_style": "icon-and-text",
+    "portal_default_plan": "yearly",
     "portal_name": true,
     "portal_plans": Array [
       "free",

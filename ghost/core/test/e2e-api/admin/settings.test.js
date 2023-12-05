@@ -9,15 +9,17 @@ const models = require('../../../core/server/models');
 const {mockLabsDisabled, mockLabsEnabled} = require('../../utils/e2e-framework-mock-manager');
 const {anyErrorId} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 86;
+const CURRENT_SETTINGS_COUNT = 87;
 
 const settingsMatcher = {};
 
 const publicHashSettingMatcher = {
+    key: 'public_hash',
     value: stringMatching(/[a-z0-9]{30}/)
 };
 
 const labsSettingMatcher = {
+    key: 'labs',
     value: stringMatching(/\{[^\s]+\}/)
 };
 
@@ -30,10 +32,10 @@ const matchSettingsArray = (length) => {
         settingsArray[26] = publicHashSettingMatcher;
     }
 
-    if (length > 60) {
+    if (length > 61) {
         // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
         // Item at index x is the lab settings, which changes as we add and remove features
-        settingsArray[60] = labsSettingMatcher;
+        settingsArray[61] = labsSettingMatcher;
     }
 
     return settingsArray;
