@@ -26,6 +26,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const handleError = useHandleError();
     const {localSettings, siteData} = useSettingGroup();
     const siteTitle = getSettingValues(localSettings, ['title']) as string[];
+    const hasPortalImprovements = useFeatureFlag('portalImprovements');
+    const allowNameChange = !isFreeTier || hasPortalImprovements;
 
     const validators: {[key in keyof Tier]?: () => string | undefined} = {
         name: () => (formState.name ? undefined : 'You must specify a name'),
@@ -192,7 +194,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         <div className='-mb-8 mt-8 flex items-start gap-8'>
             <div className='flex grow flex-col gap-8'>
                 <Form marginBottom={false} title='Basic' grouped>
-                    {!isFreeTier && <TextField
+                    {allowNameChange && <TextField
                         autoComplete='off'
                         error={Boolean(errors.name)}
                         hint={errors.name}
