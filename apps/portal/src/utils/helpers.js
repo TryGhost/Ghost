@@ -451,6 +451,11 @@ export function getFreeProductBenefits({site}) {
 
 export function getFreeTierTitle({site}) {
     const freeProduct = getFreeProduct({site});
+
+    if (freeProduct?.name === 'Free' && hasOnlyFreeProduct({site})) {
+        return 'Free membership';
+    }
+
     return freeProduct?.name || 'Free';
 }
 
