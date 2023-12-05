@@ -683,6 +683,17 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     opacity: .5;
 }
 
+.gh-editor-title-container .tk-indicator {
+    position: absolute;
+    top: 15px;
+    right: -5.6rem;
+    padding: .4rem;
+    color: #95A1AD;
+    font-size: 1.2rem;
+    font-weight: 500;
+    cursor: default;
+}
+
 .gh-editor-back-button {
     height: 34px;
     margin-right: 8px;
