@@ -67,6 +67,7 @@
                 @title={{readonly this.post.titleScratch}}
                 @titleAutofocus={{this.shouldFocusTitle}}
                 @titlePlaceholder={{concat (capitalize this.post.displayName) " title"}}
+                @titleHasTk={{this.titleHasTk}}
                 @onTitleChange={{this.updateTitleScratch}}
                 @onTitleBlur={{perform this.saveTitleTask}}
                 @body={{readonly this.post.lexicalScratch}}
@@ -77,7 +78,7 @@
                 @scrollOffsetBottomSelector=".gh-mobile-nav-bar"
                 @onEditorCreated={{this.setKoenigEditor}}
                 @updateWordCount={{this.updateWordCount}}
-                @updateTkCount={{this.updateTkCount}}
+                @updatePostTkCount={{this.updatePostTkCount}}
                 @featureImage={{this.post.featureImage}}
                 @featureImageAlt={{this.post.featureImageAlt}}
                 @featureImageCaption={{this.post.featureImageCaption}}
