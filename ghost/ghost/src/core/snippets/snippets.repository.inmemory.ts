@@ -18,7 +18,7 @@ export class SnippetsRepositoryInMemory implements SnippetsRepository {
     async getAll(order: OrderOf<[]>[], filter?: string | undefined): Promise<Snippet[]> {
         const filterObj = nql(filter);
         return [...this.snippets.values()].filter((value: Snippet) => {
-            return filterObj.testJSON(value);
+            return filterObj.queryJSON(value);
         });
     }
 
