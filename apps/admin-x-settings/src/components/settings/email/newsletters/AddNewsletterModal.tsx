@@ -53,7 +53,8 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         limiter?.errorIfWouldGoOverLimit('newsletters').catch((error) => {
             if (error instanceof HostLimitError) {
                 NiceModal.show(LimitModal, {
-                    prompt: error.message || `Your current plan doesn't support more newsletters.`
+                    prompt: error.message || `Your current plan doesn't support more newsletters.`,
+                    onOk: () => updateRoute({route: '/pro', isExternal: true})
                 });
                 modal.remove();
                 updateRoute('newsletters');
