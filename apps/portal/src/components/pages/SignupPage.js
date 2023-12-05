@@ -9,6 +9,7 @@ import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
 import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
+import {interceptAnchorClicks} from '../../utils/links';
 
 export const SignupPageStyles = `
 .gh-portal-back-sitetitle {
@@ -529,13 +530,6 @@ class SignupPage extends React.Component {
         const errorClassName = this.state.errors?.checkbox ? 'gh-portal-error' : '';
 
         const className = `gh-portal-signup-terms ${errorClassName}`;
-
-        const interceptAnchorClicks = (e) => {
-            if (e.target.tagName === 'A') {
-                e.preventDefault();
-                window.open(e.target.href, '_blank');
-            }
-        };
 
         return (
             <div className={className} onClick={interceptAnchorClicks}>
