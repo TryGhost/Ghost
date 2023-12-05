@@ -35,6 +35,9 @@ const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
 const TIMEDSAVE_TIMEOUT = 60000;
 
+const TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
+const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
+
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
     'post.lexicalScratch',
@@ -215,11 +218,48 @@ export default class LexicalEditorController extends Controller {
         return config.environment !== 'test' && this.get('post.isDraft');
     }
 
-    TK_REGEX = new RegExp(/(^|.)([^a-zA-Z0-9\s]?(TK)+[^a-zA-Z0-9\s]?)($|.)/);
+    TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
+    WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
 
     @computed('post.titleScratch')
     get titleHasTk() {
-        return this.TK_REGEX.test(this.post.titleScratch) ? 1 : 0;
+        let text = this.post.titleScratch;
+        let matchArr = TK_REGEX.exec(text);
+
+        if (matchArr === null) {
+            return false;
+        }
+
+        function isValidMatch(match) {
+            // negative lookbehind isn't supported before Safari 16.4
+            // so we capture the preceding char and test it here
+            if (match[1] && match[1].trim() && WORD_CHAR_REGEX.test(match[1])) {
+                return false;
+            }
+
+            // we also check any following char in code to avoid an overly
+            // complex regex when looking for word-chars following the optional
+            // trailing symbol char
+            if (match[4] && match[4].trim() && WORD_CHAR_REGEX.test(match[4])) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // our regex will match invalid TKs because we can't use negative lookbehind
+        // so we need to loop through the matches discarding any that are invalid
+        // and moving on to any subsequent matches
+        while (matchArr !== null && !isValidMatch(matchArr)) {
+            text = text.slice(matchArr.index + matchArr[0].length - 1);
+            matchArr = TK_REGEX.exec(text);
+        }
+
+        if (matchArr === null) {
+            return false;
+        }
+
+        return true;
     }
 
     @computed('titleHasTk', 'postTkCount')
