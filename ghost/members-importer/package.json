@@ -28,6 +28,7 @@
     "@tryghost/errors": "1.2.26",
     "@tryghost/logging": "2.4.8",
     "@tryghost/members-csv": "0.0.0",
+    "@tryghost/metrics": "1.0.27",
     "@tryghost/tpl": "0.1.26",
     "moment-timezone": "0.5.23"
   }
