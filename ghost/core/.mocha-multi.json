@@ -1,0 +1,8 @@
+{
+    "reporterEnabled": "dot, kelonio/out/plugin/mochaReporter",
+    "kelonioOutPluginMochaReporterReporterOptions": {
+      "inferDescriptions": true,
+      "printReportAtEnd": true,
+      "extensions": []
+    }
+  }
