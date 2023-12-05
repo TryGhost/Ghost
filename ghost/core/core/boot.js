@@ -394,12 +394,34 @@ async function initNestDependencies() {
     debug('Begin: initNestDependencies');
     const GhostNestApp = require('@tryghost/ghost');
     const providers = GhostNestApp.AppModule.providers;
+    const urlUtils = require('./shared/url-utils');
     providers.push({
         provide: 'models',
         useValue: require('./server/models')
     }, {
         provide: 'knex',
         useValue: require('./server/data/db/connection')
+    }, {
+        provide: 'urlUtils',
+        useValue: urlUtils
+    }, {
+        provide: 'urlUtilsHax',
+        useValue: {
+            mobiledocToTransformReady(mobiledoc) {
+                return urlUtils.mobiledocToTransformReady(mobiledoc, {
+                    cardTransformers: require('./server/lib/mobiledoc').cards
+                });
+            },
+            lexicalToTransformReady(lexical) {
+                return urlUtils.lexicalToTransformReady(lexical, {
+                    nodes: require('./server/lib/lexical').nodes,
+                    transformMap: require('./server/lib/lexical').urlTransformMap
+                });
+            },
+            transformReadyToAbsolute(value) {
+                return urlUtils.transformReadyToAbsolute(value);
+            }
+        }
     }, {
         // @NOTE: decide if this comes in as separate values
         provide: 'settings',
