@@ -264,7 +264,7 @@ export default class LexicalEditorController extends Controller {
 
     @computed('titleHasTk', 'postTkCount')
     get tkCount() {
-        return (this.hasTitleTk ? 1 : 0) + this.postTkCount;
+        return (this.titleHasTk ? 1 : 0) + this.postTkCount;
     }
 
     @action
