@@ -1,6 +1,7 @@
 const moment = require('moment-timezone');
 const path = require('path');
 const fs = require('fs-extra');
+const metrics = require('@tryghost/metrics');
 const membersCSV = require('@tryghost/members-csv');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -119,6 +120,7 @@ module.exports = class MembersCSVImporter {
      * @param {string} filePath - the path to a "prepared" CSV file
      */
     async perform(filePath) {
+        const performStart = Date.now();
         const rows = await membersCSV.parse(filePath, DEFAULT_CSV_HEADER_MAPPING);
 
         const defaultTier = await this._getDefaultTier();
@@ -272,6 +274,12 @@ module.exports = class MembersCSVImporter {
         await Promise.all(
             archivableStripePriceIds.map(stripePriceId => this._stripeUtils.archivePrice(stripePriceId))
         );
+
+        metrics.metric({
+            imported: result.imported,
+            errors: result.errors.length,
+            value: Date.now() - performStart
+        });
 
         return {
             total: result.imported + result.errors.length,
