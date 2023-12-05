@@ -1070,6 +1070,10 @@ figure {
     padding-right: 8px; /* extra padding used for dynamic positioning with js */
 }
 
+.gh-tk-reminder .modal-body p strong {
+    white-space: nowrap;
+}
+
 /* Labs
 /* ---------------------------------------------------------- */
 
