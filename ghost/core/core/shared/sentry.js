@@ -59,17 +59,18 @@ if (sentryConfig && !sentryConfig.disabled) {
     const Sentry = require('@sentry/node');
     const version = require('@tryghost/version').full;
     const environment = config.get('env');
+    const tracesSampleRate = parseFloat(sentryConfig.tracesSampleRate) || 0.0;
     Sentry.init({
         dsn: sentryConfig.dsn,
         integrations: [
             new Sentry.Integrations.Http({tracing: true}),
             new Sentry.Integrations.Express()
         ],
-        tracesSampleRate: 1.0,
         release: 'ghost@' + version,
         environment: environment,
         maxValueLength: 1000,
-        beforeSend: beforeSend
+        beforeSend,
+        tracesSampleRate
     });
 
     module.exports = {
