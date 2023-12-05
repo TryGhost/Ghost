@@ -51,12 +51,6 @@
                 @postCount={{this.postCount}}
                 @close={{@close}}
             />
-        {{else if this.isConfirmingTks}}
-            <Editor::Modals::PublishFlow::TkReminder
-                @tkCount={{@data.tkCount}}
-                @close={{@close}}
-                @confirm={{this.confirmTks}}
-            />
         {{else}}
             <Editor::Modals::PublishFlow::Options
                 @publishOptions={{@data.publishOptions}}
