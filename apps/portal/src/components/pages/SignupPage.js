@@ -531,9 +531,13 @@ class SignupPage extends React.Component {
         const className = `gh-portal-signup-terms ${errorClassName}`;
 
         const interceptAnchorClicks = (e) => {
-            if (e.target.tagName === 'A') {
-                e.preventDefault();
-                window.open(e.target.href, '_blank');
+            if (e.currentTarget.contains(e.target)) {
+                const anchor = e.target.closest('a');
+
+                if (anchor) {
+                    e.preventDefault();
+                    window.open(anchor.href, '_blank');
+                }
             }
         };
 
