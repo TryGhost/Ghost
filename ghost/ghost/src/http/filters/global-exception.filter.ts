@@ -1,14 +1,23 @@
 import {ArgumentsHost, Catch, ExceptionFilter} from '@nestjs/common';
 import {Response} from 'express';
 
+interface GhostError extends Error {
+    statusCode?: number;
+    context?: string;
+    errorType?: string;
+    errorDetails?: string;
+    property?: string;
+    help?: string;
+    code?: string;
+    id?: string;
+    ghostErrorCode?: string;
+}
+
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-    catch(error: any, host: ArgumentsHost) {
+    catch(error: GhostError, host: ArgumentsHost) {
         const context = host.switchToHttp();
         const response = context.getResponse<Response>();
-
-        console.log(error);
-        console.log(error.id);
 
         response.status(error.statusCode || 500);
         response.json({

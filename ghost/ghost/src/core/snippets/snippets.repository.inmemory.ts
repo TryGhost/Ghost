@@ -2,6 +2,7 @@ import ObjectID from 'bson-objectid';
 import {Snippet} from './snippet.entity';
 import {SnippetsRepository} from './snippets.repository.interface';
 import {OrderOf, Page} from '../../common/repository';
+import nql from '@tryghost/nql';
 
 export class SnippetsRepositoryInMemory implements SnippetsRepository {
     snippets: Map<string, Snippet>;
@@ -15,11 +16,17 @@ export class SnippetsRepositoryInMemory implements SnippetsRepository {
         this.snippets.set(entity.id.toHexString(), entity);
     }
     async getAll(order: OrderOf<[]>[], filter?: string | undefined): Promise<Snippet[]> {
-        return [...this.snippets.values()];
+        const filterObj = nql(filter);
+        return [...this.snippets.values()].filter((value: Snippet) => {
+            return filterObj.testJSON(value);
+        });
     }
 
     async getSome(page: Page, order: OrderOf<[]>[], filter?: string | undefined): Promise<Snippet[]> {
-        return [...this.snippets.values()];
+        const all = await this.getAll(order, filter);
+        const start = (page.page - 1) * page.count;
+        const data = all.slice(start, start + page.count);
+        return data;
     }
 
     async getOne(id: ObjectID) {
@@ -27,6 +34,6 @@ export class SnippetsRepositoryInMemory implements SnippetsRepository {
     }
 
     async getCount(filter?: string | undefined): Promise<number> {
-        return 0;
+        return (await this.getAll([], filter)).length;
     }
 }

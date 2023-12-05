@@ -10,7 +10,7 @@ import {Request, Response} from 'express';
 
 @Injectable()
 export class LocationHeaderInterceptor implements NestInterceptor {
-    intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    intercept<T>(context: ExecutionContext, next: CallHandler): Observable<T> {
         if (context.getType() !== 'http') {
             return next.handle();
         }
@@ -50,6 +50,8 @@ export class LocationHeaderInterceptor implements NestInterceptor {
 
             const url = new URL('https://ghost.io');
             url.protocol = req.secure ? 'https:' : 'http:';
+            // We use `any` here because we haven't yet extended the express Request object with the vhost plugin types
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             url.host = (req as any).vhost ? (req as any).vhost.host : req.get('host');
             url.pathname = req.path;
             url.pathname += `${id}/`;
