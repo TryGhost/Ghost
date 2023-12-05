@@ -14,6 +14,42 @@ import {NotFoundError} from '@tryghost/errors';
 export class SnippetsController {
     constructor(private readonly service: SnippetsService) {}
 
+    mapBodyToData(body: unknown): {name?: string, description?: string, lexical?: string, mobiledoc?: string} {
+        if (typeof body !== 'object' || body === null) {
+            return {};
+        }
+        if (!Reflect.has(body, 'snippets')) {
+            return {};
+        }
+
+        const bodyWithSnippets = body as {snippets: unknown;};
+
+        if (!Array.isArray(bodyWithSnippets.snippets)) {
+            return {};
+        }
+
+        const firstSnippet = bodyWithSnippets.snippets[0] as unknown;
+
+        if (typeof firstSnippet !== 'object' || firstSnippet === null) {
+            return {};
+        }
+
+        // We use any here because we don't know what the type is, but we are checking that it's a string
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const getString = (obj: object) => (prop: string) => (prop in obj && typeof (obj as any)[prop] === 'string' ? (obj as any)[prop] : undefined);
+
+        const getStringFrom = getString(firstSnippet);
+
+        const data = {
+            name: getStringFrom('name'),
+            description: getStringFrom('description'),
+            lexical: getStringFrom('lexical'),
+            mobiledoc: getStringFrom('mobiledoc')
+        };
+
+        return data;
+    }
+
     @Get(':id')
     async read(
         @Param('id') id: 'string',
@@ -49,10 +85,10 @@ export class SnippetsController {
     @Put(':id')
     async edit(
         @Param('id') id: 'string',
-        @Body() body: any,
+        @Body() body: unknown,
         @Query('formats') formats?: 'mobiledoc' | 'lexical'
     ): Promise<{snippets: [SnippetDTO]}> {
-        const snippet = await this.service.update(ObjectID.createFromHexString(id), body.snippets[0]);
+        const snippet = await this.service.update(ObjectID.createFromHexString(id), this.mapBodyToData(body));
         if (snippet === null) {
             throw new NotFoundError({
                 context: 'Snippet not found.',
@@ -66,13 +102,15 @@ export class SnippetsController {
 
     @Post('')
     async add(
-        @Body() body: any,
+        @Body() body: unknown,
         @Query('formats') formats?: 'mobiledoc' | 'lexical'
     ): Promise<{snippets: [SnippetDTO]}> {
         const snippet = await this.service.create({
-            ...body.snippets[0],
+            ...this.mapBodyToData(body),
             updatedAt: now()
-        });
+        // We cast this as `any` because we're having to pass updatedAt as a hack to replicate broken existing API implementation
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
 
         return {
             snippets: [new SnippetDTO(snippet, {formats})]
