@@ -75,9 +75,9 @@ const WordCountPlugin = ({editorResource, ...props}) => {
     return <_WordCountPlugin {...props} />;
 };
 
-const TKPlugin = ({editorResource, ...props}) => {
-    const {TKPlugin: _TKPlugin} = editorResource.read();
-    return <_TKPlugin {...props} />;
+const TKCountPlugin = ({editorResource, ...props}) => {
+    const {TKCountPlugin: _TKCountPlugin} = editorResource.read();
+    return <_TKCountPlugin {...props} />;
 };
 
 export default class KoenigLexicalEditor extends Component {
@@ -526,6 +526,7 @@ export default class KoenigLexicalEditor extends Component {
                             multiplayerEndpoint={multiplayerEndpoint}
                             onError={this.onError}
                             darkMode={this.feature.nightShift}
+                            isTKEnabled={this.feature.tkReminders}
                         >
                             <KoenigEditor
                                 editorResource={this.editorResource}
@@ -536,7 +537,7 @@ export default class KoenigLexicalEditor extends Component {
                                 registerAPI={this.args.registerAPI}
                             />
                             <WordCountPlugin editorResource={this.editorResource} onChange={this.args.updateWordCount} />
-                            {this.feature.tkReminders && <TKPlugin editorResource={this.editorResource} onCountChange={this.args.updatePostTkCount} />}
+                            {this.feature.tkReminders && <TKCountPlugin editorResource={this.editorResource} onChange={this.args.updatePostTkCount} />}
                         </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>
