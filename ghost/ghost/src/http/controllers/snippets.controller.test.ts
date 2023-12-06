@@ -5,12 +5,10 @@ import {SnippetsController} from './snippets.controller';
 import {SnippetsService} from '../../core/snippets/snippets.service';
 import {SnippetsRepositoryInMemory} from '../../core/snippets/snippets.repository.inmemory';
 import assert from 'assert/strict';
-import sinon from 'sinon';
 import {SnippetsRepository} from '../../core/snippets/snippets.repository.interface';
 
 describe('SnippetsController', () => {
     let snippetsController: SnippetsController;
-    let snippetsService: SnippetsService;
     let snippetsRepository: SnippetsRepository;
 
     beforeEach(async () => {
@@ -26,7 +24,6 @@ describe('SnippetsController', () => {
             ]
         }).compile();
 
-        snippetsService = moduleRef.get<SnippetsService>(SnippetsService);
         snippetsController =
             moduleRef.get<SnippetsController>(SnippetsController);
     });
