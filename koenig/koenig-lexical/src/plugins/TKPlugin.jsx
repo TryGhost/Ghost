@@ -183,7 +183,7 @@ export default function TKPlugin() {
     useLayoutEffect(() => {
         const editorKey = editor.getKey();
         const nodeMap = getTKNodeMap(editor.getEditorState());
-        setEditorTkNodes(editor, nodeMap);
+        setEditorTkNodes(editorKey, nodeMap);
 
         return () => {
             setEditorTkNodes(editorKey, undefined);
