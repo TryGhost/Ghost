@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0.35
+    container_name: ghost-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ghost
+    restart: always
+    volumes:
+      # Turns out you can drop .sql or .sql.gz files in here, cool!
+      - ./mysql-preload:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: "mysql -uroot -proot ghost -e 'select 1'"
+      interval: 1s
+      retries: 120
