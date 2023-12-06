@@ -1,9 +1,9 @@
 import CardContext from '../context/CardContext';
 import {$createTKNode, $isTKNode, ExtendedTextNode, TKNode} from '@tryghost/kg-default-nodes';
-import {$getNodeByKey, $getSelection, $isDecoratorNode, $isRangeSelection, $nodesOfType, TextNode} from 'lexical';
+import {$getNodeByKey, $getSelection, $isDecoratorNode, $isRangeSelection, TextNode} from 'lexical';
 import {SELECT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {createPortal} from 'react-dom';
-import {useCallback, useContext, useEffect, useLayoutEffect, useState} from 'react';
+import {useCallback, useContext, useEffect, useState} from 'react';
 import {useKoenigTextEntity} from '../hooks/useKoenigTextEntity';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useTKContext} from '../context/TKContext';
@@ -21,10 +21,6 @@ function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {
     const calculatePosition = useCallback(() => {
         let top = 0;
         let right = -56;
-
-        if (!containingElement) {
-            return {top, right};
-        }
 
         const rootElementRect = rootElement.getBoundingClientRect();
 
@@ -138,72 +134,37 @@ function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {
 
 export default function TKPlugin() {
     const [editor] = useLexicalComposerContext();
-    const {tkNodeMap, editorTkNodeMap, setEditorTkNodes} = useTKContext();
+    const {tkNodeMap, addEditorTkNode, removeEditorTkNode, removeEditor} = useTKContext();
     const {nodeKey: parentEditorNodeKey} = useContext(CardContext);
 
     useEffect(() => {
         if (!editor.hasNodes([TKNode])) {
             throw new Error('TKPlugin: TKNode not registered on editor');
         }
-    }, [editor]);
 
-    // we need to update context with this editor's node map
-    // [{topLevelNodeKey, tkNodes}, {topLevelNodeKey, tkNodes}, ...]
-    // for nested editors topLevelNodeKey will be the key of the node that contains the nested editor
-    const getTKNodeMap = useCallback((editorState) => {
-        if (!editorState) {
-            return null;
-        }
+        // clean up editor when it is destroyed - ensures counts are up to date
+        // when a nested-editor-containing card is deleted
+        return () => {
+            removeEditor(editor.getKey());
+        };
+    }, [editor, removeEditor]);
 
-        const internalNodeMap = {};
-
-        // this collects all nodes
-        editorState.read(() => {
-            const foundNodes = $nodesOfType(TKNode);
-
-            // now we need to build a map of topLevelNodeKey -> tkNodes
-            foundNodes.forEach((tkNode) => {
-                const topLevelNodeKey = tkNode.getTopLevelElement()?.getKey();
-
-                if (internalNodeMap[topLevelNodeKey] === undefined) {
-                    internalNodeMap[topLevelNodeKey] = [tkNode.getKey()];
-                } else {
-                    internalNodeMap[topLevelNodeKey].push(tkNode.getKey());
+    useEffect(() => {
+        return editor.registerMutationListener(TKNode, (mutatedNodes) => {
+            editor.getEditorState().read(() => {
+                // mutatedNodes is a Map where each key is the NodeKey, and the value is the state of mutation.
+                for (let [tkNodeKey, mutation] of mutatedNodes) {
+                    if (mutation === 'destroyed') {
+                        removeEditorTkNode(editor.getKey(), tkNodeKey);
+                    } else {
+                        const parentNodeKey = $getNodeByKey(tkNodeKey).getTopLevelElement()?.getKey();
+                        const topLevelNodeKey = parentEditorNodeKey || parentNodeKey;
+                        addEditorTkNode(editor.getKey(), topLevelNodeKey, tkNodeKey);
+                    }
                 }
             });
         });
-
-        // convert to array of {topLevelNodeKey, tkNodes: [nodeKeys]} pairs
-        return Object.entries(internalNodeMap).map(([topLevelNodeKey, tkNodeKeys]) => {
-            return {topLevelNodeKey: parentEditorNodeKey || topLevelNodeKey, tkNodeKeys};
-        });
-    }, [parentEditorNodeKey]);
-
-    // run once on mount and then let the editor state listener handle updates
-    useLayoutEffect(() => {
-        const editorKey = editor.getKey();
-        const nodeMap = getTKNodeMap(editor.getEditorState());
-        setEditorTkNodes(editorKey, nodeMap);
-
-        return () => {
-            setEditorTkNodes(editorKey, undefined);
-        };
-        /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    }, []);
-
-    // update TKs on editor state updates
-    // TODO: switch to registerMutationListener for better performance
-    useEffect(() => {
-        const editorKey = editor.getKey();
-
-        return editor.registerUpdateListener(({editorState}) => {
-            const nodeMap = getTKNodeMap(editorState);
-            // this is a simple way to check that the nodes actually changed before we re-render indicators on the dom
-            if (JSON.stringify(nodeMap) !== JSON.stringify(editorTkNodeMap[editorKey])) {
-                setEditorTkNodes(editorKey, nodeMap);
-            }
-        });
-    }, [editor, getTKNodeMap, setEditorTkNodes, editorTkNodeMap]);
+    }, [editor, addEditorTkNode, removeEditorTkNode, parentEditorNodeKey]);
 
     const createTKNode = useCallback((textNode) => {
         return $createTKNode(textNode.getTextContent());
