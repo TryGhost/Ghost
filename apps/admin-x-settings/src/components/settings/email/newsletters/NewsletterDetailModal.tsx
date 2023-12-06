@@ -73,17 +73,11 @@ const ReplyToEmailField: React.FC<{
         setSenderReplyTo(rendered);
     };
 
-    const hint = (
-        <>
-            If left empty, replies go to {newsletterAddress}
-        </>
-    );
-
     // Pro users without custom sending domains
     return (
         <TextField
             error={Boolean(errors.sender_reply_to)}
-            hint={errors.sender_reply_to || hint}
+            hint={errors.sender_reply_to}
             placeholder={newsletterAddress || ''}
             title="Reply-to email"
             value={senderReplyTo}
@@ -220,7 +214,7 @@ const Sidebar: React.FC<{
                 <TextField
                     error={Boolean(errors.sender_email)}
                     hint={errors.sender_email}
-                    placeholder={sendingEmailUsername ? `@${sendingDomain(config)}` : `${defaultEmailAddress}` }
+                    placeholder={defaultEmailAddress}
                     rightPlaceholder={sendingEmailUsername ? `@${sendingDomain(config)}` : `` }
                     title="Sender email address"
                     value={sendingEmailUsername || ''}
