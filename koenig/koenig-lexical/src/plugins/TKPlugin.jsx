@@ -1,19 +1,28 @@
-import {$createTKNode, $isTKNode, TKNode} from '@tryghost/kg-default-nodes';
-import {$getNodeByKey, $getSelection, $isRangeSelection, $nodesOfType} from 'lexical';
+import CardContext from '../context/CardContext';
+import {$createTKNode, $isTKNode, ExtendedTextNode, TKNode} from '@tryghost/kg-default-nodes';
+import {$getNodeByKey, $getSelection, $isDecoratorNode, $isRangeSelection, $nodesOfType, TextNode} from 'lexical';
+import {SELECT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {createPortal} from 'react-dom';
-import {useCallback, useEffect, useLayoutEffect, useState} from 'react';
+import {useCallback, useContext, useEffect, useLayoutEffect, useState} from 'react';
+import {useKoenigTextEntity} from '../hooks/useKoenigTextEntity';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useLexicalTextEntity} from '../hooks/useExtendedTextEntity';
+import {useTKContext} from '../context/TKContext';
 
 const REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
 const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
 
-function TKIndicator({editor, rootElement, containingElement, nodeKeys}) {
+function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {
     const tkClasses = editor._config.theme.tk?.split(' ') || [];
     const tkHighlightClasses = editor._config.theme.tkHighlighted?.split(' ') || [];
 
+    const containingElement = editor.getElementByKey(parentKey);
+
     // position element relative to the TK Node containing element
     const calculateTop = useCallback(() => {
+        if (!containingElement) {
+            return 0;
+        }
+
         const rootElementRect = rootElement.getBoundingClientRect();
         const containerElementRect = containingElement.getBoundingClientRect();
 
@@ -30,6 +39,11 @@ function TKIndicator({editor, rootElement, containingElement, nodeKeys}) {
         e.stopPropagation();
 
         editor.update(() => {
+            if ($isDecoratorNode($getNodeByKey(parentKey))) {
+                editor.dispatchCommand(SELECT_CARD_COMMAND, {cardKey: parentKey});
+                return;
+            }
+
             let nodeKeyToSelect = nodeKeys[0];
 
             // if there is a selection, and it is a TK node, select the next one
@@ -48,19 +62,37 @@ function TKIndicator({editor, rootElement, containingElement, nodeKeys}) {
         });
     };
 
-    // highlight all associated TK nodes when the indicator is hovered
-    const onMouseEnter = (e) => {
+    const toggleHighlightClasses = (isHighlighted) => {
+        let isCard;
+
+        editor.getEditorState().read(() => {
+            if ($isDecoratorNode($getNodeByKey(parentKey))) {
+                isCard = true;
+            }
+        });
+
+        if (isCard) {
+            return;
+        }
+
         nodeKeys.forEach((key) => {
-            editor.getElementByKey(key).classList.remove(...tkClasses);
-            editor.getElementByKey(key).classList.add(...tkHighlightClasses);
+            if (isHighlighted) {
+                editor.getElementByKey(key).classList.remove(...tkClasses);
+                editor.getElementByKey(key).classList.add(...tkHighlightClasses);
+            } else {
+                editor.getElementByKey(key).classList.add(...tkClasses);
+                editor.getElementByKey(key).classList.remove(...tkHighlightClasses);
+            }
         });
     };
 
+    // highlight all associated TK nodes when the indicator is hovered
+    const onMouseEnter = (e) => {
+        toggleHighlightClasses(true);
+    };
+
     const onMouseLeave = (e) => {
-        nodeKeys.forEach((key) => {
-            editor.getElementByKey(key).classList.add(...tkClasses);
-            editor.getElementByKey(key).classList.remove(...tkHighlightClasses);
-        });
+        toggleHighlightClasses(false);
     };
 
     // set up an observer to reposition the indicator when the TK node containing
@@ -92,9 +124,10 @@ function TKIndicator({editor, rootElement, containingElement, nodeKeys}) {
     );
 }
 
-export default function TKPlugin({onCountChange = () => {}}) {
+export default function TKPlugin() {
     const [editor] = useLexicalComposerContext();
-    const [tkNodes, setTkNodes] = useState([]);
+    const {tkNodeMap, editorTkNodeMap, setEditorTkNodes} = useTKContext();
+    const {nodeKey: parentEditorNodeKey} = useContext(CardContext);
 
     useEffect(() => {
         if (!editor.hasNodes([TKNode])) {
@@ -102,40 +135,63 @@ export default function TKPlugin({onCountChange = () => {}}) {
         }
     }, [editor]);
 
-    const getTKNodesForIndicators = useCallback((editorState) => {
-        let foundNodes = [];
-
+    // we need to update context with this editor's node map
+    // [{topLevelNodeKey, tkNodes}, {topLevelNodeKey, tkNodes}, ...]
+    // for nested editors topLevelNodeKey will be the key of the node that contains the nested editor
+    const getTKNodeMap = useCallback((editorState) => {
         if (!editorState) {
-            return foundNodes;
+            return null;
         }
+
+        const internalNodeMap = {};
 
         // this collects all nodes
         editorState.read(() => {
-            foundNodes = $nodesOfType(TKNode);
+            const foundNodes = $nodesOfType(TKNode);
+
+            // now we need to build a map of topLevelNodeKey -> tkNodes
+            foundNodes.forEach((tkNode) => {
+                const topLevelNodeKey = tkNode.getTopLevelElement()?.getKey();
+
+                if (internalNodeMap[topLevelNodeKey] === undefined) {
+                    internalNodeMap[topLevelNodeKey] = [tkNode.getKey()];
+                } else {
+                    internalNodeMap[topLevelNodeKey].push(tkNode.getKey());
+                }
+            });
         });
 
-        return foundNodes;
-    }, []);
+        // convert to array of {topLevelNodeKey, tkNodes: [nodeKeys]} pairs
+        return Object.entries(internalNodeMap).map(([topLevelNodeKey, tkNodeKeys]) => {
+            return {topLevelNodeKey: parentEditorNodeKey || topLevelNodeKey, tkNodeKeys};
+        });
+    }, [parentEditorNodeKey]);
 
     // run once on mount and then let the editor state listener handle updates
     useLayoutEffect(() => {
-        const nodes = getTKNodesForIndicators(editor.getEditorState());
-        setTkNodes(nodes);
-        onCountChange(nodes.length);
+        const editorKey = editor.getKey();
+        const nodeMap = getTKNodeMap(editor.getEditorState());
+        setEditorTkNodes(editor, nodeMap);
+
+        return () => {
+            setEditorTkNodes(editorKey, undefined);
+        };
         /* eslint-disable-next-line react-hooks/exhaustive-deps */
     }, []);
 
     // update TKs on editor state updates
+    // TODO: switch to registerMutationListener for better performance
     useEffect(() => {
+        const editorKey = editor.getKey();
+
         return editor.registerUpdateListener(({editorState}) => {
-            const foundNodes = getTKNodesForIndicators(editorState);
+            const nodeMap = getTKNodeMap(editorState);
             // this is a simple way to check that the nodes actually changed before we re-render indicators on the dom
-            if (JSON.stringify(foundNodes) !== JSON.stringify(tkNodes)) {
-                setTkNodes(foundNodes);
-                onCountChange(foundNodes.length);
+            if (JSON.stringify(nodeMap) !== JSON.stringify(editorTkNodeMap[editorKey])) {
+                setEditorTkNodes(editorKey, nodeMap);
             }
         });
-    }, [editor, getTKNodesForIndicators, setTkNodes, tkNodes, onCountChange]);
+    }, [editor, getTKNodeMap, setEditorTkNodes, editorTkNodeMap]);
 
     const createTKNode = useCallback((textNode) => {
         return $createTKNode(textNode.getTextContent());
@@ -192,11 +248,20 @@ export default function TKPlugin({onCountChange = () => {}}) {
         };
     }, []);
 
-    useLexicalTextEntity(
+    // TODO: register ExtendedTextNode + replacement on nested editors
+    const nodeType = editor.hasNode(ExtendedTextNode) ? ExtendedTextNode : TextNode;
+
+    useKoenigTextEntity(
         getTKMatch,
         TKNode,
         createTKNode,
+        nodeType
     );
+
+    // we only want to render TK indicators for the top level editor
+    if (parentEditorNodeKey) {
+        return null;
+    }
 
     const editorRoot = editor.getRootElement();
     const editorRootParent = editor.getRootElement()?.parentElement;
@@ -205,39 +270,26 @@ export default function TKPlugin({onCountChange = () => {}}) {
         return null;
     }
 
-    const tkParentNodesMap = {};
+    const TKIndicators = Object.entries(tkNodeMap).map(([parentKey, nodeKeys]) => {
+        const parentContainer = editor.getElementByKey(parentKey);
 
-    if (tkNodes.length > 0) {
-        editor.getEditorState().read(() => {
-            tkNodes.forEach((tkNode) => {
-                const parentKey = tkNode.getParent().getKey();
+        if (!parentContainer) {
+            return false;
+        }
 
-                // prevent duplication, add node keys to existing indicator
-                // for nodes that are contained in the same parent
-                if (tkParentNodesMap[parentKey]) {
-                    tkParentNodesMap[parentKey].push(tkNode.getKey());
-                    return;
-                }
-
-                tkParentNodesMap[parentKey] = [tkNode.getKey()];
-            });
-        });
-    }
-
-    const TKIndicators = Object.entries(tkParentNodesMap).map(([parentKey, nodeKeys]) => {
         return (
             <TKIndicator
                 key={parentKey}
-                containingElement={editor.getElementByKey(parentKey)}
                 editor={editor}
                 nodeKeys={nodeKeys}
+                parentKey={parentKey}
                 rootElement={editorRoot}
             />
         );
-    });
+    }).filter(Boolean);
 
     return createPortal(
-        Object.values(TKIndicators),
+        TKIndicators,
         editorRootParent
     );
 }

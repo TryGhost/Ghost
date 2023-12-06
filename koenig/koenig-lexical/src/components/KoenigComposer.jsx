@@ -6,6 +6,7 @@ import {CollaborationPlugin} from '@lexical/react/LexicalCollaborationPlugin';
 import {Doc} from 'yjs';
 import {KoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
+import {TKContext} from '../context/TKContext';
 import {WebsocketProvider} from 'y-websocket';
 
 // Catch any errors that occur during Lexical updates and log them
@@ -28,6 +29,7 @@ const KoenigComposer = ({
     cardConfig = {},
     darkMode = false,
     enableMultiplayer = false,
+    isTKEnabled,
     multiplayerEndpoint,
     multiplayerDebug = true,
     multiplayerDocId,
@@ -109,6 +111,7 @@ const KoenigComposer = ({
                 cardConfig,
                 darkMode,
                 enableMultiplayer,
+                isTKEnabled,
                 multiplayerEndpoint,
                 multiplayerDocId,
                 multiplayerUsername,
@@ -116,16 +119,18 @@ const KoenigComposer = ({
                 onWordCountChangeRef
             }}>
                 <KoenigSelectedCardContext>
-                    {enableMultiplayer ? (
-                        <CollaborationPlugin
-                            id="main"
-                            initialEditorState={initialEditorState}
-                            providerFactory={createWebsocketProvider}
-                            shouldBootstrap={true}
-                            username={multiplayerUsername}
-                        />
-                    ) : null}
-                    {children}
+                    <TKContext>
+                        {enableMultiplayer ? (
+                            <CollaborationPlugin
+                                id="main"
+                                initialEditorState={initialEditorState}
+                                providerFactory={createWebsocketProvider}
+                                shouldBootstrap={true}
+                                username={multiplayerUsername}
+                            />
+                        ) : null}
+                        {children}
+                    </TKContext>
                 </KoenigSelectedCardContext>
             </KoenigComposerContext.Provider>
         </LexicalComposer>

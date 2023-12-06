@@ -15,7 +15,7 @@ import {
     KoenigComposer, KoenigEditor, MINIMAL_NODES, MINIMAL_TRANSFORMERS,
     MobiledocCopyPlugin,
     RestrictContentPlugin,
-    TKPlugin,
+    TKCountPlugin,
     WordCountPlugin
 } from '../src';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
@@ -71,7 +71,7 @@ function getAllowedNodes({editorType}) {
     return undefined;
 }
 
-function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setWordCount}) {
+function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setWordCount, setTKCount}) {
     if (editorType === 'basic') {
         return (
             <KoenigComposableEditor
@@ -104,12 +104,12 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
         >
             <MobiledocCopyPlugin />
             <WordCountPlugin onChange={setWordCount} />
-            <TKPlugin />
+            <TKCountPlugin onChange={setTKCount} />
         </KoenigEditor>
     );
 }
 
-function DemoComposer({editorType, isMultiplayer, setWordCount}) {
+function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
     const [searchParams, setSearchParams] = useSearchParams();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [sidebarView, setSidebarView] = useState('json');
@@ -254,6 +254,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount}) {
             enableMultiplayer={isMultiplayer}
             fileUploader={{useFileUpload: useFileUpload({isMultiplayer}), fileTypes}}
             initialEditorState={initialContent}
+            isTKEnabled={true} // TODO: can we move this onto <KoenigEditor>?
             multiplayerDocId={`demo/${WEBSOCKET_ID}`}
             multiplayerEndpoint={WEBSOCKET_ENDPOINT}
             nodes={getAllowedNodes({editorType})}
@@ -276,6 +277,7 @@ function DemoComposer({editorType, isMultiplayer, setWordCount}) {
                             darkMode={darkMode}
                             editorType={editorType}
                             registerAPI={setEditorAPI}
+                            setTKCount={setTKCount}
                             setWordCount={setWordCount}
                         />
                     </div>
@@ -296,6 +298,7 @@ const MemoizedDemoComposer = React.memo(DemoComposer);
 
 function DemoApp({editorType, isMultiplayer}) {
     const [wordCount, setWordCount] = useState(0);
+    const [tkCount, setTKCount] = useState(0);
 
     // used to force a re-initialization of the editor when URL changes, otherwise
     // content is memoized and causes issues when switching between editor types
@@ -307,11 +310,12 @@ function DemoApp({editorType, isMultiplayer}) {
             className={`koenig-lexical top`}
         >
             {/* outside of DemoComposer to avoid re-renders and flaky tests when word count changes */}
-            <WordCount wordCount={wordCount} />
+            <WordCount tkCount={tkCount} wordCount={wordCount} />
 
             <MemoizedDemoComposer
                 editorType={editorType}
                 isMultiplayer={isMultiplayer}
+                setTKCount={setTKCount}
                 setWordCount={setWordCount}
             />
         </div>

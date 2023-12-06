@@ -8,6 +8,7 @@ import KoenigErrorBoundary from './KoenigErrorBoundary';
 import MarkdownPastePlugin from '../plugins/MarkdownPastePlugin.jsx';
 import MarkdownShortcutPlugin from '../plugins/MarkdownShortcutPlugin';
 import React from 'react';
+import TKPlugin from '../plugins/TKPlugin.jsx';
 import {ContentEditable} from '@lexical/react/LexicalContentEditable';
 import {EditorPlaceholder} from './ui/EditorPlaceholder';
 import {ExternalControlPlugin} from '../plugins/ExternalControlPlugin';
@@ -46,7 +47,7 @@ const KoenigComposableEditor = ({
     const {historyState} = useSharedHistoryContext();
     const [editor] = useLexicalComposerContext();
     const {isCollabActive} = useCollaborationContext();
-    const {editorContainerRef, darkMode} = React.useContext(KoenigComposerContext);
+    const {editorContainerRef, darkMode, isTKEnabled} = React.useContext(KoenigComposerContext);
 
     const isNested = !!editor._parentEditor;
     const isDragReorderEnabled = isDragEnabled && !readOnly && !isNested;
@@ -114,6 +115,7 @@ const KoenigComposableEditor = ({
             {onBlur && <KoenigBlurPlugin onBlur={onBlur} />}
             {onFocus && <KoenigFocusPlugin onFocus={onFocus} />}
             <MarkdownPastePlugin />
+            {isTKEnabled && <TKPlugin />}
             {children}
         </div>
     );
