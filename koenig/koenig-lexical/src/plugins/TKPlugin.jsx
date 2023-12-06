@@ -24,7 +24,9 @@ function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {
         }
 
         const rootElementRect = rootElement.getBoundingClientRect();
-        const containerElementRect = containingElement.getBoundingClientRect();
+
+        const positioningElement = containingElement.querySelector('[data-kg-card]') || containingElement;
+        const containerElementRect = positioningElement.getBoundingClientRect();
 
         return containerElementRect.top - rootElementRect.top + 4;
     }, [rootElement, containingElement]);
