@@ -1,6 +1,6 @@
 import {MilestoneCreatedEvent} from '@tryghost/milestones';
 import {SlackNotifications} from '@tryghost/slack-notifications';
-import {HandleEvent} from '../common/handle-event.decorator';
+import {OnEvent} from '../common/handle-event.decorator';
 import {Inject} from '@nestjs/common';
 
 interface IConfig {
@@ -18,7 +18,7 @@ export class SlackNotificationsListener {
         this.enabled = hostSettings?.milestones?.url && hostSettings?.milestones?.enabled;
     }
 
-    @HandleEvent(MilestoneCreatedEvent)
+    @OnEvent(MilestoneCreatedEvent)
     async notifyMilestones(event: typeof MilestoneCreatedEvent) {
         if (!this.enabled) {
             return;

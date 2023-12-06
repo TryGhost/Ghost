@@ -18,7 +18,7 @@ type EventRegistrationSpec<EventData, Subscriber> = {
 
 const events: EventRegistrationSpec<unknown, unknown>[] = [];
 
-export function HandleEvent<T>(Event: new (data: T, timestamp: Date) => IEvent<T>) {
+export function OnEvent<T>(Event: new (data: T, timestamp: Date) => IEvent<T>) {
     return function (target: object, methodName: string) {
         events.push({
             Event: Event as new (data: unknown, timestamp: Date) => IEvent<T>,
