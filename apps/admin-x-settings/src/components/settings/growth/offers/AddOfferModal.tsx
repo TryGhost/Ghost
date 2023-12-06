@@ -129,6 +129,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
     handleAmountInput,
     handleCodeInput,
     validate,
+    clearError,
     errors,
     testId,
     handleTrialAmountInput,
@@ -174,6 +175,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 handleNameInput(e);
                                 setNameLength(e.target.value.length);
                             }}
+                            onKeyDown={() => clearError('name')}
                         />
                         <TextField
                             error={Boolean(errors.displayTitle)}
@@ -185,6 +187,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             onChange={(e) => {
                                 handleDisplayTitleInput(e);
                             }}
+                            onKeyDown={() => clearError('displayTitle')}
                         />
                         <TextArea
                             placeholder='Take advantage of this limited-time offer.'
@@ -233,6 +236,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                     onChange={(e) => {
                                         handleAmountInput(e);
                                     }}
+                                    onKeyDown={() => clearError('amount')}
                                 />
                                 <div className='absolute right-1.5 top-6 z-10'>
                                     <Select
@@ -271,7 +275,9 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 onBlur={validate}
                                 onChange={(e) => {
                                     handleTrialAmountInput(e);
-                                }} />
+                                }} 
+                                onKeyDown={() => clearError('amount')}/>
+                                
                         }
 
                         <TextField
@@ -284,6 +290,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             onChange={(e) => {
                                 handleCodeInput(e);
                             }}
+                            onKeyDown={() => clearError('code')}
                         />
                     </div>
                 </section>
