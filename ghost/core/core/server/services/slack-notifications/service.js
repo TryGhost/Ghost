@@ -1,45 +1,32 @@
-const DomainEvents = require('@tryghost/domain-events');
 const config = require('../../../shared/config');
 const logging = require('@tryghost/logging');
 
 class SlackNotificationsServiceWrapper {
-    /** @type {import('@tryghost/slack-notifications/lib/SlackNotificationsService')} */
-    #api;
+    /** @type {import('@tryghost/slack-notifications/lib/SlackNotifications')} */
+    api;
 
     /**
      *
      * @param {object} deps
      * @param {string} deps.siteUrl
-     * @param {boolean} deps.isEnabled
      * @param {URL} deps.webhookUrl
      *
-     * @returns {import('@tryghost/slack-notifications/lib/SlackNotificationsService')}
+     * @returns {import('@tryghost/slack-notifications/lib/SlackNotifications')}
      */
-    static create({siteUrl, isEnabled, webhookUrl}) {
+    static create({siteUrl, webhookUrl}) {
         const {
-            SlackNotificationsService,
             SlackNotifications
         } = require('@tryghost/slack-notifications');
 
-        const slackNotifications = new SlackNotifications({
+        return new SlackNotifications({
             webhookUrl,
             siteUrl,
             logging
         });
-
-        return new SlackNotificationsService({
-            DomainEvents,
-            logging,
-            config: {
-                isEnabled,
-                webhookUrl
-            },
-            slackNotifications
-        });
     }
 
     init() {
-        if (this.#api) {
+        if (this.api) {
             // Prevent creating duplicate DomainEvents subscribers
             return;
         }
@@ -47,12 +34,9 @@ class SlackNotificationsServiceWrapper {
         const hostSettings = config.get('hostSettings');
         const urlUtils = require('../../../shared/url-utils');
         const siteUrl = urlUtils.getSiteUrl();
-        const isEnabled = !!(hostSettings?.milestones?.enabled && hostSettings?.milestones?.url);
         const webhookUrl = hostSettings?.milestones?.url;
 
-        this.#api = SlackNotificationsServiceWrapper.create({siteUrl, isEnabled, webhookUrl});
-
-        this.#api.subscribeEvents();
+        this.api = SlackNotificationsServiceWrapper.create({siteUrl, webhookUrl});
     }
 }
 

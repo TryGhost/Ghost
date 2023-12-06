@@ -402,8 +402,14 @@ async function initNestDependencies() {
         provide: 'knex',
         useValue: require('./server/data/db/connection')
     }, {
+        provide: 'SlackNotifications',
+        useValue: require('./server/services/slack-notifications').api
+    }, {
         provide: 'urlUtils',
         useValue: urlUtils
+    }, {
+        provide: 'config',
+        useValue: require('./shared/config')
     }, {
         provide: 'DomainEvents',
         useValue: require('@tryghost/domain-events')
