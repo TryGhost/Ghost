@@ -405,6 +405,9 @@ async function initNestDependencies() {
         provide: 'urlUtils',
         useValue: urlUtils
     }, {
+        provide: 'DomainEvents',
+        useValue: require('@tryghost/domain-events')
+    }, {
         provide: 'urlUtilsHax',
         useValue: {
             mobiledocToTransformReady(mobiledoc) {
