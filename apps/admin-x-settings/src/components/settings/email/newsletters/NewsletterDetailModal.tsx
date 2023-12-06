@@ -533,17 +533,18 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         savingDelay: 500,
         onSave: async () => {
             const {newsletters: [updatedNewsletter], meta: {sent_email_verification: [emailToVerify] = []} = {}} = await editNewsletter(formState); ``;
+            const previousFrom = renderSenderEmail(updatedNewsletter, config, defaultEmailAddress);
+            const previousReplyTo = renderReplyToEmail(updatedNewsletter, config, supportEmailAddress, defaultEmailAddress) || previousFrom;
+
             let title;
             let prompt;
 
             if (emailToVerify && emailToVerify === 'sender_email') {
-                const previousFrom = renderSenderEmail(updatedNewsletter, config, defaultEmailAddress);
                 title = 'Confirm newsletter email address';
                 prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_email}</strong>. Until the address has been verified, newsletters will be sent from the {updatedNewsletter.sender_email ? ' previous' : ' default'} email address{previousFrom ? ` (${previousFrom})` : ''}.</>;
             } else if (emailToVerify && emailToVerify === 'sender_reply_to') {
-                const previousReplyTo = renderReplyToEmail(updatedNewsletter, config, supportEmailAddress, defaultEmailAddress);
                 title = 'Confirm reply-to address';
-                prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_reply_to}</strong>. Until the address has been verified, newsletters will use the previous reply-to address{previousReplyTo ? ` (${previousReplyTo})` : ''}.</>;
+                prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_reply_to}</strong>. Until the address has been verified, replies will continue to go to {previousReplyTo}.</>;
             }
 
             if (title && prompt) {
