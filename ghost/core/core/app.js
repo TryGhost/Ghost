@@ -30,8 +30,9 @@ const maintenanceMiddleware = (req, res, next) => {
 const rootApp = () => {
     const app = express('root');
     app.use(sentry.requestHandler);
-    app.use(sentry.tracingHandler);
-
+    if (config.get('sentry')?.tracing?.enabled === true) {
+        app.use(sentry.tracingHandler);
+    }
     app.enable('maintenance');
     app.use(maintenanceMiddleware);
 
