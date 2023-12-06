@@ -18,20 +18,29 @@ function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {
     const containingElement = editor.getElementByKey(parentKey);
 
     // position element relative to the TK Node containing element
-    const calculateTop = useCallback(() => {
+    const calculatePosition = useCallback(() => {
+        let top = 0;
+        let right = -56;
+
         if (!containingElement) {
-            return 0;
+            return {top, right};
         }
 
         const rootElementRect = rootElement.getBoundingClientRect();
 
         const positioningElement = containingElement.querySelector('[data-kg-card]') || containingElement;
-        const containerElementRect = positioningElement.getBoundingClientRect();
+        const positioningElementRect = positioningElement.getBoundingClientRect();
 
-        return containerElementRect.top - rootElementRect.top + 4;
+        top = positioningElementRect.top - rootElementRect.top + 4;
+
+        if (positioningElementRect.right > rootElementRect.right) {
+            right = right - (positioningElementRect.right - rootElementRect.right);
+        }
+
+        return {top, right};
     }, [rootElement, containingElement]);
 
-    const [top, setTop] = useState(calculateTop());
+    const [position, setPosition] = useState(calculatePosition());
 
     // select the TK node when the indicator is clicked,
     // cycle selection through associated TK nodes when clicked multiple times
@@ -100,7 +109,7 @@ function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {
     // set up an observer to reposition the indicator when the TK node containing
     // element moves relative to the root element
     useEffect(() => {
-        const observer = new ResizeObserver(() => (setTop(calculateTop())));
+        const observer = new ResizeObserver(() => (setPosition(calculatePosition())));
 
         observer.observe(rootElement);
         observer.observe(containingElement);
@@ -108,15 +117,16 @@ function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {
         return () => {
             observer.disconnect();
         };
-    }, [rootElement, containingElement, calculateTop]);
+    }, [rootElement, containingElement, calculatePosition]);
 
     const style = {
-        top: `${top}px`
+        top: `${position.top}px`,
+        right: `${position.right}px`
     };
 
     return (
         <div
-            className="absolute -right-14 cursor-pointer p-1 text-xs font-medium text-grey-600"
+            className="absolute cursor-pointer p-1 text-xs font-medium text-grey-600"
             data-testid="tk-indicator"
             style={style}
             onClick={onClick}
