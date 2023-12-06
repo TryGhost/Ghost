@@ -9,7 +9,7 @@ interface IConfig {
     get(key: string): any
 }
 
-export class SlackNotificationsHandler {
+export class SlackNotificationsListener {
     service: typeof SlackNotifications;
     private readonly enabled: boolean;
     constructor(@Inject('SlackNotifications') service: typeof SlackNotifications, @Inject('config') config: IConfig) {

@@ -1,7 +1,7 @@
 import {SnippetsController} from '../http/controllers/snippets.controller';
 import {SnippetsService} from '../core/snippets/snippets.service';
 import {KnexSnippetsRepository} from '../db/knex/snippets.repository';
-import {SlackNotificationsHandler} from '../handlers/slack-notifications.handler';
+import {SlackNotificationsListener} from '../listeners/slack-notifications.listener';
 
 class AppModuleClass {}
 
@@ -14,6 +14,6 @@ export const AppModule = {
             useClass: KnexSnippetsRepository
         },
         SnippetsService,
-        SlackNotificationsHandler
+        SlackNotificationsListener
     ]
 };
