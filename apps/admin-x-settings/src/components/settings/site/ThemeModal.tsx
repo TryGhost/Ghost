@@ -221,7 +221,8 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         } else {
             NiceModal.show(LimitModal, {
                 title: 'Upgrade to enable custom themes',
-                prompt: uploadConfig?.error || <>Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.</>
+                prompt: uploadConfig?.error || <>Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.</>,
+                onOk: () => updateRoute({route: '/pro', isExternal: true})
             });
         }
     };
