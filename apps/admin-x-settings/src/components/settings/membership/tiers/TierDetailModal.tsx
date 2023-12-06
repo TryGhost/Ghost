@@ -72,7 +72,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             } else {
                 await createTier(values);
             }
-            if (isFreeTier) {
+            if (isFreeTier && hasPortalImprovements) {
                 // If we changed the visibility, we also need to update Portal settings in some situations
                 // Like the free tier is a special case, and should also be present/absent in portal_plans
                 const visible = formState.visibility === 'public';
