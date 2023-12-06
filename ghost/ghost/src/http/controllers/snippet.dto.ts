@@ -8,7 +8,7 @@ export class SnippetDTO {
     created_at: Date;
     updated_at: Date|null;
 
-    constructor(data: Snippet, options: {formats?: 'mobiledoc'|'lexical'}) {
+    constructor(data: Snippet, options: {formats: 'mobiledoc' | 'lexical'}) {
         this.id = data.id.toString();
         this.name = data.name;
 

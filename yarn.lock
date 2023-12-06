@@ -7330,6 +7330,21 @@
     "@tanstack/query-core" "4.36.1"
     use-sync-external-store "^1.2.0"
 
+"@tectonique/api-standards-nestjs@^0.0.20":
+  version "0.0.20"
+  resolved "https://registry.yarnpkg.com/@tectonique/api-standards-nestjs/-/api-standards-nestjs-0.0.20.tgz#a1be946c614841fc8fb6ac01341d68f5c85eadbe"
+  integrity sha512-dzrGaP6PKxm8gQTsy+PcqbK1HMcDZpJ+cfKxR5cIc4Qc9HAZP0sH/yDP0dEgj3nQZIfZh46BWq2IR1GbrPfIhA==
+  dependencies:
+    "@tectonique/api-standards" "^1.0.0"
+    zod "^3.20.2"
+
+"@tectonique/api-standards@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tectonique/api-standards/-/api-standards-1.0.0.tgz#d66a22fc14a5a4a0d8ee30a9a2441660f4b2ef15"
+  integrity sha512-El9u4FJY2brfLv9AINZ+EuC5HpQQmf6XSulpvWBTrrlvsuybG+gk28PiOZsO5IyqD/U3kTjXoFjWN3kFLyCKzg==
+  dependencies:
+    uuid "^9.0.0"
+
 "@testing-library/dom@^8.0.0":
   version "8.20.0"
   resolved "https://registry.yarnpkg.com/@testing-library/dom/-/dom-8.20.0.tgz#914aa862cef0f5e89b98cc48e3445c4c921010f6"
@@ -32055,3 +32070,8 @@ zip-stream@^4.1.0:
     archiver-utils "^2.1.0"
     compress-commons "^4.1.0"
     readable-stream "^3.6.0"
+
+zod@^3.20.2, zod@^3.22.4:
+  version "3.22.4"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.22.4.tgz#f31c3a9386f61b1f228af56faa9255e845cf3fff"
+  integrity sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==

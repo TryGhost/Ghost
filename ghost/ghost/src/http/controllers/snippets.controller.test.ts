@@ -53,7 +53,12 @@ describe('SnippetsController', () => {
                 }
             };
 
-            const response = await snippetsController.browse();
+            const response = await snippetsController.browse({
+                formats: 'mobiledoc',
+                limit: 15,
+                page: 1
+            });
+
             assert.equal(response.snippets.length, 1);
             assert.equal(Object.keys(response.snippets[0]).length, 6);
             assert.equal(

@@ -1,12 +1,15 @@
-import {Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseFilters, UseInterceptors} from '@nestjs/common';
+import {Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseFilters, UseInterceptors, UsePipes} from '@nestjs/common';
 import {SnippetsService} from '../../core/snippets/snippets.service';
 import {SnippetDTO} from './snippet.dto';
 import {Pagination} from '../../common/pagination.type';
 import ObjectID from 'bson-objectid';
 import {now} from '../../common/date';
+import {ZodValidationPipe} from '../../common/schemas/zod-validation.pipe';
 import {LocationHeaderInterceptor} from '../interceptors/location-header.interceptor';
 import {GlobalExceptionFilter} from '../filters/global-exception.filter';
 import {NotFoundError} from '@tryghost/errors';
+import {BrowseSnippetQuerySchema} from './snippets.schema.input';
+import {BrowseSnippetQueryDTO, GetSnippetQueryDTO, PutSnippetQueryDTO, PostSnippetQueryDTO} from './snippets.dto.input';
 
 @Controller('snippets')
 @UseInterceptors(LocationHeaderInterceptor)
@@ -53,7 +56,7 @@ export class SnippetsController {
     @Get(':id')
     async read(
         @Param('id') id: 'string',
-        @Query('formats') formats?: 'mobiledoc' | 'lexical'
+        @Query() query: GetSnippetQueryDTO
     ): Promise<{snippets: [SnippetDTO]}> {
         const snippet = await this.service.getOne(ObjectID.createFromHexString(id));
         if (snippet === null) {
@@ -63,7 +66,7 @@ export class SnippetsController {
             });
         }
         return {
-            snippets: [new SnippetDTO(snippet, {formats})]
+            snippets: [new SnippetDTO(snippet, query)]
         };
     }
 
@@ -86,7 +89,7 @@ export class SnippetsController {
     async edit(
         @Param('id') id: 'string',
         @Body() body: unknown,
-        @Query('formats') formats?: 'mobiledoc' | 'lexical'
+        @Query() query: PutSnippetQueryDTO
     ): Promise<{snippets: [SnippetDTO]}> {
         const snippet = await this.service.update(ObjectID.createFromHexString(id), this.mapBodyToData(body));
         if (snippet === null) {
@@ -96,14 +99,14 @@ export class SnippetsController {
             });
         }
         return {
-            snippets: [new SnippetDTO(snippet, {formats})]
+            snippets: [new SnippetDTO(snippet, query)]
         };
     }
 
     @Post('')
     async add(
         @Body() body: unknown,
-        @Query('formats') formats?: 'mobiledoc' | 'lexical'
+        @Query() query: PostSnippetQueryDTO
     ): Promise<{snippets: [SnippetDTO]}> {
         const snippet = await this.service.create({
             ...this.mapBodyToData(body),
@@ -113,16 +116,14 @@ export class SnippetsController {
         } as any);
 
         return {
-            snippets: [new SnippetDTO(snippet, {formats})]
+            snippets: [new SnippetDTO(snippet, query)]
         };
     }
 
     @Get('')
+    @UsePipes(new ZodValidationPipe(BrowseSnippetQuerySchema))
     async browse(
-        @Query('formats') formats?: 'mobiledoc' | 'lexical',
-        @Query('filter') filter?: string,
-        @Query('page') page: number = 1,
-        @Query('limit') limit: number | 'all' = 15
+        @Query() {formats, limit, filter, page}: BrowseSnippetQueryDTO
     ): Promise<{snippets: SnippetDTO[], meta: {pagination: Pagination;};}> {
         let snippets;
         let total;
