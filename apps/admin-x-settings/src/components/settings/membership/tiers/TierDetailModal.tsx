@@ -8,7 +8,7 @@ import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framewor
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
 import {currencies, currencySelectGroups, validateCurrencyAmount} from '../../../../utils/currency';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'react-hot-toast';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
@@ -22,12 +22,14 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const {updateRoute} = useRouting();
     const {mutateAsync: updateTier} = useEditTier();
     const {mutateAsync: createTier} = useAddTier();
+    const {mutateAsync: editSettings} = useEditSettings();
     const [hasFreeTrial, setHasFreeTrial] = React.useState(!!tier?.trial_days);
     const handleError = useHandleError();
     const {localSettings, siteData} = useSettingGroup();
-    const siteTitle = getSettingValues(localSettings, ['title']) as string[];
+    const [siteTitle, portalPlansJson] = getSettingValues(localSettings, ['title', 'portal_plans']) as string[];
     const hasPortalImprovements = useFeatureFlag('portalImprovements');
     const allowNameChange = !isFreeTier || hasPortalImprovements;
+    const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
 
     const validators: {[key in keyof Tier]?: () => string | undefined} = {
         name: () => (formState.name ? undefined : 'You must specify a name'),
@@ -69,6 +71,31 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                 await updateTier({...tier, ...values});
             } else {
                 await createTier(values);
+            }
+            if (isFreeTier && hasPortalImprovements) {
+                // If we changed the visibility, we also need to update Portal settings in some situations
+                // Like the free tier is a special case, and should also be present/absent in portal_plans
+                const visible = formState.visibility === 'public';
+                let save = false;
+
+                if (portalPlans.includes('free') && !visible) {
+                    portalPlans.splice(portalPlans.indexOf('free'), 1);
+                    save = true;
+                }
+
+                if (!portalPlans.includes('free') && visible) {
+                    portalPlans.push('free');
+                    save = true;
+                }
+
+                if (save) {
+                    await editSettings([
+                        {
+                            key: 'portal_plans',
+                            value: JSON.stringify(portalPlans)
+                        }
+                    ]);
+                }
             }
         },
         onSavedStateReset: () => {
@@ -335,8 +362,19 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             </div>
             <div className='sticky top-[96px] hidden shrink-0 basis-[380px] min-[920px]:!visible min-[920px]:!block'>
                 <TierDetailPreview isFreeTier={isFreeTier} tier={formState} />
-                
-                {!tier && hasPortalImprovements && <Form className=' mt-3' gap='none'><Checkbox checked={false} hint='You can always change this in portal settings' label='Show tier in portal for new signups' value='fakeShow' onChange={() => {}}></Checkbox></Form>}
+
+                {hasPortalImprovements &&
+                    <Form className=' mt-3' gap='none'>
+                        <Checkbox
+                            checked={formState.visibility === 'public'}
+                            hint='You can always change this in portal settings' label='Show tier in portal for new signups'
+                            value='fakeShow'
+                            onChange={(checked) => {
+                                updateForm(state => ({...state, visibility: checked ? 'public' : 'none'}));
+                            }}
+                        ></Checkbox>
+                    </Form>
+                }
             </div>
         </div>
     </Modal>;
