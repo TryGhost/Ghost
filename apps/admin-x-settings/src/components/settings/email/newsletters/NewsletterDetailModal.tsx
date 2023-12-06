@@ -84,7 +84,7 @@ const ReplyToEmailField: React.FC<{
         <TextField
             error={Boolean(errors.sender_reply_to)}
             hint={errors.sender_reply_to || hint}
-            placeholder={''}
+            placeholder={newsletterAddress || ''}
             title="Reply-to email"
             value={senderReplyTo}
             onBlur={onBlur}
@@ -219,8 +219,9 @@ const Sidebar: React.FC<{
             return (
                 <TextField
                     error={Boolean(errors.sender_email)}
-                    hint={errors.sender_email || `If left empty, ${defaultEmailAddress} will be used`}
-                    rightPlaceholder={`@${sendingDomain(config)}`}
+                    hint={errors.sender_email}
+                    placeholder={sendingEmailUsername ? `@${sendingDomain(config)}` : `${defaultEmailAddress}` }
+                    rightPlaceholder={sendingEmailUsername ? `@${sendingDomain(config)}` : `` }
                     title="Sender email address"
                     value={sendingEmailUsername || ''}
                     onBlur={validate}
@@ -257,7 +258,7 @@ const Sidebar: React.FC<{
                     />
                     <TextArea rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
                 </Form>
-                <Form className='mt-6' gap='sm' margins='lg' title='Email addresses'>
+                <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
                     <TextField placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
                     {renderSenderEmailField()}
                     <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
