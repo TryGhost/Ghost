@@ -14,16 +14,16 @@ test.describe('Offers Modal', () => {
         }});
         await page.goto('/');
         const section = page.getByTestId('offers');
-        await section.getByRole('button', {name: 'Manage offers'}).click();
-        const modal = page.getByTestId('offers-modal');
-        await expect(modal).toBeVisible();
+        await section.getByRole('button', {name: 'Add offers'}).click();
+        const addModal = page.getByTestId('add-offer-modal');
+        await expect(addModal).toBeVisible();
     });
 
     test('Offers Add Modal is available', async ({page}) => {
         await mockApi({page, requests: {
+            browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             addOffer: {method: 'POST', path: '/offers/', response: {
                 offers: [{
@@ -45,9 +45,9 @@ test.describe('Offers Modal', () => {
 
     test('Can add a new offer', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
+            browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
             browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             addOffer: {method: 'POST', path: `/offers/`, response: {
@@ -85,9 +85,9 @@ test.describe('Offers Modal', () => {
 
     test('Errors if required fields are missing', async ({page}) => {
         await mockApi({page, requests: {
+            browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
             browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             addOffer: {method: 'POST', path: `/offers/`, response: {
@@ -112,9 +112,9 @@ test.describe('Offers Modal', () => {
 
     test('Shows validation hints', async ({page}) => {
         await mockApi({page, requests: {
+            browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
             browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             addOffer: {method: 'POST', path: `/offers/`, response: {
@@ -144,9 +144,10 @@ test.describe('Offers Modal', () => {
 
     test('Can view active offers', async ({page}) => {
         await mockApi({page, requests: {
+            browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseAllOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
         }});
 
@@ -161,9 +162,10 @@ test.describe('Offers Modal', () => {
 
     test('Can view archived offers', async ({page}) => {
         await mockApi({page, requests: {
+            browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseAllOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
         }});
 
@@ -178,9 +180,10 @@ test.describe('Offers Modal', () => {
 
     test('Supports updating an offer', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
+            browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseAllOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
             browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             editOffer: {method: 'PUT', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: {
