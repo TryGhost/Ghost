@@ -12,7 +12,7 @@ interface IConfig {
 export class SlackNotificationsHandler {
     service: typeof SlackNotifications;
     private readonly enabled: boolean;
-    constructor(service: typeof SlackNotifications, @Inject('config') config: IConfig) {
+    constructor(@Inject('SlackNotifications') service: typeof SlackNotifications, @Inject('config') config: IConfig) {
         this.service = service;
         const hostSettings = config.get('hostSettings');
         this.enabled = hostSettings?.milestones?.url && hostSettings?.milestones?.enabled;
@@ -21,7 +21,7 @@ export class SlackNotificationsHandler {
     @HandleEvent(MilestoneCreatedEvent)
     async notifyMilestones(event: typeof MilestoneCreatedEvent) {
         if (!this.enabled) {
-
+            return;
         }
         try {
             await this.service.notifyMilestoneReceived(event.data);
