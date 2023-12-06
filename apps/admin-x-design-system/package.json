@@ -48,7 +48,7 @@
     "sinon": "17.0.0",
     "storybook": "7.6.3",
     "ts-node": "10.9.1",
-    "typescript": "5.3.2",
+    "typescript": "5.3.3",
     "vite": "4.5.1",
     "vite-plugin-svgr": "3.3.0"
   },
