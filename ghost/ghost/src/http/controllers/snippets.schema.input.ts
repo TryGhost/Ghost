@@ -18,3 +18,13 @@ export const BrowseSnippetQuerySchema = z.object({
     formats: formatSchema
 });
 
+const SnippetSchema = z.object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+    lexical: z.string().optional(),
+    mobiledoc: z.string().optional()
+});
+
+export const SnippetsBodySchema = z.object({
+    snippets: z.array(SnippetSchema).nonempty()
+});
