@@ -18,7 +18,7 @@ const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
             description="Add custom code to your publication"
             keywords={keywords}
             navid='code-injection'
-            testId='codeinjection'
+            testId='code-injection'
             title="Code injection"
         />
     );

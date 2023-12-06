@@ -69,7 +69,7 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
         okColor='grey'
         okLabel='Save'
         size='full'
-        testId='modal-code'
+        testId='modal-code-injection'
         title='Code injection'
         onOk={onOk}
     >
