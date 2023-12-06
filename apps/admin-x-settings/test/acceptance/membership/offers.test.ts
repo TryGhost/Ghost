@@ -49,7 +49,6 @@ test.describe('Offers Modal', () => {
             browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            //browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
             browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             addOffer: {method: 'POST', path: `/offers/`, response: {
@@ -90,7 +89,6 @@ test.describe('Offers Modal', () => {
             browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            //browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
             browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             addOffer: {method: 'POST', path: `/offers/`, response: {
@@ -118,7 +116,6 @@ test.describe('Offers Modal', () => {
             browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            //browseOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
             browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             addOffer: {method: 'POST', path: `/offers/`, response: {
