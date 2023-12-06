@@ -1,7 +1,7 @@
 import ObjectID from 'bson-objectid';
 import {Snippet} from './snippet.entity';
 import {SnippetsRepository} from './snippets.repository.interface';
-import {OrderOf, Page} from '../../common/repository';
+import {OrderOf, Page} from '../../common/interfaces/repository.interface';
 import nql from '@tryghost/nql';
 
 export class SnippetsRepositoryInMemory implements SnippetsRepository {

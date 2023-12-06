@@ -1,6 +1,6 @@
-import {Actor} from './actor';
+import {Actor} from '../types/actor.type';
 import ObjectID from 'bson-objectid';
-import {now} from './date';
+import {now} from '../helpers/date.helper';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function equals(a: any, b: any) {

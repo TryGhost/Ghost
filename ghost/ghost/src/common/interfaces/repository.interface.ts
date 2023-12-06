@@ -1,5 +1,5 @@
 import ObjectID from 'bson-objectid';
-import {Entity} from './entity';
+import {Entity} from '../base/entity.base';
 
 export type Page = {
     page: number;

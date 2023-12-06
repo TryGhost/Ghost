@@ -1,10 +1,10 @@
 import {Inject} from '@nestjs/common';
 import {Knex} from 'knex';
 import ObjectID from 'bson-objectid';
-import {OrderOf, Page, Repository} from '../../common/repository';
+import {OrderOf, Page, Repository} from '../../common/interfaces/repository.interface';
 import assert from 'assert';
 import nql from '@tryghost/nql';
-import {Entity} from '../../common/entity';
+import {Entity} from '../../common/base/entity.base';
 
 export abstract class BaseKnexRepository<T extends Entity<unknown>, F, O extends OrderOf<Fields>, Fields extends string[], Row> implements Repository<T, F, Fields> {
     constructor(@Inject('knex') private readonly knex: Knex) {}

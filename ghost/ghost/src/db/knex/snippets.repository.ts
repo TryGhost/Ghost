@@ -1,6 +1,6 @@
 import {SnippetsRepository} from '../../core/snippets/snippets.repository.interface';
 import {Snippet} from '../../core/snippets/snippet.entity';
-import {OrderOf} from '../../common/repository';
+import {OrderOf} from '../../common/interfaces/repository.interface';
 import {BaseKnexRepository} from './knex.repository';
 import ObjectID from 'bson-objectid';
 import {Knex} from 'knex';
@@ -93,4 +93,3 @@ export class KnexSnippetsRepository
         });
     }
 }
-

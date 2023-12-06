@@ -1,4 +1,4 @@
-import {Entity} from '../../common/entity';
+import {Entity} from '../../common/base/entity.base';
 
 type SnippetData = {
     name: string;

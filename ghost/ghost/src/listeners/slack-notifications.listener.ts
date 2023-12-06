@@ -1,6 +1,6 @@
 import {MilestoneCreatedEvent} from '@tryghost/milestones';
 import {SlackNotifications} from '@tryghost/slack-notifications';
-import {OnEvent} from '../common/handle-event.decorator';
+import {OnEvent} from '../common/decorators/handle-event.decorator';
 import {Inject} from '@nestjs/common';
 
 interface IConfig {
