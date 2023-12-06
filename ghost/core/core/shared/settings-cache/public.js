@@ -38,6 +38,7 @@ module.exports = {
     portal_signup_terms_html: 'portal_signup_terms_html',
     portal_signup_checkbox_required: 'portal_signup_checkbox_required',
     portal_plans: 'portal_plans',
+    portal_default_plan: 'portal_default_plan',
     portal_name: 'portal_name',
     portal_button: 'portal_button',
     comments_enabled: 'comments_enabled',

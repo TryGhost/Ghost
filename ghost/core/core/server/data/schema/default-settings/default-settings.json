@@ -330,6 +330,14 @@
             "defaultValue": "[\"free\"]",
             "type": "array"
         },
+        "portal_default_plan": {
+            "defaultValue": "yearly",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["yearly", "monthly"]]
+            },
+            "type": "string"
+        },
         "portal_products": {
             "defaultValue": "[]",
             "type": "array"
