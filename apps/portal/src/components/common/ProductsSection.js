@@ -79,6 +79,17 @@ export const ProductsSectionStyles = () => {
             color: var(--grey8);
         }
 
+        .gh-portal-maximum-discount {
+            font-size: 1.4rem;
+            font-weight: 400;
+            margin-left: 4px;
+            margin-bottom: -1px;
+        }
+
+        .gh-portal-btn.active .gh-portal-maximum-discount {
+            opacity: 0.5;
+        }
+
         .gh-portal-products-grid {
             display: flex;
             flex-wrap: wrap;
@@ -847,9 +858,19 @@ function YearlyDiscount({discount}) {
     }
 }
 
-function ProductPriceSwitch({selectedInterval, setSelectedInterval}) {
+function ProductPriceSwitch({selectedInterval, setSelectedInterval, products}) {
     const {site, t} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
+
+    // Filter only paid products
+    const paidProducts = products.filter(product => product.id !== 'free');
+
+    // Extract discounts from products
+    const prices = paidProducts.map(product => calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount));
+
+    // Find the highest price using Math.max
+    const highestYearlyDiscount = Math.max(...prices);
+
     if (!portalPlans.includes('monthly') || !portalPlans.includes('yearly')) {
         return null;
     }
@@ -874,6 +895,7 @@ function ProductPriceSwitch({selectedInterval, setSelectedInterval}) {
                     }}
                 >
                     {t('Yearly')}
+                    {(highestYearlyDiscount > 0) && <span className='gh-portal-maximum-discount'>{t('(Save {{highestYearlyDiscount}}%)', {highestYearlyDiscount})}</span>}
                 </button>
             </div>
         </div>
