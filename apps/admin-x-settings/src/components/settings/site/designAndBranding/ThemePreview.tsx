@@ -69,9 +69,9 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
             headers: {
                 'Content-Type': 'text/html;charset=utf-8',
                 'x-ghost-preview': previewData,
-                Accept: 'text/plain',
-                mode: 'cors'
+                Accept: 'text/plain'
             },
+            mode: 'cors',
             credentials: 'include'
         })
             .then(response => response.text())
