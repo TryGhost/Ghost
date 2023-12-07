@@ -10,6 +10,7 @@ module.exports = class DataGeneratorCommand extends Command {
         this.argument('--clear-database', {type: 'boolean', defaultValue: false, desc: 'Clear all entries in the database before importing'});
         this.argument('--tables', {type: 'string', desc: 'Only import the specified list of tables, where quantities can be specified by appending a colon followed by the quantity for each table. Example: --tables=members:1000,posts,tags,members_login_events'});
         this.argument('--with-default', {type: 'boolean', defaultValue: false, desc: 'Include default tables as well as those specified (simply override quantities)'});
+        this.argument('--print-dependencies', {type: 'boolean', defaultValue: false, desc: 'Prints the dependency tree for the data generator and exits'});
     }
 
     initializeContext(context) {
@@ -51,7 +52,8 @@ module.exports = class DataGeneratorCommand extends Command {
             baseUrl: config.getSiteUrl(),
             clearDatabase: argv['clear-database'],
             tables,
-            withDefault: argv['with-default']
+            withDefault: argv['with-default'],
+            printDependencies: argv['print-dependencies']
         });
         try {
             await dataGenerator.importData();
