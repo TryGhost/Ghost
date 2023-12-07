@@ -37,9 +37,9 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
                     visibilityMemo
                 ),
                 Accept: 'text/plain',
-                mode: 'cors',
-                credentials: 'include'
-            }
+                mode: 'cors'
+            },
+            credentials: 'include'
         })
             .then(response => response.text())
             .then((data) => {
