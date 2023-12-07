@@ -6,21 +6,23 @@ const {slugify} = require('@tryghost/string');
 class NewslettersImporter extends TableImporter {
     static table = 'newsletters';
     static dependencies = [];
+
     defaultQuantity = 2;
+
+    sortOrder = 0;
 
     constructor(knex, transaction) {
         super(NewslettersImporter.table, knex, transaction);
-        this.sortOrder = 0;
-        // TODO: Use random names if we ever need more than 2 newsletters
-        this.names = ['Regular premium', 'Occasional freebie'];
     }
 
     generate() {
-        const name = this.names.shift();
+        const name = `${faker.commerce.productAdjective()} ${faker.word.noun()}`;
         const sortOrder = this.sortOrder;
         this.sortOrder = this.sortOrder + 1;
+
         const weekAfter = new Date(blogStartDate);
         weekAfter.setDate(weekAfter.getDate() + 7);
+
         return {
             id: faker.database.mongodbObjectId(),
             uuid: faker.datatype.uuid(),
