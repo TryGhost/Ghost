@@ -8,13 +8,15 @@ export default class MigrateService extends Service {
     @service ghostPaths;
     @service settings;
 
-    migrateUrl = 'https://migrate.ghost.org';
+    // migrateUrl = 'https://migrate.ghost.org';
+    migrateUrl = 'http://localhost:3010';
     migrateRouteRoot = '#/migrate';
 
     @tracked migrateWindowOpen = false;
     @tracked siteData = null;
     @tracked previousRoute = null;
     @tracked isIframeTransition = false;
+    @tracked platform = null;
 
     get apiUrl() {
         const origin = window.location.origin;
@@ -71,6 +73,10 @@ export default class MigrateService extends Service {
 
     getIframeURL() {
         let url = this.migrateUrl;
+        const params = this.router.currentRoute.params;
+        if (params.platform) {
+            url = url + '?platform=' + params.platform;
+        }
 
         return url;
     }
