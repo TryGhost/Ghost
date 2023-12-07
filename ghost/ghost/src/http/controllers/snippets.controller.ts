@@ -1,6 +1,7 @@
-import {Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseFilters, UseInterceptors} from '@nestjs/common';
+import {Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseFilters, UseInterceptors, ValidationPipe} from '@nestjs/common';
 import {SnippetsService} from '../../core/snippets/snippets.service';
 import {SnippetDTO} from './snippet.dto';
+import {SnippetsBodyDTO} from './snippet.dto.input';
 import {Pagination} from '../../common/pagination.type';
 import ObjectID from 'bson-objectid';
 import {now} from '../../common/date';
@@ -50,7 +51,6 @@ export class SnippetsController {
 
         const data = {
             name: getStringFrom('name'),
-            description: getStringFrom('description'),
             lexical: getStringFrom('lexical'),
             mobiledoc: getStringFrom('mobiledoc')
         };
@@ -110,11 +110,17 @@ export class SnippetsController {
 
     @Post('')
     async add(
-        @Body() body: unknown,
+        @Body(new ValidationPipe({
+            // @NOTE: here for local debugging purposes
+            enableDebugMessages: true,
+            whitelist: true,
+            // @NOTE: has to be done for nested validation to work
+            transform: true
+        })) body: SnippetsBodyDTO,
         @Query('formats', ParseFormatsQueryPipe) formats:FormatsParameter
     ): Promise<{snippets: [SnippetDTO]}> {
         const snippet = await this.service.create({
-            ...this.mapBodyToData(body),
+            ...body.snippets[0],
             updatedAt: now()
         // We cast this as `any` because we're having to pass updatedAt as a hack to replicate broken existing API implementation
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
