@@ -131,6 +131,7 @@ export default class LexicalEditorController extends Controller {
     // koenig related properties
     wordCount = 0;
     postTkCount = 0;
+    featureImageTkCount = 0;
 
     /* private properties ----------------------------------------------------*/
 
@@ -262,9 +263,9 @@ export default class LexicalEditorController extends Controller {
         return true;
     }
 
-    @computed('titleHasTk', 'postTkCount')
+    @computed('titleHasTk', 'postTkCount', 'featureImageTkCount')
     get tkCount() {
-        return (this.titleHasTk ? 1 : 0) + this.postTkCount;
+        return (this.titleHasTk ? 1 : 0) + this.postTkCount + this.featureImageTkCount;
     }
 
     @action
@@ -366,6 +367,11 @@ export default class LexicalEditorController extends Controller {
     @action
     updatePostTkCount(count) {
         this.set('postTkCount', count);
+    }
+
+    @action
+    updateFeatureImageTkCount(count) {
+        this.set('featureImageTkCount', count);
     }
 
     @action
@@ -1135,6 +1141,7 @@ export default class LexicalEditorController extends Controller {
         this.set('showSettingsMenu', false);
         this.set('wordCount', 0);
         this.set('postTkCount', 0);
+        this.set('featureImageTkCount', 0);
 
         // remove the onbeforeunload handler as it's only relevant whilst on
         // the editor route

@@ -57,6 +57,11 @@ const EmojiPickerPlugin = ({editorResource, ...props}) => {
     return <_EmojiPickerPlugin {...props} />;
 };
 
+const TKCountPlugin = ({editorResource, ...props}) => {
+    const {TKCountPlugin: _TKCountPlugin} = editorResource.read();
+    return <_TKCountPlugin {...props} />;
+};
+
 export default class KoenigLexicalEditorInput extends Component {
     @service ajax;
     @service feature;
@@ -100,6 +105,7 @@ export default class KoenigLexicalEditorInput extends Component {
                             editorResource={this.editorResource}
                             initialEditorState={this.args.lexical}
                             onError={this.onError}
+                            isTKEnabled={this.args.onTKCountChange ? true : false}
                         >
                             <KoenigComposableEditor
                                 editorResource={this.editorResource}
@@ -112,9 +118,11 @@ export default class KoenigLexicalEditorInput extends Component {
                                 className={`koenig-lexical-editor-input ${this.feature.nightShift ? 'dark' : ''}`}
                                 placeholderText={props.placeholderText}
                                 placeholderClassName="koenig-lexical-editor-input-placeholder"
+                                registerAPI={this.args.registerAPI}
                             >
                                 <HtmlOutputPlugin editorResource={this.editorResource} html={props.html} setHtml={props.onChangeHtml} />
                                 {this.emojiPicker ? <EmojiPickerPlugin editorResource={this.editorResource} /> : null}
+                                {this.args.onTKCountChange ? <TKCountPlugin editorResource={this.editorResource} onChange={this.args.onTKCountChange} /> : null}
                             </KoenigComposableEditor>
                         </KoenigComposer>
                     </Suspense>
