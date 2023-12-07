@@ -7623,7 +7623,7 @@
     "@tryghost/root-utils" "^0.3.24"
     debug "^4.3.1"
 
-"@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.26", "@tryghost/debug@^0.1.27":
+"@tryghost/debug@0.1.27", "@tryghost/debug@^0.1.13", "@tryghost/debug@^0.1.26", "@tryghost/debug@^0.1.27":
   version "0.1.27"
   resolved "https://registry.yarnpkg.com/@tryghost/debug/-/debug-0.1.27.tgz#e1e08e4b69b236de0996a710bac8bcb2d15552bc"
   integrity sha512-pLFSm+1FLYKKnjVR5B8dXC5ArjU9AbbW3IBv1oAtupjFDf+rtN/ShMgaaLI8c4c9G/F6fAtvnO/yOJ2ea85W4A==

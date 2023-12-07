@@ -18,6 +18,7 @@
     "lib"
   ],
   "devDependencies": {
+    "@tryghost/debug": "0.1.27",
     "c8": "8.0.1",
     "knex": "2.4.2",
     "mocha": "10.2.0",
