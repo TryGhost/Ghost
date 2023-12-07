@@ -23018,10 +23018,10 @@ metascraper-url@5.40.0:
   dependencies:
     "@metascraper/helpers" "^5.40.0"
 
-metascraper@5.40.0:
-  version "5.40.0"
-  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.40.0.tgz#d1f861e48de1db6ff236bff203b8475e765aa8f8"
-  integrity sha512-gocK0LcBZ+fo+pQ+eQz2eeeAtfUrtjgCxW6vltEz9Oc3s3K2vgaJbXkFnvxFt+dMcPHpGK6LXbEejN5q1AmpIw==
+metascraper@5.41.0:
+  version "5.41.0"
+  resolved "https://registry.yarnpkg.com/metascraper/-/metascraper-5.41.0.tgz#b89a06af1805729e7bffcc77616280311c7fda71"
+  integrity sha512-Hb51/Vz6MxpowlK0De/j3L4ez5oHjhLDy4+pOIkpmrko9v+PDRu5HSsSh3YFhIFvf6yM4/AHz6OWtb+utmU1bg==
   dependencies:
     "@metascraper/helpers" "^5.40.0"
     cheerio "~1.0.0-rc.12"
