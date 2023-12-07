@@ -18,6 +18,7 @@ class DataGenerator {
         baseDataPack = '',
         baseUrl,
         logger,
+        printDependencies,
         withDefault
     }) {
         this.knex = knex;
@@ -28,6 +29,7 @@ class DataGenerator {
         this.baseUrl = baseUrl;
         this.logger = logger;
         this.withDefault = withDefault;
+        this.printDependencies = printDependencies;
     }
 
     sortTableList() {
@@ -157,6 +159,14 @@ class DataGenerator {
         }
 
         this.sortTableList();
+
+        if (this.printDependencies) {
+            this.logger.info('Table dependencies:');
+            for (const table of this.tableList) {
+                this.logger.info(`\t${table.name}: ${table.dependencies.join(', ')}`);
+            }
+            process.exit(0);
+        }
 
         if (this.willClearData) {
             await this.clearData(transaction);
