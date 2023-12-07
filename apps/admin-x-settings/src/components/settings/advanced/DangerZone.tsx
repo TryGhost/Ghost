@@ -40,7 +40,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
             }
             keywords={keywords}
             navid='dangerzone'
-            testId='dangezone'
+            testId='dangerzone'
         >
             <div>
                 <Button color='red' label='Delete all content' onClick={handleDeleteAllContent} />
