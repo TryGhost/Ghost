@@ -862,11 +862,8 @@ function ProductPriceSwitch({selectedInterval, setSelectedInterval, products}) {
     const {site, t} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
 
-    // Filter only paid products
-    const paidProducts = products.filter(product => product.id !== 'free');
-
     // Extract discounts from products
-    const prices = paidProducts.map(product => calculateDiscount(product.monthlyPrice.amount, product.yearlyPrice.amount));
+    const prices = products.map(product => calculateDiscount(product.monthlyPrice?.amount, product.yearlyPrice?.amount));
 
     // Find the highest price using Math.max
     const highestYearlyDiscount = Math.max(...prices);
