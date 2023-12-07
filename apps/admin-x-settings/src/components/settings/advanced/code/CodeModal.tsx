@@ -1,7 +1,7 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useMemo, useRef, useState} from 'react';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {CodeEditor, Modal, TabView} from '@tryghost/admin-x-design-system';
+import {ButtonGroup, CodeEditor, Heading, Modal, TabView} from '@tryghost/admin-x-design-system';
 import {ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
@@ -47,37 +47,57 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
         {
             id: 'header',
             title: 'Site header',
-            contents: (<CodeEditor height='full' {...headerProps} ref={headerEditorRef} className='mt-2' data-testid='header-code' autoFocus />)
+            contents: (<CodeEditor height='full' {...headerProps} ref={headerEditorRef} className='mt-2' data-testid='header-code' autoFocus />),
+            tabWrapperClassName: 'flex-auto',
+            containerClassName: 'h-full'
         },
         {
             id: 'footer',
             title: 'Site footer',
-            contents: (<CodeEditor height='full' {...footerProps} ref={footerEditorRef} className='mt-2' data-testid='footer-code' />)
+            contents: (<CodeEditor height='full' {...footerProps} ref={footerEditorRef} className='mt-2' data-testid='footer-code' />),
+            tabWrapperClassName: 'flex-auto',
+            containerClassName: 'h-full'
         }
     ] as const;
-
-    const onOk = () => {
-        modal.remove();
-        handleSave();
-        afterClose?.();
-    };
 
     return <Modal
         afterClose={afterClose}
         cancelLabel='Close'
+        footer={<></>}
         height='full'
         okColor='grey'
         okLabel='Save'
         size='full'
         testId='modal-code-injection'
-        title='Code injection'
-        onOk={onOk}
     >
-        <TabView<'header' | 'footer'>
-            selectedTab={selectedTab}
-            tabs={tabs}
-            onTabChange={setSelectedTab}
-        />
+        <div className='flex h-full flex-col'>
+            <div className='mb-4 flex items-center justify-between'>
+                <Heading level={2}>Code injection</Heading>
+                <ButtonGroup buttons={[
+                    {
+                        label: 'Close',
+                        color: 'outline',
+                        onClick: () => {
+                            modal.remove();
+                            afterClose?.();
+                        }
+                    },
+                    {
+                        label: 'Save',
+                        color: 'black',
+                        onClick: () => {
+                            handleSave();
+                        }
+                    }
+                ]} />
+            </div>
+            <TabView<'header' | 'footer'>
+                containerClassName='flex-auto flex flex-col mb-16'
+                selectedTab={selectedTab}
+                tabs={tabs}
+                onTabChange={setSelectedTab}
+            />
+        </div>
     </Modal>;
 };
 
