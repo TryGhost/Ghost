@@ -50,7 +50,7 @@
                     {{svg-jar "koenig/kg-trash"}}
                 </button>
             </div>
-            <div class="flex justify-between align-center">
+            <div class="relative flex justify-between align-center">
                 {{#if this.isEditingAlt}}
                     <input
                         type="text"
@@ -70,6 +70,8 @@
                         @placeholderText={{if this.captionInputFocused "" "Add a caption to the feature image"}}
                         @onFocus={{fn (mut this.captionInputFocused) true}}
                         @onBlur={{this.handleCaptionBlur}}
+                        @onTKCountChange={{this.onTKCountChange}}
+                        @registerAPI={{this.registerEditorAPI}}
                     />
                 {{/if}}
                 <button
@@ -78,6 +80,12 @@
                 >
                     Alt
                 </button>
+
+                {{#if (and this.tkCount (not this.isEditingAlt))}}
+                    <div class="tk-indicator" data-testid="feature-image-tk-indicator" role="button" {{on "click" this.focusCaptionEditor}}>
+                        TK
+                    </div>
+                {{/if}}
             </div>
         {{else}}
             {{!-- no-image state --}}

@@ -635,6 +635,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     background-color: transparent !important;
     transition: border-color .15s linear;
     -webkit-appearance: none;
+    overflow: hidden; /* Hides any indicators such as TK */
 }
 
 .gh-editor-feature-image-alttext::placeholder,
@@ -683,7 +684,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     opacity: .5;
 }
 
-.gh-editor-title-container .tk-indicator {
+.gh-editor .tk-indicator {
     position: absolute;
     top: 15px;
     right: -5.6rem;
@@ -691,7 +692,12 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     color: #95A1AD;
     font-size: 1.2rem;
     font-weight: 500;
-    cursor: default;
+    cursor: pointer;
+}
+
+.gh-editor-feature-image-container .tk-indicator {
+    top: 0;
+    padding: 0 .4rem;
 }
 
 .gh-editor-back-button {
