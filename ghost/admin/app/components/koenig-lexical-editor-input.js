@@ -14,6 +14,18 @@ class ErrorHandler extends React.Component {
         return {hasError: true};
     }
 
+    componentDidCatch(error) {
+        if (this.props.config.sentry_dsn) {
+            Sentry.captureException(error, {
+                tags: {
+                    lexical: true
+                }
+            });
+        }
+
+        console.error(error, errorInfo); // eslint-disable-line
+    }
+
     render() {
         if (this.state.hasError) {
             return (
@@ -82,7 +94,7 @@ export default class KoenigLexicalEditorInput extends Component {
     ReactComponent = (props) => {
         return (
             <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
-                <ErrorHandler>
+                <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigComposer
                             editorResource={this.editorResource}
