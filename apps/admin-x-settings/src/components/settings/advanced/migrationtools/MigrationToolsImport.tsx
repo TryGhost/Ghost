@@ -46,21 +46,21 @@ const MigrationToolsImport: React.FC = () => {
                     <SubstackIcon className='h-[18px] w-auto' />
                 }
                 title='Substack'
-                onClick={() => updateRoute({isExternal: true, route: 'migrate'})}
+                onClick={() => updateRoute({isExternal: true, route: '/migrate/substack'})}
             />
             <ImportButton
                 icon={
                     <MediumIcon className='h-[18px] w-auto' />
                 }
                 title='Medium'
-                onClick={() => updateRoute({isExternal: true, route: 'migrate'})}
+                onClick={() => updateRoute({isExternal: true, route: '/migrate/medium'})}
             />
             <ImportButton
                 icon={
                     <MailchimpIcon className='h-5 w-auto' />
                 }
                 title='Mailchimp'
-                onClick={() => updateRoute({isExternal: true, route: 'migrate'})}
+                onClick={() => updateRoute({isExternal: true, route: '/migrate/mailchimp'})}
             />
             <ImportButton
                 icon={
