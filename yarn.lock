@@ -4266,10 +4266,10 @@
     pump "^3.0.0"
     tar-fs "^2.1.1"
 
-"@newrelic/aws-sdk@^7.0.2":
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/@newrelic/aws-sdk/-/aws-sdk-7.0.2.tgz#e93f1796c89be8323a75f3d7ec45b1bdd5a29292"
-  integrity sha512-nT19hzId0MbjR3v1ks5YetvNfrwIEgMfeai+T2pQkuWkjCsYm3z+OybLOYMCN66gueqOOqGTq60qhM4dFu5s5w==
+"@newrelic/aws-sdk@^7.0.3":
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/@newrelic/aws-sdk/-/aws-sdk-7.0.3.tgz#aada548b28c69c30bd0caf54dc27b759fc4fafed"
+  integrity sha512-oafBFD+DEAqXTg0w15eEu2rfoedWMS7abyW5CuOJxSb+7OWiFUx9jZPpdFblsYPVNWBehxFdws6/JEio3GklyA==
 
 "@newrelic/koa@^8.0.1":
   version "8.0.1"
@@ -23767,14 +23767,14 @@ neo-async@^2.5.0, neo-async@^2.6.1, neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-newrelic@11.6.0:
-  version "11.6.0"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-11.6.0.tgz#0a75ef5382428cb0e9a219edc4ed9b392b1b3341"
-  integrity sha512-peYHffhstQlPQnjTYnXZmz/VX4rvnk8rE9n/kM0KKDbStQbcQE+COkdliDS7jg82ERf90aawu8YGWQRVD/w/GQ==
+newrelic@11.6.1:
+  version "11.6.1"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-11.6.1.tgz#ae2af414662bc2c201d589b235fc24cf8ab1007c"
+  integrity sha512-3tmSRqAcKdPPKGz9qswOvNDlsZXueC8QgJGty0uD95aurFzQoIOjI6/1dQBn3cxM8xxm3/vVa/Z2CAe4q0WK7g==
   dependencies:
     "@grpc/grpc-js" "^1.9.4"
     "@grpc/proto-loader" "^0.7.5"
-    "@newrelic/aws-sdk" "^7.0.2"
+    "@newrelic/aws-sdk" "^7.0.3"
     "@newrelic/koa" "^8.0.1"
     "@newrelic/security-agent" "0.5.0"
     "@newrelic/superagent" "^7.0.1"
