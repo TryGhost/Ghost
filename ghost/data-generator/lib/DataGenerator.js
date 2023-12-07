@@ -91,7 +91,7 @@ class DataGenerator {
         }
         let baseData = {};
         try {
-            baseData = JSON.parse(await (await fs.readFile(baseDataPack)).toString());
+            baseData = JSON.parse((await fs.readFile(baseDataPack)).toString());
             this.logger.info('Read base data pack');
         } catch (error) {
             this.logger.error('Failed to read data pack: ', error);
