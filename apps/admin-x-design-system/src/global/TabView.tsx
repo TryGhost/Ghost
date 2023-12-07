@@ -5,6 +5,8 @@ export type Tab<ID = string> = {
     id: ID;
     title: string;
     counter?: number | null;
+    tabWrapperClassName?: string;
+    containerClassName?: string;
 
     /**
      * Optional, so you can just use the tabs to other views
@@ -102,6 +104,7 @@ export interface TabViewProps<ID = string> {
     border?: boolean;
     buttonBorder?: boolean;
     width?: TabWidth;
+    containerClassName?: string;
 }
 
 function TabView<ID extends string = string>({
@@ -110,7 +113,8 @@ function TabView<ID extends string = string>({
     selectedTab,
     border = true,
     buttonBorder = border,
-    width = 'normal'
+    width = 'normal',
+    containerClassName
 }: TabViewProps<ID>) {
     if (tabs.length !== 0 && selectedTab === undefined) {
         selectedTab = tabs[0].id;
@@ -126,7 +130,7 @@ function TabView<ID extends string = string>({
     };
 
     return (
-        <section>
+        <section className={containerClassName}>
             <TabList
                 border={border}
                 buttonBorder={buttonBorder}
@@ -139,8 +143,8 @@ function TabView<ID extends string = string>({
                 return (
                     <>
                         {tab.contents &&
-                            <div key={tab.id} className={`${selectedTab === tab.id ? 'block' : 'hidden'}`} role='tabpanel'>
-                                <div>{tab.contents}</div>
+                            <div key={tab.id} className={`${selectedTab === tab.id ? 'block' : 'hidden'} ${tab.tabWrapperClassName}`} role='tabpanel'>
+                                <div className={tab.containerClassName}>{tab.contents}</div>
                             </div>
                         }
                     </>
