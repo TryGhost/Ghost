@@ -23,6 +23,7 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
     const [headerContent, footerContent] = getSettingValues<string>(localSettings, ['codeinjection_head', 'codeinjection_foot']);
 
     const [selectedTab, setSelectedTab] = useState<'header' | 'footer'>('header');
+    const [savingTitle, setSavingTitle] = useState<string | undefined>('Save');
 
     const headerEditorRef = useRef<ReactCodeMirrorRef>(null);
     const footerEditorRef = useRef<ReactCodeMirrorRef>(null);
@@ -65,8 +66,6 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
         cancelLabel='Close'
         footer={<></>}
         height='full'
-        okColor='grey'
-        okLabel='Save'
         size='full'
         testId='modal-code-injection'
     >
@@ -83,10 +82,20 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
                         }
                     },
                     {
-                        label: 'Save',
-                        color: 'black',
-                        onClick: () => {
-                            handleSave();
+                        disabled: savingTitle === 'Saving',
+                        label: savingTitle,
+                        color: savingTitle === 'Saved' ? 'green' : 'black',
+                        onClick: async () => {
+                            const save = await handleSave();
+                            setSavingTitle('Saving');
+                            setTimeout(() => {
+                                if (save) {
+                                    setSavingTitle('Saved');
+                                    setTimeout(() => {
+                                        setSavingTitle('Save');
+                                    }, 1000);
+                                }
+                            }, 1000);
                         }
                     }
                 ]} />
