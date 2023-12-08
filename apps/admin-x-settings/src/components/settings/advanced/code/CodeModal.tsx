@@ -74,7 +74,6 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
         <div className='flex h-full flex-col'>
             <div className='mb-4 flex items-center justify-between'>
                 <Heading level={2}>Code injection</Heading>
-                return (
                 <ButtonGroup buttons={[
                     {
                         label: 'Close',
