@@ -4,6 +4,7 @@ import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {ButtonGroup, CodeEditor, Heading, Modal, TabView} from '@tryghost/admin-x-design-system';
 import {ReactCodeMirrorRef} from '@uiw/react-codemirror';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useSaveButton} from '../../../../hooks/useSaveButton';
 
 interface CodeModalProps {
     hint?: React.ReactNode;
@@ -23,7 +24,6 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
     const [headerContent, footerContent] = getSettingValues<string>(localSettings, ['codeinjection_head', 'codeinjection_foot']);
 
     const [selectedTab, setSelectedTab] = useState<'header' | 'footer'>('header');
-    const [savingTitle, setSavingTitle] = useState<string | undefined>('Save');
 
     const headerEditorRef = useRef<ReactCodeMirrorRef>(null);
     const footerEditorRef = useRef<ReactCodeMirrorRef>(null);
@@ -61,6 +61,8 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
         }
     ] as const;
 
+    const {savingTitle, isSaving, onSaveClick} = useSaveButton(handleSave, true);
+
     return <Modal
         afterClose={afterClose}
         cancelLabel='Close'
@@ -72,6 +74,7 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
         <div className='flex h-full flex-col'>
             <div className='mb-4 flex items-center justify-between'>
                 <Heading level={2}>Code injection</Heading>
+                return (
                 <ButtonGroup buttons={[
                     {
                         label: 'Close',
@@ -82,21 +85,10 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
                         }
                     },
                     {
-                        disabled: savingTitle === 'Saving',
+                        disabled: isSaving,
                         label: savingTitle,
                         color: savingTitle === 'Saved' ? 'green' : 'black',
-                        onClick: async () => {
-                            const save = await handleSave({fakeWhenUnchanged: true});
-                            setSavingTitle('Saving');
-                            setTimeout(() => {
-                                if (save) {
-                                    setSavingTitle('Saved');
-                                    setTimeout(() => {
-                                        setSavingTitle('Save');
-                                    }, 1000);
-                                }
-                            }, 1000);
-                        }
+                        onClick: onSaveClick
                     }
                 ]} />
             </div>
