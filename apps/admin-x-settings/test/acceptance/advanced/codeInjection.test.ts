@@ -39,8 +39,6 @@ test.describe('Code injection settings', async () => {
         }
 
         await modal.getByRole('button', {name: 'Save'}).click();
-        await expect(modal).toBeHidden();
-        // await expect(modal.getByRole('button', {name: 'Save'})).toBeHidden();
 
         expect(lastApiRequests.editSettings?.body).toMatchObject({
             settings: [

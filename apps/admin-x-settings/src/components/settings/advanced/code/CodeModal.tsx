@@ -86,7 +86,7 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
                         label: savingTitle,
                         color: savingTitle === 'Saved' ? 'green' : 'black',
                         onClick: async () => {
-                            const save = await handleSave();
+                            const save = await handleSave({fakeWhenUnchanged: true});
                             setSavingTitle('Saving');
                             setTimeout(() => {
                                 if (save) {
