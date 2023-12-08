@@ -1,8 +1,7 @@
 import {Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseFilters, UseInterceptors, ValidationPipe} from '@nestjs/common';
 import {SnippetsService} from '../../core/snippets/snippets.service';
-import {SnippetDTO} from './snippet.dto.output';
+import {SnippetDTO, BrowseSnippetsDTO} from './snippet.dto.output';
 import {SnippetsBodyDTO} from './snippet.dto.input';
-import {Pagination} from '../../common/pagination.type';
 import ObjectID from 'bson-objectid';
 import {now} from '../../common/date';
 import {LocationHeaderInterceptor} from '../interceptors/location-header.interceptor';
@@ -137,7 +136,7 @@ export class SnippetsController {
         @Query('page', ParsePageQueryPipe) page: number,
         @Query('limit', ParseLimitQueryPipe) limit: number | 'all',
         @Query('filter', ParseFilterQueryPipe) filter?: string
-    ): Promise<{snippets: SnippetDTO[], meta: {pagination: Pagination;};}> {
+    ): Promise<BrowseSnippetsDTO> {
         let snippets;
         let total;
         if (limit === 'all') {
@@ -156,20 +155,6 @@ export class SnippetsController {
         }
         const pages = limit === 'all' ? 0 : Math.ceil(total / limit);
 
-        const snippetDTOs = snippets.map(snippet => new SnippetDTO(snippet, {formats}));
-
-        return {
-            snippets: snippetDTOs,
-            meta: {
-                pagination: {
-                    page,
-                    limit,
-                    total,
-                    pages,
-                    prev: page > 1 ? page - 1 : null,
-                    next: page < pages ? page + 1 : null
-                }
-            }
-        };
+        return new BrowseSnippetsDTO(snippets, {page, limit, pages, total}, {formats});
     }
 }

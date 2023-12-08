@@ -1,3 +1,4 @@
+import {Pagination} from '../../common/pagination.type';
 import {Snippet} from '../../core/snippets/snippet.entity';
 
 export class SnippetDTO {
@@ -20,5 +21,23 @@ export class SnippetDTO {
 
         this.created_at = data.createdAt;
         this.updated_at = data.updatedAt || null;
+    }
+}
+export class BrowseSnippetsDTO {
+    snippets: SnippetDTO[];
+    meta: {
+        pagination: Pagination
+    };
+
+    constructor(snippets: Snippet[], pagination: Pick<Pagination, 'page' | 'limit' | 'pages' | 'total'>, options: {formats?: 'mobiledoc'|'lexical'}) {
+        this.snippets = snippets.map(snippet => new SnippetDTO(snippet, options));
+
+        this.meta = {
+            pagination: {
+                ...pagination,
+                prev: pagination.page > 1 ? pagination.page - 1 : null,
+                next: pagination.page < pagination.pages ? pagination.page + 1 : null
+            }
+        };
     }
 }
