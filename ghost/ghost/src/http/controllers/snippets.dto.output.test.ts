@@ -1,7 +1,7 @@
 import {Snippet} from '../../core/snippets/snippet.entity';
 import ObjectId from 'bson-objectid';
 import assert from 'assert/strict';
-import {SnippetDTO} from './snippet.dto';
+import {SnippetDTO} from './snippet.dto.output';
 
 describe('BrowseSnippetDTO', () => {
     it('constructs a BrowseSnippetDTO object from a Snippet object with mobiledoc field', async () => {

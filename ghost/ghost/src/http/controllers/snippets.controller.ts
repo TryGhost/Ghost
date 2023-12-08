@@ -1,6 +1,6 @@
 import {Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseFilters, UseInterceptors, ValidationPipe} from '@nestjs/common';
 import {SnippetsService} from '../../core/snippets/snippets.service';
-import {SnippetDTO} from './snippet.dto';
+import {SnippetDTO} from './snippet.dto.output';
 import {SnippetsBodyDTO} from './snippet.dto.input';
 import {Pagination} from '../../common/pagination.type';
 import ObjectID from 'bson-objectid';
