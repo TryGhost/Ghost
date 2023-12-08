@@ -157,7 +157,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 if (error instanceof HostLimitError) {
                     NiceModal.show(LimitModal, {
                         formSheet: true,
-                        prompt: error.message || `Your current plan doesn't support more users.`
+                        prompt: error.message || `Your current plan doesn't support more users.`,
+                        onOk: () => updateRoute({route: '/pro', isExternal: true})
                     });
                     return;
                 } else {

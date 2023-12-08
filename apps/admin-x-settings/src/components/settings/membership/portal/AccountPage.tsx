@@ -6,15 +6,22 @@ import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const AccountPage: React.FC<{
     updateSetting: (key: string, setting: SettingValue) => void
-}> = ({updateSetting}) => {
+    errors: Record<string, string | undefined>
+    setError: (key: string, error: string | undefined) => void
+}> = ({updateSetting, errors, setError}) => {
     const {siteData, settings, config} = useGlobalData();
-    const [membersSupportAddress] = getSettingValues(settings, ['members_support_address']);
+    const [membersSupportAddress, supportEmailAddress] = getSettingValues(settings, ['members_support_address', 'support_email_address']);
+    const calculatedSupportAddress = supportEmailAddress?.toString() || fullEmailAddress(membersSupportAddress?.toString() || '', siteData!, config);
     const emailDomain = getEmailDomain(siteData!, config);
-
-    const [value, setValue] = useState(fullEmailAddress(membersSupportAddress?.toString() || '', siteData!, config));
+    const [value, setValue] = useState(calculatedSupportAddress);
 
     const updateSupportAddress: FocusEventHandler<HTMLInputElement> = (e) => {
         let supportAddress = e.target.value;
+
+        if (!supportAddress) {
+            setError('members_support_address', 'Please enter an email address');
+            return;
+        }
 
         let settingValue = emailDomain && supportAddress === `noreply@${emailDomain}` ? 'noreply' : supportAddress;
 
@@ -23,11 +30,18 @@ const AccountPage: React.FC<{
     };
 
     useEffect(() => {
-        setValue(fullEmailAddress(membersSupportAddress?.toString() || '', siteData!, config));
-    }, [membersSupportAddress, siteData]);
+        setValue(calculatedSupportAddress);
+    }, [calculatedSupportAddress]);
 
     return <div className='mt-7'><Form>
-        <TextField title='Support email address' value={value} onBlur={updateSupportAddress} onChange={e => setValue(e.target.value)} />
+        <TextField
+            error={!!errors.members_support_address}
+            hint={errors.members_support_address}
+            title='Support email address'
+            value={value}
+            onBlur={updateSupportAddress}
+            onChange={e => setValue(e.target.value)}
+        />
     </Form></div>;
 };
 

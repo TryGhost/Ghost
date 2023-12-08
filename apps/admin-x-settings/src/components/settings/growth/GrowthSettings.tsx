@@ -5,6 +5,8 @@ import Recommendations from './Recommendations';
 import SearchableSection from '../../SearchableSection';
 import TipsOrDonations from './TipsOrDonations';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
+import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
+import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 export const searchKeywords = {
     tips: ['growth', 'tip', 'donation', 'one time', 'payment'],
@@ -16,13 +18,15 @@ export const searchKeywords = {
 const GrowthSettings: React.FC = () => {
     const hasTipsAndDonations = useFeatureFlag('tipsAndDonations');
     const hasRecommendations = useFeatureFlag('recommendations');
-    const hasOffers = useFeatureFlag('adminXOffers');
+    const hasOffersLabs = useFeatureFlag('adminXOffers');
+    const {config, settings} = useGlobalData();
+    const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
     return (
         <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Growth'>
             {hasRecommendations && <Recommendations keywords={searchKeywords.recommendations} />}
             <EmbedSignupForm keywords={searchKeywords.embedSignupForm} />
-            {hasOffers && <Offers keywords={searchKeywords.offers} />}
+            {hasOffersLabs && hasStripeEnabled && <Offers keywords={searchKeywords.offers} />}
             {hasTipsAndDonations && <TipsOrDonations keywords={searchKeywords.tips} />}
         </SearchableSection>
     );

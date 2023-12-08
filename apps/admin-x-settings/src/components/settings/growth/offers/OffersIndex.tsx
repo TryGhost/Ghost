@@ -1,5 +1,6 @@
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
+import {ButtonGroup, ButtonProps} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {NoValueLabel} from '@tryghost/admin-x-design-system';
 import {SortMenu} from '@tryghost/admin-x-design-system';
@@ -59,6 +60,11 @@ export const getOfferDiscount = (type: string, amount: number, cadence: string, 
         break;
     };
 
+    // Check if updatedPrice is negative, if so, set it to 0
+    if (updatedPrice < 0) {
+        updatedPrice = 0;
+    }
+
     const updatedPriceWithCurrency = getSymbol(currency) + numberWithCommas(formatToTwoDecimals(currencyToDecimal(updatedPrice)));
 
     return {
@@ -82,42 +88,6 @@ export const CopyLinkButton: React.FC<{offerCode: string}> = ({offerCode}) => {
     };
 
     return <Tooltip containerClassName='group-hover:opacity-100 opacity-0 flex items-center -mr-1 justify-center leading-none w-5 h-5' content={isCopied ? 'Copied' : 'Copy link'} size='sm'><Button color='clear' hideLabel={true} icon={isCopied ? 'check-circle' : 'hyperlink-circle'} iconColorClass={isCopied ? 'text-green w-[14px] h-[14px]' : 'w-[18px] h-[18px]'} label={isCopied ? 'Copied' : 'Copy'} unstyled={true} onClick={handleCopyClick} /></Tooltip>;
-};
-
-const OfferCard: React.FC<{amount: number, cadence: string, currency: string, duration: string, name: string, code: string, offerId: string, offerTier: Tier | undefined, redemptionCount: number, type: OfferType, onClick: ()=>void}> = ({amount, cadence, currency, duration, name, code, offerId, offerTier, redemptionCount, type, onClick}) => {
-    let tierName = offerTier?.name + ' ' + getOfferCadence(cadence) + ' — ' + getOfferDuration(duration);
-    const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(type, amount, cadence, currency || 'USD', offerTier);
-
-    const isTierArchived = offerTier?.active === false;
-
-    return (
-        <div className={`group relative ${isTierArchived ? '' : 'cursor-pointer'} border border-transparent bg-grey-100 p-5 transition-all ${!isTierArchived ? 'hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm' : ''} dark:bg-grey-950 ${!isTierArchived ? 'dark:hover:border-grey-800' : ''}`} onClick={!isTierArchived ? onClick : () => {}}>
-            <div className='flex h-full flex-col gap-6'>
-                <div className={`${isTierArchived ? 'pointer-events-none opacity-50' : ''} flex grow items-baseline justify-between gap-2`}>
-                    <h2 className='text-[1.6rem] font-semibold'>{name}</h2>
-                    <span className={`-translate-y-px whitespace-nowrap text-xs font-semibold uppercase ${discountColor}`}>{discountOffer}</span>
-                </div>
-                <div className={`${isTierArchived ? 'pointer-events-none opacity-50' : ''} flex items-baseline gap-1`}>
-                    <span className='text-3xl font-bold tracking-tight'>{updatedPriceWithCurrency}</span>
-                    <span className='text-[1.6rem] font-medium text-grey-700 line-through'>{originalPriceWithCurrency}</span>
-                </div>
-                <div className='flex items-center justify-between'>
-                    <div className={`${isTierArchived ? 'pointer-events-none opacity-50' : ''} flex flex-col items-start text-xs`}>
-                        <span className='font-medium'>{tierName}</span>
-                        <a className='text-grey-700 hover:underline' href={createRedemptionFilterUrl(offerId)}>{redemptionCount} redemptions</a>
-                    </div>
-                    {!isTierArchived ?
-                        <CopyLinkButton offerCode={code} /> :
-                        null
-                    }
-                </div>
-            </div>
-            {isTierArchived ?
-                <div className='absolute left-4 top-4 whitespace-nowrap rounded-sm bg-black px-2 py-0.5 text-xs leading-normal text-white opacity-0 transition-all group-hover:opacity-100 dark:bg-grey-950'>This offer is disabled, because <br /> it is tied to an archived tier.</div> :
-                null
-            }
-        </div>
-    );
 };
 
 export const OffersIndexModal = () => {
@@ -144,7 +114,6 @@ export const OffersIndexModal = () => {
         {id: 'archived', title: 'Archived'}
     ];
     const [selectedTab, setSelectedTab] = useState('active');
-    const [selectedLayout, setSelectedLayout] = useState('card');
     const [sortOption, setSortOption] = useState('date-added');
     const [sortDirection, setSortDirection] = useState('desc');
 
@@ -174,43 +143,11 @@ export const OffersIndexModal = () => {
             }
         });
 
-    const cardLayoutOutput = <div className='mt-8 grid grid-cols-1 gap-6 min-[600px]:grid-cols-2 min-[900px]:grid-cols-3'>
-        {sortedOffers.filter((offer) => {
-            const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
-            //Check to filter out offers with archived offerTier
-            return (selectedTab === 'active' && (offer.status === 'active' && offerTier && offerTier.active === true)) ||
-            (selectedTab === 'archived' && (offer.status === 'archived' || (offerTier && offerTier.active === false)));
-        }).map((offer) => {
-            const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
-
-            if (!offerTier) {
-                return null;
-            }
-
-            return (
-                <OfferCard
-                    key={offer?.id}
-                    amount={offer?.amount}
-                    cadence={offer?.cadence}
-                    code={offer?.code}
-                    currency={offer?.currency || 'USD'}
-                    duration={offer?.duration}
-                    name={offer?.name}
-                    offerId={offer?.id ? offer.id : ''}
-                    offerTier={offerTier}
-                    redemptionCount={offer?.redemption_count ? offer.redemption_count : 0}
-                    type={offer?.type as OfferType}
-                    onClick={() => handleOfferEdit(offer?.id ? offer.id : '')}
-                />
-            );
-        })}
-    </div>;
-
     const listLayoutOutput = <div className='overflow-x-auto'>
         <table className='m-0 w-full'>
             {(selectedTab === 'active' && activeOffers.length > 0) || (selectedTab === 'archived' && archivedOffers.length > 0) ?
                 <tr className='border-b border-b-grey-300'>
-                    <th className='px-5 py-2.5 pl-0 text-xs font-normal text-grey-700'>{sortedOffers.length} {sortedOffers.length > 1 ? 'offers' : 'offer'}</th>
+                    <th className='px-5 py-2.5 pl-0 text-xs font-normal text-grey-700'>{selectedTab === 'active' ? activeOffers.length : archivedOffers.length} {selectedTab === 'active' ? (activeOffers.length !== 1 ? 'offers' : 'offer') : (archivedOffers.length !== 1 ? 'offers' : 'offer')}</th>
                     <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Tier</th>
                     <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Terms</th>
                     <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Price</th>
@@ -253,26 +190,37 @@ export const OffersIndexModal = () => {
         </table>
     </div>;
 
+    const buttons: ButtonProps[] = [
+        {
+            key: 'cancel-modal',
+            label: 'Cancel',
+            onClick: () => {
+                modal.remove();
+                updateRoute('offers');
+            }
+        },
+        {
+            key: 'new-offer',
+            icon: 'add',
+            label: 'New offer',
+            color: 'green',
+            onClick: () => updateRoute('offers/new')
+        }
+    ];
+
     return <Modal
         afterClose={() => {
             updateRoute('offers');
         }}
         animate={false}
+        backDropClick={false}
         cancelLabel=''
-        footer={
-            <div className='mx-8 flex w-full items-center justify-between'>
-                <a className='text-sm' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">→ Learn about offers in Ghost</a>
-                <Button color='black' label='Close' onClick={() => {
-                    modal.remove();
-                    updateRoute('offers');
-                }} />
-            </div>
-        }
+        footer={false}
         header={false}
         height='full'
         size='lg'
         testId='offers-modal'
-        stickyFooter
+        width={1140}
     >
         <div className='pt-6'>
             <header>
@@ -286,11 +234,11 @@ export const OffersIndexModal = () => {
                             onTabChange={setSelectedTab}
                         />
                     </div>
-                    <Button color='green' icon='add' iconColorClass='green' label='New offer' link={true} size='sm' onClick={() => updateRoute('offers/new')} />
+                    <ButtonGroup buttons={buttons} />
                 </div>
                 <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
                     <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
-                    <div className='flex gap-3'>
+                    <div className='-mr-3'>
                         <SortMenu
                             direction='desc'
                             items={[
@@ -307,10 +255,6 @@ export const OffersIndexModal = () => {
                                 setSortOption(selectedOption);
                             }}
                         />
-                        <div className='flex gap-3'>
-                            <Button icon='layout-module-1' iconColorClass={selectedLayout === 'card' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('card')} />
-                            <Button icon='layout-headline' iconColorClass={selectedLayout === 'list' ? 'text-black' : 'text-grey-500'} link={true} size='sm' onClick={() => setSelectedLayout('list')} />
-                        </div>
                     </div>
                 </div>
             </header>
@@ -326,7 +270,7 @@ export const OffersIndexModal = () => {
                 </NoValueLabel> :
                 null
             }
-            {selectedLayout === 'card' ? cardLayoutOutput : listLayoutOutput}
+            {listLayoutOutput}
         </div>
     </Modal>;
 };

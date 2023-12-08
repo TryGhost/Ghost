@@ -28,7 +28,7 @@
     "@tryghost/errors": "1.2.26",
     "@tryghost/tpl": "0.1.26",
     "csso": "5.0.5",
-    "terser": "5.24.0",
+    "terser": "5.26.0",
     "tiny-glob": "0.2.9"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.36.3",
+  "version": "2.37.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -26,7 +26,7 @@
     "test:unit": "yarn test:ci",
     "lint": "eslint src --ext .js --cache",
     "preship": "yarn lint",
-    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
+    "ship": "STATUS=$(git status --porcelain .); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; else echo \"Uncommitted changes found.\" && exit 1; fi",
     "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
     "prepublishOnly": "yarn build"
   },
@@ -80,12 +80,12 @@
   "devDependencies": {
     "@babel/eslint-parser": "7.23.3",
     "@doist/react-interpolate": "0.4.1",
-    "@sentry/react": "7.81.1",
-    "@sentry/tracing": "7.81.1",
+    "@sentry/react": "7.85.0",
+    "@sentry/tracing": "7.85.0",
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "12.1.5",
     "@tryghost/i18n": "0.0.0",
-    "@vitejs/plugin-react": "4.2.0",
+    "@vitejs/plugin-react": "4.2.1",
     "@vitest/coverage-v8": "0.34.3",
     "@vitest/ui": "0.34.3",
     "concurrently": "8.2.2",
@@ -94,7 +94,7 @@
     "jsdom": "22.1.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "vite": "4.5.0",
+    "vite": "4.5.1",
     "vite-plugin-css-injected-by-js": "3.3.0",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "0.34.3"

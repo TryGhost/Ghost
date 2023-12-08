@@ -3,14 +3,14 @@ import React from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
-import {hasSendingDomain, isManagedEmail} from '@tryghost/admin-x-framework/api/config';
+import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletterEmails';
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
     const hasEmailCustomization = useFeatureFlag('emailCustomization');
     const {currentUser, settings, siteData, config} = useGlobalData();
-    const [title, icon, commentsEnabled, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'default_email_address']);
+    const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'support_email_address', 'default_email_address']);
 
     let headerTitle: string | null = null;
     if (newsletter.show_header_title) {
@@ -91,17 +91,6 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         secondaryTextColor
     } : {};
 
-    const renderSenderEmail = () => {
-        if (isManagedEmail(config)) {
-            if (!hasSendingDomain(config)) {
-                // Sender email is ignored
-                return defaultEmailAddress || '';
-            }
-        }
-
-        return newsletter.sender_email || defaultEmailAddress || '';
-    };
-
     return <NewsletterPreviewContent
         authorPlaceholder={currentUser.name || currentUser.email}
         backgroundColor={colors.backgroundColor || '#ffffff'}
@@ -111,8 +100,9 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}
         headerTitle={headerTitle}
-        senderEmail={renderSenderEmail()}
+        senderEmail={renderSenderEmail(newsletter, config, defaultEmailAddress)}
         senderName={newsletter.sender_name || title}
+        senderReplyTo={renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress)}
         showBadge={newsletter.show_badge}
         showCommentCta={showCommentCta}
         showFeatureImage={newsletter.show_feature_image}
