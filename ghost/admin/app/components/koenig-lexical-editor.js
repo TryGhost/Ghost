@@ -49,6 +49,18 @@ class ErrorHandler extends React.Component {
         return {hasError: true};
     }
 
+    componentDidCatch(error) {
+        if (this.props.config.sentry_dsn) {
+            Sentry.captureException(error, {
+                tags: {
+                    lexical: true
+                }
+            });
+        }
+
+        console.error(error, errorInfo); // eslint-disable-line
+    }
+
     render() {
         if (this.state.hasError) {
             return (
@@ -75,9 +87,9 @@ const WordCountPlugin = ({editorResource, ...props}) => {
     return <_WordCountPlugin {...props} />;
 };
 
-const TKPlugin = ({editorResource, ...props}) => {
-    const {TKPlugin: _TKPlugin} = editorResource.read();
-    return <_TKPlugin {...props} />;
+const TKCountPlugin = ({editorResource, ...props}) => {
+    const {TKCountPlugin: _TKCountPlugin} = editorResource.read();
+    return <_TKCountPlugin {...props} />;
 };
 
 export default class KoenigLexicalEditor extends Component {
@@ -513,7 +525,7 @@ export default class KoenigLexicalEditor extends Component {
 
         return (
             <div className={['koenig-react-editor', 'koenig-lexical', this.args.className].filter(Boolean).join(' ')}>
-                <ErrorHandler>
+                <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigComposer
                             editorResource={this.editorResource}
@@ -526,6 +538,7 @@ export default class KoenigLexicalEditor extends Component {
                             multiplayerEndpoint={multiplayerEndpoint}
                             onError={this.onError}
                             darkMode={this.feature.nightShift}
+                            isTKEnabled={this.feature.tkReminders}
                         >
                             <KoenigEditor
                                 editorResource={this.editorResource}
@@ -536,7 +549,7 @@ export default class KoenigLexicalEditor extends Component {
                                 registerAPI={this.args.registerAPI}
                             />
                             <WordCountPlugin editorResource={this.editorResource} onChange={this.args.updateWordCount} />
-                            {this.feature.tkReminders && <TKPlugin editorResource={this.editorResource} onCountChange={this.args.updatePostTkCount} />}
+                            {this.feature.tkReminders && <TKCountPlugin editorResource={this.editorResource} onChange={this.args.updatePostTkCount} />}
                         </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>

@@ -73,18 +73,12 @@ const ReplyToEmailField: React.FC<{
         setSenderReplyTo(rendered);
     };
 
-    const hint = (
-        <>
-            If left empty, replies go to {newsletterAddress}
-        </>
-    );
-
     // Pro users without custom sending domains
     return (
         <TextField
             error={Boolean(errors.sender_reply_to)}
-            hint={errors.sender_reply_to || hint}
-            placeholder={''}
+            hint={errors.sender_reply_to}
+            placeholder={newsletterAddress || ''}
             title="Reply-to email"
             value={senderReplyTo}
             onBlur={onBlur}
@@ -219,8 +213,9 @@ const Sidebar: React.FC<{
             return (
                 <TextField
                     error={Boolean(errors.sender_email)}
-                    hint={errors.sender_email || `If left empty, ${defaultEmailAddress} will be used`}
-                    rightPlaceholder={`@${sendingDomain(config)}`}
+                    hint={errors.sender_email}
+                    placeholder={defaultEmailAddress}
+                    rightPlaceholder={sendingEmailUsername ? `@${sendingDomain(config)}` : `` }
                     title="Sender email address"
                     value={sendingEmailUsername || ''}
                     onBlur={validate}
@@ -257,7 +252,7 @@ const Sidebar: React.FC<{
                     />
                     <TextArea rows={2} title="Description" value={newsletter.description || ''} onChange={e => updateNewsletter({description: e.target.value})} />
                 </Form>
-                <Form className='mt-6' gap='sm' margins='lg' title='Email addresses'>
+                <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
                     <TextField placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
                     {renderSenderEmailField()}
                     <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
@@ -538,17 +533,18 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         savingDelay: 500,
         onSave: async () => {
             const {newsletters: [updatedNewsletter], meta: {sent_email_verification: [emailToVerify] = []} = {}} = await editNewsletter(formState); ``;
+            const previousFrom = renderSenderEmail(updatedNewsletter, config, defaultEmailAddress);
+            const previousReplyTo = renderReplyToEmail(updatedNewsletter, config, supportEmailAddress, defaultEmailAddress) || previousFrom;
+
             let title;
             let prompt;
 
             if (emailToVerify && emailToVerify === 'sender_email') {
-                const previousFrom = renderSenderEmail(updatedNewsletter, config, defaultEmailAddress);
                 title = 'Confirm newsletter email address';
                 prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_email}</strong>. Until the address has been verified, newsletters will be sent from the {updatedNewsletter.sender_email ? ' previous' : ' default'} email address{previousFrom ? ` (${previousFrom})` : ''}.</>;
             } else if (emailToVerify && emailToVerify === 'sender_reply_to') {
-                const previousReplyTo = renderReplyToEmail(updatedNewsletter, config, supportEmailAddress, defaultEmailAddress);
                 title = 'Confirm reply-to address';
-                prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_reply_to}</strong>. Until the address has been verified, newsletters will use the previous reply-to address{previousReplyTo ? ` (${previousReplyTo})` : ''}.</>;
+                prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_reply_to}</strong>. Until the address has been verified, replies will continue to go to {previousReplyTo}.</>;
             }
 
             if (title && prompt) {

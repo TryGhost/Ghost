@@ -45,7 +45,7 @@ const COMMAND_ADMIN = {
 
 const COMMAND_TYPESCRIPT = {
     name: 'ts',
-    command: 'nx watch --projects=ghost/collections,ghost/in-memory-repository,ghost/bookshelf-repository,ghost/mail-events,ghost/model-to-domain-event-interceptor,ghost/post-revisions,ghost/nql-filter-expansions,ghost/post-events,ghost/donations,ghost/recommendations,ghost/email-addresses -- nx run \\$NX_PROJECT_NAME:build:ts',
+    command: 'while [ 1 ]; do nx watch --projects=ghost/collections,ghost/in-memory-repository,ghost/bookshelf-repository,ghost/mail-events,ghost/model-to-domain-event-interceptor,ghost/post-revisions,ghost/nql-filter-expansions,ghost/post-events,ghost/donations,ghost/recommendations,ghost/email-addresses -- nx run \\$NX_PROJECT_NAME:build:ts; done',
     cwd: path.resolve(__dirname, '../../'),
     prefixColor: 'cyan',
     env: {}
@@ -55,7 +55,7 @@ const adminXApps = '@tryghost/admin-x-demo,@tryghost/admin-x-settings';
 
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',
-    command: 'nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework -- nx run \\$NX_PROJECT_NAME:build --skip-nx-cache',
+    command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework -- nx run \\$NX_PROJECT_NAME:build --skip-nx-cache; done',
     cwd: path.resolve(__dirname, '../..'),
     prefixColor: '#C35831',
     env: {}

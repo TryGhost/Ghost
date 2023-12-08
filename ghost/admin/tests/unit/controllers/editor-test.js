@@ -162,4 +162,22 @@ describe('Unit: Controller: lexical-editor', function () {
             expect(controller.get('post.slug')).to.not.be.ok;
         });
     });
+
+    describe('TK count in title', function () {
+        it('should have count 0 for no TK', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+
+            controller.set('post', EmberObject.create({titleScratch: 'this is a title'}));
+
+            expect(controller.get('tkCount')).to.equal(0);
+        });
+
+        it('should count TK reminders in the title', async function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+
+            controller.set('post', EmberObject.create({titleScratch: 'this is a TK'}));
+
+            expect(controller.get('tkCount')).to.equal(1);
+        });
+    });
 });
