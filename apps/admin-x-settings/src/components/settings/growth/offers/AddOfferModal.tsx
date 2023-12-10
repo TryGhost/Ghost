@@ -3,6 +3,7 @@ import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
@@ -364,6 +365,8 @@ const AddOfferModal = () => {
         }
     });
 
+    const {data: {offers: allOffers = []} = {}} = useBrowseOffers();
+
     const {formState, updateForm, handleSave, saveState, okProps, validate, errors, clearError} = useForm({
         initialState: {
             disableBackground: false,
@@ -592,7 +595,12 @@ const AddOfferModal = () => {
     }, [hasOffers, modal, updateRoute]);
 
     const cancelAddOffer = () => {
-        updateRoute('offers/edit');
+        if(allOffers.length > 0) {
+            updateRoute('offers');
+        } else {
+            modal.remove();
+            updateRoute('offers');
+        }
     };
 
     const overrides : offerPortalPreviewUrlTypes = useMemo(() => {
