@@ -18,9 +18,6 @@ env:
     ${{ github.workspace }}/ghost/*/node_modules
     ~/.cache/ms-playwright/
   CACHED_BUILD_PATHS: |
-    ${{ github.workspace }}/apps/*/dist
-    ${{ github.workspace }}/apps/*/es
-    ${{ github.workspace }}/apps/*/umd
     ${{ github.workspace }}/ghost/*/build
   NX_CACHE_RESTORE_KEYS: |
     nx-Linux-${{ github.ref }}-${{ github.sha }}
@@ -186,7 +183,7 @@ jobs:
 
       - name: Build packages
         if: steps.cache_built_packages.outputs.cache-hit != 'true'
-        run: yarn nx run-many -t build:ts && yarn nx run-many -t build -p apps/*
+        run: yarn nx run-many -t build:ts
     outputs:
       dependency_cache_key: ${{ env.cachekey }}
 
