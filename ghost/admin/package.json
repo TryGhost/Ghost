@@ -186,18 +186,6 @@
             "target": "build"
           }
         ]
-      },
-      "build": {
-        "dependsOn": [
-          "build",
-          {
-            "projects": [
-              "@tryghost/admin-x-demo",
-              "@tryghost/admin-x-settings"
-            ],
-            "target": "build"
-          }
-        ]
       }
     }
   }

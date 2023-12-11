@@ -55,13 +55,13 @@ const adminXApps = '@tryghost/admin-x-demo,@tryghost/admin-x-settings';
 
 const COMMANDS_ADMINX = [{
     name: 'adminXDeps',
-    command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework -- nx run \\$NX_PROJECT_NAME:build --skip-nx-cache; done',
+    command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework -- nx run \\$NX_PROJECT_NAME:build; done',
     cwd: path.resolve(__dirname, '../..'),
     prefixColor: '#C35831',
     env: {}
 }, {
     name: 'adminX',
-    command: `nx run-many --projects=${adminXApps} --targets=build && nx run-many --projects=${adminXApps} --parallel=${adminXApps.length} --targets=dev`,
+    command: `nx run-many --projects=${adminXApps} --parallel=${adminXApps.length} --targets=dev`,
     cwd: path.resolve(__dirname, '../../apps/admin-x-settings'),
     prefixColor: '#C35831',
     env: {}
