@@ -4896,7 +4896,7 @@
     "@sentry/types" "7.86.0"
     "@sentry/utils" "7.86.0"
 
-"@sentry/core@7.86.0":
+"@sentry/core@7.86.0", "@sentry/core@^7.76.0":
   version "7.86.0"
   resolved "https://registry.yarnpkg.com/@sentry/core/-/core-7.86.0.tgz#d01f538783dee9a0d79141a63145392ad2c1cb89"
   integrity sha512-SbLvqd1bRYzhDS42u7GMnmbDMfth/zRiLElQWbLK/shmuZzTcfQSwNNdF4Yj+VfjOkqPFgGmICHSHVUc9dh01g==
@@ -4918,6 +4918,15 @@
     ember-cli-htmlbars "^6.1.1"
     ember-cli-typescript "^5.1.1"
 
+"@sentry/hub@^7.76.0":
+  version "7.86.0"
+  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-7.86.0.tgz#58f157a8b4dad8ba5b9f70004c5b8368c2a0b676"
+  integrity sha512-tS9g+yoD/Zs4OS/gCO4/ccT0m90o3brkCIm/gRzPqI5dq2hEE1qn8bF7HM/vLQARM+bsmTEzPzZy19104U5Btg==
+  dependencies:
+    "@sentry/core" "7.86.0"
+    "@sentry/types" "7.86.0"
+    "@sentry/utils" "7.86.0"
+
 "@sentry/integrations@7.86.0":
   version "7.86.0"
   resolved "https://registry.yarnpkg.com/@sentry/integrations/-/integrations-7.86.0.tgz#70240b354428dbaac32c2224b27539f295593c2b"
@@ -4928,7 +4937,7 @@
     "@sentry/utils" "7.86.0"
     localforage "^1.8.1"
 
-"@sentry/node@7.86.0", "@sentry/node@^7.73.0":
+"@sentry/node@7.86.0", "@sentry/node@^7.73.0", "@sentry/node@^7.76.0":
   version "7.86.0"
   resolved "https://registry.yarnpkg.com/@sentry/node/-/node-7.86.0.tgz#416db178aeb64f7895a23ae1c3d4d65ce51ed50a"
   integrity sha512-cB1bn/LMn2Km97Y3hv63xwWxT50/G5ixGuSxTZ3dCQM6VDhmZoCuC5NGT3itVvaRd6upQXRZa5W0Zgyh0HXKig==
@@ -4938,6 +4947,20 @@
     "@sentry/types" "7.86.0"
     "@sentry/utils" "7.86.0"
     https-proxy-agent "^5.0.0"
+
+"@sentry/profiling-node@^1.2.6":
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/@sentry/profiling-node/-/profiling-node-1.2.6.tgz#e43494896657bcfd11e75480ed6def4172e86c21"
+  integrity sha512-WsXO7VmLze5wPWHpvoRZFTtN+wHw9lYWKZs4T2FwPmvfNVaScGJey/+Wp51aM47Yy12Gj9n/BpqFYDsUXRLMvw==
+  dependencies:
+    "@sentry/core" "^7.76.0"
+    "@sentry/hub" "^7.76.0"
+    "@sentry/node" "^7.76.0"
+    "@sentry/types" "^7.76.0"
+    "@sentry/utils" "^7.76.0"
+    detect-libc "^2.0.2"
+    node-abi "^3.47.0"
+    node-gyp "^9.4.0"
 
 "@sentry/react@7.86.0":
   version "7.86.0"
@@ -4966,12 +4989,12 @@
   dependencies:
     "@sentry-internal/tracing" "7.86.0"
 
-"@sentry/types@7.86.0":
+"@sentry/types@7.86.0", "@sentry/types@^7.76.0":
   version "7.86.0"
   resolved "https://registry.yarnpkg.com/@sentry/types/-/types-7.86.0.tgz#56ed2f5b15e8130ea5ecfbbc4102d88eaa3b3a67"
   integrity sha512-pGAt0+bMfWgo0KG2epthfNV4Wae03tURpoxNjGo5Fr4cXxvLTSijSAQ6rmmO4bXBJ7+rErEjX30g30o/eEdP9g==
 
-"@sentry/utils@7.86.0":
+"@sentry/utils@7.86.0", "@sentry/utils@^7.76.0":
   version "7.86.0"
   resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-7.86.0.tgz#356ec19bf1e3e5c40935dd987fd15bee8c6b37ba"
   integrity sha512-6PejFtw9VTFFy5vu0ks+U7Ozkqz+eMt+HN8AZKBKErYzX5/xs0kpkOcSRpu3ETdTYcZf8VAmLVgFgE2BE+3WuQ==
@@ -7689,7 +7712,7 @@
 
 "@tryghost/html-to-mobiledoc@3.0.1":
   version "3.0.1"
-  resolved "https://registry.npmjs.org/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-3.0.1.tgz#934cb273c2378e6d06c50326cbe87a1ba4cb7fde"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-3.0.1.tgz#934cb273c2378e6d06c50326cbe87a1ba4cb7fde"
   integrity sha512-IehQkQ1SaASav0t+b/tLlxYWIMFFVuqH4kz8ynQq1mhYp6wKaTYrGgFft2o1d2oob2KEYIICNl7fTzj5W7oAYw==
   dependencies:
     "@tryghost/kg-parser-plugins" "^4.0.1"
@@ -7736,7 +7759,7 @@
 
 "@tryghost/kg-clean-basic-html@4.0.1", "@tryghost/kg-clean-basic-html@^4.0.1":
   version "4.0.1"
-  resolved "https://registry.npmjs.org/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-4.0.1.tgz#27e5c029449781f16f7d3687614a8efff8c67b22"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-4.0.1.tgz#27e5c029449781f16f7d3687614a8efff8c67b22"
   integrity sha512-dt1yfQUms9xt14gawu49pdxITjSry9E4OA5a/br3E+K3NbNoIK/+cXMFDTa8hmCofmRxBH5YZfA6cbjMzvDcRA==
 
 "@tryghost/kg-converters@0.0.22":
@@ -7850,7 +7873,7 @@
 
 "@tryghost/kg-parser-plugins@^4.0.1":
   version "4.0.1"
-  resolved "https://registry.npmjs.org/@tryghost/kg-parser-plugins/-/kg-parser-plugins-4.0.1.tgz#e89c54e383c949e22293de8badff2d564813b578"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-4.0.1.tgz#e89c54e383c949e22293de8badff2d564813b578"
   integrity sha512-QdUAEaenQ/1VfaDsMwk+dVHczdTxK6muQYSWnIW6c+T8TxRuQGEM73140otKEL4Uee0w/xNkAC+cVDJnySiH6g==
   dependencies:
     "@tryghost/kg-clean-basic-html" "^4.0.1"
@@ -23860,6 +23883,13 @@ node-abi@^3.3.0:
   version "3.28.0"
   resolved "https://registry.yarnpkg.com/node-abi/-/node-abi-3.28.0.tgz#b0df8b317e1c4f2f323756c5fc8ffccc5bca4718"
   integrity sha512-fRlDb4I0eLcQeUvGq7IY3xHrSb0c9ummdvDSYWfT9+LKP+3jCKw/tKoqaM7r1BAoiAC6GtwyjaGnOz6B3OtF+A==
+  dependencies:
+    semver "^7.3.5"
+
+node-abi@^3.47.0:
+  version "3.52.0"
+  resolved "https://registry.yarnpkg.com/node-abi/-/node-abi-3.52.0.tgz#ffba0a85f54e552547e5849015f40f9514d5ba7c"
+  integrity sha512-JJ98b02z16ILv7859irtXn4oUaFWADtvkzy2c0IAatNVX2Mc9Yoh8z6hZInn3QwvMEYhHuQloYi+TTQy67SIdQ==
   dependencies:
     semver "^7.3.5"
 
