@@ -10,7 +10,6 @@ export default function render(node, document, options) {
     let html = node.html;
 
     const tweetData = metadata && metadata.tweet_data;
-    const container = document.createElement('div');
     const isEmail = options.target === 'email';
 
     if (tweetData && isEmail) {
@@ -156,8 +155,7 @@ export default function render(node, document, options) {
         `;
     }
 
-    container.innerHTML = html.trim();
-    figure.appendChild(container);
+    figure.innerHTML = html.trim();
 
     const caption = node.caption;
     if (caption) {
