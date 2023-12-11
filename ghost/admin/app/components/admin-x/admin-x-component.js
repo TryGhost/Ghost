@@ -220,6 +220,9 @@ export default class AdminXComponent extends Component {
     };
 
     externalNavigate = ({route, models = []}) => {
+        if (!route.startsWith('/')) {
+            route = `/${route}`;
+        }
         this.router.transitionTo(route, ...models);
     };
 
