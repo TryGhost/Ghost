@@ -1,6 +1,7 @@
-import {StaffTokenResponseType} from '../../../../src/api/staffToken';
+import {StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, testUrlValidation} from '../../../utils/acceptance';
+import {globalDataRequests} from '../../../utils/acceptance';
+import {mockApi, responseFixtures, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User profile', async () => {
     test('Supports editing user profiles', async ({page}) => {

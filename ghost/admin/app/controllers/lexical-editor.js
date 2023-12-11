@@ -35,6 +35,9 @@ const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
 const TIMEDSAVE_TIMEOUT = 60000;
 
+const TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
+const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
+
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
     'post.lexicalScratch',
@@ -127,6 +130,8 @@ export default class LexicalEditorController extends Controller {
 
     // koenig related properties
     wordCount = 0;
+    postTkCount = 0;
+    featureImageTkCount = 0;
 
     /* private properties ----------------------------------------------------*/
 
@@ -212,6 +217,55 @@ export default class LexicalEditorController extends Controller {
     @computed('post.isDraft')
     get _canAutosave() {
         return config.environment !== 'test' && this.get('post.isDraft');
+    }
+
+    TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
+    WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
+
+    @computed('post.titleScratch')
+    get titleHasTk() {
+        let text = this.post.titleScratch;
+        let matchArr = TK_REGEX.exec(text);
+
+        if (matchArr === null) {
+            return false;
+        }
+
+        function isValidMatch(match) {
+            // negative lookbehind isn't supported before Safari 16.4
+            // so we capture the preceding char and test it here
+            if (match[1] && match[1].trim() && WORD_CHAR_REGEX.test(match[1])) {
+                return false;
+            }
+
+            // we also check any following char in code to avoid an overly
+            // complex regex when looking for word-chars following the optional
+            // trailing symbol char
+            if (match[4] && match[4].trim() && WORD_CHAR_REGEX.test(match[4])) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // our regex will match invalid TKs because we can't use negative lookbehind
+        // so we need to loop through the matches discarding any that are invalid
+        // and moving on to any subsequent matches
+        while (matchArr !== null && !isValidMatch(matchArr)) {
+            text = text.slice(matchArr.index + matchArr[0].length - 1);
+            matchArr = TK_REGEX.exec(text);
+        }
+
+        if (matchArr === null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @computed('titleHasTk', 'postTkCount', 'featureImageTkCount')
+    get tkCount() {
+        return (this.titleHasTk ? 1 : 0) + this.postTkCount + this.featureImageTkCount;
     }
 
     @action
@@ -308,6 +362,16 @@ export default class LexicalEditorController extends Controller {
     @action
     updateWordCount(count) {
         this.set('wordCount', count);
+    }
+
+    @action
+    updatePostTkCount(count) {
+        this.set('postTkCount', count);
+    }
+
+    @action
+    updateFeatureImageTkCount(count) {
+        this.set('featureImageTkCount', count);
     }
 
     @action
@@ -695,7 +759,6 @@ export default class LexicalEditorController extends Controller {
                     scope.setTag('post_type', post.isPage ? 'page' : 'post');
                     scope.setTag('save_revision', options.adapterOptions?.saveRevision);
                     scope.setTag('email_segment', options.adapterOptions?.emailSegment);
-                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
                     scope.setTag('convert_to_lexical', options.adapterOptions?.convertToLexical);
                 });
             }
@@ -708,7 +771,6 @@ export default class LexicalEditorController extends Controller {
                     scope.setTag('post_type', post.isPage ? 'page' : 'post');
                     scope.setTag('save_revision', options.adapterOptions?.saveRevision);
                     scope.setTag('email_segment', options.adapterOptions?.emailSegment);
-                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
                     scope.setTag('convert_to_lexical', options.adapterOptions?.convertToLexical);
                 });
             }
@@ -1077,7 +1139,9 @@ export default class LexicalEditorController extends Controller {
         this.set('hasDirtyAttributes', false);
         this.set('shouldFocusTitle', false);
         this.set('showSettingsMenu', false);
-        this.set('wordCount', null);
+        this.set('wordCount', 0);
+        this.set('postTkCount', 0);
+        this.set('featureImageTkCount', 0);
 
         // remove the onbeforeunload handler as it's only relevant whilst on
         // the editor route

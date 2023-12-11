@@ -305,9 +305,9 @@ class ajaxService extends AjaxService {
             method: request.method,
             status
         });
-        Sentry.setTag('ajaxStatus', status);
-        Sentry.setTag('ajaxUrl', request.url);
-        Sentry.setTag('ajaxMethod', request.method);
+        Sentry.setTag('ajax_status', status);
+        Sentry.setTag('ajax_url', request.url.slice(0, 200)); // the max length of a tag value is 200 characters
+        Sentry.setTag('ajax_method', request.method);
 
         if (headers['content-version']) {
             const contentVersion = semverCoerce(headers['content-version']);

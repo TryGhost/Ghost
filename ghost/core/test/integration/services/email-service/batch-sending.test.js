@@ -54,7 +54,7 @@ async function testEmailBatches(settings, email_recipient_filter, expectedBatche
     assert.equal(emailModel.get('email_count'), expectedTotal, 'This email should have an email_count of ' + expectedTotal + ' recipients');
 
     // Did we create batches?
-    const batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+    const batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
     assert.equal(batches.models.length, expectedBatches.length);
     const remainingBatches = batches.models.slice();
     const emailRecipients = [];
@@ -74,7 +74,7 @@ async function testEmailBatches(settings, email_recipient_filter, expectedBatche
         assert.equal(firstBatch.get('error_data'), null);
 
         // Did we create recipients?
-        const emailRecipientsFirstBatch = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}+batch_id:${firstBatch.id}`});
+        const emailRecipientsFirstBatch = await models.EmailRecipient.findAll({filter: `email_id:'${emailModel.id}'+batch_id:'${firstBatch.id}'`});
         assert.equal(emailRecipientsFirstBatch.models.length, expectedBatch.recipients);
 
         emailRecipients.push(...emailRecipientsFirstBatch.models);
@@ -142,7 +142,7 @@ describe('Batch sending tests', function () {
         assert.equal(emailModel.get('email_count'), 4);
 
         // Did we create batches?
-        const batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+        const batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
         assert.equal(batches.models.length, 1);
 
         // Check all batches are in send state
@@ -157,7 +157,7 @@ describe('Batch sending tests', function () {
         }
 
         // Did we create recipients?
-        const emailRecipients = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}`});
+        const emailRecipients = await models.EmailRecipient.findAll({filter: `email_id:'${emailModel.id}'`});
         assert.equal(emailRecipients.models.length, 4);
 
         for (const recipient of emailRecipients.models) {
@@ -189,7 +189,7 @@ describe('Batch sending tests', function () {
         assert.equal(emailModel.get('email_count'), 4);
 
         // Did we create batches?
-        const batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+        const batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
         assert.equal(batches.models.length, 1);
     });
 
@@ -223,11 +223,11 @@ describe('Batch sending tests', function () {
         assert.equal(emailModel.get('email_count'), 4);
 
         // Did we create batches?
-        const batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+        const batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
         assert.equal(batches.models.length, 1);
 
         // Did we create recipients?
-        const emailRecipients = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}`});
+        const emailRecipients = await models.EmailRecipient.findAll({filter: `email_id:'${emailModel.id}'`});
         assert.equal(emailRecipients.models.length, 4);
 
         for (const recipient of emailRecipients.models) {
@@ -238,7 +238,7 @@ describe('Batch sending tests', function () {
         // Create a new email and see if it is included now
         const {emailModel: emailModel2} = await sendEmail(agent);
         assert.equal(emailModel2.get('email_count'), 5);
-        const emailRecipients2 = await models.EmailRecipient.findAll({filter: `email_id:${emailModel2.id}`});
+        const emailRecipients2 = await models.EmailRecipient.findAll({filter: `email_id:'${emailModel2.id}'`});
         assert.equal(emailRecipients2.models.length, emailRecipients.models.length + 1);
     });
 
@@ -411,7 +411,7 @@ describe('Batch sending tests', function () {
         assert.equal(emailModel.get('email_count'), 5);
 
         // Did we create batches?
-        let batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+        let batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
         assert.equal(batches.models.length, 5);
 
         // sort batches by id because findAll doesn't have order option
@@ -449,7 +449,7 @@ describe('Batch sending tests', function () {
             assert.equal(batch.get('member_segment'), null);
 
             // Did we create recipients?
-            const batchRecipients = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}+batch_id:${batch.id}`});
+            const batchRecipients = await models.EmailRecipient.findAll({filter: `email_id:'${emailModel.id}'+batch_id:'${batch.id}'`});
             assert.equal(batchRecipients.models.length, 1);
 
             emailRecipients.push(...batchRecipients.models);
@@ -463,7 +463,7 @@ describe('Batch sending tests', function () {
         await jobManager.allSettled();
 
         await emailModel.refresh();
-        batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+        batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
 
         // sort batches by provider_id (nullable) because findAll doesn't have order option
         batches.models.sort(sortBatches);
@@ -472,7 +472,7 @@ describe('Batch sending tests', function () {
         assert.equal(emailModel.get('email_count'), 5);
 
         // Did we keep the batches?
-        batches = await models.EmailBatch.findAll({filter: `email_id:${emailModel.id}`});
+        batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
 
         // sort batches by provider_id (nullable) because findAll doesn't have order option
         batches.models.sort(sortBatches);
@@ -491,7 +491,7 @@ describe('Batch sending tests', function () {
             assert.equal(batch.get('error_data'), null);
 
             // Did we create recipients?
-            const batchRecipients = await models.EmailRecipient.findAll({filter: `email_id:${emailModel.id}+batch_id:${batch.id}`});
+            const batchRecipients = await models.EmailRecipient.findAll({filter: `email_id:'${emailModel.id}'+batch_id:'${batch.id}'`});
             assert.equal(batchRecipients.models.length, 1);
 
             emailRecipients.push(...batchRecipients.models);
@@ -567,7 +567,7 @@ describe('Batch sending tests', function () {
             // Test if all links are replaced and contain the member id
             const cheerio = require('cheerio');
             const $ = cheerio.load(html);
-            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:\'' + emailModel.get('post_id') + '\''});
 
             for (const el of $('a').toArray()) {
                 const href = $(el).attr('href');
@@ -612,7 +612,7 @@ describe('Batch sending tests', function () {
 
             const {emailModel, html} = await sendEmail(agent);
             assert.match(html, /\m=/);
-            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:\'' + emailModel.get('post_id') + '\''});
 
             for (const link of links) {
                 // Check ref not added to all replaced links
@@ -627,7 +627,7 @@ describe('Batch sending tests', function () {
 
             const {emailModel, html} = await sendEmail(agent);
             assert.match(html, /\m=/);
-            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:\'' + emailModel.get('post_id') + '\''});
 
             for (const link of links) {
                 // Check ref not added to all replaced links
@@ -640,7 +640,7 @@ describe('Batch sending tests', function () {
 
             const {emailModel, html} = await sendEmail(agent);
             assert.doesNotMatch(html, /\m=/);
-            const links = await linkRedirectRepository.getAll({filter: 'post_id:' + emailModel.get('post_id')});
+            const links = await linkRedirectRepository.getAll({filter: 'post_id:\'' + emailModel.get('post_id') + '\''});
             assert.equal(links.length, 0);
         });
     });

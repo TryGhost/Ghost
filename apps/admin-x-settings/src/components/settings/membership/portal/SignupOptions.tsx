@@ -1,7 +1,8 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {CheckboxGroup, CheckboxProps, Form, HtmlField, Toggle} from '@tryghost/admin-x-design-system';
-import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '../../../../api/settings';
-import {Tier, getPaidActiveTiers} from '../../../../api/tiers';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
+import {CheckboxGroup, CheckboxProps, Form, HtmlField, Select, SelectOption, Toggle} from '@tryghost/admin-x-design-system';
+import {Setting, SettingValue, checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {Tier, getPaidActiveTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const SignupOptions: React.FC<{
@@ -13,9 +14,9 @@ const SignupOptions: React.FC<{
     setError: (key: string, error: string | undefined) => void
 }> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError}) => {
     const {config} = useGlobalData();
-
-    const [membersSignupAccess, portalName, portalSignupTermsHtml, portalSignupCheckboxRequired, portalPlansJson] = getSettingValues(
-        localSettings, ['members_signup_access', 'portal_name', 'portal_signup_terms_html', 'portal_signup_checkbox_required', 'portal_plans']
+    const hasPortalImprovements = useFeatureFlag('portalImprovements');
+    const [membersSignupAccess, portalName, portalSignupTermsHtml, portalSignupCheckboxRequired, portalPlansJson, portalDefaultPlan] = getSettingValues(
+        localSettings, ['members_signup_access', 'portal_name', 'portal_signup_terms_html', 'portal_signup_checkbox_required', 'portal_plans', 'portal_default_plan']
     );
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
 
@@ -49,6 +50,20 @@ const SignupOptions: React.FC<{
         }
 
         updateSetting('portal_plans', JSON.stringify(portalPlans));
+
+        // Check default plan is included
+        if (hasPortalImprovements) {
+            if (portalDefaultPlan === 'yearly') {
+                if (!portalPlans.includes('yearly') && portalPlans.includes('monthly')) {
+                    updateSetting('portal_default_plan', 'monthly');
+                }
+            } else if (portalDefaultPlan === 'monthly') {
+                if (!portalPlans.includes('monthly')) {
+                    // If both yearly and monthly are missing from plans, still set it to yearly
+                    updateSetting('portal_default_plan', 'yearly');
+                }
+            }
+        }
     };
 
     // This is a bit unclear in current admin, maybe we should add a message if the settings are disabled?
@@ -60,7 +75,7 @@ const SignupOptions: React.FC<{
 
     if (localTiers) {
         localTiers.forEach((tier) => {
-            if (tier.name === 'Free') {
+            if (tier.type === 'free') {
                 tiersCheckboxes.push({
                     checked: (portalPlans.includes('free')),
                     disabled: isDisabled,
@@ -85,6 +100,11 @@ const SignupOptions: React.FC<{
     }
 
     const paidActiveTiersResult = getPaidActiveTiers(localTiers) || [];
+
+    const defaultPlanOptions: SelectOption[] = [
+        {value: 'yearly', label: 'Yearly'},
+        {value: 'monthly', label: 'Monthly'}
+    ];
 
     if (paidActiveTiersResult.length > 0 && isStripeEnabled) {
         paidActiveTiersResult.forEach((tier) => {
@@ -112,29 +132,42 @@ const SignupOptions: React.FC<{
         />
 
         {isStripeEnabled && localTiers.some(tier => tier.visibility === 'public') && (
-            <CheckboxGroup
-                checkboxes={[
-                    {
-                        checked: portalPlans.includes('monthly'),
-                        disabled: isDisabled,
-                        label: 'Monthly',
-                        value: 'monthly',
-                        onChange: () => {
-                            togglePlan('monthly');
+            <>
+                <CheckboxGroup
+                    checkboxes={[
+                        {
+                            checked: portalPlans.includes('monthly'),
+                            disabled: isDisabled,
+                            label: 'Monthly',
+                            value: 'monthly',
+                            onChange: () => {
+                                togglePlan('monthly');
+                            }
+                        },
+                        {
+                            checked: portalPlans.includes('yearly'),
+                            disabled: isDisabled,
+                            label: 'Yearly',
+                            value: 'yearly',
+                            onChange: () => {
+                                togglePlan('yearly');
+                            }
                         }
-                    },
-                    {
-                        checked: portalPlans.includes('yearly'),
-                        disabled: isDisabled,
-                        label: 'Yearly',
-                        value: 'yearly',
-                        onChange: () => {
-                            togglePlan('yearly');
-                        }
-                    }
-                ]}
-                title='Prices available at signup'
-            />
+                    ]}
+                    title='Prices available at signup'
+                />
+                {hasPortalImprovements &&
+                    <Select
+                        disabled={(portalPlans.includes('yearly') && portalPlans.includes('monthly')) ? false : true}
+                        options={defaultPlanOptions}
+                        selectedOption={defaultPlanOptions.find(option => option.value === portalDefaultPlan)}
+                        title='Price shown by default'
+                        onSelect={(option) => {
+                            updateSetting('portal_default_plan', option?.value ?? 'yearly');
+                        }}
+                    />
+                }
+            </>
         )}
 
         <HtmlField

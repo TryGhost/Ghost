@@ -625,6 +625,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 100%;
     height: 24px;
     margin: 0 0 1.7em 0;
+    padding: 0;
     outline: none;
     border-width: 0;
     border-style: none;
@@ -634,6 +635,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     background-color: transparent !important;
     transition: border-color .15s linear;
     -webkit-appearance: none;
+    overflow: hidden; /* Hides any indicators such as TK */
 }
 
 .gh-editor-feature-image-alttext::placeholder,
@@ -680,6 +682,22 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 
 .gh-editor-title.faded {
     opacity: .5;
+}
+
+.gh-editor .tk-indicator {
+    position: absolute;
+    top: 15px;
+    right: -5.6rem;
+    padding: .4rem;
+    color: #95A1AD;
+    font-size: 1.2rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.gh-editor-feature-image-container .tk-indicator {
+    top: 0;
+    padding: 0 .4rem;
 }
 
 .gh-editor-back-button {
@@ -1056,6 +1074,10 @@ figure {
     transition: transform 250ms ease-in-out;
     transform: translateX(0); /* used for dynamic positioning with js */
     padding-right: 8px; /* extra padding used for dynamic positioning with js */
+}
+
+.gh-tk-reminder .modal-body p strong {
+    white-space: nowrap;
 }
 
 /* Labs

@@ -330,6 +330,7 @@ async function initServices({config}) {
     const mailEvents = require('./server/services/mail-events');
     const donationService = require('./server/services/donations');
     const recommendationsService = require('./server/services/recommendations');
+    const emailAddressService = require('./server/services/email-address');
 
     const urlUtils = require('./shared/url-utils');
 
@@ -340,6 +341,9 @@ async function initServices({config}) {
     // NOTE: Members service depends on these
     //       so they are initialized before it.
     await stripe.init();
+
+    // NOTE: newsletter service and email service depend on email address service
+    await emailAddressService.init(),
 
     await Promise.all([
         memberAttribution.init(),
@@ -542,6 +546,11 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 7 - Init our background services, we don't wait for this to finish
         initBackgroundServices({config});
+
+        // If we pass the env var, kill Ghost
+        if (process.env.GHOST_CI_SHUTDOWN_AFTER_BOOT) {
+            process.exit(0);
+        }
 
         // We return the server purely for testing purposes
         if (server) {

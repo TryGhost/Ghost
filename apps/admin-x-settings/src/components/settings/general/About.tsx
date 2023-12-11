@@ -1,11 +1,10 @@
 import NiceModal from '@ebay/nice-modal-react';
-import useRouting from '../../../hooks/useRouting';
 import {GhostLogo, Icon, Modal, Separator} from '@tryghost/admin-x-design-system';
-import {RoutingModalProps} from '../../providers/RoutingProvider';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {linkToGitHubReleases} from '../../../utils/linkToGithubReleases';
 import {showDatabaseWarning} from '../../../utils/showDatabaseWarning';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {useUpgradeStatus} from '../../providers/ServiceProvider';
+import {useUpgradeStatus} from '../../providers/SettingsAppProvider';
 
 const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
     const {updateRoute} = useRouting();
@@ -18,11 +17,12 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
         return date.getFullYear();
     }
 
-    function hasDeveloperExperiments():string {
+    function hasDeveloperExperiments():boolean {
         if (config.enableDeveloperExperiments) {
-            return 'Enabled';
+            return true;
+        } else {
+            return false;
         }
-        return 'Disabled';
     }
 
     function showSystemInfo() : boolean {
@@ -74,7 +74,7 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
                     }
                     {
                         hasDeveloperExperiments() && (
-                            <div><strong>Developer experiments:</strong> {hasDeveloperExperiments()}</div>
+                            <div><strong>Developer experiments:</strong> Enabled</div>
                         )
                     }
 

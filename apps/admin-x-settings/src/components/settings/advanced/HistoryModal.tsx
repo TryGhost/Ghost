@@ -1,12 +1,11 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import useFilterableApi from '../../../hooks/useFilterableApi';
-import useRouting from '../../../hooks/useRouting';
-import {Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '../../../api/actions';
+import {Action, getActionTitle, getContextResource, getLinkTarget, isBulkAction, useBrowseActions} from '@tryghost/admin-x-framework/api/actions';
 import {Avatar, Button, Icon, InfiniteScrollListener, List, ListItem, LoadSelectOptions, Modal, NoValueLabel, Popover, Select, SelectOption, Toggle, ToggleGroup, debounce} from '@tryghost/admin-x-design-system';
-import {RoutingModalProps} from '../../providers/RoutingProvider';
-import {User} from '../../../api/users';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {User} from '@tryghost/admin-x-framework/api/users';
 import {generateAvatarColor, getInitials} from '../../../utils/helpers';
 import {useCallback, useState} from 'react';
+import {useFilterableApi} from '@tryghost/admin-x-framework/hooks';
 
 const HistoryIcon: React.FC<{action: Action}> = ({action}) => {
     let name = 'pen';
@@ -28,7 +27,7 @@ const HistoryAvatar: React.FC<{action: Action}> = ({action}) => {
         <div className='relative shrink-0'>
             <Avatar
                 bgColor={generateAvatarColor(action.actor?.name || action.actor?.slug || '')}
-                image={action.actor?.image}
+                image={action.actor?.image ?? undefined}
                 label={getInitials(action.actor?.name || action.actor?.slug)}
                 labelColor='white'
                 size='md'
@@ -175,7 +174,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
             filter: [
                 excludedEvents.length && `event:-[${excludedEvents.join(',')}]`,
                 excludedResources.length && `resource_type:-[${excludedResources.join(',')}]`,
-                params?.user && `actor_id:${params.user}`
+                params?.user && `actor_id:'${params.user}'`
             ].filter(Boolean).join('+')
         },
         getNextPageParams: (lastPage, otherParams) => ({

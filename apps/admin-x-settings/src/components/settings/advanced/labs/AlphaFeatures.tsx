@@ -48,13 +48,29 @@ const features = [{
     description: 'Enables publishers to collect one-time payments',
     flag: 'tipsAndDonations'
 },{
-    title: 'List-Unsubscribe header',
-    description: 'Set the List-Unsubscribe header in emails',
-    flag: 'listUnsubscribeHeader'
-},{
     title: 'AdminX Offers',
     description: 'Enables the new offers UI in AdminX settings',
     flag: 'adminXOffers'
+},{
+    title: 'Filter by email disabled',
+    description: 'Allows filtering members by email disabled',
+    flag: 'filterEmailDisabled'
+},{
+    title: 'AdminX Demo',
+    description: 'Adds a navigation link to the AdminX demo app',
+    flag: 'adminXDemo'
+},{
+    title: 'TK Reminders',
+    description: 'Enables the TK Reminders feature in the editor',
+    flag: 'tkReminders'
+},{
+    title: 'New email addresses',
+    description: 'For self hosters, forces the usage of the mail.from config as from address for all outgoing emails',
+    flag: 'newEmailAddresses'
+},{
+    title: 'Portal improvements',
+    description: 'Adds a bunch of improvements to portal and portal settings',
+    flag: 'portalImprovements'
 }];
 
 const AlphaFeatures: React.FC = () => {

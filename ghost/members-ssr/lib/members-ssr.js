@@ -18,6 +18,8 @@ const {
 
 /**
  * @typedef {object} Member
+ * @prop {string} id
+ * @prop {string} transient_id
  * @prop {string} email
  */
 
@@ -170,15 +172,27 @@ class MembersSSR {
     }
 
     /**
+     * @method _getMemberIdentityData
+     *
+     * @param {string} transientId
+     *
+     * @returns {Promise<Member>} member
+     */
+    async _getMemberIdentityDataFromTransientId(transientId) {
+        const api = await this._getMembersApi();
+        return api.getMemberIdentityDataFromTransientId(transientId);
+    }
+
+    /**
      * @method _getMemberIdentityToken
      *
      * @param {string} email
      *
      * @returns {Promise<JWT>} member
      */
-    async _getMemberIdentityToken(email) {
+    async _getMemberIdentityToken(transientId) {
         const api = await this._getMembersApi();
-        return api.getMemberIdentityToken(email);
+        return api.getMemberIdentityToken(transientId);
     }
 
     /**
@@ -235,9 +249,14 @@ class MembersSSR {
             }
         }
 
-        this._setSessionCookie(req, res, member.email);
+        this._setSessionCookie(req, res, member.transient_id);
 
         return member;
+    }
+
+    async _cycleTransientId(memberId) {
+        const api = await this._getMembersApi();
+        return api.cycleTransientId(memberId);
     }
 
     /**
@@ -248,6 +267,13 @@ class MembersSSR {
      * @returns {Promise<void>}
      */
     async deleteSession(req, res) {
+        if (req.body && typeof req.body === 'object' && req.body.all) {
+            // Update transient_id to invalidate all sessions
+            const member = await this.getMemberDataFromSession(req, res);
+            if (member) {
+                await this._cycleTransientId(member.id);
+            }
+        }
         this._removeSessionCookie(req, res);
     }
 
@@ -260,9 +286,8 @@ class MembersSSR {
      * @returns {Promise<Member>}
      */
     async getMemberDataFromSession(req, res) {
-        const email = this._getSessionCookies(req, res);
-
-        const member = await this._getMemberIdentityData(email);
+        const transientId = this._getSessionCookies(req, res);
+        const member = await this._getMemberIdentityDataFromTransientId(transientId);
         return member;
     }
 
@@ -275,10 +300,10 @@ class MembersSSR {
      * @returns {Promise<JWT>} identity token
      */
     async getIdentityTokenForMemberFromSession(req, res) {
-        const email = this._getSessionCookies(req, res);
-        const token = await this._getMemberIdentityToken(email);
+        const transientId = this._getSessionCookies(req, res);
+        const token = await this._getMemberIdentityToken(transientId);
         if (!token) {
-            this.deleteSession(req, res);
+            await this.deleteSession(req, res);
             throw new BadRequestError({
                 message: 'Invalid session, could not get identity token'
             });

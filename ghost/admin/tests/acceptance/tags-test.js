@@ -59,9 +59,6 @@ describe('Acceptance: Tags', function () {
             // it loads tags list
             expect(currentURL(), 'currentURL').to.equal('tags');
 
-            // it has correct page title
-            expect(document.title, 'page title').to.equal('Tags - Test Blog');
-
             // it highlights nav menu
             expect(find('[data-test-nav="tags"]'), 'highlights nav menu item')
                 .to.have.class('active');

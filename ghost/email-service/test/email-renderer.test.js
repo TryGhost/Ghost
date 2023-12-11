@@ -681,6 +681,11 @@ describe('Email renderer', function () {
             },
             labs: {
                 isSet: () => false
+            },
+            emailAddressService: {
+                getAddress(addresses) {
+                    return addresses;
+                }
             }
         });
 
@@ -723,6 +728,12 @@ describe('Email renderer', function () {
     });
 
     describe('getReplyToAddress', function () {
+        let emailAddressService = {
+            getAddress(addresses) {
+                return addresses;
+            },
+            managedEmailEnabled: true
+        };
         let emailRenderer = new EmailRenderer({
             settingsCache: {
                 get: (key) => {
@@ -741,7 +752,8 @@ describe('Email renderer', function () {
             },
             labs: {
                 isSet: () => false
-            }
+            },
+            emailAddressService
         });
 
         it('returns support address', function () {
@@ -754,14 +766,52 @@ describe('Email renderer', function () {
             response.should.equal('support@example.com');
         });
 
-        it('returns correct reply to address for newsletter', function () {
+        it('[legacy] returns correct reply to address for newsletter', function () {
+            emailAddressService.managedEmailEnabled = false;
             const newsletter = createModel({
                 sender_email: 'ghost@example.com',
                 sender_name: 'Ghost',
                 sender_reply_to: 'newsletter'
             });
             const response = emailRenderer.getReplyToAddress({}, newsletter);
-            response.should.equal(`"Ghost" <ghost@example.com>`);
+            assert.equal(response, `"Ghost" <ghost@example.com>`);
+            emailAddressService.managedEmailEnabled = true;
+        });
+
+        it('returns null when set to newsletter', function () {
+            emailAddressService.managedEmailEnabled = true;
+            const newsletter = createModel({
+                sender_email: 'ghost@example.com',
+                sender_name: 'Ghost',
+                sender_reply_to: 'newsletter'
+            });
+            const response = emailRenderer.getReplyToAddress({}, newsletter);
+            assert.equal(response, null);
+        });
+
+        it('returns correct custom reply to address', function () {
+            const newsletter = createModel({
+                sender_email: 'ghost@example.com',
+                sender_name: 'Ghost',
+                sender_reply_to: 'anything@iwant.com'
+            });
+            const response = emailRenderer.getReplyToAddress({}, newsletter);
+            assert.equal(response, 'anything@iwant.com');
+        });
+
+        it('handles removed replyto addresses', function () {
+            const newsletter = createModel({
+                sender_email: 'ghost@example.com',
+                sender_name: 'Ghost',
+                sender_reply_to: 'anything@iwant.com'
+            });
+            emailAddressService.getAddress = ({from}) => {
+                return {
+                    from
+                };
+            };
+            const response = emailRenderer.getReplyToAddress({}, newsletter);
+            assert.equal(response, null);
         });
     });
 

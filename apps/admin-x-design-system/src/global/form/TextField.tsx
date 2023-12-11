@@ -76,7 +76,7 @@ const TextField: React.FC<TextFieldProps> = ({
 
     const textFieldClasses = !unstyled && clsx(
         'peer z-[1] order-2 h-8 w-full bg-transparent px-3 py-1 text-sm placeholder:text-grey-500 dark:placeholder:text-grey-700 md:h-9 md:py-2 md:text-md',
-        disabled ? 'cursor-not-allowed text-grey-700 opacity-60 dark:text-grey-700' : 'dark:text-white',
+        disabled ? 'text-grey-700 opacity-60 dark:text-grey-700' : 'dark:text-white',
         rightPlaceholder ? 'w-0 grow rounded-l-md' : 'rounded-md',
         className
     );

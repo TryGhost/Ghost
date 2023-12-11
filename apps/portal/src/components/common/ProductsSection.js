@@ -894,7 +894,7 @@ function getSelectedPrice({products, selectedProduct, selectedInterval}) {
     return selectedPrice;
 }
 
-function getActiveInterval({portalPlans, selectedInterval = 'year'}) {
+function getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval}) {
     if (selectedInterval === 'month' && portalPlans.includes('monthly')) {
         return 'month';
     }
@@ -903,26 +903,32 @@ function getActiveInterval({portalPlans, selectedInterval = 'year'}) {
         return 'year';
     }
 
-    if (portalPlans.includes('monthly')) {
-        return 'month';
+    if (portalDefaultPlan) {
+        if (portalDefaultPlan === 'monthly' && portalPlans.includes('monthly')) {
+            return 'month';
+        }
     }
 
     if (portalPlans.includes('yearly')) {
         return 'year';
     }
+
+    if (portalPlans.includes('monthly')) {
+        return 'month';
+    }
 }
 
 function ProductsSection({onPlanSelect, products, type = null, handleChooseSignup, errors}) {
     const {site, member, t} = useContext(AppContext);
-    const {portal_plans: portalPlans} = site;
-    const defaultInterval = getActiveInterval({portalPlans});
-
+    const {portal_plans: portalPlans, portal_default_plan: portalDefaultPlan} = site;
     const defaultProductId = products.length > 0 ? products[0].id : 'free';
-    const [selectedInterval, setSelectedInterval] = useState(defaultInterval);
+
+    // Note: by default we set it to null, so that it changes reactively in the preview version of Portal
+    const [selectedInterval, setSelectedInterval] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(defaultProductId);
 
     const selectedPrice = getSelectedPrice({products, selectedInterval, selectedProduct});
-    const activeInterval = getActiveInterval({portalPlans, selectedInterval});
+    const activeInterval = getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval});
 
     const isComplimentary = isComplimentaryMember({member});
 

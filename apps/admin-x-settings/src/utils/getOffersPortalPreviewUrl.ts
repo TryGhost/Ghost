@@ -2,14 +2,14 @@ export type offerPortalPreviewUrlTypes = {
     disableBackground?: boolean;
     name: string;
     code: string;
-    displayTitle?: string;
-    displayDescription?: string;
+    displayTitle: string;
+    displayDescription: string;
     type: string;
     cadence: string;
-    amount?: number;
+    amount: number;
     duration: string;
     durationInMonths: number;
-    currency?: string;
+    currency: string;
     status: string;
     tierId: string;
 };
@@ -31,9 +31,11 @@ export const getOfferPortalPreviewUrl = (overrides:offerPortalPreviewUrlTypes, b
         tierId
     } = overrides;
 
-    const portalBase = '/#/portal/preview/offer';
+    baseUrl = baseUrl.replace(/\/$/, '');
+    const portalBase = '/?v=modal-portal-offer#/portal/preview/offer';
     const settingsParam = new URLSearchParams();
 
+    settingsParam.append('disableBackground', 'false');
     settingsParam.append('name', encodeURIComponent(name));
     settingsParam.append('code', encodeURIComponent(code));
     settingsParam.append('display_title', encodeURIComponent(displayTitle));

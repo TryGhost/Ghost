@@ -6,17 +6,15 @@ import ProfileDetails from './users/ProfileDetails';
 import React, {useCallback, useEffect} from 'react';
 import StaffToken from './users/StaffToken';
 import clsx from 'clsx';
-import useForm, {ErrorMessages} from '../../../hooks/useForm';
-import useHandleError from '../../../utils/api/handleError';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
-import useRouting from '../../../hooks/useRouting';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
 import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, showToast} from '@tryghost/admin-x-design-system';
+import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {RoutingModalProps} from '../../providers/RoutingProvider';
-import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '../../../api/users';
-import {getImageUrl, useUploadImage} from '../../../api/images';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {validateFacebookUrl, validateTwitterUrl} from '../../../utils/socialUrls';
@@ -159,7 +157,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 if (error instanceof HostLimitError) {
                     NiceModal.show(LimitModal, {
                         formSheet: true,
-                        prompt: error.message || `Your current plan doesn't support more users.`
+                        prompt: error.message || `Your current plan doesn't support more users.`,
+                        onOk: () => updateRoute({route: '/pro', isExternal: true})
                     });
                     return;
                 } else {
@@ -383,7 +382,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                     id='avatar'
                                     imageClassName='w-full h-full object-cover rounded-full shrink-0'
                                     imageContainerClassName='relative group bg-cover bg-center -ml-2 h-[80px] w-[80px] shrink-0'
-                                    imageURL={formState.profile_image}
+                                    imageURL={formState.profile_image ?? undefined}
                                     pintura={
                                         {
                                             isEnabled: editor.isEnabled,

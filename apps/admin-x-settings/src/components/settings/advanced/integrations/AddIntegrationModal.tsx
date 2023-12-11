@@ -1,11 +1,10 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
 import {Form, LimitModal, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {useCreateIntegration} from '../../../../api/integrations';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {useCreateIntegration} from '@tryghost/admin-x-framework/api/integrations';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
@@ -21,7 +20,8 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
             limiter.errorIfWouldGoOverLimit('customIntegrations').catch((error) => {
                 if (error instanceof HostLimitError) {
                     NiceModal.show(LimitModal, {
-                        prompt: error.message || `Your current plan doesn't support more custom integrations.`
+                        prompt: error.message || `Your current plan doesn't support more custom integrations.`,
+                        onOk: () => updateRoute({route: '/pro', isExternal: true})
                     });
                     modal.remove();
                     updateRoute('integrations');

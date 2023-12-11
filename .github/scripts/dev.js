@@ -2,6 +2,7 @@ const path = require('path');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 
+const chalk = require('chalk');
 const concurrently = require('concurrently');
 
 // check we're running on Node 18 and above
@@ -44,21 +45,23 @@ const COMMAND_ADMIN = {
 
 const COMMAND_TYPESCRIPT = {
     name: 'ts',
-    command: 'nx watch --projects=ghost/collections,ghost/in-memory-repository,ghost/bookshelf-repository,ghost/mail-events,ghost/model-to-domain-event-interceptor,ghost/post-revisions,ghost/nql-filter-expansions,ghost/post-events,ghost/donations,ghost/recommendations -- nx run \\$NX_PROJECT_NAME:build:ts',
+    command: 'while [ 1 ]; do nx watch --projects=ghost/collections,ghost/in-memory-repository,ghost/bookshelf-repository,ghost/mail-events,ghost/model-to-domain-event-interceptor,ghost/post-revisions,ghost/nql-filter-expansions,ghost/post-events,ghost/donations,ghost/recommendations,ghost/email-addresses -- nx run \\$NX_PROJECT_NAME:build:ts; done',
     cwd: path.resolve(__dirname, '../../'),
     prefixColor: 'cyan',
     env: {}
 };
 
+const adminXApps = '@tryghost/admin-x-demo,@tryghost/admin-x-settings';
+
 const COMMANDS_ADMINX = [{
-    name: 'adminXDS',
-    command: 'nx watch --projects=apps/admin-x-design-system -- nx run \\$NX_PROJECT_NAME:build --skip-nx-cache',
+    name: 'adminXDeps',
+    command: 'while [ 1 ]; do nx watch --projects=apps/admin-x-design-system,apps/admin-x-framework -- nx run \\$NX_PROJECT_NAME:build --skip-nx-cache; done',
     cwd: path.resolve(__dirname, '../..'),
     prefixColor: '#C35831',
     env: {}
 }, {
     name: 'adminX',
-    command: 'yarn nx build && yarn dev',
+    command: `nx run-many --projects=${adminXApps} --targets=build && nx run-many --projects=${adminXApps} --parallel=${adminXApps.length} --targets=dev`,
     cwd: path.resolve(__dirname, '../../apps/admin-x-settings'),
     prefixColor: '#C35831',
     env: {}
@@ -75,7 +78,7 @@ if (DASH_DASH_ARGS.includes('ghost')) {
 if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'portal',
-        command: 'yarn dev',
+        command: 'nx run @tryghost/portal:dev',
         cwd: path.resolve(__dirname, '../../apps/portal'),
         prefixColor: 'magenta',
         env: {}
@@ -98,7 +101,7 @@ if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
 if (DASH_DASH_ARGS.includes('signup') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'signup-form',
-        command: DASH_DASH_ARGS.includes('signup') ? 'yarn dev' : 'yarn preview',
+        command: DASH_DASH_ARGS.includes('signup') ? 'nx run @tryghost/signup-form:dev' : 'nx run @tryghost/signup-form:preview',
         cwd: path.resolve(__dirname, '../../apps/signup-form'),
         prefixColor: 'magenta',
         env: {}
@@ -109,7 +112,7 @@ if (DASH_DASH_ARGS.includes('signup') || DASH_DASH_ARGS.includes('all')) {
 if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('announcementBar') || DASH_DASH_ARGS.includes('announcementbar') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'announcement-bar',
-        command: 'yarn dev',
+        command: 'nx run @tryghost/announcement-bar:dev',
         cwd: path.resolve(__dirname, '../../apps/announcement-bar'),
         prefixColor: '#DC9D00',
         env: {}
@@ -120,7 +123,7 @@ if (DASH_DASH_ARGS.includes('announcement-bar') || DASH_DASH_ARGS.includes('anno
 if (DASH_DASH_ARGS.includes('search') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'search',
-        command: 'yarn dev',
+        command: 'nx run @tryghost/sodo-search:dev',
         cwd: path.resolve(__dirname, '../../apps/sodo-search'),
         prefixColor: '#23de43',
         env: {}
@@ -159,7 +162,7 @@ if (DASH_DASH_ARGS.includes('comments') || DASH_DASH_ARGS.includes('all')) {
 
     commands.push({
         name: 'comments',
-        command: 'yarn dev',
+        command: 'nx run @tryghost/comments-ui:dev',
         cwd: path.resolve(__dirname, '../../apps/comments-ui'),
         prefixColor: '#E55137',
         env: {}
@@ -171,7 +174,6 @@ async function handleStripe() {
         if (DASH_DASH_ARGS.includes('offline')) {
             return;
         }
-        console.log('Fetching Stripe secret token..');
 
         let stripeSecret;
         try {
@@ -204,6 +206,8 @@ async function handleStripe() {
         process.exit(0);
     }
 
+    console.log(`Running projects: ${commands.map(c => chalk.green(c.name)).join(', ')}`);
+
     const {result} = concurrently(commands, {
         prefix: 'name',
         killOthers: ['failure', 'success']
@@ -212,6 +216,10 @@ async function handleStripe() {
     try {
         await result;
     } catch (err) {
-        console.error('\nExecuting dev command failed, ensure dependencies are up-to-date by running `yarn fix`\n');
+        console.error();
+        console.error(chalk.red(`Executing dev command failed:`) + `\n`);
+        console.error(chalk.red(`If you've recently done a \`yarn main\`, dependencies might be out of sync. Try running \`${chalk.green('yarn fix')}\` to fix this.`));
+        console.error(chalk.red(`If not, something else went wrong. Please report this to the Ghost team.`));
+        console.error();
     }
 })();

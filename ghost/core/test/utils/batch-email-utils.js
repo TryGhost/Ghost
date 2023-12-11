@@ -59,7 +59,7 @@ async function createPublishedPostEmail(agent, settings = {}, email_recipient_fi
 let lastEmailModel;
 
 /**
- * @typedef {{html: string, plaintext: string, emailModel: any, recipientData: any}} SendEmail
+ * @typedef {{html: string, plaintext: string, emailModel: any, recipientData: any, from: string, replyTo?: string}} SendEmail
  */
 
 /**
@@ -214,5 +214,6 @@ module.exports = {
     sendEmail,
     sendFailedEmail,
     retryEmail,
-    matchEmailSnapshot
+    matchEmailSnapshot,
+    getLastEmail
 };
