@@ -1,6 +1,7 @@
 const config = require('./config');
 const sentryConfig = config.get('sentry');
 const errors = require('@tryghost/errors');
+const {ProfilingIntegration} = require('@sentry/profiling-node');
 
 const beforeSend = function (event, hint) {
     try {
@@ -73,6 +74,10 @@ if (sentryConfig && !sentryConfig.disabled) {
         sentryInitConfig.integrations.push(new Sentry.Integrations.Http({tracing: true}));
         sentryInitConfig.integrations.push(new Sentry.Integrations.Express());
         sentryInitConfig.tracesSampleRate = parseFloat(sentryConfig.tracing.sampleRate) || 0.0;
+    }
+    if (sentryConfig.profiling?.enabled === true) {
+        sentryInitConfig.integrations.push(new ProfilingIntegration());
+        sentryInitConfig.profilesSampleRate = parseFloat(sentryConfig.profiling.sampleRate) || 0.0;
     }
     Sentry.init(sentryInitConfig);
 
