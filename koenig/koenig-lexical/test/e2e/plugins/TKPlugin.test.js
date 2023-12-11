@@ -1,4 +1,4 @@
-import {assertSelection, focusEditor, initialize} from '../../utils/e2e';
+import {assertHTML, assertSelection, focusEditor, html, initialize} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('TK Plugin', async function () {
@@ -74,6 +74,24 @@ test.describe('TK Plugin', async function () {
             await page.keyboard.type('TKs and TK and [TK]');
 
             await expect(page.locator('[data-kg-tk="true"]')).toHaveCount(2);
+        });
+
+        test('highlights TK when preceded or follow by emdash', async function () {
+            await focusEditor(page);
+
+            await page.keyboard.type('First---TK Second---TK---Third TK---Last');
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">First</span>
+                    <span data-kg-tk="true" data-lexical-text="true">—TK</span>
+                    <span data-lexical-text="true">Second</span>
+                    <span data-kg-tk="true" data-lexical-text="true">—TK—</span>
+                    <span data-lexical-text="true">Third</span>
+                    <span data-kg-tk="true" data-lexical-text="true">TK—</span>
+                    <span data-lexical-text="true">Last</span>
+                </p>
+            `);
         });
     });
 

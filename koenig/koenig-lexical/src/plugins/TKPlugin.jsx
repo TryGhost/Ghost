@@ -180,14 +180,14 @@ export default function TKPlugin() {
         function isValidMatch(match) {
             // negative lookbehind isn't supported before Safari 16.4
             // so we capture the preceding char and test it here
-            if (match[1] && match[1].trim() && WORD_CHAR_REGEX.test(match[1])) {
+            if (match[1] && match[1].trim() && WORD_CHAR_REGEX.test(match[1]) && match[2].slice(0, 1) !== '—') {
                 return false;
             }
 
             // we also check any following char in code to avoid an overly
             // complex regex when looking for word-chars following the optional
             // trailing symbol char
-            if (match[4] && match[4].trim() && WORD_CHAR_REGEX.test(match[4])) {
+            if (match[4] && match[4].trim() && WORD_CHAR_REGEX.test(match[4]) && match[2].slice(-1) !== '—') {
                 return false;
             }
 
