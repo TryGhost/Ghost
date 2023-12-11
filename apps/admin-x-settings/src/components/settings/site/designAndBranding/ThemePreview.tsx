@@ -65,7 +65,7 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
 
         // Fetch theme preview HTML
         fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'text/html;charset=utf-8',
                 'x-ghost-preview': previewData,
