@@ -220,7 +220,7 @@ test.describe('Design settings', async () => {
         await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Post'})).toBeHidden();
 
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify({})]]).toString();
-        expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
+        await expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 
     test('Custom theme setting visibility', async ({page}) => {

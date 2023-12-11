@@ -111,7 +111,7 @@ const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modals, chil
             return;
         }
 
-        const newPath = options.route;
+        const newPath = options.route.replace(/^\//, '');
 
         if (newPath === route) {
             // No change

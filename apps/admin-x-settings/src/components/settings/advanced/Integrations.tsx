@@ -42,7 +42,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
 
     const handleClick = () => {
         if (disabled) {
-            updateRoute({route: 'pro'});
+            updateRoute({route: 'pro', isExternal: true});
         } else {
             action();
         }
