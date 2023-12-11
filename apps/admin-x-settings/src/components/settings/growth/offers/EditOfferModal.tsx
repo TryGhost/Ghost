@@ -268,7 +268,7 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         title='Offer'
         width={1140}
         onCancel={() => {
-            updateRoute('offers/edit');
+            window.history.back();
         }}
         onOk={async () => {
             if (!(await handleSave({fakeWhenUnchanged: true}))) {
