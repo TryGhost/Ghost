@@ -19,6 +19,7 @@
             @handleCaptionBlur={{@handleFeatureImageCaptionBlur}}
             @forceButtonDisplay={{or (not @title) (eq @title "(Untitled)") this.titleIsHovered this.titleIsFocused}}
             @isHidden={{or (not @cardOptions.post.showTitleAndFeatureImage) false}}
+            @onTKCountChange={{@updateFeatureImageTkCount}}
         />
 
         <div class="gh-editor-title-container page-improvements">

@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
-    "@sentry/node": "7.85.0",
+    "@sentry/node": "7.86.0",
     "@tryghost/adapter-base-cache": "0.1.10",
     "@tryghost/adapter-cache-redis": "0.0.0",
     "@tryghost/adapter-manager": "0.0.0",
@@ -209,7 +209,7 @@
     "multer": "1.4.4",
     "mysql2": "3.6.5",
     "nconf": "0.12.1",
-    "newrelic": "11.6.0",
+    "newrelic": "11.6.1",
     "node-jose": "2.2.0",
     "path-match": "1.2.4",
     "probe-image-size": "7.2.3",
@@ -219,7 +219,7 @@
     "socket.io": "4.7.2",
     "stoppable": "1.1.0",
     "uuid": "9.0.1",
-    "ws": "8.14.2",
+    "ws": "8.15.0",
     "xml": "1.0.1",
     "y-protocols": "1.0.6",
     "yjs": "13.6.10"
