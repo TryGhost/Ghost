@@ -21,7 +21,6 @@ const GA_FEATURES = [
     'announcementBar',
     'signupForm',
     'recommendations',
-    'editorEmojiPicker',
     'listUnsubscribeHeader',
     'filterEmailDisabled'
 ];
@@ -45,7 +44,6 @@ const ALPHA_FEATURES = [
     'tipsAndDonations',
     'importMemberTier',
     'lexicalIndicators',
-    'editorEmojiPicker',
     'adminXOffers',
     'filterEmailDisabled',
     'adminXDemo',

@@ -73,10 +73,6 @@ export default class KoenigLexicalEditorInput extends Component {
     editorResource = this.koenig.resource;
 
     get emojiPicker() {
-        if (!this.feature.editorEmojiPicker) {
-            return false;
-        }
-
         return this.args.emojiPicker ?? true;
     }
 
