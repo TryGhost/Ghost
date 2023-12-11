@@ -14,6 +14,7 @@ import {CardMenuPlugin} from '../plugins/CardMenuPlugin';
 import {EmailCtaPlugin} from '../plugins/EmailCtaPlugin';
 import {EmailPlugin} from '../plugins/EmailPlugin';
 import {EmbedPlugin} from '../plugins/EmbedPlugin';
+import {EmojiPickerPlugin} from './EmojiPickerPlugin';
 import {FilePlugin} from '../plugins/FilePlugin';
 import {GalleryPlugin} from '../plugins/GalleryPlugin';
 import {HeaderPlugin} from '../plugins/HeaderPlugin';
@@ -22,15 +23,10 @@ import {ListPlugin} from '@lexical/react/LexicalListPlugin';
 import {PaywallPlugin} from '../plugins/PaywallPlugin';
 import {ProductPlugin} from '../plugins/ProductPlugin';
 import {SignupPlugin} from '../plugins/SignupPlugin';
-// import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
-import KoenigComposerContext from '../context/KoenigComposerContext';
-import {EmojiPickerPlugin} from './EmojiPickerPlugin';
 import {TogglePlugin} from '../plugins/TogglePlugin';
 import {VideoPlugin} from '../plugins/VideoPlugin';
 
 export const AllDefaultPlugins = () => {
-    const {cardConfig} = React.useContext(KoenigComposerContext);
-
     return (
         <>
             {/* Lexical Plugins */}
@@ -39,7 +35,7 @@ export const AllDefaultPlugins = () => {
 
             {/* Koenig Plugins */}
             <CardMenuPlugin />
-            {cardConfig.feature?.emojiPicker ? <EmojiPickerPlugin /> : null}
+            <EmojiPickerPlugin />
 
             {/* Card Plugins */}
             <AudioPlugin />

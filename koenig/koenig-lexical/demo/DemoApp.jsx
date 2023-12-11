@@ -45,8 +45,7 @@ const cardConfig = {
     membersEnabled: true,
     feature: {
         collections: true,
-        collectionsCard: true,
-        emojiPicker: true
+        collectionsCard: true
     },
     deprecated: {
         headerV1: process.env.NODE_ENV === 'test' ? false : true // show header v1 only for tests
