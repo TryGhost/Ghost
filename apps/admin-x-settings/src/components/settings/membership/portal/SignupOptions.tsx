@@ -128,7 +128,7 @@ const SignupOptions: React.FC<{
 
         <CheckboxGroup
             checkboxes={tiersCheckboxes}
-            title='Tiers available at startup'
+            title='Tiers available at signup'
         />
 
         {isStripeEnabled && localTiers.some(tier => tier.visibility === 'public') && (
@@ -161,7 +161,7 @@ const SignupOptions: React.FC<{
                         disabled={(portalPlans.includes('yearly') && portalPlans.includes('monthly')) ? false : true}
                         options={defaultPlanOptions}
                         selectedOption={defaultPlanOptions.find(option => option.value === portalDefaultPlan)}
-                        title='Price shown by default'
+                        title='Price preselected at signup'
                         onSelect={(option) => {
                             updateSetting('portal_default_plan', option?.value ?? 'yearly');
                         }}
