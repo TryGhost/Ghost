@@ -48,6 +48,17 @@
     ::selection {
         background: var(--grey-900);
     }
+
+    em-emoji-picker {
+        /* --green */
+        --rgb-accent: 48, 207, 67;
+        /* --grey-950 */
+        --rgb-background: 35, 41, 47;
+        /* --grey-300 */
+        --rgb-color: 221, 225, 229;
+        /* --grey-900 */
+        --rgb-input: 57, 64, 71;
+      }
 }
 
 .koenig-lexical.koenig-lexical-caption {
@@ -79,10 +90,6 @@ em-emoji-picker {
     --shadow: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
 
     height: 325px;
-  }
-
-  [data-theme="dark"] {
-    --em-rgb-accent: (255,0,0)
   }
 
   em-emoji-picker #nav button[aria-selected] svg {
