@@ -320,7 +320,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             items={benefits.items}
                             itemSeparator={false}
                             renderItem={({id, item}) => <div className='relative flex w-full items-center gap-5'>
-                                <div className='absolute left-[-32px] top-[7px] flex h-6 w-6 items-center justify-center bg-white group-hover:hidden'><Icon name='check' size='sm' /></div>
+                                <div className='absolute left-[-32px] top-[7px] flex h-6 w-6 items-center justify-center bg-white group-hover:hidden dark:bg-black'><Icon name='check' size='sm' /></div>
                                 <TextField
                                     // className='grow border-b border-grey-500 py-2 focus:border-grey-800 group-hover:border-grey-600'
                                     value={item}
