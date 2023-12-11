@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} zile gratis",
     "{{amount}} off": "{{amount}} redus",
     "{{amount}} off for first {{number}} months.": "{{amount}} redus pentru primele {{number}} luni.",
@@ -48,7 +49,6 @@
     "Edit": "Editează",
     "Email": "Email",
     "Email newsletter": "Newsletter prin email",
-    "Email preference updated.": "Preferința de email a fost actualizată.",
     "Email preferences": "Preferințe email",
     "Emails": "Emailuri",
     "Emails disabled": "Emailuri dezactivate",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Deblochează accesul la toate buletinele informative devenind un abonat plătit.",
     "Unsubscribe from all emails": "Dezabonează-te de la toate emailurile",
     "Unsubscribed": "Dezabonat",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Dezabonarea de la emailuri nu va anula abonamentul plătit la {{title}}",
     "Update": "Actualizează",
     "Update your preferences": "Actualizează-ți preferințele",

@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} dní zdarma",
     "{{amount}} off": "{{amount}} zľava",
     "{{amount}} off for first {{number}} months.": "Zľava {{amount}} pre prvé {{number}} mesiace.",
@@ -48,7 +49,6 @@
     "Edit": "Upraviť",
     "Email": "",
     "Email newsletter": "",
-    "Email preference updated.": "E-mailové nastavnia zmenené.",
     "Email preferences": "E-mailové nastavnia",
     "Emails": "E-maily",
     "Emails disabled": "E-maily vypnuté",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "",
     "Unsubscribe from all emails": "Odhlásený z odberu všetkých email-ov",
     "Unsubscribed": "Odhlásený z odberu",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Odhlásením z odberu email-ov sa nezruší predplatné k {{title}}",
     "Update": "Upraviť",
     "Update your preferences": "Upraviť nastavenia",

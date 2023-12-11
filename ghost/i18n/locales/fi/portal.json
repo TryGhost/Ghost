@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} päivää ilmaiseksi",
     "{{amount}} off": "{{amount}} pois",
     "{{amount}} off for first {{number}} months.": "{{amount}} pois ensimmäisestä {{number}} kuukaudesta",
@@ -48,7 +49,6 @@
     "Edit": "Muokkaa",
     "Email": "Sähköposti",
     "Email newsletter": "Uutiskirje sähköpostiin",
-    "Email preference updated.": "Sähköpostiasetukset päivitetty",
     "Email preferences": "Sähköpostiasetukset",
     "Emails": "Sähköpostit",
     "Emails disabled": "Sähköpostit pois käytöstä",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Avaa pääsy kaikkiin uutiskirjeisiin maksullisella tilauksella.",
     "Unsubscribe from all emails": "Peruuta kaikki sähköpostit",
     "Unsubscribed": "Tilaus peruutettu",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Sähköpostien peruuttaminen ei peruuta maksullista tilaustasi {{title}}",
     "Update": "Päivitä",
     "Update your preferences": "Päivitä asetuksesi",

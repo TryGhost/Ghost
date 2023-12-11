@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}}天免费",
     "{{amount}} off": "减免{{amount}}",
     "{{amount}} off for first {{number}} months.": "前{{number}}月减免{{amount}}",
@@ -48,7 +49,6 @@
     "Edit": "编辑",
     "Email": "电子邮件",
     "Email newsletter": "电子邮件快报",
-    "Email preference updated.": "电子邮件偏好已更新。",
     "Email preferences": "电子邮件偏好设置",
     "Emails": "电子邮件列表",
     "Emails disabled": "关闭电子邮件列表",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "成为付费订阅用户以解锁全部快报。",
     "Unsubscribe from all emails": "取消所有邮件订阅",
     "Unsubscribed": "取消订阅",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "取消邮件订阅不会取消您对 {{title}} 的付费订阅。",
     "Update": "更新",
     "Update your preferences": "更新您的偏好设置",

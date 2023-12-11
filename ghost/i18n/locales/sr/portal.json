@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "",
     "{{amount}} off": "",
     "{{amount}} off for first {{number}} months.": "",
@@ -48,7 +49,6 @@
     "Edit": "",
     "Email": "Email",
     "Email newsletter": "",
-    "Email preference updated.": "Email podešavanja su sačuvana.",
     "Email preferences": "Email podešavanja",
     "Emails": "Email-ovi",
     "Emails disabled": "Isključeni email-ovi",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "",
     "Unsubscribe from all emails": "Odjavite se sa svih email-ova",
     "Unsubscribed": "",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Odjavljivanjem sa email-ova nećete prekinuti Vašu pretplatu na {{title}}",
     "Update": "",
     "Update your preferences": "Izmenite Vaša podešavanja",
