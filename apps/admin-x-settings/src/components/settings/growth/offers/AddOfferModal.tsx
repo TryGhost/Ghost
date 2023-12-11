@@ -592,7 +592,7 @@ const AddOfferModal = () => {
     }, [hasOffers, modal, updateRoute]);
 
     const cancelAddOffer = () => {
-        updateRoute('offers/edit');
+        window.history.back();
     };
 
     const overrides : offerPortalPreviewUrlTypes = useMemo(() => {
