@@ -878,6 +878,7 @@ function ProductPriceSwitch({selectedInterval, setSelectedInterval, products}) {
             <div className={'gh-portal-products-pricetoggle' + (selectedInterval === 'month' ? ' left' : '')}>
                 <button
                     data-test-button='switch-monthly'
+                    data-testid="monthly-switch"
                     className={'gh-portal-btn' + (selectedInterval === 'month' ? ' active' : '')}
                     onClick={() => {
                         setSelectedInterval('month');
@@ -887,6 +888,7 @@ function ProductPriceSwitch({selectedInterval, setSelectedInterval, products}) {
                 </button>
                 <button
                     data-test-button='switch-yearly'
+                    data-testid="yearly-switch"
                     className={'gh-portal-btn' + (selectedInterval === 'year' ? ' active' : '')}
                     onClick={() => {
                         setSelectedInterval('year');
