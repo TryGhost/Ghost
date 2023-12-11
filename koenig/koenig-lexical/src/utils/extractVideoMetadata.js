@@ -14,10 +14,11 @@ export default function extractVideoMetadata(file) {
             duration = video.duration;
             width = video.videoWidth;
             height = video.videoHeight;
+        };
 
-            setTimeout(() => {
-                video.currentTime = 0.5;
-            }, 200);
+        video.oncanplay = function () {
+            video.currentTime = 0.5;
+            video.oncanplay = null;
         };
 
         video.onseeked = function () {
@@ -42,5 +43,7 @@ export default function extractVideoMetadata(file) {
         };
 
         video.src = URL.createObjectURL(file);
+        // required for iPhone Safari to load the video contents for the thumbnail
+        video.load();
     });
 }
