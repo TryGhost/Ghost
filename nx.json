@@ -22,13 +22,6 @@
         ]
     },
     "targetDefaults": {
-        "build": {
-            "outputs": [
-                "{projectRoot}/dist",
-                "{projectRoot}/es",
-                "{projectRoot}/umd"
-            ]
-        },
         "build:ts": {
             "dependsOn": [
                 "^build:ts"
