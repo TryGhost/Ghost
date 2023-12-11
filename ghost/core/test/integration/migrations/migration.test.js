@@ -34,14 +34,14 @@ describe('Migrations', function () {
             await knexMigrator.reset({force: true});
             await knexMigrator.init();
         });
-    
+
         it('can rollback to the previous minor version', async function () {
             await knexMigrator.rollback({
                 version: previousVersion,
                 force: true
             });
         });
-    
+
         it('can rollback to the previous minor version and then forwards again', async function () {
             await knexMigrator.rollback({
                 version: previousVersion,
@@ -51,7 +51,7 @@ describe('Migrations', function () {
                 force: true
             });
         });
-    
+
         it('should have idempotent migrations', async function () {
             // Delete all knowledge that we've run migrations so we can run them again
             if (dbUtils.isMySQL()) {
@@ -59,7 +59,7 @@ describe('Migrations', function () {
             } else {
                 await db.knex('migrations').whereLike('version', `${currentMajor}.%`).del();
             }
-    
+
             await knexMigrator.migrate({
                 force: true
             });
@@ -99,7 +99,7 @@ describe('Migrations', function () {
             const permissions = this.obj;
 
             // If you have to change this number, please add the relevant `havePermission` checks below
-            permissions.length.should.eql(115);
+            permissions.length.should.eql(120);
 
             permissions.should.havePermission('Export database', ['Administrator', 'DB Backup Integration']);
             permissions.should.havePermission('Import database', ['Administrator', 'Self-Serve Migration Integration', 'DB Backup Integration']);

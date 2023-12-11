@@ -1,30 +1,25 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React from 'react';
-import TextArea from '../../../../admin-x-ds/global/form/TextArea';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import useForm from '../../../../hooks/useForm';
-import useRouting from '../../../../hooks/useRouting';
-import {modalRoutes} from '../../../providers/RoutingProvider';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
+import React, {useEffect} from 'react';
+import {Form, LimitModal, Modal, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {numberWithCommas} from '../../../../utils/helpers';
 import {toast} from 'react-hot-toast';
-import {useAddNewsletter} from '../../../../api/newsletters';
-import {useBrowseMembers} from '../../../../api/members';
+import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
+import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
-interface AddNewsletterModalProps {}
-
-const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
+const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
+    const handleError = useHandleError();
 
     const {data: members} = useBrowseMembers({
         searchParams: {filter: 'newsletters.status:active+email_disabled:0', limit: '1', page: '1', include: 'newsletters,labels'}
     });
 
     const {mutateAsync: addNewsletter} = useAddNewsletter();
-    const {formState, updateForm, handleSave, errors, validate, clearError} = useForm({
+    const {formState, updateForm, saveState, handleSave, errors, clearError} = useForm({
         initialState: {
             name: '',
             description: '',
@@ -34,11 +29,13 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
             const response = await addNewsletter({
                 name: formState.name,
                 description: formState.description,
-                opt_in_existing: formState.optInExistingSubscribers
+                opt_in_existing: formState.optInExistingSubscribers,
+                feedback_enabled: true
             });
 
-            updateRoute({route: modalRoutes.showNewsletter, params: {id: response.newsletters[0].id}});
+            updateRoute({route: `newsletters/${response.newsletters[0].id}`});
         },
+        onSaveError: handleError,
         onValidate: () => {
             const newErrors: Record<string, string> = {};
 
@@ -50,12 +47,33 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
         }
     });
 
+    const limiter = useLimiter();
+
+    useEffect(() => {
+        limiter?.errorIfWouldGoOverLimit('newsletters').catch((error) => {
+            if (error instanceof HostLimitError) {
+                NiceModal.show(LimitModal, {
+                    prompt: error.message || `Your current plan doesn't support more newsletters.`,
+                    onOk: () => updateRoute({route: '/pro', isExternal: true})
+                });
+                modal.remove();
+                updateRoute('newsletters');
+            } else {
+                throw error;
+            }
+        });
+    }, [limiter, modal, updateRoute]);
+
+    const subscriberCount = members?.meta?.pagination.total;
+
     return <Modal
         afterClose={() => {
             updateRoute('newsletters');
         }}
+        backDropClick={false}
         okColor='black'
         okLabel='Create'
+        okLoading={saveState === 'saving'}
         size='sm'
         testId='add-newsletter-modal'
         title='Create newsletter'
@@ -66,7 +84,7 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
             } else {
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save newsletter! One or more fields have errors, please doublecheck you filled all mandatory fields'
+                    message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
                 });
             }
         }}
@@ -76,12 +94,12 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
             marginTop
         >
             <TextField
+                autoFocus={true}
                 error={Boolean(errors.name)}
                 hint={errors.name}
                 placeholder='Weekly roundup'
                 title='Name'
                 value={formState.name}
-                onBlur={validate}
                 onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                 onKeyDown={() => clearError('name')}
             />
@@ -94,7 +112,7 @@ const AddNewsletterModal: React.FC<AddNewsletterModalProps> = () => {
                 checked={formState.optInExistingSubscribers}
                 direction='rtl'
                 hint={formState.optInExistingSubscribers ?
-                    `This newsletter will be available to all members. Your ${members?.meta?.pagination.total} existing subscriber${members?.meta?.pagination.total === 1 ? '' : 's'} will also be opted-in to receive it.` :
+                    `This newsletter will be available to all members. Your ${subscriberCount === undefined ? '' : numberWithCommas(subscriberCount)} existing subscriber${members?.meta?.pagination.total === 1 ? '' : 's'} will also be opted-in to receive it.` :
                     'The newsletter will be available to all new members. Existing members won’t be subscribed, but may visit their account area to opt-in to future emails.'
                 }
                 label='Opt-in existing subscribers'

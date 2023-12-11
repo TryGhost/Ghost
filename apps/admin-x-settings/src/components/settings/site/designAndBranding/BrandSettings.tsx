@@ -1,11 +1,12 @@
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Hint from '../../../../admin-x-ds/global/Hint';
-import ImageUpload from '../../../../admin-x-ds/global/form/ImageUpload';
-import React from 'react';
-import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import {SettingValue} from '../../../../api/settings';
-import {getImageUrl, useUploadImage} from '../../../../api/images';
+import React, {useRef, useState} from 'react';
+import UnsplashSearchModal from '../../../../unsplash/UnsplashSearchModal';
+import usePinturaEditor from '../../../../hooks/usePinturaEditor';
+import {ColorPickerField, Heading, Hint, ImageUpload, SettingGroupContent, TextField, debounce} from '@tryghost/admin-x-design-system';
+import {SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
+import {useFramework} from '@tryghost/admin-x-framework';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 export interface BrandSettingValues {
     description: string
@@ -17,33 +18,45 @@ export interface BrandSettingValues {
 
 const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key: string, value: SettingValue) => void }> = ({values,updateSetting}) => {
     const {mutateAsync: uploadImage} = useUploadImage();
+    const [siteDescription, setSiteDescription] = useState(values.description);
+    const {settings} = useGlobalData();
+    const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
+    const [showUnsplash, setShowUnsplash] = useState<boolean>(false);
+    const {unsplashConfig} = useFramework();
+    const handleError = useHandleError();
+
+    const updateDescriptionDebouncedRef = useRef(
+        debounce((value: string) => {
+            updateSetting('description', value);
+        }, 500)
+    );
+
+    const editor = usePinturaEditor();
 
     return (
         <div className='mt-7'>
             <SettingGroupContent>
                 <TextField
                     key='site-description'
-                    clearBg={true}
                     hint='Used in your theme, meta data and search results'
                     title='Site description'
-                    value={values.description}
-                    onChange={event => updateSetting('description', event.target.value)}
+                    value={siteDescription}
+                    onChange={(event) => {
+                        // Immediately update the local state
+                        setSiteDescription(event.target.value);
+                        // Debounce the updateSetting call
+                        updateDescriptionDebouncedRef.current(event.target.value);
+                    }}
                 />
-                <div className='flex items-center justify-between gap-3'>
-                    <Heading grey={true} level={6}>Accent color</Heading>
-                    <div className='relative max-w-[70px]'>
-                        {/* <span className='absolute left-1 top-[9px] text-grey-600'>#</span> */}
-                        <TextField
-                            key='accent-color'
-                            className='text-right'
-                            clearBg={true}
-                            maxLength={7}
-                            type='color'
-                            value={values.accentColor}
-                            onChange={event => updateSetting('accent_color', event.target.value)}
-                        />
-                    </div>
-                </div>
+                <ColorPickerField
+                    debounceMs={200}
+                    direction='rtl'
+                    title={<Heading className='mt-[3px]' grey={true} level={6}>Accent color</Heading>}
+                    value={values.accentColor}
+                    alwaysOpen
+                    // we debounce this because the color picker fires a lot of events.
+                    onChange={value => updateSetting('accent_color', value)}
+                />
                 <div className={`flex justify-between ${values.icon ? 'items-start ' : 'items-end'}`}>
                     <div>
                         <Heading grey={(values.icon ? true : false)} level={6}>Publication icon</Heading>
@@ -52,6 +65,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     <div className='flex gap-3'>
                         <ImageUpload
                             deleteButtonClassName='!top-1 !right-1'
+                            editButtonClassName='!top-1 !right-1'
                             height={values.icon ? '66px' : '36px'}
                             id='logo'
                             imageBWCheckedBg={true}
@@ -59,7 +73,11 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                             width={values.icon ? '66px' : '150px'}
                             onDelete={() => updateSetting('icon', null)}
                             onUpload={async (file) => {
-                                updateSetting('icon', getImageUrl(await uploadImage({file})));
+                                try {
+                                    updateSetting('icon', getImageUrl(await uploadImage({file})));
+                                } catch (e) {
+                                    handleError(e);
+                                }
                             }}
                         >
                         Upload icon
@@ -77,7 +95,11 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         imageURL={values.logo || ''}
                         onDelete={() => updateSetting('logo', null)}
                         onUpload={async (file) => {
-                            updateSetting('logo', getImageUrl(await uploadImage({file})));
+                            try {
+                                updateSetting('logo', getImageUrl(await uploadImage({file})));
+                            } catch (e) {
+                                handleError(e);
+                            }
                         }}
                     >
                     Upload logo
@@ -87,16 +109,57 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     <Heading className='mb-2' grey={(values.coverImage ? true : false)} level={6}>Publication cover</Heading>
                     <ImageUpload
                         deleteButtonClassName='!top-1 !right-1'
+                        editButtonClassName='!top-1 !right-10'
                         height='180px'
                         id='cover'
                         imageURL={values.coverImage || ''}
+                        openUnsplash={() => setShowUnsplash(true)}
+                        pintura={
+                            {
+                                isEnabled: editor.isEnabled,
+                                openEditor: async () => editor.openEditor({
+                                    image: values.coverImage || '',
+                                    handleSave: async (file:File) => {
+                                        try {
+                                            updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                                        } catch (e) {
+                                            handleError(e);
+                                        }
+                                    }
+                                })
+                            }
+                        }
+                        unsplashButtonClassName='!top-1 !right-1'
+                        unsplashEnabled={unsplashEnabled}
                         onDelete={() => updateSetting('cover_image', null)}
                         onUpload={async (file) => {
-                            updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                            try {
+                                updateSetting('cover_image', getImageUrl(await uploadImage({file})));
+                            } catch (e) {
+                                handleError(e);
+                            }
                         }}
                     >
                     Upload cover
                     </ImageUpload>
+                    {
+                        showUnsplash && unsplashConfig && unsplashEnabled && (
+                            <UnsplashSearchModal
+                                unsplashConf={{
+                                    defaultHeaders: unsplashConfig
+                                }}
+                                onClose={() => {
+                                    setShowUnsplash(false);
+                                }}
+                                onImageInsert={(image) => {
+                                    if (image.src) {
+                                        updateSetting('cover_image', image.src);
+                                    }
+                                    setShowUnsplash(false);
+                                }}
+                            />
+                        )
+                    }
                 </div>
             </SettingGroupContent>
         </div>

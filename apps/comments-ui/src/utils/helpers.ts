@@ -1,4 +1,4 @@
-import {Comment} from '../AppContext';
+import {Comment, TranslationFunction} from '../AppContext';
 
 export function formatNumber(number: number): string {
     if (number !== 0 && !number) {
@@ -9,43 +9,43 @@ export function formatNumber(number: number): string {
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-export function formatRelativeTime(dateString: string): string {
+export function formatRelativeTime(dateString: string, t: TranslationFunction): string {
     const date = new Date(dateString);
     const now = new Date();
 
     // Diff is in seconds
     let diff = Math.round((now.getTime() - date.getTime()) / 1000);
     if (diff < 5) {
-        return 'Just now';
+        return t('Just now');
     }
 
     if (diff < 60) {
-        return `${diff} seconds ago`;
+        return t('{{amount}} seconds ago', {amount: diff});
     }
 
     // Diff in minutes
     diff = diff / 60;
     if (diff < 60) {
         if (Math.floor(diff) === 1) {
-            return `One minute ago`;
+            return t(`One minute ago`);
         }
-        return `${Math.floor(diff)} minutes ago`;
+        return t('{{amount}} minutes ago', {amount: Math.floor(diff)});
     }
 
     // First check for yesterday
     // (we ignore setting 'yesterday' if close to midnight and keep using minutes until 1 hour difference)
     const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
     if (date.getFullYear() === yesterday.getFullYear() && date.getMonth() === yesterday.getMonth() && date.getDate() === yesterday.getDate()) {
-        return 'Yesterday';
+        return t('Yesterday');
     }
 
     // Diff in hours
     diff = diff / 60;
     if (diff < 24) {
         if (Math.floor(diff) === 1) {
-            return `One hour ago`;
+            return t(`One hour ago`);
         }
-        return `${Math.floor(diff)} hours ago`;
+        return t('{{amount}} hours ago', {amount: Math.floor(diff)});
     }
 
     // Diff in days
@@ -53,18 +53,38 @@ export function formatRelativeTime(dateString: string): string {
     if (diff < 7) {
         if (Math.floor(diff) === 1) {
             // Special case, we should compare based on dates in the future instead
-            return `One day ago`;
+            return t(`One day ago`);
         }
-        return `${Math.floor(diff)} days ago`;
+        return t('{{amount}} days ago', {amount: Math.floor(diff)});
     }
 
     // Diff in weeks
     diff = diff / 7;
+    if (diff < 4) {
+        if (Math.floor(diff) === 1) {
+            // Special case, we should compare based on dates in the future instead
+            return t(`One week ago`);
+        }
+        return t('{{amount}} weeks ago', {amount: Math.floor(diff)});
+    }
+
+    // Diff in months
+    diff = diff * 7 / 30;
+    if (diff < 12) {
+        if (Math.floor(diff) === 1) {
+            // Special case, we should compare based on dates in the future instead
+            return t(`One month ago`);
+        }
+        return t('{{amount}} months ago', {amount: Math.floor(diff)});
+    }
+
+    // Diff in years
+    diff = diff * 30 / 365;
     if (Math.floor(diff) === 1) {
         // Special case, we should compare based on dates in the future instead
-        return `One week ago`;
+        return t(`One year ago`);
     }
-    return `${Math.floor(diff)} weeks ago`;
+    return t('{{amount}} years ago', {amount: Math.floor(diff)});
 }
 
 export function formatExplicitTime(dateString: string): string {

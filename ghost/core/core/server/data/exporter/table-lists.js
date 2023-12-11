@@ -50,7 +50,10 @@ const BACKUP_TABLES = [
     'email_spam_complaint_events',
     'milestones',
     'collections',
-    'collections_posts'
+    'collections_posts',
+    'recommendations',
+    'recommendation_click_events',
+    'recommendation_subscribe_events'
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file

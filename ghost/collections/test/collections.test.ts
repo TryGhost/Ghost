@@ -1,15 +1,14 @@
 import assert from 'assert/strict';
+import sinon from 'sinon';
 import DomainEvents from '@tryghost/domain-events';
 import {
     CollectionsService,
     CollectionsRepositoryInMemory,
-    PostDeletedEvent,
     PostAddedEvent,
     PostEditedEvent,
     TagDeletedEvent
 } from '../src/index';
 import {
-    PostsBulkDestroyedEvent,
     PostsBulkUnpublishedEvent,
     PostsBulkFeaturedEvent,
     PostsBulkUnfeaturedEvent,
@@ -164,6 +163,19 @@ describe('CollectionsService', function () {
         it('Does not error when trying to add a post to a collection that does not exist', async function () {
             const editedCollection = await collectionsService.addPostToCollection('fake id', postFixtures[0]);
             assert(editedCollection === null);
+        });
+    });
+
+    describe('latest collection', function () {
+        it('Includes all posts when fetched directly', async function () {
+            await collectionsService.createCollection({
+                title: 'Latest',
+                slug: 'latest',
+                type: 'automatic',
+                filter: ''
+            });
+            const collection = await collectionsService.getBySlug('latest');
+            assert(collection?.posts.length === 4);
         });
     });
 
@@ -473,13 +485,7 @@ describe('CollectionsService', function () {
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
                 assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
 
-                collectionsService.subscribeToEvents();
-                const postDeletedEvent = PostDeletedEvent.create({
-                    id: postFixtures[0].id
-                });
-
-                DomainEvents.dispatch(postDeletedEvent);
-                await DomainEvents.allSettled();
+                await collectionsService.removePostFromAllCollections(postFixtures[0].id);
 
                 assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 1);
@@ -491,14 +497,11 @@ describe('CollectionsService', function () {
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
                 assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
 
-                collectionsService.subscribeToEvents();
-                const postDeletedEvent = PostsBulkDestroyedEvent.create([
+                const deletedPostIds = [
                     postFixtures[0].id,
                     postFixtures[1].id
-                ]);
-
-                DomainEvents.dispatch(postDeletedEvent);
-                await DomainEvents.allSettled();
+                ];
+                await collectionsService.removePostsFromAllCollections(deletedPostIds);
 
                 assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 2);
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 0);
@@ -655,6 +658,31 @@ describe('CollectionsService', function () {
                 assert.equal((await collectionsService.getById(automaticFeaturedCollection.id))?.posts?.length, 3);
                 assert.equal((await collectionsService.getById(automaticNonFeaturedCollection.id))?.posts.length, 2);
                 assert.equal((await collectionsService.getById(manualCollection.id))?.posts.length, 2);
+            });
+
+            it('Does nothing when the PostEditedEvent contains no relevant changes', async function () {
+                collectionsService.subscribeToEvents();
+                const updatePostInMatchingCollectionsSpy = sinon.spy(collectionsService, 'updatePostInMatchingCollections');
+                const postEditEvent = PostEditedEvent.create({
+                    id: 'something',
+                    current: {
+                        id: 'unique-post-id',
+                        status: 'scheduled',
+                        featured: true,
+                        tags: ['they', 'do', 'not', 'change']
+                    },
+                    previous: {
+                        id: 'unique-post-id',
+                        status: 'published',
+                        featured: true,
+                        tags: ['they', 'do', 'not', 'change']
+                    }
+                });
+
+                DomainEvents.dispatch(postEditEvent);
+                await DomainEvents.allSettled();
+
+                assert.equal(updatePostInMatchingCollectionsSpy.callCount, 0, 'updatePostInMatchingCollections method should not have been called');
             });
         });
     });

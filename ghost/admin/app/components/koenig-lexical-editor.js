@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/ember';
 import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
+import fetch from 'fetch';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -48,6 +49,18 @@ class ErrorHandler extends React.Component {
         return {hasError: true};
     }
 
+    componentDidCatch(error) {
+        if (this.props.config.sentry_dsn) {
+            Sentry.captureException(error, {
+                tags: {
+                    lexical: true
+                }
+            });
+        }
+
+        console.error(error, errorInfo); // eslint-disable-line
+    }
+
     render() {
         if (this.state.hasError) {
             return (
@@ -59,86 +72,42 @@ class ErrorHandler extends React.Component {
     }
 }
 
-const fetchKoenig = function () {
-    let status = 'pending';
-    let response;
-
-    const fetchPackage = async () => {
-        if (window['@tryghost/koenig-lexical']) {
-            return window['@tryghost/koenig-lexical'];
-        }
-
-        // the manual specification of the protocol in the import template string is
-        // required to work around ember-auto-import complaining about an unknown dynamic import
-        // during the build step
-        const GhostAdmin = window.GhostAdmin || window.Ember.Namespace.NAMESPACES.find(ns => ns.name === 'ghost-admin');
-        const urlTemplate = GhostAdmin.__container__.lookup('config:main').editor?.url;
-        const urlVersion = GhostAdmin.__container__.lookup('config:main').editor?.version;
-
-        const url = new URL(urlTemplate.replace('{version}', urlVersion));
-
-        if (url.protocol === 'http:') {
-            await import(`http://${url.host}${url.pathname}`);
-        } else {
-            await import(`https://${url.host}${url.pathname}`);
-        }
-
-        return window['@tryghost/koenig-lexical'];
-    };
-
-    const suspender = fetchPackage().then(
-        (res) => {
-            status = 'success';
-            response = res;
-        },
-        (err) => {
-            status = 'error';
-            response = err;
-        }
-    );
-
-    const read = () => {
-        switch (status) {
-        case 'pending':
-            throw suspender;
-        case 'error':
-            throw response;
-        default:
-            return response;
-        }
-    };
-
-    return {read};
-};
-
-const editorResource = fetchKoenig();
-
-const KoenigComposer = (props) => {
+const KoenigComposer = ({editorResource, ...props}) => {
     const {KoenigComposer: _KoenigComposer} = editorResource.read();
     return <_KoenigComposer {...props} />;
 };
 
-const KoenigEditor = (props) => {
+const KoenigEditor = ({editorResource, ...props}) => {
     const {KoenigEditor: _KoenigEditor} = editorResource.read();
     return <_KoenigEditor {...props} />;
 };
 
-const WordCountPlugin = (props) => {
+const WordCountPlugin = ({editorResource, ...props}) => {
     const {WordCountPlugin: _WordCountPlugin} = editorResource.read();
     return <_WordCountPlugin {...props} />;
+};
+
+const TKCountPlugin = ({editorResource, ...props}) => {
+    const {TKCountPlugin: _TKCountPlugin} = editorResource.read();
+    return <_TKCountPlugin {...props} />;
 };
 
 export default class KoenigLexicalEditor extends Component {
     @service ajax;
     @service feature;
     @service ghostPaths;
+    @service koenig;
     @service session;
     @service store;
     @service settings;
     @service membersUtils;
 
     @inject config;
+
     offers = null;
+    contentKey = null;
+
+    editorResource = this.koenig.resource;
 
     get pinturaJsUrl() {
         if (!this.settings.pintura) {
@@ -157,7 +126,7 @@ export default class KoenigLexicalEditor extends Component {
     get pinturaConfig() {
         const jsUrl = this.getImageEditorJSUrl();
         const cssUrl = this.getImageEditorCSSUrl();
-        if (!this.feature.lexicalEditor || !jsUrl || !cssUrl) {
+        if (!jsUrl || !cssUrl) {
             return null;
         }
         return {
@@ -241,13 +210,20 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const fetchCollectionPosts = async (collectionSlug) => {
-            const collectionPostsEndpoint = this.ghostPaths.url.api('posts');
-            const {posts} = await this.ajax.request(collectionPostsEndpoint, {
-                data: {
-                    collection: collectionSlug,
-                    limit: 12
-                }
-            });
+            if (!this.contentKey) {
+                const integrations = await this.store.findAll('integration');
+                const contentIntegration = integrations.findBy('slug', 'ghost-core-content');
+                this.contentKey = contentIntegration?.contentKey.secret;
+            }
+
+            const postsUrl = new URL(this.ghostPaths.url.admin('/api/content/posts/'), window.location.origin);
+            postsUrl.searchParams.append('key', this.contentKey);
+            postsUrl.searchParams.append('collection', collectionSlug);
+            postsUrl.searchParams.append('limit', 12);
+
+            const response = await fetch(postsUrl.toString());
+            const {posts} = await response.json();
+
             return posts;
         };
 
@@ -277,14 +253,22 @@ export default class KoenigLexicalEditor extends Component {
             };
 
             const donationLink = () => {
-                // TODO: remove feature condition once Tips & Donations have been released
-                if (this.feature.tipsAndDonations) {
-                    if (this.settings.donationsEnabled) {
-                        return [{
-                            label: 'Tip or donation',
-                            value: '#/portal/support'
-                        }];
-                    }
+                if (this.feature.tipsAndDonations && this.settings.donationsEnabled) {
+                    return [{
+                        label: 'Tip or donation',
+                        value: '#/portal/support'
+                    }];
+                }
+
+                return [];
+            };
+
+            const recommendationLink = () => {
+                if (this.settings.recommendationsEnabled) {
+                    return [{
+                        label: 'Recommendations',
+                        value: '#/portal/recommendations'
+                    }];
                 }
 
                 return [];
@@ -297,7 +281,7 @@ export default class KoenigLexicalEditor extends Component {
                 };
             });
 
-            return [...defaults, ...memberLinks(), ...donationLink(), ...offersLinks];
+            return [...defaults, ...memberLinks(), ...donationLink(), ...recommendationLink(), ...offersLinks];
         };
 
         const fetchLabels = async () => {
@@ -325,7 +309,8 @@ export default class KoenigLexicalEditor extends Component {
             fetchLabels,
             feature: {
                 collectionsCard: this.feature.get('collectionsCard'),
-                collections: this.feature.get('collections')
+                collections: this.feature.get('collections'),
+                emojiPicker: this.feature.get('editorEmojiPicker')
             },
             depreciated: {
                 headerV1: true // if false, shows header v1 in the menu
@@ -540,9 +525,10 @@ export default class KoenigLexicalEditor extends Component {
 
         return (
             <div className={['koenig-react-editor', 'koenig-lexical', this.args.className].filter(Boolean).join(' ')}>
-                <ErrorHandler>
+                <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigComposer
+                            editorResource={this.editorResource}
                             cardConfig={cardConfig}
                             enableMultiplayer={enableMultiplayer}
                             fileUploader={{useFileUpload, fileTypes}}
@@ -552,14 +538,18 @@ export default class KoenigLexicalEditor extends Component {
                             multiplayerEndpoint={multiplayerEndpoint}
                             onError={this.onError}
                             darkMode={this.feature.nightShift}
+                            isTKEnabled={this.feature.tkReminders}
                         >
                             <KoenigEditor
+                                editorResource={this.editorResource}
                                 cursorDidExitAtTop={this.args.cursorDidExitAtTop}
+                                placeholderText={this.args.placeholder}
                                 darkMode={this.feature.nightShift}
                                 onChange={this.args.onChange}
                                 registerAPI={this.args.registerAPI}
                             />
-                            <WordCountPlugin onChange={this.args.updateWordCount} />
+                            <WordCountPlugin editorResource={this.editorResource} onChange={this.args.updateWordCount} />
+                            {this.feature.tkReminders && <TKCountPlugin editorResource={this.editorResource} onChange={this.args.updatePostTkCount} />}
                         </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>

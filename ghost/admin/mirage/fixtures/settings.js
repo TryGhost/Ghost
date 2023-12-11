@@ -19,7 +19,7 @@ function setting(group, key, value) {
 }
 
 // These settings represent a default new site setup
-// Real default settings can be found in https://github.com/TryGhost/Ghost/blob/main/core/server/data/schema/default-settings/default-settings.json
+// Real default settings can be found in https://github.com/TryGhost/Ghost/blob/main/ghost/core/core/server/data/schema/default-settings/default-settings.json
 export default [
     // SITE
     setting('site', 'title', 'Test Blog'),
@@ -49,7 +49,7 @@ export default [
     setting('site', 'twitter_description', null),
 
     // THEME
-    setting('theme', 'active_theme', 'Casper'),
+    setting('theme', 'active_theme', 'source'),
 
     // PRIVATE
     setting('private', 'is_private', false),
@@ -77,6 +77,7 @@ export default [
     setting('portal', 'portal_name', true),
     setting('portal', 'portal_button', true),
     setting('portal', 'portal_plans', JSON.stringify(['free'])),
+    setting('portal', 'portal_default_plan', 'yearly'),
     setting('portal', 'portal_products', JSON.stringify([])),
     setting('portal', 'portal_button_style', 'icon-and-text'),
     setting('portal', 'portal_button_icon', null),

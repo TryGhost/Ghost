@@ -1,11 +1,10 @@
-import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NavigationEditForm from './navigation/NavigationEditForm';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import TabView from '../../../admin-x-ds/global/TabView';
 import useNavigationEditor, {NavigationItem} from '../../../hooks/site/useNavigationEditor';
-import useRouting from '../../../hooks/useRouting';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getSettingValues} from '../../../api/settings';
+import {Modal, TabView} from '@tryghost/admin-x-design-system';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useState} from 'react';
 
 const NavigationModal = NiceModal.create(() => {
@@ -45,6 +44,7 @@ const NavigationModal = NiceModal.create(() => {
             }}
             buttonsDisabled={saveState === 'saving'}
             dirty={localSettings.some(setting => setting.dirty)}
+            okLabel={saveState === 'saving' ? 'Saving...' : 'OK'}
             scrolling={true}
             size='lg'
             stickyFooter={true}
@@ -58,18 +58,18 @@ const NavigationModal = NiceModal.create(() => {
                 }
             }}
         >
-            <div className='-mb-8 mt-6'>
+            <div className='mb-1 mt-6'>
                 <TabView
                     selectedTab={selectedTab}
                     tabs={[
                         {
                             id: 'primary-nav',
-                            title: 'Primary navigation',
+                            title: 'Primary',
                             contents: <NavigationEditForm baseUrl={siteData!.url} navigation={navigation} />
                         },
                         {
                             id: 'secondary-nav',
-                            title: 'Secondary navigation',
+                            title: 'Secondary',
                             contents: <NavigationEditForm baseUrl={siteData!.url} navigation={secondaryNavigation} />
                         }
                     ]}

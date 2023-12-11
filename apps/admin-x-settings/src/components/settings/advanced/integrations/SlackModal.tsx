@@ -1,17 +1,12 @@
-import Button from '../../../../admin-x-ds/global/Button';
-import Form from '../../../../admin-x-ds/global/form/Form';
 import IntegrationHeader from './IntegrationHeader';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
 import toast from 'react-hot-toast';
-import useRouting from '../../../../hooks/useRouting';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import validator from 'validator';
+import {Button, Form, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Icon} from '../../../../assets/icons/slack.svg';
-import {getSettingValues} from '../../../../api/settings';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
-import {useTestSlack} from '../../../../api/slack';
+import {getSettingValues, useTestSlack} from '@tryghost/admin-x-framework/api/settings';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const SlackModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
@@ -40,11 +35,6 @@ const SlackModal = NiceModal.create(() => {
                 message: 'Check your Slack channel for the test message',
                 type: 'neutral'
             });
-        } else {
-            showToast({
-                type: 'pageError',
-                message: 'Can\'t save Slack settings! One or more fields have errors, please doublecheck you filled all mandatory fields'
-            });
         }
     };
 
@@ -63,11 +53,6 @@ const SlackModal = NiceModal.create(() => {
                 if (await handleSave()) {
                     modal.remove();
                     updateRoute('integrations');
-                } else {
-                    showToast({
-                        type: 'pageError',
-                        message: 'Can\'t save Slack settings! One or more fields have errors, please doublecheck you filled all mandatory fields'
-                    });
                 }
             }}
         >
@@ -90,7 +75,7 @@ const SlackModal = NiceModal.create(() => {
                         onChange={e => updateSetting('slack_url', e.target.value)}
                         onKeyDown={() => clearError('slackUrl')}
                     />
-                    <div className='flex w-full items-center gap-2'>
+                    <div className='flex w-full flex-col gap-2 md:flex-row md:items-center'>
                         <TextField
                             containerClassName='flex-grow'
                             hint='The username to display messages from'

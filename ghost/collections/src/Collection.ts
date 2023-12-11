@@ -4,8 +4,12 @@ import tpl from '@tryghost/tpl';
 import nql from '@tryghost/nql';
 import {posts as postExpansions} from '@tryghost/nql-filter-expansions';
 import {CollectionPost} from './CollectionPost';
+import {CollectionPostAdded} from './events/CollectionPostAdded';
+import {CollectionPostRemoved} from './events/CollectionPostRemoved';
 
 import ObjectID from 'bson-objectid';
+
+type CollectionEvent = CollectionPostAdded | CollectionPostRemoved;
 
 const messages = {
     invalidIDProvided: 'Invalid ID provided for Collection',
@@ -19,7 +23,7 @@ const messages = {
 };
 
 function validateFilter(filter: string | null, type: 'manual' | 'automatic', isAllowedEmpty = false) {
-    const allowedProperties = ['featured', 'published_at', 'tag', 'tags']
+    const allowedProperties = ['featured', 'published_at', 'tag', 'tags'];
     if (type === 'manual') {
         if (filter !== null) {
             throw new ValidationError({
@@ -64,6 +68,7 @@ function validateFilter(filter: string | null, type: 'manual' | 'automatic', isA
 }
 
 export class Collection {
+    events: CollectionEvent[];
     id: string;
     title: string;
     private _slug: string;
@@ -131,6 +136,9 @@ export class Collection {
      * @param index {number} - The index to insert the post at, use negative numbers to count from the end.
      */
     addPost(post: CollectionPost, index: number = -0) {
+        if (this.slug === 'latest') {
+            return false;
+        }
         if (this.type === 'automatic') {
             const matchesFilter = this.postMatchesFilter(post);
 
@@ -141,6 +149,11 @@ export class Collection {
 
         if (this.posts.includes(post.id)) {
             this._posts = this.posts.filter(id => id !== post.id);
+        } else {
+            this.events.push(CollectionPostAdded.create({
+                post_id: post.id,
+                collection_id: this.id
+            }));
         }
 
         if (index < 0 || Object.is(index, -0)) {
@@ -154,6 +167,10 @@ export class Collection {
     removePost(id: string) {
         if (this.posts.includes(id)) {
             this._posts = this.posts.filter(postId => postId !== id);
+            this.events.push(CollectionPostRemoved.create({
+                post_id: id,
+                collection_id: this.id
+            }));
         }
     }
 
@@ -162,6 +179,12 @@ export class Collection {
     }
 
     removeAllPosts() {
+        for (const id of this._posts) {
+            this.events.push(CollectionPostRemoved.create({
+                post_id: id,
+                collection_id: this.id
+            }));
+        }
         this._posts = [];
     }
 
@@ -178,6 +201,7 @@ export class Collection {
         this.updatedAt = data.updatedAt;
         this.deleted = data.deleted;
         this._posts = data.posts;
+        this.events = [];
     }
 
     toJSON() {
@@ -247,7 +271,7 @@ export class Collection {
             createdAt: Collection.validateDateField(data.created_at, 'created_at'),
             updatedAt: Collection.validateDateField(data.updated_at, 'updated_at'),
             deleted: data.deleted || false,
-            posts: data.posts || []
+            posts: data.slug !== 'latest' ? (data.posts || []) : []
         });
     }
 }

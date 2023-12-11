@@ -48,6 +48,8 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 The page will reload if you make edits.<br />
 You will also see any lint errors in the console.
 
+Start the portal server when developing Ghost by running Ghost (in root folder) via `yarn dev --all` or `yarn dev --portal`. This will host the portal JavaScript files, and makes sure that Ghost uses these locally hosted assets instead of the ones from the CDN.
+
 ### `yarn build`
 
 Creates the production single minified bundle for external use in `umd/portal.min.js`.  <br />

@@ -1,15 +1,16 @@
-const {expect, test} = require('@playwright/test');
+const {expect} = require('@playwright/test');
+const test = require('../fixtures/ghost-test');
 
 test.describe('Admin', () => {
     test.describe('Setup', () => {
-        test('Loads Admin', async ({page}) => {
-            const response = await page.goto('/ghost');
+        test('Loads Admin', async ({sharedPage}) => {
+            const response = await sharedPage.goto('/ghost');
             expect(response.status()).toEqual(200);
         });
 
-        test('Is setup correctly', async ({page}) => {
-            await page.goto('/ghost');
-            await expect(page.locator('.gh-nav-menu-details-sitetitle')).toHaveText(/The Local Test/);
+        test('Is setup correctly', async ({sharedPage}) => {
+            await sharedPage.goto('/ghost');
+            await expect(sharedPage.locator('.gh-nav-menu-details-sitetitle')).toHaveText(/The Local Test/);
         });
     });
 });

@@ -24,6 +24,7 @@ Object {
       "paid_subscription_canceled_notification": false,
       "paid_subscription_started_notification": true,
       "profile_image": null,
+      "recommendation_notifications": true,
       "slug": "test",
       "status": "active",
       "tour": null,
@@ -40,7 +41,7 @@ exports[`Authentication API Blog setup complete setup 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "686",
+  "content-length": "722",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -238,6 +239,9 @@ test@example.com [test@example.com]"
 
 exports[`Authentication API Blog setup complete setup 5: [metadata 1] 1`] = `
 Object {
+  "encoding": "base64",
+  "from": "noreply@127.0.0.1",
+  "generateTextFromHTML": true,
   "subject": "Your New Ghost Site",
   "to": "test@example.com",
 }
@@ -298,6 +302,7 @@ Object {
       "paid_subscription_canceled_notification": false,
       "paid_subscription_started_notification": true,
       "profile_image": null,
+      "recommendation_notifications": true,
       "slug": "test",
       "status": "active",
       "tour": null,
@@ -314,7 +319,7 @@ exports[`Authentication API Blog setup complete setup with default theme 2: [hea
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "686",
+  "content-length": "722",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -512,6 +517,9 @@ test@example.com [test@example.com]"
 
 exports[`Authentication API Blog setup complete setup with default theme 5: [metadata 1] 1`] = `
 Object {
+  "encoding": "base64",
+  "from": "noreply@127.0.0.1",
+  "generateTextFromHTML": true,
   "subject": "Your New Ghost Site",
   "to": "test@example.com",
 }
@@ -587,6 +595,7 @@ Object {
       "paid_subscription_canceled_notification": false,
       "paid_subscription_started_notification": true,
       "profile_image": "https://example.com/super_photo.jpg",
+      "recommendation_notifications": true,
       "slug": "test",
       "status": "active",
       "tour": null,
@@ -603,7 +612,7 @@ exports[`Authentication API Blog setup update setup 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "758",
+  "content-length": "794",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

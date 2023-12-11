@@ -102,13 +102,13 @@ type UnpublishedCommentProps = {
     openEditMode: () => void;
 }
 const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEditMode}) => {
-    const {admin} = useAppContext();
+    const {admin, t} = useAppContext();
 
     let notPublishedMessage;
     if (admin && comment.status === 'hidden') {
-        notPublishedMessage = 'This comment has been hidden.';
+        notPublishedMessage = t('This comment has been hidden.');
     } else {
-        notPublishedMessage = 'This comment has been removed.';
+        notPublishedMessage = t('This comment has been removed.');
     }
 
     const avatar = (<BlankAvatar />);
@@ -140,17 +140,18 @@ const MemberExpertise: React.FC<{comment: Comment}> = ({comment}) => {
     }
 
     return (
-        <span>{memberExpertise}<span className="mx-[0.3em]">·</span></span>
+        <span className="[overflow-wrap:anywhere]">{memberExpertise}<span className="mx-[0.3em]">·</span></span>
     );
 };
 
 const EditedInfo: React.FC<{comment: Comment}> = ({comment}) => {
+    const {t} = useAppContext();
     if (!comment.edited_at) {
         return null;
     }
     return (
         <span>
-            <span className="mx-[0.3em]">·</span>Edited
+            <span className="mx-[0.3em]">·</span>{t('Edited')}
         </span>
     );
 };
@@ -192,7 +193,8 @@ const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({comment, isInReplyMode, clos
 
 // TODO: move name detection to helper
 const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
-    const name = !comment.member ? 'Deleted member' : (comment.member.name ? comment.member.name : 'Anonymous');
+    const {t} = useAppContext();
+    const name = !comment.member ? t('Deleted member') : (comment.member.name ? comment.member.name : t('Anonymous'));
     return (
         <h4 className="text-[rgb(23,23,23] font-sans text-[17px] font-bold tracking-tight dark:text-[rgba(255,255,255,0.85)]">
             {name}
@@ -223,7 +225,7 @@ const CommentBody: React.FC<{html: string}> = ({html}) => {
     const dangerouslySetInnerHTML = {__html: html};
     return (
         <div className="mt mb-2 flex flex-row items-center gap-4 pr-4">
-            <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content font-sans text-[16px] leading-normal text-neutral-900 dark:text-[rgba(255,255,255,0.85)]" data-testid="comment-content"/>
+            <p dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content font-sans text-[16px] leading-normal text-neutral-900 [overflow-wrap:anywhere] dark:text-[rgba(255,255,255,0.85)]" data-testid="comment-content"/>
         </div>
     );
 };

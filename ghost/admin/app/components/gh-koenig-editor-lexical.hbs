@@ -1,4 +1,4 @@
-<div class="gh-koenig-editor relative w-100 vh-100 overflow-x-hidden overflow-y-auto z-0" {{did-insert this.registerElement}} ...attributes>
+<div class="gh-koenig-editor relative z-0" {{did-insert this.registerElement}} ...attributes>
     {{!-- full height content pane --}}
     {{!-- template-lint-disable no-invalid-interactive no-passed-in-event-handlers --}}
     <div
@@ -16,8 +16,10 @@
             @updateAlt={{@setFeatureImageAlt}}
             @caption={{@featureImageCaption}}
             @updateCaption={{@setFeatureImageCaption}}
+            @handleCaptionBlur={{@handleFeatureImageCaptionBlur}}
             @forceButtonDisplay={{or (not @title) (eq @title "(Untitled)") this.titleIsHovered this.titleIsFocused}}
             @isHidden={{or (not @cardOptions.post.showTitleAndFeatureImage) false}}
+            @onTKCountChange={{@updateFeatureImageTkCount}}
         />
 
         <div class="gh-editor-title-container page-improvements">
@@ -25,6 +27,15 @@
                 <span class="gh-editor-hidden-indicator" data-tooltip="Post title is hidden on page">
                     {{svg-jar "eye-closed"}}
                 </span>
+            {{/if}}
+
+            {{#if (and (feature "tkReminders") @titleHasTk)}}
+                <div
+                    class="tk-indicator" data-testid="tk-indicator"
+                    {{on "click" this.focusTitle}}
+                >
+                    TK
+                </div>
             {{/if}}
 
             <GhTextarea
@@ -49,32 +60,13 @@
 
         <KoenigLexicalEditor
             @lexical={{@body}}
+            @placeholder={{@bodyPlaceholder}}
             @cardConfig={{@cardOptions}}
             @onChange={{@onBodyChange}}
             @registerAPI={{this.registerEditorAPI}}
             @cursorDidExitAtTop={{this.focusTitle}}
             @updateWordCount={{@updateWordCount}}
+            @updatePostTkCount={{@updatePostTkCount}}
         />
-
-        {{!-- <KoenigEditor
-            @mobiledoc={{@body}}
-            @placeholder={{@bodyPlaceholder}}
-            @spellcheck={{true}}
-            @onChange={{@onBodyChange}}
-            @didCreateEditor={{this.onEditorCreated}}
-            @cursorDidExitAtTop={{this.focusTitle}}
-            @headerOffset={{@headerOffset}}
-            @dropTargetSelector=".gh-koenig-editor-pane"
-            @scrollContainerSelector={{@scrollContainerSelector}}
-            @scrollOffsetTopSelector={{@scrollOffsetTopSelector}}
-            @scrollOffsetBottomSelector={{@scrollOffsetBottomSelector}}
-            @wordCountDidChange={{@onWordCountChange}}
-            @snippets={{@snippets}}
-            @saveSnippet={{@saveSnippet}}
-            @updateSnippet={{@updateSnippet}}
-            @deleteSnippet={{@deleteSnippet}}
-            @cardOptions={{@cardOptions}}
-            @postType={{@postType}}
-        /> --}}
     </div>
 </div>

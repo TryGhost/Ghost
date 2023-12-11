@@ -188,7 +188,8 @@ module.exports = function MembersAPI({
         tokenService,
         sendEmailWithMagicLink,
         memberAttributionService,
-        labsService
+        labsService,
+        newslettersService
     });
 
     const wellKnownController = new WellKnownController({
@@ -274,8 +275,16 @@ module.exports = function MembersAPI({
         return memberBREADService.read({email});
     }
 
-    async function getMemberIdentityToken(email) {
-        const member = await getMemberIdentityData(email);
+    async function getMemberIdentityDataFromTransientId(transientId) {
+        return memberBREADService.read({transient_id: transientId});
+    }
+
+    async function cycleTransientId(memberId) {
+        await users.cycleTransientId({id: memberId});
+    }
+
+    async function getMemberIdentityToken(transientId) {
+        const member = await getMemberIdentityDataFromTransientId(transientId);
         if (!member) {
             return null;
         }
@@ -366,7 +375,9 @@ module.exports = function MembersAPI({
         middleware,
         getMemberDataFromMagicLinkToken,
         getMemberIdentityToken,
+        getMemberIdentityDataFromTransientId,
         getMemberIdentityData,
+        cycleTransientId,
         setMemberGeolocationFromIp,
         getPublicConfig,
         bus,

@@ -43,9 +43,30 @@ const matchPostShallowIncludes = {
     tiers: anyArray,
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
-    published_at: anyISODateTime,
-    post_revisions: anyArray
+    published_at: anyISODateTime
 };
+
+async function trackDb(fn, skip) {
+    const db = require('../../../core/server/data/db');
+    if (db?.knex?.client?.config?.client !== 'sqlite3') {
+        return skip();
+    }
+    /** @type {import('sqlite3').Database} */
+    const database = db.knex.client;
+
+    const queries = [];
+    function handler(/** @type {{sql: string}} */ query) {
+        queries.push(query);
+    }
+
+    database.on('query', handler);
+
+    await fn();
+
+    database.off('query', handler);
+
+    return queries;
+}
 
 describe('Collections API', function () {
     let agent;
@@ -76,6 +97,26 @@ describe('Collections API', function () {
                         matchCollection
                     ]
                 });
+        });
+
+        it('Makes limited DB queries when browsing', async function () {
+            const queries = await trackDb(async () => {
+                await agent
+                    .get('/collections/')
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        collections: [
+                            matchCollection,
+                            matchCollection
+                        ]
+                    });
+            }, this.skip.bind(this));
+            const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
+            assert(collectionRelatedQueries.length === 3);
         });
 
         it('Can browse Collections and include the posts count', async function () {
@@ -491,6 +532,127 @@ describe('Collections API', function () {
     });
 
     describe('Collection Posts updates automatically', function () {
+        it('Makes limited DB queries when updating due to post changes', async function () {
+            await agent
+                .get(`/collections/slug/featured/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 2
+                        }
+                    }]
+                });
+
+            const postToAdd = {
+                title: 'Collection update test',
+                featured: false
+            };
+
+            let post;
+
+            {
+                const queries = await trackDb(async () => {
+                    const {body: {posts: [createdPost]}} = await agent
+                        .post('/posts/')
+                        .body({
+                            posts: [postToAdd]
+                        })
+                        .expectStatus(201);
+
+                    await DomainEvents.allSettled();
+
+                    post = createdPost;
+                }, this.skip.bind(this));
+
+                const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
+                assert.equal(collectionRelatedQueries.length, 7);
+            }
+
+            await agent
+                .get(`/collections/slug/featured/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 2
+                        }
+                    }]
+                });
+
+            {
+                const queries = await trackDb(async () => {
+                    await agent
+                        .put(`/posts/${post.id}/`)
+                        .body({
+                            posts: [Object.assign({}, post, {featured: true})]
+                        })
+                        .expectStatus(200);
+
+                    await DomainEvents.allSettled();
+                }, this.skip.bind(this));
+
+                const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
+                assert.equal(collectionRelatedQueries.length, 16);
+            }
+
+            await agent
+                .get(`/collections/slug/featured/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 3
+                        }
+                    }]
+                });
+
+            {
+                const queries = await trackDb(async () => {
+                    await agent
+                        .delete(`/posts/${post.id}/`)
+                        .expectStatus(204);
+
+                    await DomainEvents.allSettled();
+                }, this.skip.bind(this));
+                const collectionRelatedQueries = queries.filter(query => query.sql.includes('collection'));
+
+                // deletion is handled on the DB layer through Cascade Delete,
+                // so collections should not execute any additional queries
+                assert.equal(collectionRelatedQueries.length, 0);
+            }
+
+            await agent
+                .get(`/collections/slug/featured/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 2
+                        }
+                    }]
+                });
+        });
         it('Updates collections when a Post is added/edited/deleted', async function () {
             await agent
                 .get(`/collections/slug/featured/?include=count.posts`)
@@ -584,7 +746,7 @@ describe('Collections API', function () {
                 });
         });
 
-        it('Updates a collection with tag filter when tag is added to posts in bulk', async function (){
+        it('Updates a collection with tag filter when tag is added to posts in bulk and when tag is removed', async function (){
             const collection = {
                 title: 'Papaya madness',
                 type: 'automatic',
@@ -655,7 +817,7 @@ describe('Collections API', function () {
 
             await DomainEvents.allSettled();
 
-            // should contain published posts with papaya tags
+            // should contain posts with papaya tags
             await agent
                 .get(`/collections/${collectionId}/?include=count.posts`)
                 .expectStatus(200)
@@ -668,6 +830,29 @@ describe('Collections API', function () {
                         ...matchCollection,
                         count: {
                             posts: 11
+                        }
+                    }]
+                });
+
+            await agent
+                .delete(`/tags/${tagId}/`)
+                .expectStatus(204);
+
+            await DomainEvents.allSettled();
+
+            // should contain ZERO posts with papaya tags
+            await agent
+                .get(`/collections/${collectionId}/?include=count.posts`)
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    collections: [{
+                        ...matchCollection,
+                        count: {
+                            posts: 0
                         }
                     }]
                 });

@@ -105,6 +105,17 @@ export default Model.extend(ValidationEngine, {
     donationsCurrency: attr('string'),
     donationsSuggestedAmount: attr('number'),
 
+    /**
+     * Recommendations
+     */
+    recommendationsEnabled: attr('boolean'),
+
+    /**
+     * Newsletter emails
+     */
+    defaultEmailAddress: attr('string'),
+    supportEmailAddress: attr('string'),
+
     // HACK - not a real model attribute but a workaround for Ember Data not
     //        exposing meta from save responses
     _meta: attr()

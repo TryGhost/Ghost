@@ -1,11 +1,9 @@
-import Button from '../../../admin-x-ds/global/Button';
 import React from 'react';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
-import Toggle from '../../../admin-x-ds/global/form/Toggle';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {getSettingValues} from '../../../api/settings';
-import {usePostsExports} from '../../../api/posts';
+import {Button, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {usePostsExports} from '@tryghost/admin-x-framework/api/posts';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -27,21 +25,22 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange(true);
     };
 
-    const {data: postsData} = usePostsExports({
+    const {refetch: postsData} = usePostsExports({
         searchParams: {
             limit: '1000'
-        }
+        },
+        enabled: false
     });
 
     const exportPosts = async () => {
-        // it should download posts as csv
-        if (postsData) {
-            const blob = new Blob([postsData], {type: 'text/csv'});
+        const {data} = await postsData();
+        if (data) {
+            const blob = new Blob([data], {type: 'text/csv'});
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.setAttribute('hidden', '');
             a.setAttribute('href', url);
-            a.setAttribute('download', 'posts.csv');
+            a.setAttribute('download', `post-analytics.${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -52,8 +51,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         <SettingGroupContent columns={2}>
             <Toggle
                 checked={trackEmailOpens}
-                direction='rtl'
-                hint='Record when a member opens an email'
                 label='Newsletter opens'
                 onChange={(e) => {
                     handleToggleChange('email_track_opens', e);
@@ -61,8 +58,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             <Toggle
                 checked={trackEmailClicks}
-                direction='rtl'
-                hint='Record when a member clicks on any link in an email'
                 label='Newsletter clicks'
                 onChange={(e) => {
                     handleToggleChange('email_track_clicks', e);
@@ -70,8 +65,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             <Toggle
                 checked={trackMemberSources}
-                direction='rtl'
-                hint='Track the traffic sources and posts that drive the most member growth'
                 label='Member sources'
                 onChange={(e) => {
                     handleToggleChange('members_track_sources', e);
@@ -79,8 +72,6 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             <Toggle
                 checked={outboundLinkTagging}
-                direction='rtl'
-                hint='Make it easier for other sites to track the traffic you send them in their analytics'
                 label='Outbound link tagging'
                 onChange={(e) => {
                     handleToggleChange('outbound_link_tagging', e);
@@ -90,25 +81,26 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Decide what data you collect from your members'
-            hideEditButton={true}
             isEditing={isEditing}
             keywords={keywords}
             navid='analytics'
             saveState={saveState}
             testId='analytics'
             title='Analytics'
+            hideEditButton
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
             onSave={handleSave}
         >
             {inputs}
-            <div className='mt-1'>
-                <Button color='green' label='Export analytics' link={true} onClick={exportPosts} />
+            <div className='items-center-mt-1 flex justify-between'>
+                <Button color='green' label='Export' link linkWithPadding onClick={exportPosts} />
+                <a className='text-sm text-green' href="https://ghost.org/help/post-analytics/" rel="noopener noreferrer" target="_blank">Learn about analytics</a>
             </div>
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 
-export default Analytics;
+export default withErrorBoundary(Analytics, 'Analytics');

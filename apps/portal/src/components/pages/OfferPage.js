@@ -6,6 +6,7 @@ import CloseButton from '../common/CloseButton';
 import InputForm from '../common/InputForm';
 import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, isSameCurrency, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
+import {interceptAnchorClicks} from '../../utils/links';
 import NewsletterSelectionPage from './NewsletterSelectionPage';
 
 export const OfferPageStyles = () => {
@@ -160,7 +161,7 @@ export default class OfferPage extends React.Component {
     }
 
     getFormErrors(state) {
-        const checkboxRequired = this.context.site.portal_signup_checkbox_required;
+        const checkboxRequired = this.context.site.portal_signup_checkbox_required && this.context.site.portal_signup_terms_html;
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
 
         return {
@@ -251,13 +252,6 @@ export default class OfferPage extends React.Component {
         const errorClassName = this.state.errors?.checkbox ? 'gh-portal-error' : '';
 
         const className = `gh-portal-signup-terms ${errorClassName}`;
-
-        const interceptAnchorClicks = (e) => {
-            if (e.target.tagName === 'A') {
-                e.preventDefault();
-                window.open(e.target.href, '_blank');
-            }
-        };
 
         return (
             <div className={className} onClick={interceptAnchorClicks}>

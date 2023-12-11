@@ -216,7 +216,7 @@
     },
     "theme": {
         "active_theme": {
-            "defaultValue": "casper",
+            "defaultValue": "source",
             "flags": "RO",
             "type": "string"
         }
@@ -329,6 +329,14 @@
         "portal_plans": {
             "defaultValue": "[\"free\"]",
             "type": "array"
+        },
+        "portal_default_plan": {
+            "defaultValue": "yearly",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["yearly", "monthly"]]
+            },
+            "type": "string"
         },
         "portal_products": {
             "defaultValue": "[]",
@@ -564,6 +572,16 @@
                 "isEmpty": false
             },
             "type": "number"
+        }
+    },
+    "recommendations": {
+        "recommendations_enabled": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     }
 }

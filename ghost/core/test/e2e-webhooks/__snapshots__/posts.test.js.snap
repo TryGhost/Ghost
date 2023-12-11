@@ -2,7 +2,7 @@
 
 exports[`post.* events post.added event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -36,6 +36,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "slug": "joe-bloggs",
           "status": "active",
           "tour": null,
@@ -65,10 +66,11 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -90,6 +92,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "slug": "joe-bloggs",
         "status": "active",
         "tour": null,
@@ -157,7 +160,7 @@ Object {
 
 exports[`post.* events post.deleted event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -192,6 +195,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -221,7 +225,7 @@ Object {
       "featured": false,
       "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "published_at": null,
       "slug": "testing-post-deleted-webhook",
       "status": "draft",
@@ -236,7 +240,7 @@ Object {
 
 exports[`post.* events post.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -270,6 +274,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -313,11 +318,11 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -339,6 +344,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -456,7 +462,7 @@ Object {
 
 exports[`post.* events post.published event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -490,6 +496,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -558,7 +565,7 @@ Header Level 3
  * Aliquam tincidunt mauris eu risus.
 
 #header h1 a{display: block;width: 300px;height: 80px;}",
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -580,6 +587,7 @@ Header Level 3
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -699,7 +707,7 @@ Header Level 3
 
 exports[`post.* events post.published.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -733,6 +741,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -776,11 +785,11 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -802,6 +811,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -919,7 +929,7 @@ Object {
 
 exports[`post.* events post.rescheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -953,6 +963,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -996,11 +1007,11 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1022,6 +1033,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1139,7 +1151,7 @@ Object {
 
 exports[`post.* events post.scheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1173,6 +1185,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1216,11 +1229,11 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1242,6 +1255,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1360,7 +1374,7 @@ Object {
 
 exports[`post.* events post.tag.attached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1394,6 +1408,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1462,7 +1477,7 @@ Header Level 3
  * Aliquam tincidunt mauris eu risus.
 
 #header h1 a{display: block;width: 300px;height: 80px;}",
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1484,6 +1499,7 @@ Header Level 3
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1647,7 +1663,7 @@ Header Level 3
 
 exports[`post.* events post.tag.detached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1681,6 +1697,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1749,7 +1766,7 @@ Header Level 3
  * Aliquam tincidunt mauris eu risus.
 
 #header h1 a{display: block;width: 300px;height: 80px;}",
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1771,6 +1788,7 @@ Header Level 3
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1874,7 +1892,7 @@ Header Level 3
 
 exports[`post.* events post.unpublished event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1908,6 +1926,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1976,7 +1995,7 @@ Header Level 3
  * Aliquam tincidunt mauris eu risus.
 
 #header h1 a{display: block;width: 300px;height: 80px;}",
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -1998,6 +2017,7 @@ Header Level 3
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2116,7 +2136,7 @@ Header Level 3
 
 exports[`post.* events post.unscheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -2150,6 +2170,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2193,11 +2214,11 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
@@ -2219,6 +2240,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,

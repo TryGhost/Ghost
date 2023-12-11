@@ -11,7 +11,7 @@
     "build": "tsc",
     "build:ts": "yarn build",
     "prepare": "tsc",
-    "test:unit": "NODE_ENV=testing c8 --src src --all --reporter text --reporter cobertura mocha -r ts-node/register './test/**/*.test.ts'",
+    "test:unit": "NODE_ENV=testing c8 --src src --all --reporter text --reporter cobertura -- mocha --reporter dot -r ts-node/register './test/**/*.test.ts'",
     "test": "yarn test:types && yarn test:unit",
     "test:types": "tsc --noEmit",
     "lint:code": "eslint src/ --ext .ts --cache",
@@ -25,8 +25,8 @@
     "c8": "8.0.1",
     "mocha": "10.2.0",
     "sinon": "15.2.0",
-    "ts-node": "10.9.1",
-    "typescript": "5.1.6"
+    "ts-node": "10.9.2",
+    "typescript": "5.3.3"
   },
   "dependencies": {}
 }

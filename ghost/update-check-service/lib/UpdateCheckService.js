@@ -150,22 +150,21 @@ class UpdateCheckService {
         const reqData = await this.updateCheckData();
 
         let reqObj = {
-            timeout: 1000,
+            timeout: {
+                request: 1000
+            },
             headers: {}
         };
 
         let checkEndpoint = this.config.checkEndpoint;
         let checkMethod = this.config.isPrivacyDisabled ? 'GET' : 'POST';
+        reqObj.method = checkMethod;
 
         // CASE: Expose stats and do a check-in
         if (checkMethod === 'POST') {
-            reqObj.json = true;
-            reqObj.body = reqData;
-            reqObj.headers['Content-Length'] = Buffer.byteLength(JSON.stringify(reqData));
-            reqObj.headers['Content-Type'] = 'application/json';
+            reqObj.json = reqData;
         } else {
-            reqObj.json = true;
-            reqObj.query = {
+            reqObj.searchParams = {
                 ghost_version: reqData.ghost_version
             };
         }

@@ -1,14 +1,12 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
 import IntegrationHeader from './IntegrationHeader';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import useRouting from '../../../../hooks/useRouting';
+import {Form, Modal, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {ReactComponent as Icon} from '../../../../assets/icons/amp.svg';
-import {Setting, getSettingValues, useEditSettings} from '../../../../api/settings';
+import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const AmpModal = NiceModal.create(() => {
     const {updateRoute} = useRouting();
@@ -17,12 +15,13 @@ const AmpModal = NiceModal.create(() => {
     const [ampId] = getSettingValues<string>(settings, ['amp_gtag_id']);
     const modal = NiceModal.useModal();
     const [enabled, setEnabled] = useState(false);
-    const [trackingId, setTrackingId] = useState('');
+    const [trackingId, setTrackingId] = useState<string | null>('');
     const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
 
     useEffect(() => {
         setEnabled(ampEnabled || false);
-        setTrackingId(ampId || '');
+        setTrackingId(ampId || null);
     }, [ampEnabled, ampId]);
 
     const handleSave = async () => {
@@ -30,7 +29,11 @@ const AmpModal = NiceModal.create(() => {
             {key: 'amp', value: enabled},
             {key: 'amp_gtag_id', value: trackingId}
         ];
-        await editSettings(updates);
+        try {
+            await editSettings(updates);
+        } catch (e) {
+            handleError(e);
+        }
     };
 
     return (
@@ -38,6 +41,7 @@ const AmpModal = NiceModal.create(() => {
             afterClose={() => {
                 updateRoute('integrations');
             }}
+            dirty={!(enabled === ampEnabled) || !(trackingId === ampId)}
             okColor='black'
             okLabel='Save & close'
             testId='amp-modal'
@@ -58,7 +62,7 @@ const AmpModal = NiceModal.create(() => {
                     <Toggle
                         checked={enabled}
                         direction='rtl'
-                        hint={<>Enable <a className='text-green' href="https://amp.dev" rel="noopener noreferrer" target='_blank'>Google Accelerated Mobile Pages</a> for your posts</>}
+                        hint={<>Google AMP is <a className='text-green' href="https://en.m.wikipedia.org/wiki/Accelerated_Mobile_Pages" rel="noopener noreferrer" target='_blank'>being retired</a> — this feature will be removed in Ghost 6.0</>}
                         label='Enable AMP'
                         onChange={(e) => {
                             setEnabled(e.target.checked);
@@ -69,7 +73,7 @@ const AmpModal = NiceModal.create(() => {
                             hint='Tracks AMP traffic in Google Analytics'
                             placeholder='UA-XXXXXXX-X'
                             title='Google Analytics Tracking ID'
-                            value={trackingId}
+                            value={trackingId || ''}
                             onChange={(e) => {
                                 setTrackingId(e.target.value);
                             }}

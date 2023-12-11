@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'assert/strict';
 import ObjectID from 'bson-objectid';
 import {Collection} from '../src/index';
 
@@ -337,6 +337,27 @@ describe('Collection', function () {
         collection.addPost(posts[3], -1);
         assert(collection.posts.length as number === 4);
         assert(collection.posts[collection.posts.length - 2] === '3');
+    });
+
+    it('Does not add a post to the latest collection', async function () {
+        const collection = await Collection.create({
+            title: 'Testing adding to latest',
+            slug: 'latest',
+            type: 'automatic',
+            filter: ''
+        });
+
+        assert.equal(collection.posts.length, 0, 'Collection should have no posts');
+
+        const added = await collection.addPost({
+            id: '0',
+            featured: false,
+            published_at: new Date(),
+            tags: []
+        });
+
+        assert.equal(added, false);
+        assert.equal(collection.posts.length, 0, 'The non-featured post should not have been added');
     });
 
     it('Adds a post to an automatic collection when it matches the filter', async function () {
