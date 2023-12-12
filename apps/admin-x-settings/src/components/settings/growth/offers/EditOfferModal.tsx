@@ -152,7 +152,7 @@ const Sidebar: React.FC<{
                                 />
                                 <TextField
                                     error={Boolean(errors.code)}
-                                    hint={errors.code || <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{offer?.code}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div>}
+                                    hint={errors.code || offer?.code !== '' ? <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{offer?.code}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div> : null}
                                     placeholder='black-friday'
                                     title='Offer code'
                                     value={offer?.code}
