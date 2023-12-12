@@ -32,6 +32,7 @@ function AltTextInput({value, placeholder, onChange, readOnly, dataTestId, autoF
             placeholder={placeholder}
             readOnly={readOnly}
             value={value}
+            data-koenig-dnd-disabled
             onChange={handleChange}
         />
     );
