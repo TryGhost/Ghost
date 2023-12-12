@@ -91,8 +91,7 @@ const createPage = async (page, {title = 'Hello world', body = 'This is my post 
  * @param {import('@playwright/test').Page} page
  */
 const openPublishFlow = async (page) => {
-    await expect(page.locator('[data-test-button="publish-flow"]')).toHaveCount(2);
-    await page.locator('[data-test-button="publish-flow"]').click();
+    await page.locator('[data-test-button="publish-flow"]').first().click();
 };
 
 /**
@@ -621,8 +620,7 @@ test.describe('Updating post access', () => {
 
         // go to publish a post
         await createPostDraft(page, {title: 'Published in timezones', body: 'Published in timezones'});
-        await expect(page.locator('[data-test-button="publish-flow"]')).toHaveCount(2);
-        await page.locator('[data-test-button="publish-flow"]').click();
+        await page.locator('[data-test-button="publish-flow"]').first().click();
 
         await expect(page.locator('[data-test-setting="publish-type"] [data-test-setting-title]')).toContainText('Publish');
 
