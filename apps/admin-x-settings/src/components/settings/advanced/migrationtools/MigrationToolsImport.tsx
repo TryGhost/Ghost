@@ -40,7 +40,7 @@ const MigrationToolsImport: React.FC = () => {
     };
 
     return (
-        <div className='grid grid-cols-3 gap-4 pt-4'>
+        <div className='grid grid-cols-1 gap-4 pt-4 md:grid-cols-2 lg:grid-cols-3'>
             <ImportButton
                 icon={
                     <SubstackIcon className='h-[18px] w-auto' />
