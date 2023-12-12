@@ -393,7 +393,7 @@ async function initServices({config}) {
 async function initNestDependencies() {
     debug('Begin: initNestDependencies');
     const GhostNestApp = require('@tryghost/ghost');
-    const providers = GhostNestApp.AppModule.providers;
+    const providers = [];
     const urlUtils = require('./shared/url-utils');
     providers.push({
         provide: 'models',
@@ -436,6 +436,9 @@ async function initNestDependencies() {
         provide: 'settings',
         useValue: require('./shared/settings-cache')
     });
+    for (const provider of providers) {
+        GhostNestApp.addProvider(provider);
+    }
     debug('End: initNestDependencies');
 }
 
