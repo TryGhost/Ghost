@@ -110,6 +110,7 @@ export const SignupPageStyles = `
     font-size: 1.4rem;
     font-weight: 600;
     margin-left: 4px !important;
+    margin-bottom: -1px;
 }
 
 .gh-portal-signup-message button span {

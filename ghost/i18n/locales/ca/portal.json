@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} dies gratuïts",
     "{{amount}} off": "{{amount}} de descompte",
     "{{amount}} off for first {{number}} months.": "{{amount}} de descompte pels primers {{number}} mesos",
@@ -48,7 +49,6 @@
     "Edit": "Editar",
     "Email": "Correu electrònic",
     "Email newsletter": "Butlletí informatiu per correu electrònic",
-    "Email preference updated.": "Preferència del correu electrònic actualitzada",
     "Email preferences": "Preferència del correu electrònic",
     "Emails": "Correus electrònics",
     "Emails disabled": "Correus electrònics desactivats",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Desbloqueja l'accés a tots els butlletins de notícies fent-te un subscriptor de pagament.",
     "Unsubscribe from all emails": "Cancel·la les subscripcions a tots els correus electrònics",
     "Unsubscribed": "S'ha cancel·lat la subscripció",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Cancel·lar la subscripció al teu correu electrònic no cancel·larà la teva subscripció de pagament a {{title}}",
     "Update": "Actualitza",
     "Update your preferences": "Actualitza les preferències",

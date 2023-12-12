@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "",
     "{{amount}} off": "",
     "{{amount}} off for first {{number}} months.": "",
@@ -48,7 +49,6 @@
     "Edit": "",
     "Email": "Retadreso",
     "Email newsletter": "",
-    "Email preference updated.": "Retpoŝta agordo ĝisdatigita.",
     "Email preferences": "Retpoŝtaj agordoj",
     "Emails": "Retpoŝtoj",
     "Emails disabled": "Retpoŝtoj malŝaltitaj",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "",
     "Unsubscribe from all emails": "Malabonu de ĉiuj retpoŝtoj",
     "Unsubscribed": "",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Malabonigi de retpoŝtoj ne nuligos vian pagitan abonon al {{title}}",
     "Update": "",
     "Update your preferences": "Ĝisdatigu viajn agordojn",

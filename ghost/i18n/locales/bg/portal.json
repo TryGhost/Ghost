@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} дни безплатно",
     "{{amount}} off": "{{amount}} отстъпка",
     "{{amount}} off for first {{number}} months.": "{{amount}} отстъпка за първите {{number}} месеца.",
@@ -48,7 +49,6 @@
     "Edit": "Редакция",
     "Email": "Имейл адрес",
     "Email newsletter": "Имейл бюлетин",
-    "Email preference updated.": "Имейл настройките са обновени.",
     "Email preferences": "Имейл настройки ",
     "Emails": "Имейли",
     "Emails disabled": "Писмата са преустновени",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Отключете достъпа до всички бюлетини, като станете платен абонат.",
     "Unsubscribe from all emails": "Прекрати изпращането на всякакви писма",
     "Unsubscribed": "Неабониран",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Спирането на изпращането на писма, няма да ти прекрати абонамента и регистрацията в {{title}}",
     "Update": "Обнови",
     "Update your preferences": "Обнови твоите предпочитания/настройки",

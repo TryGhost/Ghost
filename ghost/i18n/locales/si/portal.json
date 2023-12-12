@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "දින {{amount}} ක් නොමිලයේ",
     "{{amount}} off": "{{amount}} ක වට්ටමක්",
     "{{amount}} off for first {{number}} months.": "පළමු මාස {{number}} සඳහා {{amount}} ක වට්ටමක්",
@@ -48,7 +49,6 @@
     "Edit": "Edit කරන්න",
     "Email": "Email",
     "Email newsletter": "Email newsletter",
-    "Email preference updated.": "Email preference update කරන ලදී.",
     "Email preferences": "Email preferences",
     "Emails": "ඊමේල්",
     "Emails disabled": "Emails නවත්වා ඇත",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Paid subscriber කෙනෙකු වීම හරහා සියළුම newsletters වලට access ලබාගන්න.",
     "Unsubscribe from all emails": "සියළුම email වලින් unsubscribe කරන්න",
     "Unsubscribed": "Unsubscribe කරන ලදී",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Email වලින් unsubscribe වීමෙන්, {{title}} සඳහා වන ඔබගේ paid subscription එක අවලංගු නොවනු ඇත",
     "Update": "Update කරන්න",
     "Update your preferences": "ඔබගේ  preferences update කරන්න",
