@@ -1,4 +1,5 @@
 const config = require('./config');
+const SentryKnexTracingIntegration = require('./SentryKnexTracingIntegration');
 const sentryConfig = config.get('sentry');
 const errors = require('@tryghost/errors');
 
@@ -93,7 +94,14 @@ if (sentryConfig && !sentryConfig.disabled) {
         }),
         tracingHandler: Sentry.Handlers.tracingHandler(),
         captureException: Sentry.captureException,
-        beforeSend: beforeSend
+        beforeSend: beforeSend,
+        initQueryTracing: (knex) => {
+            if (sentryConfig.tracing?.enabled === true) {
+                const integration = new SentryKnexTracingIntegration(knex);
+
+                Sentry.addIntegration(integration);
+            }
+        }
     };
 } else {
     const expressNoop = function (req, res, next) {
@@ -106,6 +114,7 @@ if (sentryConfig && !sentryConfig.disabled) {
         requestHandler: expressNoop,
         errorHandler: expressNoop,
         tracingHandler: expressNoop,
-        captureException: noop
+        captureException: noop,
+        initQueryTracing: noop
     };
 }
