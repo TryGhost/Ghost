@@ -20,7 +20,7 @@ const OfferContainer: React.FC<{offerTitle: string, tier: Tier, cadence: string,
                 <span className='text-grey-700'>{cadence === 'month' ? 'monthly' : 'yearly'}</span>
             </div>
             <div className='mt-2 flex items-end justify-between'>
-                <a className='text-xs text-grey-700 hover:text-black hover:underline' href={createRedemptionFilterUrl(offerId)}>{redemptions} redemptions</a>
+                <a className={`text-xs text-grey-700 hover:text-black ${redemptions === 0 ? 'pointer-events-none' : 'hover:underline'}`} href={createRedemptionFilterUrl(offerId)}>{redemptions} redemptions</a>
                 <CopyLinkButton offerCode={offerCode} />
             </div>
         </div>
