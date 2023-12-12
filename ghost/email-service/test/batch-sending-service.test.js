@@ -282,7 +282,7 @@ describe('Batch Sending Service', function () {
                 ]
             }));
 
-            const innitialMembers = members.slice();
+            const initialMembers = members.slice();
 
             Member.getFilteredCollectionQuery = ({filter}) => {
                 // Everytime we request the members, we also create a new member, to simulate that creating batches doesn't happen in a transaction
@@ -361,10 +361,92 @@ describe('Batch Sending Service', function () {
             assert.equal(insertedRecipients.length, 16);
 
             // Check all recipients match initialMembers
-            assert.deepEqual(insertedRecipients.map(recipient => recipient.member_id).sort(), innitialMembers.map(member => member.id).sort());
+            assert.deepEqual(insertedRecipients.map(recipient => recipient.member_id).sort(), initialMembers.map(member => member.id).sort());
 
             // Check email_count set
             assert.equal(email.get('email_count'), 16);
+        });
+
+        it('Does log message to sentry if email_count is off by > 1%', async function () {
+            const Member = createModelClass({});
+            const EmailBatch = createModelClass({});
+            const newsletter = createModel({});
+
+            // Create 16 members in single line
+            const members = new Array(16).fill(0).map(i => createModel({
+                email: `example${i}@example.com`,
+                uuid: `member${i}`,
+                newsletters: [
+                    newsletter
+                ]
+            }));
+
+            Member.getFilteredCollectionQuery = ({filter}) => {
+                // Everytime we request the members, we also create a new member, to simulate that creating batches doesn't happen in a transaction
+                // These created members should be excluded
+                members.push(createModel({
+                    email: `example${members.length}@example.com`,
+                    uuid: `member${members.length}`,
+                    newsletters: [
+                        newsletter
+                    ]
+                }));
+
+                const q = nql(filter);
+                // Check that the filter id:<${lastId} is a string
+                // In rare cases when the object ID is numeric, the query returns unexpected results
+                assert.equal(typeof q.toJSON().$and[1].id.$lt, 'string');
+
+                const all = members.filter((member) => {
+                    return q.queryJSON(member.toJSON());
+                });
+
+                // Sort all by id desc (string)
+                all.sort((a, b) => {
+                    return b.id.localeCompare(a.id);
+                });
+                return createDb({
+                    all: all.map(member => member.toJSON())
+                });
+            };
+
+            const db = createDb({});
+            const captureMessage = sinon.stub();
+
+            const service = new BatchSendingService({
+                models: {Member, EmailBatch},
+                sentry: {
+                    captureMessage
+                },
+                emailRenderer: {
+                    getSegments() {
+                        return [null];
+                    }
+                },
+                sendingService: {
+                    getMaximumRecipients() {
+                        return 5;
+                    }
+                },
+                emailSegmenter: {
+                    getMemberFilterForSegment(n) {
+                        return `newsletters.id:'${n.id}'`;
+                    }
+                },
+                db
+            });
+
+            const email = createModel({
+                email_count: 15
+            });
+
+            await service.createBatches({
+                email,
+                post: createModel({}),
+                newsletter
+            });
+
+            assert(captureMessage.calledOnce);
         });
 
         it('works with multiple batches', async function () {
@@ -392,7 +474,7 @@ describe('Batch Sending Service', function () {
                 }))
             ];
 
-            const innitialMembers = members.slice();
+            const initialMembers = members.slice();
 
             Member.getFilteredCollectionQuery = ({filter}) => {
                 const q = nql(filter);
@@ -452,7 +534,7 @@ describe('Batch Sending Service', function () {
             assert.equal(insertedRecipients.length, 4);
 
             // Check all recipients match initialMembers
-            assert.deepEqual(insertedRecipients.map(recipient => recipient.member_id).sort(), innitialMembers.map(member => member.id).sort());
+            assert.deepEqual(insertedRecipients.map(recipient => recipient.member_id).sort(), initialMembers.map(member => member.id).sort());
 
             // Check email_count set
             assert.equal(email.get('email_count'), 4);
