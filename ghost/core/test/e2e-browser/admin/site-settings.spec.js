@@ -66,6 +66,7 @@ test.describe('Site Settings', () => {
                 title: 'Test post',
                 body: 'Test post content'
             });
+            await expect(sharedPage.locator('[data-test-button="publish-flow"]')).toHaveCount(2);
             await sharedPage.locator('[data-test-button="publish-flow"]').click();
             await expect(sharedPage.locator('[data-test-setting="publish-type"] > button')).toHaveCount(0);
             await expect(sharedPage.locator('[data-test-setting="email-recipients"]')).toHaveCount(0);
