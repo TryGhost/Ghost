@@ -18,6 +18,13 @@
     outline: 0;
 }
 
+@media (max-width: 500px) {
+    .publish-modal .gh-publish-trigger,
+    .publish-modal .gh-unpublish-trigger {
+        display: none;
+    }
+}
+
 .gh-date-time-picker {
     position: relative;
     display: flex;
@@ -350,9 +357,15 @@
     line-height: 1.2em;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 1024px) {
     .gh-publish-title {
         font-size: 3.6rem;
+    }
+}
+
+@media (max-width: 500px) {
+    .gh-publish-title {
+        font-size: 3rem;
     }
 }
 
@@ -719,6 +732,12 @@
 
 .gh-publish-confirmation strong {
     white-space: nowrap;
+}
+
+@media (max-width: 500px) {
+    .gh-publish-confirmation {
+        font-size: 1.6rem;
+    }
 }
 
 .gh-publish-confirmation + .gh-box-error {

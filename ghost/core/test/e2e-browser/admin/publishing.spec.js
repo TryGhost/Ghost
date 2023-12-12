@@ -91,7 +91,7 @@ const createPage = async (page, {title = 'Hello world', body = 'This is my post 
  * @param {import('@playwright/test').Page} page
  */
 const openPublishFlow = async (page) => {
-    await page.locator('[data-test-button="publish-flow"]').click();
+    await page.locator('[data-test-button="publish-flow"]').first().click();
 };
 
 /**
@@ -314,7 +314,7 @@ test.describe('Publishing', () => {
             await adminPage.fill('[data-test-field="custom-excerpt"]', 'Short description and meta');
 
             // save
-            await adminPage.locator('[data-test-button="publish-save"]').click();
+            await adminPage.locator('[data-test-button="publish-save"]').first().click();
 
             // check front-end has new text after reloading
             await frontendPage.waitForTimeout(300); // let save go through
@@ -447,7 +447,7 @@ test.describe('Publishing', () => {
             await checkPostNotPublished(testsharedPage, postData);
 
             // Now unschedule this post
-            await sharedPage.locator('[data-test-button="update-flow"]').click();
+            await sharedPage.locator('[data-test-button="update-flow"]').first().click();
             await sharedPage.locator('[data-test-button="revert-to-draft"]').click();
 
             // Check status
@@ -620,7 +620,7 @@ test.describe('Updating post access', () => {
 
         // go to publish a post
         await createPostDraft(page, {title: 'Published in timezones', body: 'Published in timezones'});
-        await page.locator('[data-test-button="publish-flow"]').click();
+        await page.locator('[data-test-button="publish-flow"]').first().click();
 
         await expect(page.locator('[data-test-setting="publish-type"] [data-test-setting-title]')).toContainText('Publish');
 
