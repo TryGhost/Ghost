@@ -11,10 +11,12 @@ class EmailBatchesImporter extends TableImporter {
     }
 
     async import(quantity) {
-        const emails = await this.transaction.select('id', 'created_at').from('emails');
+        const emails = await this.transaction.select('id', 'created_at', 'email_count').from('emails');
 
-        // TODO: Generate >1 batch per email
-        await this.importForEach(emails, quantity ?? emails.length);
+        // 1 batch per 1000 recipients
+        await this.importForEach(emails, quantity ?? (() => {
+            return Math.ceil(this.model.email_count / 1000);
+        }));
     }
 
     generate() {

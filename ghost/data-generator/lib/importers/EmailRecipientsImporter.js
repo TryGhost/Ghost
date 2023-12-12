@@ -28,25 +28,31 @@ class EmailRecipientsImporter extends TableImporter {
                 'opened_count',
                 'failed_count')
             .from('emails');
+        this.emails = emails;
         this.emailBatches = await this.transaction.select('id', 'email_id', 'updated_at').from('email_batches');
         this.members = await this.transaction.select('id', 'uuid', 'email', 'name').from('members');
         this.membersSubscribeEvents = await this.transaction.select('id', 'newsletter_id', 'created_at', 'member_id').from('members_subscribe_events');
 
-        await this.importForEach(emails, quantity ? quantity / emails.length : this.members.length);
+        await this.importForEach(this.emailBatches, quantity ? quantity / emails.length : 1000);
     }
 
     setReferencedModel(model) {
-        this.model = model;
-        this.batch = this.emailBatches.find(batch => batch.email_id === model.id);
+        this.batch = model;
+        this.model = this.emails.find(email => email.id === this.batch.email_id);
+        this.batchIndex = this.emailBatches.filter(b => b.email_id === this.model.id).findIndex(batch => batch.id === this.batch.id);
+
         // Shallow clone members list so we can shuffle and modify it
         const earliestOpenTime = new Date(this.batch.updated_at);
         const latestOpenTime = new Date(this.batch.updated_at);
         latestOpenTime.setDate(latestOpenTime.getDate() + 14);
         const currentTime = new Date();
+
         this.membersList = this.membersSubscribeEvents
             .filter(entry => entry.newsletter_id === this.model.newsletter_id)
             .filter(entry => new Date(entry.created_at) < earliestOpenTime)
-            .map(memberSubscribeEvent => memberSubscribeEvent.member_id);
+            .map(memberSubscribeEvent => memberSubscribeEvent.member_id)
+            .slice(this.batchIndex * 1000, (this.batchIndex + 1) * 1000);
+
         this.events = this.membersList.length > 0 ? generateEvents({
             shape: 'ease-out',
             trend: 'negative',
@@ -54,21 +60,25 @@ class EmailRecipientsImporter extends TableImporter {
             startTime: earliestOpenTime,
             endTime: currentTime < latestOpenTime ? currentTime : latestOpenTime
         }) : [];
+
         this.emailMeta = {
-            emailCount: this.model.email_count,
             // delievered and not opened
             deliveredCount: this.model.delivered_count - this.model.opened_count,
             openedCount: this.model.opened_count,
             failedCount: this.model.failed_count
         };
+
+        let offset = this.batchIndex * 1000;
+
+        // We always first create the failures, then the opened, then the delivered, so we need to remove those from the meta so we don't generate them multiple times
+        this.emailMeta = {
+            failedCount: Math.max(0, this.emailMeta.failedCount - offset),
+            openedCount: Math.max(0, this.emailMeta.openedCount - Math.max(0, offset - this.emailMeta.failedCount)),
+            deliveredCount: Math.max(0, this.emailMeta.deliveredCount - Math.max(0, offset - this.emailMeta.failedCount - this.emailMeta.openedCount))
+        };
     }
 
     generate() {
-        if (this.emailMeta.emailCount <= 0) {
-            return;
-        }
-        this.emailMeta.emailCount -= 1;
-
         const timestamp = this.events.shift();
         if (!timestamp) {
             return;
