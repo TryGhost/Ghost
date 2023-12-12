@@ -356,14 +356,14 @@
             margin: 3.2rem 0 0;
         }
 
-        /* Mobiledoc cards can be addressed by their wrapper div element */
+        /*  Cards can be addressed by their wrapper div element */
         :where(
             div + p
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
             margin: 2.8rem 0 0;
         }
 
-        /* Mobiledoc cards can be addressed by their wrapper div element */
+        /*  Cards can be addressed by their wrapper div element */
         :where(
             div + figure
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
@@ -537,7 +537,7 @@
             color: var(--kg-accent-color, #ff0095);
             text-decoration: underline;
         }
-        
+
         :where(
             .dark a
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
@@ -586,7 +586,7 @@
         }
 
 
-        /* Mobiledoc cards can be selected by their wrapper div element */
+        /* Cards can be selected by their wrapper div element */
         :where(
             div + blockquote
         ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {

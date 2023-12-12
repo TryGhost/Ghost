@@ -25,7 +25,6 @@ import ImagePlugin from './plugins/ImagePlugin';
 import KoenigBehaviourPlugin from './plugins/KoenigBehaviourPlugin';
 import MarkdownPlugin from './plugins/MarkdownPlugin';
 import MarkdownShortcutPlugin from './plugins/MarkdownShortcutPlugin';
-import MobiledocCopyPlugin from './plugins/MobiledocCopyPlugin';
 import PlusCardMenuPlugin from './plugins/PlusCardMenuPlugin';
 import RestrictContentPlugin from './plugins/RestrictContentPlugin';
 import SignupPlugin from './plugins/SignupPlugin';
@@ -82,7 +81,6 @@ export {
     KoenigBehaviourPlugin,
     MarkdownPlugin,
     MarkdownShortcutPlugin,
-    MobiledocCopyPlugin,
     PlusCardMenuPlugin,
     RestrictContentPlugin,
     SignupPlugin,

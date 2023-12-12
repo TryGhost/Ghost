@@ -13,7 +13,6 @@ import {$getRoot, $isDecoratorNode} from 'lexical';
 import {
     BASIC_NODES, BASIC_TRANSFORMERS, KoenigComposableEditor,
     KoenigComposer, KoenigEditor, MINIMAL_NODES, MINIMAL_TRANSFORMERS,
-    MobiledocCopyPlugin,
     RestrictContentPlugin,
     TKCountPlugin,
     WordCountPlugin
@@ -101,7 +100,6 @@ function DemoEditor({editorType, registerAPI, cursorDidExitAtTop, darkMode, setW
             darkMode={darkMode}
             registerAPI={registerAPI}
         >
-            <MobiledocCopyPlugin />
             <WordCountPlugin onChange={setWordCount} />
             <TKCountPlugin onChange={setTKCount} />
         </KoenigEditor>
