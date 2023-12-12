@@ -95,7 +95,7 @@ class DataGenerator {
                 // Avoid deleting the admin user
                 await transaction(table).del().whereNot('id', '1');
             } else {
-                await transaction(table).del();
+                await transaction(table).truncate();
             }
         }
     }
