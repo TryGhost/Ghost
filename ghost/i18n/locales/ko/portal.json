@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}}일 무료",
     "{{amount}} off": "{{amount}} 할인",
     "{{amount}} off for first {{number}} months.": "첫 {{number}}개월 {{amount}} 할인",
@@ -48,7 +49,6 @@
     "Edit": "편집",
     "Email": "이메일",
     "Email newsletter": "이메일 뉴스레터",
-    "Email preference updated.": "이메일 기본 설정이 업데이트되었습니다.",
     "Email preferences": "이메일 설정",
     "Emails": "이메일",
     "Emails disabled": "이메일 사용 중지됨",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "유료 구독자가 되어 모든 뉴스레터에 접근하세요.",
     "Unsubscribe from all emails": "모든 이메일 구독 취소",
     "Unsubscribed": "구독 취소 완료",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "이메일 구독 취소는 {{title}}에 대한 유료 구독을 취소하지 않습니다",
     "Update": "업데이트",
     "Update your preferences": "설정 업데이트",

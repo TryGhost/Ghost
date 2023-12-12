@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} gün ücretsiz",
     "{{amount}} off": "{{amount}} indirim",
     "{{amount}} off for first {{number}} months.": "İlk {{number}} ay için {{amount}} indirim.",
@@ -48,7 +49,6 @@
     "Edit": "Düzenle",
     "Email": "E-posta",
     "Email newsletter": "E-posta bülteni",
-    "Email preference updated.": "E-posta tercihi güncellendi.",
     "Email preferences": "E-posta tercihleri",
     "Emails": "E-postalar",
     "Emails disabled": "E-postalar devre dışı",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Ücretli bir abone olarak tüm haber bültenlerine erişimin kilidini açın.",
     "Unsubscribe from all emails": "Tüm e-postaların aboneliğinden çık",
     "Unsubscribed": "Abonelikten çıkıldı",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "E-postaların aboneliğinden çıkmak, {{title}} sitesine olan ücretli aboneliğini iptal etmeyecek",
     "Update": "Güncelle",
     "Update your preferences": "Tercihlerini güncelle",

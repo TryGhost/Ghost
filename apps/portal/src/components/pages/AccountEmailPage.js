@@ -38,7 +38,7 @@ export default function AccountEmailPage() {
                 setSubscribedNewsletters([]);
                 onAction('showPopupNotification', {
                     action: 'updated:success',
-                    message: t(`Email preference updated.`)
+                    message: t(`Unsubscribed from all emails.`)
                 });
                 const data = {newsletters: []};
                 if (commentsEnabled) {

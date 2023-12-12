@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "",
     "{{amount}} off": "",
     "{{amount}} off for first {{number}} months.": "",
@@ -48,7 +49,6 @@
     "Edit": "",
     "Email": "Email",
     "Email newsletter": "",
-    "Email preference updated.": "Настройки электронной почты обновлены.",
     "Email preferences": "Настройки электронной почты",
     "Emails": "Письма",
     "Emails disabled": "Письма отключены",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "",
     "Unsubscribe from all emails": "Отписаться от всех писем",
     "Unsubscribed": "",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Отключение рассылки не отменит вашу платную подписку на {{title}}",
     "Update": "",
     "Update your preferences": "Обновить настройки",

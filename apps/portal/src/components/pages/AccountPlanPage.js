@@ -229,7 +229,7 @@ function PlansOrProductSection({selectedPlan, onPlanSelect, onPlanCheckout, chan
     const activeProduct = getMemberActiveProduct({member, site});
     return (
         <MultipleProductsPlansSection
-            products={products.length > 0 || isComplimentary ? products : [activeProduct]}
+            products={products.length > 0 || isComplimentary || !activeProduct ? products : [activeProduct]}
             selectedPlan={selectedPlan}
             changePlan={changePlan}
             onPlanSelect={onPlanSelect}

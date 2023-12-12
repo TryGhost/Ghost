@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} dagar án endurgjalds",
     "{{amount}} off": "{{amount}} afsláttur",
     "{{amount}} off for first {{number}} months.": "{{amount}} afsláttur fyrstu {{number}} mánuðina.",
@@ -48,7 +49,6 @@
     "Edit": "Breyta",
     "Email": "Netfang",
     "Email newsletter": "Fréttabréf",
-    "Email preference updated.": "Stillingum netfangsins breytt",
     "Email preferences": "Stillingar netfangs",
     "Emails": "Netföng",
     "Emails disabled": "Netföng gerð óvirk",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Fáðu aðgang að öllum fréttabréfum með því að gerast áskrifandi.",
     "Unsubscribe from all emails": "Segja upp öllum tölvupóstum",
     "Unsubscribed": "Ekki í áskrift",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Uppsögn tölvupósta felur ekki í sér uppsögn áskriftar að {{title}}",
     "Update": "Uppfæra",
     "Update your preferences": "Breyta vali",

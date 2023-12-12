@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "",
     "{{amount}} off": "",
     "{{amount}} off for first {{number}} months.": "",
@@ -48,7 +49,6 @@
     "Edit": "",
     "Email": "Електронна пошта",
     "Email newsletter": "",
-    "Email preference updated.": "Налаштування електронної пошти оновлені.",
     "Email preferences": "Налаштування електронної пошти",
     "Emails": "Електронні листи",
     "Emails disabled": "Електронна пошта вимкнена",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "",
     "Unsubscribe from all emails": "Відписатись від усіх листів",
     "Unsubscribed": "",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Відписка від листів не скасує твою платну підписку на {{title}}",
     "Update": "",
     "Update your preferences": "Онови свої налаштування",

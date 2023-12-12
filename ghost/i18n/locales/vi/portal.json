@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} ngày đọc thử",
     "{{amount}} off": "Giảm {{amount}}",
     "{{amount}} off for first {{number}} months.": "Giảm {{amount}} cho {{number}} tháng đầu tiên.",
@@ -48,7 +49,6 @@
     "Edit": "Chỉnh sửa",
     "Email": "Email",
     "Email newsletter": "Email bản tin",
-    "Email preference updated.": "Đã cập nhật email.",
     "Email preferences": "Thiết lập email",
     "Emails": "Emails",
     "Emails disabled": "Vô hiệu hóa email",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Trở thành thành viên trả phí để mở khóa truy cập toàn bộ bản tin.",
     "Unsubscribe from all emails": "Hủy theo dõi tất cả email",
     "Unsubscribed": "Đã hủy theo dõi",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Việc hủy theo dõi qua email sẽ không hủy gói đăng ký trả phí của bạn đối với {{title}}",
     "Update": "Cập nhật",
     "Update your preferences": "Cập nhật thiết lập",

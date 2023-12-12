@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} dite falas",
     "{{amount}} off": "{{amount}} zbritje",
     "{{amount}} off for first {{number}} months.": "{{amount}} zbritje në {{number}} muajt e parë",
@@ -48,7 +49,6 @@
     "Edit": "Modifiko",
     "Email": "Email",
     "Email newsletter": "Buletini i emailit",
-    "Email preference updated.": "Preferenca e emailit u përditësua.",
     "Email preferences": "Preferenat e emailit",
     "Emails": "Emailet",
     "Emails disabled": "Emailet e çaktivizuara",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Zhbllokoni aksesin per te gjitha buletinet duke u bere nje abonues me pagese.",
     "Unsubscribe from all emails": "Çregjistrohu nga të gjitha emailet",
     "Unsubscribed": "I çabonuar",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Çregjistrimi nga emailet nuk do ta anulojë abonimin tuaj me pagesë në {{title}}",
     "Update": "Rifresko",
     "Update your preferences": "Përditësoni preferencat tuaja",

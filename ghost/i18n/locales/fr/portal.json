@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} jours gratuits",
     "{{amount}} off": "{{amount}} de réduction",
     "{{amount}} off for first {{number}} months.": "{{amount}} de réduction pour les {{number}} premiers mois.",
@@ -48,7 +49,6 @@
     "Edit": "Modifier",
     "Email": "E-mail",
     "Email newsletter": "E-mail de la newsletter",
-    "Email preference updated.": "Préférences d’e-mail mises à jour.",
     "Email preferences": "Préférences d’e-mail",
     "Emails": "E-mails",
     "Emails disabled": "E-mails désactivés",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Débloquez l'accès à toutes les newsletters en devenant un abonné payant.",
     "Unsubscribe from all emails": "Se désinscrire de tous les e-mails",
     "Unsubscribed": "Désabonné(e)",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "La désinscription des e-mails n’annulera pas votre abonnement payant à {{title}}",
     "Update": "Mise à jour",
     "Update your preferences": "Mettez à jour vos préférences",

@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} dae gratis",
     "{{amount}} off": "{{amount}} afslag",
     "{{amount}} off for first {{number}} months.": "{{amount}} afslag vir die eerste {{number}} maande.",
@@ -48,7 +49,6 @@
     "Edit": "Wysig",
     "Email": "E-pos",
     "Email newsletter": "Epos nuusbrief",
-    "Email preference updated.": "E-pos instellings opgedateer.",
     "Email preferences": "E-pos instellings",
     "Emails": "E-posse",
     "Emails disabled": "E-posse afgeskakel",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Ontsluit toegang tot alle nuusbriewe deur 'n betaalde intekenaar te word.",
     "Unsubscribe from all emails": "Meld af van alle e-posse",
     "Unsubscribed": "Afgemeld",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Deur van eposse af te skakel, sal nie u betaalde subskripsie van {{title}} kanselleer nie",
     "Update": "Opdateer",
     "Update your preferences": "Opdateer u voorkeure",

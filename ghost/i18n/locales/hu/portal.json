@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} napig ingyen",
     "{{amount}} off": "{{amount}} kedvezmény",
     "{{amount}} off for first {{number}} months.": "{{amount}} kedvezmény az első {{number}} hónapig.",
@@ -48,7 +49,6 @@
     "Edit": "Szerkesztés",
     "Email": "Email",
     "Email newsletter": "Hírlevél",
-    "Email preference updated.": "Email beállítások elmentve",
     "Email preferences": "Email beállítások",
     "Emails": "Email-ek",
     "Emails disabled": "Email-ek kikapcsolva",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Előfizetéssel hozzáférhet minden hírlevélhez!",
     "Unsubscribe from all emails": "Leiratkozás minden email-ről",
     "Unsubscribed": "Sikeres leiratkozás",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Az email-ről történő leiratkozás nem szűnteti meg a fiókját",
     "Update": "Frissítés",
     "Update your preferences": "Beállítások mentése",

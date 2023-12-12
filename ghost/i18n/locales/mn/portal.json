@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "",
     "{{amount}} off": "",
     "{{amount}} off for first {{number}} months.": "",
@@ -48,7 +49,6 @@
     "Edit": "",
     "Email": "Имэйл",
     "Email newsletter": "",
-    "Email preference updated.": "Имэйлийн тохиргоо шинэчлэгдлээ.",
     "Email preferences": "Имэйлийн тохиргоо",
     "Emails": "Имэйлүүд",
     "Emails disabled": "Имэйлийг идэхгүй болгосон",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "",
     "Unsubscribe from all emails": "Бүх имэйлийг зогсоох",
     "Unsubscribed": "",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Имэйлийг зогсоосон ч таны {{title}} төлбөртэй захиалга цуцлагдахгүй",
     "Update": "",
     "Update your preferences": "Тохиргоогоо шинэчлэх",

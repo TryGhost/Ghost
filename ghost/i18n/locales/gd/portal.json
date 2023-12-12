@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}}l an-asgaidh",
     "{{amount}} off": "{{amount}} dheth",
     "{{amount}} off for first {{number}} months.": "{{amount}} dheth fad {{number}}m",
@@ -48,7 +49,6 @@
     "Edit": "Deasaich",
     "Email": "Post-d",
     "Email newsletter": "Cuairt-litir",
-    "Email preference updated.": "Chaidh na roghainnean puist-d ùrachadh.",
     "Email preferences": "Roghainnean puist-d",
     "Emails": "Puist-d",
     "Emails disabled": "Puist-d à comas",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Tig nad bhall phaighte gus cothrom fhaighinn air na cuairt-litrichean gu lèir.",
     "Unsubscribe from all emails": "Na fo-sgrìobh ri puist-d tuilleadh",
     "Unsubscribed": "Chan fhaigh thu puist-d tuilleadh",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Cuiridh seo stad air puist-d, cha cuir e stad air na tha thu a’ paigheadh airson a bhallrachd agad.",
     "Update": "Ùraich",
     "Update your preferences": "Ùraich na roghainnean agad",

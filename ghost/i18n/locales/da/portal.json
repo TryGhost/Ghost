@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} dage gratis",
     "{{amount}} off": "{{amount}} rabat",
     "{{amount}} off for first {{number}} months.": "{{amount}} rabat for de første {{number}} måneder.",
@@ -48,7 +49,6 @@
     "Edit": "Rediger",
     "Email": "E-mail",
     "Email newsletter": "E-mail nyhedsbrev",
-    "Email preference updated.": "E-mail præferencer blev opdateret.",
     "Email preferences": "E-mail præferencer",
     "Emails": "E-mails",
     "Emails disabled": "E-mails deaktiveret",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Lås op for adgang til alle nyhedsbreve ved at blive en betalingsabonnent.",
     "Unsubscribe from all emails": "Afmeld alle e-mails",
     "Unsubscribed": "Afmeldt",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Du annullerer ikke dit abonnement på {{title}} ved at afmelde dig fra alle e-mails",
     "Update": "Opdater",
     "Update your preferences": "Opdater dine præferencer",

@@ -431,7 +431,8 @@ export function getSiteProducts({site, pageQuery}) {
     }
     if (hasFreeProductPrice({site})) {
         products.unshift({
-            id: 'free'
+            id: 'free',
+            type: 'free'
         });
     }
     return products;

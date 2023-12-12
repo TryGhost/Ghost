@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "",
     "{{amount}} off": "",
     "{{amount}} off for first {{number}} months.": "",
@@ -48,7 +49,6 @@
     "Edit": "",
     "Email": "Email",
     "Email newsletter": "",
-    "Email preference updated.": "Email sozlamalari yangilandi.",
     "Email preferences": "Email sozlamalari",
     "Emails": "Elektron xatlar",
     "Emails disabled": "Elektron pochta xabarlari o‘chirilgan",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "",
     "Unsubscribe from all emails": "Barcha elektron pochta xabarlariga obunani bekor qiling",
     "Unsubscribed": "",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Elektron pochtalarga obunani bekor qilish {{title}}ga pulli obunanu bekor qilmaydi",
     "Update": "",
     "Update your preferences": "Sozlamalarni yangilash",

@@ -123,7 +123,7 @@ const Select: React.FC<SelectProps> = ({
         containerClasses = clsx(
             'dark:text-white',
             fullWidth && 'w-full',
-            disabled && 'opacity-40'
+            disabled && 'cursor-not-allowed opacity-40'
         );
     }
     containerClasses = clsx(
@@ -134,10 +134,11 @@ const Select: React.FC<SelectProps> = ({
     const customClasses = {
         control: clsx(
             controlClasses?.control,
-            'h-9 min-h-[36px] w-full cursor-pointer appearance-none rounded-md border outline-none dark:text-white',
+            'h-9 min-h-[36px] w-full appearance-none rounded-md border outline-none dark:text-white',
             size === 'xs' ? 'py-0 pr-2 text-xs' : 'py-1 pr-4',
             clearBg ? '' : 'bg-grey-150 px-3 dark:bg-grey-900',
             error ? 'border-red' : `border-transparent ${!clearBg && 'hover:bg-grey-100 dark:hover:bg-grey-925'}`,
+            !disabled && 'cursor-pointer',
             (title && !clearBg) && 'mt-1.5'
         ),
         valueContainer: clsx('mr-1.5 gap-1', controlClasses?.valueContainer),
@@ -178,6 +179,7 @@ const Select: React.FC<SelectProps> = ({
         options,
         placeholder: prompt ? prompt : '',
         value: selectedOption,
+        isDisabled: disabled,
         unstyled: true,
         onChange: onSelect,
         onFocus: handleFocus,

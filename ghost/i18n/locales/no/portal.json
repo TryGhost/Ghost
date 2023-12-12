@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} dager gratis",
     "{{amount}} off": "{{amount}} rabatt",
     "{{amount}} off for first {{number}} months.": "{{amount}} rabatt første {{number}} måneder.",
@@ -48,7 +49,6 @@
     "Edit": "Rediger",
     "Email": "Epost",
     "Email newsletter": "Epostbasert nyhetsbrev",
-    "Email preference updated.": "Innstillinger for epost oppdatert",
     "Email preferences": "Innstillinger for epost",
     "Emails": "Epost",
     "Emails disabled": "Epost deaktivert",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Få tilgang til alle nyhetsbrevene ved å oppgradere ditt abonnement.",
     "Unsubscribe from all emails": "Meld deg av mottak av all epost",
     "Unsubscribed": "Avmeldt",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Å melde seg av e-poster vil ikke avbryte abonnementet ditt på {{title}}",
     "Update": "Oppdater",
     "Update your preferences": "Oppdater dine valg",
