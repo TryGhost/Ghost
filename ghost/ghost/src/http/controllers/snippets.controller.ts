@@ -92,7 +92,11 @@ export class SnippetsController {
     @Put(':id')
     async edit(
         @Param('id') id: 'string',
-        @Body() body: unknown,
+        @Body(new ValidationPipe({
+            whitelist: true,
+            // @NOTE: has to be done for nested validation to work
+            transform: true
+        })) body: SnippetsBodyDTO,
         @Query('formats', ParseFormatsQueryPipe) formats:FormatsParameter
     ): Promise<{snippets: [SnippetDTO]}> {
         const snippet = await this.service.update(ObjectID.createFromHexString(id), this.mapBodyToData(body));
@@ -110,8 +114,6 @@ export class SnippetsController {
     @Post('')
     async add(
         @Body(new ValidationPipe({
-            // @NOTE: here for local debugging purposes
-            enableDebugMessages: true,
             whitelist: true,
             // @NOTE: has to be done for nested validation to work
             transform: true
