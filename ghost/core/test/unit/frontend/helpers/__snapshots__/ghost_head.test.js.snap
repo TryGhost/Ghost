@@ -6,7 +6,7 @@ Object {
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Custom Facebook title\\">
@@ -24,7 +24,7 @@ Object {
     <meta name=\\"twitter:label1\\" content=\\"Written by\\">
     <meta name=\\"twitter:data1\\" content=\\"name\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -81,7 +81,7 @@ Object {
 
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
-    padding: 40px 4vw;
+    padding: 40px min(4vw,80px);
 }
 
 .gh-post-upgrade-cta h2 {
@@ -132,7 +132,7 @@ Object {
     opacity: 0.92;
 }</style>
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
     <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script><style>:root {--ghost-accent-color: #123456;}</style>",
 }
@@ -143,7 +143,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Custom Facebook title\\">
@@ -161,7 +161,7 @@ Object {
     <meta name=\\"twitter:label1\\" content=\\"Written by\\">
     <meta name=\\"twitter:data1\\" content=\\"name\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -213,7 +213,7 @@ Object {
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Custom Facebook title\\">
@@ -231,7 +231,7 @@ Object {
     <meta name=\\"twitter:label1\\" content=\\"Written by\\">
     <meta name=\\"twitter:data1\\" content=\\"name\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -274,9 +274,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -285,9 +285,9 @@ exports[`{{ghost_head}} helper accent_color includes style tag on templates with
 Object {
   "rendered": "<meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script><style>:root {--ghost-accent-color: #123456;}</style>
-    
+
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -298,7 +298,7 @@ Object {
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <link rel=\\"amphtml\\" href=\\"http://127.0.0.1:2369/post/amp/\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Custom Facebook title\\">
@@ -316,7 +316,7 @@ Object {
     <meta name=\\"twitter:label1\\" content=\\"Written by\\">
     <meta name=\\"twitter:data1\\" content=\\"name\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -359,9 +359,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script><style>:root {--ghost-accent-color: #123456;}</style>
-    
+
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -371,7 +371,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Custom Facebook title\\">
@@ -389,7 +389,7 @@ Object {
     <meta name=\\"twitter:label1\\" content=\\"Written by\\">
     <meta name=\\"twitter:data1\\" content=\\"name\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -432,9 +432,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -444,7 +444,7 @@ Object {
   "string": "<meta name=\\"description\\" content=\\"site description\\" />
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\" />
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\" />
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\" />
     <meta property=\\"og:type\\" content=\\"website\\" />
     <meta property=\\"og:title\\" content=\\"Ghost\\" />
@@ -456,7 +456,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\" />
     <meta name=\\"twitter:url\\" content=\\"http://127.0.0.1:2369/\\" />
     <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/site-cover.png\\" />
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -559,7 +559,7 @@ Object {
   "string": "<meta name=\\"description\\" content=\\"site description\\" />
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\" />
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\" />
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\" />
     <meta property=\\"og:type\\" content=\\"website\\" />
     <meta property=\\"og:title\\" content=\\"Ghost\\" />
@@ -571,7 +571,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\" />
     <meta name=\\"twitter:url\\" content=\\"http://127.0.0.1:2369/\\" />
     <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/site-cover.png\\" />
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -673,7 +673,7 @@ Object {
   "string": "<meta name=\\"description\\" content=\\"site description\\" />
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\" />
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\" />
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\" />
     <meta property=\\"og:type\\" content=\\"website\\" />
     <meta property=\\"og:title\\" content=\\"Ghost\\" />
@@ -685,7 +685,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\" />
     <meta name=\\"twitter:url\\" content=\\"http://127.0.0.1:2369/\\" />
     <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/site-cover.png\\" />
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -714,7 +714,7 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 4.3\\" />
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\" />
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/npm/@tryghost/sodo-search@~1.0/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>",
 }
 `;
@@ -724,7 +724,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -736,7 +736,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\">
     <meta name=\\"twitter:url\\" content=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/site-cover.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -776,7 +776,7 @@ Object {
 
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
-    padding: 40px 4vw;
+    padding: 40px min(4vw,80px);
 }
 
 .gh-post-upgrade-cta h2 {
@@ -827,7 +827,7 @@ Object {
     opacity: 0.92;
 }</style>
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
     <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
 }
@@ -838,7 +838,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -850,7 +850,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\">
     <meta name=\\"twitter:url\\" content=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/site-cover.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -890,7 +890,7 @@ Object {
 
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
-    padding: 40px 4vw;
+    padding: 40px min(4vw,80px);
 }
 
 .gh-post-upgrade-cta h2 {
@@ -941,7 +941,7 @@ Object {
     opacity: 0.92;
 }</style>
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -951,7 +951,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -963,7 +963,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\">
     <meta name=\\"twitter:url\\" content=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/site-cover.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -1003,7 +1003,7 @@ Object {
 
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
-    padding: 40px 4vw;
+    padding: 40px min(4vw,80px);
 }
 
 .gh-post-upgrade-cta h2 {
@@ -1054,7 +1054,7 @@ Object {
     opacity: 0.92;
 }</style>
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
     <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
 }
@@ -1065,7 +1065,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -1077,7 +1077,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\">
     <meta name=\\"twitter:url\\" content=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/site-cover.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -1117,7 +1117,7 @@ Object {
 
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
-    padding: 40px 4vw;
+    padding: 40px min(4vw,80px);
 }
 
 .gh-post-upgrade-cta h2 {
@@ -1168,7 +1168,7 @@ Object {
     opacity: 0.92;
 }</style><script async src=\\"https://js.stripe.com/v3/\\"></script>
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
     <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
 }
@@ -1179,7 +1179,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -1191,7 +1191,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\">
     <meta name=\\"twitter:url\\" content=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/site-cover.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -1217,9 +1217,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 4.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1229,7 +1229,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -1241,7 +1241,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\">
     <meta name=\\"twitter:url\\" content=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/site-cover.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -1281,7 +1281,7 @@ Object {
 
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
-    padding: 40px 4vw;
+    padding: 40px min(4vw,80px);
 }
 
 .gh-post-upgrade-cta h2 {
@@ -1332,7 +1332,7 @@ Object {
     opacity: 0.92;
 }</style>
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
     <script defer src=\\"/public/member-attribution.min.js?v=asset-hash\\"></script>",
 }
@@ -1343,7 +1343,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -1355,7 +1355,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\">
     <meta name=\\"twitter:url\\" content=\\"http://127.0.0.1:2369/\\">
     <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/site-cover.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -1381,9 +1381,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 4.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1395,9 +1395,9 @@ Object {
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/site/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/site/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/site/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1409,9 +1409,9 @@ Object {
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">
     <style>body {background: red;}</style>",
 }
@@ -1424,9 +1424,9 @@ Object {
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">
     <style>body {background: red;}</style>",
 }
@@ -1439,9 +1439,9 @@ Object {
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">
     <style>body {background: red;}</style>
     post-codeinjection",
@@ -1455,9 +1455,9 @@ Object {
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">
     <style>body {background: red;}</style>",
 }
@@ -1469,7 +1469,7 @@ Object {
     <link rel=\\"icon\\" href=\\"/content/images/size/w256h256/favicon.png\\" type=\\"image/png\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Custom Facebook title\\">
@@ -1487,7 +1487,7 @@ Object {
     <meta name=\\"twitter:label1\\" content=\\"Written by\\">
     <meta name=\\"twitter:data1\\" content=\\"name\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -1540,9 +1540,9 @@ Object {
     <meta name=\\"referrer\\" content=\\"origin\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/site/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/site/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1556,9 +1556,9 @@ Object {
     <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1569,7 +1569,7 @@ Object {
     <meta name=\\"robots\\" content=\\"noindex,nofollow\\">
     <meta name=\\"referrer\\" content=\\"same-origin\\">
     <link rel=\\"amphtml\\" href=\\"http://localhost:65530/amp/\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -1579,12 +1579,12 @@ Object {
     <meta name=\\"twitter:title\\" content=\\"Ghost\\">
     <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/\\">
     <meta name=\\"twitter:image\\" content=\\"http://localhost:65530/content/images/site-cover.png\\">
-    
+
     <meta name=\\"generator\\" content=\\"Ghost \\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1594,7 +1594,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -1606,7 +1606,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\">
     <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/\\">
     <meta name=\\"twitter:image\\" content=\\"http://localhost:65530/content/images/site-cover.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -1632,9 +1632,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1645,9 +1645,9 @@ Object {
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1658,9 +1658,9 @@ Object {
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1680,7 +1680,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -1692,7 +1692,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\">
     <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/\\">
     <meta name=\\"twitter:image\\" content=\\"http://localhost:65530/content/images/site-cover.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -1718,9 +1718,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">
     <script defer src=\\"/public/comment-counts.min.js?v=asset-hash\\" data-ghost-comments-counts-api=\\"http://localhost:65530/members/api/comments/counts/\\"></script>",
 }
@@ -1731,7 +1731,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -1743,7 +1743,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\">
     <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/\\">
     <meta name=\\"twitter:image\\" content=\\"http://localhost:65530/content/images/site-cover.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -1769,9 +1769,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">
     <script defer src=\\"/public/comment-counts.min.js?v=asset-hash\\" data-ghost-comments-counts-api=\\"http://localhost:65530/members/api/comments/counts/\\"></script>",
 }
@@ -1781,7 +1781,7 @@ exports[`{{ghost_head}} helper without Code Injection outputs structured data bu
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/featured/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -1789,12 +1789,12 @@ Object {
     <meta name=\\"twitter:card\\" content=\\"summary\\">
     <meta name=\\"twitter:title\\" content=\\"Ghost\\">
     <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/featured/\\">
-    
+
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1803,7 +1803,7 @@ exports[`{{ghost_head}} helper without Code Injection returns canonical URL 1 1`
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/about/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Welcome to Ghost\\">
@@ -1815,7 +1815,7 @@ Object {
     <meta property=\\"article:tag\\" content=\\"tag1\\">
     <meta property=\\"article:tag\\" content=\\"tag2\\">
     <meta property=\\"article:tag\\" content=\\"tag3\\">
-    
+
     <meta name=\\"twitter:card\\" content=\\"summary_large_image\\">
     <meta name=\\"twitter:title\\" content=\\"Welcome to Ghost\\">
     <meta name=\\"twitter:description\\" content=\\"This is a short post\\">
@@ -1825,7 +1825,7 @@ Object {
     <meta name=\\"twitter:data1\\" content=\\"Author name\\">
     <meta name=\\"twitter:label2\\" content=\\"Filed under\\">
     <meta name=\\"twitter:data2\\" content=\\"tag1, tag2, tag3\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -1857,9 +1857,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1869,7 +1869,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site SEO description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"facebook site title\\">
@@ -1881,7 +1881,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"twitter site description\\">
     <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/\\">
     <meta name=\\"twitter:image\\" content=\\"http://localhost:65530/content/images/twitter-image.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -1907,9 +1907,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1918,7 +1918,7 @@ exports[`{{ghost_head}} helper without Code Injection returns meta tag string ev
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -1926,12 +1926,12 @@ Object {
     <meta name=\\"twitter:card\\" content=\\"summary\\">
     <meta name=\\"twitter:title\\" content=\\"Ghost\\">
     <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/\\">
-    
+
     <meta name=\\"generator\\" content=\\"Ghost 0.9\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1942,9 +1942,9 @@ Object {
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1957,9 +1957,9 @@ Object {
     <link rel=\\"next\\" href=\\"http://localhost:65530/page/4/\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1972,9 +1972,9 @@ Object {
     <link rel=\\"next\\" href=\\"http://localhost:65530/page/3/\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -1984,7 +1984,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"tag meta description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/tag/tagtitle/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"tag meta title\\">
@@ -1997,7 +1997,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"tag meta description\\">
     <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/tag/tagtitle/\\">
     <meta name=\\"twitter:image\\" content=\\"http://localhost:65530/content/images/tag-image.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2024,9 +2024,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -2036,7 +2036,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"Author bio\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/author/authorname/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"profile\\">
     <meta property=\\"og:title\\" content=\\"Author name - Ghost\\">
@@ -2051,7 +2051,7 @@ Object {
     <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/author/authorname/\\">
     <meta name=\\"twitter:image\\" content=\\"http://localhost:65530/content/images/author-cover-image.png\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2074,9 +2074,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -2087,7 +2087,7 @@ Object {
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Welcome to Ghost &quot;test&quot;\\">
@@ -2099,7 +2099,7 @@ Object {
     <meta property=\\"article:tag\\" content=\\"tag1\\">
     <meta property=\\"article:tag\\" content=\\"tag2\\">
     <meta property=\\"article:tag\\" content=\\"tag3\\">
-    
+
     <meta property=\\"article:author\\" content=\\"https://www.facebook.com/testuser\\">
     <meta name=\\"twitter:card\\" content=\\"summary_large_image\\">
     <meta name=\\"twitter:title\\" content=\\"Welcome to Ghost &quot;test&quot;\\">
@@ -2111,7 +2111,7 @@ Object {
     <meta name=\\"twitter:label2\\" content=\\"Filed under\\">
     <meta name=\\"twitter:data2\\" content=\\"tag1, tag2, tag3\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2155,9 +2155,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -2167,7 +2167,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Custom Facebook title\\">
@@ -2179,7 +2179,7 @@ Object {
     <meta property=\\"article:tag\\" content=\\"tag1\\">
     <meta property=\\"article:tag\\" content=\\"tag2\\">
     <meta property=\\"article:tag\\" content=\\"tag3\\">
-    
+
     <meta property=\\"article:author\\" content=\\"https://www.facebook.com/testuser\\">
     <meta name=\\"twitter:card\\" content=\\"summary_large_image\\">
     <meta name=\\"twitter:title\\" content=\\"Custom Twitter title\\">
@@ -2191,7 +2191,7 @@ Object {
     <meta name=\\"twitter:label2\\" content=\\"Filed under\\">
     <meta name=\\"twitter:data2\\" content=\\"tag1, tag2, tag3\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2243,7 +2243,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Ghost\\">
@@ -2255,7 +2255,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"site description\\">
     <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/\\">
     <meta name=\\"twitter:image\\" content=\\"http://localhost:65530/content/images/site-cover.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2281,9 +2281,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -2294,7 +2294,7 @@ Object {
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Custom Facebook title\\">
@@ -2306,7 +2306,7 @@ Object {
     <meta property=\\"article:tag\\" content=\\"tag1\\">
     <meta property=\\"article:tag\\" content=\\"tag2\\">
     <meta property=\\"article:tag\\" content=\\"tag3\\">
-    
+
     <meta property=\\"article:author\\" content=\\"https://www.facebook.com/testuser\\">
     <meta name=\\"twitter:card\\" content=\\"summary_large_image\\">
     <meta name=\\"twitter:title\\" content=\\"Welcome to Ghost\\">
@@ -2318,7 +2318,7 @@ Object {
     <meta name=\\"twitter:label2\\" content=\\"Filed under\\">
     <meta name=\\"twitter:data2\\" content=\\"tag1, tag2, tag3\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2362,9 +2362,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -2375,7 +2375,7 @@ Object {
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Welcome to Ghost\\">
@@ -2387,7 +2387,7 @@ Object {
     <meta property=\\"article:tag\\" content=\\"tag1\\">
     <meta property=\\"article:tag\\" content=\\"tag2\\">
     <meta property=\\"article:tag\\" content=\\"tag3\\">
-    
+
     <meta property=\\"article:author\\" content=\\"https://www.facebook.com/testuser\\">
     <meta name=\\"twitter:card\\" content=\\"summary_large_image\\">
     <meta name=\\"twitter:title\\" content=\\"Custom Twitter title\\">
@@ -2399,7 +2399,7 @@ Object {
     <meta name=\\"twitter:label2\\" content=\\"Filed under\\">
     <meta name=\\"twitter:data2\\" content=\\"tag1, tag2, tag3\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2443,9 +2443,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -2455,7 +2455,7 @@ Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Welcome to Ghost\\">
@@ -2473,7 +2473,7 @@ Object {
     <meta name=\\"twitter:label1\\" content=\\"Written by\\">
     <meta name=\\"twitter:data1\\" content=\\"Author name\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2512,9 +2512,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -2525,7 +2525,7 @@ Object {
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Welcome to Ghost\\">
@@ -2537,7 +2537,7 @@ Object {
     <meta property=\\"article:tag\\" content=\\"tag1\\">
     <meta property=\\"article:tag\\" content=\\"tag2\\">
     <meta property=\\"article:tag\\" content=\\"tag3\\">
-    
+
     <meta property=\\"article:author\\" content=\\"https://www.facebook.com/testuser\\">
     <meta name=\\"twitter:card\\" content=\\"summary_large_image\\">
     <meta name=\\"twitter:title\\" content=\\"Welcome to Ghost\\">
@@ -2549,7 +2549,7 @@ Object {
     <meta name=\\"twitter:label2\\" content=\\"Filed under\\">
     <meta name=\\"twitter:data2\\" content=\\"tag1, tag2, tag3\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2585,9 +2585,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -2597,7 +2597,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/about/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"About\\">
@@ -2615,7 +2615,7 @@ Object {
     <meta name=\\"twitter:label1\\" content=\\"Written by\\">
     <meta name=\\"twitter:data1\\" content=\\"name\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2658,9 +2658,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -2670,7 +2670,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/about/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"Custom Facebook title\\">
@@ -2688,7 +2688,7 @@ Object {
     <meta name=\\"twitter:label1\\" content=\\"Written by\\">
     <meta name=\\"twitter:data1\\" content=\\"name\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2731,9 +2731,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -2744,7 +2744,7 @@ Object {
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Welcome to Ghost\\">
@@ -2762,7 +2762,7 @@ Object {
     <meta name=\\"twitter:label1\\" content=\\"Written by\\">
     <meta name=\\"twitter:data1\\" content=\\"Author name\\">
     <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2805,9 +2805,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -2817,7 +2817,7 @@ Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <link rel=\\"amphtml\\" href=\\"http://localhost:65530/post/amp/\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"article\\">
     <meta property=\\"og:title\\" content=\\"Welcome to Ghost\\">
@@ -2829,7 +2829,7 @@ Object {
     <meta property=\\"article:tag\\" content=\\"tag1\\">
     <meta property=\\"article:tag\\" content=\\"tag2\\">
     <meta property=\\"article:tag\\" content=\\"tag3\\">
-    
+
     <meta name=\\"twitter:card\\" content=\\"summary_large_image\\">
     <meta name=\\"twitter:title\\" content=\\"Welcome to Ghost\\">
     <meta name=\\"twitter:description\\" content=\\"This is a short post\\">
@@ -2839,7 +2839,7 @@ Object {
     <meta name=\\"twitter:data1\\" content=\\"Author name\\">
     <meta name=\\"twitter:label2\\" content=\\"Filed under\\">
     <meta name=\\"twitter:data2\\" content=\\"tag1, tag2, tag3\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2871,9 +2871,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -2882,7 +2882,7 @@ exports[`{{ghost_head}} helper without Code Injection tag first page without met
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/tag/tagtitle/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"tagtitle - Ghost\\">
@@ -2893,7 +2893,7 @@ Object {
     <meta name=\\"twitter:title\\" content=\\"tagtitle - Ghost\\">
     <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/tag/tagtitle/\\">
     <meta name=\\"twitter:image\\" content=\\"http://localhost:65530/content/images/tag-image.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2919,9 +2919,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;
@@ -2931,7 +2931,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"tag description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/tag/tagtitle/\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
-    
+
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
     <meta property=\\"og:type\\" content=\\"website\\">
     <meta property=\\"og:title\\" content=\\"tagtitle - Ghost\\">
@@ -2944,7 +2944,7 @@ Object {
     <meta name=\\"twitter:description\\" content=\\"tag description\\">
     <meta name=\\"twitter:url\\" content=\\"http://localhost:65530/tag/tagtitle/\\">
     <meta name=\\"twitter:image\\" content=\\"http://localhost:65530/content/images/tag-image.png\\">
-    
+
     <script type=\\"application/ld+json\\">
 {
     \\"@context\\": \\"https://schema.org\\",
@@ -2971,9 +2971,9 @@ Object {
 
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
-    
+
     <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" crossorigin=\\"anonymous\\"></script>
-    
+
     <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">",
 }
 `;

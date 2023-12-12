@@ -13,7 +13,7 @@ const contentHelper = `.gh-post-upgrade-cta-content,
 
 .gh-post-upgrade-cta-content {
     border-radius: 8px;
-    padding: 40px 4vw;
+    padding: 40px min(4vw,80px);
 }
 
 .gh-post-upgrade-cta h2 {
