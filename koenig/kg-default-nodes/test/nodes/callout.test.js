@@ -166,6 +166,22 @@ describe('CalloutNode', function () {
                 </div>
             `);
         }));
+
+        it('can render with inline code', editorTest(function () {
+            dataset.calloutText = '<p><span style=\"white-space: pre-wrap;\">Does </span><code spellcheck=\"false\" style=\"white-space: pre-wrap;\"><span>inline code</span></code><span style=\"white-space: pre-wrap;\"> render properly?</span></p>';
+
+            const node = $createCalloutNode(dataset);
+            const {element} = node.exportDOM(exportOptions);
+
+            element.outerHTML.should.prettifyTo(html`
+                <div class="kg-card kg-callout-card kg-callout-card-blue">
+                    <div class="kg-callout-emoji">💡</div>
+                    <div class="kg-callout-text">
+                        Does <code spellcheck="false" style="white-space: pre-wrap">inline code</code> render properly?
+                    </div>
+                </div>
+            `);
+        }));
     });
 
     describe('importDOM', function () {
