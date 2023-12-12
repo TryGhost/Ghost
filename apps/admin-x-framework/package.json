@@ -91,7 +91,7 @@
     "react-dom": "^18.2.0",
     "vite": "4.5.1",
     "vite-plugin-css-injected-by-js": "^3.3.0",
-    "vite-plugin-svgr": "3.3.0",
+    "vite-plugin-svgr": "4.2.0",
     "vitest": "0.34.3"
   },
   "peerDependencies": {

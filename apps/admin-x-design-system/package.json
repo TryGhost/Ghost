@@ -50,7 +50,7 @@
     "ts-node": "10.9.2",
     "typescript": "5.3.3",
     "vite": "4.5.1",
-    "vite-plugin-svgr": "3.3.0"
+    "vite-plugin-svgr": "4.2.0"
   },
   "dependencies": {
     "@dnd-kit/core": "6.1.0",
