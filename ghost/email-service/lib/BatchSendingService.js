@@ -278,12 +278,12 @@ class BatchSendingService {
         if (email.get('email_count') !== totalCount) {
             logging.error(`Email ${email.id} has wrong stored email_count ${email.get('email_count')}, did expect ${totalCount}. Updating the model.`);
 
-            // If the difference is more than 10, we log to Sentry so we can investigate
+            // If the error rate is greater than 1%, we log it to Sentry so we can investigate
             // Some differences are expected, e.g. if a new member signs up while we are sending the email
-            const delta = Math.abs(totalCount - email.get('email_count'));
-            if (this.#sentry && delta >= 10) {
+            const errorRate = Math.abs((totalCount - email.get('email_count')) / email.get('email_count'));
+            if (this.#sentry && errorRate >= 0.01) {
                 // we don't have a real exception, so just log a message to Sentry
-                this.#sentry.captureMessage(`Email ${email.id} has wrong stored email_count ${email.get('email_count')}, did expect ${totalCount}. Updating the model.`);
+                this.#sentry.captureMessage(`Email ${email.id} has wrong stored email_count ${email.get('email_count')}, did expect ${totalCount}.`);
             }
 
             // We update the email model because this might happen in rare cases where the initial member count changed (e.g. deleted members)
@@ -402,10 +402,6 @@ class BatchSendingService {
         );
         if (!batch) {
             logging.error(`Tried sending email batch that is not pending or failed ${originalBatch.id}`);
-            if (this.#sentry) {
-                // we don't have a real exception, so just log a message to Sentry
-                this.#sentry.captureMessage(`Tried sending email batch that is not pending or failed ${originalBatch.id}`);
-            }
             return true;
         }
 
