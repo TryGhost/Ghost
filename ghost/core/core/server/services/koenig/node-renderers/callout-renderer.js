@@ -28,7 +28,7 @@ export function renderCalloutNode(node, options = {}) {
     const temporaryContainer = document.createElement('div');
     temporaryContainer.innerHTML = node.calloutText;
 
-    const allowedTags = ['A', 'STRONG', 'EM', 'B', 'I', 'BR'];
+    const allowedTags = ['A', 'STRONG', 'EM', 'B', 'I', 'BR', 'CODE', 'MARK', 'S', 'DEL', 'U', 'SUP', 'SUB'];
     cleanDOM(temporaryContainer, allowedTags);
 
     textElement.innerHTML = temporaryContainer.innerHTML;
