@@ -18,7 +18,7 @@ const OffersRouteHandler: React.FC<OffersRouteHandlerProps> = ({route}) => {
     } else if (route.startsWith('offers/success/') && route.length > 'offers/success/'.length) {
         const offerId = route.split('/').pop();
         return <OfferSuccess id={offerId ? offerId : ''} />;
-    } else if (route === 'offers/edit') {
+    } else {
         return <OffersIndexModal />;
     }
 };

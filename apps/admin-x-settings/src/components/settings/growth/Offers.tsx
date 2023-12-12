@@ -62,33 +62,36 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label={allOffers.length > 0 ? 'Manage offers' : 'Add offers'} link linkWithPadding onClick={allOffers.length > 0 ? openOfferListModal : openAddModal}/>}
+            customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label={allOffers.length > 0 ? 'Manage offers' : 'Add offer'} link linkWithPadding onClick={allOffers.length > 0 ? openOfferListModal : openAddModal}/>}
             description={<>Create discounts & coupons to boost new subscriptions. {allOffers.length === 0 && <a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">Learn more</a>}</>}
             keywords={keywords}
             navid='offers'
             testId='offers'
             title='Offers'
         >
-            <div>
-                <div className='grid grid-cols-1 gap-4 min-[900px]:grid-cols-3'>
-                    {latestThree.map(offer => (<OfferContainer
-                        key={offer.id}
-                        amount={offer.amount}
-                        cadence={offer.cadence}
-                        currency={offer.currency || 'USD'}
-                        goToOfferEdit={goToOfferEdit}
-                        offerCode={offer.code}
-                        offerId={offer.id}
-                        offerTitle={offer.name}
-                        redemptions={offer.redemption_count}
-                        tier={offer.tier}
-                        type={offer.type}
-                    />))}
-                </div>
-                {allOffers.length > 3 && <div className='mt-4 border-t border-t-grey-200 pt-2'>
-                    <span className='text-xs text-grey-700 dark:text-grey-600'>{allOffers.length} offers in total</span>
-                </div>}
-            </div>
+            {latestThree.length > 0 ?
+                <div>
+                    <div className='grid grid-cols-1 gap-4 min-[900px]:grid-cols-3'>
+                        {latestThree.map(offer => (<OfferContainer
+                            key={offer.id}
+                            amount={offer.amount}
+                            cadence={offer.cadence}
+                            currency={offer.currency || 'USD'}
+                            goToOfferEdit={goToOfferEdit}
+                            offerCode={offer.code}
+                            offerId={offer.id}
+                            offerTitle={offer.name}
+                            redemptions={offer.redemption_count}
+                            tier={offer.tier}
+                            type={offer.type}
+                        />))}
+                    </div>
+                    {allOffers.length > 3 && <div className='mt-4 border-t border-t-grey-200 pt-2'>
+                        <span className='text-xs text-grey-700 dark:text-grey-600'>{allOffers.length} offers in total</span>
+                    </div>}
+                </div> :
+                null
+            }
         </TopLevelGroup>
     );
 };
