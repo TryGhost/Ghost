@@ -90,5 +90,8 @@ async function runAndStream(command, args, options) {
         }
     } else {
         console.log(chalk.green(`MySQL already configured, skipping setup`));
+
+        console.log(chalk.blue(`Running knex-migrator init`));
+        await runAndStream('yarn', ['knex-migrator', 'init'], {cwd: coreFolder});
     }
 })();
