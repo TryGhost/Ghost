@@ -10,6 +10,8 @@ module.exports = (name) => {
     const app = express();
     app.set('name', name);
 
+    sentry.initExpressAppTracing(app);
+
     // Make sure 'req.secure' is valid for proxied requests
     // (X-Forwarded-Proto header will be checked, if present)
     app.enable('trust proxy');
@@ -33,6 +35,8 @@ module.exports = (name) => {
 module.exports.Router = (name, options) => {
     debug('new Router start', name);
     const router = express.Router(options);
+
+    sentry.initExpressRouterTracing(router, name);
 
     router.use(sentry.errorHandler);
 

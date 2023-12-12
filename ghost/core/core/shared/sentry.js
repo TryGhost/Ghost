@@ -72,7 +72,6 @@ if (sentryConfig && !sentryConfig.disabled) {
     // Enable tracing if sentry.tracing.enabled is true
     if (sentryConfig.tracing?.enabled === true) {
         sentryInitConfig.integrations.push(new Sentry.Integrations.Http({tracing: true}));
-        sentryInitConfig.integrations.push(new Sentry.Integrations.Express());
         sentryInitConfig.tracesSampleRate = parseFloat(sentryConfig.tracing.sampleRate) || 0.0;
     }
     Sentry.init(sentryInitConfig);
@@ -101,6 +100,32 @@ if (sentryConfig && !sentryConfig.disabled) {
 
                 Sentry.addIntegration(integration);
             }
+        },
+        initExpressAppTracing: (app) => {
+            if (sentryConfig.tracing?.enabled === true) {
+                const integration = new Sentry.Integrations.Express({
+                    app,
+                    methods: ['use', 'get', 'post', 'put', 'delete']
+                });
+
+                // This is a hack to allow us to have multiple express integrations
+                integration.name = `${integration.name}_app_${app.get('name')}`;
+
+                Sentry.addIntegration(integration);
+            }
+        },
+        initExpressRouterTracing: (router, name) => {
+            if (sentryConfig.tracing?.enabled === true) {
+                const integration = new Sentry.Integrations.Express({
+                    router,
+                    methods: ['use', 'get', 'post', 'put', 'delete']
+                });
+
+                // This is a hack to allow us to have multiple express integrations
+                integration.name = `${integration.name}_router_${name.replace(/\s/g, '_').toLowerCase()}`;
+
+                Sentry.addIntegration(integration);
+            }
         }
     };
 } else {
@@ -115,6 +140,7 @@ if (sentryConfig && !sentryConfig.disabled) {
         errorHandler: expressNoop,
         tracingHandler: expressNoop,
         captureException: noop,
-        initQueryTracing: noop
+        initQueryTracing: noop,
+        initExpressAppTracing: noop
     };
 }

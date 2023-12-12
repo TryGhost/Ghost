@@ -87,7 +87,7 @@ class ParentRouter {
         let targetRoute = null;
 
         // CASE: iterate over routers and check whether a router has a redirect for the target slug enabled.
-        siteRouter.handle.stack.every((router) => {
+        siteRouter?.handle.stack.every((router) => {
             if (router.handle.parent && router.handle.parent.isRedirectEnabled && router.handle.parent.isRedirectEnabled(this.getResourceType(), slug)) {
                 targetRoute = router.handle.parent.getRoute();
                 return false;
