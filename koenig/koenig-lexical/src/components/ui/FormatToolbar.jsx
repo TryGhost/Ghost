@@ -35,8 +35,19 @@ const blockTypeToBlockName = {
     number: 'Numbered List',
     paragraph: 'Normal',
     quote: 'Quote',
+    'extended-quote': 'Quote',
     aside: 'Aside'
 };
+
+function quoteIcon(blockType = '') {
+    if (blockType.endsWith?.('quote')) {
+        return 'quoteOne';
+    } else if (blockType.endsWith?.('aside')) {
+        return 'quoteTwo';
+    } else {
+        return 'quote';
+    }
+}
 
 export default function FormatToolbar({
     editor,
@@ -150,9 +161,9 @@ export default function FormatToolbar({
             const selection = $getSelection();
 
             if ($isRangeSelection(selection)) {
-                if (blockType === 'quote') {
+                if (blockType?.endsWith('quote')) {
                     $setBlocksType(selection, () => $createAsideNode());
-                } else if (blockType === 'aside') {
+                } else if (blockType?.endsWith?.('aside')) {
                     $setBlocksType(selection, () => $createParagraphNode());
                 } else {
                     $setBlocksType(selection, () => $createQuoteNode());
@@ -198,8 +209,8 @@ export default function FormatToolbar({
             <ToolbarMenuItem
                 data-kg-toolbar-button="quote"
                 hide={hideQuotes}
-                icon={blockType === 'aside' ? 'quoteOne' : 'quoteTwo'}
-                isActive={blockType === 'quote' || blockType === 'aside'}
+                icon={quoteIcon(blockType)}
+                isActive={blockType.endsWith?.('quote') || blockType.endsWith?.('aside')}
                 label="Toggle blockquote"
                 onClick={formatQuote}
             />
