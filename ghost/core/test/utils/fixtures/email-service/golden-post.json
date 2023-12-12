@@ -34,7 +34,7 @@
                 "direction": "ltr",
                 "format": "",
                 "indent": 0,
-                "type": "quote",
+                "type": "extended-quote",
                 "version": 1
             },
             {
@@ -70,7 +70,7 @@
                 "direction": "ltr",
                 "format": "",
                 "indent": 0,
-                "type": "heading",
+                "type": "extended-heading",
                 "version": 1,
                 "tag": "h2"
             },
@@ -89,19 +89,19 @@
                 "direction": "ltr",
                 "format": "",
                 "indent": 0,
-                "type": "heading",
+                "type": "extended-heading",
                 "version": 1,
                 "tag": "h3"
             },
             {
                 "type": "image",
                 "version": 1,
-                "src": "https://main.ghost.org/content/images/2023/11/IMG_1952-1.jpeg",
-                "width": 4032,
-                "height": 3024,
+                "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg/1920px-Cow_%28Fleckvieh_breed%29_Oeschinensee_Slaunger_2009-07-07.jpg",
+                "width": null,
+                "height": null,
                 "title": "",
-                "alt": "A beautiful tree, indeed.",
-                "caption": "<span style=\"white-space: pre-wrap;\">A beautiful tree.</span>",
+                "alt": "Cows eat grass.",
+                "caption": "<span style=\"white-space: pre-wrap;\">A lovely cow</span>",
                 "cardWidth": "regular",
                 "href": ""
             },
@@ -116,50 +116,42 @@
                 "html": "<p>A paragraph inside an HTML card.</p>\n<p>And another one, with some <b>bold</b> text.</p>"
             },
             {
+                "type": "horizontalrule",
+                "version": 1
+            },
+            {
                 "type": "gallery",
                 "version": 1,
                 "images": [
                     {
                         "row": 0,
-                        "src": "https://main.ghost.org/content/images/2023/11/IMG_1952-6.jpeg",
-                        "width": 4032,
-                        "height": 3024,
-                        "fileName": "IMG_1952.jpeg"
+                        "src": "https://images.unsplash.com/photo-1702352461386-15dcf064708a?q=80&w=2128&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                        "width": null,
+                        "height": null,
+                        "alt": "",
+                        "caption": "",
+                        "fileName": "photo-1702352461386-15dcf064708a"
                     },
                     {
                         "row": 0,
-                        "src": "https://main.ghost.org/content/images/2023/11/IMG_1873.jpeg",
-                        "width": 4032,
-                        "height": 3024,
-                        "fileName": "IMG_1873.jpeg"
+                        "src": "https://images.unsplash.com/photo-1702377168432-ac8b5e387998?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                        "width": null,
+                        "height": null,
+                        "alt": "",
+                        "caption": "",
+                        "fileName": "photo-1702377168432-ac8b5e387998"
                     },
                     {
                         "row": 0,
-                        "src": "https://main.ghost.org/content/images/2023/11/IMG_1868-2.jpeg",
-                        "width": 4032,
-                        "height": 3024,
-                        "fileName": "IMG_1868.jpeg"
-                    },
-                    {
-                        "row": 1,
-                        "src": "https://main.ghost.org/content/images/2023/11/IMG_1478.jpeg",
-                        "width": 3024,
-                        "height": 4032,
-                        "fileName": "IMG_1478.jpeg"
-                    },
-                    {
-                        "row": 1,
-                        "src": "https://main.ghost.org/content/images/2023/11/IMG_3917.jpeg",
-                        "width": 5184,
-                        "height": 3456,
-                        "fileName": "IMG_3917.jpeg"
+                        "src": "https://plus.unsplash.com/premium_photo-1700558685152-81f821a40724?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                        "width": 2070,
+                        "height": 1380,
+                        "alt": "",
+                        "caption": "",
+                        "fileName": "premium_photo-1700558685152-81f821a40724"
                     }
                 ],
-                "caption": "<p><span style=\"white-space: pre-wrap;\">A tree, a meerkat, and a terrier.</span></p>"
-            },
-            {
-                "type": "horizontalrule",
-                "version": 1
+                "caption": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">A gallery.</span></p>"
             },
             {
                 "type": "bookmark",
@@ -205,7 +197,7 @@
             {
                 "type": "callout",
                 "version": 1,
-                "calloutText": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">I had an idea...</span></p>",
+                "calloutText": "<p><span style=\"white-space: pre-wrap;\">I had an idea...</span></p>",
                 "calloutEmoji": "💡",
                 "backgroundColor": "blue"
             },
@@ -213,46 +205,46 @@
                 "type": "toggle",
                 "version": 1,
                 "heading": "<span style=\"white-space: pre-wrap;\">Spoiler alert!</span>",
-                "content": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">Just kidding</span></p>"
+                "content": "<p><span style=\"white-space: pre-wrap;\">Just kidding</span></p>"
             },
             {
                 "type": "audio",
                 "version": 1,
                 "duration": 105.822041,
                 "mimeType": "audio/mpeg",
-                "src": "https://main.ghost.org/content/media/2023/11/sample.mp3",
+                "src": "https://main.ghost.org/content/media/2023/12/sample.mp3",
                 "title": "Sample",
                 "thumbnailSrc": ""
             },
             {
                 "type": "video",
                 "version": 1,
-                "src": "https://main.ghost.org/content/media/2023/11/sample_640x360.mp4",
-                "caption": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">A video card.</span></p>",
+                "src": "https://main.ghost.org/content/media/2023/12/sample_640x360.mp4",
+                "caption": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">A lovely video of a woman on the beach doing nothing.</span></p>",
                 "fileName": "sample_640x360.mp4",
                 "mimeType": "video/mp4",
                 "width": 640,
                 "height": 360,
                 "duration": 13.346667,
-                "thumbnailSrc": "https://main.ghost.org/content/media/2023/11/sample_640x360_thumb.jpg",
+                "thumbnailSrc": "https://main.ghost.org/content/media/2023/12/sample_640x360_thumb.jpg",
                 "customThumbnailSrc": "",
                 "thumbnailWidth": 640,
                 "thumbnailHeight": 360,
                 "cardWidth": "regular",
-                "loop": false
+                "loop": true
             },
             {
                 "type": "product",
                 "version": 1,
-                "productImageSrc": "https://main.ghost.org/content/images/2023/11/71124418043__F5E7A067-CA69-4E5F-91D8-938EC4A12B20.jpeg",
-                "productImageWidth": 3024,
-                "productImageHeight": 4032,
-                "productTitle": "<span style=\"white-space: pre-wrap;\">Care for a refreshment?</span>",
-                "productDescription": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">It's what plants crave.</span></p>",
+                "productImageSrc": "https://main.ghost.org/content/images/2023/12/ghost-logo.png",
+                "productImageWidth": 800,
+                "productImageHeight": 257,
+                "productTitle": "<span style=\"white-space: pre-wrap;\">Make a blog!</span>",
+                "productDescription": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">with Ghost</span></p>",
                 "productRatingEnabled": true,
                 "productStarRating": 5,
                 "productButtonEnabled": true,
-                "productButton": "$98 at Amazon",
+                "productButton": "Click here",
                 "productUrl": "https://ghost.org"
             },
             {
@@ -379,7 +371,7 @@
                 "version": 1,
                 "code": "console.log('Hello world!');",
                 "language": "javascript",
-                "caption": "<p dir=\"ltr\"><span style=\"white-space: pre-wrap;\">A tiny little script.</span></p>"
+                "caption": "<p><span style=\"white-space: pre-wrap;\">A tiny little script.</span></p>"
             },
             {
                 "type": "file",
@@ -388,14 +380,6 @@
                 "fileCaption": "A tiny text file.",
                 "fileName": "test.txt",
                 "fileSize": 16
-            },
-            {
-                "children": [],
-                "direction": null,
-                "format": "",
-                "indent": 0,
-                "type": "paragraph",
-                "version": 1
             }
         ],
         "direction": "ltr",
