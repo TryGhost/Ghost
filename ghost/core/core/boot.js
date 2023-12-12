@@ -483,7 +483,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Sentry must be initialized early, but requires config
         debug('Begin: Load sentry');
-        require('./shared/sentry');
+        const sentry = require('./shared/sentry');
         debug('End: Load sentry');
 
         // Step 2 - Start server with minimal app in global maintenance mode
@@ -502,6 +502,9 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         debug('Begin: Get DB ready');
         await initDatabase({config});
         bootLogger.log('database ready');
+        sentry.initQueryTracing(
+            require('./server/data/db/connection')
+        );
         debug('End: Get DB ready');
 
         // Step 4 - Load Ghost with all its services
