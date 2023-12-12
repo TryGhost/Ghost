@@ -329,15 +329,11 @@ module.exports = function apiRoutes() {
     router.delete('/emails/analytics', mw.authAdminApi, http(api.emails.cancelScheduledAnalytics));
 
     // ## Snippets
-    router.get('/snippets', mw.authAdminApi, labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.browse)));
-    //router.get('/snippets/:id', mw.authAdminApi, http(api.snippets.read));
-    router.get('/snippets/:id', mw.authAdminApi, labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.read)));
-    //router.post('/snippets', mw.authAdminApi, http(api.snippets.add));
-    router.post('/snippets', mw.authAdminApi, labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.add)));
-    //router.put('/snippets/:id', mw.authAdminApi, http(api.snippets.edit));
-    router.put('/snippets/:id', mw.authAdminApi, labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.edit)));
-    //router.del('/snippets/:id', mw.authAdminApi, http(api.snippets.destroy));
-    router.del('/snippets/:id', mw.authAdminApi, labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.destroy)));
+    router.get('/snippets', labs.skipMiddleware('nestSnippetsAPI', mw.authAdminApi), labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.browse)));
+    router.get('/snippets/:id', labs.skipMiddleware('nestSnippetsAPI', mw.authAdminApi), labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.read)));
+    router.post('/snippets', labs.skipMiddleware('nestSnippetsAPI', mw.authAdminApi), labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.add)));
+    router.put('/snippets/:id', labs.skipMiddleware('nestSnippetsAPI', mw.authAdminApi), labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.edit)));
+    router.del('/snippets/:id', labs.skipMiddleware('nestSnippetsAPI', mw.authAdminApi), labs.skipMiddleware('nestSnippetsAPI', http(api.snippets.destroy)));
 
     // ## Custom theme settings
     router.get('/custom_theme_settings', mw.authAdminApi, http(api.customThemeSettings.browse));
