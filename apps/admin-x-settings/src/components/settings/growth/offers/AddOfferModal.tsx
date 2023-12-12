@@ -298,14 +298,14 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 }}
                                 onChange={(e) => {
                                     handleTrialAmountInput(e);
-                                }} 
+                                }}
                                 onKeyDown={() => clearError('amount')}/>
-                                
+
                         }
 
                         <TextField
                             error={Boolean(errors.code)}
-                            hint={errors.code || <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div>}
+                            hint={errors.code || (overrides.code.value !== '' ? <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div> : null)}
                             placeholder='black-friday'
                             title='Offer code'
                             value={overrides.code.value}
