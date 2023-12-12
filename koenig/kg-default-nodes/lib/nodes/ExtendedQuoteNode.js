@@ -42,6 +42,12 @@ export class ExtendedQuoteNode extends QuoteNode {
         json.type = 'extended-quote';
         return json;
     }
+
+    /* c8 ignore start */
+    extractWithChild() {
+        return true;
+    }
+    /* c8 ignore end */
 }
 
 function convertBlockquoteElement() {

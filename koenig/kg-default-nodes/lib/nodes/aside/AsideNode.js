@@ -55,6 +55,10 @@ export class AsideNode extends ElementNode {
     isInline() {
         return false;
     }
+
+    extractWithChild() {
+        return true;
+    }
     /* c8 ignore stop */
 }
 
