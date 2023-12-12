@@ -7686,14 +7686,14 @@
   dependencies:
     lodash-es "^4.17.11"
 
-"@tryghost/html-to-mobiledoc@2.0.42":
-  version "2.0.42"
-  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-2.0.42.tgz#ebd0b84dca9df5cba9e42914f494f6a04ff7fafe"
-  integrity sha512-U9mp1O3iGGjVsj4e1hyO/LtoZYuFFrvwkXHidJ58vZkVq0l6U7BVXIcpyL0KSYsG5qrpdHlwuEaKXJcBD5KmYQ==
+"@tryghost/html-to-mobiledoc@3.0.1":
+  version "3.0.1"
+  resolved "https://registry.npmjs.org/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-3.0.1.tgz#934cb273c2378e6d06c50326cbe87a1ba4cb7fde"
+  integrity sha512-IehQkQ1SaASav0t+b/tLlxYWIMFFVuqH4kz8ynQq1mhYp6wKaTYrGgFft2o1d2oob2KEYIICNl7fTzj5W7oAYw==
   dependencies:
-    "@tryghost/kg-parser-plugins" "^3.0.42"
+    "@tryghost/kg-parser-plugins" "^4.0.1"
     "@tryghost/mobiledoc-kit" "^0.12.4-ghost.1"
-    jsdom "^22.0.0"
+    jsdom "^23.0.0"
 
 "@tryghost/http-cache-utils@0.1.11":
   version "0.1.11"
@@ -7733,15 +7733,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/kg-card-factory/-/kg-card-factory-5.0.0.tgz#502abc0d3f7956770a6334070772d7f71f21c528"
   integrity sha512-z2aADkNYj/9BnNuKBdjUYbtIyPPnrbn2U4C+YrzJ2FCGAxPIrvUjkbAVfr16OiMY1IKH7lRQ9tPf/Uxowg5rWA==
 
-"@tryghost/kg-clean-basic-html@4.0.0", "@tryghost/kg-clean-basic-html@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-4.0.0.tgz#87b5aded2811316e3226f44ce2131d896c2bbfcd"
-  integrity sha512-/D037hnw3r6q+PYYrLUa+2vNN56EScqQvfdLG4hi4vD3A7pOs3jtdd72KHXo9KgGF23daphyY71hVX2k5cvnPw==
-
-"@tryghost/kg-clean-basic-html@^3.0.41":
-  version "3.0.41"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-3.0.41.tgz#e680adab4b6b880ced1963fd3cf900bb47656602"
-  integrity sha512-J7OD6be0daRSZXQyD85cZ810WHNzP85U5qCDOhk50JsTIv2cQfCS0u3ej1hQBcVX3YVBMgmxDkQBhXAb7GpHxw==
+"@tryghost/kg-clean-basic-html@4.0.1", "@tryghost/kg-clean-basic-html@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.npmjs.org/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-4.0.1.tgz#27e5c029449781f16f7d3687614a8efff8c67b22"
+  integrity sha512-dt1yfQUms9xt14gawu49pdxITjSry9E4OA5a/br3E+K3NbNoIK/+cXMFDTa8hmCofmRxBH5YZfA6cbjMzvDcRA==
 
 "@tryghost/kg-converters@0.0.22":
   version "0.0.22"
@@ -7768,16 +7763,16 @@
     lodash "^4.17.21"
     luxon "^3.0.0"
 
-"@tryghost/kg-default-nodes@1.0.0", "@tryghost/kg-default-nodes@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-nodes/-/kg-default-nodes-1.0.0.tgz#39be6eabb1ddb00b73f403fff69de3a2e63aac5b"
-  integrity sha512-ufiQNwWy2zG9SfAsfYWWrKpc4oXe+Hriy3NIUfS1ZhoY0F9uThV8smH0QW1WS86NEi+Bhy3DxXtD4LrTCo649Q==
+"@tryghost/kg-default-nodes@1.0.1", "@tryghost/kg-default-nodes@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/@tryghost/kg-default-nodes/-/kg-default-nodes-1.0.1.tgz#ec7ed3d81ad6343d824f26453aeef2813444778d"
+  integrity sha512-0Sr3XKHZWqPLV3CTV0UU3n+73+E3y8YVsKzTq/U1k1DhxftnwwMJrfP8aIFtYcnj7KaAig5vYLnoNCwI0bkoTA==
   dependencies:
     "@lexical/clipboard" "0.12.2"
     "@lexical/rich-text" "0.12.2"
     "@lexical/selection" "0.12.2"
     "@lexical/utils" "0.12.2"
-    "@tryghost/kg-clean-basic-html" "^4.0.0"
+    "@tryghost/kg-clean-basic-html" "^4.0.1"
     "@tryghost/kg-markdown-html-renderer" "^7.0.0"
     html-minifier "^4.0.0"
     jsdom "^23.0.0"
@@ -7785,21 +7780,21 @@
     lodash "^4.17.21"
     luxon "^3.3.0"
 
-"@tryghost/kg-default-transforms@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-default-transforms/-/kg-default-transforms-1.0.1.tgz#02fcdfab4a40f06717980cd11cf7cbcb64c04a06"
-  integrity sha512-v1hf3jAi/QHgQIMkuFhxTr/srdmvWz8TWFaZH8UCUUtsPbMad5uGlK8t6EO7jCXRg/Oh84sRT0gOccmx0aD94A==
+"@tryghost/kg-default-transforms@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/@tryghost/kg-default-transforms/-/kg-default-transforms-1.0.2.tgz#641f3a4cc58cfd7ac1af4be44030aa77def54c20"
+  integrity sha512-6PrJ5g3sZ4EDbCqo/OgEaGL6vOv8r6mD8kLpkpxYrnME7Yuk/LN/C52P5YCbalDN3O4elPUX9vMIrZ+qqnPGUA==
   dependencies:
     "@lexical/list" "0.12.2"
     "@lexical/rich-text" "0.12.2"
     "@lexical/utils" "0.12.2"
-    "@tryghost/kg-default-nodes" "^1.0.0"
+    "@tryghost/kg-default-nodes" "^1.0.1"
     lexical "0.12.2"
 
-"@tryghost/kg-html-to-lexical@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-html-to-lexical/-/kg-html-to-lexical-1.0.1.tgz#8c96300d38a689c4de4f506022792d26d62bf113"
-  integrity sha512-CpS+T/s07U4EV2+C3J2JUAw7ha1oANFvuAjD9y/srTzxkqoNJ1y2GzEYNvZaO2R0nbYrgEJ4Z1xnFGQyBTHS3A==
+"@tryghost/kg-html-to-lexical@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/@tryghost/kg-html-to-lexical/-/kg-html-to-lexical-1.0.2.tgz#64d2688828a2ff4597cff1ddc272e5fa32bd58db"
+  integrity sha512-0dXRpbe+Qm4aedG/vbh2/HMUpcI2CsTz2aUfkpgGrP4Om7C/AC9IOHJd5i9pXsU8OBeXkQP0SpTN0obnVoCizg==
   dependencies:
     "@lexical/clipboard" "0.12.2"
     "@lexical/headless" "0.12.2"
@@ -7807,15 +7802,15 @@
     "@lexical/link" "0.12.2"
     "@lexical/list" "0.12.2"
     "@lexical/rich-text" "0.12.2"
-    "@tryghost/kg-default-nodes" "^1.0.0"
-    "@tryghost/kg-default-transforms" "^1.0.1"
+    "@tryghost/kg-default-nodes" "^1.0.1"
+    "@tryghost/kg-default-transforms" "^1.0.2"
     jsdom "^23.0.0"
     lexical "0.12.2"
 
-"@tryghost/kg-lexical-html-renderer@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-1.0.0.tgz#52aeb6360174faf6f236b74d0e90c0a22e657645"
-  integrity sha512-rXnJ45vGDRZTZ7tgCn3G6aJBa+Y+Fr+RJ/NORHjAsowk+6D18eTr5XyBVC2wvh5r2Zc98B7Nr7Cz6RP9EqoGyA==
+"@tryghost/kg-lexical-html-renderer@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/@tryghost/kg-lexical-html-renderer/-/kg-lexical-html-renderer-1.0.1.tgz#d17a535a796d35673de80ef197724e817473a4de"
+  integrity sha512-GxuoZ6ISsfI0bN8e/4w9XsUzT3SsGarcufL06w0LOaDsD7YtWSkxxv0+ONICGVEGCW+vKBvpW65faQhvDTBqZw==
   dependencies:
     "@lexical/clipboard" "0.12.2"
     "@lexical/code" "0.12.2"
@@ -7823,7 +7818,7 @@
     "@lexical/link" "0.12.2"
     "@lexical/list" "0.12.2"
     "@lexical/rich-text" "0.12.2"
-    "@tryghost/kg-default-nodes" "^1.0.0"
+    "@tryghost/kg-default-nodes" "^1.0.1"
     jsdom "^23.0.0"
     lexical "0.12.2"
     prettier "^3.0.0"
@@ -7852,12 +7847,12 @@
     mobiledoc-dom-renderer "^0.7.0"
     simple-dom "^1.4.0"
 
-"@tryghost/kg-parser-plugins@^3.0.42":
-  version "3.0.42"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-3.0.42.tgz#82044ab8f500e30e2c605317f32b626f272cefe0"
-  integrity sha512-2QhoKyI0KaW0khQvZpJxter448GO7wX4pXxuPjek4wsuo05UeM/osc9I67JiIB9/XP3qfQol15JLuzf360432Q==
+"@tryghost/kg-parser-plugins@^4.0.1":
+  version "4.0.1"
+  resolved "https://registry.npmjs.org/@tryghost/kg-parser-plugins/-/kg-parser-plugins-4.0.1.tgz#e89c54e383c949e22293de8badff2d564813b578"
+  integrity sha512-QdUAEaenQ/1VfaDsMwk+dVHczdTxK6muQYSWnIW6c+T8TxRuQGEM73140otKEL4Uee0w/xNkAC+cVDJnySiH6g==
   dependencies:
-    "@tryghost/kg-clean-basic-html" "^3.0.41"
+    "@tryghost/kg-clean-basic-html" "^4.0.1"
 
 "@tryghost/kg-utils@^1.0.23":
   version "1.0.23"
@@ -7866,10 +7861,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/koenig-lexical@1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.0.4.tgz#47531f9f0f9b942227605c0c8d45cd4a523b01f0"
-  integrity sha512-hoFRmz+wkaWxqjWadzZ5FyRwGs/01hy3iT4Rk4Q9NsvbEfsCG45wqrhE26ZrfckxI4oKbJFgIWOD+9JBwBkV4Q==
+"@tryghost/koenig-lexical@1.0.5":
+  version "1.0.5"
+  resolved "https://registry.npmjs.org/@tryghost/koenig-lexical/-/koenig-lexical-1.0.5.tgz#595d517ce54abc94eae6e8af395f63058211af6f"
+  integrity sha512-Ggpo2YtXdruvyYBpFoi1vjq2bNMWEu76f6cXXRSJAU9zSL6EJHEQ2O+kNvZyk0x50cP7Rtnrhf/4P3nepCllIA==
 
 "@tryghost/limit-service@1.2.12", "@tryghost/limit-service@^1.2.10":
   version "1.2.12"
@@ -21100,7 +21095,7 @@ jscodeshift@^0.15.1:
     temp "^0.8.4"
     write-file-atomic "^2.3.0"
 
-jsdom@22.1.0, jsdom@^22.0.0, jsdom@~22.1.0:
+jsdom@22.1.0, jsdom@~22.1.0:
   version "22.1.0"
   resolved "https://registry.yarnpkg.com/jsdom/-/jsdom-22.1.0.tgz#0fca6d1a37fbeb7f4aac93d1090d782c56b611c8"
   integrity sha512-/9AVW7xNbsBv6GfWho4TTNjEo9fe6Zhf9O7s0Fhhr3u+awPwAJMKwAMXnkk5vBxflqLW9hTHX/0cs+P3gW+cQw==
