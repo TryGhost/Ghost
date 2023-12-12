@@ -14,7 +14,7 @@ test.describe('Offers Modal', () => {
         }});
         await page.goto('/');
         const section = page.getByTestId('offers');
-        await section.getByRole('button', {name: 'Add offers'}).click();
+        await section.getByRole('button', {name: 'Add offer'}).click();
         const addModal = page.getByTestId('add-offer-modal');
         await expect(addModal).toBeVisible();
     });
