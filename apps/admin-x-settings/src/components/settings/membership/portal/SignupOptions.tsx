@@ -79,7 +79,7 @@ const SignupOptions: React.FC<{
                 tiersCheckboxes.push({
                     checked: (portalPlans.includes('free')),
                     disabled: isDisabled,
-                    label: 'Free',
+                    label: hasPortalImprovements ? tier.name : 'Free',
                     value: 'free',
                     onChange: (checked) => {
                         if (portalPlans.includes('free') && !checked) {
