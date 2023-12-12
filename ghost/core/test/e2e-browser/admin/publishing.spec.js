@@ -314,7 +314,7 @@ test.describe('Publishing', () => {
             await adminPage.fill('[data-test-field="custom-excerpt"]', 'Short description and meta');
 
             // save
-            await adminPage.locator('[data-test-button="publish-save"]').click();
+            await adminPage.locator('[data-test-button="publish-save"]').first().click();
 
             // check front-end has new text after reloading
             await frontendPage.waitForTimeout(300); // let save go through
@@ -447,7 +447,7 @@ test.describe('Publishing', () => {
             await checkPostNotPublished(testsharedPage, postData);
 
             // Now unschedule this post
-            await sharedPage.locator('[data-test-button="update-flow"]').click();
+            await sharedPage.locator('[data-test-button="update-flow"]').first().click();
             await sharedPage.locator('[data-test-button="revert-to-draft"]').click();
 
             // Check status
