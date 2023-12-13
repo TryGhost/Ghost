@@ -415,7 +415,11 @@ export default class LexicalEditorController extends Controller {
 
     @action
     handleFeatureImageCaptionBlur() {
-        if (this.post?.isDraft) {
+        if (!this.post || this.post.isDestroyed || this.post.isDestroying) {
+            return;
+        }
+
+        if (this.post.isDraft) {
             this.autosaveTask.perform();
         }
     }
@@ -615,6 +619,10 @@ export default class LexicalEditorController extends Controller {
 
     @task
     *beforeSaveTask(options = {}) {
+        if (this.post?.isDestroyed || this.post?.isDestroying) {
+            return;
+        }
+
         // ensure we remove any blank cards when performing a full save
         if (!options.backgroundSave) {
             // TODO: not yet implemented in react editor
