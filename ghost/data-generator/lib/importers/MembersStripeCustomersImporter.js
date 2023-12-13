@@ -10,7 +10,7 @@ class MembersStripeCustomersImporter extends TableImporter {
     }
 
     async import(quantity) {
-        const members = await this.transaction.select('id', 'name', 'email', 'created_at').from('members');
+        const members = await this.transaction.select('id', 'name', 'email', 'created_at').from('members').where('status', 'paid');
 
         await this.importForEach(members, quantity ? quantity / members.length : 1);
     }
