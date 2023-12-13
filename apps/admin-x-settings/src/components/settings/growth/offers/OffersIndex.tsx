@@ -126,7 +126,7 @@ export const OffersIndexModal = () => {
 
     const handleOfferEdit = (id:string) => {
         // TODO: implement
-        localStorage.setItem('editOfferPageSource', 'offersIndex');
+        sessionStorage.setItem('editOfferPageSource', 'offersIndex');
         updateRoute(`offers/edit/${id}`);
     };
 

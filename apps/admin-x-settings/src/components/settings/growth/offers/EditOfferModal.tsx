@@ -269,11 +269,11 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         title='Offer'
         width={1140}
         onCancel={() => {
-            if (localStorage.getItem('editOfferPageSource') && localStorage.getItem('editOfferPageSource') === 'offers') {
-                localStorage.removeItem('editOfferPageSource');
+            if (sessionStorage.getItem('editOfferPageSource') && sessionStorage.getItem('editOfferPageSource') === 'offers') {
+                sessionStorage.removeItem('editOfferPageSource');
                 updateRoute('offers');
             } else {
-                localStorage.removeItem('editOfferPageSource');
+                sessionStorage.removeItem('editOfferPageSource');
                 updateRoute('offers/edit');
             }
         }}

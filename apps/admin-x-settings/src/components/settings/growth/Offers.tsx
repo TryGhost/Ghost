@@ -57,7 +57,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const goToOfferEdit = (offerId: string) => {
-        localStorage.setItem('editOfferPageSource', 'offers');
+        sessionStorage.setItem('editOfferPageSource', 'offers');
         updateRoute(`offers/edit/${offerId}`);
     };
 
