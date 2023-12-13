@@ -7,6 +7,7 @@ import {now} from '../../../common/helpers/date.helper';
 import {LocationHeaderInterceptor} from '../../interceptors/location-header.interceptor';
 import {GlobalExceptionFilter} from '../../filters/global-exception.filter';
 import {NotFoundError} from '@tryghost/errors';
+import {AJVValidationPipe} from '../../pipes/ajv-validation.pipe';
 
 @Controller('snippets')
 @UseInterceptors(LocationHeaderInterceptor)
@@ -49,7 +50,7 @@ export class SnippetsController {
     @Put(':id')
     async edit(
         @Param('id') id: 'string',
-        @Body() body: any,
+        @Body(new AJVValidationPipe('snippets-update')) body: any,
         @Query('formats') formats?: 'mobiledoc' | 'lexical'
     ): Promise<{snippets: [SnippetDTO]}> {
         const snippet = await this.service.update(ObjectID.createFromHexString(id), body.snippets[0]);
@@ -66,7 +67,7 @@ export class SnippetsController {
 
     @Post('')
     async add(
-        @Body() body: any,
+        @Body(new AJVValidationPipe('snippets-add')) body: any,
         @Query('formats') formats?: 'mobiledoc' | 'lexical'
     ): Promise<{snippets: [SnippetDTO]}> {
         const snippet = await this.service.create({
