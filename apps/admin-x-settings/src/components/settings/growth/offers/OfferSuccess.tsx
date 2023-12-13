@@ -106,11 +106,11 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
                     <TextField type='url' value={offerLink} disabled />
                     <Button color='green' label={isCopied ? 'Copied!' : 'Copy link'} fullWidth onClick={handleCopyClick} />
                 </div>
-                <div className='flex items-center gap-4 text-xs font-medium before:h-px before:grow before:bg-grey-300 before:content-[""] after:h-px after:grow after:bg-grey-300 after:content-[""]'>OR</div>
+                <div className='flex items-center gap-4 text-xs font-medium before:h-px before:grow before:bg-grey-300 before:content-[""] after:h-px after:grow after:bg-grey-300 after:content-[""] dark:before:bg-grey-800 dark:after:bg-grey-800'>OR</div>
                 <div className='flex gap-2'>
-                    <Button className='h-8 border border-grey-300' icon='twitter-x' iconColorClass='w-[14px] h-[14px]' size='sm' fullWidth onClick={handleTwitter} />
-                    <Button className='h-8 border border-grey-300' icon='facebook' size='sm' fullWidth onClick={handleFacebook} />
-                    <Button className='h-8 border border-grey-300' icon='linkedin' size='sm' fullWidth onClick={handleLinkedIn} />
+                    <Button className='h-8 border border-grey-300 dark:border-grey-800' icon='twitter-x' iconColorClass='w-[14px] h-[14px]' size='sm' fullWidth onClick={handleTwitter} />
+                    <Button className='h-8 border border-grey-300 dark:border-grey-800' icon='facebook' size='sm' fullWidth onClick={handleFacebook} />
+                    <Button className='h-8 border border-grey-300 dark:border-grey-800' icon='linkedin' size='sm' fullWidth onClick={handleLinkedIn} />
                 </div>
             </div>
         </div>
