@@ -651,7 +651,7 @@ describe('Comments API', function () {
             });
 
             it('Can edit a comment on a post', async function () {
-                const {body} = await await membersAgent
+                const {body} = await membersAgent
                     .put(`/api/comments/${commentId}`)
                     .body({comments: [{
                         html: 'Updated comment'
