@@ -170,11 +170,6 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             maxLength={40}
                             placeholder='Black Friday'
                             title='Offer name'
-                            onBlur={(e) => {
-                                if (!e.target.value && e.target.value.length === 0) {
-                                    errors.name = 'Name is required';
-                                }
-                            }}
                             onChange={(e) => {
                                 handleNameInput(e);
                                 setNameLength(e.target.value.length);
@@ -187,11 +182,6 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             placeholder='Black Friday Special'
                             title='Display title'
                             value={overrides.displayTitle.value}
-                            onBlur={(e) => {
-                                if (!e.target.value && e.target.value.length === 0) {
-                                    errors.displayTitle = 'Display title is required';
-                                }
-                            }}
                             onChange={(e) => {
                                 handleDisplayTitleInput(e);
                             }}
@@ -240,19 +230,6 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                             ? (overrides.fixedAmount === 0 ? '' : overrides.fixedAmount?.toString())
                                             : (overrides.percentAmount === 0 ? '' : overrides.percentAmount?.toString())
                                     }
-                                    onBlur={() => {
-                                        if (overrides.type === 'percent' && overrides.percentAmount === 0) {
-                                            errors.amount = 'Enter an amount greater than 0.';
-                                        }
-
-                                        if (overrides.type === 'percent' && overrides.percentAmount && (overrides.percentAmount < 0 || overrides.percentAmount >= 100)) {
-                                            errors.amount = 'Amount must be between 0 and 100%.';
-                                        }
-
-                                        if (overrides.type === 'fixed' && overrides.fixedAmount && overrides.fixedAmount <= 0) {
-                                            errors.amount = 'Enter an amount greater than 0.';
-                                        }
-                                    }}
                                     onChange={(e) => {
                                         handleAmountInput(e);
                                     }}
@@ -292,11 +269,6 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 title='Trial duration'
                                 type='number'
                                 value={overrides.trialAmount?.toString()}
-                                onBlur={(e) => {
-                                    if (Number(e.target.value) < 1) {
-                                        errors.amount = 'Free trial must be at least 1 day.';
-                                    }
-                                }}
                                 onChange={(e) => {
                                     handleTrialAmountInput(e);
                                 }}
@@ -310,11 +282,6 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             placeholder='black-friday'
                             title='Offer code'
                             value={overrides.code.value}
-                            onBlur={(e) => {
-                                if (!e.target.value && e.target.value.length === 0) {
-                                    errors.code = 'Code is required';
-                                }
-                            }}
                             onChange={(e) => {
                                 handleCodeInput(e);
                             }}
