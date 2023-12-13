@@ -10117,7 +10117,7 @@ axios-retry@3.2.0:
   dependencies:
     is-retry-allowed "^1.1.0"
 
-axios@1.6.0, axios@^1.0.0, axios@^1.3.3:
+axios@1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.0.tgz#f1e5292f26b2fd5c2e66876adc5b06cdbd7d2102"
   integrity sha512-EZ1DYihju9pwVB+jg67ogm+Tmqc6JmhamRN6I4Zt8DfZu5lbcQGw3ozH9lFejSJgs/ibaef3A9PMXPLeefFGJg==
@@ -10133,6 +10133,15 @@ axios@^0.27.2:
   dependencies:
     follow-redirects "^1.14.9"
     form-data "^4.0.0"
+
+axios@^1.0.0, axios@^1.3.3, axios@^1.6.0:
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.2.tgz#de67d42c755b571d3e698df1b6504cde9b0ee9f2"
+  integrity sha512-7i24Ri4pmDRfJTR7LDBhsOTtcm+9kjX5WiY1X3wIisx6G9So3pfMkEiU7emUBe46oceVImccTEM3k6C5dbVW8A==
+  dependencies:
+    follow-redirects "^1.15.0"
+    form-data "^4.0.0"
+    proxy-from-env "^1.1.0"
 
 b4a@^1.6.4:
   version "1.6.4"
@@ -22539,12 +22548,12 @@ magic-string@^0.30.0, magic-string@^0.30.1:
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.4.15"
 
-mailgun.js@9.3.0:
-  version "9.3.0"
-  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-9.3.0.tgz#2fc86acfa2e8ade457b65e03aac1cfb802062a5e"
-  integrity sha512-iRqCglCdi+Q5anFpeRKHiytT/i34E14p/WtTE57VSeq5bATK+zQ8UnpFgPRaqGGTJqyGjqcO9m5YDRRB4/qirw==
+mailgun.js@9.4.0:
+  version "9.4.0"
+  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-9.4.0.tgz#0c6e93229585ee54f49a1d2ade0a1cefa104e851"
+  integrity sha512-BT+v4q0OEgmn5a8Nx0tgtHJ4OaerbVCo9gUskXVuF65HQd9hsz9AmUNXHAK4PtUlQDBA7wrPI9jiWVbfVuR8NQ==
   dependencies:
-    axios "^1.3.3"
+    axios "^1.6.0"
     base-64 "^1.0.0"
     url-join "^4.0.1"
 
