@@ -5,7 +5,7 @@ const dateToDatabaseString = require('../utils/database-date');
 class WebMentionsImporter extends TableImporter {
     static table = 'mentions';
     static dependencies = [];
-    defaultQuantity = 3;
+    defaultQuantity = 23;
 
     constructor(knex, transaction, {baseUrl}) {
         super(WebMentionsImporter.table, knex, transaction);
