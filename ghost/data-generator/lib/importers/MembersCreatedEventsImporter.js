@@ -4,7 +4,7 @@ const {luck} = require('../utils/random');
 
 class MembersCreatedEventsImporter extends TableImporter {
     static table = 'members_created_events';
-    static dependencies = ['members', 'posts'];
+    static dependencies = ['members', 'posts', 'mentions'];
 
     constructor(knex, transaction) {
         super(MembersCreatedEventsImporter.table, knex, transaction);
@@ -13,6 +13,7 @@ class MembersCreatedEventsImporter extends TableImporter {
     async import(quantity) {
         const members = await this.transaction.select('id', 'created_at').from('members');
         this.posts = await this.transaction.select('id', 'published_at', 'visibility', 'type', 'slug').from('posts').orderBy('published_at', 'desc');
+        this.incomingRecommendations = await this.transaction.select('id', 'source', 'created_at').from('mentions');
 
         await this.importForEach(members, quantity ? quantity / members.length : 1);
     }
@@ -32,6 +33,8 @@ class MembersCreatedEventsImporter extends TableImporter {
     generate() {
         const source = this.generateSource();
         let attribution = {};
+        let referrer = {};
+
         if (source === 'member' && luck(30)) {
             const post = this.posts.find(p => p.visibility === 'public' && new Date(p.published_at) < new Date(this.model.created_at));
             if (post) {
@@ -42,12 +45,47 @@ class MembersCreatedEventsImporter extends TableImporter {
                 };
             }
         }
-        return Object.assign({}, {
+
+        if (source === 'member' && luck(40)) {
+            if (luck(20)) {
+                // Ghost network
+                referrer = {
+                    referrer_source: luck(20) ? 'Ghost.org' : 'Ghost Explore',
+                    referrer_url: 'ghost.org',
+                    referrer_medium: 'Ghost Network'
+                };
+            } else {
+                // Incoming recommendation
+                const incomingRecommendation = faker.helpers.arrayElement(this.incomingRecommendations);
+
+                const hostname = new URL(incomingRecommendation.source).hostname;
+                referrer = {
+                    referrer_source: hostname,
+                    referrer_url: hostname,
+                    referrer_medium: faker.helpers.arrayElement([null, 'Email'])
+                };
+            }
+        }
+
+        if (source === 'import') {
+            referrer.referrer_source = 'Imported';
+            referrer.referrer_medium = 'Member Importer';
+        } else if (source === 'admin') {
+            referrer.referrer_source = 'Created manually';
+            referrer.referrer_medium = 'Ghost Admin';
+        } else if (source === 'api') {
+            referrer.referrer_source = 'Created via API';
+            referrer.referrer_medium = 'Admin API';
+        }
+
+        return {
             id: faker.database.mongodbObjectId(),
             created_at: this.model.created_at,
             member_id: this.model.id,
-            source
-        }, attribution);
+            source,
+            ...attribution,
+            ...referrer
+        };
     }
 }
 
