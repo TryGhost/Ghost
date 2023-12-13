@@ -98,7 +98,7 @@ const Sidebar: React.FC<{
                 <div className='flex grow flex-col pt-2'>
                     <Form className=' grow'>
                         <section>
-                            <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5'>
+                            <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
                                 <div className='flex flex-col gap-1.5'>
                                     <span className='text-xs font-semibold leading-none text-grey-700'>Created on</span>
                                     <span>{formatTimestamp(offer?.created_at ? offer.created_at : '')}</span>
