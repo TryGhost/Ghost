@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
@@ -15,6 +16,20 @@ if (nodeVersion < 18) {
 const config = require('../../ghost/core/core/shared/config/loader').loadNconf({
     customConfigPath: path.join(__dirname, '../../ghost/core')
 });
+
+const tsPackages = fs.readdirSync(path.resolve(__dirname, '../../ghost'), {withFileTypes: true})
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name)
+    .filter(packageFolder => {
+        try {
+            const packageJson = require(path.resolve(__dirname, `../../ghost/${packageFolder}/package.json`));
+            return packageJson.scripts?.['build:ts'];
+        } catch (err) {
+            return false;
+        }
+    })
+    .map(packageFolder => `ghost/${packageFolder}`)
+    .join(',');
 
 const liveReloadBaseUrl = config.getSubdir() || '/ghost/';
 const siteUrl = config.getSiteUrl();
@@ -45,7 +60,7 @@ const COMMAND_ADMIN = {
 
 const COMMAND_TYPESCRIPT = {
     name: 'ts',
-    command: 'while [ 1 ]; do nx watch --projects=ghost/collections,ghost/in-memory-repository,ghost/bookshelf-repository,ghost/mail-events,ghost/model-to-domain-event-interceptor,ghost/post-revisions,ghost/nql-filter-expansions,ghost/post-events,ghost/donations,ghost/recommendations,ghost/email-addresses -- nx run \\$NX_PROJECT_NAME:build:ts; done',
+    command: `while [ 1 ]; do nx watch --projects=${tsPackages} -- nx run \\$NX_PROJECT_NAME:build:ts; done`,
     cwd: path.resolve(__dirname, '../../'),
     prefixColor: 'cyan',
     env: {}
