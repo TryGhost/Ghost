@@ -214,6 +214,14 @@ module.exports = function (defaults) {
                         fs: false
                     }
                 },
+                ...(isDevelopment && {
+                    cache: {
+                        type: 'filesystem',
+                        buildDependencies: {
+                            config: [__filename]
+                        }
+                    }
+                }),
                 plugins: [
                     new webpack.ProvidePlugin({
                         process: 'process/browser'
