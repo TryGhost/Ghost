@@ -595,7 +595,7 @@ const AddOfferModal = () => {
     }, [hasOffers, modal, updateRoute]);
 
     const cancelAddOffer = () => {
-        if(allOffers.length > 0) {
+        if (allOffers.length > 0) {
             updateRoute('offers/edit');
         } else {
             updateRoute('offers');
