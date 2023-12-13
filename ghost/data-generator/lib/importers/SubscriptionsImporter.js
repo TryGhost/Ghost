@@ -13,7 +13,7 @@ class SubscriptionsImporter extends TableImporter {
 
     async import() {
         const membersProducts = await this.transaction.select('member_id', 'product_id').from('members_products');
-        this.members = await this.transaction.select('id', 'status', 'created_at').from('members');
+        this.members = await this.transaction.select('id', 'status', 'created_at').from('members').where('status', 'paid');
         this.stripeProducts = await this.transaction.select('product_id', 'stripe_product_id').from('stripe_products');
         this.stripePrices = await this.transaction.select('stripe_product_id', 'currency', 'amount', 'interval').from('stripe_prices');
         await this.importForEach(membersProducts, 1);
@@ -21,6 +21,9 @@ class SubscriptionsImporter extends TableImporter {
 
     generate() {
         const member = this.members.find(m => m.id === this.model.member_id);
+        if (!member) {
+            return;
+        }
         const status = member.status;
         const billingInfo = {};
         const isMonthly = faker.datatype.boolean();
