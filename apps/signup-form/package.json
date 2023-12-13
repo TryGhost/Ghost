@@ -20,7 +20,7 @@
         "dev": "concurrently \"vite --port 6173\" \"vite preview -l silent\" \"vite build --watch\"",
         "preview": "concurrently \"vite preview -l silent\" \"vite build --watch\"",
         "dev:test": "vite build && vite preview --port 6175",
-        "build": "tsc && vite build",
+        "build": "concurrently \"tsc\" \"vite build\"",
         "lint": "yarn run lint:js",
         "lint:js": "eslint --ext .js,.ts,.cjs,.tsx --cache src test",
         "test:unit": "yarn build",
