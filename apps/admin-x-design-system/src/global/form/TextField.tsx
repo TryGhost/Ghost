@@ -126,7 +126,7 @@ const TextField: React.FC<TextFieldProps> = ({
         return (
             <div className={containerClassName}>
                 {field}
-                {title && <Heading className={hideTitle ? 'sr-only' : 'order-1 peer-focus:!text-black dark:!text-grey-300 dark:peer-focus:!text-white'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+                {title && <Heading className={hideTitle ? 'sr-only' : 'order-1'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
                 {hint && <Hint className={hintClassName} color={error ? 'red' : 'default'}>{hint}</Hint>}
             </div>
         );

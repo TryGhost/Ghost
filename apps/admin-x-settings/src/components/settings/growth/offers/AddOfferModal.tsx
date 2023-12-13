@@ -31,7 +31,7 @@ interface OfferType {
 }
 
 const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => void}> = ({type, checked, onClick}) => {
-    const checkboxClass = checked ? 'bg-black text-white' : 'border border-grey-300';
+    const checkboxClass = checked ? 'bg-black text-white dark:bg-white dark:text-black' : 'border border-grey-300 dark:border-grey-800';
 
     return (
         <button className='text-left' type='button' onClick={onClick}>
@@ -210,7 +210,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                 <section className='mt-4'>
                     <h2 className='mb-4 text-lg'>Details</h2>
                     <div className='flex flex-col gap-6'>
-                        <div className='flex flex-col gap-4 rounded-md border border-grey-200 p-4'>
+                        <div className='flex flex-col gap-4 rounded-md border border-grey-200 p-4 dark:border-grey-800'>
                             <ButtonSelect checked={overrides.type !== 'trial' ? true : false} type={typeOptions[0]} onClick={() => {
                                 handleTypeChange('percent');
                             }} />

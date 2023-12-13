@@ -147,7 +147,7 @@ export const OffersIndexModal = () => {
     const listLayoutOutput = <div className='overflow-x-auto'>
         <table className='m-0 w-full'>
             {(selectedTab === 'active' && activeOffers.length > 0) || (selectedTab === 'archived' && archivedOffers.length > 0) ?
-                <tr className='border-b border-b-grey-300'>
+                <tr className='border-b border-b-grey-300 dark:border-grey-800'>
                     <th className='px-5 py-2.5 pl-0 text-xs font-normal text-grey-700'>{selectedTab === 'active' ? activeOffers.length : archivedOffers.length} {selectedTab === 'active' ? (activeOffers.length !== 1 ? 'offers' : 'offer') : (archivedOffers.length !== 1 ? 'offers' : 'offer')}</th>
                     <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Tier</th>
                     <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Terms</th>
@@ -174,7 +174,7 @@ export const OffersIndexModal = () => {
                 const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
 
                 return (
-                    <tr className={`group relative scale-100 border-b border-b-grey-200`}>
+                    <tr className={`group relative scale-100 border-b border-b-grey-200 dark:border-grey-800`}>
                         <td className={`${isTierArchived ? 'opacity-50' : ''} min-w-[200px] p-0 font-semibold`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5 pl-0`} onClick={!isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {}}>{offer?.name}</a></td>
                         <td className={`${isTierArchived ? 'opacity-50' : ''} whitespace-nowrap p-0 text-sm`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5`} onClick={!isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {}}>{offerTier.name} {getOfferCadence(offer.cadence)}</a></td>
                         <td className={`${isTierArchived ? 'opacity-50' : ''} whitespace-nowrap p-0 text-sm`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5`} onClick={!isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {}}><span className={`font-semibold uppercase ${discountColor}`}>{discountOffer}</span> — {getOfferDuration(offer.duration)}</a></td>
@@ -237,7 +237,7 @@ export const OffersIndexModal = () => {
                     </div>
                     <ButtonGroup buttons={buttons} />
                 </div>
-                <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
+                <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5 dark:border-b-grey-800'>
                     <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
                     <div className='-mr-3'>
                         <SortMenu
