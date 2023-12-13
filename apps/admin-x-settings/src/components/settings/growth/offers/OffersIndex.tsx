@@ -200,7 +200,7 @@ export const OffersIndexModal = () => {
     const buttons: ButtonProps[] = [
         {
             key: 'cancel-modal',
-            label: 'Cancel',
+            label: 'Close',
             onClick: () => {
                 modal.remove();
                 updateRoute('offers');
@@ -245,7 +245,7 @@ export const OffersIndexModal = () => {
                 </div>
                 <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5 dark:border-b-grey-800'>
                     <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
-                    <div className='-mr-3'>
+                    <div>
                         <SortMenu
                             direction={sortDirection as 'asc' | 'desc'}
                             items={[
