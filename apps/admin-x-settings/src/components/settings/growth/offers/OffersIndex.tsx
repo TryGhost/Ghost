@@ -123,9 +123,6 @@ export const OffersIndexModal = () => {
     const sortOption = offersSorting?.option || 'date-added';
     const sortDirection = offersSorting?.direction || 'desc';
 
-    // const [sortOption, setSortOption] = useState('date-added'); // add this to global state
-    // const [sortDirection, setSortDirection] = useState('desc'); // add this to global state
-
     useEffect(() => {
         if (!hasOffers) {
             modal.remove();
@@ -264,12 +261,6 @@ export const OffersIndexModal = () => {
                                     option: sortOption,
                                     direction: newDirection
                                 }]);
-                                // setSortingState?.([{
-                                //     type: 'offers',
-                                //     option: sortOption,
-                                //     direction: newDirection
-                                // }]);
-                                // keep all other sorting options the same, only change direction
                             }}
                             onSortChange={(selectedOption) => {
                                 setSortingState?.([{
