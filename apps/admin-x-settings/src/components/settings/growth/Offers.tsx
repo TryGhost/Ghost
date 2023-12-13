@@ -5,6 +5,7 @@ import {CopyLinkButton, createRedemptionFilterUrl, getOfferDiscount} from './off
 import {Offer, useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
+import {numberWithCommas} from '../../../utils/helpers';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -20,7 +21,7 @@ const OfferContainer: React.FC<{offerTitle: string, tier: Tier, cadence: string,
                 <span className='text-grey-700'>{cadence === 'month' ? 'monthly' : 'yearly'}</span>
             </div>
             <div className='mt-2 flex items-end justify-between'>
-                <a className={`text-xs text-grey-700 hover:text-black ${redemptions === 0 ? 'pointer-events-none' : 'hover:underline'}`} href={createRedemptionFilterUrl(offerId)}>{redemptions} redemptions</a>
+                <a className={`text-xs text-grey-700 hover:text-black ${redemptions === 0 ? 'pointer-events-none' : 'hover:underline'}`} href={createRedemptionFilterUrl(offerId)}>{numberWithCommas(redemptions)} {redemptions === 1 ? 'redemption' : 'redemptions'}</a>
                 <CopyLinkButton offerCode={offerCode} />
             </div>
         </div>
