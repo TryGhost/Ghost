@@ -12,7 +12,7 @@ export class SnippetDTO {
         this.id = data.id.toString();
         this.name = data.name;
 
-        if (options.formats === 'mobiledoc') {
+        if (options.formats === 'mobiledoc' || !options.formats) {
             this.mobiledoc = data.mobiledoc || null;
         } else {
             this.lexical = data.lexical || null;

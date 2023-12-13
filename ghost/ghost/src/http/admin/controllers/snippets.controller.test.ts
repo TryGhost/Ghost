@@ -50,8 +50,7 @@ describe('SnippetsController', () => {
                 id: ObjectId(),
                 deleted: false,
                 name: 'Test',
-                mobiledoc:
-                    '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Test"]]]]}',
+                mobiledoc: '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Test"]]]]}',
                 lexical: undefined,
                 createdAt: new Date(),
                 updatedAt: null,
