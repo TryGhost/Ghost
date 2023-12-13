@@ -247,7 +247,7 @@ export const OffersIndexModal = () => {
                     <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
                     <div className='-mr-3'>
                         <SortMenu
-                            direction='desc'
+                            direction={sortDirection as 'asc' | 'desc'}
                             items={[
                                 {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added', direction: 'desc'},
                                 {id: 'name', label: 'Name', selected: sortOption === 'name', direction: 'asc'},
