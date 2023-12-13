@@ -25,7 +25,7 @@ const Sidebar: React.FC<{
         errors: ErrorMessages,
         offer: Offer,
         updateOffer: (fields: Partial<Offer>) => void,
-        validate: () => void}> = ({clearError, errors, offer, updateOffer, validate}) => {
+        validate: () => void}> = ({clearError, errors, offer, updateOffer}) => {
             const {siteData} = useGlobalData();
             const [isCopied, setIsCopied] = useState(false);
             const handleError = useHandleError();
