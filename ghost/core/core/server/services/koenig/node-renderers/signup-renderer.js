@@ -5,12 +5,11 @@ import {addCreateDocumentOption} from '../../utils/add-create-document-option';
 function cardTemplate(nodeData) {
     const cardClasses = getCardClasses(nodeData).join(' ');
 
-    const backgroundAccent = nodeData.backgroundColor === 'accent' && !nodeData.backgroundImageSrc ? 'kg-style-accent' : ''; // don't apply accent style if there's a background image
+    const backgroundAccent = getAccentClass(nodeData); // don't apply accent style if there's a background image
     const buttonAccent = nodeData.buttonColor === 'accent' ? 'kg-style-accent' : '';
     const buttonStyle = nodeData.buttonColor !== 'accent' ? `background-color: ${nodeData.buttonColor};` : ``;
     const alignment = nodeData.alignment === 'center' ? 'kg-align-center' : '';
     const backgroundImageStyle = nodeData.backgroundColor !== 'accent' && (!nodeData.backgroundImageSrc || nodeData.layout === 'split') ? `background-color: ${nodeData.backgroundColor}` : '';
-    const useTextColor = !nodeData.backgroundColor === 'transparent';
 
     const imgTemplate = nodeData.backgroundImageSrc ? `
         <picture><img class="kg-signup-card-image" src="${nodeData.backgroundImageSrc}" alt="" /></picture>
@@ -26,10 +25,10 @@ function cardTemplate(nodeData) {
                     <span class="kg-signup-card-button-loading">${loadingIcon()}</span>
                 </button>
             </div>
-            <div class="kg-signup-card-success" ${useTextColor ? `style="color: ${nodeData.textColor};` : ''}>
+            <div class="kg-signup-card-success" ${nodeData.textColor ? `style="color: ${nodeData.textColor};"` : ''}>
                 ${nodeData.successMessage || 'Thanks! Now check your email to confirm.'}
             </div>
-            <div class="kg-signup-card-error" ${useTextColor ? `style="color: ${nodeData.textColor};` : ''} data-members-error></div>
+            <div class="kg-signup-card-error" ${nodeData.textColor ? `style="color: ${nodeData.textColor};"` : ''} data-members-error></div>
         </form>
         `;
 
@@ -39,10 +38,10 @@ function cardTemplate(nodeData) {
             <div class="kg-signup-card-content">
                 ${nodeData.layout === 'split' ? imgTemplate : ''}
                 <div class="kg-signup-card-text ${alignment}">
-                    <h2 class="kg-signup-card-heading" ${useTextColor ? `style="color: ${nodeData.textColor};` : ''}>${nodeData.header}</h2>
-                    <p class="kg-signup-card-subheading" ${useTextColor ? `style="color: ${nodeData.textColor};` : ''}>${nodeData.subheader}</p>
+                    <h2 class="kg-signup-card-heading" ${nodeData.textColor ? `style="color: ${nodeData.textColor};"` : ''}>${nodeData.header}</h2>
+                    <p class="kg-signup-card-subheading" ${nodeData.textColor ? `style="color: ${nodeData.textColor};"` : ''}>${nodeData.subheader}</p>
                     ${formTemplate}
-                    <p class="kg-signup-card-disclaimer" ${useTextColor ? `style="color: ${nodeData.textColor};` : ''}>${nodeData.disclaimer}</p>
+                    <p class="kg-signup-card-disclaimer" ${nodeData.textColor ? `style="color: ${nodeData.textColor};"` : ''}>${nodeData.disclaimer}</p>
                 </div>
             </div>
         </div>
@@ -150,3 +149,15 @@ export function getCardClasses(nodeData) {
 
     return cardClasses;
 }
+
+// In general, we don't want to apply the accent style if there's a background image
+//  but with the split format we display both an image and a background color
+const getAccentClass = (nodeData) => {
+    if (nodeData.layout === 'split' && nodeData.backgroundColor === 'accent') {
+        return 'kg-style-accent';
+    } else if (nodeData.layout !== 'split' && !nodeData.backgroundImageSrc && nodeData.backgroundColor === 'accent') {
+        return 'kg-style-accent';
+    } else {
+        return '';
+    }
+};
