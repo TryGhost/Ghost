@@ -19,6 +19,7 @@ module.exports = [
     require('./EmailsImporter'),
     require('./EmailBatchesImporter'),
     require('./EmailRecipientsImporter'),
+    require('./EmailRecipientFailuresImporter'),
     require('./RedirectsImporter'),
     require('./MembersClickEventsImporter'),
     require('./OffersImporter'),
