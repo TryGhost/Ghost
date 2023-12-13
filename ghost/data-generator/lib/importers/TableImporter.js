@@ -56,7 +56,7 @@ class TableImporter {
     async importForEach(models = [], amount) {
         const data = [];
 
-        debug (`Generating data for ${models.length} models for ${this.name}`);
+        debug (`Generating data for ${models.length} models x ${amount} for ${this.name}`);
         const now = Date.now();
 
         for (const model of models) {
