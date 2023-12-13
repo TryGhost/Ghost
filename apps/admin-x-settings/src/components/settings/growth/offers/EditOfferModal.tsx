@@ -262,6 +262,7 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
         preview={iframe}
+        previewToolbar={false}
         sidebar={sidebar}
         size='lg'
         testId='offer-update-modal'
