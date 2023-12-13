@@ -54,7 +54,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "vite build && tsc -p tsconfig.declaration.json",
+    "build": "concurrently \"vite build\" \"tsc -p tsconfig.declaration.json\"",
     "prepare": "yarn build",
     "test": "yarn test:types && yarn test:unit",
     "test:types": "tsc --noEmit",
@@ -100,16 +100,15 @@
   },
   "nx": {
     "targets": {
-      "build": {
+      "dev": {
         "dependsOn": [
-          "build",
-          {"projects": ["@tryghost/admin-x-design-system"], "target": "build"}
+          "^build"
         ]
       },
       "test:unit": {
         "dependsOn": [
           "test:unit",
-          {"projects": ["@tryghost/admin-x-design-system"], "target": "build"}
+          "^build"
         ]
       }
     }
