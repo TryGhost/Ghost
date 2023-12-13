@@ -15,6 +15,7 @@ const UniversalImportModal: React.FC = () => {
             backDropClick={false}
             okLabel=''
             size='sm'
+            testId='universal-import-modal'
             title='Universal import'
         >
             <div className='py-4 leading-9'>

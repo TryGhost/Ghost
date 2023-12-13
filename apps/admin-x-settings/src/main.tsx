@@ -10,7 +10,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <App
             designSystem={{darkMode: false, fetchKoenigLexical: async () => {}}}
             framework={{
-                externalNavigate: () => {},
+                externalNavigate: (link) => {
+                    window.location.href = `/external/${encodeURIComponent(JSON.stringify(link))}`;
+                },
                 ghostVersion: '5.x',
                 sentryDSN: null,
                 unsplashConfig: {} as DefaultHeaderTypes,
