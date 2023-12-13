@@ -3,26 +3,6 @@ import {globalDataRequests} from '../../utils/acceptance';
 import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Labs', async () => {
-    test('Delete all content', async ({page}) => {
-        const {lastApiRequests} = await mockApi({page, requests: {
-            ...globalDataRequests,
-            deleteAllContent: {method: 'DELETE', path: '/db/', response: {}}
-        }});
-
-        await page.goto('/');
-
-        const labsSection = page.getByTestId('labs');
-
-        await labsSection.getByRole('button', {name: 'Open'}).click();
-        await labsSection.getByRole('button', {name: 'Delete'}).click();
-
-        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Delete'}).click();
-
-        await expect(page.getByTestId('toast-success')).toContainText('All content deleted');
-
-        expect(lastApiRequests.deleteAllContent).toBeTruthy();
-    });
-
     test('Uploading/downloading redirects', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,

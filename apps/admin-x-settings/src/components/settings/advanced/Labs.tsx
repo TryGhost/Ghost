@@ -1,25 +1,19 @@
 import AlphaFeatures from './labs/AlphaFeatures';
 import BetaFeatures from './labs/BetaFeatures';
 import LabsBubbles from '../../../assets/images/labs-bg.svg';
-import MigrationOptions from './labs/MigrationOptions';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import {Button, SettingGroupHeader, Tab, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
-type LabsTab = 'labs-migration-options' | 'labs-alpha-features' | 'labs-beta-features';
+type LabsTab = 'labs-alpha-features' | 'labs-beta-features';
 
 const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
-    const [selectedTab, setSelectedTab] = useState<LabsTab>('labs-migration-options');
+    const [selectedTab, setSelectedTab] = useState<LabsTab>('labs-beta-features');
     const [isOpen, setIsOpen] = useState(false);
     const {config} = useGlobalData();
 
     const tabs = [
-        {
-            id: 'labs-migration-options',
-            title: 'Migration options',
-            contents: <MigrationOptions />
-        },
         {
             id: 'labs-beta-features',
             title: 'Beta features',
@@ -54,7 +48,7 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='labs'
         >
             {isOpen ?
-                <TabView<'labs-migration-options' | 'labs-alpha-features' | 'labs-beta-features'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+                <TabView<'labs-alpha-features' | 'labs-beta-features'> selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
                 :
                 <div className='absolute inset-0 z-0 overflow-hidden opacity-70'>
                     <img className='absolute -right-6 -top-6 dark:opacity-10' src={LabsBubbles} />
