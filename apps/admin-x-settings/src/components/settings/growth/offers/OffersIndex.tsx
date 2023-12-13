@@ -249,9 +249,9 @@ export const OffersIndexModal = () => {
                         <SortMenu
                             direction={sortDirection as 'asc' | 'desc'}
                             items={[
-                                {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added', direction: 'desc'},
-                                {id: 'name', label: 'Name', selected: sortOption === 'name', direction: 'asc'},
-                                {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions', direction: 'desc'}
+                                {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added', direction: sortDirection as 'asc' | 'desc'},
+                                {id: 'name', label: 'Name', selected: sortOption === 'name', direction: sortDirection as 'asc' | 'desc'},
+                                {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions', direction: sortDirection as 'asc' | 'desc'}
                             ]}
                             position='right'
                             onDirectionChange={(selectedDirection) => {
