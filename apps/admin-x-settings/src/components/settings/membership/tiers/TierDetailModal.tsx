@@ -3,7 +3,7 @@ import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './TierDetailPreview';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Button, ButtonProps, Checkbox, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
+import {Button, ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Hint, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
@@ -364,15 +364,12 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                 <TierDetailPreview isFreeTier={isFreeTier} tier={formState} />
 
                 {hasPortalImprovements &&
-                    <Form className=' mt-3' gap='none'>
-                        <Checkbox
-                            checked={formState.visibility === 'public'}
-                            hint='You can always change this in portal settings' label='Show tier in portal for new signups'
-                            value='fakeShow'
-                            onChange={(checked) => {
-                                updateForm(state => ({...state, visibility: checked ? 'public' : 'none'}));
-                            }}
-                        ></Checkbox>
+                    <Form className=' mt-0' gap='none'>
+                        <Hint className=''>
+                            <p className='inline-block'>{(formState.visibility === 'public') ? 'Visible' : 'Not visible'} at signup. You can change this in {tier ? <Button className='text-xs font-normal' color='green' label='Portal settings' link onClick={() => {
+                                updateRoute('portal/edit');
+                            }}/> : <span className='font-semibold'>Portal settings</span>}.</p>
+                        </Hint>
                     </Form>
                 }
             </div>
