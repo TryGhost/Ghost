@@ -156,9 +156,8 @@ const SignupOptions: React.FC<{
                     ]}
                     title='Prices available at signup'
                 />
-                {hasPortalImprovements &&
+                {(hasPortalImprovements && (portalPlans.includes('yearly') && portalPlans.includes('monthly'))) &&
                     <Select
-                        disabled={(portalPlans.includes('yearly') && portalPlans.includes('monthly')) ? false : true}
                         options={defaultPlanOptions}
                         selectedOption={defaultPlanOptions.find(option => option.value === portalDefaultPlan)}
                         title='Price preselected at signup'
