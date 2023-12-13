@@ -8,6 +8,7 @@ import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getTiersCadences} from '../../../../utils/getTiersCadences';
 import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
+import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useMemo, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useModal} from '@ebay/nice-modal-react';
@@ -364,6 +365,8 @@ const AddOfferModal = () => {
         }
     });
 
+    const {data: {offers: allOffers = []} = {}} = useBrowseOffers();
+
     const {formState, updateForm, handleSave, saveState, okProps, validate, errors, clearError} = useForm({
         initialState: {
             disableBackground: false,
@@ -592,7 +595,11 @@ const AddOfferModal = () => {
     }, [hasOffers, modal, updateRoute]);
 
     const cancelAddOffer = () => {
-        updateRoute('offers/edit');
+        if (allOffers.length > 0) {
+            updateRoute('offers/edit');
+        } else {
+            updateRoute('offers');
+        }
     };
 
     const overrides : offerPortalPreviewUrlTypes = useMemo(() => {
