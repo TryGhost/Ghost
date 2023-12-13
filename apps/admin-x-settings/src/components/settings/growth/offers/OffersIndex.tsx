@@ -14,6 +14,7 @@ import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useModal} from '@ebay/nice-modal-react';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSortingState} from '../../../providers/SettingsAppProvider';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
@@ -113,9 +114,14 @@ export const OffersIndexModal = () => {
         {id: 'active', title: 'Active'},
         {id: 'archived', title: 'Archived'}
     ];
+
+    const {sortingState, setSortingState} = useSortingState();
+    const offersSorting = sortingState?.find(sorting => sorting.type === 'offers');
+
     const [selectedTab, setSelectedTab] = useState('active');
-    const [sortOption, setSortOption] = useState('date-added');
-    const [sortDirection, setSortDirection] = useState('desc');
+
+    const sortOption = offersSorting?.option || 'date-added';
+    const sortDirection = offersSorting?.direction || 'desc';
 
     useEffect(() => {
         if (!hasOffers) {
@@ -250,10 +256,18 @@ export const OffersIndexModal = () => {
                             position='right'
                             onDirectionChange={(selectedDirection) => {
                                 const newDirection = selectedDirection === 'asc' ? 'desc' : 'asc';
-                                setSortDirection(newDirection);
+                                setSortingState?.([{
+                                    type: 'offers',
+                                    option: sortOption,
+                                    direction: newDirection
+                                }]);
                             }}
                             onSortChange={(selectedOption) => {
-                                setSortOption(selectedOption);
+                                setSortingState?.([{
+                                    type: 'offers',
+                                    option: selectedOption,
+                                    direction: sortDirection
+                                }]);
                             }}
                         />
                     </div>
