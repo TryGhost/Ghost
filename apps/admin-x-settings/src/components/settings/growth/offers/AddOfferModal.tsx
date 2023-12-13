@@ -663,6 +663,7 @@ const AddOfferModal = () => {
         okColor={okProps.color}
         okLabel='Publish'
         preview={iframe}
+        previewToolbar={false}
         sidebar={sidebar}
         size='lg'
         testId='add-offer-modal'
