@@ -415,7 +415,7 @@ export default class LexicalEditorController extends Controller {
 
     @action
     handleFeatureImageCaptionBlur() {
-        if (this.post.isDraft) {
+        if (this.post?.isDraft) {
             this.autosaveTask.perform();
         }
     }
