@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {expectExternalLink, mockApi} from '@tryghost/admin-x-framework/test/acceptance';
+import {expectExternalNavigate, mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 import {globalDataRequests} from '../../utils/acceptance';
 
 test.describe('Migration tools', async () => {
@@ -13,17 +13,17 @@ test.describe('Migration tools', async () => {
         const migrationSection = page.getByTestId('migrationtools');
 
         await migrationSection.getByRole('button', {name: 'Substack'}).click();
-        await expectExternalLink(page, {route: '/migrate/substack'});
+        await expectExternalNavigate(page, {route: '/migrate/substack'});
 
         await page.goto('/');
 
         await migrationSection.getByRole('button', {name: 'Medium'}).click();
-        await expectExternalLink(page, {route: '/migrate/medium'});
+        await expectExternalNavigate(page, {route: '/migrate/medium'});
 
         await page.goto('/');
 
         await migrationSection.getByRole('button', {name: 'Mailchimp'}).click();
-        await expectExternalLink(page, {route: '/migrate/mailchimp'});
+        await expectExternalNavigate(page, {route: '/migrate/mailchimp'});
     });
 
     test('Universal import', async ({page}) => {

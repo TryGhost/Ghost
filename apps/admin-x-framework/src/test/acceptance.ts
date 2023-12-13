@@ -259,6 +259,6 @@ export async function testUrlValidation(input: Locator, textToEnter: string, exp
     }
 };
 
-export async function expectExternalLink(page: Page, link: Partial<ExternalLink>) {
+export async function expectExternalNavigate(page: Page, link: Partial<ExternalLink>) {
     await page.waitForURL(`/external/${encodeURIComponent(JSON.stringify({isExternal: true, ...link}))}`);
 };
