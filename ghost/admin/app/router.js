@@ -71,7 +71,9 @@ Router.map(function () {
         });
     });
 
-    this.route('migrate');
+    this.route('migrate', function () {
+        this.route('migrate', {path: '/*platform'});
+    });
 
     this.route('members', function () {
         this.route('import');
