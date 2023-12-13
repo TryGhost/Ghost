@@ -18,7 +18,7 @@ export default function EmailSuppressedPage() {
                 <CloseButton />
             </header>
 
-            <div class="gh-longform">
+            <div className="gh-longform">
                 <h3>{t('Why has my email been disabled?')}</h3>
                 <p>{t('Newsletters can be disabled on your account for two reasons: A previous email was marked as spam, or attempting to send an email resulted in a permanent failure (bounce).')}</p>
                 <h4>{t('Spam complaints')}</h4>

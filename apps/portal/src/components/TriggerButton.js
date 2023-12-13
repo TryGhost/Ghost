@@ -9,7 +9,7 @@ import {ReactComponent as ButtonIcon3} from '../images/icons/button-icon-3.svg';
 import {ReactComponent as ButtonIcon4} from '../images/icons/button-icon-4.svg';
 import {ReactComponent as ButtonIcon5} from '../images/icons/button-icon-5.svg';
 import TriggerButtonStyle from './TriggerButton.styles';
-import {isInviteOnlySite} from '../utils/helpers';
+import {isInviteOnlySite, isSigninAllowed} from '../utils/helpers';
 import {hasMode} from '../utils/check-mode';
 
 const ICON_MAPPING = {
@@ -20,7 +20,7 @@ const ICON_MAPPING = {
     'icon-5': ButtonIcon5
 };
 
-const Styles = ({brandColor, hasText}) => {
+const Styles = ({hasText}) => {
     const frame = {
         ...(!hasText ? {width: '105px'} : {}),
         ...(hasMode(['preview']) ? {opacity: 1} : {})
@@ -164,12 +164,21 @@ class TriggerButtonContent extends React.Component {
 
     onToggle() {
         const {showPopup, member, site} = this.context;
+
         if (showPopup) {
             this.context.onAction('closePopup');
-        } else {
-            const loggedOutPage = isInviteOnlySite({site}) ? 'signin' : 'signup';
-            const page = member ? 'accountHome' : loggedOutPage;
+            return;
+        }
+
+        if (member) {
+            this.context.onAction('openPopup', {page: 'accountHome'});
+            return;
+        }
+
+        if (isSigninAllowed({site})) {
+            const page = isInviteOnlySite({site}) ? 'signin' : 'signup';
             this.context.onAction('openPopup', {page});
+            return;
         }
     }
 
@@ -240,10 +249,11 @@ export default class TriggerButton extends React.Component {
     }
 
     render() {
-        const {portal_button: portalButton} = this.context.site;
+        const site = this.context.site;
+        const {portal_button: portalButton} = site;
         const {showPopup} = this.context;
 
-        if (!portalButton || hasMode(['offerPreview'])) {
+        if (!portalButton || !isSigninAllowed({site}) || hasMode(['offerPreview'])) {
             return null;
         }
 

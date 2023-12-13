@@ -3,6 +3,7 @@ import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import PreviewModal from './modals/preview';
 import PublishFlowModal from './modals/publish-flow';
 import PublishOptionsResource from 'ghost-admin/helpers/publish-options';
+import TkReminderModal from './modals/tk-reminder';
 import UpdateFlowModal from './modals/update-flow';
 import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
@@ -44,6 +45,16 @@ export default class PublishManagement extends Component {
         this.updateFlowModal?.close();
 
         const isValid = await this._validatePost();
+
+        if (this.args.tkCount > 0) {
+            const ignoreTks = await this.modals.open(TkReminderModal, {
+                tkCount: this.args.tkCount
+            });
+
+            if (ignoreTks !== true) {
+                return;
+            }
+        }
 
         if (isValid && !this.publishFlowModal || this.publishFlowModal?.isClosing) {
             this.publishOptions.resetPastScheduledAt();
@@ -169,7 +180,7 @@ export default class PublishManagement extends Component {
         const willEmailImmediately = this.publishOptions.willEmailImmediately;
 
         // clean up blank editor cards
-        // apply cloned mobiledoc
+        // apply cloned lexical
         // apply scratch values
         // generate slug if needed (should never happen - publish flow can't be opened on new posts)
         yield this.args.beforePublish();

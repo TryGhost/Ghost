@@ -1,5 +1,6 @@
 /**
  * @typedef {object} MentionCreatedEventData
+ * @property {import('./Mention')} mention
  */
 
 module.exports = class MentionCreatedEvent {

@@ -18,7 +18,8 @@ describe('MemberStripeCustomer Model', function run() {
             const context = testUtils.context.admin;
 
             const member = await Member.add({
-                email: 'test@test.test'
+                email: 'test@test.test',
+                email_disabled: false
             });
 
             const product = await Product.add({
@@ -83,7 +84,8 @@ describe('MemberStripeCustomer Model', function run() {
         it('Is correctly mapped to the member', async function () {
             const context = testUtils.context.admin;
             const member = await Member.add({
-                email: 'test@test.member'
+                email: 'test@test.member',
+                email_disabled: false
             }, context);
 
             await MemberStripeCustomer.add({
@@ -110,7 +112,8 @@ describe('MemberStripeCustomer Model', function run() {
         it('Cascades to members_stripe_customers_subscriptions', async function () {
             const context = testUtils.context.admin;
             const member = await Member.add({
-                email: 'test@test.member'
+                email: 'test@test.member',
+                email_disabled: false
             }, context);
 
             await MemberStripeCustomer.add({

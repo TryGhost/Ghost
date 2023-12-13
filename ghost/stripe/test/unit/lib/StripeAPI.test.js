@@ -209,8 +209,8 @@ describe('StripeAPI', function () {
                                 id: 'recent_customer_id',
                                 subscriptions: {
                                     data: [
-                                        {created: 1000},
-                                        {created: 9000}
+                                        {current_period_end: 1000},
+                                        {current_period_end: 9000}
                                     ]
                                 }
                             },
@@ -224,7 +224,7 @@ describe('StripeAPI', function () {
                                 id: 'old_customer_id',
                                 subscriptions: {
                                     data: [
-                                        {created: 5000}
+                                        {current_period_end: 5000}
                                     ]
                                 }
                             }
@@ -248,6 +248,39 @@ describe('StripeAPI', function () {
 
                 should.equal(stripeCustomerId, 'recent_customer_id');
             });
+        });
+    });
+
+    describe('cancelSubscriptionTrial', function () {
+        const mockSubscription = {
+            id: 'sub_123'
+        };
+        beforeEach(function () {
+            mockStripe = {
+                subscriptions: {
+                    update: sinon.stub().resolves(mockSubscription)
+                }
+            };
+            const mockStripeConstructor = sinon.stub().returns(mockStripe);
+            StripeAPI.__set__('Stripe', mockStripeConstructor);
+            api.configure({
+                secretKey: ''
+            });
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('cancels a subscription trial', async function () {
+            const result = await api.cancelSubscriptionTrial(mockSubscription.id);
+
+            should.equal(mockStripe.subscriptions.update.callCount, 1);
+
+            should.equal(mockStripe.subscriptions.update.args[0][0], mockSubscription.id);
+            should.deepEqual(mockStripe.subscriptions.update.args[0][1], {trial_end: 'now'});
+
+            should.deepEqual(result, mockSubscription);
         });
     });
 });

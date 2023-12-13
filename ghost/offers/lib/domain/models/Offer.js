@@ -11,6 +11,9 @@ const OfferType = require('./OfferType');
 const OfferDuration = require('./OfferDuration');
 const OfferCurrency = require('./OfferCurrency');
 const OfferStatus = require('./OfferStatus');
+const OfferCreatedEvent = require('../events/OfferCreatedEvent');
+const OfferCodeChangeEvent = require('../events/OfferCodeChangeEvent');
+const OfferCreatedAt = require('./OfferCreatedAt');
 
 /**
  * @typedef {object} OfferProps
@@ -27,6 +30,8 @@ const OfferStatus = require('./OfferStatus');
  * @prop {OfferStatus} status
  * @prop {OfferTier} tier
  * @prop {number} redemptionCount
+ * @prop {string} createdAt
+ * @prop {string|null} lastRedeemed
  */
 
 /**
@@ -45,6 +50,8 @@ const OfferStatus = require('./OfferStatus');
  * @prop {string} status
  * @prop {number} redemptionCount
  * @prop {TierProps|OfferTier} tier
+ * @prop {Date} created_at
+ * @prop {Date|null} last_redeemed
  */
 
 /**
@@ -100,6 +107,7 @@ class OfferTier {
 }
 
 class Offer {
+    events = [];
     get id() {
         return this.props.id.toHexString();
     }
@@ -176,6 +184,14 @@ class Offer {
         return !!this.options.isNew;
     }
 
+    get createdAt() {
+        return this.props.createdAt;
+    }
+
+    get lastRedeemed() {
+        return this.props.lastRedeemed;
+    }
+
     /**
      * @param {OfferCode} code
      * @param {UniqueChecker} uniqueChecker
@@ -195,6 +211,13 @@ class Offer {
                 message: `Offer 'code' must be unique. Please change and try again.`
             });
         }
+
+        this.events.push(OfferCodeChangeEvent.create({
+            offerId: this.id,
+            previousCode: this.props.code,
+            currentCode: code
+        }));
+
         this.changed.code = this.props.code;
         this.props.code = code;
     }
@@ -232,6 +255,11 @@ class Offer {
             /** @type OfferCode */
             code: null
         };
+        if (options.isNew) {
+            this.events.push(OfferCreatedEvent.create({
+                offer: this
+            }));
+        }
     }
 
     /**
@@ -260,6 +288,8 @@ class Offer {
         const cadence = OfferCadence.create(data.cadence);
         const duration = OfferDuration.create(data.duration, data.duration_in_months);
         const status = OfferStatus.create(data.status || 'active');
+        const createdAt = isNew ? OfferCreatedAt.create() : OfferCreatedAt.create(data.created_at);
+        const lastRedeemed = data.last_redeemed ? new Date(data.last_redeemed).toISOString() : null;
 
         if (isNew && data.redemptionCount !== undefined) {
             // TODO correct error
@@ -325,7 +355,9 @@ class Offer {
             currency,
             tier,
             redemptionCount,
-            status
+            status,
+            createdAt,
+            lastRedeemed
         }, {isNew});
     }
 }

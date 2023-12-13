@@ -1,31 +1,69 @@
-import MultiSelect, {MultiSelectOption} from '../../../admin-x-ds/global/form/MultiSelect';
-import React, {useContext, useEffect, useState} from 'react';
-import Select from '../../../admin-x-ds/global/form/Select';
-import SettingGroup from '../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../admin-x-ds/settings/SettingGroupContent';
+import React from 'react';
+import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {GroupBase, MultiValue} from 'react-select';
-import {ServicesContext} from '../../providers/ServiceProvider';
-import {Tier} from '../../../types/api';
-import {getOptionLabel, getPaidActiveTiers, getSettingValues} from '../../../utils/helpers';
+import {MultiSelect, MultiSelectOption, Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getOptionLabel} from '../../../utils/helpers';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
-    {value: 'all', label: 'Anyone can sign up'},
-    {value: 'invite', label: 'Only people I invite'},
-    {value: 'none', label: 'Nobody'}
+    {
+        value: 'all',
+        label: 'Anyone can sign up',
+        hint: 'All visitors will be able to subscribe and sign in'
+    },
+    {
+        value: 'invite',
+        label: 'Only people I invite',
+        hint: 'People can sign in from your site but won\'t be able to sign up'
+    },
+    {
+        value: 'none',
+        label: 'Nobody',
+        hint: 'Disable all member features, including newsletters'
+    }
 ];
 
 const DEFAULT_CONTENT_VISIBILITY_OPTIONS = [
-    {value: 'public', label: 'Public'},
-    {value: 'members', label: 'Members only'},
-    {value: 'paid', label: 'Paid-members only'},
-    {value: 'tiers', label: 'Specific tiers'}
+    {
+        value: 'public',
+        label: 'Public',
+        hint: 'All site visitors to your site, no login required'
+    },
+    {
+        value: 'members',
+        label: 'Members only',
+        hint: 'All logged-in members'
+    },
+    {
+        value: 'paid',
+        label: 'Paid-members only',
+        hint: 'Only logged-in members with an active Stripe subscription'
+    },
+    {
+        value: 'tiers',
+        label: 'Specific tiers',
+        hint: 'Members with any of the selected tiers'
+    }
 ];
 
 const COMMENTS_ENABLED_OPTIONS = [
-    {value: 'all', label: 'All members'},
-    {value: 'paid', label: 'Paid-members only'},
-    {value: 'off', label: 'Nobody'}
+    {
+        value: 'all',
+        label: 'All members',
+        hint: 'Logged-in members'
+    },
+    {
+        value: 'paid',
+        label: 'Paid-members only',
+        hint: 'Only logged-in members with an active Stripe subscription'
+    },
+    {
+        value: 'off',
+        label: 'Nobody',
+        hint: 'Disable commenting completely'
+    }
 ];
 
 const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
@@ -47,23 +85,16 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const defaultContentVisibilityLabel = getOptionLabel(DEFAULT_CONTENT_VISIBILITY_OPTIONS, defaultContentVisibility);
     const commentsEnabledLabel = getOptionLabel(COMMENTS_ENABLED_OPTIONS, commentsEnabled);
 
-    const {api} = useContext(ServicesContext);
-    const [tiers, setTiers] = useState<Tier[]>([]);
-
-    useEffect(() => {
-        api.tiers.browse().then((response) => {
-            setTiers(getPaidActiveTiers(response.tiers));
-        });
-    }, [api]);
+    const {data: {tiers} = {}} = useBrowseTiers();
 
     const tierOptionGroups: GroupBase<MultiSelectOption>[] = [
         {
             label: 'Active Tiers',
-            options: tiers.filter(({active}) => active).map(tier => ({value: tier.id, label: tier.name}))
+            options: tiers?.filter(({active}) => active).map(tier => ({value: tier.id, label: tier.name})) || []
         },
         {
             label: 'Archived Tiers',
-            options: tiers.filter(({active}) => !active).map(tier => ({value: tier.id, label: tier.name}))
+            options: tiers?.filter(({active}) => !active).map(tier => ({value: tier.id, label: tier.name})) || []
         }
     ];
 
@@ -102,25 +133,28 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <Select
                 hint='Who should be able to subscribe to your site?'
                 options={MEMBERS_SIGNUP_ACCESS_OPTIONS}
-                selectedOption={membersSignupAccess}
+                selectedOption={MEMBERS_SIGNUP_ACCESS_OPTIONS.find(option => option.value === membersSignupAccess)}
+                testId='subscription-access-select'
                 title="Subscription access"
-                onSelect={(value) => {
-                    updateSetting('members_signup_access', value);
+                onSelect={(option) => {
+                    updateSetting('members_signup_access', option?.value || null);
                 }}
             />
             <Select
                 hint='When a new post is created, who should have access?'
                 options={DEFAULT_CONTENT_VISIBILITY_OPTIONS}
-                selectedOption={defaultContentVisibility}
+                selectedOption={DEFAULT_CONTENT_VISIBILITY_OPTIONS.find(option => option.value === defaultContentVisibility)}
+                testId='default-post-access-select'
                 title="Default post access"
-                onSelect={(value) => {
-                    updateSetting('default_content_visibility', value);
+                onSelect={(option) => {
+                    updateSetting('default_content_visibility', option?.value || null);
                 }}
             />
             {defaultContentVisibility === 'tiers' && (
                 <MultiSelect
                     color='black'
                     options={tierOptionGroups.filter(group => group.options.length > 0)}
+                    testId='tiers-select'
                     title='Select tiers'
                     values={selectedTierOptions}
                     clearBg
@@ -130,21 +164,22 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <Select
                 hint='Who can comment on posts?'
                 options={COMMENTS_ENABLED_OPTIONS}
-                selectedOption={commentsEnabled}
+                selectedOption={COMMENTS_ENABLED_OPTIONS.find(option => option.value === commentsEnabled)}
+                testId='commenting-select'
                 title="Commenting"
-                onSelect={(value) => {
-                    updateSetting('comments_enabled', value);
+                onSelect={(option) => {
+                    updateSetting('comments_enabled', option?.value || null);
                 }}
             />
         </SettingGroupContent>
     );
 
     return (
-        <SettingGroup
+        <TopLevelGroup
             description='Set up default access options for subscription and posts'
             isEditing={isEditing}
             keywords={keywords}
-            navid='access'
+            navid='members'
             saveState={saveState}
             testId='access'
             title='Access'
@@ -153,8 +188,8 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             {isEditing ? form : values}
-        </SettingGroup>
+        </TopLevelGroup>
     );
 };
 
-export default Access;
+export default withErrorBoundary(Access, 'Access');

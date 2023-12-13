@@ -34,7 +34,7 @@ function handleTokenUrl() {
     }
 }
 
-function setup({siteUrl}) {
+function setup() {
     addRootDiv();
     handleTokenUrl();
 }

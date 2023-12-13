@@ -15,14 +15,14 @@ class StaffService {
 
         const Emails = require('./StaffServiceEmails');
 
-        /** @private */
         this.emails = new Emails({
             logging,
             models,
             mailer,
             settingsHelpers,
             settingsCache,
-            urlUtils
+            urlUtils,
+            labs
         });
     }
 

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'assert/strict';
 import {InMemoryRepository} from '../src/index';
 
 type SimpleEntity = {
@@ -6,6 +6,7 @@ type SimpleEntity = {
     deleted: boolean;
     name: string;
     age: number;
+    birthday: string;
 }
 
 class SimpleInMemoryRepository extends InMemoryRepository<string, SimpleEntity> {
@@ -15,7 +16,8 @@ class SimpleInMemoryRepository extends InMemoryRepository<string, SimpleEntity> 
     protected toPrimitive(entity: SimpleEntity): object {
         return {
             name: entity.name,
-            age: entity.age
+            age: entity.age,
+            birthday: entity.birthday
         };
     }
 }
@@ -29,7 +31,8 @@ describe('InMemoryRepository', function () {
                 id: '1',
                 deleted: false,
                 name: 'John',
-                age: 30
+                age: 30,
+                birthday: new Date('2000-01-01').toISOString()
             };
 
             await repository.save(entity);
@@ -48,7 +51,8 @@ describe('InMemoryRepository', function () {
                 id: '2',
                 deleted: false,
                 name: 'John',
-                age: 24
+                age: 24,
+                birthday: new Date('2000-01-01').toISOString()
             };
 
             await repository.save(entity);
@@ -72,7 +76,8 @@ describe('InMemoryRepository', function () {
                 id: '3',
                 deleted: false,
                 name: 'Egg',
-                age: 180
+                age: 180,
+                birthday: new Date('2010-01-01').toISOString()
             };
 
             await repository.save(entity);
@@ -95,17 +100,20 @@ describe('InMemoryRepository', function () {
             id: '1',
             deleted: false,
             name: 'Kym',
-            age: 24
+            age: 24,
+            birthday: new Date('2000-01-01').toISOString()
         }, {
             id: '2',
             deleted: false,
             name: 'John',
-            age: 30
+            age: 30,
+            birthday: new Date('2000-01-01').toISOString()
         }, {
             id: '3',
             deleted: false,
             name: 'Kevin',
-            age: 5
+            age: 5,
+            birthday: new Date('2000-01-01').toISOString()
         }];
 
         for (const entity of entities) {
@@ -126,29 +134,34 @@ describe('InMemoryRepository', function () {
         assert(result[2].age === 5);
     });
 
-    it('Can save and retrieve a page of entities', async function () {
+    it('Can save and retrieve a filtered page of entities', async function () {
         const repository = new SimpleInMemoryRepository();
-        const entities = [{
-            id: '1',
-            deleted: false,
-            name: 'John',
-            age: 30
-        }, {
-            id: '2',
-            deleted: false,
-            name: 'Kym',
-            age: 24
-        }, {
-            id: '3',
-            deleted: false,
-            name: 'Egg',
-            age: 180
-        }, {
-            id: '4',
-            deleted: false,
-            name: 'Kevin',
-            age: 36
-        }];
+        const entities = [
+            {
+                id: '3',
+                deleted: false,
+                name: 'Egg',
+                age: 180,
+                birthday: new Date('2010-01-01').toISOString()
+            }, {
+                id: '1',
+                deleted: false,
+                name: 'John',
+                age: 30,
+                birthday: new Date('2000-01-01').toISOString()
+            }, {
+                id: '2',
+                deleted: false,
+                name: 'Kym',
+                age: 24,
+                birthday: new Date('2000-01-01').toISOString()
+            }, {
+                id: '4',
+                deleted: false,
+                name: 'Kevin',
+                age: 36,
+                birthday: new Date('2010-01-01').toISOString()
+            }];
 
         for (const entity of entities) {
             await repository.save(entity);
@@ -171,5 +184,20 @@ describe('InMemoryRepository', function () {
         assert(result);
         assert(result.length === 3);
         assert(count === 1);
+
+        const resultBirthdayFilter = await repository.getPage({
+            filter: 'birthday:>2005-01-01T00:00:00.000Z',
+            page: 1,
+            limit: 3,
+            order: [{
+                field: 'age',
+                direction: 'asc'
+            }]
+        });
+
+        assert(resultBirthdayFilter);
+        assert.equal(resultBirthdayFilter.length, 2);
+        assert.equal(resultBirthdayFilter[0].name, 'Kevin');
+        assert.equal(resultBirthdayFilter[1].name, 'Egg');
     });
 });

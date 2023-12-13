@@ -90,6 +90,23 @@ describe('Frontend Routing: Preview Routes', function () {
             .expect(assertCorrectFrontendHeaders);
     });
 
+    it('should redirect sent email-only posts to /email/:uuid from /p/:uuid', async function () {
+        // difficult to build a sent newsletter using the data generator
+        const emailedPost = await testUtils.fixtures.insertPosts([{
+            title: 'test newsletter',
+            status: 'sent',
+            posts_meta: {
+                email_only: true
+            }
+        }]);
+
+        await request.get(`/p/${emailedPost[0].get('uuid')}/`)
+            .expect(301)
+            .expect('Location', `/email/${emailedPost[0].get('uuid')}/`)
+            .expect('Cache-Control', testUtils.cacheRules.year)
+            .expect(assertCorrectFrontendHeaders);
+    });
+
     it('404s unknown uuids', async function () {
         request.get('/p/aac6b4f6-e1f3-406c-9247-c94a0496d39f/')
             .expect(404)

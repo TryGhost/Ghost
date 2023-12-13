@@ -5,7 +5,7 @@ import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
 import {MultipleProductsPlansSection} from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
-import {allowCompMemberUpgrade, formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePrice, getMemberSubscription, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {allowCompMemberUpgrade, formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
@@ -50,7 +50,7 @@ function getConfirmationPageTitle({confirmationType, t}) {
     }
 }
 
-const Header = ({onBack, showConfirmation, confirmationType}) => {
+const Header = ({showConfirmation, confirmationType}) => {
     const {member, t} = useContext(AppContext);
     let title = isPaidMember({member}) ? 'Change plan' : 'Choose a plan';
     if (showConfirmation) {
@@ -87,7 +87,7 @@ const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandCo
         <div className="gh-portal-expire-container">
             <ActionButton
                 dataTestId={'cancel-subscription'}
-                onClick={(e) => {
+                onClick={() => {
                     onCancelSubscription({
                         subscriptionId: subscription.id,
                         cancelAtPeriodEnd: true
@@ -222,12 +222,14 @@ const ChangePlanSection = ({plans, selectedPlan, onPlanSelect, onCancelSubscript
     );
 };
 
-function PlansOrProductSection({showLabel, plans, selectedPlan, onPlanSelect, onPlanCheckout, changePlan = false}) {
+function PlansOrProductSection({selectedPlan, onPlanSelect, onPlanCheckout, changePlan = false}) {
     const {site, member} = useContext(AppContext);
     const products = getUpgradeProducts({site, member});
+    const isComplimentary = isComplimentaryMember({member});
+    const activeProduct = getMemberActiveProduct({member, site});
     return (
         <MultipleProductsPlansSection
-            products={products}
+            products={products.length > 0 || isComplimentary || !activeProduct ? products : [activeProduct]}
             selectedPlan={selectedPlan}
             changePlan={changePlan}
             onPlanSelect={onPlanSelect}
@@ -352,7 +354,7 @@ export default class AccountPlanPage extends React.Component {
         this.context.onAction('signout');
     }
 
-    onBack(e) {
+    onBack() {
         if (this.state.showConfirmation) {
             this.cancelConfirmPage();
         } else {
@@ -417,7 +419,7 @@ export default class AccountPlanPage extends React.Component {
         }
     };
 
-    onCancelSubscription({subscriptionId, cancelAtPeriodEnd}) {
+    onCancelSubscription({subscriptionId}) {
         const {member} = this.context;
         const subscription = getSubscriptionFromId({subscriptionId, member});
         const subscriptionPlan = getPriceFromSubscription({subscription});

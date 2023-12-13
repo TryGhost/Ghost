@@ -213,7 +213,7 @@ describe('Comments API', function () {
 
             it('Can browse all comments of a post', async function () {
                 await membersAgent
-                    .get(`/api/comments/?filter=post_id:${postId}`)
+                    .get(`/api/comments/?filter=post_id:'${postId}'`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
                         etag: anyEtag
@@ -308,7 +308,7 @@ describe('Comments API', function () {
 
             it('Can browse all comments of a post', async function () {
                 await membersAgent
-                    .get(`/api/comments/?filter=post_id:${postId}`)
+                    .get(`/api/comments/?filter=post_id:'${postId}'`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
                         etag: anyEtag
@@ -420,7 +420,7 @@ describe('Comments API', function () {
             it('Can reply to a comment with www domain', async function () {
                 // Test that the www. is stripped from the default
                 configUtils.set('url', 'http://www.domain.example/');
-                await testCanReply(member, {from: 'noreply@domain.example'});
+                await testCanReply(member, {from: '"Ghost" <noreply@domain.example>'});
             });
 
             it('Can reply to a comment with custom support email', async function () {
@@ -434,7 +434,7 @@ describe('Comments API', function () {
                     }
                     return getStub.wrappedMethod.call(settingsCache, key, options);
                 });
-                await testCanReply(member, {from: 'support@example.com'});
+                await testCanReply(member, {from: '"Ghost" <support@example.com>'});
             });
 
             it('Can like a comment', async function () {
@@ -616,7 +616,7 @@ describe('Comments API', function () {
                     .expectEmptyBody();
 
                 // Check report
-                const reports = await models.CommentReport.findAll({filter: 'comment_id:' + commentId});
+                const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + commentId + '\''});
                 reports.models.length.should.eql(1);
 
                 const report = reports.models[0];
@@ -641,7 +641,7 @@ describe('Comments API', function () {
                     .expectEmptyBody();
 
                 // Check report should be the same (no extra created)
-                const reports = await models.CommentReport.findAll({filter: 'comment_id:' + commentId});
+                const reports = await models.CommentReport.findAll({filter: 'comment_id:\'' + commentId + '\''});
                 reports.models.length.should.eql(1);
 
                 const report = reports.models[0];
@@ -651,7 +651,7 @@ describe('Comments API', function () {
             });
 
             it('Can edit a comment on a post', async function () {
-                const {body} = await await membersAgent
+                const {body} = await membersAgent
                     .put(`/api/comments/${commentId}`)
                     .body({comments: [{
                         html: 'Updated comment'
@@ -679,7 +679,7 @@ describe('Comments API', function () {
                     }]});
 
                 const {body} = await membersAgent
-                    .get(`/api/comments/?filter=post_id:${anotherPostId}`);
+                    .get(`/api/comments/?filter=post_id:'${anotherPostId}'`);
 
                 assert(!body.comments.find(comment => comment.id === commentId), 'The comment should not have moved post');
             });

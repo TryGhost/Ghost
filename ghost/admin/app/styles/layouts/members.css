@@ -1,8 +1,8 @@
 /* Global
 /* ----------------------------------------- */
 :root {
-    --member-import-table-outline: color-mod(var(--darkgrey) a(12%) s(+40%));
-    --member-import-table-border: color-mod(var(--darkgrey) a(7%) s(+40%));
+    --member-import-table-outline: var(--whitegrey-d2);
+    --member-import-table-border: var(--whitegrey-d1);
 }
 
 /* Members avatar
@@ -1500,6 +1500,7 @@ p.gh-members-import-errordetailtext {
 .gh-members-import-table {
     position: relative;
     margin-bottom: 1px;
+    border-collapse: separate;
 }
 
 .gh-members-import-table::before {
@@ -1527,8 +1528,10 @@ p.gh-members-import-errordetailtext {
 }
 
 .gh-members-import-table th {
+    position: sticky;
+    top: 0;
     padding: 3px 8px;
-    background: color-mod(var(--darkgrey) a(5%) s(+50%));
+    background: var(--whitegrey-l2);
     border-left: 1px solid var(--member-import-table-border);
     border-top: 1px solid var(--member-import-table-outline);
     border-bottom: 1px solid var(--member-import-table-border);
@@ -1859,22 +1862,8 @@ p.gh-members-import-errordetail:first-of-type {
     width: 100%;
 }
 
-.gh-email-design-typography .gh-setting-dropdown {
-    margin: 0;
-    padding: 0 8px 0 8px;
-}
-
-.gh-email-design-typography-wrapper.header .gh-setting-dropdown {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-}
-
 .gh-email-design-typography-wrapper.header .ember-power-select-status-icon {
     right: 16px !important;
-}
-
-.gh-email-design-typography .gh-setting-dropdown-list .ember-power-select-option {
-    padding: 2px 8px;
 }
 
 .gh-email-design-typography-wrapper.header .gh-btn-group {

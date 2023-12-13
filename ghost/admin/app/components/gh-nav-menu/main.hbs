@@ -34,14 +34,16 @@
                     </li>
                     {{#if (gh-user-can-admin this.session.user)}}
                     <li class="relative">
-                        <LinkTo @route="explore" title="Ghost Explore" data-test-nav="explore">{{svg-jar "globe-simple"}} Explore</LinkTo>
+                        <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active"}} {{on "click" (fn this.toggleExploreWindow "")}} data-test-nav="explore">
+                            {{svg-jar "globe-simple"}} Explore
+                        </a>
                     </li>
                     {{/if}}
                 </ul>
                 <ul class="gh-nav-list gh-nav-manage">
                     <li class="gh-nav-list-new relative">
                         <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts"}} data-test-nav="posts">{{svg-jar "posts"}}Posts</GhLinkToCustomViewsIndex>
-                        <LinkTo @route="editor.new" @model="post" class="gh-secondary-action gh-nav-new-post" @alt="New post" title="New post" data-test-nav="new-story"><span>{{svg-jar "plus"}}</span></LinkTo>
+                        <LinkTo @route="lexical-editor.new" @model="post" class="gh-secondary-action gh-nav-new-post" @alt="New post" title="New post" data-test-nav="new-story"><span>{{svg-jar "plus"}}</span></LinkTo>
                         {{#if this.session.user.isAuthorOrContributor}}
                             {{#if this.customViews.forPosts}}
                                 <ul class="gh-nav-view-list">
@@ -94,9 +96,6 @@
                     {{#if this.showTagsNavigation}}
                         <li><LinkTo @route="tags" @current-when="tags tag tag.new" data-test-nav="tags">{{svg-jar "tag"}}Tags</LinkTo></li>
                     {{/if}}
-                    {{#if (and (gh-user-can-admin this.session.user) (feature "collections"))}}
-                        <li><LinkTo @route="collections" @current-when="collections collection collection.new" data-test-nav="collections">{{svg-jar "collections-bookmark"}}Collections</LinkTo></li>
-                    {{/if}}
                     {{#if (gh-user-can-admin this.session.user)}}
                         <li class="relative">
                             {{#if (eq this.router.currentRouteName "members.index")}}
@@ -120,10 +119,10 @@
                             </li>
                         {{/if}}
                     {{/if}}
-                    {{#if (and (gh-user-can-admin this.session.user) (feature "adminXSettings"))}}
-                            <li>
-                                <LinkTo @route="settings-x" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}} AdminX Settings</LinkTo>
-                            </li>
+                    {{#if (feature "adminXDemo")}}
+                        <li>
+                            <LinkTo @route="demo-x" @current-when="demo-x">{{svg-jar "star"}}AdminX Demo</LinkTo>
+                        </li>
                     {{/if}}
                 </ul>
 

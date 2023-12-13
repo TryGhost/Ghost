@@ -2,6 +2,7 @@ type PostData = {
     id: string;
     featured: boolean;
     published_at: Date;
+    tags: Array<{slug: string}>;
 };
 
 export class PostAddedEvent {
@@ -15,6 +16,7 @@ export class PostAddedEvent {
         this.timestamp = timestamp;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static create(data: any, timestamp = new Date()) {
         return new PostAddedEvent(data, timestamp);
     }

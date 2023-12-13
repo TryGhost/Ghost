@@ -109,6 +109,12 @@ export const GlobalStyles = `
         cursor: pointer;
     }
 
+    p a {
+        font-weight: 500;
+        color: var(--brandcolor);
+        text-decoration: none;
+    }
+
     svg {
         box-sizing: content-box;
     }
@@ -141,6 +147,7 @@ export const GlobalStyles = `
         font-size: 27px;
         margin-top: 0px;
         margin-bottom: 0.25em;
+        text-wrap: balance;
     }
 
     .gh-longform h4 {

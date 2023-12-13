@@ -7,8 +7,9 @@ import NewsletterSelectionPage from './NewsletterSelectionPage';
 import ProductsSection from '../common/ProductsSection';
 import InputForm from '../common/InputForm';
 import {ValidateInputForm} from '../../utils/form';
-import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasFreeProductPrice, hasMultipleNewsletters, hasFreeTrialTier} from '../../utils/helpers';
+import {getSiteProducts, getSitePrices, hasOnlyFreePlan, isInviteOnlySite, freeHasBenefitsOrDescription, hasOnlyFreeProduct, getFreeProductBenefits, getFreeTierDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed} from '../../utils/helpers';
 import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
+import {interceptAnchorClicks} from '../../utils/links';
 
 export const SignupPageStyles = `
 .gh-portal-back-sitetitle {
@@ -109,6 +110,7 @@ export const SignupPageStyles = `
     font-size: 1.4rem;
     font-weight: 600;
     margin-left: 4px !important;
+    margin-bottom: -1px;
 }
 
 .gh-portal-signup-message button span {
@@ -171,7 +173,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     margin-top: 0;
 }
 
-.gh-portal-invite-only-notification {
+.gh-portal-invite-only-notification, .gh-portal-members-disabled-notification {
     margin: 8px 32px 24px;
     padding: 0;
     text-align: center;
@@ -285,6 +287,10 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     color: var(--grey4);
     font-size: 1.5rem;
     line-height: 1.5em;
+}
+
+.gh-portal-signup-terms-content p {
+    margin-bottom: 0;
 }
 
 .gh-portal-error .gh-portal-signup-terms-content {
@@ -422,7 +428,7 @@ class SignupPage extends React.Component {
         e && e.preventDefault();
         // Hack: React checkbox gets out of sync with dom state with instant update
         this.timeoutId = setTimeout(() => {
-            this.setState((prevState) => {
+            this.setState(() => {
                 return {
                     plan: priceId
                 };
@@ -517,7 +523,7 @@ class SignupPage extends React.Component {
                     required={true}
                     onChange={handleCheckboxChange}
                 />
-                <span class="checkbox"></span>
+                <span className="checkbox"></span>
                 {termsText}
             </label>
         ) : termsText;
@@ -525,13 +531,6 @@ class SignupPage extends React.Component {
         const errorClassName = this.state.errors?.checkbox ? 'gh-portal-error' : '';
 
         const className = `gh-portal-signup-terms ${errorClassName}`;
-
-        const interceptAnchorClicks = (e) => {
-            if (e.target.tagName === 'A') {
-                e.preventDefault();
-                window.open(e.target.href, '_blank');
-            }
-        };
 
         return (
             <div className={className} onClick={interceptAnchorClicks}>
@@ -548,7 +547,7 @@ class SignupPage extends React.Component {
         }
 
         let label = t('Continue');
-        const showOnlyFree = pageQuery === 'free' && hasFreeProductPrice({site});
+        const showOnlyFree = pageQuery === 'free';
 
         if (hasOnlyFreePlan({site}) || showOnlyFree) {
             label = t('Sign up');
@@ -670,9 +669,24 @@ class SignupPage extends React.Component {
             );
         }
 
+        if (!isSignupAllowed({site})) {
+            return (
+                <section>
+                    <div className='gh-portal-section'>
+                        <p
+                            className='gh-portal-members-disabled-notification'
+                            data-testid="members-disabled-notification-text"
+                        >
+                            {t('Memberships unavailable, contact the owner for access.')}
+                        </p>
+                    </div>
+                </section>
+            );
+        }
+
         const freeBenefits = getFreeProductBenefits({site});
         const freeDescription = getFreeTierDescription({site});
-        const showOnlyFree = pageQuery === 'free' && hasFreeProductPrice({site});
+        const showOnlyFree = pageQuery === 'free';
         const hasOnlyFree = hasOnlyFreeProduct({site}) || showOnlyFree;
         const sticky = !showOnlyFree && (freeBenefits.length || freeDescription);
 
@@ -716,19 +730,19 @@ class SignupPage extends React.Component {
         );
     }
 
-    renderSiteLogo() {
+    renderSiteIcon() {
         const {site, pageQuery} = this.context;
+        const siteIcon = site.icon;
 
-        const siteLogo = site.icon;
-
-        const logoStyle = {};
-
-        if (siteLogo) {
-            logoStyle.backgroundImage = `url(${siteLogo})`;
+        if (siteIcon) {
             return (
-                <img className='gh-portal-signup-logo' src={siteLogo} alt={site.title} />
+                <img className='gh-portal-signup-logo' src={siteIcon} alt={site.title} />
             );
         } else if (isInviteOnlySite({site, pageQuery})) {
+            return (
+                <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
+            );
+        } else if (!isSignupAllowed({site})) {
             return (
                 <InvitationIcon className='gh-portal-icon gh-portal-icon-invitation' />
             );
@@ -741,7 +755,7 @@ class SignupPage extends React.Component {
         const siteTitle = site.title || '';
         return (
             <header className='gh-portal-signup-header'>
-                {this.renderSiteLogo()}
+                {this.renderSiteIcon()}
                 <h1 className="gh-portal-main-title" data-testid='site-title-text'>{siteTitle}</h1>
             </header>
         );
@@ -794,10 +808,6 @@ class SignupPage extends React.Component {
                     {this.renderFormHeader()}
                     {this.renderForm()}
                 </div>
-                {/* <footer className={'gh-portal-signup-footer gh-portal-logged-out-form-container ' + footerClass}>
-                    {this.renderSubmitButton()}
-                    {this.renderLoginMessage()}
-                </footer> */}
             </>
         );
     }

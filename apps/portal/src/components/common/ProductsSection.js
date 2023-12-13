@@ -1,11 +1,13 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier} from '../../utils/helpers';
+import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, getSupportAddress, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier, isComplimentaryMember} from '../../utils/helpers';
 import AppContext from '../../AppContext';
 import calculateDiscount from '../../utils/discount';
+import Interpolate from '@doist/react-interpolate';
+import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
-export const ProductsSectionStyles = ({site}) => {
+export const ProductsSectionStyles = () => {
     // const products = getSiteProducts({site});
     // const noOfProducts = products.length;
     return `
@@ -75,6 +77,17 @@ export const ProductsSectionStyles = ({site}) => {
 
         .gh-portal-priceoption-label.inactive {
             color: var(--grey8);
+        }
+
+        .gh-portal-maximum-discount {
+            font-size: 1.4rem;
+            font-weight: 400;
+            margin-left: 4px;
+            margin-bottom: -1px;
+        }
+
+        .gh-portal-btn.active .gh-portal-maximum-discount {
+            opacity: 0.5;
         }
 
         .gh-portal-products-grid {
@@ -636,7 +649,7 @@ function ProductCardPrice({product}) {
 }
 
 function FreeProductCard({products, handleChooseSignup, error}) {
-    const {site, action} = useContext(AppContext);
+    const {site, action, t} = useContext(AppContext);
     const {selectedProduct, setSelectedProduct} = useContext(ProductsContext);
 
     let cardClass = selectedProduct === 'free' ? 'gh-portal-product-card free checked' : 'gh-portal-product-card free';
@@ -707,7 +720,7 @@ function FreeProductCard({products, handleChooseSignup, error}) {
                                 onClick={(e) => {
                                     handleChooseSignup(e, 'free');
                                 }}>
-                                {((selectedProduct === 'free' && disabled) ? <LoaderIcon className='gh-portal-loadingicon' /> : 'Choose')}
+                                {((selectedProduct === 'free' && disabled) ? <LoaderIcon className='gh-portal-loadingicon' /> : t('Choose'))}
                             </button>
                             {error && <div className="gh-portal-error-message">{error}</div>}
                         </div>
@@ -719,6 +732,7 @@ function FreeProductCard({products, handleChooseSignup, error}) {
 }
 
 function ProductCardButton({selectedProduct, product, disabled, noOfProducts, trialDays}) {
+    const {t} = useContext(AppContext);
     if (selectedProduct === product.id && disabled) {
         return (
             <LoaderIcon className='gh-portal-loadingicon' />
@@ -726,10 +740,18 @@ function ProductCardButton({selectedProduct, product, disabled, noOfProducts, tr
     }
 
     if (trialDays > 0) {
-        return ('Start ' + trialDays + '-day free trial');
+        return (
+            <Interpolate
+                syntax={SYNTAX_I18NEXT}
+                string={t('Start {{amount}}-day free trial')}
+                mapping={{
+                    amount: trialDays
+                }}
+            />
+        );
     }
 
-    return (noOfProducts > 1 ? 'Choose' : 'Continue');
+    return (noOfProducts > 1 ? t('Choose') : t('Continue'));
 }
 
 function ProductCard({product, products, selectedInterval, handleChooseSignup, error}) {
@@ -813,7 +835,7 @@ function ProductCards({products, selectedInterval, handleChooseSignup, errors}) 
     });
 }
 
-function YearlyDiscount({discount, trialDays}) {
+function YearlyDiscount({discount}) {
     const {site, t} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
 
@@ -836,9 +858,17 @@ function YearlyDiscount({discount, trialDays}) {
     }
 }
 
-function ProductPriceSwitch({products, selectedInterval, setSelectedInterval}) {
+function ProductPriceSwitch({selectedInterval, setSelectedInterval, products}) {
     const {site, t} = useContext(AppContext);
     const {portal_plans: portalPlans} = site;
+    const paidProducts = products.filter(product => product.type !== 'free');
+
+    // Extract discounts from products
+    const prices = paidProducts.map(product => calculateDiscount(product.monthlyPrice?.amount, product.yearlyPrice?.amount));
+
+    // Find the highest price using Math.max
+    const highestYearlyDiscount = Math.max(...prices);
+
     if (!portalPlans.includes('monthly') || !portalPlans.includes('yearly')) {
         return null;
     }
@@ -848,8 +878,9 @@ function ProductPriceSwitch({products, selectedInterval, setSelectedInterval}) {
             <div className={'gh-portal-products-pricetoggle' + (selectedInterval === 'month' ? ' left' : '')}>
                 <button
                     data-test-button='switch-monthly'
+                    data-testid="monthly-switch"
                     className={'gh-portal-btn' + (selectedInterval === 'month' ? ' active' : '')}
-                    onClick={(e) => {
+                    onClick={() => {
                         setSelectedInterval('month');
                     }}
                 >
@@ -857,12 +888,14 @@ function ProductPriceSwitch({products, selectedInterval, setSelectedInterval}) {
                 </button>
                 <button
                     data-test-button='switch-yearly'
+                    data-testid="yearly-switch"
                     className={'gh-portal-btn' + (selectedInterval === 'year' ? ' active' : '')}
-                    onClick={(e) => {
+                    onClick={() => {
                         setSelectedInterval('year');
                     }}
                 >
                     {t('Yearly')}
+                    {(highestYearlyDiscount > 0) && <span className='gh-portal-maximum-discount'>{t('(Save {{highestYearlyDiscount}}%)', {highestYearlyDiscount})}</span>}
                 </button>
             </div>
         </div>
@@ -883,7 +916,7 @@ function getSelectedPrice({products, selectedProduct, selectedInterval}) {
     return selectedPrice;
 }
 
-function getActiveInterval({portalPlans, selectedInterval = 'year'}) {
+function getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval}) {
     if (selectedInterval === 'month' && portalPlans.includes('monthly')) {
         return 'month';
     }
@@ -892,26 +925,34 @@ function getActiveInterval({portalPlans, selectedInterval = 'year'}) {
         return 'year';
     }
 
-    if (portalPlans.includes('monthly')) {
-        return 'month';
+    if (portalDefaultPlan) {
+        if (portalDefaultPlan === 'monthly' && portalPlans.includes('monthly')) {
+            return 'month';
+        }
     }
 
     if (portalPlans.includes('yearly')) {
         return 'year';
     }
+
+    if (portalPlans.includes('monthly')) {
+        return 'month';
+    }
 }
 
 function ProductsSection({onPlanSelect, products, type = null, handleChooseSignup, errors}) {
-    const {site} = useContext(AppContext);
-    const {portal_plans: portalPlans} = site;
-    const defaultInterval = getActiveInterval({portalPlans});
-
+    const {site, member, t} = useContext(AppContext);
+    const {portal_plans: portalPlans, portal_default_plan: portalDefaultPlan} = site;
     const defaultProductId = products.length > 0 ? products[0].id : 'free';
-    const [selectedInterval, setSelectedInterval] = useState(defaultInterval);
+
+    // Note: by default we set it to null, so that it changes reactively in the preview version of Portal
+    const [selectedInterval, setSelectedInterval] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState(defaultProductId);
 
     const selectedPrice = getSelectedPrice({products, selectedInterval, selectedProduct});
-    const activeInterval = getActiveInterval({portalPlans, selectedInterval});
+    const activeInterval = getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval});
+
+    const isComplimentary = isComplimentaryMember({member});
 
     useEffect(() => {
         setSelectedProduct(defaultProductId);
@@ -926,7 +967,16 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
     }
 
     if (products.length === 0) {
-        return null;
+        if (isComplimentary) {
+            const supportAddress = getSupportAddress({site});
+            return (
+                <p style={{textAlign: 'center'}}>
+                    {t('Please contact {{supportAddress}} to adjust your complimentary subscription.', {supportAddress})}
+                </p>
+            );
+        } else {
+            return null;
+        }
     }
 
     let className = 'gh-portal-products';
@@ -1003,6 +1053,7 @@ export function ChangeProductSection({onPlanSelect, selectedPlan, products, type
                 <ProductPriceSwitch
                     selectedInterval={activeInterval}
                     setSelectedInterval={setSelectedInterval}
+                    products={products}
                 />
 
                 <div className="gh-portal-products-grid">
@@ -1022,7 +1073,7 @@ export function ChangeProductSection({onPlanSelect, selectedPlan, products, type
     );
 }
 
-function ProductDescription({product, selectedPrice, activePrice}) {
+function ProductDescription({product}) {
     if (product?.description) {
         return (
             <div className="gh-portal-product-description" data-testid="product-description">
@@ -1080,7 +1131,7 @@ function ChangeProductCard({product, onPlanSelect}) {
 
 function ChangeProductCards({products, onPlanSelect}) {
     return products.map((product) => {
-        if (product.id === 'free') {
+        if (!product || product.id === 'free') {
             return null;
         }
         return (

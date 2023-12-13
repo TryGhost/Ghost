@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 const FIELD_MAPPINGS = [
@@ -14,7 +15,13 @@ const FIELD_MAPPINGS = [
 ];
 
 export default class extends Component {
-    @tracked availableFields = FIELD_MAPPINGS;
+    @service feature;
+    @tracked availableFields = [
+        ...FIELD_MAPPINGS,
+        ...(
+            this.feature.importMemberTier ? [{label: 'Tier', value: 'import_tier'}] : []
+        )
+    ];
 
     get mapTo() {
         return this.args.mapTo;

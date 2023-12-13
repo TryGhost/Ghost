@@ -1,8 +1,7 @@
-import React from 'react';
 import {render, fireEvent} from '@testing-library/react';
 import InputField from './InputField';
 
-const setup = (overrides = {}) => {
+const setup = () => {
     const mockOnChangeFn = jest.fn();
     const props = {
         name: 'test-input',

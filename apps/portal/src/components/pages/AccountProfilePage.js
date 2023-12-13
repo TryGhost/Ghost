@@ -33,7 +33,7 @@ export default class AccountProfilePage extends React.Component {
         this.context.onAction('signout');
     }
 
-    onBack(e) {
+    onBack() {
         this.context.onAction('back');
     }
 

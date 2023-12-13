@@ -87,7 +87,7 @@ function corsOptionsDelegate(req, cb) {
  * @param {Express.Response} res
  * @param {Function} next
  */
-const handleCaching = (req, res, next) => {
+const handleCaching = function handleCaching(req, res, next) {
     const method = req.method && req.method.toUpperCase && req.method.toUpperCase();
     if (method === 'OPTIONS') {
         // @NOTE: try to add native support for dynamic 'vary' header value in 'cors' module

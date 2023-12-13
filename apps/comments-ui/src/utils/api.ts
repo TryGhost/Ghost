@@ -124,7 +124,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             browse({page, postId}: {page: number, postId: string}) {
                 firstCommentsLoadedAt = firstCommentsLoadedAt ?? new Date().toISOString();
 
-                const filter = encodeURIComponent(`post_id:${postId}+created_at:<=${firstCommentsLoadedAt}`);
+                const filter = encodeURIComponent(`post_id:'${postId}'+created_at:<=${firstCommentsLoadedAt}`);
                 const order = encodeURIComponent('created_at DESC, id DESC');
 
                 const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=5&order=${order}&filter=${filter}&page=${page}`});
@@ -144,7 +144,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 });
             },
             async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId: string; limit?: number | 'all'}) {
-                const filter = encodeURIComponent(`id:>${afterReplyId}`);
+                const filter = encodeURIComponent(`id:>'${afterReplyId}'`);
                 const order = encodeURIComponent('created_at ASC, id ASC');
 
                 const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?limit=${limit ?? 5}&order=${order}&filter=${filter}`});
@@ -273,7 +273,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
     };
 
     api.init = async () => {
-        let [member] = await Promise.all([
+        const [member] = await Promise.all([
             api.member.sessionData()
         ]);
 

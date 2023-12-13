@@ -20,6 +20,9 @@ import {FeedbackPageStyles} from './pages/FeedbackPage';
 import EmailSuppressedPage from './pages/EmailSuppressedPage.css';
 import EmailSuppressionFAQ from './pages/EmailSuppressionFAQ.css';
 import EmailReceivingFAQ from './pages/EmailReceivingFAQ.css';
+import {TipsAndDonationsSuccessStyle} from './pages/SupportSuccess';
+import {TipsAndDonationsErrorStyle} from './pages/SupportError';
+import {RecommendationsPageStyles} from './pages/RecommendationsPage';
 
 // Global styles
 const FrameStyles = `
@@ -357,6 +360,23 @@ const FrameStyles = `
 
 .gh-portal-popup-container.preview {
     animation: none !important;
+}
+
+.gh-portal-popup-wrapper.preview.offer {
+    padding-top: 0;
+}
+
+.gh-portal-popup-container.preview.offer {
+    max-width: 420px;
+    transform: scale(0.9);
+    margin-top: 3.2vw;
+}
+
+@media (max-width: 480px) {
+    .gh-portal-popup-container.preview.offer {
+        transform-origin: top;
+        margin-top: 0;
+    }
 }
 
 @keyframes popup {
@@ -1223,6 +1243,9 @@ export function getFrameStyles({site}) {
         FeedbackPageStyles +
         EmailSuppressedPage +
         EmailSuppressionFAQ +
-        EmailReceivingFAQ;
+        EmailReceivingFAQ +
+        TipsAndDonationsSuccessStyle +
+        TipsAndDonationsErrorStyle +
+        RecommendationsPageStyles;
     return FrameStyle;
 }

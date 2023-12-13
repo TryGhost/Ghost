@@ -18,7 +18,6 @@ export function Main({apiUrl}) {
 
         getSiteSettings();
         // We only do this for init
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

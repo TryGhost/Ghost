@@ -1,5 +1,5 @@
 import AppContext from '../../AppContext';
-import React, {useContext, useEffect, useState} from 'react';
+import {useContext, useEffect, useState} from 'react';
 import {isPaidMember} from '../../utils/helpers';
 import NewsletterManagement from '../common/NewsletterManagement';
 
@@ -38,7 +38,7 @@ export default function AccountEmailPage() {
                 setSubscribedNewsletters([]);
                 onAction('showPopupNotification', {
                     action: 'updated:success',
-                    message: t(`Email preference updated.`)
+                    message: t(`Unsubscribed from all emails.`)
                 });
                 const data = {newsletters: []};
                 if (commentsEnabled) {

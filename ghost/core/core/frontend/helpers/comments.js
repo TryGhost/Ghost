@@ -1,5 +1,5 @@
 const {SafeString} = require('../services/handlebars');
-const {urlUtils, getFrontendKey, settingsCache} = require('../services/proxy');
+const {labs, urlUtils, getFrontendKey, settingsCache} = require('../services/proxy');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
 
 module.exports = async function comments(options) {
@@ -50,14 +50,14 @@ module.exports = async function comments(options) {
     }
 
     const frontendKey = await getFrontendKey();
-    const {scriptUrl, stylesUrl} = getFrontendAppConfig('comments');
+    const {scriptUrl} = getFrontendAppConfig('comments');
 
     const data = {
+        locale: labs.isSet('i18n') ? (settingsCache.get('locale') || 'en') : undefined,
         'ghost-comments': urlUtils.getSiteUrl(),
         api: urlUtils.urlFor('api', {type: 'content'}, true),
         admin: urlUtils.urlFor('admin', true),
         key: frontendKey,
-        styles: stylesUrl,
         title: title,
         count: count,
         'post-id': this.id,

@@ -91,8 +91,9 @@ export function allowCompMemberUpgrade({member}) {
 }
 
 export function getCompExpiry({member}) {
-    if (member?.subscriptions?.[0]?.tier?.expiry_at) {
-        return getDateString(member.subscriptions[0].tier.expiry_at);
+    const subscription = getMemberSubscription({member});
+    if (subscription?.tier?.expiry_at) {
+        return getDateString(subscription.tier.expiry_at);
     }
     return '';
 }
@@ -135,6 +136,15 @@ export function getPriceFromSubscription({subscription}) {
 export function getMemberActivePrice({member}) {
     const subscription = getMemberSubscription({member});
     return getPriceFromSubscription({subscription});
+}
+
+export function getMemberActiveProduct({member, site}) {
+    const subscription = getMemberSubscription({member});
+    const price = getPriceFromSubscription({subscription});
+    const allProducts = getAllProductsForSite({site});
+    return allProducts.find((product) => {
+        return product.id === price?.product.product_id;
+    });
 }
 
 export function isMemberActivePrice({priceId, site, member}) {
@@ -229,6 +239,18 @@ export function isInviteOnlySite({site = {}, pageQuery = ''}) {
     return prices.length === 0 || (site && site.members_signup_access === 'invite');
 }
 
+export function hasRecommendations({site}) {
+    return site?.recommendations_enabled === true;
+}
+
+export function isSigninAllowed({site}) {
+    return site?.members_signup_access === 'all' || site?.members_signup_access === 'invite';
+}
+
+export function isSignupAllowed({site}) {
+    return site?.members_signup_access === 'all' && (site?.is_stripe_configured || hasOnlyFreePlan({site}));
+}
+
 export function hasMultipleProducts({site}) {
     const products = getAvailableProducts({site});
 
@@ -236,6 +258,11 @@ export function hasMultipleProducts({site}) {
         return true;
     }
     return false;
+}
+
+export function getRefDomain() {
+    const referrerSource = window.location.hostname.replace(/^www\./, '');
+    return referrerSource;
 }
 
 export function hasMultipleProductsFeature({site}) {
@@ -398,13 +425,14 @@ export function hasBenefits({prices, site}) {
 
 export function getSiteProducts({site, pageQuery}) {
     const products = getAvailableProducts({site});
-    const showOnlyFree = pageQuery === 'free' && hasFreeProductPrice({site});
+    const showOnlyFree = pageQuery === 'free';
     if (showOnlyFree) {
         return [];
     }
     if (hasFreeProductPrice({site})) {
         products.unshift({
-            id: 'free'
+            id: 'free',
+            type: 'free'
         });
     }
     return products;
@@ -423,11 +451,8 @@ export function getFreeProductBenefits({site}) {
 }
 
 export function getFreeTierTitle({site}) {
-    if (hasOnlyFreeProduct({site})) {
-        return 'Free membership';
-    } else {
-        return 'Free';
-    }
+    const freeProduct = getFreeProduct({site});
+    return freeProduct?.name || 'Free';
 }
 
 export function getFreeTierDescription({site}) {
@@ -444,7 +469,7 @@ export function freeHasBenefitsOrDescription({site}) {
     return false;
 }
 
-export function getProductBenefits({product, site = null}) {
+export function getProductBenefits({product}) {
     if (product?.monthlyPrice && product?.yearlyPrice) {
         const productBenefits = product?.benefits || [];
         const monthlyBenefits = productBenefits;
@@ -529,15 +554,7 @@ export function subscriptionHasFreeTrial({sub} = {}) {
 }
 
 export function isInThePast(date) {
-    const today = new Date();
-
-    // 👇️ OPTIONAL!
-    // This line sets the hour of the current date to midnight
-    // so the comparison only returns `true` if the passed in date
-    // is at least yesterday
-    today.setHours(0, 0, 0, 0);
-
-    return date < today;
+    return date < new Date();
 }
 
 export function getProductFromPrice({site, priceId}) {
@@ -681,27 +698,42 @@ export const getMemberName = ({member}) => {
 };
 
 export const getSupportAddress = ({site}) => {
-    const {members_support_address: supportAddress} = site || {};
+    const {members_support_address: oldSupportAddress, support_email_address: supportAddress} = site || {};
 
-    if (supportAddress?.indexOf('@') < 0) {
-        const siteDomain = getSiteDomain({site});
-        const updatedDomain = siteDomain?.replace(/^(www)\.(?=[^/]*\..{2,5})/, '') || '';
-        return `${supportAddress}@${updatedDomain}`;
+    // If available, use the calculated setting support_email_address
+    if (supportAddress) {
+        return supportAddress;
     }
 
-    if (supportAddress?.split('@')?.length > 1) {
-        const [recipient, domain] = supportAddress.split('@');
+    // Deprecated: use the saved setting members_support_address
+    if (oldSupportAddress?.indexOf('@') < 0) {
+        const siteDomain = getSiteDomain({site});
+        const updatedDomain = siteDomain?.replace(/^(www)\.(?=[^/]*\..{2,5})/, '') || '';
+        return `${oldSupportAddress}@${updatedDomain}`;
+    }
+
+    if (oldSupportAddress?.split('@')?.length > 1) {
+        const [recipient, domain] = oldSupportAddress.split('@');
         const updatedDomain = domain?.replace(/^(www)\.(?=[^/]*\..{2,5})/, '') || '';
         return `${recipient}@${updatedDomain}`;
     }
-    return supportAddress || '';
+
+    return oldSupportAddress || '';
 };
 
 export const getDefaultNewsletterSender = ({site}) => {
+    const {default_email_address: defaultEmailAddress} = site || {};
+
+    // If available, use the calculated setting default_email_address as default
+    const defaultAddress = defaultEmailAddress || `noreply@${getSiteDomain({site})}`;
+
     const newsletters = getSiteNewsletters({site});
     const defaultNewsletter = newsletters?.[0];
-    if (defaultNewsletter) {
-        return defaultNewsletter.sender_email || `noreply@${getSiteDomain({site})}`;
+
+    if (defaultNewsletter && defaultNewsletter.sender_email) {
+        return defaultNewsletter.sender_email;
+    } else {
+        return defaultAddress;
     }
 };
 

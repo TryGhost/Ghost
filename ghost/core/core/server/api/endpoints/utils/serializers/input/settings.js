@@ -38,6 +38,7 @@ const EDITABLE_SETTINGS = [
     'portal_name',
     'portal_button',
     'portal_plans',
+    'portal_default_plan',
     'portal_button_style',
     'firstpromoter',
     'firstpromoter_id',
@@ -68,7 +69,10 @@ const EDITABLE_SETTINGS = [
     'announcement_visibility',
     'pintura',
     'pintura_js_url',
-    'pintura_css_url'
+    'pintura_css_url',
+    'donations_currency',
+    'donations_suggested_amount',
+    'recommendations_enabled'
 ];
 
 module.exports = {

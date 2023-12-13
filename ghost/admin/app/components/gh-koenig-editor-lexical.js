@@ -13,6 +13,7 @@ export default class GhKoenigEditorReactComponent extends Component {
     uploadUrl = `${ghostPaths().apiRoot}/images/upload/`;
 
     editorAPI = null;
+    skipFocusEditor = false;
 
     @tracked titleIsHovered = false;
     @tracked titleIsFocused = false;
@@ -38,6 +39,30 @@ export default class GhKoenigEditorReactComponent extends Component {
     trackMousedown(event) {
         // triggered when a mousedown is registered on .gh-koenig-editor-pane
         this.mousedownY = event.clientY;
+
+        // mousedown can select a card which can deselect another card meaning the
+        // mouseup/click event can occur outside of the initially clicked card, in
+        // which case we don't want to then "re-focus" the editor and cause unexpected
+        // selection changes
+        const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
+        const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
+
+        if (clickedOnDecorator || clickedOnSlashMenu) {
+            this.skipFocusEditor = true;
+        }
+    }
+
+    @action
+    editorPaneDragover(event) {
+        event.preventDefault();
+    }
+
+    @action
+    editorPaneDrop(event) {
+        if (event.dataTransfer.files.length > 0) {
+            event.preventDefault();
+            this.editorAPI?.insertFiles(Array.from(event.dataTransfer.files));
+        }
     }
 
     // Title actions -----------------------------------------------------------
@@ -84,7 +109,7 @@ export default class GhKoenigEditorReactComponent extends Component {
     onTitleKeydown(event) {
         const {editorAPI} = this;
 
-        if (!editorAPI) {
+        if (!editorAPI || event.originalEvent.isComposing) {
             return;
         }
 
@@ -113,15 +138,11 @@ export default class GhKoenigEditorReactComponent extends Component {
         this.args.registerAPI(API);
     }
 
-    // @action
-    // onEditorCreated(koenig) {
-    //     this._setupEditor(koenig);
-    //     this.args.onEditorCreated?.(koenig);
-    // }
-
+    // focus the editor when the editor canvas is clicked below the editor content,
+    // otherwise the browser will defocus the editor and the cursor will disappear
     @action
     focusEditor(event) {
-        if (event.target.classList.contains('gh-koenig-editor-pane')) {
+        if (!this.skipFocusEditor && event.target.classList.contains('gh-koenig-editor-pane')) {
             let editorCanvas = this.editorAPI.editorInstance.getRootElement();
             let {bottom} = editorCanvas.getBoundingClientRect();
 
@@ -136,48 +157,12 @@ export default class GhKoenigEditorReactComponent extends Component {
                 if (this.editorAPI.lastNodeIsDecorator()) {
                     this.editorAPI.insertParagraphAtBottom();
                 }
+
                 // Focus the editor
                 this.editorAPI.focusEditor({position: 'bottom'});
-
-                //scroll to the bottom of the container
-                // containerRef.current.scrollTop = containerRef.current.scrollHeight;
             }
         }
+
+        this.skipFocusEditor = false;
     }
-
-    // _setupEditor(koenig) {
-    //     let component = this;
-
-    //     this.koenigEditor = koenig;
-
-    //     // focus the title when pressing SHIFT+TAB
-    //     this.koenigEditor.registerKeyCommand({
-    //         str: 'SHIFT+TAB',
-    //         run() {
-    //             component.focusTitle();
-    //             return true;
-    //         }
-    //     });
-    // }
-
-    // _addParaAtTop() {
-    //     if (!this.koenigEditor) {
-    //         return;
-    //     }
-
-    //     let editor = this.koenigEditor;
-    //     let section = editor.post.toRange().head.section;
-
-    //     // create a blank paragraph at the top of the editor unless it's already
-    //     // a blank paragraph
-    //     if (section.isListItem || !section.isBlank || section.text !== '') {
-    //         editor.run((postEditor) => {
-    //             let {builder} = postEditor;
-    //             let newPara = builder.createMarkupSection('p');
-    //             let sections = section.isListItem ? section.parent.parent.sections : section.parent.sections;
-
-    //             postEditor.insertSectionBefore(sections, newPara, section);
-    //         });
-    //     }
-    // }
 }

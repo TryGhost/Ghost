@@ -1,7 +1,10 @@
 import PortalFrame from './PortalFrame';
 import PortalLinks from './PortalLinks';
 import React from 'react';
-import {Setting, Tier} from '../../../../types/api';
+import {Setting} from '@tryghost/admin-x-framework/api/settings';
+import {Tier} from '@tryghost/admin-x-framework/api/tiers';
+import {getPortalPreviewUrl} from '../../../../utils/getPortalPreviewUrl';
+import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 interface PortalPreviewProps {
     selectedTab: string;
@@ -14,13 +17,26 @@ const PortalPreview: React.FC<PortalPreviewProps> = ({
     localSettings,
     localTiers
 }) => {
+    const {
+        siteData,
+        config
+    } = useGlobalData();
+
+    const href = getPortalPreviewUrl({
+        settings: localSettings,
+        tiers: localTiers,
+        selectedTab,
+        siteData,
+        config
+    });
+
     let tabContents = <></>;
 
     switch (selectedTab) {
     case 'account':
         tabContents = (
             <>
-                <PortalFrame selectedTab={selectedTab} settings={localSettings} tiers={localTiers} />
+                <PortalFrame href={href || ''} selectedTab={selectedTab} />
             </>
         );
         break;
@@ -30,7 +46,7 @@ const PortalPreview: React.FC<PortalPreviewProps> = ({
     default:
         tabContents = (
             <>
-                <PortalFrame selectedTab={selectedTab} settings={localSettings} tiers={localTiers} />
+                <PortalFrame href={href || ''} selectedTab={selectedTab} />
             </>
         );
         break;

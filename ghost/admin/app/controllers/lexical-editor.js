@@ -16,6 +16,7 @@ import {GENERIC_ERROR_MESSAGE} from '../services/notifications';
 import {action, computed} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalize} from '@ember/string';
+import {captureMessage} from '@sentry/ember';
 import {dropTask, enqueueTask, restartableTask, task, taskGroup, timeout} from 'ember-concurrency';
 import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -33,8 +34,9 @@ const DUPLICATED_POST_TITLE_SUFFIX = '(Copy)';
 const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
 const TIMEDSAVE_TIMEOUT = 60000;
-// time in ms to force a save even if the post is already saved so we trigger a new revision on the server
-const REVISIONSAVE_TIMEOUT = 1000 * 60 * 10; // 10 minutes
+
+const TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
+const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
 
 // this array will hold properties we need to watch for this.hasDirtyAttributes
 let watchedProps = [
@@ -128,10 +130,13 @@ export default class LexicalEditorController extends Controller {
 
     // koenig related properties
     wordCount = 0;
+    postTkCount = 0;
+    featureImageTkCount = 0;
 
     /* private properties ----------------------------------------------------*/
 
     _leaveConfirmed = false;
+    _saveOnLeavePerformed = false;
     _previousTagNames = null; // set by setPost and _postSaved, used in hasDirtyAttributes
 
     /* computed properties ---------------------------------------------------*/
@@ -201,18 +206,66 @@ export default class LexicalEditorController extends Controller {
         return false;
     }
 
-    @computed('_autosaveTask.isRunning', '_timedSaveTask.isRunning', '_revisionSaveTask.isRunning')
+    @computed('_autosaveTask.isRunning', '_timedSaveTask.isRunning')
     get _autosaveRunning() {
         let autosave = this.get('_autosaveTask.isRunning');
         let timedsave = this.get('_timedSaveTask.isRunning');
-        let revisionsave = this.get('_revisionSaveTask.isRunning');
 
-        return autosave || timedsave || revisionsave;
+        return autosave || timedsave;
     }
 
     @computed('post.isDraft')
     get _canAutosave() {
         return config.environment !== 'test' && this.get('post.isDraft');
+    }
+
+    TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
+    WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
+
+    @computed('post.titleScratch')
+    get titleHasTk() {
+        let text = this.post.titleScratch;
+        let matchArr = TK_REGEX.exec(text);
+
+        if (matchArr === null) {
+            return false;
+        }
+
+        function isValidMatch(match) {
+            // negative lookbehind isn't supported before Safari 16.4
+            // so we capture the preceding char and test it here
+            if (match[1] && match[1].trim() && WORD_CHAR_REGEX.test(match[1])) {
+                return false;
+            }
+
+            // we also check any following char in code to avoid an overly
+            // complex regex when looking for word-chars following the optional
+            // trailing symbol char
+            if (match[4] && match[4].trim() && WORD_CHAR_REGEX.test(match[4])) {
+                return false;
+            }
+
+            return true;
+        }
+
+        // our regex will match invalid TKs because we can't use negative lookbehind
+        // so we need to loop through the matches discarding any that are invalid
+        // and moving on to any subsequent matches
+        while (matchArr !== null && !isValidMatch(matchArr)) {
+            text = text.slice(matchArr.index + matchArr[0].length - 1);
+            matchArr = TK_REGEX.exec(text);
+        }
+
+        if (matchArr === null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @computed('titleHasTk', 'postTkCount', 'featureImageTkCount')
+    get tkCount() {
+        return (this.titleHasTk ? 1 : 0) + this.postTkCount + this.featureImageTkCount;
     }
 
     @action
@@ -223,8 +276,6 @@ export default class LexicalEditorController extends Controller {
         this._autosaveTask.perform();
         // force save at 60 seconds
         this._timedSaveTask.perform();
-        // force save at 10 minutes to trigger revision
-        this._revisionSaveTask.perform();
     }
 
     @action
@@ -259,7 +310,6 @@ export default class LexicalEditorController extends Controller {
     cancelAutosave() {
         this._autosaveTask.cancelAll();
         this._timedSaveTask.cancelAll();
-        this._revisionSaveTask.cancelAll();
     }
 
     // called by the "are you sure?" modal
@@ -315,6 +365,16 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
+    updatePostTkCount(count) {
+        this.set('postTkCount', count);
+    }
+
+    @action
+    updateFeatureImageTkCount(count) {
+        this.set('featureImageTkCount', count);
+    }
+
+    @action
     setFeatureImage(url) {
         this.post.set('featureImage', url);
 
@@ -351,6 +411,13 @@ export default class LexicalEditorController extends Controller {
     @action
     setFeatureImageCaption(html) {
         this.post.set('featureImageCaption', html);
+    }
+
+    @action
+    handleFeatureImageCaptionBlur() {
+        if (!this.post || this.post.isDestroyed || this.post.isDestroying) {
+            return;
+        }
 
         if (this.post.isDraft) {
             this.autosaveTask.perform();
@@ -436,39 +503,53 @@ export default class LexicalEditorController extends Controller {
     // _xSave tasks  that will also cancel the autosave task
     @task({group: 'saveTasks'})
     *saveTask(options = {}) {
+        if (this.post.isDestroyed || this.post.isDestroying) {
+            return;
+        }
+
         let prevStatus = this.get('post.status');
         let isNew = this.get('post.isNew');
-        let status;
         const adapterOptions = {};
 
         this.cancelAutosave();
 
-        if (options.backgroundSave && !this.hasDirtyAttributes && !options.leavingEditor && !options.saveRevision) {
+        if (options.backgroundSave && !this.hasDirtyAttributes && !options.leavingEditor) {
             return;
         }
 
-        if (options.backgroundSave) {
-            // do not allow a post's status to be set to published by a background save
-            status = 'draft';
+        // leaving the editor should never result in a status change, we only save on editor
+        // leave to trigger a revision save
+        if (options.leavingEditor) {
+            // ensure we always have a status present otherwise we'll error when saving
+            if (!this.post.status) {
+                this.post.status = 'draft';
+            }
         } else {
-            if (this.get('post.pastScheduledTime')) {
-                status = (!this.willSchedule && !this.willPublish) ? 'draft' : 'published';
+            let status;
+
+            if (options.backgroundSave) {
+                // do not allow a post's status to be set to published by a background save
+                status = 'draft';
             } else {
-                if (this.willPublish && !this.get('post.isScheduled')) {
-                    status = 'published';
-                } else if (this.willSchedule && !this.get('post.isPublished')) {
-                    status = 'scheduled';
-                } else if (this.get('post.isSent')) {
-                    status = 'sent';
+                if (this.get('post.pastScheduledTime')) {
+                    status = (!this.willSchedule && !this.willPublish) ? 'draft' : 'published';
                 } else {
-                    status = 'draft';
+                    if (this.willPublish && !this.get('post.isScheduled')) {
+                        status = 'published';
+                    } else if (this.willSchedule && !this.get('post.isPublished')) {
+                        status = 'scheduled';
+                    } else if (this.get('post.isSent')) {
+                        status = 'sent';
+                    } else {
+                        status = 'draft';
+                    }
                 }
             }
-        }
 
-        // set manually here instead of in beforeSaveTask because the
-        // new publishing flow sets the post status manually on publish
-        this.set('post.status', status);
+            // set manually here instead of in beforeSaveTask because the
+            // new publishing flow sets the post status manually on publish
+            this.set('post.status', status);
+        }
 
         const explicitSave = !options.backgroundSave;
         const leavingEditor = options.leavingEditor;
@@ -479,8 +560,6 @@ export default class LexicalEditorController extends Controller {
 
         try {
             let post = yield this._savePostTask.perform({...options, adapterOptions});
-
-            post.set('statusScratch', null);
 
             // Clear any error notification (if any)
             this.notifications.clearAll();
@@ -497,17 +576,13 @@ export default class LexicalEditorController extends Controller {
                 return true;
             }
 
-            // Even if we've just saved and nothing else has changed, we want to save in 10 minutes to force a revision
-            this._revisionSaveTask.perform();
-
             return post;
         } catch (error) {
             if (!this.session.isAuthenticated) {
                 yield this.modals.open(ReAuthenticateModal);
 
                 if (this.session.isAuthenticated) {
-                    this.saveTask.perform(options);
-                    return;
+                    return this.saveTask.perform(options);
                 }
             }
 
@@ -544,6 +619,10 @@ export default class LexicalEditorController extends Controller {
 
     @task
     *beforeSaveTask(options = {}) {
+        if (this.post?.isDestroyed || this.post?.isDestroying) {
+            return;
+        }
+
         // ensure we remove any blank cards when performing a full save
         if (!options.backgroundSave) {
             // TODO: not yet implemented in react editor
@@ -676,10 +755,34 @@ export default class LexicalEditorController extends Controller {
             this.post.set('emailOnly', options.emailOnly);
         }
 
+        const startTime = Date.now();
+
         try {
             yield post.save(options);
+
+            // log if a save is slow
+            if (this.config.sentry_dsn && (Date.now() - startTime > 2000)) {
+                captureMessage('Successful Lexical save took > 2s', (scope) => {
+                    scope.setTag('save_time', Math.ceil((Date.now() - startTime) / 1000));
+                    scope.setTag('post_type', post.isPage ? 'page' : 'post');
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('email_segment', options.adapterOptions?.emailSegment);
+                    scope.setTag('convert_to_lexical', options.adapterOptions?.convertToLexical);
+                });
+            }
         } catch (error) {
             this.post.set('emailOnly', previousEmailOnlyValue);
+
+            if (this.config.sentry_dsn && (Date.now() - startTime > 2000)) {
+                captureMessage('Failed Lexical save took > 2s', (scope) => {
+                    scope.setTag('save_time', Math.ceil((Date.now() - startTime) / 1000));
+                    scope.setTag('post_type', post.isPage ? 'page' : 'post');
+                    scope.setTag('save_revision', options.adapterOptions?.saveRevision);
+                    scope.setTag('email_segment', options.adapterOptions?.emailSegment);
+                    scope.setTag('convert_to_lexical', options.adapterOptions?.convertToLexical);
+                });
+            }
+
             if (isServerUnreachableError(error)) {
                 const [prevStatus, newStatus] = this.post.changedAttributes().status || [this.post.status, this.post.status];
                 this._showErrorAlert(prevStatus, newStatus, error);
@@ -790,22 +893,34 @@ export default class LexicalEditorController extends Controller {
         this.syncMobiledocSnippets();
     }
 
+    sleep(ms) {
+        return new Promise((r) => {
+            setTimeout(r, ms);
+        });
+    }
+
     @action
     async syncMobiledocSnippets() {
         const snippets = this.store.peekAll('snippet');
 
         // very early in the beta we had a bug where lexical snippets were saved with double-encoded JSON
         // we fix that here by re-saving any snippets that are still in that state
-        const snippetFixSaves = [];
-        snippets.forEach((snippet) => {
+        for (let i = 0; i < snippets.length; i++) {
+            const snippet = snippets.objectAt(i);
             if (typeof snippet.lexical === 'string') {
                 try {
                     snippet.lexical = JSON.parse(snippet.lexical);
                     snippet.mobiledoc = {};
-                    snippetFixSaves.push(snippet.save());
+                    await snippet.save();
+                    // Temp fix: Timeout for 100 ms between requests to avoid hitting rate limit (50req/s)
+                    // refs https://github.com/TryGhost/Product/issues/4022
+                    await this.sleep(100);
                 } catch (e) {
                     snippet.lexical = null;
-                    snippetFixSaves.push(snippet.save());
+                    await snippet.save();
+                    // Temp fix: Timeout for 100 ms between requests to avoid hitting rate limit (50req/s)
+                    // refs https://github.com/TryGhost/Product/issues/4022
+                    await this.sleep(100);
 
                     console.error(e); // eslint-disable-line no-console
 
@@ -818,10 +933,10 @@ export default class LexicalEditorController extends Controller {
                     }
                 }
             }
-        });
-        await Promise.all(snippetFixSaves);
+        }
 
-        snippets.forEach((snippet) => {
+        for (let i = 0; i < snippets.length; i++) {
+            const snippet = snippets.objectAt(i);
             if (!snippet.lexical || snippet.lexical.syncedAt && moment.utc(snippet.lexical.syncedAt).isBefore(snippet.updatedAtUTC)) {
                 const serializedLexical = mobiledocToLexical(JSON.stringify(snippet.mobiledoc));
 
@@ -848,8 +963,12 @@ export default class LexicalEditorController extends Controller {
 
                 // kick off a background save, we already have .lexical updated which is what we need
                 snippet.save();
+
+                // Temp fix: Timeout for 100 ms between requests to avoid hitting rate limit (50req/s)
+                // refs https://github.com/TryGhost/Product/issues/4022
+                await this.sleep(100);
             }
-        });
+        }
     }
 
     /* Public methods --------------------------------------------------------*/
@@ -904,15 +1023,6 @@ export default class LexicalEditorController extends Controller {
             return;
         }
 
-        // clean up blank cards when leaving the editor if we have a draft post
-        // - blank cards could be left around due to autosave triggering whilst
-        //   a blank card is present then the user attempting to leave
-        // - will mark the post as dirty so it gets saved when transitioning
-        // TODO: not yet implemented in react editor
-        // if (this._koenig && post.isDraft) {
-        //     this._koenig.cleanup();
-        // }
-
         // user can enter the slug name and then leave the post page,
         // in such case we should wait until the slug would be saved on backend
         if (this.updateSlugTask.isRunning) {
@@ -921,31 +1031,43 @@ export default class LexicalEditorController extends Controller {
             return transition.retry();
         }
 
+        const fromNewToEdit = this.router.currentRouteName === 'lexical-editor.new'
+            && transition.targetName === 'lexical-editor.edit'
+            && transition.intent.contexts?.[0]?.id === post.id;
+
+        // clean up blank cards when leaving the editor if we have a draft post
+        // - blank cards could be left around due to autosave triggering whilst
+        //   a blank card is present then the user attempting to leave
+        // - will mark the post as dirty so it gets saved when transitioning
+        // TODO: not yet implemented in lexical editor
+        // if (this._koenig && post.isDraft) {
+        //     this._koenig.cleanup();
+        // }
+
+        // if we need to save when leaving the editor, abort the transition, save,
+        // then retry. If a previous transition already performed a save, skip to
+        // avoid potential infinite transition+save loops
+
         let hasDirtyAttributes = this.hasDirtyAttributes;
         let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
 
         // Check if anything has changed since the last revision
         let postRevisions = post.get('postRevisions').toArray();
         let latestRevision = postRevisions[postRevisions.length - 1];
-        let hasChangedSinceLastRevision = post.get('lexical') !== latestRevision.get('lexical');
-
-        let fromNewToEdit = this.router.currentRouteName === 'lexical-editor.new'
-            && transition.targetName === 'lexical-editor.edit'
-            && transition.intent.contexts
-            && transition.intent.contexts[0]
-            && transition.intent.contexts[0].id === post.id;
+        let hasChangedSinceLastRevision = !latestRevision || (!post.isNew && post.lexical.replaceAll(this.config.blogUrl, '') !== latestRevision.lexical.replaceAll(this.config.blogUrl, ''));
 
         let deletedWithoutChanges = state.isDeleted
-            && (state.isSaving || !state.hasDirtyAttributes);
+                && (state.isSaving || !state.hasDirtyAttributes);
 
         // If leaving the editor and the post has changed since we last saved a revision, always save a new revision
-        if (hasChangedSinceLastRevision) {
+        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes) {
             transition.abort();
             if (this._autosaveRunning) {
                 this.cancelAutosave();
                 this.autosaveTask.cancelAll();
             }
             await this.autosaveTask.perform({leavingEditor: true, backgroundSave: false});
+            this._saveOnLeavePerformed = true;
             return transition.retry();
         }
 
@@ -966,7 +1088,10 @@ export default class LexicalEditorController extends Controller {
                 this.autosaveTask.cancelAll();
 
                 // If leaving the editor, always save a revision
-                await this.autosaveTask.perform({leavingEditor: true});
+                if (!this._saveOnLeavePerformed) {
+                    await this.autosaveTask.perform({leavingEditor: true});
+                    this._saveOnLeavePerformed = true;
+                }
                 return transition.retry();
             }
 
@@ -982,7 +1107,7 @@ export default class LexicalEditorController extends Controller {
                 return;
             } else {
                 this._leaveConfirmed = true;
-                transition.retry();
+                return transition.retry();
             }
         }
 
@@ -1016,12 +1141,15 @@ export default class LexicalEditorController extends Controller {
 
         this._previousTagNames = [];
         this._leaveConfirmed = false;
+        this._saveOnLeavePerformed = false;
 
         this.set('post', null);
         this.set('hasDirtyAttributes', false);
         this.set('shouldFocusTitle', false);
         this.set('showSettingsMenu', false);
-        this.set('wordCount', null);
+        this.set('wordCount', 0);
+        this.set('postTkCount', 0);
+        this.set('featureImageTkCount', 0);
 
         // remove the onbeforeunload handler as it's only relevant whilst on
         // the editor route
@@ -1058,21 +1186,6 @@ export default class LexicalEditorController extends Controller {
         }
     }).drop())
         _timedSaveTask;
-
-    // save at 10 minutes even if the post is already saved
-    @(task(function* () {
-        if (!this._canAutosave) {
-            return;
-        }
-
-        while (config.environment !== 'test' && true) {
-            yield timeout(REVISIONSAVE_TIMEOUT);
-            this.autosaveTask.perform({
-                saveRevision: this._canAutosave
-            });
-        }
-    }).drop())
-        _revisionSaveTask;
 
     /* Private methods -------------------------------------------------------*/
 

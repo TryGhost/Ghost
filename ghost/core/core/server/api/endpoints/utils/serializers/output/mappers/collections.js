@@ -4,25 +4,12 @@
  *
  * @returns {SerializedCollection}
  */
-const mapper = (collection) => {
+const mapper = (collection, frame) => {
     let json;
-    let posts;
     if (collection.toJSON) {
         json = collection.toJSON();
-        posts = json.posts.map((postId, index) => {
-            return {
-                id: postId,
-                sort_order: index
-            };
-        });
     } else {
         json = collection;
-        posts = json.posts.map((post) => {
-            return {
-                id: post.id,
-                sort_order: post.sort_order
-            };
-        });
     }
 
     const serialized = {
@@ -34,9 +21,14 @@ const mapper = (collection) => {
         filter: json.filter,
         feature_image: json.feature_image || json.featureImage || null,
         created_at: (json.created_at || json.createdAt).toISOString().replace(/\d{3}Z$/, '000Z'),
-        updated_at: (json.updated_at || json.updatedAt).toISOString().replace(/\d{3}Z$/, '000Z'),
-        posts
+        updated_at: (json.updated_at || json.updatedAt).toISOString().replace(/\d{3}Z$/, '000Z')
     };
+
+    if (frame?.options?.withRelated?.includes('count.posts')) {
+        serialized.count = {
+            posts: json.posts.length
+        };
+    }
 
     return serialized;
 };

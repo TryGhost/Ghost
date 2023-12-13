@@ -216,7 +216,7 @@ class BatchSendingService {
     async getBatches(email) {
         logging.info(`Getting batches for email ${email.id}`);
 
-        return await this.#models.EmailBatch.findAll({filter: 'email_id:' + email.id});
+        return await this.#models.EmailBatch.findAll({filter: 'email_id:\'' + email.id + '\''});
     }
 
     /**
@@ -227,7 +227,7 @@ class BatchSendingService {
     async createBatches({email, post, newsletter}) {
         logging.info(`Creating batches for email ${email.id}`);
 
-        const segments = this.#emailRenderer.getSegments(post);
+        const segments = await this.#emailRenderer.getSegments(post);
         const batches = [];
         const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
         let totalCount = 0;
@@ -247,7 +247,9 @@ class BatchSendingService {
             while (!members || lastId) {
                 logging.info(`Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId}`);
 
-                const filter = segmentFilter + `+id:<${lastId}`;
+                const filter = segmentFilter + `+id:<'${lastId}'`;
+                logging.info(`Fetching members batch for email ${email.id} segment ${segment}, lastId: ${lastId} ${filter}`);
+
                 members = await this.#models.Member.getFilteredCollectionQuery({filter})
                     .orderByRaw('id DESC')
                     .select('members.id', 'members.uuid', 'members.email', 'members.name').limit(BATCH_SIZE + 1);
@@ -275,6 +277,14 @@ class BatchSendingService {
 
         if (email.get('email_count') !== totalCount) {
             logging.error(`Email ${email.id} has wrong stored email_count ${email.get('email_count')}, did expect ${totalCount}. Updating the model.`);
+
+            // If the error rate is greater than 1%, we log it to Sentry so we can investigate
+            // Some differences are expected, e.g. if a new member signs up while we are sending the email
+            const errorRate = Math.abs((totalCount - email.get('email_count')) / email.get('email_count'));
+            if (this.#sentry && errorRate >= 0.01) {
+                // we don't have a real exception, so just log a message to Sentry
+                this.#sentry.captureMessage(`Email ${email.id} has wrong stored email_count ${email.get('email_count')}, did expect ${totalCount}.`);
+            }
 
             // We update the email model because this might happen in rare cases where the initial member count changed (e.g. deleted members)
             // between creating the email and sending it
@@ -501,22 +511,13 @@ class BatchSendingService {
      * @returns {Promise<MemberLike[]>}
      */
     async getBatchMembers(batchId) {
-        let models = await this.#models.EmailRecipient.findAll({filter: `batch_id:${batchId}`, withRelated: ['member', 'member.stripeSubscriptions', 'member.products']});
+        let models = await this.#models.EmailRecipient.findAll({filter: `batch_id:'${batchId}'`, withRelated: ['member', 'member.stripeSubscriptions', 'member.products']});
 
         const BATCH_SIZE = this.#sendingService.getMaximumRecipients();
         if (models.length > BATCH_SIZE) {
-            // @NOTE: filtering by batch_id is our best effort to "correct" returned data
-            logging.warn(`Email batch ${batchId} has ${models.length} members, which exceeds the maximum of ${BATCH_SIZE} members per batch. Filtering by batch_id: ${batchId}`);
-            models = models.filter(m => m.get('batch_id') === batchId);
-
-            if (models.length > BATCH_SIZE) {
-                // @NOTE this is a best effort logic to still try sending an email batch
-                //       even if it exceeds the maximum recipients limit of the sending service.
-                //       In theory this should never happen, but being extra safe to make sure
-                //       the email delivery still happens.
-                logging.error(`Email batch ${batchId} has ${models.length} members, which exceeds the maximum of ${BATCH_SIZE}. Truncating to ${BATCH_SIZE}`);
-                models = models.slice(0, BATCH_SIZE);
-            }
+            throw new errors.EmailError({
+                message: `Email batch ${batchId} has ${models.length} members, which exceeds the maximum of ${BATCH_SIZE} members per batch.`
+            });
         }
 
         return models.map((model) => {

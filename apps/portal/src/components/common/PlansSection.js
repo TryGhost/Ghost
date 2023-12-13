@@ -1,4 +1,3 @@
-import React from 'react';
 import {isCookiesDisabled} from '../../utils/helpers';
 import ProductsSection, {ChangeProductSection} from './ProductsSection';
 

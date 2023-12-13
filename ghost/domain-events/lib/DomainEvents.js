@@ -69,7 +69,7 @@ class DomainEvents {
     static #awaitQueue = [];
     static #dispatchCount = 0;
     static #processedCount = 0;
-    static #trackingEnabled = process.env.NODE_ENV.startsWith('test');
+    static #trackingEnabled = process.env.NODE_ENV?.startsWith('test');
 
     /**
      * Waits for all the events in the queue to be dispatched and fully processed (async).

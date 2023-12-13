@@ -36,7 +36,18 @@ export default class Footer extends Component {
     }
 
     get hasThemeErrors() {
-        return this.themeManagement.activeTheme && this.themeManagement.activeTheme.gscanErrors.length;
+        const errors = this.themeManagement.activeTheme && this.themeManagement.activeTheme.gscanErrors;
+        if (!errors) {
+            return false;
+        }
+        // filter errors that have other UI to display to users that the functionality is not working
+        const filteredErrors = errors?.filter((error) => {
+            if (error.code === 'GS110-NO-MISSING-PAGE-BUILDER-USAGE' && error?.failures?.[0].message.includes(`show_title_and_feature_image`)) {
+                return false;                
+            }
+            return true;
+        });
+        return filteredErrors && filteredErrors.length;
     }
 
     // equivalent to "left: auto; right: -20px"

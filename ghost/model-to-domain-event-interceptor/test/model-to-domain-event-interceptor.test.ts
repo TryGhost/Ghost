@@ -1,12 +1,15 @@
 import assert from 'assert/strict';
 import events from 'events';
+import sinon from 'sinon';
 import DomainEvents from '@tryghost/domain-events';
-const {
-    CollectionResourceChangeEvent,
-    PostDeletedEvent,
+import {
+    PostDeletedEvent
+} from '@tryghost/post-events';
+import {
     PostEditedEvent,
-    PostAddedEvent
-} = require('@tryghost/collections');
+    PostAddedEvent,
+    TagDeletedEvent
+} from '@tryghost/collections';
 
 import {ModelToDomainEventInterceptor} from '../src';
 
@@ -82,7 +85,10 @@ describe('ModelToDomainEventInterceptor', function () {
             assert.ok(event.data);
             assert.ok(event.data.current);
             assert.equal(event.data.current.status, 'draft');
+            assert.equal(event.data.previous.status, 'published');
 
+            assert.deepEqual(event.data.current.tags[0], {slug: 'tag-current-slug'});
+            assert.deepEqual(event.data.previous.tags[0], {slug: 'tag-previous-slug'});
             interceptedEvent = event;
         });
 
@@ -92,6 +98,28 @@ describe('ModelToDomainEventInterceptor', function () {
                 status: 'draft',
                 featured: false,
                 published_at: new Date()
+            },
+            _previousAttributes: {
+                status: 'published',
+                featured: true
+            },
+            relations: {
+                tags: {
+                    models: [{
+                        get: function (key: string) {
+                            return `tag-current-${key}`;
+                        }
+                    }]
+                }
+            },
+            _previousRelations: {
+                tags: {
+                    models: [{
+                        get: function (key: string) {
+                            return `tag-previous-${key}`;
+                        }
+                    }]
+                }
             }
         });
 
@@ -124,7 +152,7 @@ describe('ModelToDomainEventInterceptor', function () {
         assert.ok(interceptedEvent);
     });
 
-    it('Intercepts unmapped Model event and dispatches CollectionResourceChangeEvent Domain event', async function () {
+    it('Intercepts post.deleted Model event without an id property and dispatches PostAddedEvent Domain event', async function () {
         let eventRegistry = new EventRegistry();
         const modelToDomainEventInterceptor = new ModelToDomainEventInterceptor({
             ModelEvents: eventRegistry,
@@ -134,18 +162,95 @@ describe('ModelToDomainEventInterceptor', function () {
         modelToDomainEventInterceptor.init();
 
         let interceptedEvent;
-        DomainEvents.subscribe(CollectionResourceChangeEvent, (event: any) => {
-            assert.equal(event.name, 'user.activated.edited');
-            assert.equal(event.data.id, '1234-user-edit');
+        DomainEvents.subscribe(PostDeletedEvent, (event: any) => {
+            assert.equal(event.id, '1234-deleted');
             interceptedEvent = event;
         });
 
-        eventRegistry.emit('user.activated.edited', {
-            id: '1234-user-edit'
+        eventRegistry.emit('post.deleted', {
+            _previousAttributes: {
+                id: '1234-deleted'
+            }
         });
 
         await DomainEvents.allSettled();
 
         assert.ok(interceptedEvent);
+    });
+
+    it('Intercepts tag.deleted Model event and dispatches TagDeletedEvent Domain event', async function () {
+        let eventRegistry = new EventRegistry();
+        const modelToDomainEventInterceptor = new ModelToDomainEventInterceptor({
+            ModelEvents: eventRegistry,
+            DomainEvents: DomainEvents
+        });
+
+        modelToDomainEventInterceptor.init();
+
+        let interceptedEvent;
+        DomainEvents.subscribe(TagDeletedEvent, (event: TagDeletedEvent) => {
+            assert.equal(event.id, '1234-deleted');
+            assert.equal(event.data.slug, 'tag-slug');
+            interceptedEvent = event;
+        });
+
+        eventRegistry.emit('tag.deleted', {
+            _previousAttributes: {
+                id: '1234-deleted',
+                slug: 'tag-slug'
+            }
+        });
+
+        await DomainEvents.allSettled();
+
+        assert.ok(interceptedEvent);
+    });
+
+    it('Intercepts tag.deleted Model event without an id property and dispatches TagDeletedEvent Domain event', async function () {
+        let eventRegistry = new EventRegistry();
+        const modelToDomainEventInterceptor = new ModelToDomainEventInterceptor({
+            ModelEvents: eventRegistry,
+            DomainEvents: DomainEvents
+        });
+
+        modelToDomainEventInterceptor.init();
+
+        let interceptedEvent;
+        DomainEvents.subscribe(TagDeletedEvent, (event: TagDeletedEvent) => {
+            assert.equal(event.id, '1234-deleted');
+            assert.equal(event.data.slug, 'tag-slug');
+            interceptedEvent = event;
+        });
+
+        eventRegistry.emit('tag.deleted', {
+            id: '1234-deleted',
+            attributes: {
+                slug: 'tag-slug'
+            }
+        });
+
+        await DomainEvents.allSettled();
+
+        assert.ok(interceptedEvent);
+    });
+
+    it('Intercepts unmapped Model event and dispatches nothing', async function () {
+        let eventRegistry = new EventRegistry();
+        const modelToDomainEventInterceptor = new ModelToDomainEventInterceptor({
+            ModelEvents: eventRegistry,
+            DomainEvents: DomainEvents
+        });
+
+        const domainEventsSpy = sinon.spy(DomainEvents, 'dispatch');
+
+        modelToDomainEventInterceptor.init();
+
+        eventRegistry.emit('tag.added', {
+            id: '1234-tag'
+        });
+
+        await DomainEvents.allSettled();
+
+        assert.equal(domainEventsSpy.called, false);
     });
 });

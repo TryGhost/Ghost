@@ -1,21 +1,24 @@
-import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import Radio from '../../../admin-x-ds/global/form/Radio';
-import TextField from '../../../admin-x-ds/global/form/TextField';
-import useRoles from '../../../hooks/useRoles';
-import useRouting from '../../../hooks/useRouting';
-import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
-import {ServicesContext} from '../../providers/ServiceProvider';
-import {showToast} from '../../../admin-x-ds/global/Toast';
-import {useContext, useEffect, useRef, useState} from 'react';
+import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
+import {Modal, Radio, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
+import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
+import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
+import {useEffect, useRef, useState} from 'react';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';
 
 const InviteUserModal = NiceModal.create(() => {
-    const {api} = useContext(ServicesContext);
-    const {roles, assignableRoles, getRoleId} = useRoles();
-    const {invites, setInvites} = useStaffUsers();
+    const modal = NiceModal.useModal();
+    const rolesQuery = useBrowseRoles();
+    const assignableRolesQuery = useBrowseRoles({
+        searchParams: {limit: 'all', permissions: 'assign'}
+    });
+    const limiter = useLimiter();
+
     const {updateRoute} = useRouting();
 
     const focusRef = useRef<HTMLInputElement>(null);
@@ -24,7 +27,13 @@ const InviteUserModal = NiceModal.create(() => {
     const [role, setRole] = useState<RoleType>('contributor');
     const [errors, setErrors] = useState<{
         email?: string;
+        role?: string;
     }>({});
+
+    const {data: {users} = {}} = useBrowseUsers();
+    const {data: {invites} = {}} = useBrowseInvites();
+    const {mutateAsync: addInvite} = useAddInvite();
+    const handleError = useHandleError();
 
     useEffect(() => {
         if (focusRef.current) {
@@ -39,6 +48,30 @@ const InviteUserModal = NiceModal.create(() => {
             }, 2000);
         }
     }, [saveState]);
+
+    useEffect(() => {
+        if (role !== 'contributor' && limiter?.isLimited('staff')) {
+            limiter.errorIfWouldGoOverLimit('staff').then(() => {
+                setErrors(e => ({...e, role: undefined}));
+            }).catch((error) => {
+                if (error instanceof HostLimitError) {
+                    setErrors(e => ({...e, role: error.message}));
+                    return;
+                } else {
+                    throw error;
+                }
+            });
+        } else {
+            setErrors(e => ({...e, role: undefined}));
+        }
+    }, [limiter, role]);
+
+    if (!rolesQuery.data?.roles || !assignableRolesQuery.data?.roles) {
+        return null;
+    }
+
+    const roles = rolesQuery.data.roles;
+    const assignableRoles = assignableRolesQuery.data.roles;
 
     let okLabel = 'Send invitation now';
     if (saveState === 'saving') {
@@ -60,15 +93,31 @@ const InviteUserModal = NiceModal.create(() => {
             });
             return;
         }
+
+        if (users?.some(({email: userEmail}) => userEmail === email)) {
+            setErrors({
+                email: 'A user with that email address already exists.'
+            });
+            return;
+        }
+
+        if (invites?.some(({email: inviteEmail}) => inviteEmail === email)) {
+            setErrors({
+                email: 'A user with that email address was already invited.'
+            });
+            return;
+        }
+
+        if (errors.role) {
+            return;
+        }
+
         setSaveState('saving');
         try {
-            const res = await api.invites.add({
+            await addInvite({
                 email,
-                roleId: getRoleId(role, roles)
+                roleId: roles.find(({name}) => name.toLowerCase() === role.toLowerCase())!.id
             });
-
-            // Update invites list
-            setInvites([...invites, res.invites[0]]);
 
             setSaveState('saved');
 
@@ -76,13 +125,17 @@ const InviteUserModal = NiceModal.create(() => {
                 message: `Invitation successfully sent to ${email}`,
                 type: 'success'
             });
-        } catch (e: any) {
+
+            modal.remove();
+            updateRoute('staff');
+        } catch (e) {
             setSaveState('error');
 
             showToast({
                 message: `Failed to send invitation to ${email}`,
                 type: 'error'
             });
+            handleError(e, {withToast: false});
             return;
         }
     };
@@ -119,13 +172,13 @@ const InviteUserModal = NiceModal.create(() => {
     return (
         <Modal
             afterClose={() => {
-                updateRoute('users');
+                updateRoute('staff');
             }}
             cancelLabel=''
             okLabel={okLabel}
-            size={540}
             testId='invite-user-modal'
             title='Invite a new staff user'
+            width={540}
             onOk={handleSendInvitation}
         >
             <div className='flex flex-col gap-6 py-4'>
@@ -133,7 +186,6 @@ const InviteUserModal = NiceModal.create(() => {
                     Send an invitation for a new person to create a staff account on your site, and select a role that matches what you’d like them to be able to do.
                 </p>
                 <TextField
-                    clearBg={true}
                     error={!!errors.email}
                     hint={errors.email}
                     inputRef={focusRef}
@@ -143,9 +195,12 @@ const InviteUserModal = NiceModal.create(() => {
                     onChange={(event) => {
                         setEmail(event.target.value);
                     }}
+                    onKeyDown={() => setErrors(e => ({...e, email: undefined}))}
                 />
                 <div>
                     <Radio
+                        error={!!errors.role}
+                        hint={errors.role}
                         id='role'
                         options={allowedRoleOptions}
                         selectedOption={role}

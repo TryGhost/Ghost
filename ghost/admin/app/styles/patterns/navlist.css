@@ -76,3 +76,13 @@ li.nav-list-item .arrow-right {
 li.nav-list-item .arrow-right path {
     fill: var(--midgrey);
 }
+
+.nav-list-item-notification {
+    margin: 0 2.4rem 2rem;
+    color: var(--middarkgrey);
+}
+
+.nav-list-item-notification a {
+    color: var(--green-d1);
+    font-weight: 500;
+}

@@ -9,6 +9,7 @@ const {DateTime} = require('luxon');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const tpl = require('@tryghost/tpl');
 const cheerio = require('cheerio');
+const {EmailAddressParser} = require('@tryghost/email-addresses');
 
 const messages = {
     subscriptionStatus: {
@@ -108,6 +109,7 @@ class EmailRenderer {
     #memberAttributionService;
     #outboundLinkTagger;
     #audienceFeedbackService;
+    #emailAddressService;
     #labs;
     #models;
 
@@ -126,6 +128,7 @@ class EmailRenderer {
      * @param {object} dependencies.linkTracking
      * @param {object} dependencies.memberAttributionService
      * @param {object} dependencies.audienceFeedbackService
+     * @param {object} dependencies.emailAddressService
      * @param {object} dependencies.outboundLinkTagger
      * @param {object} dependencies.labs
      * @param {{Post: object}} dependencies.models
@@ -142,6 +145,7 @@ class EmailRenderer {
         linkTracking,
         memberAttributionService,
         audienceFeedbackService,
+        emailAddressService,
         outboundLinkTagger,
         labs,
         models
@@ -157,6 +161,7 @@ class EmailRenderer {
         this.#linkTracking = linkTracking;
         this.#memberAttributionService = memberAttributionService;
         this.#audienceFeedbackService = audienceFeedbackService;
+        this.#emailAddressService = emailAddressService;
         this.#outboundLinkTagger = outboundLinkTagger;
         this.#labs = labs;
         this.#models = models;
@@ -166,7 +171,7 @@ class EmailRenderer {
         return post.related('posts_meta')?.get('email_subject') || post.get('title');
     }
 
-    getFromAddress(_post, newsletter) {
+    #getRawFromAddress(post, newsletter) {
         let senderName = this.#settingsCache.get('title') ? this.#settingsCache.get('title').replace(/"/g, '\\"') : '';
         if (newsletter.get('sender_name')) {
             senderName = newsletter.get('sender_name');
@@ -185,8 +190,19 @@ class EmailRenderer {
                 fromAddress = localAddress;
             }
         }
+        return {
+            address: fromAddress,
+            name: senderName || undefined
+        };
+    }
 
-        return senderName ? `"${senderName}" <${fromAddress}>` : fromAddress;
+    getFromAddress(post, newsletter) {
+        // Clean from address to ensure DMARC alignment
+        const addresses = this.#emailAddressService.getAddress({
+            from: this.#getRawFromAddress(post, newsletter)
+        });
+
+        return EmailAddressParser.stringify(addresses.from);
     }
 
     /**
@@ -198,18 +214,36 @@ class EmailRenderer {
         if (newsletter.get('sender_reply_to') === 'support') {
             return this.#settingsHelpers.getMembersSupportAddress();
         }
-        return this.getFromAddress(post, newsletter);
+        if (newsletter.get('sender_reply_to') === 'newsletter') {
+            if (this.#emailAddressService.managedEmailEnabled) {
+                // Don't duplicate the same replyTo addres if it already in the FROM address
+                return null;
+            }
+            return this.getFromAddress(post, newsletter);
+        }
+
+        const addresses = this.#emailAddressService.getAddress({
+            from: this.#getRawFromAddress(post, newsletter),
+            replyTo: {
+                address: newsletter.get('sender_reply_to')
+            }
+        });
+
+        if (addresses.replyTo) {
+            return EmailAddressParser.stringify(addresses.replyTo);
+        }
+        return null;
     }
 
     /**
 		Returns all the segments that we need to render the email for because they have different content.
         WARNING: The sum of all the returned segments should always include all the members. Those members are later limited if needed based on the recipient filter of the email.
         @param {Post} post
-        @returns {Segment[]}
+        @returns {Promise<Segment[]>}
 	*/
-    getSegments(post) {
+    async getSegments(post) {
         const allowedSegments = ['status:free', 'status:-free'];
-        const html = this.renderPostBaseHtml(post);
+        const html = await this.renderPostBaseHtml(post);
 
         /**
          * Always add free and paid segments if email has paywall card
@@ -235,11 +269,12 @@ class EmailRenderer {
         return allowedSegments;
     }
 
-    renderPostBaseHtml(post) {
+    async renderPostBaseHtml(post) {
         const postUrl = this.#getPostUrl(post);
         let html;
         if (post.get('lexical')) {
-            html = this.#renderers.lexical.render(
+            // only lexical's renderer is async
+            html = await this.#renderers.lexical.render(
                 post.get('lexical'), {target: 'email', postUrl}
             );
         } else {
@@ -259,7 +294,7 @@ class EmailRenderer {
      * @returns {Promise<EmailBody>}
      */
     async renderBody(post, newsletter, segment, options) {
-        let html = this.renderPostBaseHtml(post);
+        let html = await this.renderPostBaseHtml(post);
 
         // We don't allow the usage of the %%{uuid}%% replacement in the email body (only in links and special cases)
         // So we need to filter them before we introduce the real %%{uuid}%%
@@ -308,9 +343,22 @@ class EmailRenderer {
         });
         html = await this.renderTemplate(templateData);
 
+        // We pass the base option to the link replacer so relative links are replaced with absolute links, relative to this base url
+        const base = templateData.post.url;
+
         // Link tracking
         if (options.clickTrackingEnabled) {
-            html = await this.#linkReplacer.replace(html, async (url) => {
+            html = await this.#linkReplacer.replace(html, async (url, originalPath) => {
+                if (originalPath.startsWith('%%{') && originalPath.endsWith('}%%')) {
+                    // Don't add the base url to replacement strings
+                    return originalPath;
+                }
+
+                // Ignore empty hashtags (used as a hack for email addresses to prevent making them clickable)
+                if (originalPath === '#') {
+                    return originalPath;
+                }
+
                 // We ignore all links that contain %%{uuid}%%
                 // because otherwise we would add tracking to links that need to be replaced first
                 if (url.toString().indexOf('%%{uuid}%%') !== -1) {
@@ -337,8 +385,35 @@ class EmailRenderer {
                 // We need to convert to a string at this point, because we need invalid string characters in the URL
                 const str = url.toString().replace(/--uuid--/g, '%%{uuid}%%');
                 return str;
-            });
+            }, {base});
+        } else {
+            // Replace all relative links to absolute ones
+            html = await this.#linkReplacer.replace(html, (url, originalPath) => {
+                if (originalPath.startsWith('%%{') && originalPath.endsWith('}%%')) {
+                    // Don't add the base url to replacement strings
+                    return originalPath;
+                }
+
+                // Ignore empty hashtags (used as a hack for email addresses to prevent making them clickable)
+                if (originalPath === '#') {
+                    return originalPath;
+                }
+                return url;
+            }, {base});
         }
+
+        // Record the original image width and height attributes before inlining the styles with juice
+        // If any images have `width: auto` or `height: auto` set via CSS,
+        // juice will explicitly set the width/height attributes to `auto` on the <img /> tag
+        // This is not supported by Outlook, so we need to reset the width/height attributes to the original values
+        // Other clients will ignore the width/height attributes and use the inlined CSS instead
+        $ = cheerio.load(html);
+        const originalImageSizes = $('img').get().map((image) => {
+            const src = image.attribs.src;
+            const width = image.attribs.width;
+            const height = image.attribs.height;
+            return {src, width, height};
+        });
 
         // Juice HTML (inline CSS)
         const juice = require('juice');
@@ -346,6 +421,21 @@ class EmailRenderer {
 
         // happens after inlining of CSS so we can change element types without worrying about styling
         $ = cheerio.load(html);
+
+        // Reset any `height="auto"` or `width="auto"` attributes to their original values before inlining CSS
+        const imageTags = $('img').get();
+        for (let i = 0; i < imageTags.length; i += 1) {
+            // There shouldn't be any issues with consistency between these two lists, but just in case...
+            if (imageTags[i].attribs.src === originalImageSizes[i].src) {
+                // if the image width or height is set to 'auto', reset to its original value
+                if (imageTags[i].attribs.width === 'auto' && originalImageSizes[i].width) {
+                    imageTags[i].attribs.width = originalImageSizes[i].width;
+                }
+                if (imageTags[i].attribs.height === 'auto' && originalImageSizes[i].height) {
+                    imageTags[i].attribs.height = originalImageSizes[i].height;
+                }
+            }
+        }
 
         // force all links to open in new tab
         $('a').attr('target', '_blank');
@@ -592,6 +682,19 @@ class EmailRenderer {
             }
         ];
 
+        if (this.#labs.isSet('listUnsubscribeHeader')) {
+            baseDefinitions.push(
+                {
+                    id: 'list_unsubscribe',
+                    getValue: (member) => {
+                        // Same URL
+                        return this.createUnsubscribeUrl(member.uuid, {newsletterUuid});
+                    },
+                    required: true // Used in email headers
+                }
+            );
+        }
+
         // Now loop through all the definenitions to see which ones are actually used + to add fallbacks if needed
         const EMAIL_REPLACEMENT_REGEX = /%%\{(.*?)\}%%/g;
         const REPLACEMENT_STRING_REGEX = /^(?<recipientProperty>\w+?)(?:,? *(?:"|&quot;)(?<fallback>.*?)(?:"|&quot;))?$/;
@@ -624,6 +727,18 @@ class EmailRenderer {
             }
         }
 
+        // Add all required replacements
+        for (const definition of baseDefinitions) {
+            if (definition.required && !replacements.find(r => r.id === definition.id)) {
+                replacements.push({
+                    id: definition.id,
+                    originalId: definition.id,
+                    token: new RegExp(`%%\\{${definition.id}\\}%%`, 'g'),
+                    getValue: definition.getValue
+                });
+            }
+        }
+
         // Now loop any replacements with possible invalid characters and replace them with a clean id
         let counter = 1;
         for (const replacement of replacements) {
@@ -638,7 +753,7 @@ class EmailRenderer {
     }
 
     async renderTemplate(data) {
-        this.#handlebars = require('handlebars');
+        this.#handlebars = require('handlebars').create();
 
         // Helpers
         this.#handlebars.registerHelper('if', function (conditional, options) {
@@ -903,7 +1018,7 @@ class EmailRenderer {
         if (newsletter.get('show_latest_posts')) {
             // Fetch last 3 published posts
             const {data} = await this.#models.Post.findPage({
-                filter: 'status:published+id:-' + post.id,
+                filter: `status:published+id:-'${post.id}'`,
                 order: 'published_at DESC',
                 limit: 3
             });

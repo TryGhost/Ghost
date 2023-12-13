@@ -4,6 +4,7 @@ import {Page} from '@playwright/test';
 const MOCKED_SITE_URL = 'https://localhost:1234';
 
 type LastApiRequest = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     body: null | any
 };
 
@@ -44,6 +45,7 @@ export async function initialize({page, path, apiStatus, embeddedOnUrl, ...optio
     };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function mockApi({page, status = 200}: {page: any, status?: number}) {
     const lastApiRequest: LastApiRequest = {
         body: null

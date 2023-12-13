@@ -6,6 +6,7 @@ import {isEmpty} from '@ember/utils';
 @classic
 export default class MemberImportValidatorService extends Service {
     @service ajax;
+    @service feature;
     @service membersUtils;
 
     @service ghostPaths;
@@ -22,6 +23,7 @@ export default class MemberImportValidatorService extends Service {
      * If the data contains 30 rows or fewer, all rows should be validated.
      *
      * @param {Array} data JSON objects mapped from CSV file
+     * @param {number} validationSampleSize number of rows to sample
      */
     _sampleData(data, validationSampleSize = 30) {
         let validatedSet = [{}];
@@ -86,13 +88,17 @@ export default class MemberImportValidatorService extends Service {
             'created_at'
         ];
 
+        if (this.feature.importMemberTier) {
+            supportedTypes.push('import_tier');
+        }
+
         const autoDetectedTypes = [
             'email'
         ];
 
         let mapping = {};
         let i = 0;
-        // loopping through all sampled data until needed data types are detected
+        // looping through all sampled data until needed data types are detected
         while (i <= (data.length - 1)) {
             if (mapping.email && mapping.stripe_customer_id) {
                 break;

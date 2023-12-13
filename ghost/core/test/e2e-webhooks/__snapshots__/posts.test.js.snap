@@ -2,7 +2,7 @@
 
 exports[`post.* events post.added event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -21,6 +21,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -35,6 +36,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "slug": "joe-bloggs",
           "status": "active",
           "tour": null,
@@ -64,16 +66,18 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -88,6 +92,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "slug": "joe-bloggs",
         "status": "active",
         "tour": null,
@@ -155,7 +160,7 @@ Object {
 
 exports[`post.* events post.deleted event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -175,6 +180,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -189,6 +195,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -218,7 +225,7 @@ Object {
       "featured": false,
       "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "published_at": null,
       "slug": "testing-post-deleted-webhook",
       "status": "draft",
@@ -233,7 +240,7 @@ Object {
 
 exports[`post.* events post.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -252,6 +259,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -266,6 +274,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -309,17 +318,18 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -334,6 +344,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -451,7 +462,7 @@ Object {
 
 exports[`post.* events post.published event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -470,6 +481,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -484,6 +496,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -525,11 +538,11 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "feature_image_caption": null,
       "featured": false,
       "frontmatter": null,
-      "html": "<!--kg-card-begin: markdown--><h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\\\\"#\\\\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->",
+      "html": "<!--kg-card-begin: markdown--><h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[[\\"markdown\\",{\\"markdown\\":\\"<h1>HTML Ipsum Presents</h1><img src=\\\\\\"http://127.0.0.1:2369/content/images/lol.jpg\\\\\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\\\\\\\\\\\\"#\\\\\\\\\\\\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>\\"}]],\\"sections\\":[[10,0]]}",
+      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[[\\"markdown\\",{\\"markdown\\":\\"<h1>HTML Ipsum Presents</h1><img src=\\\\\\"http://127.0.0.1:2369/content/images/lol.jpg\\\\\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\\\\"#\\\\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>\\"}]],\\"sections\\":[[10,0]]}",
       "og_description": null,
       "og_image": null,
       "og_title": null,
@@ -552,13 +565,14 @@ Header Level 3
  * Aliquam tincidunt mauris eu risus.
 
 #header h1 a{display: block;width: 300px;height: 80px;}",
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -573,6 +587,7 @@ Header Level 3
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -692,7 +707,7 @@ Header Level 3
 
 exports[`post.* events post.published.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -711,6 +726,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -725,6 +741,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -768,17 +785,18 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -793,6 +811,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -910,7 +929,7 @@ Object {
 
 exports[`post.* events post.rescheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -929,6 +948,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -943,6 +963,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -986,17 +1007,18 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -1011,6 +1033,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1128,7 +1151,7 @@ Object {
 
 exports[`post.* events post.scheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1147,6 +1170,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -1161,6 +1185,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1204,17 +1229,18 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -1229,6 +1255,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1347,7 +1374,7 @@ Object {
 
 exports[`post.* events post.tag.attached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1366,6 +1393,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -1380,6 +1408,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1421,11 +1450,11 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "feature_image_caption": null,
       "featured": false,
       "frontmatter": null,
-      "html": "<!--kg-card-begin: markdown--><h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\\\\"#\\\\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->",
+      "html": "<!--kg-card-begin: markdown--><h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[[\\"markdown\\",{\\"markdown\\":\\"<h1>HTML Ipsum Presents</h1><img src=\\\\\\"http://127.0.0.1:2369/content/images/lol.jpg\\\\\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\\\\\\\\\\\\"#\\\\\\\\\\\\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>\\"}]],\\"sections\\":[[10,0]]}",
+      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[[\\"markdown\\",{\\"markdown\\":\\"<h1>HTML Ipsum Presents</h1><img src=\\\\\\"http://127.0.0.1:2369/content/images/lol.jpg\\\\\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\\\\"#\\\\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>\\"}]],\\"sections\\":[[10,0]]}",
       "og_description": null,
       "og_image": null,
       "og_title": null,
@@ -1448,13 +1477,14 @@ Header Level 3
  * Aliquam tincidunt mauris eu risus.
 
 #header h1 a{display: block;width: 300px;height: 80px;}",
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -1469,6 +1499,7 @@ Header Level 3
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1632,7 +1663,7 @@ Header Level 3
 
 exports[`post.* events post.tag.detached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1651,6 +1682,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -1665,6 +1697,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1706,11 +1739,11 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "feature_image_caption": null,
       "featured": false,
       "frontmatter": null,
-      "html": "<!--kg-card-begin: markdown--><h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\\\\"#\\\\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->",
+      "html": "<!--kg-card-begin: markdown--><h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[[\\"markdown\\",{\\"markdown\\":\\"<h1>HTML Ipsum Presents</h1><img src=\\\\\\"http://127.0.0.1:2369/content/images/lol.jpg\\\\\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\\\\\\\\\\\\"#\\\\\\\\\\\\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>\\"}]],\\"sections\\":[[10,0]]}",
+      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[[\\"markdown\\",{\\"markdown\\":\\"<h1>HTML Ipsum Presents</h1><img src=\\\\\\"http://127.0.0.1:2369/content/images/lol.jpg\\\\\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\\\\"#\\\\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>\\"}]],\\"sections\\":[[10,0]]}",
       "og_description": null,
       "og_image": null,
       "og_title": null,
@@ -1733,13 +1766,14 @@ Header Level 3
  * Aliquam tincidunt mauris eu risus.
 
 #header h1 a{display: block;width: 300px;height: 80px;}",
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -1754,6 +1788,7 @@ Header Level 3
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1857,7 +1892,7 @@ Header Level 3
 
 exports[`post.* events post.unpublished event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -1876,6 +1911,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -1890,6 +1926,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -1931,11 +1968,11 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "feature_image_caption": null,
       "featured": false,
       "frontmatter": null,
-      "html": "<!--kg-card-begin: markdown--><h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\\\\"#\\\\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->",
+      "html": "<!--kg-card-begin: markdown--><h1>HTML Ipsum Presents</h1><img src=\\"http://127.0.0.1:2369/content/images/lol.jpg\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\"#\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre><!--kg-card-end: markdown-->",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[[\\"markdown\\",{\\"markdown\\":\\"<h1>HTML Ipsum Presents</h1><img src=\\\\\\"http://127.0.0.1:2369/content/images/lol.jpg\\\\\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\\\\\\\\\\\\"#\\\\\\\\\\\\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>\\"}]],\\"sections\\":[[10,0]]}",
+      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[[\\"markdown\\",{\\"markdown\\":\\"<h1>HTML Ipsum Presents</h1><img src=\\\\\\"http://127.0.0.1:2369/content/images/lol.jpg\\\\\\"><p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href=\\\\\\"#\\\\\\">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p><h2>Header Level 2</h2><ol><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ol><blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote><h3>Header Level 3</h3><ul><li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li><li>Aliquam tincidunt mauris eu risus.</li></ul><pre><code>#header h1 a{display: block;width: 300px;height: 80px;}</code></pre>\\"}]],\\"sections\\":[[10,0]]}",
       "og_description": null,
       "og_image": null,
       "og_title": null,
@@ -1958,13 +1995,14 @@ Header Level 3
  * Aliquam tincidunt mauris eu risus.
 
 #header h1 a{display: block;width: 300px;height: 80px;}",
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -1979,6 +2017,7 @@ Header Level 3
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2097,7 +2136,7 @@ Header Level 3
 
 exports[`post.* events post.unscheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate",
+  "accept-encoding": "gzip, deflate, br",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -2116,6 +2155,7 @@ Object {
           "comment_notifications": true,
           "cover_image": null,
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "donation_notifications": true,
           "email": "jbloggs@example.com",
           "facebook": null,
           "free_member_signup_notification": true,
@@ -2130,6 +2170,7 @@ Object {
           "paid_subscription_canceled_notification": false,
           "paid_subscription_started_notification": true,
           "profile_image": "https://example.com/super_photo.jpg",
+          "recommendation_notifications": true,
           "roles": Array [
             Object {
               "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -2173,17 +2214,18 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "meta_description": null,
       "meta_title": null,
-      "mobiledoc": "{\\"version\\":\\"0.3.1\\",\\"ghostVersion\\":\\"4.0\\",\\"markups\\":[],\\"atoms\\":[],\\"cards\\":[],\\"sections\\":[[1,\\"p\\",[[0,[],0,\\"\\"]]]]}",
+      "mobiledoc": null,
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "post_revisions": Array [],
+      "post_revisions": Any<Array>,
       "primary_author": Object {
         "accessibility": null,
         "bio": "bio",
         "comment_notifications": true,
         "cover_image": null,
         "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "donation_notifications": true,
         "email": "jbloggs@example.com",
         "facebook": null,
         "free_member_signup_notification": true,
@@ -2198,6 +2240,7 @@ Object {
         "paid_subscription_canceled_notification": false,
         "paid_subscription_started_notification": true,
         "profile_image": "https://example.com/super_photo.jpg",
+        "recommendation_notifications": true,
         "roles": Array [
           Object {
             "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,

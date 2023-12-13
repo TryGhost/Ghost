@@ -2,8 +2,8 @@ const {
     CollectionsService
 } = require('@tryghost/collections');
 const BookshelfCollectionsRepository = require('./BookshelfCollectionsRepository');
-const labs = require('../../../shared/labs');
 
+let inited = false;
 class CollectionsServiceWrapper {
     /** @type {CollectionsService} */
     api;
@@ -12,15 +12,17 @@ class CollectionsServiceWrapper {
         const DomainEvents = require('@tryghost/domain-events');
         const postsRepository = require('./PostsRepository').getInstance();
         const models = require('../../models');
-        const collectionsRepositoryInMemory = new BookshelfCollectionsRepository(models.Collection);
+        const collectionsRepositoryInMemory = new BookshelfCollectionsRepository(models.Collection, models.CollectionPost, DomainEvents);
 
         const collectionsService = new CollectionsService({
             collectionsRepository: collectionsRepositoryInMemory,
             postsRepository: postsRepository,
             DomainEvents: DomainEvents,
             slugService: {
-                async generate(input) {
-                    return models.Collection.generateSlug(models.Collection, input, {});
+                async generate(input, options) {
+                    return models.Collection.generateSlug(models.Collection, input, {
+                        transacting: options.transaction
+                    });
                 }
             }
         });
@@ -29,34 +31,22 @@ class CollectionsServiceWrapper {
     }
 
     async init() {
-        if (!labs.isSet('collections')) {
+        const config = require('../../../shared/config');
+        const labs = require('../../../shared/labs');
+
+        // CASE: emergency kill switch in case we need to disable collections outside of labs
+        if (config.get('hostSettings:collections:enabled') === false) {
             return;
         }
 
-        const existingBuiltins = await this.api.getAll({filter: 'slug:featured'});
+        if (labs.isSet('collections')) {
+            if (inited) {
+                return;
+            }
 
-        if (!existingBuiltins.data.length) {
-            await this.api.createCollection({
-                title: 'Index',
-                slug: 'index',
-                description: 'Collection with all posts',
-                type: 'automatic',
-                deletable: false,
-                filter: 'status:published'
-            });
-
-            await this.api.createCollection({
-                title: 'Featured Posts',
-                slug: 'featured',
-                description: 'Collection of featured posts',
-                type: 'automatic',
-                deletable: false,
-                filter: 'featured:true'
-            });
+            inited = true;
+            this.api.subscribeToEvents();
         }
-
-        this.api.subscribeToEvents();
-        require('./intercept-events')();
     }
 }
 

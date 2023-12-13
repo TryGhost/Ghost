@@ -55,7 +55,7 @@
                         {{/if}}
 
                         <li>
-                            <LinkTo @route="settings.staff.user" @model={{this.session.user.slug}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="user-profile">
+                            <LinkTo @route="settings-x.settings-x" @model="staff/{{this.session.user.slug}}" class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="user-profile">
                                 Your profile
                             </LinkTo>
                         </li>
@@ -99,11 +99,8 @@
             </GhBasicDropdown>
         </div>
         <div class="flex items-center pe-all">
-            {{#if (gh-user-can-admin this.session.user)}}
-                <LinkTo class="gh-nav-bottom-tabicon" @route="settings" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}}</LinkTo>
-            {{/if}}
-            {{#if this.session.user.isEditor}}
-                <LinkTo class="gh-nav-bottom-tabicon" @route="settings.staff" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}}</LinkTo>
+            {{#if (or (gh-user-can-admin this.session.user) this.session.user.isEditor)}}
+                <LinkTo class="gh-nav-bottom-tabicon" @route="settings-x" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings"}}</LinkTo>
             {{/if}}
             <div class="nightshift-toggle-container">
                 <div class="nightshift-toggle {{if this.feature.nightShift "on"}}" {{action (toggle "nightShift" this.feature)}}>
