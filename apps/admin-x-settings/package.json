@@ -66,28 +66,15 @@
   },
   "nx": {
     "targets": {
-      "build": {
+      "dev": {
         "dependsOn": [
-          "build",
-          {
-            "projects": [
-              "@tryghost/admin-x-design-system",
-              "@tryghost/admin-x-framework"
-            ],
-            "target": "build"
-          }
+          "^build"
         ]
       },
       "test:acceptance": {
         "dependsOn": [
           "test:acceptance",
-          {
-            "projects": [
-              "@tryghost/admin-x-design-system",
-              "@tryghost/admin-x-framework"
-            ],
-            "target": "build"
-          }
+          "^build"
         ]
       }
     }

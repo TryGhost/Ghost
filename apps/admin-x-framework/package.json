@@ -100,16 +100,15 @@
   },
   "nx": {
     "targets": {
-      "build": {
+      "dev": {
         "dependsOn": [
-          "build",
-          {"projects": ["@tryghost/admin-x-design-system"], "target": "build"}
+          "^build"
         ]
       },
       "test:unit": {
         "dependsOn": [
           "test:unit",
-          {"projects": ["@tryghost/admin-x-design-system"], "target": "build"}
+          "^build"
         ]
       }
     }
