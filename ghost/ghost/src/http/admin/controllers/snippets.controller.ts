@@ -1,4 +1,4 @@
-import {Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseFilters, UseInterceptors} from '@nestjs/common';
+import {Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UseFilters, UseGuards, UseInterceptors} from '@nestjs/common';
 import {SnippetsService} from '../../../core/snippets/snippets.service';
 import {SnippetDTO} from './snippet.dto';
 import {Pagination} from '../../../common/types/pagination.type';
@@ -7,13 +7,25 @@ import {now} from '../../../common/helpers/date.helper';
 import {LocationHeaderInterceptor} from '../../interceptors/location-header.interceptor';
 import {GlobalExceptionFilter} from '../../filters/global-exception.filter';
 import {NotFoundError} from '@tryghost/errors';
+import {Roles} from '../../../common/decorators/permissions.decorator';
+import {PermissionsGuard} from '../../guards/permissions.guard';
+import {AdminAPIAuthentication} from '../../guards/admin-api-authentication.guard';
 
 @Controller('snippets')
+@UseGuards(AdminAPIAuthentication, PermissionsGuard)
 @UseInterceptors(LocationHeaderInterceptor)
 @UseFilters(GlobalExceptionFilter)
 export class SnippetsController {
     constructor(private readonly service: SnippetsService) {}
 
+    @Roles([
+        'Admin',
+        'Author',
+        'Contributor',
+        'Editor',
+        'Owner',
+        'Admin Integration'
+    ])
     @Get(':id')
     async read(
         @Param('id') id: 'string',
@@ -31,6 +43,12 @@ export class SnippetsController {
         };
     }
 
+    @Roles([
+        'Admin',
+        'Editor',
+        'Owner',
+        'Admin Integration'
+    ])
     @Delete(':id')
     @HttpCode(204)
     async destroy(
@@ -46,6 +64,12 @@ export class SnippetsController {
         return {};
     }
 
+    @Roles([
+        'Admin',
+        'Editor',
+        'Owner',
+        'Admin Integration'
+    ])
     @Put(':id')
     async edit(
         @Param('id') id: 'string',
@@ -64,6 +88,12 @@ export class SnippetsController {
         };
     }
 
+    @Roles([
+        'Admin',
+        'Editor',
+        'Owner',
+        'Admin Integration'
+    ])
     @Post('')
     async add(
         @Body() body: any,
@@ -79,6 +109,14 @@ export class SnippetsController {
         };
     }
 
+    @Roles([
+        'Admin',
+        'Author',
+        'Contributor',
+        'Editor',
+        'Owner',
+        'Admin Integration'
+    ])
     @Get('')
     async browse(
         @Query('formats') formats?: 'mobiledoc' | 'lexical',
