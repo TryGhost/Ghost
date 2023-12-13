@@ -45,7 +45,3 @@ Ghost outputs basic meta tags to allow rich snippets of your content to be recog
 - Schema.org - http://schema.org/docs/documents.html
 - Open Graph - http://ogp.me/
 - Twitter cards - https://dev.twitter.com/cards/overview
-
-### Default Theme
-
-The default theme which comes with Ghost loads a copy of jQuery from the jQuery Foundation's [public CDN](https://code.jquery.com/jquery-3.4.1.min.js).
