@@ -25,7 +25,7 @@ const Sidebar: React.FC<{
         errors: ErrorMessages,
         offer: Offer,
         updateOffer: (fields: Partial<Offer>) => void,
-        validate: () => void}> = ({clearError, errors, offer, updateOffer, validate}) => {
+        validate: () => void}> = ({clearError, errors, offer, updateOffer}) => {
             const {siteData} = useGlobalData();
             const [isCopied, setIsCopied] = useState(false);
             const handleError = useHandleError();
@@ -131,7 +131,6 @@ const Sidebar: React.FC<{
                                     placeholder='Black Friday'
                                     title='Offer name'
                                     value={offer?.name}
-                                    onBlur={validate}
                                     onChange={(e) => {
                                         setNameLength(e.target.value.length);
                                         updateOffer({name: e.target.value});
@@ -156,7 +155,6 @@ const Sidebar: React.FC<{
                                     placeholder='black-friday'
                                     title='Offer code'
                                     value={offer?.code}
-                                    onBlur={validate}
                                     onChange={e => updateOffer({code: e.target.value})}
                                     onKeyDown={() => clearError('name')}
                                 />
