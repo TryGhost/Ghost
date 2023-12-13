@@ -36,7 +36,7 @@
     "@ember/optional-features": "2.0.0",
     "@ember/render-modifiers": "2.1.0",
     "@ember/test-helpers": "2.9.4",
-    "@embroider/macros": "1.13.3",
+    "@embroider/macros": "1.13.4",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@sentry/ember": "7.86.0",
