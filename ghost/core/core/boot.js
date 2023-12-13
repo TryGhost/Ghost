@@ -408,6 +408,12 @@ async function initNestDependencies() {
         provide: 'urlUtils',
         useValue: urlUtils
     }, {
+        provide: 'SessionService',
+        useValue: require('./server/services/auth/session').sessionService
+    }, {
+        provide: 'AdminAuthenticationService',
+        useValue: require('./server/services/auth/api-key').admin
+    }, {
         provide: 'config',
         useValue: require('./shared/config')
     }, {
