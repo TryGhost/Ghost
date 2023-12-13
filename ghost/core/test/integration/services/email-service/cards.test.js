@@ -4,6 +4,10 @@ const assert = require('assert/strict');
 const configUtils = require('../../../utils/configUtils');
 const {sendEmail, matchEmailSnapshot} = require('../../../utils/batch-email-utils');
 const cheerio = require('cheerio');
+const fs = require('fs-extra');
+const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
+
+const goldenPost = fs.readJsonSync('./test/utils/fixtures/email-service/golden-post.json');
 
 /**
  * Remove the preheader span from the email html and put it in a separate field called preheader
@@ -137,5 +141,50 @@ describe('Can send cards via email', function () {
         assert.ok(data.preheader.includes('This is a paragraph'));
 
         await matchEmailSnapshot();
+    });
+
+    it('renders the golden post correctly', async function () {
+        const data = await sendEmail(agent, {
+            lexical: JSON.stringify(goldenPost)
+        });
+
+        splitPreheader(data);
+
+        await matchEmailSnapshot();
+    });
+
+    it('renders all of the default nodes in the golden post', async function () {
+        // This test checks that all of the default nodes from @tryghost/kg-default-nodes are present in the golden post
+        // This is to ensure that if we add new cards to Koenig, they will be included in the golden post
+        // This is important because the golden post is used to test the email rendering of the cards after
+        // they have gone through the Email Renderer, which can change the HTML/CSS of the cards
+        // See the README.md in this same directory for more information.
+
+        const cardsInGoldenPost = goldenPost.root.children.map((child) => {
+            return child.type;
+        });
+
+        const excludedCards = [
+            'collection', // only used in pages, will never be emailed
+            'extended-text', // not a card
+            'extended-quote', // not a card
+            'extended-heading', // not a card
+            'tk' // shouldn't be present in published posts / emails
+        ];
+
+        const cardsInDefaultNodes = DEFAULT_NODES.map((node) => {
+            try {
+                return node.getType();
+            } catch (error) {
+                return null;
+            }
+        }).filter((card) => {
+            return card !== null && !excludedCards.includes(card); // don't include extended versions of regular text type nodes, we only want the cards (decorator nodes)
+        });
+
+        // Check that every card in DEFAULT_NODES are present in the golden post (with the exception of the excludedCards above)
+        for (const card of cardsInDefaultNodes) {
+            assert.ok(cardsInGoldenPost.includes(card), `The golden post does not contain the ${card} card`);
+        }
     });
 });
