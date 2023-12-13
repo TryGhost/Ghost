@@ -75,10 +75,11 @@ if (sentryConfig && !sentryConfig.disabled) {
         sentryInitConfig.integrations.push(new Sentry.Integrations.Http({tracing: true}));
         sentryInitConfig.integrations.push(new Sentry.Integrations.Express());
         sentryInitConfig.tracesSampleRate = parseFloat(sentryConfig.tracing.sampleRate) || 0.0;
-    }
-    if (sentryConfig.profiling?.enabled === true) {
-        sentryInitConfig.integrations.push(new ProfilingIntegration());
-        sentryInitConfig.profilesSampleRate = parseFloat(sentryConfig.profiling.sampleRate) || 0.0;
+        // Enable profiling, if configured, only if tracing is also configured
+        if (sentryConfig.profiling?.enabled === true) {
+            sentryInitConfig.integrations.push(new ProfilingIntegration());
+            sentryInitConfig.profilesSampleRate = parseFloat(sentryConfig.profiling.sampleRate) || 0.0;
+        }
     }
     Sentry.init(sentryInitConfig);
 
