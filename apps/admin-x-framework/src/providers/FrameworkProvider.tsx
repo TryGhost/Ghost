@@ -42,7 +42,7 @@ const FrameworkContext = createContext<FrameworkContextType>({
     onDelete: () => {}
 });
 
-function FrameworkProvider({children, ...props}: FrameworkProviderProps) {
+export function FrameworkProvider({children, ...props}: FrameworkProviderProps) {
     return (
         <SentryErrorBoundary>
             <QueryClientProvider client={queryClient}>
@@ -53,7 +53,5 @@ function FrameworkProvider({children, ...props}: FrameworkProviderProps) {
         </SentryErrorBoundary>
     );
 }
-
-export default FrameworkProvider;
 
 export const useFramework = () => useContext(FrameworkContext);

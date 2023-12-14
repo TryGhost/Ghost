@@ -1,12 +1,11 @@
 import {renderHook} from '@testing-library/react';
 import React, {ReactNode} from 'react';
-import FrameworkProvider from '../../../../src/providers/FrameworkProvider';
+import {FrameworkProvider} from '../../../../src/providers/FrameworkProvider';
 import {useFetchApi} from '../../../../src/utils/api/fetchApi';
 import {withMockFetch} from '../../../utils/mockFetch';
 
 const wrapper: React.FC<{ children: ReactNode }> = ({children}) => (
     <FrameworkProvider
-        basePath=''
         externalNavigate={() => {}}
         ghostVersion='5.x'
         sentryDSN=''

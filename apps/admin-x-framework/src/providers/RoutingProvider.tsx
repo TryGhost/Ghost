@@ -97,7 +97,7 @@ export interface RoutingProviderProps {
     children: React.ReactNode;
 }
 
-const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modals, children}) => {
+export const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modals, children}) => {
     const {externalNavigate} = useFramework();
     const [route, setRoute] = useState<string | undefined>(undefined);
     const [loadingModal, setLoadingModal] = useState(false);
@@ -171,8 +171,6 @@ const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modals, chil
         </RouteContext.Provider>
     );
 };
-
-export default RoutingProvider;
 
 export function useRouting() {
     return useContext(RouteContext);
