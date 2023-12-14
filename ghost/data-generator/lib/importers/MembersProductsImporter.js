@@ -13,7 +13,7 @@ class MembersProductsImporter extends TableImporter {
 
     async import(quantity) {
         const members = await this.transaction.select('id').from('members').whereNot('status', 'free');
-        this.products = await this.transaction.select('id').from('products').whereNot('name', 'Free');
+        this.products = await this.transaction.select('id').from('products').whereNot('type', 'fee');
 
         await this.importForEach(members, quantity ? quantity / members.length : 1);
     }
