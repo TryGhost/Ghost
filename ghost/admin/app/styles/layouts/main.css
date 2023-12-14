@@ -2138,6 +2138,20 @@ section.gh-ds h2 {
     background: var(--red);
 }
 
+.gh-generic-toast {
+    color: var(--black);
+    background: var(--main-color-content-greybg);
+    transition: background-color .2s;
+}
+
+.gh-generic-toast:hover {
+    background: color-mod(var(--main-color-content-greybg) l(-2%));
+}
+
+.gh-referral-toast + .gh-generic-toast {
+    display: none;
+}
+
 /* Ghost Referrals invite toast */
 .gh-referral-toast {
     position: relative;

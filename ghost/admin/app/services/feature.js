@@ -58,6 +58,9 @@ export default class FeatureService extends Service {
     // user-specific referral invitation
     @feature('referralInviteDismissed', {user: true}) referralInviteDismissed;
 
+    // user-specific offers notification
+    @feature('offersNotificationDismissed', {user: true}) offersNotificationDismissed;
+
     // labs flags
     @feature('urlCache') urlCache;
     @feature('lexicalMultiplayer') lexicalMultiplayer;
