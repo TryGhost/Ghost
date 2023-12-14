@@ -492,12 +492,14 @@ const AddOfferModal = () => {
             let newOverrides = {...prevOverrides};
             newOverrides.name = newValue;
             if (!prevOverrides.code.isDirty) {
+                clearError('code');
                 newOverrides.code = {
                     ...prevOverrides.code,
                     value: slugify(newValue)
                 };
             }
             if (!prevOverrides.displayTitle.isDirty) {
+                clearError('displayTitle');
                 newOverrides.displayTitle = {
                     ...prevOverrides.displayTitle,
                     value: newValue
