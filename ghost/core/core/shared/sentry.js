@@ -1,7 +1,17 @@
 const config = require('./config');
+const logging = require('@tryghost/logging');
 const SentryKnexTracingIntegration = require('./SentryKnexTracingIntegration');
 const sentryConfig = config.get('sentry');
 const errors = require('@tryghost/errors');
+
+// Import Sentry's profiling integration if available
+let ProfilingIntegration;
+try {
+    ({ProfilingIntegration} = require('@sentry/profiling-node'));
+} catch (err) {
+    logging.warn('Sentry Profiling Integration not available');
+    ProfilingIntegration = null;
+}
 
 const beforeSend = function (event, hint) {
     try {
@@ -74,6 +84,11 @@ if (sentryConfig && !sentryConfig.disabled) {
         sentryInitConfig.integrations.push(new Sentry.Integrations.Http({tracing: true}));
         sentryInitConfig.integrations.push(new Sentry.Integrations.Express());
         sentryInitConfig.tracesSampleRate = parseFloat(sentryConfig.tracing.sampleRate) || 0.0;
+        // Enable profiling, if configured, only if tracing is also configured
+        if (ProfilingIntegration && sentryConfig.profiling?.enabled === true) {
+            sentryInitConfig.integrations.push(new ProfilingIntegration());
+            sentryInitConfig.profilesSampleRate = parseFloat(sentryConfig.profiling.sampleRate) || 0.0;
+        }
     }
     Sentry.init(sentryInitConfig);
 
