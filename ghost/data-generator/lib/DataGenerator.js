@@ -7,6 +7,7 @@ const {faker} = require('@faker-js/faker');
 const {faker: americanFaker} = require('@faker-js/faker/locale/en_US');
 const crypto = require('crypto');
 const {Buffer} = require('node:buffer');
+const DatabaseInfo = require('@tryghost/database-info');
 
 const importers = require('./importers').reduce((acc, val) => {
     acc[val.table] = val;
@@ -153,8 +154,10 @@ class DataGenerator {
     async importData() {
         await this.knex.transaction(async (transaction) => {
             // Performance improvements
-            await this.knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(transaction);
-            await this.knex.raw('SET unique_checks=0;').transacting(transaction);
+            if (!DatabaseInfo.isSQLite(this.knex)) {
+                await this.knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(transaction);
+                await this.knex.raw('SET unique_checks=0;').transacting(transaction);
+            }
 
             // Add default tables if none are specified
             if (this.tableList.length === 0) {
@@ -249,8 +252,10 @@ class DataGenerator {
             }
 
             // Performance improvements
-            await this.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(transaction);
-            await this.knex.raw('SET unique_checks=1;').transacting(transaction);
+            if (!DatabaseInfo.isSQLite(this.knex)) {
+                await this.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(transaction);
+                await this.knex.raw('SET unique_checks=1;').transacting(transaction);
+            }
         }, {isolationLevel: 'read committed'});
     }
 }
