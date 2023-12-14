@@ -201,7 +201,7 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
             const newErrors: Record<string, string> = {};
 
             if (!formState?.name) {
-                newErrors.name = 'Please enter a name';
+                newErrors.name = 'Name is required';
             }
 
             if (!formState?.display_title) {

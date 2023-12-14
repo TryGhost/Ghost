@@ -23,12 +23,12 @@ const validateUrl = function (errors: ErrorMessages, url: string) {
 
         // Check domain includes a dot
         if (!u.hostname.includes('.')) {
-            errors.url = 'Please enter a valid URL.';
+            errors.url = 'Enter a valid URL';
         } else {
             delete errors.url;
         }
     } catch (e) {
-        errors.url = 'Please enter a valid URL.';
+        errors.url = 'Enter a valid URL';
     }
     return errors;
 };

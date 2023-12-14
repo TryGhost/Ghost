@@ -36,7 +36,7 @@ test.describe('User profile', async () => {
 
         await modal.getByLabel('Full name').fill('');
         await modal.getByRole('button', {name: 'Save & close'}).click();
-        await expect(modal).toContainText('Please enter a name');
+        await expect(modal).toContainText('Name is required');
 
         await modal.getByLabel('Full name').fill(new Array(195).join('a'));
         await modal.getByRole('button', {name: 'Save & close'}).click();
@@ -56,7 +56,7 @@ test.describe('User profile', async () => {
 
         await modal.getByLabel('Website').fill('not-a-website');
         await modal.getByLabel('Website').blur();
-        await expect(modal).toContainText('Please enter a valid URL');
+        await expect(modal).toContainText('Enter a valid URL');
 
         const facebookInput = modal.getByLabel('Facebook profile');
 

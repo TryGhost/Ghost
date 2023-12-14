@@ -102,9 +102,6 @@ const RecommendationDescriptionForm: React.FC<Props<EditOrAddRecommendation | Re
             hint={errors.title}
             title="Title"
             value={formState.title ?? ''}
-            onBlur={() => setErrors(
-                validateDescriptionFormField(errors, 'title', formState.title)
-            )}
             onChange={(e) => {
                 clearError?.('title');
                 updateForm(state => ({...state, title: e.target.value}));
@@ -118,9 +115,6 @@ const RecommendationDescriptionForm: React.FC<Props<EditOrAddRecommendation | Re
             rows={4}
             title="Short description"
             value={formState.description ?? ''}
-            onBlur={() => setErrors(
-                validateDescriptionFormField(errors, 'description', formState.description)
-            )}
             onChange={(e) => {
                 clearError?.('description');
                 setDescriptionLength(e.target.value.length);

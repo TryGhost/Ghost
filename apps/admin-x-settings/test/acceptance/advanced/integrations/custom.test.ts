@@ -127,7 +127,7 @@ test.describe('Custom integrations', async () => {
         // Validation
 
         await createModal.getByRole('button', {name: 'Add'}).click();
-        await expect(createModal).toHaveText(/Please enter a name/);
+        await expect(createModal).toHaveText(/Name is required/);
 
         // Successful creation
 
