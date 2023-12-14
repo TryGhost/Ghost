@@ -10,12 +10,24 @@ class MembersStripeCustomersImporter extends TableImporter {
     }
 
     async import(quantity) {
-        const members = await this.transaction.select('id', 'name', 'email', 'created_at').from('members').where('status', 'paid');
+        const members = await this.transaction.select('id', 'name', 'email', 'created_at', 'status').from('members');
 
         await this.importForEach(members, quantity ? quantity / members.length : 1);
     }
 
     generate() {
+        if (this.model.status !== 'paid') {
+            // Only 30% of free members should have a stripe customer = have had a subscription in the past or tried to subscribe
+            // The number should increase the older the member is
+
+            const daysSinceMemberCreated = Math.floor((new Date() - new Date(this.model.created_at)) / (1000 * 60 * 60 * 24));
+            const shouldHaveStripeCustomer = faker.datatype.number({min: 0, max: 100}) < Math.max(Math.min(daysSinceMemberCreated / 30, 30), 5);
+
+            if (!shouldHaveStripeCustomer) {
+                return;
+            }
+        }
+
         return {
             id: faker.database.mongodbObjectId(),
             member_id: this.model.id,

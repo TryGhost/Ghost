@@ -5,7 +5,7 @@ const dateToDatabaseString = require('../utils/database-date');
 
 class MembersSubscribeEventsImporter extends TableImporter {
     static table = 'members_subscribe_events';
-    static dependencies = ['members', 'newsletters'/*, 'subscriptions'*/];
+    static dependencies = ['members', 'newsletters'];
 
     constructor(knex, transaction) {
         super(MembersSubscribeEventsImporter.table, knex, transaction);
@@ -14,7 +14,6 @@ class MembersSubscribeEventsImporter extends TableImporter {
     async import(quantity) {
         const members = await this.transaction.select('id', 'created_at', 'status').from('members');
         this.newsletters = await this.transaction.select('id').from('newsletters').orderBy('sort_order');
-        //this.subscriptions = await this.transaction.select('member_id', 'created_at').from('subscriptions');
 
         await this.importForEach(members, quantity ? quantity / members.length : this.newsletters.length);
     }

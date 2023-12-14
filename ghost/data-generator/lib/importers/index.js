@@ -15,7 +15,6 @@ module.exports = [
     require('./MembersNewslettersImporter'),
     require('./StripeProductsImporter'),
     require('./StripePricesImporter'),
-    require('./SubscriptionsImporter'),
     require('./EmailsImporter'),
     require('./EmailBatchesImporter'),
     require('./EmailRecipientsImporter'),
