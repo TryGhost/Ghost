@@ -18,7 +18,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
     const {mutateAsync: editWebhook} = useEditWebhook();
     const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, errors, clearError, validate} = useForm<Partial<Webhook>>({
+    const {formState, updateForm, handleSave, errors, clearError} = useForm<Partial<Webhook>>({
         initialState: webhook || {},
         onSave: async () => {
             if (formState.id) {
@@ -32,19 +32,19 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Please enter a name';
+                newErrors.name = 'Enter a name';
             }
 
             if (!formState.event) {
-                newErrors.event = 'Please select an event';
+                newErrors.event = 'Select an event';
             }
 
             if (!formState.target_url) {
-                newErrors.target_url = 'Please enter a target URL';
+                newErrors.target_url = 'Enter a target URL';
             }
 
             if (formState.target_url && !validator.isURL(formState.target_url)) {
-                newErrors.target_url = 'Please enter a valid URL';
+                newErrors.target_url = 'Enter a valid URL';
             }
 
             return newErrors;
@@ -81,7 +81,6 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                     placeholder='Custom webhook'
                     title='Name'
                     value={formState.name}
-                    onBlur={validate}
                     onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                     onKeyDown={() => clearError('name')}
                 />
@@ -106,7 +105,6 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                     title='Target URL'
                     type='url'
                     value={formState.target_url}
-                    onBlur={validate}
                     onChange={e => updateForm(state => ({...state, target_url: e.target.value}))}
                     onKeyDown={() => clearError('target_url')}
                 />
