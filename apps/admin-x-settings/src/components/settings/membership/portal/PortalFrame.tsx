@@ -4,9 +4,13 @@ type PortalFrameProps = {
     href: string;
     onLoaded?: (iframe: HTMLIFrameElement) => void;
     onDestroyed?: () => void;
+    selectedTab?: string;
 }
 
-const PortalFrame: React.FC<PortalFrameProps> = ({href, onLoaded, onDestroyed}) => {
+const PortalFrame: React.FC<PortalFrameProps> = ({href, onLoaded, onDestroyed, selectedTab}) => {
+    if (!selectedTab) {
+        selectedTab = 'signup';
+    }
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isInvisible, setIsInvisible] = useState<boolean>(true);
 
