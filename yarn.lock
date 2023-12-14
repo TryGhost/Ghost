@@ -4939,6 +4939,14 @@
     "@sentry/utils" "7.86.0"
     https-proxy-agent "^5.0.0"
 
+"@sentry/profiling-node@^1.3.2":
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@sentry/profiling-node/-/profiling-node-1.3.2.tgz#68b802b6f4d6730c653d0120ebb688a99cfc3493"
+  integrity sha512-Dm2FmR0+BYrTm3YSmbCxjeklAsXZecOwWarZQdrCQniPYlxS9GPgWv1P+J78+CrHZ4IpoIvnlRppGPMrJwPXkw==
+  dependencies:
+    detect-libc "^2.0.2"
+    node-abi "^3.52.0"
+
 "@sentry/react@7.86.0":
   version "7.86.0"
   resolved "https://registry.yarnpkg.com/@sentry/react/-/react-7.86.0.tgz#54b1a27e773f3a4fe6afe5d83bbc3e71e42ac326"
@@ -7689,7 +7697,7 @@
 
 "@tryghost/html-to-mobiledoc@3.0.1":
   version "3.0.1"
-  resolved "https://registry.npmjs.org/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-3.0.1.tgz#934cb273c2378e6d06c50326cbe87a1ba4cb7fde"
+  resolved "https://registry.yarnpkg.com/@tryghost/html-to-mobiledoc/-/html-to-mobiledoc-3.0.1.tgz#934cb273c2378e6d06c50326cbe87a1ba4cb7fde"
   integrity sha512-IehQkQ1SaASav0t+b/tLlxYWIMFFVuqH4kz8ynQq1mhYp6wKaTYrGgFft2o1d2oob2KEYIICNl7fTzj5W7oAYw==
   dependencies:
     "@tryghost/kg-parser-plugins" "^4.0.1"
@@ -7736,7 +7744,7 @@
 
 "@tryghost/kg-clean-basic-html@4.0.1", "@tryghost/kg-clean-basic-html@^4.0.1":
   version "4.0.1"
-  resolved "https://registry.npmjs.org/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-4.0.1.tgz#27e5c029449781f16f7d3687614a8efff8c67b22"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-clean-basic-html/-/kg-clean-basic-html-4.0.1.tgz#27e5c029449781f16f7d3687614a8efff8c67b22"
   integrity sha512-dt1yfQUms9xt14gawu49pdxITjSry9E4OA5a/br3E+K3NbNoIK/+cXMFDTa8hmCofmRxBH5YZfA6cbjMzvDcRA==
 
 "@tryghost/kg-converters@0.0.22":
@@ -7850,7 +7858,7 @@
 
 "@tryghost/kg-parser-plugins@^4.0.1":
   version "4.0.1"
-  resolved "https://registry.npmjs.org/@tryghost/kg-parser-plugins/-/kg-parser-plugins-4.0.1.tgz#e89c54e383c949e22293de8badff2d564813b578"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-parser-plugins/-/kg-parser-plugins-4.0.1.tgz#e89c54e383c949e22293de8badff2d564813b578"
   integrity sha512-QdUAEaenQ/1VfaDsMwk+dVHczdTxK6muQYSWnIW6c+T8TxRuQGEM73140otKEL4Uee0w/xNkAC+cVDJnySiH6g==
   dependencies:
     "@tryghost/kg-clean-basic-html" "^4.0.1"
@@ -23860,6 +23868,13 @@ node-abi@^3.3.0:
   version "3.28.0"
   resolved "https://registry.yarnpkg.com/node-abi/-/node-abi-3.28.0.tgz#b0df8b317e1c4f2f323756c5fc8ffccc5bca4718"
   integrity sha512-fRlDb4I0eLcQeUvGq7IY3xHrSb0c9ummdvDSYWfT9+LKP+3jCKw/tKoqaM7r1BAoiAC6GtwyjaGnOz6B3OtF+A==
+  dependencies:
+    semver "^7.3.5"
+
+node-abi@^3.52.0:
+  version "3.52.0"
+  resolved "https://registry.yarnpkg.com/node-abi/-/node-abi-3.52.0.tgz#ffba0a85f54e552547e5849015f40f9514d5ba7c"
+  integrity sha512-JJ98b02z16ILv7859irtXn4oUaFWADtvkzy2c0IAatNVX2Mc9Yoh8z6hZInn3QwvMEYhHuQloYi+TTQy67SIdQ==
   dependencies:
     semver "^7.3.5"
 
