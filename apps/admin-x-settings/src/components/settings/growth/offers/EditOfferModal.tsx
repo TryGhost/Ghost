@@ -138,10 +138,13 @@ const Sidebar: React.FC<{
                                     onKeyDown={() => clearError('name')}
                                 />
                                 <TextField
+                                    error={Boolean(errors.displayTitle)}
+                                    hint={errors.displayTitle}
                                     placeholder='Black Friday Special'
                                     title='Display title'
                                     value={offer?.display_title}
                                     onChange={e => updateOffer({display_title: e.target.value})}
+                                    onKeyDown={() => clearError('displayTitle')}
                                 />
                                 <TextArea
                                     placeholder='Take advantage of this limited-time offer.'
@@ -156,7 +159,7 @@ const Sidebar: React.FC<{
                                     title='Offer code'
                                     value={offer?.code}
                                     onChange={e => updateOffer({code: e.target.value})}
-                                    onKeyDown={() => clearError('name')}
+                                    onKeyDown={() => clearError('code')}
                                 />
                             </div>
                         </section>
@@ -199,6 +202,10 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
 
             if (!formState?.name) {
                 newErrors.name = 'Please enter a name';
+            }
+
+            if (!formState?.display_title) {
+                newErrors.displayTitle = 'Display title is required';
             }
 
             if (!formState?.code) {
