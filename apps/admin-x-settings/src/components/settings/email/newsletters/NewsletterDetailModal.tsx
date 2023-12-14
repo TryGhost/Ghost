@@ -22,7 +22,7 @@ const ReplyToEmailField: React.FC<{
     errors: ErrorMessages;
     validate: () => void;
     clearError: (field: string) => void;
-}> = ({newsletter, updateNewsletter, errors, clearError, validate}) => {
+}> = ({newsletter, updateNewsletter, errors, clearError}) => {
     const {settings, config} = useGlobalData();
     const [defaultEmailAddress, supportEmailAddress] = getSettingValues<string>(settings, ['default_email_address', 'support_email_address']);
     const newEmailAddressesFlag = useFeatureFlag('newEmailAddresses');
@@ -66,8 +66,6 @@ const ReplyToEmailField: React.FC<{
     }
 
     const onBlur = () => {
-        validate();
-
         // Update the senderReplyTo to the rendered value again
         const rendered = renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || '';
         setSenderReplyTo(rendered);
@@ -191,7 +189,6 @@ const Sidebar: React.FC<{
                     placeholder={newsletterAddress || ''}
                     title="Sender email address"
                     value={newsletter.sender_email || ''}
-                    onBlur={validate}
                     onChange={e => updateNewsletter({sender_email: e.target.value})}
                     onKeyDown={() => clearError('sender_email')}
                 />
@@ -218,7 +215,6 @@ const Sidebar: React.FC<{
                     rightPlaceholder={sendingEmailUsername ? `@${sendingDomain(config)}` : `` }
                     title="Sender email address"
                     value={sendingEmailUsername || ''}
-                    onBlur={validate}
                     onChange={(e) => {
                         const username = e.target.value?.split('@')[0];
                         const newEmail = username ? `${username}@${sendingDomain(config)}` : '';
@@ -246,7 +242,6 @@ const Sidebar: React.FC<{
                         placeholder="Weekly Roundup"
                         title="Name"
                         value={newsletter.name || ''}
-                        onBlur={validate}
                         onChange={e => updateNewsletter({name: e.target.value})}
                         onKeyDown={() => clearError('name')}
                     />
