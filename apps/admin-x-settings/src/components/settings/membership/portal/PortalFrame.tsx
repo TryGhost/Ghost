@@ -2,12 +2,11 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 type PortalFrameProps = {
     href: string;
-    onLoaded?: (iframe: HTMLIFrameElement) => void;
     onDestroyed?: () => void;
     selectedTab?: string;
 }
 
-const PortalFrame: React.FC<PortalFrameProps> = ({href, onLoaded, onDestroyed, selectedTab}) => {
+const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab}) => {
     if (!selectedTab) {
         selectedTab = 'signup';
     }
@@ -17,12 +16,11 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onLoaded, onDestroyed, s
     // Handler for making the iframe visible, memoized with useCallback
     const makeVisible = useCallback(() => {
         setTimeout(() => {
-            setIsInvisible(false);
-            if (onLoaded && iframeRef.current) {
-                onLoaded(iframeRef.current);
+            if (iframeRef.current) {
+                setIsInvisible(false);
             }
         }, 100); // Delay to allow scripts to render
-    }, [onLoaded]); // Dependencies for useCallback
+    }, [iframeRef]); // Dependencies for useCallback
 
     // Effect for attaching message listener
     useEffect(() => {
