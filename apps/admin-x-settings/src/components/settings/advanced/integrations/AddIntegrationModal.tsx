@@ -41,7 +41,7 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
         title='Add integration'
         onOk={async () => {
             if (!name) {
-                setErrors({name: 'Please enter a name'});
+                setErrors({name: 'Name is required'});
                 return;
             }
 

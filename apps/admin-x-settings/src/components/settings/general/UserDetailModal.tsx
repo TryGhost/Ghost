@@ -24,7 +24,7 @@ const validators: Record<string, (u: Partial<User>) => string> = {
         let error = '';
 
         if (!name) {
-            error = 'Please enter a name';
+            error = 'Name is required';
         }
 
         if (name && name.length > 191) {
@@ -39,7 +39,7 @@ const validators: Record<string, (u: Partial<User>) => string> = {
     },
     url: ({url}) => {
         const valid = !url || validator.isURL(url);
-        return valid ? '' : 'Please enter a valid URL';
+        return valid ? '' : 'Enter a valid URL';
     },
     bio: ({bio}) => {
         const valid = !bio || bio.length <= 200;

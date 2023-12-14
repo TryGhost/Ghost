@@ -560,15 +560,15 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Please enter a name';
+                newErrors.name = 'Name is required';
             }
 
             if (formState.sender_email && !validator.isEmail(formState.sender_email)) {
-                newErrors.sender_email = 'Invalid email.';
+                newErrors.sender_email = 'Invalid email';
             }
 
             if (formState.sender_reply_to && !validator.isEmail(formState.sender_reply_to) && !['newsletter', 'support'].includes(formState.sender_reply_to)) {
-                newErrors.sender_reply_to = 'Invalid email.';
+                newErrors.sender_reply_to = 'Invalid email';
             }
 
             return newErrors;
