@@ -66,7 +66,6 @@ const ReplyToEmailField: React.FC<{
     }
 
     const onBlur = () => {
-
         // Update the senderReplyTo to the rendered value again
         const rendered = renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || '';
         setSenderReplyTo(rendered);
