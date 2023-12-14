@@ -1,4 +1,4 @@
-import {assertHTML, ctrlOrCmd, focusEditor, initialize, insertCard} from '../../utils/e2e';
+import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Emoji Picker Plugin', async function () {
@@ -142,6 +142,18 @@ test.describe('Emoji Picker Plugin', async function () {
         await page.keyboard.type(':', {delay: 10});
 
         await assertHTML(page, '<p dir="ltr"><mark data-lexical-text="true"><span>Test ❤️</span></mark></p>');
+    });
+
+    test('can handle :, with no search matches', async function () {
+        await focusEditor(page);
+        await page.keyboard.type(':,', {delay: 10});
+        await expect(page.getByTestId('emoji-menu')).not.toBeVisible();
+        // can continue typing (previous bug crashed editor)
+        await page.keyboard.type(' testing');
+
+        await assertHTML(page, html`
+            <p dir="ltr"><span data-lexical-text="true">:, testing</span></p>
+        `);
     });
 
     test(`can use emojis in nested editors`, async function () {

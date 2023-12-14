@@ -172,7 +172,7 @@ export function EmojiPickerPlugin() {
                 anchorElementRef,
                 {selectedIndex, selectOptionAndCleanUp, setHighlightedIndex}
             ) => {
-                if (anchorElementRef.current === null || searchResults === null || searchResults.length === 0) {
+                if (anchorElementRef.current === null || !searchResults || searchResults.length === 0) {
                     return null;
                 }
                 return (
