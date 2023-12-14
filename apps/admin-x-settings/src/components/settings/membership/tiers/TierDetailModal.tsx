@@ -37,7 +37,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         yearly_price: () => (formState.type !== 'free' ? validateCurrencyAmount(formState.yearly_price || 0, formState.currency, {allowZero: false}) : undefined)
     };
 
-    const {formState, saveState, updateForm, handleSave, errors, setErrors, clearError, okProps} = useForm<TierFormState>({
+    const {formState, saveState, updateForm, handleSave, errors, clearError, okProps} = useForm<TierFormState>({
         initialState: {
             ...(tier || {}),
             trial_days: tier?.trial_days?.toString() || '',
@@ -104,16 +104,6 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         },
         onSaveError: handleError
     });
-
-    const validateField = (key: string) => {
-        const error = validators[key as keyof Tier]?.();
-
-        if (error) {
-            setErrors({...errors, [key]: error});
-        } else {
-            clearError(key);
-        }
-    };
 
     const benefits = useSortableIndexedList({
         items: formState.benefits || [],
@@ -227,8 +217,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         title='Name'
                         value={formState.name || ''}
                         autoFocus
-                        onBlur={() => validateField('name')}
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
+                        onKeyDown={() => clearError('name')}
                     />}
                     <TextField
                         autoComplete='off'
@@ -267,8 +257,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                         title='Monthly price'
                                         valueInCents={formState.monthly_price || ''}
                                         hideTitle
-                                        onBlur={() => validateField('monthly_price')}
                                         onChange={price => updateForm(state => ({...state, monthly_price: price}))}
+                                        onKeyDown={() => clearError('monthly_price')}
                                     />
                                     <CurrencyField
                                         error={Boolean(errors.yearly_price)}
@@ -278,8 +268,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                         title='Yearly price'
                                         valueInCents={formState.yearly_price || ''}
                                         hideTitle
-                                        onBlur={() => validateField('yearly_price')}
                                         onChange={price => updateForm(state => ({...state, yearly_price: price}))}
+                                        onKeyDown={() => clearError('yearly_price')}
                                     />
                                 </div>
                             </div>
