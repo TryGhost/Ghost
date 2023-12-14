@@ -20,7 +20,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
     const {mutateAsync: uploadImage} = useUploadImage();
     const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, saveState, errors, clearError, validate, okProps} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors, clearError, okProps} = useForm({
         initialState: integration,
         savingDelay: 500,
         savedDelay: 500,
@@ -36,7 +36,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Please enter a name';
+                newErrors.name = 'Name is required.';
             }
 
             return newErrors;
@@ -126,7 +126,6 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                         hint={errors.name}
                         title='Title'
                         value={formState.name}
-                        onBlur={validate}
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                         onKeyDown={() => clearError('name')}
                     />
