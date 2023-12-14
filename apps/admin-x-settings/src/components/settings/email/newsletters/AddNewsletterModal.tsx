@@ -40,7 +40,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Please enter a name';
+                newErrors.name = 'Name is required';
             }
 
             return newErrors;
