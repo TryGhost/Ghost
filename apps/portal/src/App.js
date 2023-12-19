@@ -311,7 +311,10 @@ export default class App extends React.Component {
         // Handle the query params key/value pairs
         for (let pair of qsParams.entries()) {
             const key = pair[0];
+
+            // Note: this needs to be cleaned up, there is no reason why we need to double encode/decode
             const value = decodeURIComponent(pair[1]);
+
             if (key === 'button') {
                 data.site.portal_button = JSON.parse(value);
             } else if (key === 'name') {
@@ -357,6 +360,8 @@ export default class App extends React.Component {
                 data.site.allow_self_signup = JSON.parse(value);
             } else if (key === 'membersSignupAccess' && value) {
                 data.site.members_signup_access = value;
+            } else if (key === 'portalDefaultPlan' && value) {
+                data.site.portal_default_plan = value;
             }
         }
         data.site.portal_plans = allowedPlans;
@@ -389,6 +394,7 @@ export default class App extends React.Component {
                 }
             ];
         }
+
         return data;
     }
 

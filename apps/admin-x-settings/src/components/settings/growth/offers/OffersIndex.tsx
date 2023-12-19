@@ -14,6 +14,7 @@ import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useModal} from '@ebay/nice-modal-react';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useSortingState} from '../../../providers/SettingsAppProvider';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
@@ -113,9 +114,14 @@ export const OffersIndexModal = () => {
         {id: 'active', title: 'Active'},
         {id: 'archived', title: 'Archived'}
     ];
+
+    const {sortingState, setSortingState} = useSortingState();
+    const offersSorting = sortingState?.find(sorting => sorting.type === 'offers');
+
     const [selectedTab, setSelectedTab] = useState('active');
-    const [sortOption, setSortOption] = useState('date-added');
-    const [sortDirection, setSortDirection] = useState('desc');
+
+    const sortOption = offersSorting?.option || 'date-added';
+    const sortDirection = offersSorting?.direction || 'desc';
 
     useEffect(() => {
         if (!hasOffers) {
@@ -126,6 +132,7 @@ export const OffersIndexModal = () => {
 
     const handleOfferEdit = (id:string) => {
         // TODO: implement
+        sessionStorage.setItem('editOfferPageSource', 'offersIndex');
         updateRoute(`offers/edit/${id}`);
     };
 
@@ -146,7 +153,7 @@ export const OffersIndexModal = () => {
     const listLayoutOutput = <div className='overflow-x-auto'>
         <table className='m-0 w-full'>
             {(selectedTab === 'active' && activeOffers.length > 0) || (selectedTab === 'archived' && archivedOffers.length > 0) ?
-                <tr className='border-b border-b-grey-300'>
+                <tr className='border-b border-b-grey-300 dark:border-grey-800'>
                     <th className='px-5 py-2.5 pl-0 text-xs font-normal text-grey-700'>{selectedTab === 'active' ? activeOffers.length : archivedOffers.length} {selectedTab === 'active' ? (activeOffers.length !== 1 ? 'offers' : 'offer') : (archivedOffers.length !== 1 ? 'offers' : 'offer')}</th>
                     <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Tier</th>
                     <th className='px-5 py-2.5 text-xs font-normal text-grey-700'>Terms</th>
@@ -173,12 +180,12 @@ export const OffersIndexModal = () => {
                 const {discountColor, discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
 
                 return (
-                    <tr className={`group relative scale-100 border-b border-b-grey-200`}>
+                    <tr className={`group relative scale-100 border-b border-b-grey-200 dark:border-grey-800`}>
                         <td className={`${isTierArchived ? 'opacity-50' : ''} min-w-[200px] p-0 font-semibold`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5 pl-0`} onClick={!isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {}}>{offer?.name}</a></td>
                         <td className={`${isTierArchived ? 'opacity-50' : ''} whitespace-nowrap p-0 text-sm`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5`} onClick={!isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {}}>{offerTier.name} {getOfferCadence(offer.cadence)}</a></td>
                         <td className={`${isTierArchived ? 'opacity-50' : ''} whitespace-nowrap p-0 text-sm`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5`} onClick={!isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {}}><span className={`font-semibold uppercase ${discountColor}`}>{discountOffer}</span> — {getOfferDuration(offer.duration)}</a></td>
                         <td className={`${isTierArchived ? 'opacity-50' : ''} whitespace-nowrap p-0 text-sm`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5`} onClick={!isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {}}>{updatedPriceWithCurrency} <span className='text-grey-700 line-through'>{originalPriceWithCurrency}</span></a></td>
-                        <td className={`${isTierArchived ? 'opacity-50' : ''} whitespace-nowrap p-0 text-sm`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5 hover:underline`} href={createRedemptionFilterUrl(offer.id ? offer.id : '')}>{offer.redemption_count}</a></td>
+                        <td className={`${isTierArchived ? 'opacity-50' : ''} whitespace-nowrap p-0 text-sm`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5 ${offer.redemption_count === 0 ? '' : 'hover:underline'}`} href={offer.redemption_count > 0 ? createRedemptionFilterUrl(offer.id ? offer.id : '') : undefined} onClick={offer.redemption_count === 0 ? !isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {} : () => {}}>{offer.redemption_count}</a></td>
                         <td className={`${isTierArchived ? 'opacity-50' : ''} min-w-[80px] whitespace-nowrap p-5 pr-0 text-right text-sm leading-none`}>{!isTierArchived ? <CopyLinkButton offerCode={offer.code} /> : null}</td>
                         {isTierArchived ?
                             <div className='absolute right-0 top-[11px] whitespace-nowrap rounded-sm bg-black px-2 py-0.5 text-xs leading-normal text-white opacity-0 transition-all group-hover:opacity-100 dark:bg-grey-950'>This offer is disabled, because <br /> it is tied to an archived tier.</div> :
@@ -193,7 +200,7 @@ export const OffersIndexModal = () => {
     const buttons: ButtonProps[] = [
         {
             key: 'cancel-modal',
-            label: 'Cancel',
+            label: 'Close',
             onClick: () => {
                 modal.remove();
                 updateRoute('offers');
@@ -236,23 +243,31 @@ export const OffersIndexModal = () => {
                     </div>
                     <ButtonGroup buttons={buttons} />
                 </div>
-                <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5'>
+                <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5 dark:border-b-grey-800'>
                     <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
-                    <div className='-mr-3'>
+                    <div>
                         <SortMenu
-                            direction='desc'
+                            direction={sortDirection as 'asc' | 'desc'}
                             items={[
-                                {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added', direction: 'desc'},
-                                {id: 'name', label: 'Name', selected: sortOption === 'name', direction: 'asc'},
-                                {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions', direction: 'desc'}
+                                {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added', direction: sortDirection as 'asc' | 'desc'},
+                                {id: 'name', label: 'Name', selected: sortOption === 'name', direction: sortDirection as 'asc' | 'desc'},
+                                {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions', direction: sortDirection as 'asc' | 'desc'}
                             ]}
                             position='right'
                             onDirectionChange={(selectedDirection) => {
                                 const newDirection = selectedDirection === 'asc' ? 'desc' : 'asc';
-                                setSortDirection(newDirection);
+                                setSortingState?.([{
+                                    type: 'offers',
+                                    option: sortOption,
+                                    direction: newDirection
+                                }]);
                             }}
                             onSortChange={(selectedOption) => {
-                                setSortOption(selectedOption);
+                                setSortingState?.([{
+                                    type: 'offers',
+                                    option: selectedOption,
+                                    direction: sortDirection
+                                }]);
                             }}
                         />
                     </div>

@@ -1,3 +1,5 @@
+const debug = require('@tryghost/debug')('TableImporter');
+
 class TableImporter {
     /**
      * @type {object|undefined} model Referenced model when generating data
@@ -21,27 +23,29 @@ class TableImporter {
         this.transaction = transaction;
     }
 
-    async import(amount = this.defaultQuantity) {
-        const batchSize = 500;
-        let batch = [];
+    async #generateData(amount = this.defaultQuantity) {
+        let data = [];
 
         for (let i = 0; i < amount; i++) {
             const model = await this.generate();
             if (model) {
-                batch.push(model);
-            } else {
-                // After first null assume that there is no more data
-                break;
-            }
-            if (batch.length === batchSize) {
-                await this.knex.batchInsert(this.name, batch, batchSize).transacting(this.transaction);
-                batch = [];
+                data.push(model);
             }
         }
 
-        // Process final batch
-        if (batch.length > 0) {
-            await this.knex.batchInsert(this.name, batch, batchSize).transacting(this.transaction);
+        return data;
+    }
+
+    async import(amount = this.defaultQuantity) {
+        const generateNow = Date.now();
+        const data = await this.#generateData(amount);
+        debug(`${this.name} generated ${data.length} records in ${Date.now() - generateNow}ms`);
+
+        if (data.length > 0) {
+            debug (`Importing ${data.length} records into ${this.name}`);
+            const now = Date.now();
+            await this.knex.batchInsert(this.name, data).transacting(this.transaction);
+            debug(`${this.name} imported ${data.length} records in ${Date.now() - now}ms`);
         }
     }
 
@@ -50,8 +54,10 @@ class TableImporter {
      * @param {Number|function} amount Number of records to import per model
      */
     async importForEach(models = [], amount) {
-        const batchSize = 500;
-        let batch = [];
+        const data = [];
+
+        debug (`Generating data for ${models.length} models x ${amount} for ${this.name}`);
+        const now = Date.now();
 
         for (const model of models) {
             this.setReferencedModel(model);
@@ -59,24 +65,19 @@ class TableImporter {
             if (!Number.isInteger(currentAmount)) {
                 currentAmount = Math.floor(currentAmount) + ((Math.random() < currentAmount % 1) ? 1 : 0);
             }
-            for (let i = 0; i < currentAmount; i++) {
-                const data = await this.generate();
-                if (data) {
-                    batch.push(data);
-                } else {
-                    // After first null assume that there is no more data for this model
-                    break;
-                }
-                if (batch.length === batchSize) {
-                    await this.knex.batchInsert(this.name, batch, batchSize).transacting(this.transaction);
-                    batch = [];
-                }
+
+            const generatedData = await this.#generateData(currentAmount);
+            if (generatedData.length > 0) {
+                data.push(...generatedData);
             }
         }
 
-        // Process final batch
-        if (batch.length > 0) {
-            await this.knex.batchInsert(this.name, batch, batchSize).transacting(this.transaction);
+        debug(`${this.name} generated ${data.length} records in ${Date.now() - now}ms`);
+
+        if (data.length > 0) {
+            const now2 = Date.now();
+            await this.knex.batchInsert(this.name, data).transacting(this.transaction);
+            debug(`${this.name} imported ${data.length} records in ${Date.now() - now2}ms`);
         }
     }
 

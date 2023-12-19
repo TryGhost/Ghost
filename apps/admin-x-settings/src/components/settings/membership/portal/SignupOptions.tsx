@@ -14,9 +14,9 @@ const SignupOptions: React.FC<{
     setError: (key: string, error: string | undefined) => void
 }> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError}) => {
     const {config} = useGlobalData();
-
-    const [membersSignupAccess, portalName, portalSignupTermsHtml, portalSignupCheckboxRequired, portalPlansJson] = getSettingValues(
-        localSettings, ['members_signup_access', 'portal_name', 'portal_signup_terms_html', 'portal_signup_checkbox_required', 'portal_plans']
+    const hasPortalImprovements = useFeatureFlag('portalImprovements');
+    const [membersSignupAccess, portalName, portalSignupTermsHtml, portalSignupCheckboxRequired, portalPlansJson, portalDefaultPlan] = getSettingValues(
+        localSettings, ['members_signup_access', 'portal_name', 'portal_signup_terms_html', 'portal_signup_checkbox_required', 'portal_plans', 'portal_default_plan']
     );
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
 
@@ -50,6 +50,20 @@ const SignupOptions: React.FC<{
         }
 
         updateSetting('portal_plans', JSON.stringify(portalPlans));
+
+        // Check default plan is included
+        if (hasPortalImprovements) {
+            if (portalDefaultPlan === 'yearly') {
+                if (!portalPlans.includes('yearly') && portalPlans.includes('monthly')) {
+                    updateSetting('portal_default_plan', 'monthly');
+                }
+            } else if (portalDefaultPlan === 'monthly') {
+                if (!portalPlans.includes('monthly')) {
+                    // If both yearly and monthly are missing from plans, still set it to yearly
+                    updateSetting('portal_default_plan', 'yearly');
+                }
+            }
+        }
     };
 
     // This is a bit unclear in current admin, maybe we should add a message if the settings are disabled?
@@ -61,11 +75,11 @@ const SignupOptions: React.FC<{
 
     if (localTiers) {
         localTiers.forEach((tier) => {
-            if (tier.name === 'Free') {
+            if (tier.type === 'free') {
                 tiersCheckboxes.push({
                     checked: (portalPlans.includes('free')),
                     disabled: isDisabled,
-                    label: 'Free',
+                    label: hasPortalImprovements ? tier.name : 'Free',
                     value: 'free',
                     onChange: (checked) => {
                         if (portalPlans.includes('free') && !checked) {
@@ -86,13 +100,10 @@ const SignupOptions: React.FC<{
     }
 
     const paidActiveTiersResult = getPaidActiveTiers(localTiers) || [];
-    const hasPortalImprovements = useFeatureFlag('portalImprovements');
 
-    // TODO: Hook up with actual values and then delete this
-    const selectOptions: SelectOption[] = [
-        {value: 'default-yearly', label: 'Yearly'},
-        {value: 'default-monthly', label: 'Monthly'}
-
+    const defaultPlanOptions: SelectOption[] = [
+        {value: 'yearly', label: 'Yearly'},
+        {value: 'monthly', label: 'Monthly'}
     ];
 
     if (paidActiveTiersResult.length > 0 && isStripeEnabled) {
@@ -117,7 +128,7 @@ const SignupOptions: React.FC<{
 
         <CheckboxGroup
             checkboxes={tiersCheckboxes}
-            title='Tiers available at startup'
+            title='Tiers available at signup'
         />
 
         {isStripeEnabled && localTiers.some(tier => tier.visibility === 'public') && (
@@ -145,9 +156,16 @@ const SignupOptions: React.FC<{
                     ]}
                     title='Prices available at signup'
                 />
-                {hasPortalImprovements && <Select disabled={(portalPlans.includes('yearly') && portalPlans.includes('monthly')) ? false : true} options={selectOptions} selectedOption={selectOptions.find(option => option.value === (portalPlans.includes('yearly') ? 'default-yearly' : 'default-monthly'))} title='Price shown by default' onSelect={(value) => {
-                    alert(value);
-                }} />}
+                {(hasPortalImprovements && (portalPlans.includes('yearly') && portalPlans.includes('monthly'))) &&
+                    <Select
+                        options={defaultPlanOptions}
+                        selectedOption={defaultPlanOptions.find(option => option.value === portalDefaultPlan)}
+                        title='Price preselected at signup'
+                        onSelect={(option) => {
+                            updateSetting('portal_default_plan', option?.value ?? 'yearly');
+                        }}
+                    />
+                }
             </>
         )}
 

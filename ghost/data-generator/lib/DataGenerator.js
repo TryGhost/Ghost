@@ -3,6 +3,11 @@ const fs = require('fs/promises');
 const JsonImporter = require('./utils/JsonImporter');
 const {getProcessRoot} = require('@tryghost/root-utils');
 const topologicalSort = require('./utils/topological-sort');
+const {faker} = require('@faker-js/faker');
+const {faker: americanFaker} = require('@faker-js/faker/locale/en_US');
+const crypto = require('crypto');
+const {Buffer} = require('node:buffer');
+const DatabaseInfo = require('@tryghost/database-info');
 
 const importers = require('./importers').reduce((acc, val) => {
     acc[val.table] = val;
@@ -11,6 +16,12 @@ const importers = require('./importers').reduce((acc, val) => {
 const schema = require('../../core/core/server/data/schema').tables;
 
 class DataGenerator {
+    /**
+     *
+     * @param {object} options
+     * @param {Record<string,number>} [options.quantities] Pass in custom amounts for specific tables
+     * @param {number} [options.seed] If you pass the same seed, the same data will be generated if you used the same options too and if the data generation code remained the same.
+     */
     constructor({
         knex,
         tables,
@@ -18,7 +29,10 @@ class DataGenerator {
         baseDataPack = '',
         baseUrl,
         logger,
-        withDefault
+        printDependencies,
+        withDefault,
+        seed,
+        quantities = {}
     }) {
         this.knex = knex;
         this.tableList = tables || [];
@@ -28,17 +42,22 @@ class DataGenerator {
         this.baseUrl = baseUrl;
         this.logger = logger;
         this.withDefault = withDefault;
+        this.printDependencies = printDependencies;
+        this.seed = seed;
+        this.quantities = quantities;
     }
 
     sortTableList() {
         // Add missing dependencies
         for (const table of this.tableList) {
             table.importer = importers[table.name];
+
             // eslint-disable-next-line no-unused-vars
             table.dependencies = Object.entries(schema[table.name]).reduce((acc, [_col, data]) => {
                 if (data.references) {
                     const referencedTable = data.references.split('.')[0];
-                    if (!acc.includes(referencedTable)) {
+                    // The ghost_subscriptions_id property has a foreign key to the subscriptions table, but we don't use that table yet atm, so don't add it as a dependency
+                    if (!acc.includes(referencedTable) && referencedTable !== 'subscriptions') {
                         acc.push(referencedTable);
                     }
                 }
@@ -79,7 +98,7 @@ class DataGenerator {
                 // Avoid deleting the admin user
                 await transaction(table).del().whereNot('id', '1');
             } else {
-                await transaction(table).del();
+                await transaction(table).truncate();
             }
         }
     }
@@ -91,7 +110,7 @@ class DataGenerator {
         }
         let baseData = {};
         try {
-            baseData = JSON.parse(await (await fs.readFile(baseDataPack)).toString());
+            baseData = JSON.parse((await fs.readFile(baseDataPack)).toString());
             this.logger.info('Read base data pack');
         } catch (error) {
             this.logger.error('Failed to read data pack: ', error);
@@ -133,57 +152,111 @@ class DataGenerator {
     }
 
     async importData() {
-        const transaction = await this.knex.transaction();
+        await this.knex.transaction(async (transaction) => {
+            // Performance improvements
+            if (!DatabaseInfo.isSQLite(this.knex)) {
+                await this.knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(transaction);
+                await this.knex.raw('SET unique_checks=0;').transacting(transaction);
+            }
 
-        // Add default tables if none are specified
-        if (this.tableList.length === 0) {
-            this.tableList = Object.keys(importers).map(name => ({name}));
-        } else if (this.withDefault) {
-            // Add default tables to the end of the list
-            const defaultTables = Object.keys(importers).map(name => ({name}));
-            for (const table of defaultTables) {
-                if (!this.tableList.find(t => t.name === table.name)) {
-                    this.tableList.push(table);
+            // Add default tables if none are specified
+            if (this.tableList.length === 0) {
+                this.tableList = Object.keys(importers).map(name => ({name}));
+            } else if (this.withDefault) {
+                // Add default tables to the end of the list
+                const defaultTables = Object.keys(importers).map(name => ({name}));
+                for (const table of defaultTables) {
+                    if (!this.tableList.find(t => t.name === table.name)) {
+                        this.tableList.push(table);
+                    }
                 }
             }
-        }
 
-        // Error if we have an unknown table
-        for (const table of this.tableList) {
-            if (importers[table.name] === undefined) {
-                // eslint-disable-next-line
-                throw new Error(`Unknown table: ${table.name}`);
+            // Error if we have an unknown table
+            for (const table of this.tableList) {
+                if (importers[table.name] === undefined) {
+                    // eslint-disable-next-line
+                    throw new Error(`Unknown table: ${table.name}`);
+                }
             }
-        }
 
-        this.sortTableList();
+            this.sortTableList();
 
-        if (this.willClearData) {
-            await this.clearData(transaction);
-        }
+            if (this.printDependencies) {
+                this.logger.info('Table dependencies:');
+                for (const table of this.tableList) {
+                    this.logger.info(`\t${table.name}: ${table.dependencies.join(', ')}`);
+                }
+                process.exit(0);
+            }
 
-        if (this.useBaseDataPack) {
-            await this.importBasePack(transaction);
-        }
+            if (this.willClearData) {
+                await this.clearData(transaction);
+            }
 
-        for (const table of this.tableList) {
-            this.logger.info('Importing content for table', table.name);
-            // Add all common options to every importer, whether they use them or not
-            const tableImporter = new table.importer(this.knex, transaction, {
-                baseUrl: this.baseUrl
-            });
-            await tableImporter.import(table.quantity ?? undefined);
-        }
+            if (this.useBaseDataPack) {
+                await this.importBasePack(transaction);
+            }
 
-        // Finalise all tables - uses new table importer objects to avoid keeping all data in memory
-        for (const table of this.tableList) {
-            const tableImporter = new table.importer(this.knex, transaction, {
-                baseUrl: this.baseUrl
-            });
-            await tableImporter.finalise();
-        }
+            // Set quantities for tables
+            for (const table of this.tableList) {
+                if (this.quantities[table.name] !== undefined) {
+                    table.quantity = this.quantities[table.name];
+                }
+            }
 
-        await transaction.commit();
+            const cryptoRandomBytes = crypto.randomBytes;
+
+            if (this.seed) {
+                // The probality distributions library uses crypto.randomBytes, which we can't seed, so we need to override it
+                crypto.randomBytes = (size) => {
+                    const buffer = Buffer.alloc(size);
+                    for (let i = 0; i < size; i++) {
+                        buffer[i] = Math.floor(faker.datatype.number({min: 0, max: 255}));
+                    }
+                    return buffer;
+                };
+            }
+
+            try {
+                for (const table of this.tableList) {
+                    if (this.seed) {
+                        // We reset the seed for every table, so the chosen tables don't affect the data and changes in one importer don't affect the others
+                        faker.seed(this.seed);
+                        americanFaker.seed(this.seed);
+                    }
+
+                    // Add all common options to every importer, whether they use them or not
+                    const tableImporter = new table.importer(this.knex, transaction, {
+                        baseUrl: this.baseUrl
+                    });
+
+                    const amount = table.quantity ?? tableImporter.defaultQuantity;
+                    this.logger.info('Importing content for table', table.name, amount ? `(${amount} records)` : '');
+
+                    await tableImporter.import(table.quantity ?? undefined);
+                }
+            } finally {
+                if (this.seed) {
+                    // Revert crypto.randomBytes to the original function
+                    crypto.randomBytes = cryptoRandomBytes;
+                }
+            }
+
+            // Finalise all tables - uses new table importer objects to avoid keeping all data in memory
+            for (const table of this.tableList) {
+                const tableImporter = new table.importer(this.knex, transaction, {
+                    baseUrl: this.baseUrl
+                });
+                await tableImporter.finalise();
+            }
+
+            // Performance improvements
+            if (!DatabaseInfo.isSQLite(this.knex)) {
+                await this.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(transaction);
+                await this.knex.raw('SET unique_checks=1;').transacting(transaction);
+            }
+        }, {isolationLevel: 'read committed'});
     }
 }
 

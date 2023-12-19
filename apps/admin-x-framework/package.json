@@ -54,7 +54,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "vite build && tsc -p tsconfig.declaration.json",
+    "build": "concurrently \"vite build\" \"tsc -p tsconfig.declaration.json\"",
     "prepare": "yarn build",
     "test": "yarn test:types && yarn test:unit",
     "test:types": "tsc --noEmit",
@@ -77,14 +77,14 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "sinon": "17.0.0",
-    "ts-node": "10.9.1",
-    "typescript": "5.3.2"
+    "ts-node": "10.9.2",
+    "typescript": "5.3.3"
   },
   "dependencies": {
-    "@sentry/react": "7.85.0",
+    "@sentry/react": "7.86.0",
     "@tanstack/react-query": "4.36.1",
     "@tryghost/admin-x-design-system": "0.0.0",
-    "@types/react": "18.2.42",
+    "@types/react": "18.2.45",
     "@types/react-dom": "18.2.17",
     "@vitejs/plugin-react": "4.2.1",
     "react": "^18.2.0",
@@ -100,16 +100,15 @@
   },
   "nx": {
     "targets": {
-      "build": {
+      "dev": {
         "dependsOn": [
-          "build",
-          {"projects": ["@tryghost/admin-x-design-system"], "target": "build"}
+          "^build"
         ]
       },
       "test:unit": {
         "dependsOn": [
           "test:unit",
-          {"projects": ["@tryghost/admin-x-design-system"], "target": "build"}
+          "^build"
         ]
       }
     }

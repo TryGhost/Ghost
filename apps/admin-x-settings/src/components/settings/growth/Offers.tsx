@@ -5,6 +5,7 @@ import {CopyLinkButton, createRedemptionFilterUrl, getOfferDiscount} from './off
 import {Offer, useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
+import {numberWithCommas} from '../../../utils/helpers';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -20,7 +21,7 @@ const OfferContainer: React.FC<{offerTitle: string, tier: Tier, cadence: string,
                 <span className='text-grey-700'>{cadence === 'month' ? 'monthly' : 'yearly'}</span>
             </div>
             <div className='mt-2 flex items-end justify-between'>
-                <a className='text-xs text-grey-700 hover:text-black hover:underline' href={createRedemptionFilterUrl(offerId)}>{redemptions} redemptions</a>
+                <a className={`text-xs text-grey-700 hover:text-black ${redemptions === 0 ? 'pointer-events-none' : 'hover:underline'}`} href={createRedemptionFilterUrl(offerId)}>{numberWithCommas(redemptions)} {redemptions === 1 ? 'redemption' : 'redemptions'}</a>
                 <CopyLinkButton offerCode={offerCode} />
             </div>
         </div>
@@ -48,43 +49,51 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const latestThree = activeOffers.slice(0, 3);
 
-    const openModal = () => {
+    const openOfferListModal = () => {
         updateRoute('offers/edit');
     };
 
+    const openAddModal = () => {
+        updateRoute('offers/new');
+    };
+
     const goToOfferEdit = (offerId: string) => {
+        sessionStorage.setItem('editOfferPageSource', 'offers');
         updateRoute(`offers/edit/${offerId}`);
     };
 
     return (
         <TopLevelGroup
-            customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label='Manage offers' link linkWithPadding onClick={openModal}/>}
+            customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label={allOffers.length > 0 ? 'Manage offers' : 'Add offer'} link linkWithPadding onClick={allOffers.length > 0 ? openOfferListModal : openAddModal}/>}
             description={<>Create discounts & coupons to boost new subscriptions. {allOffers.length === 0 && <a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">Learn more</a>}</>}
             keywords={keywords}
             navid='offers'
             testId='offers'
             title='Offers'
         >
-            <div>
-                <div className='grid grid-cols-1 gap-4 min-[900px]:grid-cols-3'>
-                    {latestThree.map(offer => (<OfferContainer
-                        key={offer.id}
-                        amount={offer.amount}
-                        cadence={offer.cadence}
-                        currency={offer.currency || 'USD'}
-                        goToOfferEdit={goToOfferEdit}
-                        offerCode={offer.code}
-                        offerId={offer.id}
-                        offerTitle={offer.name}
-                        redemptions={offer.redemption_count}
-                        tier={offer.tier}
-                        type={offer.type}
-                    />))}
-                </div>
-                {allOffers.length > 3 && <div className='mt-4 border-t border-t-grey-200 pt-2'>
-                    <span className='text-xs text-grey-700 dark:text-grey-600'>{allOffers.length} offers in total</span>
-                </div>}
-            </div>
+            {latestThree.length > 0 ?
+                <div>
+                    <div className='grid grid-cols-1 gap-4 min-[900px]:grid-cols-3'>
+                        {latestThree.map(offer => (<OfferContainer
+                            key={offer.id}
+                            amount={offer.amount}
+                            cadence={offer.cadence}
+                            currency={offer.currency || 'USD'}
+                            goToOfferEdit={goToOfferEdit}
+                            offerCode={offer.code}
+                            offerId={offer.id}
+                            offerTitle={offer.name}
+                            redemptions={offer.redemption_count}
+                            tier={offer.tier}
+                            type={offer.type}
+                        />))}
+                    </div>
+                    {allOffers.length > 3 && <div className='mt-4 border-t border-t-grey-200 pt-2'>
+                        <span className='text-xs text-grey-700 dark:text-grey-600'>{allOffers.length} offers in total</span>
+                    </div>}
+                </div> :
+                null
+            }
         </TopLevelGroup>
     );
 };

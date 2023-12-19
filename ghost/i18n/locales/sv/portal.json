@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} gratisdagar",
     "{{amount}} off": "{{amount}} i rabatt",
     "{{amount}} off for first {{number}} months.": "{{amount}} i rabatt de första {{number}} månaderna.",
@@ -48,7 +49,6 @@
     "Edit": "Editera",
     "Email": "E-post",
     "Email newsletter": "Nyhetsbrev via e-post",
-    "Email preference updated.": "Inställningar för e-post uppdaterade.",
     "Email preferences": "E-postinställningar",
     "Emails": "E-postmeddelanden",
     "Emails disabled": "E-post inaktiverad",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Få tillgång till alla nyhetsbrev genom att bli betalande prenumerant",
     "Unsubscribe from all emails": "Avregistrera från alla e-postutskick",
     "Unsubscribed": "Avregistrerad",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Avregistrering från e-postmeddelanden kommer inte att avbryta din betalda prenumeration på {{title}}",
     "Update": "Uppdatera",
     "Update your preferences": "Uppdatera dina inställningar",

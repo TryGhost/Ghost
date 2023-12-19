@@ -29,7 +29,7 @@ test.describe('Newsletter settings', async () => {
         await modal.getByRole('button', {name: 'Create'}).click();
 
         await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
-        await expect(modal).toHaveText(/Please enter a name/);
+        await expect(modal).toHaveText(/Name is required/);
 
         // Shouldn't be necessary, but without these Playwright doesn't click Create the second time for some reason
         await modal.getByRole('button', {name: 'Cancel'}).click();
@@ -72,7 +72,7 @@ test.describe('Newsletter settings', async () => {
         await modal.getByRole('button', {name: 'Save'}).click();
 
         await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
-        await expect(modal).toHaveText(/Please enter a name/);
+        await expect(modal).toHaveText(/Name is required/);
 
         await modal.getByPlaceholder('Weekly Roundup').fill('Updated newsletter');
 
@@ -247,12 +247,12 @@ test.describe('Newsletter settings', async () => {
                 await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
                 await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm reply-to address/);
                 await expect(page.getByTestId('confirmation-modal')).toHaveText(/sent a confirmation email to test@test.com/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/previous reply-to address \(support@example.com\)/);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/replies will continue to go to support@example.com/);
             });
         });
 
-        test.describe('For Ghost (Pro) users with custom domain', () => {
-            test('Allow sender and reply-to addresses to be changed without verification, but not their domain name', async ({page}) => {
+        test.describe('For Ghost (Pro) users with custom sending domain', () => {
+            test('Allow sender address to be changed partially (username but not domain name)', async ({page}) => {
                 await mockApi({page, requests: {
                     ...globalDataRequests,
                     browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
@@ -283,25 +283,17 @@ test.describe('Newsletter settings', async () => {
                 await section.getByText('Awesome newsletter').click();
                 const modal = page.getByTestId('newsletter-modal');
                 const senderEmail = modal.getByLabel('Sender email');
-                const replyToEmail = modal.getByLabel('Reply-to email');
-
-                // The sending domain is rendered as placeholder text
-                expect(modal).toHaveText(/@customdomain\.com/);
 
                 // The sender email field should keep the username part of the email address
                 await senderEmail.fill('harry@potter.com');
                 expect(await senderEmail.inputValue()).toBe('harry');
-
-                // Full flexibility for the reply-to address
-                await replyToEmail.fill('hermione@customdomain.com');
-                expect(await replyToEmail.inputValue()).toBe('hermione@customdomain.com');
 
                 // The new username is saved without a confirmation popup
                 await modal.getByRole('button', {name: 'Save'}).click();
                 await expect(page.getByTestId('confirmation-modal')).toHaveCount(0);
             });
 
-            test('Reply-To addresses without a matching domain require verification', async ({page}) => {
+            test('Allow full customisation of the reply-to address, with verification', async ({page}) => {
                 await mockApi({page, requests: {
                     ...globalDataRequests,
                     browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
@@ -331,26 +323,18 @@ test.describe('Newsletter settings', async () => {
                 const section = page.getByTestId('newsletters');
                 await section.getByText('Awesome newsletter').click();
                 const modal = page.getByTestId('newsletter-modal');
-                const senderEmail = modal.getByLabel('Sender email');
                 const replyToEmail = modal.getByLabel('Reply-to email');
-
-                // The sending domain is rendered as placeholder text
-                expect(modal).toHaveText(/@customdomain\.com/);
-
-                // The sender email field should keep the username part of the email address
-                await senderEmail.fill('harry@potter.com');
-                expect(await senderEmail.inputValue()).toBe('harry');
 
                 // Full flexibility for the reply-to address
                 await replyToEmail.fill('hermione@granger.com');
                 expect(await replyToEmail.inputValue()).toBe('hermione@granger.com');
 
-                // The new username is saved without a confirmation popup
+                // There is a verification popup for the new reply-to address
                 await modal.getByRole('button', {name: 'Save'}).click();
                 await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
                 await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm reply-to address/);
                 await expect(page.getByTestId('confirmation-modal')).toHaveText(/sent a confirmation email to hermione@granger.com/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/previous reply-to address \(support@example.com\)/);
+                await expect(page.getByTestId('confirmation-modal')).toHaveText(/replies will continue to go to support@example.com/);
             });
         });
     });

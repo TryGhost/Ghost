@@ -1,6 +1,17 @@
 const config = require('./config');
+const logging = require('@tryghost/logging');
+const SentryKnexTracingIntegration = require('./SentryKnexTracingIntegration');
 const sentryConfig = config.get('sentry');
 const errors = require('@tryghost/errors');
+
+// Import Sentry's profiling integration if available
+let ProfilingIntegration;
+try {
+    ({ProfilingIntegration} = require('@sentry/profiling-node'));
+} catch (err) {
+    logging.warn('Sentry Profiling Integration not available');
+    ProfilingIntegration = null;
+}
 
 const beforeSend = function (event, hint) {
     try {
@@ -59,13 +70,27 @@ if (sentryConfig && !sentryConfig.disabled) {
     const Sentry = require('@sentry/node');
     const version = require('@tryghost/version').full;
     const environment = config.get('env');
-    Sentry.init({
+    const sentryInitConfig = {
         dsn: sentryConfig.dsn,
         release: 'ghost@' + version,
         environment: environment,
         maxValueLength: 1000,
-        beforeSend: beforeSend
-    });
+        integrations: [],
+        beforeSend
+    };
+
+    // Enable tracing if sentry.tracing.enabled is true
+    if (sentryConfig.tracing?.enabled === true) {
+        sentryInitConfig.integrations.push(new Sentry.Integrations.Http({tracing: true}));
+        sentryInitConfig.integrations.push(new Sentry.Integrations.Express());
+        sentryInitConfig.tracesSampleRate = parseFloat(sentryConfig.tracing.sampleRate) || 0.0;
+        // Enable profiling, if configured, only if tracing is also configured
+        if (ProfilingIntegration && sentryConfig.profiling?.enabled === true) {
+            sentryInitConfig.integrations.push(new ProfilingIntegration());
+            sentryInitConfig.profilesSampleRate = parseFloat(sentryConfig.profiling.sampleRate) || 0.0;
+        }
+    }
+    Sentry.init(sentryInitConfig);
 
     module.exports = {
         requestHandler: Sentry.Handlers.requestHandler(),
@@ -82,8 +107,16 @@ if (sentryConfig && !sentryConfig.disabled) {
                 return (error.statusCode === 500);
             }
         }),
+        tracingHandler: Sentry.Handlers.tracingHandler(),
         captureException: Sentry.captureException,
-        beforeSend: beforeSend
+        beforeSend: beforeSend,
+        initQueryTracing: (knex) => {
+            if (sentryConfig.tracing?.enabled === true) {
+                const integration = new SentryKnexTracingIntegration(knex);
+
+                Sentry.addIntegration(integration);
+            }
+        }
     };
 } else {
     const expressNoop = function (req, res, next) {
@@ -95,6 +128,8 @@ if (sentryConfig && !sentryConfig.disabled) {
     module.exports = {
         requestHandler: expressNoop,
         errorHandler: expressNoop,
-        captureException: noop
+        tracingHandler: expressNoop,
+        captureException: noop,
+        initQueryTracing: noop
     };
 }

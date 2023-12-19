@@ -30,6 +30,7 @@ import {SettingsResponseType} from '../api/settings';
 import {ThemesResponseType} from '../api/themes';
 import {TiersResponseType} from '../api/tiers';
 import {UsersResponseType} from '../api/users';
+import {ExternalLink} from '../routing';
 
 interface MockRequestConfig {
     method: string;
@@ -223,7 +224,7 @@ export async function mockSitePreview({page, url, response}: {page: Page, url: s
     const lastRequest: {previewHeader?: string} = {};
 
     await page.route(url, async (route) => {
-        if (route.request().method() !== 'POST') {
+        if (route.request().method() !== 'GET') {
             return route.continue();
         }
 
@@ -256,4 +257,8 @@ export async function testUrlValidation(input: Locator, textToEnter: string, exp
     if (expectedError) {
         await expect(input.locator('xpath=../..')).toContainText(expectedError);
     }
+};
+
+export async function expectExternalNavigate(page: Page, link: Partial<ExternalLink>) {
+    await page.waitForURL(`/external/${encodeURIComponent(JSON.stringify({isExternal: true, ...link}))}`);
 };

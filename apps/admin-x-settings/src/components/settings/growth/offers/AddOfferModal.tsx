@@ -8,6 +8,7 @@ import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {getTiersCadences} from '../../../../utils/getTiersCadences';
 import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
+import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useMemo, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useModal} from '@ebay/nice-modal-react';
@@ -30,7 +31,7 @@ interface OfferType {
 }
 
 const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => void}> = ({type, checked, onClick}) => {
-    const checkboxClass = checked ? 'bg-black text-white' : 'border border-grey-300';
+    const checkboxClass = checked ? 'bg-black text-white dark:bg-white dark:text-black' : 'border border-grey-300 dark:border-grey-800';
 
     return (
         <button className='text-left' type='button' onClick={onClick}>
@@ -128,7 +129,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
     handleDurationInMonthsInput,
     handleAmountInput,
     handleCodeInput,
-    validate,
+    clearError,
     errors,
     testId,
     handleTrialAmountInput,
@@ -169,11 +170,11 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             maxLength={40}
                             placeholder='Black Friday'
                             title='Offer name'
-                            onBlur={validate}
                             onChange={(e) => {
                                 handleNameInput(e);
                                 setNameLength(e.target.value.length);
                             }}
+                            onKeyDown={() => clearError('name')}
                         />
                         <TextField
                             error={Boolean(errors.displayTitle)}
@@ -181,10 +182,10 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             placeholder='Black Friday Special'
                             title='Display title'
                             value={overrides.displayTitle.value}
-                            onBlur={validate}
                             onChange={(e) => {
                                 handleDisplayTitleInput(e);
                             }}
+                            onKeyDown={() => clearError('displayTitle')}
                         />
                         <TextArea
                             placeholder='Take advantage of this limited-time offer.'
@@ -199,7 +200,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                 <section className='mt-4'>
                     <h2 className='mb-4 text-lg'>Details</h2>
                     <div className='flex flex-col gap-6'>
-                        <div className='flex flex-col gap-4 rounded-md border border-grey-200 p-4'>
+                        <div className='flex flex-col gap-4 rounded-md border border-grey-200 p-4 dark:border-grey-800'>
                             <ButtonSelect checked={overrides.type !== 'trial' ? true : false} type={typeOptions[0]} onClick={() => {
                                 handleTypeChange('percent');
                             }} />
@@ -229,10 +230,10 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                             ? (overrides.fixedAmount === 0 ? '' : overrides.fixedAmount?.toString())
                                             : (overrides.percentAmount === 0 ? '' : overrides.percentAmount?.toString())
                                     }
-                                    onBlur={validate}
                                     onChange={(e) => {
                                         handleAmountInput(e);
                                     }}
+                                    onKeyDown={() => clearError('amount')}
                                 />
                                 <div className='absolute right-1.5 top-6 z-10'>
                                     <Select
@@ -268,22 +269,23 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                 title='Trial duration'
                                 type='number'
                                 value={overrides.trialAmount?.toString()}
-                                onBlur={validate}
                                 onChange={(e) => {
                                     handleTrialAmountInput(e);
-                                }} />
+                                }}
+                                onKeyDown={() => clearError('amount')}/>
+
                         }
 
                         <TextField
                             error={Boolean(errors.code)}
-                            hint={errors.code || <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div>}
+                            hint={errors.code || (overrides.code.value !== '' ? <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div> : null)}
                             placeholder='black-friday'
                             title='Offer code'
                             value={overrides.code.value}
-                            onBlur={validate}
                             onChange={(e) => {
                                 handleCodeInput(e);
                             }}
+                            onKeyDown={() => clearError('code')}
                         />
                     </div>
                 </section>
@@ -329,6 +331,8 @@ const AddOfferModal = () => {
             currency: tierCadenceOptions[0]?.value ? parseData(tierCadenceOptions[0]?.value).currency : ''
         }
     });
+
+    const {data: {offers: allOffers = []} = {}} = useBrowseOffers();
 
     const {formState, updateForm, handleSave, saveState, okProps, validate, errors, clearError} = useForm({
         initialState: {
@@ -488,12 +492,14 @@ const AddOfferModal = () => {
             let newOverrides = {...prevOverrides};
             newOverrides.name = newValue;
             if (!prevOverrides.code.isDirty) {
+                clearError('code');
                 newOverrides.code = {
                     ...prevOverrides.code,
                     value: slugify(newValue)
                 };
             }
             if (!prevOverrides.displayTitle.isDirty) {
+                clearError('displayTitle');
                 newOverrides.displayTitle = {
                     ...prevOverrides.displayTitle,
                     value: newValue
@@ -558,7 +564,11 @@ const AddOfferModal = () => {
     }, [hasOffers, modal, updateRoute]);
 
     const cancelAddOffer = () => {
-        updateRoute('offers/edit');
+        if (allOffers.length > 0) {
+            updateRoute('offers/edit');
+        } else {
+            updateRoute('offers');
+        }
     };
 
     const overrides : offerPortalPreviewUrlTypes = useMemo(() => {
@@ -615,13 +625,14 @@ const AddOfferModal = () => {
             updateRoute('offers');
         }}
         backDropClick={false}
-        cancelLabel='Cancel'
+        cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
         height='full'
         okColor={okProps.color}
         okLabel='Publish'
         preview={iframe}
+        previewToolbar={false}
         sidebar={sidebar}
         size='lg'
         testId='add-offer-modal'
@@ -630,7 +641,7 @@ const AddOfferModal = () => {
         onCancel={cancelAddOffer}
         onOk={async () => {
             validate();
-            const isErrorsEmpty = Object.keys(errors).length === 0;
+            const isErrorsEmpty = Object.values(errors).every(error => !error);
             if (!isErrorsEmpty) {
                 showToast({
                     type: 'pageError',

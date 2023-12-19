@@ -1,7 +1,7 @@
 import {InfiniteData, QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {act, renderHook, waitFor} from '@testing-library/react';
 import React, {ReactNode} from 'react';
-import FrameworkProvider from '../../../../src/providers/FrameworkProvider';
+import {FrameworkProvider} from '../../../../src/providers/FrameworkProvider';
 import {createInfiniteQuery, createMutation, createPaginatedQuery, createQuery, createQueryWithId} from '../../../../src/utils/api/hooks';
 import {withMockFetch} from '../../../utils/mockFetch';
 

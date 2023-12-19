@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}}日間無料",
     "{{amount}} off": "{{amount}}オフ",
     "{{amount}} off for first {{number}} months.": "最初の{{number}}ヶ月間{{amount}}オフ",
@@ -48,7 +49,6 @@
     "Edit": "編集",
     "Email": "メール",
     "Email newsletter": "ニュースレターのメール",
-    "Email preference updated.": "メールの設定が更新されました。",
     "Email preferences": "メールの設定",
     "Emails": "メール",
     "Emails disabled": "メールが無効になっています",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "有料の購読者になることで、すべてのニュースレターへのアクセスが可能になります。",
     "Unsubscribe from all emails": "すべてのメールの購読解除",
     "Unsubscribed": "購読解除されました",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "メールの購読を解除しても、{{title}}への有料購読はキャンセルされません",
     "Update": "更新",
     "Update your preferences": "設定を更新する",

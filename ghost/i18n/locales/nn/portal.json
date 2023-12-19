@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} dagar gratis",
     "{{amount}} off": "avslag",
     "{{amount}} off for first {{number}} months.": "{{amount}} dei første {{number}} månadane.",
@@ -48,7 +49,6 @@
     "Edit": "Endra",
     "Email": "E-post",
     "Email newsletter": "E-post nyheitsbrev",
-    "Email preference updated.": "E-post preferansane dine er oppdatert.",
     "Email preferences": "E-post preferansar.",
     "Emails": "E-postar.",
     "Emails disabled": "E-postar skrudd av",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Få tilgang til alle nyheitsbreva med å bli ein betalande abonnent.",
     "Unsubscribe from all emails": "Slutt å motta e-postar",
     "Unsubscribed": "Abonnement avslutta",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Å avslutta e-postabonnementa vil ikkje kansellera det betalta abonnementet ditt til {{title}}",
     "Update": "Oppdater",
     "Update your preferences": "Oppdater preferansane dine",

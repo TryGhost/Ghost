@@ -11,8 +11,8 @@ const setup = (overrides) => {
             }
         }
     );
-    const monthlyCheckboxEl = utils.queryByRole('button', {name: 'Monthly'});
-    const yearlyCheckboxEl = utils.queryByRole('button', {name: 'Yearly'});
+    const monthlyCheckboxEl = utils.getByTestId('monthly-switch');
+    const yearlyCheckboxEl = utils.getByTestId('yearly-switch');
     const continueBtn = utils.queryByRole('button', {name: 'Continue'});
     const chooseBtns = utils.queryAllByRole('button', {name: 'Choose'});
     return {

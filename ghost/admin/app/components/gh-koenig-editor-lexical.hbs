@@ -19,13 +19,23 @@
             @handleCaptionBlur={{@handleFeatureImageCaptionBlur}}
             @forceButtonDisplay={{or (not @title) (eq @title "(Untitled)") this.titleIsHovered this.titleIsFocused}}
             @isHidden={{or (not @cardOptions.post.showTitleAndFeatureImage) false}}
+            @onTKCountChange={{@updateFeatureImageTkCount}}
         />
 
-        <div class="gh-editor-title-container page-improvements">
+        <div class="gh-editor-title-container">
             {{#if (and (not @cardOptions.post.showTitleAndFeatureImage) (not @featureImage))}}
                 <span class="gh-editor-hidden-indicator" data-tooltip="Post title is hidden on page">
                     {{svg-jar "eye-closed"}}
                 </span>
+            {{/if}}
+
+            {{#if (and (feature "tkReminders") @titleHasTk)}}
+                <div
+                    class="tk-indicator" data-testid="tk-indicator"
+                    {{on "click" this.focusTitle}}
+                >
+                    TK
+                </div>
             {{/if}}
 
             <GhTextarea
@@ -56,7 +66,7 @@
             @registerAPI={{this.registerEditorAPI}}
             @cursorDidExitAtTop={{this.focusTitle}}
             @updateWordCount={{@updateWordCount}}
-            @updateTkCount={{@updateTkCount}}
+            @updatePostTkCount={{@updatePostTkCount}}
         />
     </div>
 </div>

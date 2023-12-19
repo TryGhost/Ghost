@@ -25,7 +25,7 @@ const Sidebar: React.FC<{
         errors: ErrorMessages,
         offer: Offer,
         updateOffer: (fields: Partial<Offer>) => void,
-        validate: () => void}> = ({clearError, errors, offer, updateOffer, validate}) => {
+        validate: () => void}> = ({clearError, errors, offer, updateOffer}) => {
             const {siteData} = useGlobalData();
             const [isCopied, setIsCopied] = useState(false);
             const handleError = useHandleError();
@@ -98,7 +98,7 @@ const Sidebar: React.FC<{
                 <div className='flex grow flex-col pt-2'>
                     <Form className=' grow'>
                         <section>
-                            <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5'>
+                            <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
                                 <div className='flex flex-col gap-1.5'>
                                     <span className='text-xs font-semibold leading-none text-grey-700'>Created on</span>
                                     <span>{formatTimestamp(offer?.created_at ? offer.created_at : '')}</span>
@@ -131,7 +131,6 @@ const Sidebar: React.FC<{
                                     placeholder='Black Friday'
                                     title='Offer name'
                                     value={offer?.name}
-                                    onBlur={validate}
                                     onChange={(e) => {
                                         setNameLength(e.target.value.length);
                                         updateOffer({name: e.target.value});
@@ -139,10 +138,13 @@ const Sidebar: React.FC<{
                                     onKeyDown={() => clearError('name')}
                                 />
                                 <TextField
+                                    error={Boolean(errors.displayTitle)}
+                                    hint={errors.displayTitle}
                                     placeholder='Black Friday Special'
                                     title='Display title'
                                     value={offer?.display_title}
                                     onChange={e => updateOffer({display_title: e.target.value})}
+                                    onKeyDown={() => clearError('displayTitle')}
                                 />
                                 <TextArea
                                     placeholder='Take advantage of this limited-time offer.'
@@ -152,13 +154,12 @@ const Sidebar: React.FC<{
                                 />
                                 <TextField
                                     error={Boolean(errors.code)}
-                                    hint={errors.code || <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{offer?.code}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div>}
+                                    hint={errors.code || (offer?.code !== '' ? <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{offer?.code}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div> : null)}
                                     placeholder='black-friday'
                                     title='Offer code'
                                     value={offer?.code}
-                                    onBlur={validate}
                                     onChange={e => updateOffer({code: e.target.value})}
-                                    onKeyDown={() => clearError('name')}
+                                    onKeyDown={() => clearError('code')}
                                 />
                             </div>
                         </section>
@@ -200,7 +201,11 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
             const newErrors: Record<string, string> = {};
 
             if (!formState?.name) {
-                newErrors.name = 'Please enter a name';
+                newErrors.name = 'Name is required';
+            }
+
+            if (!formState?.display_title) {
+                newErrors.displayTitle = 'Display title is required';
             }
 
             if (!formState?.code) {
@@ -256,19 +261,27 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
             updateRoute('offers');
         }}
         backDropClick={false}
+        cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
         height='full'
         okColor={okProps.color}
         okLabel={okProps.label || 'Save'}
         preview={iframe}
+        previewToolbar={false}
         sidebar={sidebar}
         size='lg'
         testId='offer-update-modal'
         title='Offer'
         width={1140}
         onCancel={() => {
-            updateRoute('offers/edit');
+            if (sessionStorage.getItem('editOfferPageSource') === 'offers') {
+                sessionStorage.removeItem('editOfferPageSource');
+                updateRoute('offers');
+            } else {
+                sessionStorage.removeItem('editOfferPageSource');
+                updateRoute('offers/edit');
+            }
         }}
         onOk={async () => {
             if (!(await handleSave({fakeWhenUnchanged: true}))) {
