@@ -150,7 +150,7 @@ const BulkEmail: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     const groupDescription = (
-        <>Define a priovider for bulk email newsletter delivery. <Link href='https://ghost.org/docs/faq/mailgun-newsletters/' target='_blank'>Why is this required?</Link></>
+        <>Define a provider for bulk email newsletter delivery. <Link href='https://ghost.org/docs/faq/mailgun-newsletters/' target='_blank'>Why is this required?</Link></>
     );
 
     return (
