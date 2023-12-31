@@ -1,13 +1,10 @@
 import CustomHeader from './CustomHeader';
-import SettingGroup from '../../../../admin-x-ds/settings/SettingGroup';
-import SettingGroupContent from '../../../../admin-x-ds/settings/SettingGroupContent';
-import TextArea from '../../../../admin-x-ds/global/form/TextArea';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
+import {SettingGroup, SettingGroupContent, TextArea, TextField} from '@tryghost/admin-x-design-system';
 import {UserDetailProps} from '../UserDetailModal';
 import {facebookHandleToUrl, facebookUrlToHandle, twitterHandleToUrl, twitterUrlToHandle, validateFacebookUrl, validateTwitterUrl} from '../../../../utils/socialUrls';
 import {useState} from 'react';
 
-export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, validators, user, setUserData}) => {
+export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, validateField, user, setUserData}) => {
     const [facebookUrl, setFacebookUrl] = useState(user.facebook ? facebookHandleToUrl(user.facebook) : '');
     const [twitterUrl, setTwitterUrl] = useState(user.twitter ? twitterHandleToUrl(user.twitter) : '');
 
@@ -19,7 +16,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                 title="Location"
                 value={user.location || ''}
                 onBlur={(e) => {
-                    validators.location({location: e.target.value});
+                    validateField('location', e.target.value);
                 }}
                 onChange={(e) => {
                     setUserData({...user, location: e.target.value});
@@ -31,7 +28,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                 title="Website"
                 value={user.website || ''}
                 onBlur={(e) => {
-                    validators.url({url: e.target.value});
+                    validateField('url', e.target.value);
                 }}
                 onChange={(e) => {
                     setUserData({...user, website: e.target.value});
@@ -43,7 +40,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                 title="Facebook profile"
                 value={facebookUrl}
                 onBlur={(e) => {
-                    if (validators.facebook({facebook: e.target.value})) {
+                    if (validateField('facebook', e.target.value)) {
                         const url = validateFacebookUrl(e.target.value);
                         setFacebookUrl(url);
                         setUserData({...user, facebook: facebookUrlToHandle(url)});
@@ -59,7 +56,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                 title="X (formerly Twitter) profile"
                 value={twitterUrl}
                 onBlur={(e) => {
-                    if (validators.twitter({twitter: e.target.value})) {
+                    if (validateField('twitter', e.target.value)) {
                         const url = validateTwitterUrl(e.target.value);
                         setTwitterUrl(url);
                         setUserData({...user, twitter: twitterUrlToHandle(url)});
@@ -75,7 +72,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                 title="Bio"
                 value={user.bio || ''}
                 onBlur={(e) => {
-                    validators.bio({bio: e.target.value});
+                    validateField('bio', e.target.value);
                 }}
                 onChange={(e) => {
                     setUserData({...user, bio: e.target.value});

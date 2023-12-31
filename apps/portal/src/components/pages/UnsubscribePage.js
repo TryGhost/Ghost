@@ -8,6 +8,7 @@ import CloseButton from '../common/CloseButton';
 import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
 import Interpolate from '@doist/react-interpolate';
 import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
+import LoadingPage from './LoadingPage';
 
 function SiteLogo() {
     const {site} = useContext(AppContext);
@@ -44,6 +45,7 @@ export default function UnsubscribePage() {
     const {site, pageData, onAction, t} = useContext(AppContext);
     const api = setupGhostApi({siteUrl: site.url});
     const [member, setMember] = useState();
+    const [loading, setLoading] = useState(true);
     const siteNewsletters = getSiteNewsletters({site});
     const defaultNewsletters = siteNewsletters.filter((d) => {
         return d.subscribe_on_signup;
@@ -57,12 +59,26 @@ export default function UnsubscribePage() {
     useEffect(() => {
         const ghostApi = setupGhostApi({siteUrl: site.url});
         (async () => {
-            const memberData = await ghostApi.member.newsletters({uuid: pageData.uuid});
+            let memberData;
+            try {
+                memberData = await ghostApi.member.newsletters({uuid: pageData.uuid});
+                setMember(memberData ?? null);
+                setLoading(false);
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.error('[PORTAL] Error fetching member newsletters', e);
+                setMember(null);
+                setLoading(false);
+                return;
+            }
 
-            setMember(memberData);
+            if (memberData === null) {
+                return;
+            }
+
             const memberNewsletters = memberData?.newsletters || [];
             setSubscribedNewsletters(memberNewsletters);
-            if (siteNewsletters?.length === 1 && !commentsEnabled) {
+            if (siteNewsletters?.length === 1 && !commentsEnabled && !pageData.newsletterUuid) {
                 // Unsubscribe from all the newsletters, because we only have one
                 const updatedData = await updateMemberNewsletters({
                     api: ghostApi,
@@ -93,8 +109,15 @@ export default function UnsubscribePage() {
         })();
     }, [commentsEnabled, pageData.uuid, pageData.newsletterUuid, pageData.comments, site.url, siteNewsletters?.length]);
 
-    // Case: Email not found
-    if (member === null) {
+    if (loading) {
+        // Loading member data from the API based on the uuid
+        return (
+            <LoadingPage />
+        );
+    }
+
+    // Case: invalid uuid passed
+    if (!member) {
         return (
             <div className='gh-portal-content gh-portal-feedback with-footer'>
                 <CloseButton />
@@ -176,6 +199,11 @@ export default function UnsubscribePage() {
         const unsubscribedNewsletter = siteNewsletters?.find((d) => {
             return d.uuid === pageData.newsletterUuid;
         });
+
+        if (!unsubscribedNewsletter) {
+            return null;
+        }
+
         const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
         return (
             <>
@@ -211,7 +239,7 @@ export default function UnsubscribePage() {
                 setSubscribedNewsletters([]);
                 onAction('showPopupNotification', {
                     action: 'updated:success',
-                    message: t(`Email preference updated.`)
+                    message: t(`Unsubscribed from all emails.`)
                 });
                 const updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
                 setMember(updatedMember);

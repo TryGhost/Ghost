@@ -6,7 +6,6 @@ const slugFilterOrder = require('./utils/slug-filter-order');
 const localUtils = require('../../index');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const clean = require('./utils/clean');
-const labs = require('../../../../../../shared/labs');
 const lexical = require('../../../../../lib/lexical');
 
 function removeSourceFormats(frame) {
@@ -57,7 +56,7 @@ function defaultFormat(frame) {
         return;
     }
 
-    frame.options.formats = 'mobiledoc';
+    frame.options.formats = 'mobiledoc,lexical';
 }
 
 function handlePostsMeta(frame) {
@@ -134,12 +133,22 @@ module.exports = {
             const html = frame.data.pages[0].html;
 
             if (frame.options.source === 'html' && !_.isEmpty(html)) {
+                if (process.env.CI) {
+                    console.time('htmlToMobiledocConverter (page)'); // eslint-disable-line no-console
+                }
                 frame.data.pages[0].mobiledoc = JSON.stringify(mobiledoc.htmlToMobiledocConverter(html));
+                if (process.env.CI) {
+                    console.timeEnd('htmlToMobiledocConverter (page)'); // eslint-disable-line no-console
+                }
 
                 // normally we don't allow both mobiledoc+lexical but the model layer will remove lexical
                 // if mobiledoc is already present to avoid migrating formats outside of an explicit conversion
-                if (labs.isSet('lexicalEditor')) {
-                    frame.data.pages[0].lexical = JSON.stringify(lexical.htmlToLexicalConverter(html));
+                if (process.env.CI) {
+                    console.time('htmlToLexicalConverter (page)'); // eslint-disable-line no-console
+                }
+                frame.data.pages[0].lexical = JSON.stringify(lexical.htmlToLexicalConverter(html));
+                if (process.env.CI) {
+                    console.timeEnd('htmlToLexicalConverter (page)'); // eslint-disable-line no-console
                 }
             }
         }

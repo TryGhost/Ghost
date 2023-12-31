@@ -9,6 +9,7 @@
                 <Editor::PublishManagement
                     @post={{this.post}}
                     @hasUnsavedChanges={{this.hasDirtyAttributes}}
+                    @tkCount={{this.tkCount}}
                     @beforePublish={{perform this.beforeSaveTask}}
                     @afterPublish={{this.afterSave}}
                     @saveTask={{this.saveTask}}
@@ -18,17 +19,13 @@
                         {{#if this.ui.isFullScreen}}
                             {{#if this.fromAnalytics }}
                                 <LinkTo @route="posts.analytics" @model={{this.post}} class="gh-btn-editor gh-editor-back-button" data-test-breadcrumb>
-                                    <span>
-                                        {{svg-jar "arrow-left"}}
-                                        Analytics
-                                    </span>
+                                    {{svg-jar "arrow-left"}}
+                                    <span>Analytics</span>
                                 </LinkTo>
                             {{else}}
                                 <LinkTo @route={{pluralize this.post.displayName }} class="gh-btn-editor gh-editor-back-button" data-test-link={{pluralize this.post.displayName}} data-test-breadcrumb>
-                                    <span>
-                                        {{svg-jar "arrow-left"}}
-                                        {{capitalize (pluralize this.post.displayName)}}
-                                    </span>
+                                    {{svg-jar "arrow-left"}}
+                                    <span>{{capitalize (pluralize this.post.displayName)}}</span>
                                 </LinkTo>
                             {{/if}}
                         {{/if}}
@@ -47,7 +44,7 @@
                         {{/if}}
                     </div>
 
-                    <section class="flex items-center pe-auto h-100">
+                    <section class="gh-editor-publish-buttons">
                         {{#unless this.post.isNew}}
                             <Editor::PublishButtons @publishManagement={{publishManagement}} />
                             {{#unless this.showSettingsMenu}}
@@ -66,6 +63,7 @@
                 @title={{readonly this.post.titleScratch}}
                 @titleAutofocus={{this.shouldFocusTitle}}
                 @titlePlaceholder={{concat (capitalize this.post.displayName) " title"}}
+                @titleHasTk={{this.titleHasTk}}
                 @onTitleChange={{this.updateTitleScratch}}
                 @onTitleBlur={{perform this.saveTitleTask}}
                 @body={{readonly this.post.lexicalScratch}}
@@ -76,12 +74,15 @@
                 @scrollOffsetBottomSelector=".gh-mobile-nav-bar"
                 @onEditorCreated={{this.setKoenigEditor}}
                 @updateWordCount={{this.updateWordCount}}
+                @updatePostTkCount={{this.updatePostTkCount}}
+                @updateFeatureImageTkCount={{if (feature "tkReminders") this.updateFeatureImageTkCount}}
                 @featureImage={{this.post.featureImage}}
                 @featureImageAlt={{this.post.featureImageAlt}}
                 @featureImageCaption={{this.post.featureImageCaption}}
                 @setFeatureImage={{this.setFeatureImage}}
                 @setFeatureImageAlt={{this.setFeatureImageAlt}}
                 @setFeatureImageCaption={{this.setFeatureImageCaption}}
+                @handleFeatureImageCaptionBlur={{this.handleFeatureImageCaptionBlur}}
                 @clearFeatureImage={{this.clearFeatureImage}}
                 @cardOptions={{hash
                     post=this.post
@@ -99,6 +100,26 @@
                     {{gh-pluralize this.wordCount "word"}}
                 </div>
                 <a href="https://ghost.org/help/using-the-editor/" class="flex" target="_blank" rel="noopener noreferrer">{{svg-jar "help"}}</a>
+            </div>
+
+            <div class="gh-editor-mobile-menu">
+                <Editor::PublishManagement
+                    @post={{this.post}}
+                    @hasUnsavedChanges={{this.hasDirtyAttributes}}
+                    @beforePublish={{perform this.beforeSaveTask}}
+                    @afterPublish={{this.afterSave}}
+                    @saveTask={{this.saveTask}}
+                    as |publishManagement|
+                >
+                    <div class="gh-editor-wordcount">
+                        {{gh-pluralize this.wordCount "word"}}
+                    </div>
+                    <section class="gh-editor-publish-buttons">
+                        {{#unless this.post.isNew}}
+                            <Editor::PublishButtons @publishManagement={{publishManagement}} />
+                        {{/unless}}
+                    </section>
+                </Editor::PublishManagement>
             </div>
 
         </GhEditor>

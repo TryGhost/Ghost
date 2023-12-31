@@ -1,6 +1,7 @@
 const {faker} = require('@faker-js/faker');
 const TableImporter = require('./TableImporter');
 const {luck} = require('../utils/random');
+const dateToDatabaseString = require('../utils/database-date');
 
 class MembersProductsImporter extends TableImporter {
     static table = 'members_products';
@@ -12,7 +13,7 @@ class MembersProductsImporter extends TableImporter {
 
     async import(quantity) {
         const members = await this.transaction.select('id').from('members').whereNot('status', 'free');
-        this.products = await this.transaction.select('id').from('products').whereNot('name', 'Free');
+        this.products = await this.transaction.select('id').from('products').whereNot('type', 'fee');
 
         await this.importForEach(members, quantity ? quantity / members.length : 1);
     }
@@ -32,7 +33,8 @@ class MembersProductsImporter extends TableImporter {
             id: faker.database.mongodbObjectId(),
             member_id: this.model.id,
             product_id: this.getProduct().id,
-            sort_order: 0
+            sort_order: 0,
+            expiry_at: this.model.status === 'paid' ? null : (luck(50) ? null : dateToDatabaseString(faker.date.future()))
         };
     }
 }

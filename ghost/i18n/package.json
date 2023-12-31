@@ -8,9 +8,8 @@
   "types": "./build/i18n.d.ts",
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test:unit:base": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
-    "test:unit": "yarn test:unit:base && yarn translate",
-    "test": "yarn test:unit",
+    "test:base": "NODE_ENV=testing c8 --include index.js --include lib --check-coverage --100  --reporter text --reporter cobertura -- mocha --reporter dot './test/**/*.test.js'",
+    "test": "yarn test:base && yarn translate",
     "lint:code": "eslint *.js lib/ --ext .js --cache",
     "lint": "yarn lint:code && yarn lint:test",
     "lint:test": "eslint -c test/.eslintrc.js test/ --ext .js --cache",
@@ -27,10 +26,10 @@
   ],
   "devDependencies": {
     "c8": "8.0.1",
-    "i18next-parser": "8.9.0",
+    "i18next-parser": "8.8.0",
     "mocha": "10.2.0"
   },
   "dependencies": {
-    "i18next": "23.6.0"
+    "i18next": "23.7.9"
   }
 }

@@ -1,5 +1,6 @@
-import {chooseOptionInSelect, globalDataRequests, mockApi, mockSitePreview, responseFixtures} from '../../utils/acceptance';
+import {chooseOptionInSelect, mockApi, mockSitePreview, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
+import {globalDataRequests} from '../../utils/acceptance';
 
 test.describe('Design settings', async () => {
     test('Working with the preview', async ({page}) => {
@@ -219,7 +220,7 @@ test.describe('Design settings', async () => {
         await expect(modal.getByTestId('design-setting-tabs').getByRole('tab', {name: 'Post'})).toBeHidden();
 
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify({})]]).toString();
-        expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
+        await expect(lastPreviewRequest.previewHeader).toMatch(new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`));
     });
 
     test('Custom theme setting visibility', async ({page}) => {

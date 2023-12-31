@@ -19,7 +19,7 @@
   ],
   "devDependencies": {
     "c8": "8.0.1",
-    "fs-extra": "11.1.1",
+    "fs-extra": "11.2.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "15.2.0"
@@ -28,7 +28,8 @@
     "@tryghost/errors": "1.2.26",
     "@tryghost/logging": "2.4.8",
     "@tryghost/members-csv": "0.0.0",
-    "@tryghost/tpl": "0.1.24",
+    "@tryghost/metrics": "1.0.27",
+    "@tryghost/tpl": "0.1.26",
     "moment-timezone": "0.5.23"
   }
 }

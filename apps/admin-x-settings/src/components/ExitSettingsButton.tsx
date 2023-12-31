@@ -1,7 +1,5 @@
-import Button from '../admin-x-ds/global/Button';
 import React from 'react';
-import useGlobalDirtyState from '../hooks/useGlobalDirtyState';
-import {confirmIfDirty} from '../utils/modals';
+import {Button, confirmIfDirty, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 
 const ExitSettingsButton: React.FC = () => {
     const {isDirty} = useGlobalDirtyState();

@@ -18,6 +18,7 @@
     "lib"
   ],
   "devDependencies": {
+    "@tryghost/debug": "0.1.27",
     "c8": "8.0.1",
     "knex": "2.4.2",
     "mocha": "10.2.0",
@@ -26,8 +27,8 @@
   },
   "dependencies": {
     "@faker-js/faker": "7.6.0",
-    "@tryghost/root-utils": "0.3.22",
-    "@tryghost/string": "0.2.4",
+    "@tryghost/root-utils": "0.3.24",
+    "@tryghost/string": "0.2.10",
     "probability-distributions": "0.9.1"
   }
 }

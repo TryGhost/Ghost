@@ -1,24 +1,17 @@
 import AdvancedThemeSettings from './theme/AdvancedThemeSettings';
-import Breadcrumbs from '../../../admin-x-ds/global/Breadcrumbs';
-import Button from '../../../admin-x-ds/global/Button';
-import ConfirmationModal from '../../../admin-x-ds/global/modal/ConfirmationModal';
-import FileUpload from '../../../admin-x-ds/global/form/FileUpload';
-import InvalidThemeModal from './theme/InvalidThemeModal';
-import LimitModal from '../../../admin-x-ds/global/modal/LimitModal';
-import Modal from '../../../admin-x-ds/global/modal/Modal';
+import InvalidThemeModal, {FatalErrors} from './theme/InvalidThemeModal';
 import NiceModal, {NiceModalHandler, useModal} from '@ebay/nice-modal-react';
 import OfficialThemes from './theme/OfficialThemes';
-import PageHeader from '../../../admin-x-ds/global/layout/PageHeader';
-import React, {useEffect, useRef, useState} from 'react';
-import TabView from '../../../admin-x-ds/global/TabView';
+import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
-import useHandleError from '../../../utils/api/handleError';
-import useRouting from '../../../hooks/useRouting';
+import {Breadcrumbs, Button, ConfirmationModal, FileUpload, LimitModal, Modal, PageHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
-import {InstalledTheme, Theme, ThemesInstallResponseType, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '../../../api/themes';
-import {OfficialTheme} from '../../providers/ServiceProvider';
-import {showToast} from '../../../admin-x-ds/global/Toast';
+import {InstalledTheme, Theme, ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
+import {JSONError} from '@tryghost/admin-x-framework/errors';
+import {OfficialTheme} from '../../providers/SettingsAppProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface ThemeToolbarProps {
     selectedTheme: OfficialTheme|null;
@@ -37,6 +30,24 @@ interface ThemeModalContentProps {
     themes: Theme[];
 }
 
+const UploadModalContent: React.FC<{onUpload: (file: File) => void}> = ({onUpload}) => {
+    const modal = useModal();
+
+    return <div className="-mb-6">
+        <FileUpload
+            id="theme-upload"
+            onUpload={(file) => {
+                modal.remove();
+                onUpload(file);
+            }}
+        >
+            <div className="cursor-pointer bg-grey-75 p-10 text-center dark:bg-grey-950">
+            Click to select or drag & drop zip file
+            </div>
+        </FileUpload>
+    </div>;
+};
+
 const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     currentTab,
     setCurrentTab,
@@ -50,14 +61,6 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const [uploadConfig, setUploadConfig] = useState<{enabled: boolean; error?: string}>();
 
     const [isUploading, setUploading] = useState(false);
-
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const handleRetry = () => {
-        if (fileInputRef?.current) {
-            fileInputRef.current.click();
-        }
-    };
 
     useEffect(() => {
         if (limiter) {
@@ -122,7 +125,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         onActivate?: () => void
     }) => {
         let data: ThemesInstallResponseType | undefined;
-        let fatalErrors = null;
+        let fatalErrors: FatalErrors | null = null;
 
         try {
             setUploading(true);
@@ -130,9 +133,11 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             setUploading(false);
         } catch (e) {
             setUploading(false);
-            const errorsJson = await handleError(e) as {errors?: []};
-            if (errorsJson?.errors) {
-                fatalErrors = errorsJson.errors;
+
+            if (e instanceof JSONError && e.response?.status === 422 && e.data?.errors) {
+                fatalErrors = (e.data.errors as any) as FatalErrors;
+            } else {
+                handleError(e);
             }
         }
 
@@ -145,7 +150,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                 fatalErrors,
                 onRetry: async (modal) => {
                     modal?.remove();
-                    handleRetry();
+                    handleUpload();
                 }
             });
         }
@@ -205,6 +210,23 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
             onBack={onClose}
         />;
 
+    const handleUpload = () => {
+        if (uploadConfig?.enabled) {
+            NiceModal.show(ConfirmationModal, {
+                title: 'Upload theme',
+                prompt: <UploadModalContent onUpload={onThemeUpload} />,
+                okLabel: '',
+                formSheet: false
+            });
+        } else {
+            NiceModal.show(LimitModal, {
+                title: 'Upgrade to enable custom themes',
+                prompt: uploadConfig?.error || <>Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.</>,
+                onOk: () => updateRoute({route: '/pro', isExternal: true})
+            });
+        }
+    };
+
     const right =
         <div className='flex items-center gap-14'>
             <div className='hidden md:!visible md:!block'>
@@ -220,19 +242,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
                     }} />
             </div>
             <div className='flex items-center gap-3'>
-                {uploadConfig && (
-                    uploadConfig.enabled ?
-                        <FileUpload id='theme-upload' inputRef={fileInputRef} onUpload={onThemeUpload}>
-                            <Button color='black' label='Upload theme' loading={isUploading} tag='div' />
-                        </FileUpload> :
-                        // for when user's plan does not support custom themes
-                        <Button color='black' label='Upload theme' onClick={() => {
-                            NiceModal.show(LimitModal, {
-                                title: 'Upgrade to enable custom themes',
-                                prompt: uploadConfig?.error || <>Your current plan only supports official themes. You can install them from the <a href="https://ghost.org/marketplace/">Ghost theme marketplace</a>.</>
-                            });
-                        }} />
-                )}
+                <Button color='black' label='Upload theme' loading={isUploading} onClick={handleUpload} />
             </div>
         </div>;
 
@@ -364,7 +374,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
             let prompt = <></>;
 
             // default theme can't be installed, only activated
-            if (selectedTheme.ref === 'default') {
+            if (isDefaultOrLegacyTheme(selectedTheme)) {
                 title = 'Activate theme';
                 prompt = <>By clicking below, <strong>{selectedTheme.name}</strong> will automatically be activated as the theme for your site.</>;
             } else {

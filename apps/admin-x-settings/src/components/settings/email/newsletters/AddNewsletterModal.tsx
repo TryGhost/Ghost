@@ -1,20 +1,13 @@
-import Form from '../../../../admin-x-ds/global/form/Form';
-import LimitModal from '../../../../admin-x-ds/global/modal/LimitModal';
-import Modal from '../../../../admin-x-ds/global/modal/Modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect} from 'react';
-import TextArea from '../../../../admin-x-ds/global/form/TextArea';
-import TextField from '../../../../admin-x-ds/global/form/TextField';
-import Toggle from '../../../../admin-x-ds/global/form/Toggle';
-import useForm from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
-import useRouting from '../../../../hooks/useRouting';
+import {Form, LimitModal, Modal, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {RoutingModalProps} from '../../../providers/RoutingProvider';
-import {showToast} from '../../../../admin-x-ds/global/Toast';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {numberWithCommas} from '../../../../utils/helpers';
 import {toast} from 'react-hot-toast';
-import {useAddNewsletter} from '../../../../api/newsletters';
-import {useBrowseMembers} from '../../../../api/members';
+import {useAddNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
+import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
@@ -26,7 +19,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     });
 
     const {mutateAsync: addNewsletter} = useAddNewsletter();
-    const {formState, updateForm, handleSave, errors, validate, clearError} = useForm({
+    const {formState, updateForm, saveState, handleSave, errors, clearError} = useForm({
         initialState: {
             name: '',
             description: '',
@@ -47,7 +40,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Please enter a name';
+                newErrors.name = 'Name is required';
             }
 
             return newErrors;
@@ -60,7 +53,8 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         limiter?.errorIfWouldGoOverLimit('newsletters').catch((error) => {
             if (error instanceof HostLimitError) {
                 NiceModal.show(LimitModal, {
-                    prompt: error.message || `Your current plan doesn't support more newsletters.`
+                    prompt: error.message || `Your current plan doesn't support more newsletters.`,
+                    onOk: () => updateRoute({route: '/pro', isExternal: true})
                 });
                 modal.remove();
                 updateRoute('newsletters');
@@ -70,12 +64,16 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
         });
     }, [limiter, modal, updateRoute]);
 
+    const subscriberCount = members?.meta?.pagination.total;
+
     return <Modal
         afterClose={() => {
             updateRoute('newsletters');
         }}
+        backDropClick={false}
         okColor='black'
         okLabel='Create'
+        okLoading={saveState === 'saving'}
         size='sm'
         testId='add-newsletter-modal'
         title='Create newsletter'
@@ -96,12 +94,12 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
             marginTop
         >
             <TextField
+                autoFocus={true}
                 error={Boolean(errors.name)}
                 hint={errors.name}
                 placeholder='Weekly roundup'
                 title='Name'
                 value={formState.name}
-                onBlur={validate}
                 onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                 onKeyDown={() => clearError('name')}
             />
@@ -114,7 +112,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 checked={formState.optInExistingSubscribers}
                 direction='rtl'
                 hint={formState.optInExistingSubscribers ?
-                    `This newsletter will be available to all members. Your ${members?.meta?.pagination.total} existing subscriber${members?.meta?.pagination.total === 1 ? '' : 's'} will also be opted-in to receive it.` :
+                    `This newsletter will be available to all members. Your ${subscriberCount === undefined ? '' : numberWithCommas(subscriberCount)} existing subscriber${members?.meta?.pagination.total === 1 ? '' : 's'} will also be opted-in to receive it.` :
                     'The newsletter will be available to all new members. Existing members won’t be subscribed, but may visit their account area to opt-in to future emails.'
                 }
                 label='Opt-in existing subscribers'

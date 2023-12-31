@@ -296,6 +296,38 @@
     box-shadow: var(--box-shadow-preview-box);
 }
 
+.gh-setting-members-portal-mock {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    box-shadow: var(--box-shadow-preview-box);
+    width: 420px;
+    height: 562px;
+    margin-bottom: 32px;
+    border-radius: 5px;
+    pointer-events: none;
+    transition: height 0.17s ease-out;
+}
+
+.gh-setting-members-portal-mock.mock-enabled {
+    pointer-events: unset;
+}
+
+.gh-setting-members-portalpreview {
+    justify-self: end;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--midgrey);
+}
+
+@media (max-width: 1140px) {
+    .gh-setting-members-portalpreview {
+        display: none;
+    }
+}
+
 .gh-offers-help {
     margin-top: 5vmin;
     margin-bottom: 0;

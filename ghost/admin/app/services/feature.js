@@ -77,6 +77,10 @@ export default class FeatureService extends Service {
     @feature('tipsAndDonations') tipsAndDonations;
     @feature('recommendations') recommendations;
     @feature('lexicalIndicators') lexicalIndicators;
+    @feature('filterEmailDisabled') filterEmailDisabled;
+    @feature('adminXDemo') adminXDemo;
+    @feature('tkReminders') tkReminders;
+    @feature('portalImprovements') portalImprovements;
 
     _user = null;
 

@@ -1,10 +1,10 @@
-import Heading from '../../../../admin-x-ds/global/Heading';
 import MarketplaceBgImage from '../../../../assets/images/footer-marketplace-bg.png';
-import ModalPage from '../../../../admin-x-ds/global/modal/ModalPage';
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
-import {OfficialTheme, ThemeVariant, useOfficialThemes} from '../../../providers/ServiceProvider';
-import {getGhostPaths, resolveAsset} from '../../../../utils/helpers';
+import {Heading, ModalPage} from '@tryghost/admin-x-design-system';
+import {OfficialTheme, ThemeVariant, useOfficialThemes} from '../../../providers/SettingsAppProvider';
+import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {resolveAsset} from '../../../../utils/helpers';
 
 const VARIANT_LOOP_INTERVAL = 3000;
 

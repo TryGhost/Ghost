@@ -15,14 +15,10 @@ export default class GhEditorFeatureImageComponent extends Component {
     @service settings;
 
     @tracked isEditingAlt = false;
-    @tracked isHovered = false;
     @tracked captionInputFocused = false;
     @tracked showUnsplashSelector = false;
     @tracked canDrop = false;
-
-    get hideButton() {
-        return !this.canDrop && !this.isHovered && !this.args.forceButtonDisplay;
-    }
+    @tracked tkCount = 0;
 
     get caption() {
         const content = this.args.caption;
@@ -37,6 +33,24 @@ export default class GhEditorFeatureImageComponent extends Component {
     setCaption(html) {
         const cleanedHtml = cleanBasicHtml(html || '', {firstChildInnerContent: true});
         this.args.updateCaption(cleanedHtml);
+    }
+
+    @action
+    registerEditorAPI(API) {
+        this.editorAPI = API;
+    }
+
+    @action
+    focusCaptionEditor() {
+        if (this.editorAPI) {
+            this.editorAPI.focusEditor({position: 'bottom'});
+        }
+    }
+
+    @action
+    handleCaptionBlur() {
+        this.captionInputFocused = false;
+        this.args.handleCaptionBlur();
     }
 
     @action
@@ -114,5 +128,13 @@ export default class GhEditorFeatureImageComponent extends Component {
     saveImage(setFiles, imageFile) {
         this.canDrop = false;
         setFiles([imageFile]);
+    }
+
+    @action
+    onTKCountChange(count) {
+        if (this.args.onTKCountChange) {
+            this.tkCount = count;
+            this.args.onTKCountChange(count);
+        }
     }
 }

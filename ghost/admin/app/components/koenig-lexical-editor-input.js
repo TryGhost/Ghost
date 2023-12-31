@@ -14,6 +14,18 @@ class ErrorHandler extends React.Component {
         return {hasError: true};
     }
 
+    componentDidCatch(error) {
+        if (this.props.config.sentry_dsn) {
+            Sentry.captureException(error, {
+                tags: {
+                    lexical: true
+                }
+            });
+        }
+
+        console.error(error, errorInfo); // eslint-disable-line
+    }
+
     render() {
         if (this.state.hasError) {
             return (
@@ -40,6 +52,16 @@ const HtmlOutputPlugin = ({editorResource, ...props}) => {
     return <_HtmlOutputPlugin {...props} />;
 };
 
+const EmojiPickerPlugin = ({editorResource, ...props}) => {
+    const {EmojiPickerPlugin: _EmojiPickerPlugin} = editorResource.read();
+    return <_EmojiPickerPlugin {...props} />;
+};
+
+const TKCountPlugin = ({editorResource, ...props}) => {
+    const {TKCountPlugin: _TKCountPlugin} = editorResource.read();
+    return <_TKCountPlugin {...props} />;
+};
+
 export default class KoenigLexicalEditorInput extends Component {
     @service ajax;
     @service feature;
@@ -49,6 +71,10 @@ export default class KoenigLexicalEditorInput extends Component {
     @inject config;
 
     editorResource = this.koenig.resource;
+
+    get emojiPicker() {
+        return this.args.emojiPicker ?? true;
+    }
 
     @action
     onError(error) {
@@ -69,12 +95,13 @@ export default class KoenigLexicalEditorInput extends Component {
     ReactComponent = (props) => {
         return (
             <div className={['koenig-react-editor', this.args.className].filter(Boolean).join(' ')}>
-                <ErrorHandler>
+                <ErrorHandler config={this.config}>
                     <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigComposer
                             editorResource={this.editorResource}
                             initialEditorState={this.args.lexical}
                             onError={this.onError}
+                            isTKEnabled={this.args.onTKCountChange ? true : false}
                         >
                             <KoenigComposableEditor
                                 editorResource={this.editorResource}
@@ -84,11 +111,14 @@ export default class KoenigLexicalEditorInput extends Component {
                                 onFocus={props.onFocus}
                                 isSnippetsEnabled={false}
                                 singleParagraph={true}
-                                className="koenig-lexical-editor-input"
+                                className={`koenig-lexical-editor-input ${this.feature.nightShift ? 'dark' : ''}`}
                                 placeholderText={props.placeholderText}
                                 placeholderClassName="koenig-lexical-editor-input-placeholder"
+                                registerAPI={this.args.registerAPI}
                             >
                                 <HtmlOutputPlugin editorResource={this.editorResource} html={props.html} setHtml={props.onChangeHtml} />
+                                {this.emojiPicker ? <EmojiPickerPlugin editorResource={this.editorResource} /> : null}
+                                {this.args.onTKCountChange ? <TKCountPlugin editorResource={this.editorResource} onChange={this.args.onTKCountChange} /> : null}
                             </KoenigComposableEditor>
                         </KoenigComposer>
                     </Suspense>

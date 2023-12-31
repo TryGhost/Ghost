@@ -12,7 +12,7 @@ describe('Site Public Settings', function () {
     });
 
     afterEach(async function () {
-        await await models.Settings.edit({
+        await models.Settings.edit({
             key: 'members_signup_access',
             value: 'all'
         }, {context: {internal: true}});
@@ -34,7 +34,7 @@ describe('Site Public Settings', function () {
     });
 
     it('Sets allow_external_signup to false when members are invite only', async function () {
-        await await models.Settings.edit({
+        await models.Settings.edit({
             key: 'members_signup_access',
             value: 'invite'
         }, {context: {internal: true}});
@@ -58,12 +58,12 @@ describe('Site Public Settings', function () {
             .get('/api/site');
         assert.equal(initialBody.site.allow_external_signup, true, 'This test requires the initial state to allow external signups');
 
-        await await models.Settings.edit({
+        await models.Settings.edit({
             key: 'portal_signup_checkbox_required',
             value: true
         }, {context: {internal: true}});
 
-        await await models.Settings.edit({
+        await models.Settings.edit({
             key: 'portal_signup_terms_html',
             value: 'I agree to the terms and conditions'
         }, {context: {internal: true}});

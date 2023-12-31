@@ -26,11 +26,11 @@
     "c8": "8.0.1",
     "mocha": "10.2.0",
     "sinon": "15.2.0",
-    "ts-node": "10.9.1",
-    "typescript": "5.2.2"
+    "ts-node": "10.9.2",
+    "typescript": "5.3.3"
   },
   "dependencies": {
-    "@tryghost/tpl": "0.1.25",
+    "@tryghost/tpl": "0.1.26",
     "@tryghost/errors": "1.2.26",
     "@tryghost/in-memory-repository": "0.0.0",
     "@tryghost/bookshelf-repository": "0.0.0",

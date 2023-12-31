@@ -1,6 +1,6 @@
 import IframeBuffering from '../../../../utils/IframeBuffering';
 import React, {useCallback} from 'react';
-import {CustomThemeSetting, hiddenCustomThemeSettingValue} from '../../../../api/customThemeSettings';
+import {CustomThemeSetting, hiddenCustomThemeSettingValue} from '@tryghost/admin-x-framework/api/customThemeSettings';
 import {isCustomThemeSettingVisible} from '../../../../utils/isCustomThemeSettingsVisible';
 
 type BrandSettings = {
@@ -65,14 +65,14 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
 
         // Fetch theme preview HTML
         fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'text/html;charset=utf-8',
                 'x-ghost-preview': previewData,
-                Accept: 'text/plain',
-                mode: 'cors',
-                credentials: 'include'
-            }
+                Accept: 'text/plain'
+            },
+            mode: 'cors',
+            credentials: 'include'
         })
             .then(response => response.text())
             .then((data) => {

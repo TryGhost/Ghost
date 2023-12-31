@@ -28,7 +28,7 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
         }
 
         fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'text/html;charset=utf-8',
                 'x-ghost-preview': getPreviewData(
@@ -36,10 +36,10 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
                     announcementContent,
                     visibilityMemo
                 ),
-                Accept: 'text/plain',
-                mode: 'cors',
-                credentials: 'include'
-            }
+                Accept: 'text/plain'
+            },
+            mode: 'cors',
+            credentials: 'include'
         })
             .then(response => response.text())
             .then((data) => {

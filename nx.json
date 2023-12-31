@@ -10,6 +10,7 @@
                     "test",
                     "test:unit"
                 ],
+                "useDaemonProcess": false,
                 "cacheDirectory": ".nxcache"
             }
         }
@@ -21,6 +22,20 @@
         ]
     },
     "targetDefaults": {
+        "build": {
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "default",
+                "^default"
+            ],
+            "outputs": [
+                "{projectRoot}/dist",
+                "{projectRoot}/es",
+                "{projectRoot}/umd"
+            ]
+        },
         "build:ts": {
             "dependsOn": [
                 "^build:ts"

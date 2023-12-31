@@ -18,7 +18,7 @@
     "lib"
   ],
   "devDependencies": {
-    "@sinonjs/fake-timers": "11.0.0",
+    "@sinonjs/fake-timers": "11.2.2",
     "c8": "8.0.1",
     "date-fns": "2.30.0",
     "delay": "5.0.0",
@@ -27,12 +27,12 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@breejs/later": "4.1.0",
+    "@breejs/later": "4.2.0",
     "@tryghost/errors": "1.2.26",
     "@tryghost/logging": "2.4.8",
     "bree": "6.5.0",
     "cron-validate": "1.4.5",
-    "fastq": "1.15.0",
+    "fastq": "1.16.0",
     "p-wait-for": "3.2.0"
   }
 }

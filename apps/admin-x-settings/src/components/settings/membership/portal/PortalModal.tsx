@@ -1,21 +1,18 @@
 import AccountPage from './AccountPage';
-import ConfirmationModal from '../../../../admin-x-ds/global/modal/ConfirmationModal';
 import LookAndFeel from './LookAndFeel';
 import NiceModal from '@ebay/nice-modal-react';
 import PortalPreview from './PortalPreview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './SignupOptions';
-import TabView, {Tab} from '../../../../admin-x-ds/global/TabView';
-import useForm, {Dirtyable} from '../../../../hooks/useForm';
-import useHandleError from '../../../../utils/api/handleError';
 import useQueryParams from '../../../../hooks/useQueryParams';
-import useRouting from '../../../../hooks/useRouting';
-import {PreviewModalContent} from '../../../../admin-x-ds/global/modal/PreviewModal';
-import {Setting, SettingValue, getSettingValues, useEditSettings} from '../../../../api/settings';
-import {Tier, getPaidActiveTiers, useBrowseTiers, useEditTier} from '../../../../api/tiers';
-import {fullEmailAddress} from '../../../../api/site';
+import {ConfirmationModal, PreviewModalContent, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
+import {Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {Setting, SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
+import {fullEmailAddress} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {verifyEmailToken} from '../../../../api/emailVerification';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {verifyEmailToken} from '@tryghost/admin-x-framework/api/emailVerification';
 
 const Sidebar: React.FC<{
     localSettings: Setting[]
@@ -48,7 +45,7 @@ const Sidebar: React.FC<{
         {
             id: 'accountPage',
             title: 'Account page',
-            contents: <AccountPage updateSetting={updateSetting} />
+            contents: <AccountPage errors={errors} setError={setError} updateSetting={updateSetting} />
         }
     ];
 
@@ -69,10 +66,10 @@ const PortalModal: React.FC = () => {
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('signup');
 
     const handleError = useHandleError();
-    const {settings, siteData} = useGlobalData();
+    const {settings, siteData, config} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
-    const tiers = getPaidActiveTiers(allTiers || []);
+    // const tiers = getPaidActiveTiers(allTiers || []);
 
     const {mutateAsync: editTier} = useEditTier();
     const {mutateAsync: verifyToken} = verifyEmailToken();
@@ -87,8 +84,8 @@ const PortalModal: React.FC = () => {
                 let {settings: verifiedSettings} = await verifyToken({token});
                 const [supportEmail] = getSettingValues<string>(verifiedSettings, ['members_support_address']);
                 NiceModal.show(ConfirmationModal, {
-                    title: 'Verifying email address',
-                    prompt: <>Success! The support email address has changed to <strong>{supportEmail}</strong></>,
+                    title: 'Support address verified',
+                    prompt: <>Your support email address has been changed to <strong>{supportEmail}</strong>.</>,
                     okLabel: 'Close',
                     cancelLabel: '',
                     onOk: confirmModal => confirmModal?.remove()
@@ -101,7 +98,7 @@ const PortalModal: React.FC = () => {
                     prompt = 'The verification link has expired. Please try again.';
                 }
                 NiceModal.show(ConfirmationModal, {
-                    title: 'Error verifying email address',
+                    title: 'Error verifying support address',
                     prompt: prompt,
                     okLabel: 'Close',
                     cancelLabel: '',
@@ -115,11 +112,13 @@ const PortalModal: React.FC = () => {
         }
     }, [handleError, verifyEmail, verifyToken]);
 
-    const {formState, setFormState, saveState, handleSave, updateForm} = useForm({
+    const {formState, setFormState, saveState, handleSave, updateForm, okProps} = useForm({
         initialState: {
             settings: settings as Dirtyable<Setting>[],
-            tiers: tiers as Dirtyable<Tier>[]
+            tiers: allTiers as Dirtyable<Tier>[] || []
         },
+
+        savingDelay: 500,
 
         onSave: async () => {
             await Promise.all(formState.tiers.filter(({dirty}) => dirty).map(tier => editTier(tier)));
@@ -136,13 +135,14 @@ const PortalModal: React.FC = () => {
 
             if (meta?.sent_email_verification) {
                 const newEmail = formState.settings.find(setting => setting.key === 'members_support_address')?.value;
-                const currentEmail = currentSettings.find(setting => setting.key === 'members_support_address')?.value;
+                const currentEmail = currentSettings.find(setting => setting.key === 'support_email_address')?.value ||
+                    fullEmailAddress(currentSettings.find(setting => setting.key === 'members_support_address')?.value?.toString() || 'noreply', siteData!, config);
 
                 NiceModal.show(ConfirmationModal, {
                     title: 'Confirm email address',
                     prompt: <>
                         We&apos;ve sent a confirmation email to <strong>{newEmail}</strong>.
-                        Until verified, your support address will remain {fullEmailAddress(currentEmail?.toString() || 'noreply', siteData!)}.
+                        Until verified, your support email address will remain {currentEmail}.
                     </>,
                     okLabel: 'Close',
                     cancelLabel: '',
@@ -153,6 +153,12 @@ const PortalModal: React.FC = () => {
 
         onSaveError: handleError
     });
+
+    useEffect(() => {
+        if (!formState.tiers.length && allTiers?.length) {
+            setFormState(state => ({...state, tiers: allTiers}));
+        }
+    }, [allTiers, formState.tiers, setFormState]);
 
     const [errors, setErrors] = useState<Record<string, string | undefined>>({});
 
@@ -204,22 +210,17 @@ const PortalModal: React.FC = () => {
         {id: 'account', title: 'Account page'},
         {id: 'links', title: 'Links'}
     ];
-    let okLabel = 'Save';
-    if (saveState === 'saving') {
-        okLabel = 'Saving...';
-    } else if (saveState === 'saved') {
-        okLabel = 'Saved';
-    }
 
     return <PreviewModalContent
         afterClose={() => {
             updateRoute('portal');
         }}
+        buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         deviceSelector={false}
         dirty={saveState === 'unsaved'}
-        okColor={saveState === 'saved' ? 'green' : 'black'}
-        okLabel={okLabel}
+        okColor={okProps.color}
+        okLabel={okProps.label || 'Save'}
         preview={preview}
         previewBgColor={selectedPreviewTab === 'links' ? 'white' : 'greygradient'}
         previewToolbarTabs={previewTabs}
@@ -228,7 +229,12 @@ const PortalModal: React.FC = () => {
         testId='portal-modal'
         title='Portal'
         onOk={async () => {
-            if (!Object.values(errors).filter(Boolean).length) {
+            if (Object.values(errors).filter(Boolean).length) {
+                showToast({
+                    type: 'pageError',
+                    message: 'Can\'t save settings, please double check that you\'ve filled all mandatory fields.'
+                });
+            } else {
                 await handleSave({force: true});
             }
         }}

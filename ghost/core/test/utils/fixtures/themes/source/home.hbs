@@ -4,9 +4,9 @@
 {{> "components/header" headerStyle=@custom.header_style}}
 
 {{#match @custom.header_style "!=" "Highlight"}}
-    {{> "components/featured" showFeatured=@custom.highlight_featured_posts limit=4}}
+    {{> "components/featured" showFeatured=@custom.show_featured_posts limit=4}}
 {{/match}}
 
 {{> "components/cta"}}
 
-{{> "components/post-list" feed="home" postFeedStyle=@custom.post_feed_style showTitle=true showSidebar=@custom.show_site_in_sidebar}}
+{{> "components/post-list" feed="home" postFeedStyle=@custom.post_feed_style showTitle=true showSidebar=@custom.show_publication_info_sidebar}}

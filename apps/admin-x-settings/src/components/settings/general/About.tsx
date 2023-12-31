@@ -1,14 +1,10 @@
-import Icon from '../../../admin-x-ds/global/Icon';
-import Modal from '../../../admin-x-ds/global/modal/Modal';
 import NiceModal from '@ebay/nice-modal-react';
-import Separator from '../../../admin-x-ds/global/Separator';
-import useRouting from '../../../hooks/useRouting';
-import {ReactComponent as GhostLogo} from '../../../admin-x-ds/assets/images/ghost-logo.svg';
-import {RoutingModalProps} from '../../providers/RoutingProvider';
+import {GhostLogo, Icon, Modal, Separator} from '@tryghost/admin-x-design-system';
+import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {linkToGitHubReleases} from '../../../utils/linkToGithubReleases';
 import {showDatabaseWarning} from '../../../utils/showDatabaseWarning';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
-import {useUpgradeStatus} from '../../providers/ServiceProvider';
+import {useUpgradeStatus} from '../../providers/SettingsAppProvider';
 
 const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
     const {updateRoute} = useRouting();
@@ -21,11 +17,12 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
         return date.getFullYear();
     }
 
-    function hasDeveloperExperiments():string {
+    function hasDeveloperExperiments():boolean {
         if (config.enableDeveloperExperiments) {
-            return 'Enabled';
+            return true;
+        } else {
+            return false;
         }
-        return 'Disabled';
     }
 
     function showSystemInfo() : boolean {
@@ -45,8 +42,8 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
             }}
             cancelLabel=''
             footer={(<></>)}
-            size={540}
             topRightContent='close'
+            width={540}
         >
             <div className='flex flex-col gap-4 pb-7 text-sm'>
                 <GhostLogo className="h-auto w-[120px] dark:invert"/>
@@ -77,7 +74,7 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
                     }
                     {
                         hasDeveloperExperiments() && (
-                            <div><strong>Developer experiments:</strong> {hasDeveloperExperiments()}</div>
+                            <div><strong>Developer experiments:</strong> Enabled</div>
                         )
                     }
 

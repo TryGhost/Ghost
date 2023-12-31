@@ -431,7 +431,8 @@ export function getSiteProducts({site, pageQuery}) {
     }
     if (hasFreeProductPrice({site})) {
         products.unshift({
-            id: 'free'
+            id: 'free',
+            type: 'free'
         });
     }
     return products;
@@ -450,11 +451,8 @@ export function getFreeProductBenefits({site}) {
 }
 
 export function getFreeTierTitle({site}) {
-    if (hasOnlyFreeProduct({site})) {
-        return 'Free membership';
-    } else {
-        return 'Free';
-    }
+    const freeProduct = getFreeProduct({site});
+    return freeProduct?.name || 'Free';
 }
 
 export function getFreeTierDescription({site}) {
@@ -556,15 +554,7 @@ export function subscriptionHasFreeTrial({sub} = {}) {
 }
 
 export function isInThePast(date) {
-    const today = new Date();
-
-    // 👇️ OPTIONAL!
-    // This line sets the hour of the current date to midnight
-    // so the comparison only returns `true` if the passed in date
-    // is at least yesterday
-    today.setHours(0, 0, 0, 0);
-
-    return date < today;
+    return date < new Date();
 }
 
 export function getProductFromPrice({site, priceId}) {
@@ -708,27 +698,42 @@ export const getMemberName = ({member}) => {
 };
 
 export const getSupportAddress = ({site}) => {
-    const {members_support_address: supportAddress} = site || {};
+    const {members_support_address: oldSupportAddress, support_email_address: supportAddress} = site || {};
 
-    if (supportAddress?.indexOf('@') < 0) {
-        const siteDomain = getSiteDomain({site});
-        const updatedDomain = siteDomain?.replace(/^(www)\.(?=[^/]*\..{2,5})/, '') || '';
-        return `${supportAddress}@${updatedDomain}`;
+    // If available, use the calculated setting support_email_address
+    if (supportAddress) {
+        return supportAddress;
     }
 
-    if (supportAddress?.split('@')?.length > 1) {
-        const [recipient, domain] = supportAddress.split('@');
+    // Deprecated: use the saved setting members_support_address
+    if (oldSupportAddress?.indexOf('@') < 0) {
+        const siteDomain = getSiteDomain({site});
+        const updatedDomain = siteDomain?.replace(/^(www)\.(?=[^/]*\..{2,5})/, '') || '';
+        return `${oldSupportAddress}@${updatedDomain}`;
+    }
+
+    if (oldSupportAddress?.split('@')?.length > 1) {
+        const [recipient, domain] = oldSupportAddress.split('@');
         const updatedDomain = domain?.replace(/^(www)\.(?=[^/]*\..{2,5})/, '') || '';
         return `${recipient}@${updatedDomain}`;
     }
-    return supportAddress || '';
+
+    return oldSupportAddress || '';
 };
 
 export const getDefaultNewsletterSender = ({site}) => {
+    const {default_email_address: defaultEmailAddress} = site || {};
+
+    // If available, use the calculated setting default_email_address as default
+    const defaultAddress = defaultEmailAddress || `noreply@${getSiteDomain({site})}`;
+
     const newsletters = getSiteNewsletters({site});
     const defaultNewsletter = newsletters?.[0];
-    if (defaultNewsletter) {
-        return defaultNewsletter.sender_email || `noreply@${getSiteDomain({site})}`;
+
+    if (defaultNewsletter && defaultNewsletter.sender_email) {
+        return defaultNewsletter.sender_email;
+    } else {
+        return defaultAddress;
     }
 };
 

@@ -1,7 +1,8 @@
-import {Integration, IntegrationsResponseType} from '../../../../src/api/integrations';
-import {Webhook, WebhooksResponseType} from '../../../../src/api/webhooks';
-import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '../../../utils/acceptance';
+import {Integration, IntegrationsResponseType} from '@tryghost/admin-x-framework/api/integrations';
+import {Webhook, WebhooksResponseType} from '@tryghost/admin-x-framework/api/webhooks';
+import {chooseOptionInSelect, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
+import {globalDataRequests} from '../../../utils/acceptance';
 
 test.describe('Custom integrations', async () => {
     test('Supports creating an integration and adding webhooks', async ({page}) => {
@@ -126,7 +127,7 @@ test.describe('Custom integrations', async () => {
         // Validation
 
         await createModal.getByRole('button', {name: 'Add'}).click();
-        await expect(createModal).toHaveText(/Please enter a name/);
+        await expect(createModal).toHaveText(/Name is required/);
 
         // Successful creation
 

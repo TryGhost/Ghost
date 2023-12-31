@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} dagen gratis",
     "{{amount}} off": "{{amount}} korting",
     "{{amount}} off for first {{number}} months.": "{{amount}} korting voor de eerste {{number}} maanden.",
@@ -48,7 +49,6 @@
     "Edit": "Bewerken",
     "Email": "E-mail",
     "Email newsletter": "Nieuwsbrief",
-    "Email preference updated.": "E-mailinstellingen aanpassen",
     "Email preferences": "E-mailinstellingen",
     "Emails": "E-mails",
     "Emails disabled": "E-mails zijn uitgeschakeld",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "",
     "Unsubscribe from all emails": "Uitschrijven voor alles",
     "Unsubscribed": "",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Je betaalde abonnement voor {{title}} wordt niet geannuleerd als je je uitschrijft voor e-mails",
     "Update": "",
     "Update your preferences": "Voorkeuren aanpassen",

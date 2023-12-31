@@ -320,18 +320,12 @@
 @media (max-width: 1024px) {
     .gh-editor-header {
         z-index: 100;
-        height: 64px;
+        height: 56px;
         margin: 0;
         padding: 0;
         padding-left: 15px;
         background-color: var(--white);
         border-radius: 0;
-    }
-}
-
-@media (max-width: 500px) {
-    .gh-editor-header .mobile {
-        margin-left: 5px;
     }
 }
 
@@ -377,6 +371,57 @@
 
 .gh-editor-wordcount-container svg path {
     stroke: var(--midgrey-l2);
+}
+
+@media (max-width: 500px) {
+    .gh-editor-wordcount-container {
+        display: none;
+    }
+}
+
+.gh-editor-mobile-menu {
+    display: none;
+}
+
+@media (max-width: 500px) {
+    .gh-editor-mobile-menu {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.2rem;
+        height: 48px;
+        padding: 0 32px;
+        background: var(--white);
+    }
+
+    .gh-editor-mobile-menu .gh-editor-wordcount {
+        padding: 0;
+    }
+
+    .gh-editor-mobile-menu svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .gh-editor-mobile-menu .gh-editor-publish-buttons {
+        display: flex;
+        align-items: center;
+        gap: 1.6rem;
+    }
+
+    .gh-editor-mobile-menu .gh-btn-editor:hover {
+        background: none !important;
+    }
+
+    .gh-editor-mobile-menu .gh-btn-editor span {
+        height: 100%;
+        padding: 0;
+        font-size: 1.3rem;
+    }
 }
 
 .gh-editor-wordcount {
@@ -562,6 +607,18 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     fill: var(--darkgrey);
 }
 
+.gh-editor-feature-image-add {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .gh-editor-feature-image-add {
+        padding-top: 1.6rem;
+    }
+}
+
 .gh-editor-feature-image-add-button {
     display: flex;
     align-items: center;
@@ -593,6 +650,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 1em;
     height: 1em;
     margin-left: 24px;
+    margin-bottom: 2px;
     line-height: 1.2;
 }
 
@@ -624,6 +682,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     width: 100%;
     height: 24px;
     margin: 0 0 1.7em 0;
+    padding: 0;
     outline: none;
     border-width: 0;
     border-style: none;
@@ -633,6 +692,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     background-color: transparent !important;
     transition: border-color .15s linear;
     -webkit-appearance: none;
+    overflow: hidden; /* Hides any indicators such as TK */
 }
 
 .gh-editor-feature-image-alttext::placeholder,
@@ -681,9 +741,27 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     opacity: .5;
 }
 
+.gh-editor .tk-indicator {
+    position: absolute;
+    top: 15px;
+    right: -5.6rem;
+    padding: .4rem;
+    color: #95A1AD;
+    font-size: 1.2rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.gh-editor-feature-image-container .tk-indicator {
+    top: 0;
+    padding: 0 .4rem;
+}
+
 .gh-editor-back-button {
+    display: flex;
+    align-items: center;
     height: 34px;
-    margin-right: 8px;
+    gap: 8px;
     padding: 0 12px;
     outline: none;
     border: none;
@@ -705,23 +783,24 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     background: var(--whitegrey);
 }
 
-.gh-editor-back-button span {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 .gh-editor-back-button svg {
-    width: .8em;
-    height: .8em;
+    width: 1.2rem;
+    height: 1.2rem;
     margin-right: .5em;
     padding-top: 2px;
     fill: var(--darkgrey);
 }
 
 @media (max-width: 500px) {
-    .gh-editor-back-button {
+    .gh-editor-back-button span {
+        display: none;
+    }
+
+    .gh-editor-back-button svg {
+        width: 1.3rem;
+        height: 1.3rem;
         margin-right: 0;
+        fill: var(--midgrey-l1);
     }
 }
 
@@ -737,6 +816,12 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     line-height: 34px;
     background: var(--white);
     border-radius: 3px;
+}
+
+@media (max-width: 500px) {
+    .gh-editor-post-status {
+        padding: 0 8px;
+    }
 }
 
 .gh-editor-post-status-btn {
@@ -783,6 +868,19 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     font-weight: 500;
 }
 
+.gh-editor-publish-buttons {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    pointer-events: auto;
+}
+
+@media (max-width: 500px) {
+    .gh-editor-publish-buttons {
+        display: none;
+    }
+}
+
 .gh-lexical-indicator {
     margin: 1px 0 0 8px;
     padding: 1px 8px;
@@ -795,6 +893,12 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 
 .gh-editor-save-trigger {
     margin-right: 8px;
+}
+
+@media (max-width: 500px) {
+    .gh-editor-save-trigger {
+        margin-right: 0;
+    }
 }
 
 .gh-editor-preview-trigger {
@@ -1057,18 +1161,14 @@ figure {
     padding-right: 8px; /* extra padding used for dynamic positioning with js */
 }
 
-.gh-announcement-editor {
-    width: 100%;
-}
-
-.gh-announcement-editor div {
-    width: 100%;
+.gh-tk-reminder .modal-body p strong {
+    white-space: nowrap;
 }
 
 /* Labs
 /* ---------------------------------------------------------- */
 
-.gh-editor-title-container.page-improvements {
+.gh-editor-title-container {
     position: relative;
     max-width: 740px;
     width: 100%;
@@ -1078,7 +1178,7 @@ figure {
     background: transparent;
 }
 
-.gh-editor .page-improvements .gh-editor-title {
+.gh-editor .gh-editor-title {
     display: block;
     width: 100%;
     max-width: unset;
@@ -1095,6 +1195,18 @@ figure {
     box-shadow: none;
 }
 
+@media (min-width: 500px) and (max-width: 768px) {
+    .gh-editor .gh-editor-title {
+        font-size: 3.6rem;
+    }
+}
+
+@media (max-width: 500px) {
+    .gh-editor .gh-editor-title {
+        font-size: 2.8rem;
+    }
+}
+
 .gh-editor-hidden-indicator {
     position: absolute;
     top: -1px;
@@ -1109,4 +1221,12 @@ figure {
 
 .gh-editor-hidden-indicator svg {
     height: 2.4rem;
+}
+
+.gh-setting-error {
+    margin-top: 1em;
+    line-height: 1.3em;
+    color: var(--red);
+    font-weight: 300;
+    letter-spacing: 0.3px;
 }

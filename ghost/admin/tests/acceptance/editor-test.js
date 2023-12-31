@@ -4,6 +4,8 @@ import sinon from 'sinon';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn} from '@ember/test-helpers';
+import {datepickerSelect} from 'ember-power-datepicker/test-support';
+import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
 import {setupApplicationTest} from 'ember-mocha';
@@ -119,6 +121,70 @@ describe('Acceptance: Editor', function () {
             return await authenticateSession();
         });
 
+        describe('post settings menu', function () {
+            it('can set publish date', async function () {
+                let [post1] = this.server.createList('post', 2, {authors: [author]});
+                let futureTime = moment().tz('Etc/UTC').add(10, 'minutes');
+
+                // sanity check
+                expect(
+                    moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD HH:mm:ss'),
+                    'initial publishedAt sanity check')
+                    .to.equal('2015-12-19 16:25:07');
+
+                // post id 1 is a draft, checking for draft behaviour now
+                await visit('/editor/post/1');
+
+                // open post settings menu
+                await click('[data-test-psm-trigger]');
+
+                // should error, if the publish time is in the wrong format
+                await fillIn('[data-test-date-time-picker-time-input]', 'foo');
+                await blur('[data-test-date-time-picker-time-input]');
+
+                expect(find('[data-test-date-time-picker-error]').textContent.trim(), 'inline error response for invalid time')
+                    .to.equal('Must be in format: "15:00"');
+
+                // should error, if the publish time is in the future
+                // NOTE: date must be selected first, changing the time first will save
+                // with the new time
+                await fillIn('[data-test-date-time-picker-datepicker] input', moment.tz('Etc/UTC').add(1, 'day').format('YYYY-MM-DD'));
+                await blur('[data-test-date-time-picker-datepicker] input');
+                await fillIn('[data-test-date-time-picker-time-input]', futureTime.format('HH:mm'));
+                await blur('[data-test-date-time-picker-time-input]');
+
+                expect(find('[data-test-date-time-picker-error]').textContent.trim(), 'inline error response for future time')
+                    .to.equal('Must be in the past');
+
+                // closing the PSM will reset the invalid date/time
+                await click('[data-test-psm-trigger]');
+                await click('[data-test-psm-trigger]');
+
+                expect(
+                    find('[data-test-date-time-picker-error]'),
+                    'date picker error after closing PSM'
+                ).to.not.exist;
+
+                expect(
+                    find('[data-test-date-time-picker-date-input]').value,
+                    'PSM date value after closing with invalid date'
+                ).to.equal(moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD'));
+
+                expect(
+                    find('[data-test-date-time-picker-time-input]').value,
+                    'PSM time value after closing with invalid date'
+                ).to.equal(moment(post1.publishedAt).tz('Etc/UTC').format('HH:mm'));
+
+                // saves the post with the new date
+                let validTime = moment('2017-04-09 12:00');
+                await fillIn('[data-test-date-time-picker-time-input]', validTime.format('HH:mm'));
+                await blur('[data-test-date-time-picker-time-input]');
+                await datepickerSelect('[data-test-date-time-picker-datepicker]', validTime.toDate());
+
+                expect(moment(post1.publishedAt).tz('Etc/UTC').format('YYYY-MM-DD HH:mm:ss')).to.equal('2017-04-09 12:00:00');
+            });
+        });
+
         it.skip('handles title validation errors correctly', async function () {
             this.server.create('post', {authors: [author]});
 
@@ -170,7 +236,7 @@ describe('Acceptance: Editor', function () {
         });
 
         it('shows author token input and allows changing of authors in PSM', async function () {
-            let adminRole = this.server.create('role', {name: 'Adminstrator'});
+            let adminRole = this.server.create('role', {name: 'Administrator'});
             let authorRole = this.server.create('role', {name: 'Author'});
             let user1 = this.server.create('user', {name: 'Primary', roles: [adminRole]});
             this.server.create('user', {name: 'Waldo', roles: [authorRole]});
@@ -504,6 +570,39 @@ describe('Acceptance: Editor', function () {
                 find('[data-test-breadcrumb]').getAttribute('href'),
                 'breadcrumb link'
             ).to.equal(`/ghost/posts/analytics/${post.id}`);
+        });
+
+        it('handles TKs in title', async function () {
+            enableLabsFlag(this.server, 'tkReminders');
+            let post = this.server.create('post', {authors: [author]});
+
+            await visit(`/editor/post/${post.id}`);
+
+            expect(
+                find('[data-test-editor-title-input]').value,
+                'initial title'
+            ).to.equal('Post 0');
+
+            await fillIn('[data-test-editor-title-input]', 'Test TK Title');
+
+            expect(
+                find('[data-test-editor-title-input]').value,
+                'title after typing'
+            ).to.equal('Test TK Title');
+
+            // check for TK indicator
+            expect(
+                find('[data-testid="tk-indicator"]'),
+                'TK indicator text'
+            ).to.exist;
+
+            // click publish to see if confirmation comes up
+            await click('[data-test-button="publish-flow"]');
+
+            expect(
+                find('[data-test-modal="tk-reminder"]'),
+                'TK reminder modal'
+            ).to.exist;
         });
     });
 });

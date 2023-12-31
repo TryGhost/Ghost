@@ -15,10 +15,10 @@ module.exports = [
     require('./MembersNewslettersImporter'),
     require('./StripeProductsImporter'),
     require('./StripePricesImporter'),
-    require('./SubscriptionsImporter'),
     require('./EmailsImporter'),
     require('./EmailBatchesImporter'),
     require('./EmailRecipientsImporter'),
+    require('./EmailRecipientFailuresImporter'),
     require('./RedirectsImporter'),
     require('./MembersClickEventsImporter'),
     require('./OffersImporter'),
@@ -33,5 +33,8 @@ module.exports = [
     require('./LabelsImporter'),
     require('./MembersLabelsImporter'),
     require('./RolesUsersImporter'),
-    require('./MembersFeedbackImporter')
+    require('./MembersFeedbackImporter'),
+    require('./RecommendationsImporter'),
+    require('./RecommendationClickEventsImporter'),
+    require('./RecommendationSubscribeEventsImporter')
 ];

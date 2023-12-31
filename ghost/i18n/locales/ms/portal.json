@@ -1,4 +1,5 @@
 {
+    "(Save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "Percuma {{amount}} hari",
     "{{amount}} off": "",
     "{{amount}} off for first {{number}} months.": "{{amount}} potongan untuk {{number}} bulan pertama.",
@@ -48,7 +49,6 @@
     "Edit": "Sunting",
     "Email": "E-mel",
     "Email newsletter": "Newsletter e-mel",
-    "Email preference updated.": "Emel pilihan dikemas kini.",
     "Email preferences": "Emel pilihan",
     "Emails": "E-mel",
     "Emails disabled": "E-mel dilumpuhkan",
@@ -130,6 +130,7 @@
     "Unlock access to all newsletters by becoming a paid subscriber.": "Buka akses ke semua newsletter dengan menjadi pelanggan berbayar.",
     "Unsubscribe from all emails": "Berhenti langganan dari semua e-mel",
     "Unsubscribed": "Langganan diberhentikan",
+    "Unsubscribed from all emails.": "",
     "Unsubscribing from emails will not cancel your paid subscription to {{title}}": "Memberhentikan langganan dari e-mel tidak akan membatalkan langganan berbayar anda ke {{title}}",
     "Update": "Kemas kini",
     "Update your preferences": "Kemas kini keutamaan anda",

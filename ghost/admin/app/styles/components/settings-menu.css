@@ -18,13 +18,13 @@
 
 @media (min-width: 500px) and (max-width: 1024px) {
     .settings-menu-toggle {
-        top: 16px;
+        top: 12px;
     }
 }
 
 @media (max-width: 500px) {
     .settings-menu-toggle {
-        top: 15px;
+        top: 11px;
         right: 20px;
     }
 }
@@ -67,12 +67,6 @@
         -30.1px 0 24.1px rgba(0, 0, 0, 0.01),
         -100px 0 80px rgba(0, 0, 0, 0.02)
     ;
-    }
-}
-
-@media (max-width: 800px) {
-    .settings-menu-container {
-        padding-bottom: 64px;
     }
 }
 
@@ -123,7 +117,6 @@
     position: fixed;
     display: flex;
     width: 100%;
-    max-width: 364px;
     padding: 36px 24px 24px;
     justify-content: space-between;
     align-items: center;
@@ -131,15 +124,9 @@
     background: var(--white);
 }
 
-@media (min-width: 500px) and (max-width: 1024px) {
+@media (max-width: 1024px) {
     .settings-menu-header {
-        padding-top: 17px;
-    }
-}
-
-@media (max-width: 500px) {
-    .settings-menu-header {
-        padding-top: 19px;
+        padding-top: 15px;
     }
 }
 
@@ -533,13 +520,6 @@ li.nav-list-item .for-switch.x-small label {
 
 .mobile-menu-expanded .content-cover {
     transform: translate3d(205px, 0px, 0px);
-}
-
-
-/* Badges
-/* ---------------------------------------------------------- */
-.gh-setting-title .gh-badge {
-    font-size: 13px;
 }
 
 /* Email

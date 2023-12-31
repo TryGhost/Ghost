@@ -1,4 +1,4 @@
-import {getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry} from './helpers';
+import {getAllProductsForSite, getAvailableProducts, getCurrencySymbol, getFreeProduct, getMemberName, getMemberSubscription, getPriceFromSubscription, getPriceIdFromPageQuery, getSupportAddress, getDefaultNewsletterSender, getUrlHistory, hasMultipleProducts, isActiveOffer, isInviteOnlySite, isPaidMember, isSameCurrency, transformApiTiersData, isSigninAllowed, isSignupAllowed, getCompExpiry, isInThePast} from './helpers';
 import * as Fixtures from './fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from '../utils/test-fixtures';
 import {isComplimentaryMember} from '../utils/helpers';
@@ -284,51 +284,101 @@ describe('Helpers - ', () => {
     });
 
     describe('getSupportAddress -', () => {
-        test('returns expected support address for non sub domain', () => {
-            let site = {
-                members_support_address: 'jamie@example.com'
-            };
-            const supportAddress = getSupportAddress({site});
+        describe('when the calculated support address is available', () => {
+            test('returns the calculated support email address, if available', () => {
+                let site = {
+                    support_email_address: 'support@example.com',
+                    members_support_address: 'noreply@example.com'
+                };
+                const supportAddress = getSupportAddress({site});
 
-            expect(supportAddress).toBe('jamie@example.com');
+                expect(supportAddress).toBe('support@example.com');
+            });
         });
 
-        test('returns expected support address for non www sub domain', () => {
-            let site = {
-                members_support_address: 'jamie@blog.example.com'
-            };
-            const supportAddress = getSupportAddress({site});
+        describe('[Deprecated] when the calculated support address is not available', () => {
+            test('returns expected support address for non sub domain', () => {
+                let site = {
+                    members_support_address: 'jamie@example.com'
+                };
+                const supportAddress = getSupportAddress({site});
 
-            expect(supportAddress).toBe('jamie@blog.example.com');
+                expect(supportAddress).toBe('jamie@example.com');
+            });
+
+            test('returns expected support address for non www sub domain', () => {
+                let site = {
+                    members_support_address: 'jamie@blog.example.com'
+                };
+                const supportAddress = getSupportAddress({site});
+
+                expect(supportAddress).toBe('jamie@blog.example.com');
+            });
+
+            test('returns expected support address for www domain', () => {
+                let site = {
+                    members_support_address: 'jamie@www.example.com'
+                };
+                const supportAddress = getSupportAddress({site});
+
+                expect(supportAddress).toBe('jamie@example.com');
+            });
+
+            test('returns expected support address for default noreply value', () => {
+                let site = {
+                    members_support_address: 'noreply',
+                    url: 'https://www.example.com'
+                };
+                const supportAddress = getSupportAddress({site});
+
+                expect(supportAddress).toBe('noreply@example.com');
+            });
+
+            test('returns empty string for missing support address', () => {
+                let site = {
+                    members_support_address: null,
+                    url: 'https://www.example.com'
+                };
+                const supportAddress = getSupportAddress({site});
+
+                expect(supportAddress).toBe('');
+            });
+        });
+    });
+
+    describe('getDefaultNewsletterSender - ', () => {
+        test('returns the sender_email from the first newsletter when available', () => {
+            let site = {
+                default_email_address: 'default@example.com',
+                url: 'https://example.com',
+                newsletters: [
+                    {
+                        sender_email: 'sender_email@example.com'
+                    }
+                ]
+            };
+            const defaultAddress = getDefaultNewsletterSender({site});
+
+            expect(defaultAddress).toBe('sender_email@example.com');
         });
 
-        test('returns expected support address for www domain', () => {
+        test('otherwise, fallbacks to the calculated default_email_address when available', () => {
             let site = {
-                members_support_address: 'jamie@www.example.com'
+                default_email_address: 'default@example.com',
+                url: 'https://example.com'
             };
-            const supportAddress = getSupportAddress({site});
+            const defaultAddress = getDefaultNewsletterSender({site});
 
-            expect(supportAddress).toBe('jamie@example.com');
+            expect(defaultAddress).toBe('default@example.com');
         });
 
-        test('returns expected support address for default noreply value', () => {
+        test('otherwise, fallbacks to noreply@sitedomain.com', () => {
             let site = {
-                members_support_address: 'noreply',
-                url: 'https://www.example.com'
+                url: 'https://example.com'
             };
-            const supportAddress = getSupportAddress({site});
+            const defaultAddress = getDefaultNewsletterSender({site});
 
-            expect(supportAddress).toBe('noreply@example.com');
-        });
-
-        test('returns empty string for missing support address', () => {
-            let site = {
-                members_support_address: null,
-                url: 'https://www.example.com'
-            };
-            const supportAddress = getSupportAddress({site});
-
-            expect(supportAddress).toBe('');
+            expect(defaultAddress).toBe('noreply@example.com');
         });
     });
 
@@ -446,6 +496,19 @@ describe('Helpers - ', () => {
             delete member.subscriptions[0].tier.expiry_at;
 
             expect(getCompExpiry({member})).toEqual('');
+        });
+    });
+
+    describe('isInThePast', () => {
+        it('returns a boolean indicating if the provided date is in the past', () => {
+            const pastDate = new Date();
+            pastDate.setDate(pastDate.getDate() - 1);
+
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 1);
+
+            expect(isInThePast(pastDate)).toEqual(true);
+            expect(isInThePast(futureDate)).toEqual(false);
         });
     });
 });

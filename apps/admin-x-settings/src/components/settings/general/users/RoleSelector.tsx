@@ -1,8 +1,6 @@
-import Heading from '../../../../admin-x-ds/global/Heading';
-import Icon from '../../../../admin-x-ds/global/Icon';
-import Radio from '../../../../admin-x-ds/global/form/Radio';
-import {User, isOwnerUser} from '../../../../api/users';
-import {useBrowseRoles} from '../../../../api/roles';
+import {Heading, Icon, Radio} from '@tryghost/admin-x-design-system';
+import {User, isOwnerUser} from '@tryghost/admin-x-framework/api/users';
+import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
 
 const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     const {data: {roles} = {}} = useBrowseRoles();

@@ -31,12 +31,14 @@
                                         {{#if headerImage}}
                                             <tr class="header-image-row">
                                                 <td class="header-image" width="100%" align="center">
-                                                    <img
-                                                        src="{{headerImage}}"
-                                                        {{#if headerImageWidth}}
-                                                            width="{{headerImageWidth}}"
-                                                        {{/if}}
-                                                    >
+                                                    <a href="{{site.url}}">
+                                                        <img
+                                                            src="{{headerImage}}"
+                                                            {{#if headerImageWidth}}
+                                                                width="{{headerImageWidth}}"
+                                                            {{/if}}
+                                                        >
+                                                    </a>
                                                 </td>
                                             </tr>
                                         {{/if}}

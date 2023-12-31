@@ -97,10 +97,15 @@ class OfferBookshelfRepository {
      */
     async mapToOffer(model, options) {
         const json = model.toJSON();
-
         const count = await this.OfferRedemptionModel.where({offer_id: json.id}).count('id', {
             transacting: options.transacting
         });
+
+        const lastRedeemed = await this.OfferRedemptionModel.where({offer_id: json.id}).orderBy('created_at', 'DESC').fetchAll({
+            transacting: options.transacting,
+            limit: 1
+        });
+
         try {
             return await Offer.create({
                 id: json.id,
@@ -119,7 +124,9 @@ class OfferBookshelfRepository {
                 tier: {
                     id: json.product.id,
                     name: json.product.name
-                }
+                },
+                created_at: json.created_at,
+                last_redeemed: lastRedeemed.toJSON().length > 0 ? lastRedeemed.toJSON()[0].created_at : null
             }, null);
         } catch (err) {
             logger.error(err);

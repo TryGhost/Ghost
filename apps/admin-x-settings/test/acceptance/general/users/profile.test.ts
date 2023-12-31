@@ -1,6 +1,7 @@
-import {StaffTokenResponseType} from '../../../../src/api/staffToken';
+import {StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, testUrlValidation} from '../../../utils/acceptance';
+import {globalDataRequests} from '../../../utils/acceptance';
+import {mockApi, responseFixtures, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User profile', async () => {
     test('Supports editing user profiles', async ({page}) => {
@@ -35,7 +36,7 @@ test.describe('User profile', async () => {
 
         await modal.getByLabel('Full name').fill('');
         await modal.getByRole('button', {name: 'Save & close'}).click();
-        await expect(modal).toContainText('Please enter a name');
+        await expect(modal).toContainText('Name is required');
 
         await modal.getByLabel('Full name').fill(new Array(195).join('a'));
         await modal.getByRole('button', {name: 'Save & close'}).click();
@@ -55,7 +56,7 @@ test.describe('User profile', async () => {
 
         await modal.getByLabel('Website').fill('not-a-website');
         await modal.getByLabel('Website').blur();
-        await expect(modal).toContainText('Please enter a valid URL');
+        await expect(modal).toContainText('Enter a valid URL');
 
         const facebookInput = modal.getByLabel('Facebook profile');
 

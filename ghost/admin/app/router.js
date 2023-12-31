@@ -48,6 +48,10 @@ Router.map(function () {
     this.route('collection.new', {path: '/collections/new'});
     this.route('collection', {path: '/collections/:collection_slug'});
 
+    this.route('demo-x', function () {
+        this.route('demo-x', {path: '/*sub'});
+    });
+
     this.route('settings-x', {path: '/settings'}, function () {
         this.route('settings-x', {path: '/*sub'});
     });
@@ -67,7 +71,9 @@ Router.map(function () {
         });
     });
 
-    this.route('migrate');
+    this.route('migrate', function () {
+        this.route('migrate', {path: '/*platform'});
+    });
 
     this.route('members', function () {
         this.route('import');

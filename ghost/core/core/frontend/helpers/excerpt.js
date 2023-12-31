@@ -22,6 +22,8 @@ module.exports = function excerpt(options) {
     } else {
         excerptText = '';
     }
+    
+    excerptText = _.escape(excerptText);
 
     truncateOptions = _.reduce(truncateOptions, (_truncateOptions, value, key) => {
         if (['words', 'characters'].includes(key)) {

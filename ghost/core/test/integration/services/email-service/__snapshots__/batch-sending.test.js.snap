@@ -84,8 +84,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -201,35 +200,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -274,7 +268,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -319,11 +314,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -396,7 +386,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -520,6 +512,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
@@ -708,8 +702,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -825,35 +818,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -898,7 +886,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -943,11 +932,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -1020,7 +1004,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -1136,6 +1122,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/
 
 
 
@@ -1318,8 +1306,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -1435,35 +1422,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -1508,7 +1490,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -1553,11 +1536,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -1630,7 +1608,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -1746,6 +1726,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/
 
 
 
@@ -1928,8 +1910,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -2045,35 +2026,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -2118,7 +2094,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -2163,11 +2140,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -2240,7 +2212,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -2356,6 +2330,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/
 
 
 
@@ -2538,8 +2514,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -2655,35 +2630,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -2728,7 +2698,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -2773,11 +2744,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -2850,7 +2816,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -2942,6 +2910,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
@@ -3096,8 +3066,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -3213,35 +3182,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -3286,7 +3250,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -3331,11 +3296,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -3408,7 +3368,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -3524,6 +3486,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
@@ -3706,8 +3670,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -3823,35 +3786,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -3896,7 +3854,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -3941,11 +3900,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -4018,7 +3972,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -4176,6 +4132,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/
 
 
 
@@ -4416,8 +4374,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -4533,35 +4490,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -4606,7 +4558,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -4651,11 +4604,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -4728,7 +4676,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -4868,6 +4818,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/
 
 
 
@@ -5082,8 +5034,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -5199,35 +5150,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -5272,7 +5218,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -5317,11 +5264,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -5394,7 +5336,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -5454,17 +5398,17 @@ table.body figcaption a {
 
                                 <tr>
                                     <td style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 24px 0; border-bottom: 1px solid #e5eff5; border-bottom: 1px solid rgba(0, 0, 0, 0.12);\\" valign=\\"top\\">
-                                        <h3 class=\\"latest-posts-header\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; margin: 0; padding: 8px 0 16px; color: #000000; font-size: 14px; font-weight: 700; text-transform: uppercase;\\">Keep reading</h3>
+                                        <h3 class=\\"latest-posts-header\\" style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; line-height: 1.11em; text-rendering: optimizeLegibility; margin: 0; padding: 8px 0 16px; color: #000000; font-size: 13px; font-weight: 700; text-transform: uppercase;\\">Keep reading</h3>
                                             <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                 <tr>
                                                     <td class=\\"latest-post\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding: 8px 0; max-width: 600px;\\" valign=\\"top\\">
                                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
                                                                 <td valign=\\"top\\" align=\\"left\\" class=\\"latest-post-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-right: 12px;\\">
-                                                                    <h4 class style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; text-rendering: optimizeLegibility; color: #000000; line-height: 1.2em; margin: 0; padding: 2px 0 4px; font-size: 19px; font-weight: 700;\\">
+                                                                    <h4 class style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; text-rendering: optimizeLegibility; color: #000000; line-height: 1.2em; margin: 0; padding: 2px 0 4px; font-size: 18px; font-weight: 700;\\">
                                                                         <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #000000;\\" target=\\"_blank\\">This is a test post title</a>
                                                                     </h4>
-                                                                        <p style=\\"line-height: 1.6em; margin: 0; padding: 0; color: #000000; color: rgba(0, 0, 0, 0.5); font-size: 15px; font-weight: 400;\\">
+                                                                        <p class=\\"latest-post-excerpt\\" style=\\"line-height: 1.6em; margin: 0; padding: 0; color: #000000; color: rgba(0, 0, 0, 0.5); font-size: 15px; font-weight: 400;\\">
                                                                             <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #000000; color: rgba(0, 0, 0, 0.5);\\" target=\\"_blank\\">Hello world</a>
                                                                         </p>
                                                                 </td>
@@ -5479,10 +5423,10 @@ table.body figcaption a {
                                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
                                                                 <td valign=\\"top\\" align=\\"left\\" class=\\"latest-post-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-right: 12px;\\">
-                                                                    <h4 class style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; text-rendering: optimizeLegibility; color: #000000; line-height: 1.2em; margin: 0; padding: 2px 0 4px; font-size: 19px; font-weight: 700;\\">
+                                                                    <h4 class style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; text-rendering: optimizeLegibility; color: #000000; line-height: 1.2em; margin: 0; padding: 2px 0 4px; font-size: 18px; font-weight: 700;\\">
                                                                         <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #000000;\\" target=\\"_blank\\">This is a test post title</a>
                                                                     </h4>
-                                                                        <p style=\\"line-height: 1.6em; margin: 0; padding: 0; color: #000000; color: rgba(0, 0, 0, 0.5); font-size: 15px; font-weight: 400;\\">
+                                                                        <p class=\\"latest-post-excerpt\\" style=\\"line-height: 1.6em; margin: 0; padding: 0; color: #000000; color: rgba(0, 0, 0, 0.5); font-size: 15px; font-weight: 400;\\">
                                                                             <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #000000; color: rgba(0, 0, 0, 0.5);\\" target=\\"_blank\\">Hello world</a>
                                                                         </p>
                                                                 </td>
@@ -5497,10 +5441,10 @@ table.body figcaption a {
                                                         <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\" width=\\"100%\\">
                                                             <tr>
                                                                 <td valign=\\"top\\" align=\\"left\\" class=\\"latest-post-title\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-right: 12px;\\">
-                                                                    <h4 class style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; text-rendering: optimizeLegibility; color: #000000; line-height: 1.2em; margin: 0; padding: 2px 0 4px; font-size: 19px; font-weight: 700;\\">
+                                                                    <h4 class style=\\"margin-top: 0; font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; text-rendering: optimizeLegibility; color: #000000; line-height: 1.2em; margin: 0; padding: 2px 0 4px; font-size: 18px; font-weight: 700;\\">
                                                                         <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #000000;\\" target=\\"_blank\\">This is a test post title</a>
                                                                     </h4>
-                                                                        <p style=\\"line-height: 1.6em; margin: 0; padding: 0; color: #000000; color: rgba(0, 0, 0, 0.5); font-size: 15px; font-weight: 400;\\">
+                                                                        <p class=\\"latest-post-excerpt\\" style=\\"line-height: 1.6em; margin: 0; padding: 0; color: #000000; color: rgba(0, 0, 0, 0.5); font-size: 15px; font-weight: 400;\\">
                                                                             <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"overflow-wrap: anywhere; text-decoration: none; color: #000000; color: rgba(0, 0, 0, 0.5);\\" target=\\"_blank\\">Hello world</a>
                                                                         </p>
                                                                 </td>
@@ -5569,6 +5513,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
@@ -5837,8 +5783,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -5954,35 +5899,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -6027,7 +5967,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -6072,11 +6013,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -6149,7 +6085,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -6285,6 +6223,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/
 
 
 
@@ -6502,8 +6442,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -6619,35 +6558,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -6692,7 +6626,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -6737,11 +6672,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -6814,7 +6744,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -6950,6 +6882,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/
 
 
 
@@ -7167,8 +7101,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -7284,35 +7217,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -7357,7 +7285,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -7402,11 +7331,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -7479,7 +7403,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -7615,6 +7541,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/
 
 
 
@@ -7832,8 +7760,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -7949,35 +7876,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -8022,7 +7944,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -8067,11 +7990,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -8144,7 +8062,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -8280,6 +8200,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/
 
 
 
@@ -8497,8 +8419,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -8614,35 +8535,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -8687,7 +8603,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -8732,11 +8649,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -8809,7 +8721,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -8945,6 +8859,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/
 
 
 
@@ -9162,8 +9078,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -9279,35 +9194,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -9352,7 +9262,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -9397,11 +9308,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -9474,7 +9380,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -9590,6 +9498,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
@@ -9774,8 +9684,7 @@ Object {
   table.body p,
 table.body ul,
 table.body ol,
-table.body td,
-table.body span {
+table.body td {
     font-size: 16px !important;
   }
 
@@ -9891,35 +9800,30 @@ table.body .feedback-button-mobile-text {
   }
 
   table.body .latest-posts-header {
-    font-size: 14px !important;
-  }
-
-  table.body .latest-post-img {
-    display: none !important;
-  }
-
-  table.body .latest-post-img-mobile {
-    display: inline-block !important;
-    width: 100%;
+    font-size: 12px !important;
   }
 
   table.body .latest-post-title {
     display: inline-block !important;
     width: 100%;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
+    padding-right: 8px !important;
   }
 
   table.body .latest-post h4,
 table.body .latest-post h4 span {
-    padding: 4px 0 !important;
-    font-size: 18px !important;
+    padding: 4px 0 6px !important;
+    font-size: 15px !important;
   }
 
-  table.body .latest-post p,
-table.body .latest-post p span {
+  table.body .latest-post-excerpt,
+table.body .latest-post-excerpt a,
+table.body .latest-post-excerpt span {
     font-size: 13px !important;
-    line-height: 1.25em;
+    line-height: 1.2 !important;
+  }
+
+  table.body .latest-post-excerpt span {
+    display: none !important;
   }
 
   table.body .subscription-box h3 {
@@ -9964,7 +9868,8 @@ table.body .manage-subscription {
     line-height: 1.3em !important;
   }
 
-  table.body h2 {
+  table.body h2,
+table.body h2 span {
     font-size: 26px !important;
     line-height: 1.22em !important;
   }
@@ -10009,11 +9914,6 @@ table.body .manage-subscription {
 
   table.body hr {
     margin: 2em 0 !important;
-  }
-
-  table.body figcaption,
-table.body figcaption a {
-    font-size: 13px !important;
   }
 }
 @media all {
@@ -10086,7 +9986,9 @@ table.body figcaption a {
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;\\">
                                             <tr class=\\"header-image-row\\">
                                                 <td class=\\"header-image\\" width=\\"100%\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; padding-top: 24px;\\" valign=\\"top\\">
-                                                    <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    <a href=\\"http://127.0.0.1:2369/r/xxxxxx?m=member-uuid\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\">
+                                                        <img src=\\"http://127.0.0.1:2369/content/images/2022/05/test.jpg\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%;\\">
+                                                    </a>
                                                 </td>
                                             </tr>
 
@@ -10202,6 +10104,8 @@ table.body figcaption a {
 
 
 
+
+http://127.0.0.1:2369/r/xxxxxx?m=member-uuid
 
 
 
