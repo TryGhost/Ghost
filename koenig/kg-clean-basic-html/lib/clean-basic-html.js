@@ -9,10 +9,9 @@ function removeCodeWrappers(html) {
     return html.replace(/<code\b[^>]*>((.*?){.*?}(.*?))<\/code>/gi, '$1');
 }
 
-/* global DOMParser, window */
 /**
  * Parses an html string and returns a cleaned version
- * @param {string} html 
+ * @param {string} html
  * @param {Object} _options
  * @param {boolean} [_options.allowBr] - if true, <br> tags will be kept
  * @param {boolean} [_options.firstChildInnerContent] - if true, only the innerHTML of the first element will be returned
@@ -27,6 +26,7 @@ export default function cleanBasicHtml(html = '', _options = {}) {
         const Parser = (typeof DOMParser !== 'undefined' && DOMParser) || (typeof window !== 'undefined' && window.DOMParser);
 
         if (!Parser) {
+            // eslint-disable-next-line ghost/ghost-custom/no-native-error
             throw new Error('cleanBasicHtml() must be passed a `createDocument` function as an option when used in a non-browser environment');
         }
 

@@ -1,5 +1,3 @@
-/* global DOMParser, window */
-
 /**
  * Copied from:
  * https://github.com/TryGhost/Ghost-Admin/blob/1f3d77d7230dd47a7eb5f38b90dfa510b2a16801/lib/koenig-editor/addon/options/parser-plugins.js
@@ -19,7 +17,7 @@ import * as headerCard from './cards/header';
 import * as htmlCard from './cards/html';
 import * as imageCard from './cards/image';
 import * as productCard from './cards/product';
-import * as softReturn from './cards/softReturn';
+import * as softReturn from './cards/soft-return';
 import * as videoCard from './cards/video';
 import * as galleryCard from './cards/gallery';
 
@@ -31,6 +29,7 @@ export function createParserPlugins(_options = {}) {
         const Parser = (typeof DOMParser !== 'undefined' && DOMParser) || (typeof window !== 'undefined' && window.DOMParser);
 
         if (!Parser) {
+            // eslint-disable-next-line ghost/ghost-custom/no-native-error
             throw new Error('createParserPlugins() must be passed a `createDocument` function as an option when used in a non-browser environment');
         }
 

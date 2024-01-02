@@ -1,8 +1,6 @@
 /* eslint-env node */
-import pkg from './package.json';
+import pkg from './package.json' assert { type: 'json' };
 import babel from '@rollup/plugin-babel';
-
-const dependencies = Object.keys(pkg.dependencies);
 
 export default [
     // Node build.
@@ -12,9 +10,8 @@ export default [
         output: {
             file: pkg.main,
             format: 'cjs',
-            sourcemap: true
-        },
-        external: dependencies
+            interop: false
+        }
     },
 
     // ES module build
@@ -41,7 +38,6 @@ export default [
                 ],
                 exclude: ['node_modules/**', '../../node_modules/**']
             })
-        ],
-        external: dependencies
+        ]
     }
 ];

@@ -1,5 +1,5 @@
 /* eslint-env node */
-import pkg from './package.json';
+import pkg from './package.json' assert { type: 'json' };
 import babel from '@rollup/plugin-babel';
 
 const dependencies = Object.keys(pkg.dependencies);
