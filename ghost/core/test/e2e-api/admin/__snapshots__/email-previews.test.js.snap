@@ -552,7 +552,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #000000; color: rgba(0, 0, 0, 0.5); margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2023 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #000000; color: rgba(0, 0, 0, 0.5); text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #000000; color: rgba(0, 0, 0, 0.5); margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #000000; color: rgba(0, 0, 0, 0.5); text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -696,7 +696,7 @@ Another email card with a similar replacement, Jamie
 
 
 
-Ghost © 2023 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
 
 
 
@@ -1195,7 +1195,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #000000; color: rgba(0, 0, 0, 0.5); margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2023 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #000000; color: rgba(0, 0, 0, 0.5); text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #000000; color: rgba(0, 0, 0, 0.5); margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #000000; color: rgba(0, 0, 0, 0.5); text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -1355,7 +1355,7 @@ Header Level 3
 
 
 
-Ghost © 2023 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
 
 
 
@@ -1881,7 +1881,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #000000; color: rgba(0, 0, 0, 0.5); margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2023 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #000000; color: rgba(0, 0, 0, 0.5); text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #000000; color: rgba(0, 0, 0, 0.5); margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #000000; color: rgba(0, 0, 0, 0.5); text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -2019,7 +2019,7 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
 
-Ghost © 2023 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
 
 
 
@@ -2894,7 +2894,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #000000; color: rgba(0, 0, 0, 0.5); margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2023 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #000000; color: rgba(0, 0, 0, 0.5); text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #000000; color: rgba(0, 0, 0, 0.5); margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #000000; color: rgba(0, 0, 0, 0.5); text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -3039,7 +3039,7 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
 
-Ghost © 2023 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
 
 
 
@@ -3940,7 +3940,7 @@ table.body h2 span {
                                 <td class=\\"wrapper\\" align=\\"center\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; box-sizing: border-box;\\" valign=\\"top\\">
                                     <table role=\\"presentation\\" border=\\"0\\" cellpadding=\\"0\\" cellspacing=\\"0\\" width=\\"100%\\" style=\\"border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 40px; padding-bottom: 30px;\\">
                                         <tr>
-                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #000000; color: rgba(0, 0, 0, 0.5); margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2023 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #000000; color: rgba(0, 0, 0, 0.5); text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
+                                            <td class=\\"footer\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; vertical-align: top; color: #000000; color: rgba(0, 0, 0, 0.5); margin-top: 20px; text-align: center; font-size: 13px; padding-bottom: 10px; padding-top: 10px; padding-left: 30px; padding-right: 30px; line-height: 1.5em;\\" valign=\\"top\\" align=\\"center\\">Ghost &#xA9; 2024 &#x2013; <a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid\\" style=\\"overflow-wrap: anywhere; color: #000000; color: rgba(0, 0, 0, 0.5); text-decoration: underline;\\" target=\\"_blank\\">Unsubscribe</a></td>
                                         </tr>
 
                                             <tr>
@@ -4085,7 +4085,7 @@ Testing links [https://ghost.org/] in email excerpt and apostrophes '
 
 
 
-Ghost © 2023 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
+Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=requested-newsletter-uuid]
 
 
 
