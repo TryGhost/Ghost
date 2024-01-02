@@ -77,8 +77,7 @@ async function runAndStream(command, args, options) {
                     host: '127.0.0.1',
                     user: 'root',
                     password: 'root',
-                    database: 'ghost',
-                    port: 3307
+                    database: 'ghost'
                 }
             };
 

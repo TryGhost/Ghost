@@ -5,7 +5,7 @@ services:
     image: mysql:8.0.35
     container_name: ghost-mysql
     ports:
-      - "3307:3306"
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: ghost
