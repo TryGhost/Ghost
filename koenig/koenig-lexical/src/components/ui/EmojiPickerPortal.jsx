@@ -66,7 +66,7 @@ const EmojiPickerPortal = ({onEmojiClick, positionRef, data = defaultData, ...pr
 
     return (
         <Portal>
-            <div className='z-10 mr-9 mt-10 rounded-md bg-white' data-testid="emoji-picker-container" style={style} onClick={handleClick}>
+            <div className='z-20 mr-9 mt-10 rounded-md bg-white' data-testid="emoji-picker-container" style={style} onClick={handleClick}>
                 <div className=''>
                     <Picker // https://github.com/missive/emoji-mart#-picker
                         data={data}
