@@ -36,11 +36,16 @@ async function runAndStream(command, args, options) {
     }
 
     const coreFolder = path.join(__dirname, '../../ghost/core');
+    const rootFolder = path.join(__dirname, '../..');
     const config = require('../../ghost/core/core/shared/config/loader').loadNconf({
         customConfigPath: coreFolder
     });
 
     const dbClient = config.get('database:client');
+    const isUsingDocker = config.get('database:docker');
+
+    // Only reset data if we are using Docker
+    let resetData = false;
 
     if (!dbClient.includes('mysql')) {
         let mysqlSetup = false;
@@ -54,6 +59,7 @@ async function runAndStream(command, args, options) {
         }
 
         if (mysqlSetup) {
+            resetData = true;
             console.log(chalk.blue(`Adding MySQL credentials to config.local.json`));
             const currentConfigPath = path.join(coreFolder, 'config.local.json');
 
@@ -66,11 +72,13 @@ async function runAndStream(command, args, options) {
 
             currentConfig.database = {
                 client: 'mysql',
+                docker: true,
                 connection: {
                     host: '127.0.0.1',
                     user: 'root',
                     password: 'root',
-                    database: 'ghost'
+                    database: 'ghost',
+                    port: 3307
                 }
             };
 
@@ -81,17 +89,28 @@ async function runAndStream(command, args, options) {
                 console.log(chalk.yellow(`Please add the following to config.local.json:\n`), JSON.stringify(currentConfig, null, 4));
                 process.exit(1);
             }
-
-            console.log(chalk.blue(`Running knex-migrator init`));
-            await runAndStream('yarn', ['knex-migrator', 'init'], {cwd: coreFolder});
-
-            //console.log(chalk.blue(`Running data generator`));
-            //await runAndStream('node', ['index.js', 'generate-data'], {cwd: coreFolder});
         }
     } else {
-        console.log(chalk.green(`MySQL already configured, skipping setup`));
+        if (isUsingDocker) {
+            console.log(chalk.yellow(`MySQL is running via Docker, resetting Docker container`));
 
-        console.log(chalk.blue(`Running knex-migrator init`));
-        await runAndStream('yarn', ['knex-migrator', 'init'], {cwd: coreFolder});
+            try {
+                await runAndStream('yarn', ['docker:reset'], {cwd: path.join(__dirname, '../../')});
+                resetData = true;
+            } catch (err) {
+                console.error(chalk.red('Failed to run MySQL Docker container'), err);
+                console.error(chalk.red('Hint: is Docker installed and running?'));
+            }
+        } else {
+            console.log(chalk.green(`MySQL already configured, skipping Docker setup`));
+        }
+    }
+
+    console.log(chalk.blue(`Running knex-migrator init`));
+    await runAndStream('yarn', ['knex-migrator', 'init'], {cwd: coreFolder});
+
+    if (resetData) {
+        console.log(chalk.blue(`Running data generator`));
+        await runAndStream('yarn', ['reset:data'], {cwd: rootFolder});
     }
 })();
