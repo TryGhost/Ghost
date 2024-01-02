@@ -44,7 +44,7 @@ function PostImage({image, layout, columns, isLoading}) {
 function PostTitle({title, layout, columns}) {
     return (
         <div className={clsx(
-            'text-lg font-bold leading-tight tracking-normal text-black dark:text-grey-100 xs:text-xl sm:text-2xl',
+            'text-lg font-bold leading-tight tracking-normal text-black xs:text-xl sm:text-2xl dark:text-grey-100',
             layout === 'list' && 'md:text-xl lg:text-2xl',
             (layout === 'grid' && columns === 1) && 'lg:text-3xl xl:text-4xl',
             (layout === 'grid' && columns === 2) && 'md:text-xl lg:text-2xl',

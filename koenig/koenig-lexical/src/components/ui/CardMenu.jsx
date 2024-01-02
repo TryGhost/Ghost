@@ -49,7 +49,7 @@ export const CardMenuItem = ({label, shortcut, desc, isSelected, scrollToItem, o
         <li className="mb-0" role="presentation">
             <button
                 ref={buttonRef}
-                className={`group flex w-full cursor-pointer flex-row items-center gap-3 border border-transparent px-2 py-[.6rem] text-left text-grey-800 hover:bg-grey-100 dark:hover:bg-grey-900 md:rounded  ${isSelected ? 'bg-grey-100 dark:bg-grey-900' : ''}`}
+                className={`group flex w-full cursor-pointer flex-row items-center gap-3 border border-transparent px-2 py-[.6rem] text-left text-grey-800 hover:bg-grey-100 md:rounded dark:hover:bg-grey-900  ${isSelected ? 'bg-grey-100 dark:bg-grey-900' : ''}`}
                 data-kg-card-menu-item={label}
                 data-kg-cardmenu-selected={isSelected}
                 role="menuitem"
@@ -172,7 +172,7 @@ export const CardMenu = ({menu = new Map(), insert = () => {}, selectedItemIndex
     }
 
     return (
-        <ul className="not-kg-prose z-[9999999] m-0 mb-3 max-h-[420px] w-[312px] flex-col overflow-y-auto rounded-md bg-white bg-clip-padding p-0 font-sans text-sm shadow-md after:block after:pb-1 dark:bg-grey-950 md:w-[348px]" role="menu">
+        <ul className="not-kg-prose z-[9999999] m-0 mb-3 max-h-[420px] w-[312px] flex-col overflow-y-auto rounded-md bg-white bg-clip-padding p-0 font-sans text-sm shadow-md after:block after:pb-1 md:w-[348px] dark:bg-grey-950" role="menu">
             {CardMenuSections}
         </ul>
     );

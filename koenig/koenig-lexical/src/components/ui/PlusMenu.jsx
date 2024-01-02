@@ -5,7 +5,7 @@ export function PlusButton({onClick}) {
         <div className="absolute left-[-32px] top-[-2px] xs:left-[-66px]" data-kg-plus-button>
             <button
                 aria-label="Add a card"
-                className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-grey transition-all ease-linear hover:border-grey-800 dark:border-grey-800 dark:hover:border-grey-400 md:h-9 md:w-9"
+                className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-grey transition-all ease-linear hover:border-grey-800 md:h-9 md:w-9 dark:border-grey-800 dark:hover:border-grey-400"
                 type="button"
                 onClick={onClick}
             >
