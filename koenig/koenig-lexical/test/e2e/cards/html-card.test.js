@@ -105,12 +105,12 @@ test.describe('Html card', async () => {
         await page.keyboard.press('Enter');
 
         // fill card
-        await expect(await page.locator('[data-kg-card="html"][data-kg-card-editing="true"]')).toBeVisible();
+        await expect(page.locator('[data-kg-card="html"][data-kg-card-editing="true"]')).toBeVisible();
         // waiting for html editor
-        await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+        await expect(page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
         await page.locator('[data-kg-card="html"]').click();
         await page.keyboard.type('text in html card', {delay: 100});
-        await expect(await page.getByText('text in html card')).toBeVisible();
+        await expect(page.getByText('text in html card')).toBeVisible();
         await page.keyboard.press('Escape');
 
         // create snippet
@@ -121,7 +121,7 @@ test.describe('Html card', async () => {
         await page.keyboard.type('/snippet');
         await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
-        await expect(await page.locator('[data-kg-card="html"]')).toHaveCount(2);
+        await expect(page.locator('[data-kg-card="html"]')).toHaveCount(2);
     });
 
     test('can undo/redo content in html editor', async function () {
@@ -130,9 +130,9 @@ test.describe('Html card', async () => {
         await page.keyboard.type('/html');
         await page.waitForSelector('[data-kg-card-menu-item="HTML"][data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
-        await expect(await page.locator('[data-kg-card="html"][data-kg-card-editing="true"]')).toBeVisible();
+        await expect(page.locator('[data-kg-card="html"][data-kg-card-editing="true"]')).toBeVisible();
         // waiting for html editor
-        await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+        await expect(page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
 
         // Types slower. Codemirror can be slow and needs some time to place the cursor after entering text.
         await page.keyboard.type('Here are some words', {delay: 500});
@@ -151,9 +151,9 @@ test.describe('Html card', async () => {
         await page.keyboard.type('/html');
         await page.waitForSelector('[data-kg-card-menu-item="HTML"][data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
-        await expect(await page.locator('[data-kg-card="html"][data-kg-card-editing="true"]')).toBeVisible();
+        await expect(page.locator('[data-kg-card="html"][data-kg-card-editing="true"]')).toBeVisible();
         // waiting for html editor
-        await expect(await page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+        await expect(page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
 
         // Types slower. Codemirror can be slow and needs some time to place the cursor after entering text.
         await page.keyboard.type('Here are some words');

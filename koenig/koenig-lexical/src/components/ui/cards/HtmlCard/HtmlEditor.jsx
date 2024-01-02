@@ -23,6 +23,9 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
         '&.cm-editor .cm-content': {
             padding: '7px 0'
         },
+        '&.cm-editor .cm-content, &.cm-editor .cm-gutter': {
+            minHeight: '170px'
+        },
         '&.cm-editor .cm-scroller': {
             overflow: 'auto'
         },
@@ -32,9 +35,6 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
             fontFamily: 'Consolas,Liberation Mono,Menlo,Courier,monospace;',
             color: '#CED4D9',
             lineHeight: '2.25rem'
-        },
-        '&.cm-editor .cm-gutter': {
-            minHeight: '170px'
         },
         '&.cm-editor .cm-lineNumbers': {
             padding: '0'
@@ -67,6 +67,9 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
         '&.cm-editor .cm-content': {
             padding: '7px 0'
         },
+        '&.cm-editor .cm-content, &.cm-editor .cm-gutter': {
+            minHeight: '170px'
+        },
         '&.cm-editor .cm-scroller': {
             overflow: 'auto'
         },
@@ -76,9 +79,6 @@ export default function HtmlEditor({darkMode, html, updateHtml}) {
             fontFamily: 'Consolas,Liberation Mono,Menlo,Courier,monospace;',
             color: 'rgb(108, 118, 127);',
             lineHeight: '2.25rem'
-        },
-        '&.cm-editor .cm-gutter': {
-            minHeight: '170px'
         },
         '&.cm-editor .cm-lineNumbers': {
             padding: '0'
