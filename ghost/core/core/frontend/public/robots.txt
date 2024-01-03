@@ -4,4 +4,4 @@ Disallow: /ghost/
 Disallow: /p/
 Disallow: /email/
 Disallow: /r/
-Disallow: /webmentions/
+Disallow: /webmentions/receive/
