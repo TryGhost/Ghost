@@ -4283,14 +4283,14 @@
     nan "^2.17.0"
     semver "^7.5.2"
 
-"@newrelic/security-agent@0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@newrelic/security-agent/-/security-agent-0.5.0.tgz#e06f6061d35bfdc7f6986134be65fdbf60f36a63"
-  integrity sha512-ycbNl362arCjKTumkXPnnbnSUARv2SEYBBpbXOfI3p1pa6PRi5kck95W7JNBzxhw/umqwHXgzHhbK8N2uKWYgA==
+"@newrelic/security-agent@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@newrelic/security-agent/-/security-agent-0.6.0.tgz#314a03553d57b8c9322bdfbf37623604c031f108"
+  integrity sha512-a7YsdHX9UthzUd7cfqjI4WDG+yyr9MNUFwr+iyuY2u3zMH0Xe99USlSWWp7nH3hgxIQ1J0JJZ1dC/7wuTHYrHw==
   dependencies:
     "@aws-sdk/client-lambda" "^3.436.0"
-    axios "1.6.0"
-    check-disk-space "3.4.0"
+    axios "^1.6.3"
+    check-disk-space "^3.4.0"
     content-type "^1.0.5"
     fast-safe-stringify "^2.1.1"
     find-package-json "^1.2.0"
@@ -10287,15 +10287,6 @@ axios-retry@3.2.0:
   dependencies:
     is-retry-allowed "^1.1.0"
 
-axios@1.6.0:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.0.tgz#f1e5292f26b2fd5c2e66876adc5b06cdbd7d2102"
-  integrity sha512-EZ1DYihju9pwVB+jg67ogm+Tmqc6JmhamRN6I4Zt8DfZu5lbcQGw3ozH9lFejSJgs/ibaef3A9PMXPLeefFGJg==
-  dependencies:
-    follow-redirects "^1.15.0"
-    form-data "^4.0.0"
-    proxy-from-env "^1.1.0"
-
 axios@^0.27.2:
   version "0.27.2"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.27.2.tgz#207658cc8621606e586c85db4b41a750e756d972"
@@ -10304,10 +10295,10 @@ axios@^0.27.2:
     follow-redirects "^1.14.9"
     form-data "^4.0.0"
 
-axios@^1.0.0, axios@^1.3.3, axios@^1.6.0:
-  version "1.6.2"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.2.tgz#de67d42c755b571d3e698df1b6504cde9b0ee9f2"
-  integrity sha512-7i24Ri4pmDRfJTR7LDBhsOTtcm+9kjX5WiY1X3wIisx6G9So3pfMkEiU7emUBe46oceVImccTEM3k6C5dbVW8A==
+axios@^1.0.0, axios@^1.3.3, axios@^1.6.0, axios@^1.6.3:
+  version "1.6.3"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.3.tgz#7f50f23b3aa246eff43c54834272346c396613f4"
+  integrity sha512-fWyNdeawGam70jXSVlKl+SUNVcL6j6W79CuSIPfi6HnDUmSCH6gyUys/HrqHeA/wU0Az41rRgean494d0Jb+ww==
   dependencies:
     follow-redirects "^1.15.0"
     form-data "^4.0.0"
@@ -12824,7 +12815,7 @@ chartjs-color@^2.1.0:
     chartjs-color-string "^0.6.0"
     color-convert "^1.9.3"
 
-check-disk-space@3.4.0:
+check-disk-space@^3.4.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/check-disk-space/-/check-disk-space-3.4.0.tgz#eb8e69eee7a378fd12e35281b8123a8b4c4a8ff7"
   integrity sha512-drVkSqfwA+TvuEhFipiR1OC9boEGZL5RrWvVsOthdcvQNXyCCuKkEiTOTXZ7qxSf/GLwq4GvzfrQD/Wz325hgw==
@@ -23990,16 +23981,16 @@ neo-async@^2.5.0, neo-async@^2.6.1, neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-newrelic@11.7.0:
-  version "11.7.0"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-11.7.0.tgz#9772e8a859f67f99cc2e190a1d92990527b25322"
-  integrity sha512-izTjP1wRhz3PVhpdcufn4YAZceZfC7+DNoKXfndrSEVwd3risqcTC9swJW10guZ35fxaQu64/lFLuyMPEsBiUg==
+newrelic@11.8.0:
+  version "11.8.0"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-11.8.0.tgz#b3ddf84c55602b632b4879fb3c19f96555bdc395"
+  integrity sha512-nJ/yQMwpqZgQLOWf+o5cBBrZvHJ5ajHuX8HuHVMXF7Bb2VuUpdyWuFLCBH/PFTr3nbsDB+D8vnNJJqzl7k24Aw==
   dependencies:
     "@grpc/grpc-js" "^1.9.4"
     "@grpc/proto-loader" "^0.7.5"
     "@newrelic/aws-sdk" "^7.0.3"
     "@newrelic/koa" "^8.0.1"
-    "@newrelic/security-agent" "0.5.0"
+    "@newrelic/security-agent" "^0.6.0"
     "@newrelic/superagent" "^7.0.1"
     "@tyriar/fibonacci-heap" "^2.0.7"
     concat-stream "^2.0.0"
