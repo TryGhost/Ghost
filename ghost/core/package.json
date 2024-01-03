@@ -209,7 +209,7 @@
     "multer": "1.4.4",
     "mysql2": "3.6.5",
     "nconf": "0.12.1",
-    "newrelic": "11.7.0",
+    "newrelic": "11.8.0",
     "node-jose": "2.2.0",
     "path-match": "1.2.4",
     "probe-image-size": "7.2.3",
