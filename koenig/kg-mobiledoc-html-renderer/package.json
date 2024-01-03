@@ -27,6 +27,6 @@
     "simple-dom": "^1.4.0"
   },
   "devDependencies": {
-    "c8": "8.0.1"
+    "c8": "9.0.0"
   }
 }

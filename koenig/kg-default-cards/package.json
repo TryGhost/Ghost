@@ -23,7 +23,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "c8": "8.0.1",
+    "c8": "9.0.0",
     "mocha": "10.2.0",
     "should": "13.2.3",
     "simple-dom": "1.4.0",
