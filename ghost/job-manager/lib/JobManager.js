@@ -5,6 +5,7 @@ const fastq = require('fastq');
 const later = require('@breejs/later');
 const Bree = require('bree');
 const pWaitFor = require('p-wait-for');
+const Sentry = require('@sentry/node');
 const {UnhandledJobError, IncorrectUsageError} = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const isCronExpression = require('./is-cron-expression');
@@ -30,6 +31,7 @@ const ALL_STATUSES = {
 class JobManager {
     #domainEvents;
     #completionPromises = new Map();
+    #sentryTransactionCache = new Map();
 
     /**
      * @param {Object} options
@@ -107,7 +109,23 @@ class JobManager {
                         });
                     }
                 }
+
+                const transaction = Sentry.startTransaction({name: `Job Execution: ${name}`});
+                const span = transaction.startChild({name, op: 'queue.task'});
+
+                this.#sentryTransactionCache.set(name, {transaction, span});
             } else if (message === 'done') {
+                // Clean up Sentry transaction
+                const {transaction, span} = this.#sentryTransactionCache.get(name);
+
+                if (transaction && span) {
+                    span.finish();
+                    transaction.finish();
+                }
+
+                this.#sentryTransactionCache.delete(name);
+
+                // Update job status
                 if (this._jobsRepository) {
                     const job = await this._jobsRepository.read(name);
 
@@ -240,11 +258,16 @@ class JobManager {
                         message: ALL_STATUSES.started
                     });
 
+                    let jobFn;
+
                     if (typeof job === 'function') {
-                        await job(data);
+                        jobFn = job.bind(job, data);
                     } else {
-                        await require(job)(data);
+                        let requiredJobFn = require(job);
+                        jobFn = requiredJobFn.bind(requiredJobFn, data);
                     }
+
+                    await Sentry.startSpan({name, op: 'queue.task'}, jobFn);
                 } catch (err) {
                     // NOTE: each job should be written in a safe way and handle all errors internally
                     //       if the error is caught here jobs implementation should be changed
