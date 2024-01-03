@@ -71,13 +71,13 @@ export function createParserPlugins(_options = {}) {
 
         let calloutEmoji = '';
         if (emojiNode) {
-            calloutEmoji = emojiNode.textContent;
+            calloutEmoji = emojiNode?.textContent;
             if (calloutEmoji) {
                 calloutEmoji = calloutEmoji.trim();
             }
         }
 
-        let calloutText = htmlNode.innerHTML;
+        let calloutText = htmlNode?.innerHTML || '';
 
         const payload = {
             calloutEmoji,

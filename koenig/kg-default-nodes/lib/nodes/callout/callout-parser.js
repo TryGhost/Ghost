@@ -15,7 +15,7 @@ export function parseCalloutNode(CalloutNode) {
                         const color = getColorTag(domNode);
 
                         const payload = {
-                            calloutText: textNode && textNode.innerHTML.trim(),
+                            calloutText: textNode && textNode.innerHTML.trim() || '',
                             calloutEmoji: emojiNode && emojiNode.innerHTML.trim() || '',
                             backgroundColor: color
                         };

@@ -82,6 +82,19 @@ describe('parser-plugins', function () {
                 backgroundColor: 'red'
             });
         });
+
+        it('parses a card without text', function () {
+            const dom = buildDOM('<div class="kg-callout-card" style="background-color: red;"><div class="kg-callout-emoji">⚠️</div><div>Text with missing class</div>');
+            const [section] = parser.parse(dom).sections.toArray();
+
+            section.type.should.equal('card-section');
+            section.name.should.equal('callout');
+            section.payload.should.deepEqual({
+                calloutEmoji: '⚠️',
+                calloutText: '',
+                backgroundColor: 'red'
+            });
+        });
     });
 
     describe('brToSoftBreakAtom', function () {
