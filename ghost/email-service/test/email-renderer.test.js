@@ -662,6 +662,18 @@ describe('Email renderer', function () {
             let response = emailRenderer.getSubject(post);
             response.should.equal('Sample Post');
         });
+
+        it('adds [TEST] prefix for test emails', function () {
+            const post = createModel({
+                posts_meta: createModel({
+                    email_subject: ''
+                }),
+                title: 'Sample Post',
+                loaded: ['posts_meta']
+            });
+            let response = emailRenderer.getSubject(post, true);
+            response.should.equal('[TEST] Sample Post');
+        });
     });
 
     describe('getFromAddress', function () {
