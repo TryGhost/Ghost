@@ -20,6 +20,22 @@ describe('Utils: tokens', function () {
         token.length.should.be.above(0);
     });
 
+    it('generate allow numeric password', function () {
+        const expires = Date.now() + 60 * 1000;
+        const dbHash = uuid.v4();
+        let token;
+
+        token = security.tokens.resetToken.generateHash({
+            email: 'test1@ghost.org',
+            expires: expires,
+            password: 123456,
+            dbHash: dbHash
+        });
+
+        should.exist(token);
+        token.length.should.be.above(0);
+    });
+
     it('compare: success', function () {
         const expires = Date.now() + 60 * 1000;
         const dbHash = uuid.v4();
