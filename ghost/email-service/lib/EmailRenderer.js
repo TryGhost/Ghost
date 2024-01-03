@@ -167,8 +167,9 @@ class EmailRenderer {
         this.#models = models;
     }
 
-    getSubject(post) {
-        return post.related('posts_meta')?.get('email_subject') || post.get('title');
+    getSubject(post, isTestEmail = false) {
+        const subject = post.related('posts_meta')?.get('email_subject') || post.get('title');
+        return isTestEmail ? `[TEST] ${subject}` : subject;
     }
 
     #getRawFromAddress(post, newsletter) {

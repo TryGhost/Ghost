@@ -301,7 +301,8 @@ class EmailService {
             emailId: null
         }, {
             clickTrackingEnabled: false,
-            openTrackingEnabled: false
+            openTrackingEnabled: false,
+            isTestEmail: true
         });
     }
 }
