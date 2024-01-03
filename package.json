@@ -24,7 +24,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "c8": "8.0.1",
+    "c8": "9.0.0",
     "mocha": "10.2.0",
     "sinon": "17.0.1"
   }
