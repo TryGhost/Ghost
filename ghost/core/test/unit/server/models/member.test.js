@@ -12,7 +12,7 @@ describe('Unit: models/member', function () {
     });
 
     beforeEach(function () {
-        config.set('assetHash', '1');
+        config.set('asset_hash', false);
     });
 
     afterEach(async function () {
