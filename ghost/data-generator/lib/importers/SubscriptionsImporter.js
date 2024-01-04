@@ -58,7 +58,7 @@ class SubscriptionsImporter extends TableImporter {
             }
         }
         return Object.assign({}, {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             type: status,
             status: 'active',
             member_id: this.model.member_id,

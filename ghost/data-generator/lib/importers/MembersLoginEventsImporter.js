@@ -31,20 +31,20 @@ class MembersLoginEventsImporter extends TableImporter {
             trend: 'negative',
             // Steady readers login more, readers who lose interest read less overall.
             // ceil because members will all have logged in at least once
-            total: shape === 'flat' ? Math.ceil(daysBetween / 3) : Math.ceil(daysBetween / 7),
+            total: Math.min(5, shape === 'flat' ? Math.ceil(daysBetween / 3) : Math.ceil(daysBetween / 7)),
             startTime: new Date(model.created_at),
             endTime: endDate
         });
     }
 
     generate() {
-        const timestamp = this.timestamps.shift();
+        const timestamp = this.timestamps.pop();
         if (!timestamp) {
             // Out of events for this user
             return null;
         }
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             created_at: dateToDatabaseString(timestamp),
             member_id: this.model.id
         };

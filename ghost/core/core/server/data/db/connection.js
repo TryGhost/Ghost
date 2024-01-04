@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const knex = require('knex');
 const os = require('os');
+const fs = require('fs');
 
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
@@ -45,6 +46,10 @@ function configure(dbConfig) {
         dbConfig.connection.timezone = 'Z';
         dbConfig.connection.charset = 'utf8mb4';
         dbConfig.connection.decimalNumbers = true;
+
+        //if (dbConfig.connection.allowLocalInfile) {
+        dbConfig.connection.infileStreamFactory = path => fs.createReadStream(path);
+        //}
     }
 
     return dbConfig;

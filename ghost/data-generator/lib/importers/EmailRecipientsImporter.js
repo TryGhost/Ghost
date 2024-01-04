@@ -2,6 +2,7 @@ const TableImporter = require('./TableImporter');
 const {faker} = require('@faker-js/faker');
 const generateEvents = require('../utils/event-generator');
 const dateToDatabaseString = require('../utils/database-date');
+const debug = require('@tryghost/debug')('EmailRecipientsImporter');
 
 const emailStatus = {
     delivered: Symbol(),
@@ -9,6 +10,25 @@ const emailStatus = {
     failed: Symbol(),
     none: Symbol()
 };
+
+function findFirstHigherIndex(arr, target) {
+    let start = 0;
+    let end = arr.length - 1;
+    let result = -1;
+
+    while (start <= end) {
+        let mid = Math.floor((start + end) / 2);
+
+        if (arr[mid] >= target) {
+            result = mid;
+            end = mid - 1; // Continue searching in the left half
+        } else {
+            start = mid + 1; // Continue searching in the right half
+        }
+    }
+
+    return result; // Return -1 if no element is higher than target
+}
 
 class EmailRecipientsImporter extends TableImporter {
     static table = 'email_recipients';
@@ -19,6 +39,7 @@ class EmailRecipientsImporter extends TableImporter {
     }
 
     async import(quantity) {
+        const now = Date.now();
         const emails = await this.transaction
             .select(
                 'id',
@@ -28,38 +49,86 @@ class EmailRecipientsImporter extends TableImporter {
                 'opened_count',
                 'failed_count')
             .from('emails');
-        this.emails = emails;
-        this.emailBatches = await this.transaction.select('id', 'email_id', 'updated_at').from('email_batches');
-        this.members = await this.transaction.select('id', 'uuid', 'email', 'name').from('members');
-        this.membersSubscribeEvents = await this.transaction.select('id', 'newsletter_id', 'created_at', 'member_id').from('members_subscribe_events');
+        this.emails = new Map();
+
+        for (const email of emails) {
+            this.emails.set(email.id, email);
+        }
+
+        this.emailBatches = await this.transaction.select('id', 'email_id', 'updated_at').from('email_batches').orderBy('email_id');
+        const members = await this.transaction.select('id', 'uuid', 'email', 'name').from('members');
+        this.membersSubscribeEvents = await this.transaction.select('id', 'newsletter_id', 'created_at', 'member_id').from('members_subscribe_events').orderBy('created_at', 'asc'); // Order required for better performance in setReferencedModel
+
+        // Create a map for fast lookups
+        this.members = new Map();
+        for (const member of members) {
+            this.members.set(member.id, member);
+        }
+
+        // Save indexes of each batch for performance (remarkable faster than doing findIndex on each generate call)
+        let lastEmailId = null;
+        let lastIndex = 0;
+        for (const batch of this.emailBatches) {
+            if (batch.email_id !== lastEmailId) {
+                lastIndex = 0;
+                lastEmailId = batch.email_id;
+            }
+            batch.index = lastIndex;
+            lastIndex += 1;
+        }
+
+        // Now reorder by email id
+
+        debug (`Prepared data for ${this.name} in ${Date.now() - now}ms`);
+
+        // We use the same event curve for all emails to speed up the generation
+        // Spread over 14 days
+        this.eventStartTimeUsed = new Date();
+        const endTime = new Date(this.eventStartTimeUsed.getTime() + 1000 * 60 * 60 * 24 * 14);
+        this.eventCurve = generateEvents({
+            shape: 'ease-out',
+            trend: 'negative',
+            total: 1000,
+            startTime: this.eventStartTimeUsed,
+            endTime
+        });
+
+        this.membersSubscribeEventsByNewsletterId = new Map();
+        this.membersSubscribeEventsCreatedAtsByNewsletterId = new Map();
+        for (const memberSubscribeEvent of this.membersSubscribeEvents) {
+            if (!this.membersSubscribeEventsByNewsletterId.has(memberSubscribeEvent.newsletter_id)) {
+                this.membersSubscribeEventsByNewsletterId.set(memberSubscribeEvent.newsletter_id, []);
+            }
+            this.membersSubscribeEventsByNewsletterId.get(memberSubscribeEvent.newsletter_id).push(memberSubscribeEvent);
+
+            if (!this.membersSubscribeEventsCreatedAtsByNewsletterId.has(memberSubscribeEvent.newsletter_id)) {
+                this.membersSubscribeEventsCreatedAtsByNewsletterId.set(memberSubscribeEvent.newsletter_id, []);
+            }
+            this.membersSubscribeEventsCreatedAtsByNewsletterId.get(memberSubscribeEvent.newsletter_id).push(memberSubscribeEvent.created_at.getTime());
+        }
 
         await this.importForEach(this.emailBatches, quantity ? quantity / emails.length : 1000);
     }
 
     setReferencedModel(model) {
         this.batch = model;
-        this.model = this.emails.find(email => email.id === this.batch.email_id);
-        this.batchIndex = this.emailBatches.filter(b => b.email_id === this.model.id).findIndex(batch => batch.id === this.batch.id);
+        this.model = this.emails.get(this.batch.email_id);
+        this.batchIndex = this.batch.index;
 
         // Shallow clone members list so we can shuffle and modify it
         const earliestOpenTime = new Date(this.batch.updated_at);
         const latestOpenTime = new Date(this.batch.updated_at);
         latestOpenTime.setDate(latestOpenTime.getDate() + 14);
-        const currentTime = new Date();
 
-        this.membersList = this.membersSubscribeEvents
-            .filter(entry => entry.newsletter_id === this.model.newsletter_id)
-            .filter(entry => new Date(entry.created_at) < earliestOpenTime)
-            .map(memberSubscribeEvent => memberSubscribeEvent.member_id)
-            .slice(this.batchIndex * 1000, (this.batchIndex + 1) * 1000);
+        // Get all members that were subscribed to this newsletter BEFORE the batch was sent
+        // We use binary search to speed up it up
+        const lastIndex = findFirstHigherIndex(this.membersSubscribeEventsCreatedAtsByNewsletterId.get(this.model.newsletter_id), earliestOpenTime);
 
-        this.events = this.membersList.length > 0 ? generateEvents({
-            shape: 'ease-out',
-            trend: 'negative',
-            total: this.membersList.length,
-            startTime: earliestOpenTime,
-            endTime: currentTime < latestOpenTime ? currentTime : latestOpenTime
-        }) : [];
+        this.membersList = this.membersSubscribeEventsByNewsletterId.get(this.model.newsletter_id).slice(0, Math.max(0, lastIndex - 1))
+            .slice(this.batchIndex * 1000, (this.batchIndex + 1) * 1000)
+            .map(memberSubscribeEvent => memberSubscribeEvent.member_id);
+
+        this.events = faker.helpers.shuffle(this.eventCurve.slice(0, this.membersList.length));
 
         this.emailMeta = {
             // delievered and not opened
@@ -84,12 +153,8 @@ class EmailRecipientsImporter extends TableImporter {
             return;
         }
 
-        const memberIdIndex = faker.datatype.number({
-            min: 0,
-            max: this.membersList.length - 1
-        });
-        const [memberId] = this.membersList.splice(memberIdIndex, 1);
-        const member = this.members.find(m => m.id === memberId);
+        const memberId = this.membersList[this.events.length]; // faster than shift
+        const member = this.members.get(memberId);
 
         let status = emailStatus.none;
         if (this.emailMeta.failedCount > 0) {
@@ -105,17 +170,18 @@ class EmailRecipientsImporter extends TableImporter {
 
         let deliveredTime;
         if (status === emailStatus.opened) {
-            const startDate = new Date(this.batch.updated_at).valueOf();
-            const endDate = timestamp.valueOf();
-            deliveredTime = new Date(startDate + (Math.random() * (endDate - startDate)));
+            const startDate = this.batch.updated_at;
+            const endDate = timestamp;
+            deliveredTime = faker.date.between(startDate, endDate);
         }
 
         return {
-            id: faker.database.mongodbObjectId(),
+            // Using sorted ids are much much faster (35% as far as my testing goes) for huge imports
+            id: this.fastFakeObjectId(),
             email_id: this.model.id,
             batch_id: this.batch.id,
             member_id: member.id,
-            processed_at: this.batch.updated_at,
+            processed_at: dateToDatabaseString(this.batch.updated_at),
             delivered_at: status === emailStatus.opened ? dateToDatabaseString(deliveredTime) : status === emailStatus.delivered ? dateToDatabaseString(timestamp) : null,
             opened_at: status === emailStatus.opened ? dateToDatabaseString(timestamp) : null,
             failed_at: status === emailStatus.failed ? dateToDatabaseString(timestamp) : null,

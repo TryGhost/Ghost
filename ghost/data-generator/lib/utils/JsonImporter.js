@@ -25,7 +25,7 @@ class JsonImporter {
     }) {
         for (const obj of data) {
             if (!('id' in obj)) {
-                obj.id = faker.database.mongodbObjectId();
+                obj.id = this.fastFakeObjectId();
             }
         }
         if (rows.findIndex(row => row === 'id') === -1) {

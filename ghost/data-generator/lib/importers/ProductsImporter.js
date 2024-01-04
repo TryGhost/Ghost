@@ -61,7 +61,7 @@ class ProductsImporter extends TableImporter {
     }
 
     generate() {
-        const name = this.names.shift();
+        const name = this.names.pop();
         const count = this.count;
         this.count = this.count + 1;
         const sixMonthsLater = new Date(blogStartDate);
@@ -78,7 +78,7 @@ class ProductsImporter extends TableImporter {
             tierInfo.yearly_price = count * 5000;
         }
         return Object.assign({}, {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             name: name,
             slug: `${slugify(name)}-${faker.random.numeric(3)}`,
             visibility: 'public',

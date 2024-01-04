@@ -1,6 +1,7 @@
 const TableImporter = require('./TableImporter');
 const {faker} = require('@faker-js/faker');
 const {luck} = require('../utils/random');
+const dateToDatabaseString = require('../utils/database-date');
 
 class MembersCreatedEventsImporter extends TableImporter {
     static table = 'members_created_events';
@@ -79,8 +80,8 @@ class MembersCreatedEventsImporter extends TableImporter {
         }
 
         return {
-            id: faker.database.mongodbObjectId(),
-            created_at: this.model.created_at,
+            id: this.fastFakeObjectId(),
+            created_at: dateToDatabaseString(this.model.created_at),
             member_id: this.model.id,
             source,
             ...attribution,

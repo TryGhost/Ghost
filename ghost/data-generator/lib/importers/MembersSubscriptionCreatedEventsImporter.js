@@ -12,10 +12,14 @@ class MembersSubscriptionCreatedEventsImporter extends TableImporter {
 
     async import(quantity) {
         const membersStripeCustomersSubscriptions = await this.transaction.select('id', 'created_at', 'customer_id').from('members_stripe_customers_subscriptions');
-        this.membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers');
+        const membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers');
         this.posts = await this.transaction.select('id', 'published_at', 'visibility', 'type', 'slug').from('posts').orderBy('published_at', 'desc');
         this.incomingRecommendations = await this.transaction.select('id', 'source', 'created_at').from('mentions');
 
+        this.membersStripeCustomers = new Map();
+        for (const memberStripeCustomer of membersStripeCustomers) {
+            this.membersStripeCustomers.set(memberStripeCustomer.customer_id, memberStripeCustomer);
+        }
         await this.importForEach(membersStripeCustomersSubscriptions, quantity ? quantity / membersStripeCustomersSubscriptions.length : 1);
     }
 
@@ -55,10 +59,10 @@ class MembersSubscriptionCreatedEventsImporter extends TableImporter {
             }
         }
 
-        const memberCustomer = this.membersStripeCustomers.find(c => c.customer_id === this.model.customer_id);
+        const memberCustomer = this.membersStripeCustomers.get(this.model.customer_id);
 
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             created_at: this.model.created_at,
             member_id: memberCustomer.member_id,
             subscription_id: this.model.id,

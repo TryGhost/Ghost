@@ -32,7 +32,7 @@ class RolesUsersImporter extends TableImporter {
             return;
         }
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             role_id: actualRole.id,
             user_id: this.model.id
         };

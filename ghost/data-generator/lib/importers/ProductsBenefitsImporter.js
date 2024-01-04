@@ -44,7 +44,7 @@ class ProductsBenefitsImporter extends TableImporter {
         const sortOrder = this.sortOrder;
         this.sortOrder = this.sortOrder + 1;
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             product_id: this.model.id,
             benefit_id: this.benefits[sortOrder].id,
             sort_order: sortOrder

@@ -17,7 +17,7 @@ class MembersNewslettersImporter extends TableImporter {
 
     generate() {
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             member_id: this.model.member_id,
             newsletter_id: this.model.newsletter_id
         };

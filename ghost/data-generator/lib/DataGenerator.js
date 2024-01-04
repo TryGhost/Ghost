@@ -8,7 +8,7 @@ const {faker: americanFaker} = require('@faker-js/faker/locale/en_US');
 const crypto = require('crypto');
 const {Buffer} = require('node:buffer');
 const DatabaseInfo = require('@tryghost/database-info');
-
+const errors = require('@tryghost/errors');
 const importers = require('./importers').reduce((acc, val) => {
     acc[val.table] = val;
     return acc;
@@ -32,7 +32,8 @@ class DataGenerator {
         printDependencies,
         withDefault,
         seed,
-        quantities = {}
+        quantities = {},
+        useCache = false
     }) {
         this.knex = knex;
         this.tableList = tables || [];
@@ -45,6 +46,7 @@ class DataGenerator {
         this.printDependencies = printDependencies;
         this.seed = seed;
         this.quantities = quantities;
+        this.useCache = useCache;
     }
 
     sortTableList() {
@@ -152,42 +154,46 @@ class DataGenerator {
     }
 
     async importData() {
+        const start = Date.now();
+
+        // Add default tables if none are specified
+        if (this.tableList.length === 0) {
+            this.tableList = Object.keys(importers).map(name => ({name}));
+        } else if (this.withDefault) {
+        // Add default tables to the end of the list
+            const defaultTables = Object.keys(importers).map(name => ({name}));
+            for (const table of defaultTables) {
+                if (!this.tableList.find(t => t.name === table.name)) {
+                    this.tableList.push(table);
+                }
+            }
+        }
+
+        // Error if we have an unknown table
+        for (const table of this.tableList) {
+            if (importers[table.name] === undefined) {
+                throw new errors.IncorrectUsageError({message: `Unknown table: ${table.name}`});
+            }
+        }
+
+        this.sortTableList();
+
+        if (this.printDependencies) {
+            this.logger.info('Table dependencies:');
+            for (const table of this.tableList) {
+                this.logger.info(`\t${table.name}: ${table.dependencies.join(', ')}`);
+            }
+            process.exit(0);
+        }
+
         await this.knex.transaction(async (transaction) => {
             // Performance improvements
             if (!DatabaseInfo.isSQLite(this.knex)) {
-                await this.knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(transaction);
-                await this.knex.raw('SET unique_checks=0;').transacting(transaction);
-            }
-
-            // Add default tables if none are specified
-            if (this.tableList.length === 0) {
-                this.tableList = Object.keys(importers).map(name => ({name}));
-            } else if (this.withDefault) {
-                // Add default tables to the end of the list
-                const defaultTables = Object.keys(importers).map(name => ({name}));
-                for (const table of defaultTables) {
-                    if (!this.tableList.find(t => t.name === table.name)) {
-                        this.tableList.push(table);
-                    }
-                }
-            }
-
-            // Error if we have an unknown table
-            for (const table of this.tableList) {
-                if (importers[table.name] === undefined) {
-                    // eslint-disable-next-line
-                    throw new Error(`Unknown table: ${table.name}`);
-                }
-            }
-
-            this.sortTableList();
-
-            if (this.printDependencies) {
-                this.logger.info('Table dependencies:');
-                for (const table of this.tableList) {
-                    this.logger.info(`\t${table.name}: ${table.dependencies.join(', ')}`);
-                }
-                process.exit(0);
+                await transaction.raw('ALTER INSTANCE DISABLE INNODB REDO_LOG;');
+                await transaction.raw('SET FOREIGN_KEY_CHECKS=0;');
+                await transaction.raw('SET unique_checks=0;');
+                await transaction.raw('SET autocommit=0;');
+                await transaction.raw('SET GLOBAL local_infile=1;');
             }
 
             if (this.willClearData) {
@@ -208,7 +214,7 @@ class DataGenerator {
             const cryptoRandomBytes = crypto.randomBytes;
 
             if (this.seed) {
-                // The probality distributions library uses crypto.randomBytes, which we can't seed, so we need to override it
+            // The probality distributions library uses crypto.randomBytes, which we can't seed, so we need to override it
                 crypto.randomBytes = (size) => {
                     const buffer = Buffer.alloc(size);
                     for (let i = 0; i < size; i++) {
@@ -221,7 +227,7 @@ class DataGenerator {
             try {
                 for (const table of this.tableList) {
                     if (this.seed) {
-                        // We reset the seed for every table, so the chosen tables don't affect the data and changes in one importer don't affect the others
+                    // We reset the seed for every table, so the chosen tables don't affect the data and changes in one importer don't affect the others
                         faker.seed(this.seed);
                         americanFaker.seed(this.seed);
                     }
@@ -234,11 +240,13 @@ class DataGenerator {
                     const amount = table.quantity ?? tableImporter.defaultQuantity;
                     this.logger.info('Importing content for table', table.name, amount ? `(${amount} records)` : '');
 
-                    await tableImporter.import(table.quantity ?? undefined);
+                    if (!this.useCache || !(await tableImporter.reuseCacheIfPossible(table.quantity ?? undefined))) {
+                        await tableImporter.import(table.quantity ?? undefined);
+                    }
                 }
             } finally {
                 if (this.seed) {
-                    // Revert crypto.randomBytes to the original function
+                // Revert crypto.randomBytes to the original function
                     crypto.randomBytes = cryptoRandomBytes;
                 }
             }
@@ -250,13 +258,9 @@ class DataGenerator {
                 });
                 await tableImporter.finalise();
             }
-
-            // Performance improvements
-            if (!DatabaseInfo.isSQLite(this.knex)) {
-                await this.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(transaction);
-                await this.knex.raw('SET unique_checks=1;').transacting(transaction);
-            }
         }, {isolationLevel: 'read committed'});
+
+        this.logger.info(`Completed data import in ${((Date.now() - start) / 1000).toFixed(1)}s`);
     }
 }
 
