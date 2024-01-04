@@ -18,6 +18,7 @@ describe('RecommendationService', function () {
     beforeEach(function () {
         enabled = false;
         fetchMetadataStub = sinon.stub().resolves({
+            url: new URL('https://exampleghostsite.com/'),
             title: 'Test',
             excerpt: null,
             featuredImage: null,
@@ -151,7 +152,7 @@ describe('RecommendationService', function () {
         it('Returns existing recommendation if found', async function () {
             const recommendation = Recommendation.create({
                 id: '2',
-                url: 'http://localhost/existing',
+                url: 'https://exampleghostsite.com/',
                 title: 'Test',
                 description: null,
                 excerpt: null,
@@ -161,81 +162,14 @@ describe('RecommendationService', function () {
             });
             await service.repository.save(recommendation);
 
-            const response = await service.checkRecommendation(new URL('http://localhost/existing'));
+            const response = await service.checkRecommendation(new URL('https://exampleghostsite.com/'));
             assert.deepEqual(response, recommendation.plain);
         });
 
-        it('Returns updated recommendation if found', async function () {
+        it('Returns existing recommendation if found and fetch fails', async function () {
             const recommendation = Recommendation.create({
                 id: '2',
-                url: 'http://localhost/existing',
-                title: 'Test',
-                description: null,
-                excerpt: null,
-                featuredImage: null,
-                favicon: null,
-                oneClickSubscribe: false
-            });
-            // Force an empty title (shouldn't be possible)
-            recommendation.title = '';
-            await service.repository.save(recommendation);
-
-            fetchMetadataStub.resolves({
-                title: 'Test 2',
-                excerpt: 'Test excerpt',
-                featuredImage: new URL('https://example.com/image.png'),
-                favicon: new URL('https://example.com/favicon.ico'),
-                oneClickSubscribe: true
-            });
-
-            const response = await service.checkRecommendation(new URL('http://localhost/existing'));
-            assert.deepEqual(response, {
-                ...recommendation.plain,
-                // Note: Title only changes if it was empty
-                title: 'Test 2',
-                description: null,
-                excerpt: 'Test excerpt',
-                featuredImage: new URL('https://example.com/image.png'),
-                favicon: new URL('https://example.com/favicon.ico'),
-                oneClickSubscribe: true
-            });
-        });
-
-        it('Returns updated recommendation if found but keeps empty title if no title found', async function () {
-            const recommendation = Recommendation.create({
-                id: '2',
-                url: 'http://localhost/existing',
-                title: 'Test',
-                description: null,
-                excerpt: null,
-                featuredImage: null,
-                favicon: null,
-                oneClickSubscribe: false
-            });
-            // Force an empty title (shouldn't be possible)
-            recommendation.title = '';
-            await service.repository.save(recommendation);
-
-            fetchMetadataStub.resolves({
-                title: null,
-                excerpt: 'Test excerpt',
-                featuredImage: new URL('https://example.com/image.png'),
-                favicon: new URL('https://example.com/favicon.ico'),
-                oneClickSubscribe: true
-            });
-
-            const response = await service.checkRecommendation(new URL('http://localhost/existing'));
-
-            // No changes here, because validation failed with an empty title
-            assert.deepEqual(response, {
-                ...recommendation.plain
-            });
-        });
-
-        it('Returns existing recommendation if found and fetch failes', async function () {
-            const recommendation = Recommendation.create({
-                id: '2',
-                url: 'http://localhost/existing',
+                url: 'https://exampleghostsite.com/',
                 title: 'Outdated title',
                 description: null,
                 excerpt: null,
@@ -246,11 +180,11 @@ describe('RecommendationService', function () {
             await service.repository.save(recommendation);
 
             fetchMetadataStub.rejects(new Error('Test'));
-            const response = await service.checkRecommendation(new URL('http://localhost/existing'));
+            const response = await service.checkRecommendation(new URL('https://exampleghostsite.com/'));
             assert.deepEqual(response, recommendation.plain);
         });
 
-        it('Returns recommendation metadata if not found', async function () {
+        it('Returns recommendation metadata', async function () {
             const response = await service.checkRecommendation(new URL('http://localhost/newone'));
             assert.deepEqual(response, {
                 title: 'Test',
@@ -258,12 +192,13 @@ describe('RecommendationService', function () {
                 featuredImage: undefined,
                 favicon: undefined,
                 oneClickSubscribe: false,
-                url: new URL('http://localhost/newone')
+                url: new URL('https://exampleghostsite.com/')
             });
         });
 
-        it('Returns recommendation metadata if not found with all data except title', async function () {
+        it('Returns recommendation metadata with all data except title', async function () {
             fetchMetadataStub.resolves({
+                url: new URL('https://example.com'),
                 title: null,
                 excerpt: 'Test excerpt',
                 featuredImage: new URL('https://example.com/image.png'),
@@ -272,12 +207,12 @@ describe('RecommendationService', function () {
             });
             const response = await service.checkRecommendation(new URL('http://localhost/newone'));
             assert.deepEqual(response, {
+                url: new URL('https://example.com/'),
                 title: undefined,
                 excerpt: 'Test excerpt',
                 featuredImage: new URL('https://example.com/image.png'),
                 favicon: new URL('https://example.com/favicon.ico'),
-                oneClickSubscribe: true,
-                url: new URL('http://localhost/newone')
+                oneClickSubscribe: true
             });
         });
     });
@@ -325,6 +260,24 @@ describe('RecommendationService', function () {
             enabled = true;
             await service.updateRecommendationsEnabledSetting([]);
             assert.equal(enabled, false);
+        });
+    });
+
+    describe('_updateRecommendationMetadata', function () {
+        it('updates recommendation metadata', async function () {
+            const recommendation = Recommendation.create({
+                id: '2',
+                url: 'https://exampleghostsite.com/',
+                title: 'Outdated title',
+                description: null,
+                excerpt: null,
+                featuredImage: null,
+                favicon: null,
+                oneClickSubscribe: false
+            });
+            await service.repository.save(recommendation);
+
+            await service._updateRecommendationMetadata(recommendation);
         });
     });
 
@@ -385,7 +338,7 @@ describe('RecommendationService', function () {
             });
         });
 
-        it('returns plain if sucessful', async function () {
+        it('returns plain if successful', async function () {
             const response = await service.addRecommendation({
                 url: 'http://localhost/1',
                 title: 'Test',
@@ -459,7 +412,7 @@ describe('RecommendationService', function () {
             });
         });
 
-        it('returns plain if sucessful', async function () {
+        it('returns plain if successful', async function () {
             const recommendation = Recommendation.create({
                 id: '2',
                 url: 'http://localhost/1',
@@ -500,6 +453,70 @@ describe('RecommendationService', function () {
             assert(response.url instanceof URL);
             assert(response.createdAt instanceof Date);
             assert(response.updatedAt instanceof Date);
+        });
+
+        it('updates metadata, besides title', async function () {
+            const recommendation = Recommendation.create({
+                id: '2',
+                url: 'https://example.com/',
+                title: 'Title',
+                description: null,
+                excerpt: null,
+                featuredImage: null,
+                favicon: null,
+                oneClickSubscribe: false
+            });
+            await service.repository.save(recommendation);
+
+            fetchMetadataStub.resolves({
+                url: new URL('https://example.com/'),
+                title: 'Title from metadata',
+                excerpt: 'Excerpt',
+                featuredImage: new URL('https://example.com/image.png'),
+                favicon: new URL('https://example.com/favicon.ico'),
+                oneClickSubscribe: true
+            });
+
+            const response = await service.editRecommendation('2', {
+                description: 'Description'
+            });
+
+            assert.deepEqual(response, {
+                title: 'Title',
+                description: 'Description',
+                excerpt: 'Excerpt',
+                featuredImage: new URL('https://example.com/image.png'),
+                favicon: new URL('https://example.com/favicon.ico'),
+                oneClickSubscribe: true,
+
+                // Ignored
+                id: response.id,
+                url: response.url,
+                clickCount: undefined,
+                subscriberCount: undefined,
+                createdAt: response.createdAt,
+                updatedAt: response.updatedAt
+            });
+        });
+
+        it('does not throw an error if metadata fetch fails', async function () {
+            const recommendation = Recommendation.create({
+                id: '2',
+                url: 'https://exampleghostsite.com/',
+                title: 'Outdated title',
+                description: null,
+                excerpt: null,
+                featuredImage: null,
+                favicon: null,
+                oneClickSubscribe: false
+            });
+            await service.repository.save(recommendation);
+
+            fetchMetadataStub.rejects(new Error('Test'));
+            const response = await service.editRecommendation('2', {
+                title: 'Test 2'
+            });
+            assert(response.id);
         });
     });
 

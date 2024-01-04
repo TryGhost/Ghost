@@ -78,18 +78,19 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 return;
             }
 
-            const existing = recommendations[0];
+            const metadata = recommendations[0];
 
-            if (existing.id) {
+            if (metadata.id) {
                 throw new AlreadyExistsError('A recommendation with this URL already exists.');
             }
 
             // Update metadata so we can preview it
-            updatedRecommendation.title = existing.title ?? defaultTitle;
-            updatedRecommendation.excerpt = existing.excerpt ?? updatedRecommendation.excerpt;
-            updatedRecommendation.featured_image = existing.featured_image ?? updatedRecommendation.featured_image ?? null;
-            updatedRecommendation.favicon = existing.favicon ?? updatedRecommendation.favicon ?? null;
-            updatedRecommendation.one_click_subscribe = existing.one_click_subscribe ?? updatedRecommendation.one_click_subscribe ?? false;
+            updatedRecommendation.url = metadata.url || validatedUrl.toString(); // Update URL in case the Admin URL was used instead of the site URL
+            updatedRecommendation.title = metadata.title ?? defaultTitle;
+            updatedRecommendation.excerpt = metadata.excerpt ?? updatedRecommendation.excerpt;
+            updatedRecommendation.featured_image = metadata.featured_image ?? updatedRecommendation.featured_image ?? null;
+            updatedRecommendation.favicon = metadata.favicon ?? updatedRecommendation.favicon ?? null;
+            updatedRecommendation.one_click_subscribe = metadata.one_click_subscribe ?? updatedRecommendation.one_click_subscribe ?? false;
 
             // Set a default description (excerpt)
             updatedRecommendation.description = updatedRecommendation.excerpt || null;

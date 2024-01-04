@@ -142,17 +142,23 @@ export class RecommendationService {
     }
 
     async checkRecommendation(url: URL): Promise<Partial<RecommendationPlain>> {
-        // If a recommendation with this URL already exists, return it, but with updated metadata
-        const existing = await this.repository.getByUrl(url);
+        let metadata;
+        try {
+            metadata = await this.recommendationMetadataService.fetch(url);
+        } catch (e) {
+            metadata = {};
+        }
+
+        const updatedUrl = metadata.url || url;
+        const existing = await this.repository.getByUrl(updatedUrl);
+
+        // If a recommendation with this URL already exists, return it
         if (existing) {
-            this._updateRecommendationMetadata(existing);
-            await this.repository.save(existing);
             return existing.plain;
         }
 
-        const metadata = await this.recommendationMetadataService.fetch(url);
         return {
-            url: url,
+            url: updatedUrl,
             title: metadata.title ?? undefined,
             excerpt: metadata.excerpt ?? undefined,
             featuredImage: metadata.featuredImage ?? undefined,
@@ -168,8 +174,6 @@ export class RecommendationService {
 
             // Set null values to undefined so we don't trigger an update
             recommendation.edit({
-                // Don't set title if it's already set on the recommendation
-                title: recommendation.title ? undefined : (metadata.title ?? undefined),
                 excerpt: metadata.excerpt ?? undefined,
                 featuredImage: metadata.featuredImage ?? undefined,
                 favicon: metadata.favicon ?? undefined,

@@ -23,6 +23,7 @@ type ExternalRequest = {
 }
 
 export type RecommendationMetadata = {
+    url: URL|null,
     title: string|null,
     excerpt: string|null,
     featuredImage: URL|null,
@@ -96,7 +97,16 @@ export class RecommendationMetadataService {
         if (ghostSiteData && typeof ghostSiteData === 'object' && ghostSiteData.site && typeof ghostSiteData.site === 'object') {
             // Check if the Ghost site returns allow_external_signup, otherwise it is an old Ghost version that returns unreliable data
             if (typeof ghostSiteData.site.allow_external_signup === 'boolean') {
+                // Fetch the site url from the metadata, in case the Admin URL was used instead of the site URL
+                let updatedUrl;
+                try {
+                    updatedUrl = new URL(ghostSiteData.site.url);
+                } catch (e) {
+                    updatedUrl = null;
+                }
+
                 return {
+                    url: updatedUrl,
                     title: ghostSiteData.site.title || null,
                     excerpt: ghostSiteData.site.description || null,
                     featuredImage: this.#castUrl(ghostSiteData.site.cover_image),
@@ -109,6 +119,7 @@ export class RecommendationMetadataService {
         // Use the oembed service to fetch metadata
         const oembed = await this.#oembedService.fetchOembedDataFromUrl(url.toString(), 'mention');
         return {
+            url: null,
             title: oembed?.metadata?.title || null,
             excerpt: oembed?.metadata?.description || null,
             featuredImage: this.#castUrl(oembed?.metadata?.thumbnail),

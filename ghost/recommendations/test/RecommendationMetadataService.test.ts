@@ -39,6 +39,7 @@ describe('RecommendationMetadataService', function () {
             .get('/subdirectory/members/api/site')
             .reply(200, {
                 site: {
+                    url: 'https://exampleghostsite.com/',
                     title: 'Example Ghost Site',
                     description: 'Example Ghost Site Description',
                     cover_image: 'https://exampleghostsite.com/cover.png',
@@ -49,6 +50,7 @@ describe('RecommendationMetadataService', function () {
 
         const metadata = await service.fetch(new URL('https://exampleghostsite.com/subdirectory'));
         assert.deepEqual(metadata, {
+            url: new URL('https://exampleghostsite.com/'),
             title: 'Example Ghost Site',
             excerpt: 'Example Ghost Site Description',
             featuredImage: new URL('https://exampleghostsite.com/cover.png'),
@@ -62,6 +64,7 @@ describe('RecommendationMetadataService', function () {
             .get('/subdirectory/members/api/site')
             .reply(200, {
                 site: {
+                    url: '',
                     title: '',
                     description: '',
                     cover_image: '',
@@ -72,6 +75,7 @@ describe('RecommendationMetadataService', function () {
 
         const metadata = await service.fetch(new URL('https://exampleghostsite.com/subdirectory'));
         assert.deepEqual(metadata, {
+            url: null,
             title: null,
             excerpt: null,
             featuredImage: null,
@@ -95,6 +99,7 @@ describe('RecommendationMetadataService', function () {
         const metadata = await service.fetch(new URL('https://exampleghostsite.com'));
         assert.deepEqual(metadata, {
             // oembed
+            url: null,
             title: 'Oembed Site Title',
             excerpt: 'Oembed Site Description',
             featuredImage: new URL('https://example.com/oembed/thumbnail.png'),
@@ -112,6 +117,7 @@ describe('RecommendationMetadataService', function () {
             .get('/members/api/site')
             .reply(200, {
                 site: {
+                    url: 'https://exampleghostsite.com/',
                     title: 'Example Ghost Site',
                     description: 'Example Ghost Site Description',
                     cover_image: 'https://exampleghostsite.com/cover.png',
@@ -122,6 +128,7 @@ describe('RecommendationMetadataService', function () {
 
         const metadata = await service.fetch(new URL('https://exampleghostsite.com/subdirectory'));
         assert.deepEqual(metadata, {
+            url: new URL('https://exampleghostsite.com/'),
             title: 'Example Ghost Site',
             excerpt: 'Example Ghost Site Description',
             featuredImage: new URL('https://exampleghostsite.com/cover.png'),
@@ -141,6 +148,7 @@ describe('RecommendationMetadataService', function () {
 
         const metadata = await service.fetch(new URL('https://exampleghostsite.com/subdirectory'));
         assert.deepEqual(metadata, {
+            url: null,
             title: 'Oembed Site Title',
             excerpt: 'Oembed Site Description',
             featuredImage: new URL('https://example.com/oembed/thumbnail.png'),
@@ -173,6 +181,7 @@ describe('RecommendationMetadataService', function () {
 
         const metadata = await service.fetch(new URL('https://exampleghostsite.com/subdirectory'));
         assert.deepEqual(metadata, {
+            url: null,
             title: 'Oembed Site Title',
             excerpt: 'Oembed Site Description',
             featuredImage: null,
@@ -205,6 +214,7 @@ describe('RecommendationMetadataService', function () {
 
         const metadata = await service.fetch(new URL('https://exampleghostsite.com/subdirectory'));
         assert.deepEqual(metadata, {
+            url: null,
             title: null,
             excerpt: null,
             featuredImage: null,
