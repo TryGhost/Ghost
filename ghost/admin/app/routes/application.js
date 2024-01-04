@@ -182,14 +182,17 @@ export default Route.extend(ShortcutsRoute, {
                 dsn: this.config.sentry_dsn,
                 environment: this.config.sentry_env,
                 release: `ghost@${this.config.version}`,
-                beforeSend,
+                // beforeSend,
                 // TransitionAborted errors surface from normal application behaviour
                 // - https://github.com/emberjs/ember.js/issues/12505
-                ignoreErrors: [/^TransitionAborted$/]
+                ignoreErrors: [/^TransitionAborted$/],
+                enableTracing: true,
+                tracesSampleRate: 1.0
             };
             if (this.config.sentry_env === 'development') {
                 sentryConfig.integrations = [new Debug()];
             }
+            console.log('Intialising sentry with config: ', sentryConfig);
             Sentry.init(sentryConfig);
         }
 

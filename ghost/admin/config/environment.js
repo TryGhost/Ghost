@@ -38,10 +38,10 @@ module.exports = function (environment) {
         'ember-websockets': {
             socketIO: true
         },
-
         '@sentry/ember': {
-            disablePerformance: true,
-            sentry: {}
+            minimumComponentRenderDuration: 0, // Setting this to zero will capture all classic components.
+            minimumRunloopQueueDuration: 0, // Setting this to zero will capture all runloop queue durations
+            
         }
     };
 
