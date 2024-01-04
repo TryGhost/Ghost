@@ -67,7 +67,7 @@
         "vite": "4.5.1",
         "vite-plugin-commonjs": "0.10.1",
         "vite-plugin-svgr": "3.3.0",
-        "vitest": "0.34.3",
+        "vitest": "0.34.6",
         "@tryghost/i18n": "0.0.0"
     }
 }
