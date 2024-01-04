@@ -51,6 +51,21 @@ describe('UNIT: sentry', function () {
             assert.equal(initArgs[0].environment, 'testing', 'should be the testing env');
             assert.ok(initArgs[0].hasOwnProperty('beforeSend'), 'should have a beforeSend function');
         });
+
+        it('initialises sentry with the correct environment', function () {
+            const env = 'staging';
+
+            configUtils.set({
+                PRO_ENV: env
+            });
+
+            delete require.cache[require.resolve('../../../core/shared/sentry')];
+            require('../../../core/shared/sentry');
+
+            const initArgs = Sentry.init.getCall(1).args;
+
+            assert.equal(initArgs[0].environment, env, 'should be the correct env');
+        });
     });
 
     describe('beforeSend', function () {

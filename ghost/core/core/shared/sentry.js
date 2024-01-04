@@ -60,7 +60,12 @@ const beforeSend = function (event, hint) {
 if (sentryConfig && !sentryConfig.disabled) {
     const Sentry = require('@sentry/node');
     const version = require('@tryghost/version').full;
-    const environment = config.get('env');
+
+    let environment = config.get('PRO_ENV');
+    if (!environment) {
+        environment = config.get('env');
+    }
+
     const sentryInitConfig = {
         dsn: sentryConfig.dsn,
         release: 'ghost@' + version,
