@@ -87,7 +87,6 @@ if (sentryConfig && !sentryConfig.disabled) {
     // Enable tracing if sentry.tracing.enabled is true
     if (sentryConfig.tracing?.enabled === true) {
         sentryInitConfig.integrations.push(new Sentry.Integrations.Http({tracing: true}));
-        sentryInitConfig.integrations.push(new Sentry.Integrations.Express());
         sentryInitConfig.tracesSampleRate = parseFloat(sentryConfig.tracing.sampleRate) || 0.0;
         // Enable profiling, if configured, only if tracing is also configured
         if (ProfilingIntegration && sentryConfig.profiling?.enabled === true) {
