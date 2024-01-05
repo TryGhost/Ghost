@@ -227,7 +227,7 @@
   "optionalDependencies": {
     "@sentry/profiling-node": "^1.3.2",
     "@tryghost/html-to-mobiledoc": "3.0.1",
-    "sqlite3": "5.1.6"
+    "sqlite3": "5.1.7"
   },
   "devDependencies": {
     "@actions/core": "1.10.1",
