@@ -13,12 +13,22 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
     }
 
     async import() {
-        this.membersProducts = await this.transaction.select('member_id', 'product_id').from('members_products');
+        const membersProducts = await this.transaction.select('member_id', 'product_id').from('members_products');
         this.members = await this.transaction.select('id', 'status', 'created_at').from('members');//.where('status', 'paid');
-        this.membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers');
+        const membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers');
         this.products = await this.transaction.select('id', 'name').from('products').whereNot('type', 'free');
         this.stripeProducts = await this.transaction.select('id', 'product_id', 'stripe_product_id').from('stripe_products');
         this.stripePrices = await this.transaction.select('id', 'nickname', 'stripe_product_id', 'stripe_price_id', 'amount', 'interval', 'currency').from('stripe_prices');
+
+        this.membersStripeCustomers = new Map();
+        for (const customer of membersStripeCustomers) {
+            this.membersStripeCustomers.set(customer.member_id, customer);
+        }
+
+        this.membersProducts = new Map();
+        for (const product of membersProducts) {
+            this.membersProducts.set(product.member_id, product);
+        }
 
         await this.importForEach(this.members, 2);
     }
@@ -33,7 +43,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
         this.count += 1;
 
         const member = this.model;
-        const customer = this.membersStripeCustomers.find(c => this.model.id === c.member_id);
+        const customer = this.membersStripeCustomers.get(this.model.id);
 
         if (!customer) {
             // This is a requirement, so skip if we don't have a customer
@@ -44,7 +54,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
             return;
         }
 
-        const memberProduct = this.membersProducts.find(p => p.member_id === this.model.id);
+        const memberProduct = this.membersProducts.get(this.model.id);
         let ghostProduct = memberProduct ? this.products.find(product => product.id === memberProduct.product_id) : null;
 
         // Whether we should create a valid subscription or not
@@ -201,7 +211,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
         const status = createValid ? faker.helpers.arrayElement(validStatusses) : faker.helpers.arrayElement(invalidStatusses);
 
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             customer_id: customer.customer_id,
             subscription_id: `sub_${faker.random.alphaNumeric(14)}`,
             stripe_price_id: stripePrice.stripe_price_id,

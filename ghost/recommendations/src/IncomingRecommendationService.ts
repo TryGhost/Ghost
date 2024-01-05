@@ -80,7 +80,7 @@ export class IncomingRecommendationService {
         // More importantly, we might have missed some deletes which we can detect.
         // So we do a slow revalidation of all incoming recommendations
         // This also prevents doing multiple external fetches when doing quick reboots of Ghost after each other (requires Ghost to be up for at least 15 seconds)
-        if (!process.env.NODE_ENV?.startsWith('test')) {
+        if (!process.env.NODE_ENV?.startsWith('test') && process.env.NODE_ENV !== 'development') {
             setTimeout(() => {
                 logging.info('Updating incoming recommendations on boot');
                 this.#updateIncomingRecommendations().catch((err) => {

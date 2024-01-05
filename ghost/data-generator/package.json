@@ -29,6 +29,7 @@
     "@faker-js/faker": "7.6.0",
     "@tryghost/root-utils": "0.3.24",
     "@tryghost/string": "0.2.10",
+    "csv-writer": "^1.6.0",
     "probability-distributions": "0.9.1"
   }
 }

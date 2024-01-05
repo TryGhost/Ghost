@@ -29,6 +29,7 @@ const generateEvents = ({
         beta = 1;
         break;
     }
+
     const data = probabilityDistributions.rbeta(total, alpha, beta, 0);
     const startTimeValue = startTime.valueOf();
     const timeDifference = endTime.valueOf() - startTimeValue;

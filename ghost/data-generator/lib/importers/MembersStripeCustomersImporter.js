@@ -29,7 +29,7 @@ class MembersStripeCustomersImporter extends TableImporter {
         }
 
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             member_id: this.model.id,
             customer_id: `cus_${faker.random.alphaNumeric(14, {
                 casing: 'mixed'

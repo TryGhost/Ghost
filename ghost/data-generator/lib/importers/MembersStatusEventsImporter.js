@@ -18,15 +18,15 @@ class MembersStatusEventsImporter extends TableImporter {
 
     setReferencedModel(model) {
         this.events = [{
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             member_id: model.id,
             from_status: null,
             to_status: 'free',
-            created_at: model.created_at
+            created_at: dateToDatabaseString(model.created_at)
         }];
         if (model.status !== 'free') {
             this.events.push({
-                id: faker.database.mongodbObjectId(),
+                id: this.fastFakeObjectId(),
                 member_id: model.id,
                 from_status: 'free',
                 to_status: model.status,
@@ -36,7 +36,7 @@ class MembersStatusEventsImporter extends TableImporter {
     }
 
     generate() {
-        const event = this.events.shift();
+        const event = this.events.pop();
         if (!event) {
             return null;
         }

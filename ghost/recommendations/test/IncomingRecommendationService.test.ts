@@ -48,7 +48,7 @@ describe('IncomingRecommendationService', function () {
             // Sandbox time
             const saved = process.env.NODE_ENV;
             try {
-                process.env.NODE_ENV = 'development';
+                process.env.NODE_ENV = 'nottesting';
                 await service.init();
                 clock.tick(1000 * 60 * 60 * 24);
                 assert(refreshMentions.calledOnce);
@@ -61,7 +61,7 @@ describe('IncomingRecommendationService', function () {
             // Sandbox time
             const saved = process.env.NODE_ENV;
             try {
-                process.env.NODE_ENV = 'development';
+                process.env.NODE_ENV = 'nottesting';
 
                 refreshMentions.rejects(new Error('test'));
                 await service.init();

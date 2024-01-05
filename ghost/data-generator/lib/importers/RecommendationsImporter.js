@@ -15,7 +15,7 @@ class RecommendationsImporter extends TableImporter {
     }
 
     generate() {
-        const id = faker.database.mongodbObjectId();
+        const id = this.fastFakeObjectId();
         return {
             id,
             url: faker.internet.url(),

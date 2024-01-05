@@ -1,4 +1,3 @@
-const {faker} = require('@faker-js/faker');
 const TableImporter = require('./TableImporter');
 
 class PostsProductsImporter extends TableImporter {
@@ -25,7 +24,7 @@ class PostsProductsImporter extends TableImporter {
         const sortOrder = this.sortOrder;
         this.sortOrder = this.sortOrder + 1;
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             post_id: this.model.id,
             product_id: this.products[sortOrder].id,
             sort_order: this.sortOrder

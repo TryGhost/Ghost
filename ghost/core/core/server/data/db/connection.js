@@ -1,9 +1,11 @@
 const _ = require('lodash');
 const knex = require('knex');
 const os = require('os');
+const fs = require('fs');
 
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
+const errors = require('@tryghost/errors');
 let knexInstance;
 
 // @TODO:
@@ -45,6 +47,14 @@ function configure(dbConfig) {
         dbConfig.connection.timezone = 'Z';
         dbConfig.connection.charset = 'utf8mb4';
         dbConfig.connection.decimalNumbers = true;
+
+        if (process.env.REQUIRE_INFILE_STREAM) {
+            if (process.env.NODE_ENV === 'development' || process.env.ALLOW_INFILE_STREAM) {
+                dbConfig.connection.infileStreamFactory = path => fs.createReadStream(path);
+            } else {
+                throw new errors.InternalServerError({message: 'MySQL infile streaming is required to run the current process, but is not allowed. Run the script in development mode or set ALLOW_INFILE_STREAM=1.'});
+            }
+        }
     }
 
     return dbConfig;

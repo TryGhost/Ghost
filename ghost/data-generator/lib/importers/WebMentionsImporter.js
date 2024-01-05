@@ -14,7 +14,7 @@ class WebMentionsImporter extends TableImporter {
     }
 
     generate() {
-        const id = faker.database.mongodbObjectId();
+        const id = this.fastFakeObjectId();
 
         const author = `${faker.name.fullName()}`;
 

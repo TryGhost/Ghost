@@ -17,7 +17,7 @@ class BenefitsImporter extends TableImporter {
         const sixMonthsLater = new Date(blogStartDate);
         sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             name: name,
             slug: `${slugify(name)}-${faker.random.numeric(3)}`,
             created_at: faker.date.between(blogStartDate, sixMonthsLater)

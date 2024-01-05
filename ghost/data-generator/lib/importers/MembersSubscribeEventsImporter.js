@@ -41,10 +41,10 @@ class MembersSubscribeEventsImporter extends TableImporter {
         const newsletterId = this.newsletters[count % this.newsletters.length].id;
 
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             member_id: this.model.id,
             newsletter_id: newsletterId,
-            subscribed: true,
+            subscribed: 1,
             created_at: createdAt,
             source: 'member'
         };
