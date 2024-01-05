@@ -154,10 +154,7 @@ class EmailRecipientsImporter extends TableImporter {
     }
 
     generate() {
-        let timestamp = this.events[this.eventIndex];
-        const memberId = this.membersList[this.eventIndex];
-        this.eventIndex += 1;
-
+        let timestamp = this.events.pop();
         if (!timestamp) {
             return;
         }
@@ -169,6 +166,7 @@ class EmailRecipientsImporter extends TableImporter {
             timestamp = new Date();
         }
 
+        const memberId = this.membersList[this.events.length];
         const member = this.members.get(memberId);
 
         let status = emailStatus.none;
