@@ -1,5 +1,4 @@
 const TableImporter = require('./TableImporter');
-const {faker} = require('@faker-js/faker');
 
 class MembersPaidSubscriptionEventsImporter extends TableImporter {
     static table = 'members_paid_subscription_events';
@@ -11,8 +10,12 @@ class MembersPaidSubscriptionEventsImporter extends TableImporter {
 
     async import() {
         const subscriptions = await this.transaction.select('id', 'customer_id', 'plan_currency', 'plan_amount', 'created_at', 'plan_id', 'status', 'cancel_at_period_end', 'current_period_end').from('members_stripe_customers_subscriptions');
-        this.membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers');
+        const membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers');
 
+        this.membersStripeCustomers = new Map();
+        for (const customer of membersStripeCustomers) {
+            this.membersStripeCustomers.set(customer.customer_id, customer);
+        }
         await this.importForEach(subscriptions, 2);
     }
 
@@ -58,7 +61,7 @@ class MembersPaidSubscriptionEventsImporter extends TableImporter {
             return;
         }
 
-        const memberCustomer = this.membersStripeCustomers.find(c => c.customer_id === this.model.customer_id);
+        const memberCustomer = this.membersStripeCustomers.get(this.model.customer_id);
         const isMonthly = this.model.plan_interval === 'month';
 
         // Note that we need to recalculate the MRR, because it will be zero for inactive subscrptions
@@ -66,7 +69,7 @@ class MembersPaidSubscriptionEventsImporter extends TableImporter {
 
         // todo: implement + MRR and -MRR in case of inactive subscriptions
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             // TODO: Support expired / updated / cancelled events too
             type: this.count === 1 ? 'created' : this.getStatus(this.model),
             member_id: memberCustomer.member_id,

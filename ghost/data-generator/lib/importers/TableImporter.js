@@ -1,4 +1,14 @@
 const debug = require('@tryghost/debug')('TableImporter');
+const dateToDatabaseString = require('../utils/database-date');
+const path = require('path');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const fs = require('fs');
+const {luck} = require('../utils/random');
+const os = require('os');
+const errors = require('@tryghost/errors');
+const ObjectID = require('bson-objectid').default;
+
+let idIndex = 0;
 
 class TableImporter {
     /**
@@ -23,6 +33,12 @@ class TableImporter {
         this.transaction = transaction;
     }
 
+    fastFakeObjectId() {
+        // using faker.database.mongodbObjectId() is too slow (slow generation + MySQL is faster for ascending PRIMARY keys)
+        idIndex += 1;
+        return ObjectID.createFromTime(idIndex).toHexString();
+    }
+
     async #generateData(amount = this.defaultQuantity) {
         let data = [];
 
@@ -42,10 +58,7 @@ class TableImporter {
         debug(`${this.name} generated ${data.length} records in ${Date.now() - generateNow}ms`);
 
         if (data.length > 0) {
-            debug (`Importing ${data.length} records into ${this.name}`);
-            const now = Date.now();
-            await this.knex.batchInsert(this.name, data).transacting(this.transaction);
-            debug(`${this.name} imported ${data.length} records in ${Date.now() - now}ms`);
+            await this.batchInsert(data);
         }
     }
 
@@ -58,12 +71,16 @@ class TableImporter {
 
         debug (`Generating data for ${models.length} models x ${amount} for ${this.name}`);
         const now = Date.now();
+        let settingReferenceModel = 0;
 
         for (const model of models) {
+            let s = Date.now();
             this.setReferencedModel(model);
+            settingReferenceModel += Date.now() - s;
+
             let currentAmount = (typeof amount === 'function') ? amount() : amount;
             if (!Number.isInteger(currentAmount)) {
-                currentAmount = Math.floor(currentAmount) + ((Math.random() < currentAmount % 1) ? 1 : 0);
+                currentAmount = Math.floor(currentAmount) + luck((currentAmount % 1) * 100);
             }
 
             const generatedData = await this.#generateData(currentAmount);
@@ -72,13 +89,72 @@ class TableImporter {
             }
         }
 
-        debug(`${this.name} generated ${data.length} records in ${Date.now() - now}ms`);
+        debug(`${this.name} generated ${data.length} records in ${Date.now() - now}ms (${settingReferenceModel}ms setting reference model)`);
 
         if (data.length > 0) {
-            const now2 = Date.now();
-            await this.knex.batchInsert(this.name, data).transacting(this.transaction);
-            debug(`${this.name} imported ${data.length} records in ${Date.now() - now2}ms`);
+            await this.batchInsert(data);
         }
+    }
+
+    async batchInsert(data) {
+        // Write to CSV file
+        const rootFolder = os.tmpdir();
+        const filePath = path.join(rootFolder, `${this.name}.csv`);
+        let now = Date.now();
+
+        if (data.length > 1000) {
+            try {
+                await fs.promises.unlink(filePath);
+            } catch (e) {
+                // Ignore: file doesn't exist
+            }
+
+            const csvWriter = createCsvWriter({
+                path: filePath,
+                header: Object.keys(data[0]).map((key) => {
+                    return {id: key, title: key};
+                })
+            });
+
+            // Loop the data in chunks of 50.000 items
+            const batchSize = 50000;
+
+            // Otherwise we get a out of range error because csvWriter tries to create a string that is too long
+            for (let i = 0; i < data.length; i += batchSize) {
+                const slicedData = data.slice(i, i + batchSize);
+
+                // Map data to what MySQL expects in the CSV for values like booleans, null and dates
+                for (let j = 0; j < slicedData.length; j++) {
+                    const obj = slicedData[j];
+
+                    for (const [key, value] of Object.entries(obj)) {
+                        if (typeof value === 'boolean') {
+                            obj[key] = value ? 1 : 0;
+                        } else if (value instanceof Date) {
+                            obj[key] = dateToDatabaseString(value);
+                        } else if (value === null) {
+                            obj[key] = '\\N';
+                        }
+                    }
+                }
+                await csvWriter.writeRecords(slicedData);
+            }
+
+            debug(`${this.name} saved CSV import file in ${Date.now() - now}ms`);
+            now = Date.now();
+
+            // Import from CSV file
+            const [result] = await this.transaction.raw(`LOAD DATA LOCAL INFILE '${filePath}' INTO TABLE \`${this.name}\` FIELDS TERMINATED BY ',' ENCLOSED BY '"' IGNORE 1 LINES (${Object.keys(data[0]).map(d => '`' + d + '`').join(',')});`);
+            if (result.affectedRows !== data.length) {
+                throw new errors.InternalServerError({
+                    message: `CSV import failed: expected ${data.length} imported rows, got ${result.affectedRows}`
+                });
+            }
+        } else {
+            await this.knex.batchInsert(this.name, data).transacting(this.transaction);
+        }
+
+        debug(`${this.name} imported ${data.length} records in ${Date.now() - now}ms`);
     }
 
     /**
