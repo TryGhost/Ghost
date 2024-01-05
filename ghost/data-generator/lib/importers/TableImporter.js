@@ -8,6 +8,8 @@ const os = require('os');
 const errors = require('@tryghost/errors');
 const ObjectID = require('bson-objectid').default;
 
+let idIndex = 0;
+
 class TableImporter {
     /**
      * @type {object|undefined} model Referenced model when generating data
@@ -29,13 +31,12 @@ class TableImporter {
         this.name = name;
         this.knex = knex;
         this.transaction = transaction;
-        this.index = 0;
     }
 
     fastFakeObjectId() {
         // using faker.database.mongodbObjectId() is too slow (slow generation + MySQL is faster for ascending PRIMARY keys)
-        this.index += 1;
-        return ObjectID.createFromTime(this.index).toHexString();
+        idIndex += 1;
+        return ObjectID.createFromTime(idIndex).toHexString();
     }
 
     async #generateData(amount = this.defaultQuantity) {
