@@ -134,6 +134,7 @@ class EmailRecipientsImporter extends TableImporter {
             .map(memberSubscribeEvent => memberSubscribeEvent.member_id);
 
         this.events = faker.helpers.shuffle(this.eventCurve.slice(0, this.membersList.length));
+        this.eventIndex = 0;
 
         this.emailMeta = {
             // delievered and not opened
@@ -153,12 +154,21 @@ class EmailRecipientsImporter extends TableImporter {
     }
 
     generate() {
-        const timestamp = this.events.shift();
+        let timestamp = this.events[this.eventIndex];
+        const memberId = this.membersList[this.eventIndex];
+        this.eventIndex += 1;
+
         if (!timestamp) {
             return;
         }
 
-        const memberId = this.membersList[this.events.length]; // faster than shift
+        // The events are generated for a different time, so we need to move them to the batch time
+        timestamp = new Date(timestamp.getTime() - this.eventStartTimeUsed.getTime() + new Date(this.batch.updated_at).getTime());
+
+        if (timestamp > new Date()) {
+            timestamp = new Date();
+        }
+
         const member = this.members.get(memberId);
 
         let status = emailStatus.none;

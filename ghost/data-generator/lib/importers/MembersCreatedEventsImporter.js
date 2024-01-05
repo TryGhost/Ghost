@@ -33,8 +33,18 @@ class MembersCreatedEventsImporter extends TableImporter {
 
     generate() {
         const source = this.generateSource();
-        let attribution = {};
-        let referrer = {};
+
+        // We need to add all properties here already otherwise CSV imports won't know all the columns
+        let attribution = {
+            attribution_id: null,
+            attribution_type: null,
+            attribution_url: null
+        };
+        let referrer = {
+            referrer_source: null,
+            referrer_url: null,
+            referrer_medium: null
+        };
 
         if (source === 'member' && luck(30)) {
             const post = this.posts.find(p => p.visibility === 'public' && new Date(p.published_at) < new Date(this.model.created_at));

@@ -4,7 +4,7 @@ const {luck} = require('../utils/random');
 
 class MembersSubscriptionCreatedEventsImporter extends TableImporter {
     static table = 'members_subscription_created_events';
-    static dependencies = ['members_stripe_customers_subscriptions', 'posts', 'mentions'];
+    static dependencies = ['members_stripe_customers', 'members_stripe_customers_subscriptions', 'posts', 'mentions'];
 
     constructor(knex, transaction) {
         super(MembersSubscriptionCreatedEventsImporter.table, knex, transaction);
@@ -13,7 +13,7 @@ class MembersSubscriptionCreatedEventsImporter extends TableImporter {
     async import(quantity) {
         const membersStripeCustomersSubscriptions = await this.transaction.select('id', 'created_at', 'customer_id').from('members_stripe_customers_subscriptions');
         const membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers');
-        this.posts = await this.transaction.select('id', 'published_at', 'visibility', 'type', 'slug').from('posts').orderBy('published_at', 'desc');
+        this.posts = await this.transaction.select('id', 'published_at', 'visibility', 'type', 'slug').from('posts').whereNotNull('published_at').where('visibility', 'public').orderBy('published_at', 'desc');
         this.incomingRecommendations = await this.transaction.select('id', 'source', 'created_at').from('mentions');
 
         this.membersStripeCustomers = new Map();
@@ -24,8 +24,17 @@ class MembersSubscriptionCreatedEventsImporter extends TableImporter {
     }
 
     generate() {
-        let attribution = {};
-        let referrer = {};
+        // We need to add all properties here already otherwise CSV imports won't know all the columns
+        let attribution = {
+            attribution_id: null,
+            attribution_type: null,
+            attribution_url: null
+        };
+        let referrer = {
+            referrer_source: null,
+            referrer_url: null,
+            referrer_medium: null
+        };
 
         if (luck(30)) {
             const post = this.posts.find(p => p.visibility === 'public' && new Date(p.published_at) < new Date(this.model.created_at));
