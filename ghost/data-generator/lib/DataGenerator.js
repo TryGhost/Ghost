@@ -32,8 +32,7 @@ class DataGenerator {
         printDependencies,
         withDefault,
         seed,
-        quantities = {},
-        useCache = false
+        quantities = {}
     }) {
         this.knex = knex;
         this.tableList = tables || [];
@@ -46,7 +45,6 @@ class DataGenerator {
         this.printDependencies = printDependencies;
         this.seed = seed;
         this.quantities = quantities;
-        this.useCache = useCache;
     }
 
     sortTableList() {
@@ -240,9 +238,7 @@ class DataGenerator {
                     const amount = table.quantity ?? tableImporter.defaultQuantity;
                     this.logger.info('Importing content for table', table.name, amount ? `(${amount} records)` : '');
 
-                    if (!this.useCache || !(await tableImporter.reuseCacheIfPossible(table.quantity ?? undefined))) {
-                        await tableImporter.import(table.quantity ?? undefined);
-                    }
+                    await tableImporter.import(table.quantity ?? undefined);
                 }
             } finally {
                 if (this.seed) {
