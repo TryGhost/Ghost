@@ -104,6 +104,11 @@ class EmailRecipientsImporter extends TableImporter {
             if (!this.membersSubscribeEventsCreatedAtsByNewsletterId.has(memberSubscribeEvent.newsletter_id)) {
                 this.membersSubscribeEventsCreatedAtsByNewsletterId.set(memberSubscribeEvent.newsletter_id, []);
             }
+
+            if (!(memberSubscribeEvent.created_at instanceof Date)) {
+                // SQLite fix
+                memberSubscribeEvent.created_at = new Date(memberSubscribeEvent.created_at);
+            }
             this.membersSubscribeEventsCreatedAtsByNewsletterId.get(memberSubscribeEvent.newsletter_id).push(memberSubscribeEvent.created_at.getTime());
         }
 

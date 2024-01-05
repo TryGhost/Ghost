@@ -1,5 +1,3 @@
-const {faker} = require('@faker-js/faker');
-
 class JsonImporter {
     constructor(knex, transaction) {
         this.knex = knex;

@@ -14,7 +14,7 @@ class ProductsImporter extends TableImporter {
 
     async import(quantity = this.defaultQuantity) {
         // TODO: Add random products if quantity != 4
-        this.names = ['Free', 'Bronze', 'Silver', 'Gold'];
+        this.names = ['Free', 'Bronze', 'Silver', 'Gold'].reverse();
         this.count = 0;
 
         await super.import(quantity);

@@ -1,4 +1,3 @@
-const {faker} = require('@faker-js/faker');
 const TableImporter = require('./TableImporter');
 
 class PostsProductsImporter extends TableImporter {

@@ -1,5 +1,4 @@
 const TableImporter = require('./TableImporter');
-const {faker} = require('@faker-js/faker');
 
 class MembersPaidSubscriptionEventsImporter extends TableImporter {
     static table = 'members_paid_subscription_events';
