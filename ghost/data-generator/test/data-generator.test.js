@@ -93,7 +93,6 @@ describe('Data Generator', function () {
         try {
             return await dataGenerator.importData();
         } catch (err) {
-            console.error(err);
             (false).should.eql(true, err.message);
         }
     });
