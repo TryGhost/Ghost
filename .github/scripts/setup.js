@@ -3,6 +3,7 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const chalk = require('chalk');
+const inquirer = require('inquirer');
 
 /**
  * Run a command and stream output to the console
@@ -91,17 +92,28 @@ async function runAndStream(command, args, options) {
         }
     } else {
         if (isUsingDocker) {
-            console.log(chalk.yellow(`MySQL is running via Docker, resetting Docker container`));
+            const yesAll = process.argv.includes('-y');
+            const noAll = process.argv.includes('-n');
+            const {confirmed} =
+                yesAll ? {confirmed: true}
+                : (
+                    noAll ? {confirmed: false}
+                    : await inquirer.prompt({name: 'confirmed', type:'confirm', message: 'MySQL is running via Docker, do you want to reset the Docker container? This will delete all existing data.', default: false})
+                );
 
-            try {
-                await runAndStream('yarn', ['docker:reset'], {cwd: path.join(__dirname, '../../')});
-                resetData = true;
-            } catch (err) {
-                console.error(chalk.red('Failed to run MySQL Docker container'), err);
-                console.error(chalk.red('Hint: is Docker installed and running?'));
+            if (confirmed) {
+                console.log(chalk.yellow(`Resetting Docker container`));
+
+                try {
+                    await runAndStream('yarn', ['docker:reset'], {cwd: path.join(__dirname, '../../')});
+                    resetData = true;
+                } catch (err) {
+                    console.error(chalk.red('Failed to run MySQL Docker container'), err);
+                    console.error(chalk.red('Hint: is Docker installed and running?'));
+                }
             }
         } else {
-            console.log(chalk.green(`MySQL already configured, skipping Docker setup`));
+            console.log(chalk.green(`MySQL already configured locally. Stop your local database and delete your "database" configuration in config.local.json to switch to Docker.`));
         }
     }
 
@@ -109,7 +121,7 @@ async function runAndStream(command, args, options) {
     await runAndStream('yarn', ['knex-migrator', 'init'], {cwd: coreFolder});
 
     if (resetData) {
-        console.log(chalk.blue(`Running data generator`));
+        console.log(chalk.blue(`Resetting all data`));
         await runAndStream('yarn', ['reset:data'], {cwd: rootFolder});
     }
 })();
