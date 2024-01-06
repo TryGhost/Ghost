@@ -30,7 +30,7 @@
     "fix": "yarn cache clean && rimraf -g '**/node_modules' && yarn",
     "knex-migrator": "yarn workspace ghost run knex-migrator",
     "setup": "yarn && git submodule update --init && NODE_ENV=development node .github/scripts/setup.js",
-    "reset:data": "cd ghost/core && node index.js generate-data --clear-database --quantities members:100,posts:1 --seed 123",
+    "reset:data": "cd ghost/core && node index.js generate-data --clear-database --quantities members:100000,posts:500 --seed 123",
     "docker:reset": "docker-compose -f .github/scripts/docker-compose.yml down -v && docker-compose -f .github/scripts/docker-compose.yml up -d --wait",
     "lint": "nx run-many -t lint",
     "test": "nx run-many -t test",
@@ -117,6 +117,7 @@
     "nx": "16.8.1",
     "rimraf": "5.0.5",
     "ts-node": "10.9.2",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "inquirer": "8.2.6"
   }
 }

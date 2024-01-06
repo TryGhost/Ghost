@@ -29,7 +29,7 @@
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "15.2.0",
-    "sqlite3": "5.1.6"
+    "sqlite3": "5.1.7"
   },
   "dependencies": {
     "moment": "2.29.3"

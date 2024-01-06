@@ -32,6 +32,8 @@ module.exports = class DataGeneratorCommand extends Command {
     }
 
     async handle(argv = {}) {
+        // If we can't stream, throw an error while creating the connection
+        process.env.REQUIRE_INFILE_STREAM = '1';
         const knex = require('../server/data/db/connection');
 
         const tables = (argv.tables ? argv.tables.split(',') : []).map(table => ({

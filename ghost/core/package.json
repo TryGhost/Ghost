@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.75.2",
+  "version": "5.75.3",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -200,7 +200,7 @@
     "juice": "9.1.0",
     "keypair": "1.0.4",
     "knex": "2.4.2",
-    "knex-migrator": "5.1.6",
+    "knex-migrator": "5.1.7",
     "lib0": "0.2.88",
     "lodash": "4.17.21",
     "luxon": "3.4.4",
@@ -225,9 +225,9 @@
     "yjs": "13.6.10"
   },
   "optionalDependencies": {
-    "@sentry/profiling-node": "^1.3.2",
+    "@sentry/profiling-node": "1.3.2",
     "@tryghost/html-to-mobiledoc": "3.0.1",
-    "sqlite3": "5.1.6"
+    "sqlite3": "5.1.7"
   },
   "devDependencies": {
     "@actions/core": "1.10.1",
@@ -250,7 +250,7 @@
     "mock-knex": "TryGhost/mock-knex#d8b93b1c20d4820323477f2c60db016ab3e73192",
     "nock": "13.3.3",
     "papaparse": "5.3.2",
-    "postcss": "8.4.32",
+    "postcss": "8.4.33",
     "postcss-cli": "10.1.0",
     "rewire": "6.0.0",
     "should": "13.2.3",
