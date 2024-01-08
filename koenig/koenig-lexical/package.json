@@ -103,7 +103,7 @@
     "eslint-plugin-tailwindcss": "3.13.1",
     "eventemitter3": "^5.0.0",
     "fast-average-color": "^9.3.0",
-    "jsdom": "23.1.0",
+    "jsdom": "23.2.0",
     "lexical": "0.12.2",
     "lodash-es": "^4.17.21",
     "luxon": "^3.3.0",
