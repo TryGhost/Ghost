@@ -81,7 +81,7 @@
     "@tryghost/kg-default-transforms": "^1.0.5",
     "@tryghost/kg-markdown-html-renderer": "^7.0.1",
     "@tryghost/kg-simplemde": "^3.0.1",
-    "@types/react": "18.2.46",
+    "@types/react": "18.2.47",
     "@types/react-dom": "18.2.18",
     "@uiw/react-codemirror": "^4.19.6",
     "@vitejs/plugin-react": "4.2.1",
