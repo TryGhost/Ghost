@@ -4922,10 +4922,10 @@
     "@sentry/utils" "7.86.0"
     https-proxy-agent "^5.0.0"
 
-"@sentry/profiling-node@1.3.2":
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@sentry/profiling-node/-/profiling-node-1.3.2.tgz#68b802b6f4d6730c653d0120ebb688a99cfc3493"
-  integrity sha512-Dm2FmR0+BYrTm3YSmbCxjeklAsXZecOwWarZQdrCQniPYlxS9GPgWv1P+J78+CrHZ4IpoIvnlRppGPMrJwPXkw==
+"@sentry/profiling-node@1.3.3":
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/@sentry/profiling-node/-/profiling-node-1.3.3.tgz#54c18fbbe20790f0e607048a56afcdd231b06c72"
+  integrity sha512-GR/5MvR6rY/MvJNk/5UJs842eMDler3iyRsi/VapZGnuVm/25LRW1jUhjtiBFMpeSbDiQINGGtnEvQT36egQsw==
   dependencies:
     detect-libc "^2.0.2"
     node-abi "^3.52.0"
