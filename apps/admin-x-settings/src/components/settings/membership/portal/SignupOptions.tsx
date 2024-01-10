@@ -1,3 +1,4 @@
+import LookAndFeel from './LookAndFeel';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {CheckboxGroup, CheckboxProps, Form, HtmlField, Select, SelectOption, Toggle} from '@tryghost/admin-x-design-system';
@@ -117,46 +118,47 @@ const SignupOptions: React.FC<{
         });
     }
 
-    return <div className='mt-7'><Form>
-        <Toggle
-            checked={Boolean(portalName)}
-            disabled={isDisabled}
-            label='Display name in signup form'
-            labelStyle='heading'
-            onChange={e => updateSetting('portal_name', e.target.checked)}
-        />
+    return <div className='mt-7'>
+        <Form title={hasPortalImprovements ? 'Signup options' : undefined} >
+            <Toggle
+                checked={Boolean(portalName)}
+                disabled={isDisabled}
+                label='Display name in signup form'
+                labelStyle='heading'
+                onChange={e => updateSetting('portal_name', e.target.checked)}
+            />
 
-        <CheckboxGroup
-            checkboxes={tiersCheckboxes}
-            title='Tiers available at signup'
-        />
+            <CheckboxGroup
+                checkboxes={tiersCheckboxes}
+                title='Tiers available at signup'
+            />
 
-        {isStripeEnabled && localTiers.some(tier => tier.visibility === 'public') && (
-            <>
-                <CheckboxGroup
-                    checkboxes={[
-                        {
-                            checked: portalPlans.includes('monthly'),
-                            disabled: isDisabled,
-                            label: 'Monthly',
-                            value: 'monthly',
-                            onChange: () => {
-                                togglePlan('monthly');
+            {isStripeEnabled && localTiers.some(tier => tier.visibility === 'public') && (
+                <>
+                    <CheckboxGroup
+                        checkboxes={[
+                            {
+                                checked: portalPlans.includes('monthly'),
+                                disabled: isDisabled,
+                                label: 'Monthly',
+                                value: 'monthly',
+                                onChange: () => {
+                                    togglePlan('monthly');
+                                }
+                            },
+                            {
+                                checked: portalPlans.includes('yearly'),
+                                disabled: isDisabled,
+                                label: 'Yearly',
+                                value: 'yearly',
+                                onChange: () => {
+                                    togglePlan('yearly');
+                                }
                             }
-                        },
-                        {
-                            checked: portalPlans.includes('yearly'),
-                            disabled: isDisabled,
-                            label: 'Yearly',
-                            value: 'yearly',
-                            onChange: () => {
-                                togglePlan('yearly');
-                            }
-                        }
-                    ]}
-                    title='Prices available at signup'
-                />
-                {(hasPortalImprovements && (portalPlans.includes('yearly') && portalPlans.includes('monthly'))) &&
+                        ]}
+                        title='Prices available at signup'
+                    />
+                    {(hasPortalImprovements && (portalPlans.includes('yearly') && portalPlans.includes('monthly'))) &&
                     <Select
                         options={defaultPlanOptions}
                         selectedOption={defaultPlanOptions.find(option => option.value === portalDefaultPlan)}
@@ -165,28 +167,32 @@ const SignupOptions: React.FC<{
                             updateSetting('portal_default_plan', option?.value ?? 'yearly');
                         }}
                     />
-                }
-            </>
-        )}
+                    }
+                </>
+            )}
 
-        <HtmlField
-            error={Boolean(errors.portal_signup_terms_html)}
-            hint={errors.portal_signup_terms_html || <>Recommended: <strong>115</strong> characters. You&apos;ve used <strong className="text-green">{signupTermsLength}</strong></>}
-            nodes='MINIMAL_NODES'
-            placeholder={`By signing up, I agree to receive emails from ...`}
-            title='Display notice at signup'
-            value={portalSignupTermsHtml?.toString()}
-            onChange={html => updateSetting('portal_signup_terms_html', html)}
-        />
+            <HtmlField
+                error={Boolean(errors.portal_signup_terms_html)}
+                hint={errors.portal_signup_terms_html || <>Recommended: <strong>115</strong> characters. You&apos;ve used <strong className="text-green">{signupTermsLength}</strong></>}
+                nodes='MINIMAL_NODES'
+                placeholder={`By signing up, I agree to receive emails from ...`}
+                title='Display notice at signup'
+                value={portalSignupTermsHtml?.toString()}
+                onChange={html => updateSetting('portal_signup_terms_html', html)}
+            />
 
-        {portalSignupTermsHtml?.toString() && <Toggle
-            checked={Boolean(portalSignupCheckboxRequired)}
-            disabled={isDisabled}
-            label='Require agreement'
-            labelStyle='heading'
-            onChange={e => updateSetting('portal_signup_checkbox_required', e.target.checked)}
-        />}
-    </Form></div>;
+            {portalSignupTermsHtml?.toString() && <Toggle
+                checked={Boolean(portalSignupCheckboxRequired)}
+                disabled={isDisabled}
+                label='Require agreement'
+                labelStyle='heading'
+                onChange={e => updateSetting('portal_signup_checkbox_required', e.target.checked)}
+            />}
+        </Form>
+        {hasPortalImprovements && <Form gap='sm' margins='lg' title='Portal button'>
+            <LookAndFeel localSettings={localSettings} updateSetting={updateSetting} />
+        </Form>}
+    </div>;
 };
 
 export default SignupOptions;

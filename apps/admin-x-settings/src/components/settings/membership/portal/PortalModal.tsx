@@ -4,6 +4,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import PortalPreview from './PortalPreview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './SignupOptions';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useQueryParams from '../../../../hooks/useQueryParams';
 import {ConfirmationModal, PreviewModalContent, Tab, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -23,7 +24,8 @@ const Sidebar: React.FC<{
     setError: (key: string, error: string | undefined) => void
 }> = ({localSettings, updateSetting, localTiers, updateTier, errors, setError}) => {
     const [selectedTab, setSelectedTab] = useState('signupOptions');
-
+    const hasPortalImprovements = useFeatureFlag('portalImprovements');
+    
     const tabs: Tab[] = [
         {
             id: 'signupOptions',
@@ -44,7 +46,7 @@ const Sidebar: React.FC<{
         },
         {
             id: 'accountPage',
-            title: 'Account page',
+            title: 'Support',
             contents: <AccountPage errors={errors} setError={setError} updateSetting={updateSetting} />
         }
     ];

@@ -222,7 +222,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     />}
                     <TextField
                         autoComplete='off'
-                        autoFocus={isFreeTier}
+                        autoFocus={!hasPortalImprovements && isFreeTier}
                         placeholder={isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content'}
                         title='Description'
                         value={formState.description || ''}
