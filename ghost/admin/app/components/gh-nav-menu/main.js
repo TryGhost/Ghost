@@ -33,7 +33,6 @@ export default class Main extends Component.extend(ShortcutsMixin) {
 
     iconStyle = '';
     iconClass = '';
-    memberCountLoading = true;
     shortcuts = null;
 
     @match('router.currentRouteName', /^settings\.integration/)
@@ -69,10 +68,6 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     didReceiveAttrs() {
         super.didReceiveAttrs(...arguments);
         this._setIconStyle();
-
-        if (this.session.user && this.session.user.isAdmin) {
-            this._loadMemberCountsTask.perform();
-        }
     }
 
     didInsertElement() {
@@ -113,17 +108,6 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     toggleExploreWindow() {
         this.explore.openExploreWindow();
     }
-
-    @task(function* () {
-        try {
-            this.set('memberCountLoading', true);
-            yield this.membersCountCache.count({});
-            this.set('memberCountLoading', false);
-        } catch (e) {
-            return false;
-        }
-    })
-        _loadMemberCountsTask;
 
     _setIconStyle() {
         let icon = this.icon;
