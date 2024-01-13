@@ -283,8 +283,6 @@ export default class PublishOptions {
     *fetchRequiredDataTask() {
         const promises = [];
 
-        console.log('fetchRequiredDataTask');
-
         // total # of members - used to enable/disable email
         // Only Admins/Owners have permission to browse members and get a count
         // for Editors/Authors set member count to 1 so email isn't disabled for not having any members
