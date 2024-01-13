@@ -13,24 +13,43 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
     }
 
     async import() {
-        const membersProducts = await this.transaction.select('member_id', 'product_id').from('members_products');
-        this.members = await this.transaction.select('id', 'status', 'created_at').from('members');//.where('status', 'paid');
-        const membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers');
+        let offset = 0;
+        let limit = 5000;
         this.products = await this.transaction.select('id', 'name').from('products').whereNot('type', 'free');
         this.stripeProducts = await this.transaction.select('id', 'product_id', 'stripe_product_id').from('stripe_products');
         this.stripePrices = await this.transaction.select('id', 'nickname', 'stripe_product_id', 'stripe_price_id', 'amount', 'interval', 'currency').from('stripe_prices');
 
-        this.membersStripeCustomers = new Map();
-        for (const customer of membersStripeCustomers) {
-            this.membersStripeCustomers.set(customer.member_id, customer);
-        }
+        while (true) {
+            const membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers').limit(limit).offset(offset);
 
-        this.membersProducts = new Map();
-        for (const product of membersProducts) {
-            this.membersProducts.set(product.member_id, product);
-        }
+            if (membersStripeCustomers.length === 0) {
+                break;
+            }
 
-        await this.importForEach(this.members, 2);
+            this.members = await this.transaction.select('id', 'status', 'created_at').from('members').whereIn('id', membersStripeCustomers.map(m => m.member_id));
+
+            if (this.members.length === 0) {
+                continue;
+            }
+
+            const membersProducts = await this.transaction.select('member_id', 'product_id').from('members_products').whereIn('member_id', this.members.map(member => member.id));
+            //const membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers').whereIn('member_id', this.members.map(member => member.id));
+
+            this.membersStripeCustomers = new Map();
+            for (const customer of membersStripeCustomers) {
+                this.membersStripeCustomers.set(customer.member_id, customer);
+            }
+
+            this.membersProducts = new Map();
+
+            for (const product of membersProducts) {
+                this.membersProducts.set(product.member_id, product);
+            }
+
+            await this.importForEach(this.members, 1.2);
+
+            offset += limit;
+        }
     }
 
     setReferencedModel(model) {

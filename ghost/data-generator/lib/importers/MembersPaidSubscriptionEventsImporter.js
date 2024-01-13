@@ -9,14 +9,25 @@ class MembersPaidSubscriptionEventsImporter extends TableImporter {
     }
 
     async import() {
-        const subscriptions = await this.transaction.select('id', 'customer_id', 'plan_currency', 'plan_amount', 'created_at', 'plan_id', 'status', 'cancel_at_period_end', 'current_period_end').from('members_stripe_customers_subscriptions');
-        const membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers');
+        let offset = 0;
+        let limit = 1000;
 
-        this.membersStripeCustomers = new Map();
-        for (const customer of membersStripeCustomers) {
-            this.membersStripeCustomers.set(customer.customer_id, customer);
+        while (true) {
+            const subscriptions = await this.transaction.select('id', 'customer_id', 'plan_currency', 'plan_amount', 'created_at', 'plan_id', 'status', 'cancel_at_period_end', 'current_period_end').from('members_stripe_customers_subscriptions').limit(limit).offset(offset);
+
+            if (subscriptions.length === 0) {
+                break;
+            }
+            const membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers').whereIn('customer_id', subscriptions.map(subscription => subscription.customer_id));
+
+            this.membersStripeCustomers = new Map();
+            for (const customer of membersStripeCustomers) {
+                this.membersStripeCustomers.set(customer.customer_id, customer);
+            }
+            await this.importForEach(subscriptions, 2);
+
+            offset += limit;
         }
-        await this.importForEach(subscriptions, 2);
     }
 
     setReferencedModel(model) {

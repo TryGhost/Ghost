@@ -9,9 +9,20 @@ class MembersNewslettersImporter extends TableImporter {
     }
 
     async import(quantity) {
-        const membersSubscribeEvents = await this.transaction.select('member_id', 'newsletter_id').from('members_subscribe_events');
+        let offset = 0;
+        let limit = 100000;
 
-        await this.importForEach(membersSubscribeEvents, quantity ? quantity / membersSubscribeEvents.length : 1);
+        while (true) {
+            const membersSubscribeEvents = await this.transaction.select('member_id', 'newsletter_id').from('members_subscribe_events').limit(limit).offset(offset);
+
+            if (membersSubscribeEvents.length === 0) {
+                break;
+            }
+
+            await this.importForEach(membersSubscribeEvents, quantity ? quantity / membersSubscribeEvents.length : 1);
+
+            offset += limit;
+        }
     }
 
     generate() {

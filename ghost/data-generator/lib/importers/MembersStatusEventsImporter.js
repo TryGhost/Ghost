@@ -11,9 +11,19 @@ class MembersStatusEventsImporter extends TableImporter {
     }
 
     async import(quantity) {
-        const members = await this.transaction.select('id', 'created_at', 'status').from('members');
+        let offset = 0;
+        let limit = 100000;
 
-        await this.importForEach(members, quantity ? quantity / members.length : 2);
+        while (true) {
+            const members = await this.transaction.select('id', 'created_at', 'status').from('members').limit(limit).offset(offset);
+
+            if (members.length === 0) {
+                break;
+            }
+
+            await this.importForEach(members, quantity ? quantity / members.length : 2);
+            offset += limit;
+        }
     }
 
     setReferencedModel(model) {

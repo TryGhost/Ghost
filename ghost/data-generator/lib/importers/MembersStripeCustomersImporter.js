@@ -10,9 +10,23 @@ class MembersStripeCustomersImporter extends TableImporter {
     }
 
     async import(quantity) {
-        const members = await this.transaction.select('id', 'name', 'email', 'created_at', 'status').from('members');
+        if (quantity === 0) {
+            return;
+        }
 
-        await this.importForEach(members, quantity ? quantity / members.length : 1);
+        let offset = 0;
+        let limit = 100000;
+
+        while (true) {
+            const members = await this.transaction.select('id', 'name', 'email', 'created_at', 'status').from('members').limit(limit).offset(offset);
+
+            if (members.length === 0) {
+                break;
+            }
+
+            await this.importForEach(members, quantity ? quantity / members.length : 1);
+            offset += limit;
+        }
     }
 
     generate() {
@@ -21,7 +35,7 @@ class MembersStripeCustomersImporter extends TableImporter {
             // The number should increase the older the member is
 
             const daysSinceMemberCreated = Math.floor((new Date() - new Date(this.model.created_at)) / (1000 * 60 * 60 * 24));
-            const shouldHaveStripeCustomer = faker.datatype.number({min: 0, max: 100}) < Math.max(Math.min(daysSinceMemberCreated / 30, 30), 5);
+            const shouldHaveStripeCustomer = faker.datatype.number({min: 0, max: 100}) < Math.max(Math.min(daysSinceMemberCreated / 60, 15), 2);
 
             if (!shouldHaveStripeCustomer) {
                 return;

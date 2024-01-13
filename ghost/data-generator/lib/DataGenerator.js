@@ -184,77 +184,79 @@ class DataGenerator {
             process.exit(0);
         }
 
-        await this.knex.transaction(async (transaction) => {
-            // Performance improvements
-            if (!DatabaseInfo.isSQLite(this.knex)) {
-                await transaction.raw('ALTER INSTANCE DISABLE INNODB REDO_LOG;');
-                await transaction.raw('SET FOREIGN_KEY_CHECKS=0;');
-                await transaction.raw('SET unique_checks=0;');
-                await transaction.raw('SET autocommit=0;');
-                await transaction.raw('SET GLOBAL local_infile=1;');
+        const transaction = this.knex;
+
+        //await this.knex.transaction(async (transaction) => {
+        // Performance improvements
+        if (!DatabaseInfo.isSQLite(this.knex)) {
+            await transaction.raw('ALTER INSTANCE DISABLE INNODB REDO_LOG;');
+            await transaction.raw('SET FOREIGN_KEY_CHECKS=0;');
+            await transaction.raw('SET unique_checks=0;');
+            //await transaction.raw('SET autocommit=0;');
+            await transaction.raw('SET GLOBAL local_infile=1;');
+        }
+
+        if (this.willClearData) {
+            await this.clearData(transaction);
+        }
+
+        if (this.useBaseDataPack) {
+            await this.importBasePack(transaction);
+        }
+
+        // Set quantities for tables
+        for (const table of this.tableList) {
+            if (this.quantities[table.name] !== undefined) {
+                table.quantity = this.quantities[table.name];
             }
+        }
 
-            if (this.willClearData) {
-                await this.clearData(transaction);
-            }
+        const cryptoRandomBytes = crypto.randomBytes;
 
-            if (this.useBaseDataPack) {
-                await this.importBasePack(transaction);
-            }
-
-            // Set quantities for tables
-            for (const table of this.tableList) {
-                if (this.quantities[table.name] !== undefined) {
-                    table.quantity = this.quantities[table.name];
-                }
-            }
-
-            const cryptoRandomBytes = crypto.randomBytes;
-
-            if (this.seed) {
+        if (this.seed) {
             // The probality distributions library uses crypto.randomBytes, which we can't seed, so we need to override it
-                crypto.randomBytes = (size) => {
-                    const buffer = Buffer.alloc(size);
-                    for (let i = 0; i < size; i++) {
-                        buffer[i] = Math.floor(faker.datatype.number({min: 0, max: 255}));
-                    }
-                    return buffer;
-                };
-            }
-
-            try {
-                for (const table of this.tableList) {
-                    if (this.seed) {
-                    // We reset the seed for every table, so the chosen tables don't affect the data and changes in one importer don't affect the others
-                        faker.seed(this.seed);
-                        americanFaker.seed(this.seed);
-                    }
-
-                    // Add all common options to every importer, whether they use them or not
-                    const tableImporter = new table.importer(this.knex, transaction, {
-                        baseUrl: this.baseUrl
-                    });
-
-                    const amount = table.quantity ?? tableImporter.defaultQuantity;
-                    this.logger.info('Importing content for table', table.name, amount ? `(${amount} records)` : '');
-
-                    await tableImporter.import(table.quantity ?? undefined);
+            crypto.randomBytes = (size) => {
+                const buffer = Buffer.alloc(size);
+                for (let i = 0; i < size; i++) {
+                    buffer[i] = Math.floor(faker.datatype.number({min: 0, max: 255}));
                 }
-            } finally {
-                if (this.seed) {
-                // Revert crypto.randomBytes to the original function
-                    crypto.randomBytes = cryptoRandomBytes;
-                }
-            }
+                return buffer;
+            };
+        }
 
-            // Finalise all tables - uses new table importer objects to avoid keeping all data in memory
+        try {
             for (const table of this.tableList) {
+                if (this.seed) {
+                    // We reset the seed for every table, so the chosen tables don't affect the data and changes in one importer don't affect the others
+                    faker.seed(this.seed);
+                    americanFaker.seed(this.seed);
+                }
+
+                // Add all common options to every importer, whether they use them or not
                 const tableImporter = new table.importer(this.knex, transaction, {
                     baseUrl: this.baseUrl
                 });
-                await tableImporter.finalise();
+
+                const amount = table.quantity ?? tableImporter.defaultQuantity;
+                this.logger.info('Importing content for table', table.name, amount ? `(${amount} records)` : '');
+
+                await tableImporter.import(table.quantity ?? undefined);
             }
-        }, {isolationLevel: 'read committed'});
+        } finally {
+            if (this.seed) {
+                // Revert crypto.randomBytes to the original function
+                crypto.randomBytes = cryptoRandomBytes;
+            }
+        }
+
+        // Finalise all tables - uses new table importer objects to avoid keeping all data in memory
+        for (const table of this.tableList) {
+            const tableImporter = new table.importer(this.knex, transaction, {
+                baseUrl: this.baseUrl
+            });
+            await tableImporter.finalise();
+        }
+        //}, {isolationLevel: 'read committed'});
 
         this.logger.info(`Completed data import in ${((Date.now() - start) / 1000).toFixed(1)}s`);
     }
