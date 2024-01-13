@@ -13,7 +13,6 @@ const importers = require('./importers').reduce((acc, val) => {
     acc[val.table] = val;
     return acc;
 }, {});
-const schema = require('../../core/core/server/data/schema').tables;
 
 class DataGenerator {
     /**
@@ -25,6 +24,7 @@ class DataGenerator {
     constructor({
         knex,
         tables,
+        schemaTables,
         clearDatabase = false,
         baseDataPack = '',
         baseUrl,
@@ -36,6 +36,7 @@ class DataGenerator {
     }) {
         this.knex = knex;
         this.tableList = tables || [];
+        this.schemaTables = schemaTables;
         this.willClearData = clearDatabase;
         this.useBaseDataPack = baseDataPack !== '';
         this.baseDataPack = baseDataPack;
@@ -53,7 +54,7 @@ class DataGenerator {
             table.importer = importers[table.name];
 
             // eslint-disable-next-line no-unused-vars
-            table.dependencies = Object.entries(schema[table.name]).reduce((acc, [_col, data]) => {
+            table.dependencies = Object.entries(this.schemaTables[table.name]).reduce((acc, [_col, data]) => {
                 if (data.references) {
                     const referencedTable = data.references.split('.')[0];
                     // The ghost_subscriptions_id property has a foreign key to the subscriptions table, but we don't use that table yet atm, so don't add it as a dependency
