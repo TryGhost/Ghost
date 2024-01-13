@@ -85,6 +85,7 @@ export default class DashboardStatsService extends Service {
     @service membersCountCache;
     @service settings;
     @service membersUtils;
+    @service membersStats;
 
     /**
      * @type {?SiteStatus} Contains information on what graphs need to be shown
@@ -523,9 +524,8 @@ export default class DashboardStatsService extends Service {
             this.memberCountStats = this.dashboardMocks.memberCountStats;
             return;
         }
-
-        let statsUrl = this.ghostPaths.url.api('stats/member_count');
-        let stats = yield this.ajax.request(statsUrl);
+        
+        const stats = yield this.membersStats.fetchMemberCounts();
         this.memberCountStats = stats.stats.map((d) => {
             return {
                 ...d,
