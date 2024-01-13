@@ -52,9 +52,13 @@ export default class MembersStatsService extends Service {
     }
 
     fetchMemberCount() {
-        let staleData = this._lastFetchedMemberCounts && (new Date() - this._lastFetchedMemberCounts) > ONE_MINUTE;
+        // if already running, return existing promise
+        if (this._fetchMemberCountsTask.isRunning) {
+            return this._fetchMemberCountsTask.last;
+        }
 
         // return existing stats unless data is > 1 min old
+        let staleData = this._lastFetchedMemberCounts && (new Date() - this._lastFetchedMemberCounts) > ONE_MINUTE;
         if (this.totalMemberCount && !this._forceRefresh && !staleData && this._fetchMemberCountsTask.last) {
             return this._fetchMemberCountsTask.last;
         }
