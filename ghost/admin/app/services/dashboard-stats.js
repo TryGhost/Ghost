@@ -525,7 +525,7 @@ export default class DashboardStatsService extends Service {
             return;
         }
         
-        const stats = yield this.membersStats.fetchMemberCounts();
+        const stats = yield this.membersStats.fetchMemberCount();
         this.memberCountStats = stats.stats.map((d) => {
             return {
                 ...d,
