@@ -17,9 +17,7 @@ export default class GhMembersSegmentCountComponent extends Component {
         this.fetchSegmentTotalTask.perform();
 
         const filter = this.args.enforcedFilter || undefined;
-
-        const members = yield this.store.query('member', {limit: 1, filter});
-        this.total = members.meta.pagination.total;
+        this.total = yield this.membersStats.count({filter});
     }
 
     @task({group: 'fetchTasks'})

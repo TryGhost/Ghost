@@ -27,6 +27,7 @@ class HostLimitError extends LimitError {
 export default class LimitsService extends Service {
     @service store;
     @service membersStats;
+    @service membersCountCache;
 
     @inject config;
 
@@ -93,10 +94,7 @@ export default class LimitsService extends Service {
     }
 
     async getMembersCount() {
-        const members = await this.store.query('member', {limit: 1});
-        const total = members.meta.pagination.total;
-
-        return total;
+        return this.membersCountCache.count({});
     }
 
     async getNewslettersCount() {
