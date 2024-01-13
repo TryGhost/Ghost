@@ -11,6 +11,10 @@ class MembersStatusEventsImporter extends TableImporter {
     }
 
     async import(quantity) {
+        if (quantity === 0) {
+            return;
+        }
+
         let offset = 0;
         let limit = 100000;
 
