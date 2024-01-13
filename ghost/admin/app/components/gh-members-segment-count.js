@@ -6,6 +6,7 @@ import {tracked} from '@glimmer/tracking';
 export default class GhMembersSegmentCountComponent extends Component {
     @service store;
     @service session;
+    @service membersCountCache;
 
     @tracked total = 0;
     @tracked segmentTotal = 0;
@@ -17,7 +18,7 @@ export default class GhMembersSegmentCountComponent extends Component {
         this.fetchSegmentTotalTask.perform();
 
         const filter = this.args.enforcedFilter || undefined;
-        this.total = yield this.membersStats.count({filter});
+        this.total = yield this.membersCountCache.count({filter});
     }
 
     @task({group: 'fetchTasks'})
