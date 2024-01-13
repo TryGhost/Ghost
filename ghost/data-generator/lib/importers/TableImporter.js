@@ -7,6 +7,7 @@ const {luck} = require('../utils/random');
 const os = require('os');
 const errors = require('@tryghost/errors');
 const {faker} = require('@faker-js/faker');
+const crypto = require('crypto');
 
 let idIndex = 500000;
 
@@ -36,7 +37,8 @@ class TableImporter {
     fastFakeObjectId() {
         // using faker.database.mongodbObjectId() is too slow (slow generation + MySQL is faster for ascending PRIMARY keys)
         idIndex += 1;
-        return faker.database.mongodbObjectId();
+
+        return `00000000` + crypto.randomBytes(8).toString('hex');
     }
 
     async #generateData(amount = this.defaultQuantity) {
