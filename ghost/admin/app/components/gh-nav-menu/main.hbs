@@ -100,19 +100,15 @@
                         <li class="relative">
                             {{#if (eq this.router.currentRouteName "members.index")}}
                                 <LinkTo @route="members" @current-when="members member member.new" @query={{reset-query-params "members.index"}} data-test-nav="members">{{svg-jar "members"}}Members
-                                    {{#let (members-count-fetcher) as |count|}}
-                                        {{#unless count.isLoading}}
-                                            <span class="gh-nav-member-count">{{format-number count.count}}</span>
-                                        {{/unless}}
-                                    {{/let}}
+                                    {{#unless this.memberCountLoading}}
+                                        <span class="gh-nav-member-count">{{format-number this.membersStats.memberCount}}</span>
+                                    {{/unless}}
                                 </LinkTo>
                             {{else}}
                                 <LinkTo @route="members" @current-when="members member member.new" data-test-nav="members">{{svg-jar "members"}}Members
-                                    {{#let (members-count-fetcher) as |count|}}
-                                        {{#unless count.isLoading}}
-                                            <span class="gh-nav-member-count">{{format-number count.count}}</span>
-                                        {{/unless}}
-                                    {{/let}}
+                                    {{#unless this.memberCountLoading}}
+                                        <span class="gh-nav-member-count">{{format-number this.membersStats.memberCount}}</span>
+                                    {{/unless}}
                                 </LinkTo>
                             {{/if}}
                         </li>
