@@ -8096,6 +8096,13 @@
   dependencies:
     lodash "^4.17.11"
 
+"@tryghost/mongo-utils@0.6.1", "@tryghost/mongo-utils@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/mongo-utils/-/mongo-utils-0.6.1.tgz#ef5e815ca923d7e3bf450c7a30843f763f68ae74"
+  integrity sha512-4v1rv5BxqImz8IYcw3Ao4EK2Ym5XY0DB/iGOURV1hkH8cECTbe515xWuR3JSXnB/o4BVZ8I1Wih4h5B0go+whA==
+  dependencies:
+    lodash "^4.17.11"
+
 "@tryghost/nodemailer@0.3.37":
   version "0.3.37"
   resolved "https://registry.yarnpkg.com/@tryghost/nodemailer/-/nodemailer-0.3.37.tgz#f8766fdc176fec1e5fcfad1ed3c137702f247c83"
@@ -8108,7 +8115,14 @@
     nodemailer-mailgun-transport "^2.1.5"
     nodemailer-stub-transport "^1.1.0"
 
-"@tryghost/nql-lang@0.6.0", "@tryghost/nql-lang@^0.6.0":
+"@tryghost/nql-lang@0.6.1", "@tryghost/nql-lang@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.6.1.tgz#830847d71f0b04107f7d20e3ebc91530fa11df16"
+  integrity sha512-0fYuzWuHXYN0qk3EnqBPv7IQykn6IaFFp1XcY3CtB3nfYZqsJzVGylQFNpxx6dhRLN8ZxdycZ00HkRChd0tvjQ==
+  dependencies:
+    date-fns "^2.28.0"
+
+"@tryghost/nql-lang@^0.6.0":
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/@tryghost/nql-lang/-/nql-lang-0.6.0.tgz#ea9a0ba5e7a141fb7279e94442bf995bb70936da"
   integrity sha512-8VAUhyA80nTlF/IrinCxw6E3q1Hd2jdpLCE/QqeKa0Q8ISoQ993eOfL9gNAbLc7rmc8GWN2QBYjAW6Xljmjkkw==
@@ -8123,6 +8137,16 @@
     "@tryghost/mongo-knex" "^0.9.0"
     "@tryghost/mongo-utils" "^0.6.0"
     "@tryghost/nql-lang" "^0.6.0"
+    mingo "^2.2.2"
+
+"@tryghost/nql@0.12.1":
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/nql/-/nql-0.12.1.tgz#da0deb03b9111ac34d70fb07e5db0c4028251ed2"
+  integrity sha512-UW3+lhyGW3AuGUAsOGsUr0hpkh1KQ2DlcdtZkN0DzU8Bznd7kR0/afOaOqnOdI257pkYmaP7PgGLXcvwTf27+w==
+  dependencies:
+    "@tryghost/mongo-knex" "^0.9.0"
+    "@tryghost/mongo-utils" "^0.6.1"
+    "@tryghost/nql-lang" "^0.6.1"
     mingo "^2.2.2"
 
 "@tryghost/pretty-cli@1.2.38", "@tryghost/pretty-cli@^1.2.38":
