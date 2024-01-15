@@ -115,6 +115,7 @@ if (sentryConfig && !sentryConfig.disabled) {
         }),
         tracingHandler: Sentry.Handlers.tracingHandler(),
         captureException: Sentry.captureException,
+        captureMessage: Sentry.captureMessage,
         beforeSend: beforeSend,
         initQueryTracing: (knex) => {
             if (sentryConfig.tracing?.enabled === true) {
