@@ -20,6 +20,7 @@ class MembersSubscribeEventsImporter extends TableImporter {
         let limit = 100000;
         this.newsletters = await this.transaction.select('id').from('newsletters').orderBy('sort_order');
 
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             const members = await this.transaction.select('id', 'created_at', 'status').from('members').limit(limit).offset(offset);
 

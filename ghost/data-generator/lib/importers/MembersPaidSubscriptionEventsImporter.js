@@ -12,6 +12,7 @@ class MembersPaidSubscriptionEventsImporter extends TableImporter {
         let offset = 0;
         let limit = 1000;
 
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             const subscriptions = await this.transaction.select('id', 'customer_id', 'plan_currency', 'plan_amount', 'created_at', 'plan_id', 'status', 'cancel_at_period_end', 'current_period_end').from('members_stripe_customers_subscriptions').limit(limit).offset(offset);
 

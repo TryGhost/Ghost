@@ -19,6 +19,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
         this.stripeProducts = await this.transaction.select('id', 'product_id', 'stripe_product_id').from('stripe_products');
         this.stripePrices = await this.transaction.select('id', 'nickname', 'stripe_product_id', 'stripe_price_id', 'amount', 'interval', 'currency').from('stripe_prices');
 
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             const membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers').limit(limit).offset(offset);
 

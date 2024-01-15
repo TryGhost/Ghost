@@ -12,6 +12,7 @@ class MembersNewslettersImporter extends TableImporter {
         let offset = 0;
         let limit = 100000;
 
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             const membersSubscribeEvents = await this.transaction.select('member_id', 'newsletter_id').from('members_subscribe_events').limit(limit).offset(offset);
 

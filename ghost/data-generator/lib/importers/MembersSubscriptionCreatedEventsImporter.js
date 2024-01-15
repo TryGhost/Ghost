@@ -16,6 +16,7 @@ class MembersSubscriptionCreatedEventsImporter extends TableImporter {
         this.posts = await this.transaction.select('id', 'published_at', 'visibility', 'type', 'slug').from('posts').whereNotNull('published_at').where('visibility', 'public').orderBy('published_at', 'desc');
         this.incomingRecommendations = await this.transaction.select('id', 'source', 'created_at').from('mentions');
 
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             const membersStripeCustomersSubscriptions = await this.transaction.select('id', 'created_at', 'customer_id').from('members_stripe_customers_subscriptions').limit(limit).offset(offset);
 

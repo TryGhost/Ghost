@@ -32,7 +32,8 @@ class DataGenerator {
         printDependencies,
         withDefault,
         seed,
-        quantities = {}
+        quantities = {},
+        useTransaction = true
     }) {
         this.knex = knex;
         this.tableList = tables || [];
@@ -45,6 +46,7 @@ class DataGenerator {
         this.printDependencies = printDependencies;
         this.seed = seed;
         this.quantities = quantities;
+        this.useTransaction = useTransaction;
     }
 
     sortTableList() {
@@ -184,15 +186,26 @@ class DataGenerator {
             process.exit(0);
         }
 
-        const transaction = this.knex;
+        if (this.useTransaction) {
+            await this.knex.transaction(async (transaction) => {
+                if (!DatabaseInfo.isSQLite(this.knex)) {
+                    await transaction.raw('SET autocommit=0;');
+                }
 
-        //await this.knex.transaction(async (transaction) => {
-        // Performance improvements
+                await this.#run(transaction);
+            }, {isolationLevel: 'read committed'});
+        } else {
+            await this.#run(this.knex);
+        }
+
+        this.logger.info(`Completed data import in ${((Date.now() - start) / 1000).toFixed(1)}s`);
+    }
+
+    async #run(transaction) {
         if (!DatabaseInfo.isSQLite(this.knex)) {
             await transaction.raw('ALTER INSTANCE DISABLE INNODB REDO_LOG;');
             await transaction.raw('SET FOREIGN_KEY_CHECKS=0;');
             await transaction.raw('SET unique_checks=0;');
-            //await transaction.raw('SET autocommit=0;');
             await transaction.raw('SET GLOBAL local_infile=1;');
         }
 
@@ -256,9 +269,6 @@ class DataGenerator {
             });
             await tableImporter.finalise();
         }
-        //}, {isolationLevel: 'read committed'});
-
-        this.logger.info(`Completed data import in ${((Date.now() - start) / 1000).toFixed(1)}s`);
     }
 }
 
