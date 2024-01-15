@@ -76,7 +76,7 @@ class MembersImporter extends TableImporter {
             uuid: faker.datatype.uuid(),
             transient_id: faker.datatype.uuid(),
             email: `${name.replace(' ', '.').replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}${faker.datatype.number({min: 0, max: 999999})}@example.com`,
-            status: luck(5) ? 'comped' : luck(25) ? 'paid' : 'free',
+            status: luck(5) ? 'comped' : luck(15) ? 'paid' : 'free',
             name: name,
             expertise: luck(30) ? faker.name.jobTitle() : undefined,
             geolocation: JSON.stringify({

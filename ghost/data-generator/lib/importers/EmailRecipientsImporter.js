@@ -39,6 +39,10 @@ class EmailRecipientsImporter extends TableImporter {
     }
 
     async import(quantity) {
+        if (quantity === 0) {
+            return;
+        }
+
         const now = Date.now();
         const emails = await this.transaction
             .select(

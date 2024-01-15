@@ -12,10 +12,25 @@ class MembersSubscribeEventsImporter extends TableImporter {
     }
 
     async import(quantity) {
-        const members = await this.transaction.select('id', 'created_at', 'status').from('members');
+        if (quantity === 0) {
+            return;
+        }
+
+        let offset = 0;
+        let limit = 100000;
         this.newsletters = await this.transaction.select('id').from('newsletters').orderBy('sort_order');
 
-        await this.importForEach(members, quantity ? quantity / members.length : this.newsletters.length);
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            const members = await this.transaction.select('id', 'created_at', 'status').from('members').limit(limit).offset(offset);
+
+            if (members.length === 0) {
+                break;
+            }
+
+            await this.importForEach(members, quantity ? quantity / members.length : this.newsletters.length);
+            offset += limit;
+        }
     }
 
     setReferencedModel(model) {
