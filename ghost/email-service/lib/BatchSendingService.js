@@ -283,7 +283,7 @@ class BatchSendingService {
             const errorRate = Math.abs((totalCount - email.get('email_count')) / email.get('email_count'));
             if (this.#sentry && errorRate >= 0.01) {
                 // we don't have a real exception, so just log a message to Sentry
-                //this.#sentry.captureMessage(`Email ${email.id} has wrong stored email_count ${email.get('email_count')}, did expect ${totalCount}.`);
+                this.#sentry.captureMessage(`Email ${email.id} has wrong stored email_count ${email.get('email_count')}, did expect ${totalCount}.`);
             }
 
             // We update the email model because this might happen in rare cases where the initial member count changed (e.g. deleted members)
