@@ -13,6 +13,10 @@ class EmailsImporter extends TableImporter {
     }
 
     async import(quantity) {
+        if (quantity === 0) {
+            return;
+        }
+
         const posts = await this.transaction.select('id', 'title', 'published_at').from('posts').where('type', 'post').where('status', 'published').orderBy('published_at', 'desc');
         this.newsletters = await this.transaction.select('id').from('newsletters').orderBy('sort_order');
         this.membersSubscribeEvents = await this.transaction.select('id', 'newsletter_id', 'created_at').from('members_subscribe_events');

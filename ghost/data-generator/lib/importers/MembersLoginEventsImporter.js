@@ -12,9 +12,25 @@ class MembersLoginEventsImporter extends TableImporter {
     }
 
     async import(quantity) {
-        const members = await this.transaction.select('id', 'created_at').from('members');
+        if (quantity === 0) {
+            return;
+        }
 
-        await this.importForEach(members, quantity ? quantity / members.length : 5);
+        let offset = 0;
+        let limit = 100000;
+
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            const members = await this.transaction.select('id', 'created_at').from('members').limit(limit).offset(offset);
+
+            if (members.length === 0) {
+                break;
+            }
+
+            await this.importForEach(members, quantity ? quantity / members.length : 5);
+
+            offset += limit;
+        }
     }
 
     setReferencedModel(model) {

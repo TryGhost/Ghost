@@ -11,16 +11,27 @@ class MembersSubscriptionCreatedEventsImporter extends TableImporter {
     }
 
     async import(quantity) {
-        const membersStripeCustomersSubscriptions = await this.transaction.select('id', 'created_at', 'customer_id').from('members_stripe_customers_subscriptions');
-        const membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers');
+        let offset = 0;
+        let limit = 1000;
         this.posts = await this.transaction.select('id', 'published_at', 'visibility', 'type', 'slug').from('posts').whereNotNull('published_at').where('visibility', 'public').orderBy('published_at', 'desc');
         this.incomingRecommendations = await this.transaction.select('id', 'source', 'created_at').from('mentions');
 
-        this.membersStripeCustomers = new Map();
-        for (const memberStripeCustomer of membersStripeCustomers) {
-            this.membersStripeCustomers.set(memberStripeCustomer.customer_id, memberStripeCustomer);
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            const membersStripeCustomersSubscriptions = await this.transaction.select('id', 'created_at', 'customer_id').from('members_stripe_customers_subscriptions').limit(limit).offset(offset);
+
+            if (membersStripeCustomersSubscriptions.length === 0) {
+                break;
+            }
+            const membersStripeCustomers = await this.transaction.select('id', 'member_id', 'customer_id').from('members_stripe_customers').whereIn('customer_id', membersStripeCustomersSubscriptions.map(subscription => subscription.customer_id));
+
+            this.membersStripeCustomers = new Map();
+            for (const memberStripeCustomer of membersStripeCustomers) {
+                this.membersStripeCustomers.set(memberStripeCustomer.customer_id, memberStripeCustomer);
+            }
+            await this.importForEach(membersStripeCustomersSubscriptions, quantity ? quantity / membersStripeCustomersSubscriptions.length : 1);
+            offset += limit;
         }
-        await this.importForEach(membersStripeCustomersSubscriptions, quantity ? quantity / membersStripeCustomersSubscriptions.length : 1);
     }
 
     generate() {
