@@ -37,7 +37,7 @@ const BulkEmail: React.FC<{ keywords: string[] }> = ({keywords}) => {
         {
             key: 'status',
             value: (
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="grid w-full grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
                     <div className="flex flex-col">
                         <h6 className="block text-xs font-semibold tracking-normal dark:text-white">Status</h6>
                         <div className="mt-1 flex items-center">
