@@ -7,10 +7,6 @@ const editorConfig = {
     }
 };
 
-interface LexicalNode {
-    type: string;
-}
-
 const wrapperMap = {
     normal: {
         tag: 'p',

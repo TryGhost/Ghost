@@ -2,7 +2,6 @@ const {createDocument, dom, html} = require('../utils');
 const {$getRoot} = require('lexical');
 const {createHeadlessEditor} = require('@lexical/headless');
 const {$generateNodesFromDOM} = require('@lexical/html');
-const {JSDOM} = require('jsdom');
 const {HorizontalRuleNode, $createHorizontalRuleNode, $isHorizontalRuleNode} = require('../../');
 
 const editorNodes = [HorizontalRuleNode];
