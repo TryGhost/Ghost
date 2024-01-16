@@ -158,9 +158,9 @@ const BulkEmail: React.FC<{ keywords: string[] }> = ({keywords}) => {
             description={groupDescription}
             isEditing={isEditing}
             keywords={keywords}
-            navid='bulk-mail'
+            navid='bulk-email'
             saveState={saveState}
-            testId='bulk-mail'
+            testId='bulk-email'
             title='Email provider'
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
