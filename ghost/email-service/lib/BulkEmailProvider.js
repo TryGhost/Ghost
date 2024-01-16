@@ -173,13 +173,25 @@ class BulkEmailProvider {
             } else if (this.#mailClient.constructor.name === 'PostmarkClient') {
                 // @TODO: handle postmark errors
             } else {
-                ghostError = new errors.EmailError({
-                    statusCode: undefined,
-                    message: this.#createMailgunErrorMessage(e),
-                    errorDetails: undefined,
-                    context: e.context || 'Bulk mail Error',
-                    code: 'BULK_EMAIL_SEND_FAILED'
-                });
+                if (e.error && e.messageData) {
+                    const {error, messageData} = e;
+
+                    ghostError = new errors.EmailError({
+                        statusCode: e.error.status,
+                        message: this.#createMailgunErrorMessage(error),
+                        errorDetails: JSON.stringify({error, messageData}),
+                        context: e.context || 'Bulk mail Error',
+                        code: 'BULK_EMAIL_SEND_FAILED'
+                    });
+                } else {
+                    ghostError = new errors.EmailError({
+                        statusCode: undefined,
+                        message: this.#createMailgunErrorMessage(e),
+                        errorDetails: undefined,
+                        context: e.context || 'Bulk mail Error',
+                        code: 'BULK_EMAIL_SEND_FAILED'
+                    });
+                }
             }
 
             debug(`failed to send message (${Date.now() - startTime}ms)`);
