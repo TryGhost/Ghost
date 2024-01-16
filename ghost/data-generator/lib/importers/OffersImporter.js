@@ -14,7 +14,7 @@ class OffersImporter extends TableImporter {
     }
 
     async import(quantity = this.defaultQuantity) {
-        this.products = await this.transaction.select('id', 'currency').from('products');
+        this.products = await this.transaction.select('id', 'currency').from('products').where('type', 'paid');
         this.names = ['Black Friday', 'Free Trial'];
         this.count = 0;
 
