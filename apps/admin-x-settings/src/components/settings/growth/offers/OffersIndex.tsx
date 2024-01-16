@@ -1,4 +1,4 @@
-import useFeatureFlag from '../../../../hooks/useFeatureFlag';
+// import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {ButtonGroup, ButtonProps} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
@@ -10,11 +10,11 @@ import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {numberWithCommas} from '../../../../utils/helpers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
-import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useModal} from '@ebay/nice-modal-react';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useSortingState} from '../../../providers/SettingsAppProvider';
+import {useState} from 'react';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
@@ -94,7 +94,7 @@ export const CopyLinkButton: React.FC<{offerCode: string}> = ({offerCode}) => {
 export const OffersIndexModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
-    const hasOffers = useFeatureFlag('adminXOffers');
+    // const hasOffers = useFeatureFlag('adminXOffers');
     const {data: {offers: allOffers = []} = {}} = useBrowseOffers({
         searchParams: {
             limit: 'all'
@@ -123,12 +123,12 @@ export const OffersIndexModal = () => {
     const sortOption = offersSorting?.option || 'date-added';
     const sortDirection = offersSorting?.direction || 'desc';
 
-    useEffect(() => {
-        if (!hasOffers) {
-            modal.remove();
-            updateRoute('');
-        }
-    }, [hasOffers, modal, updateRoute]);
+    // useEffect(() => {
+    //     if (!hasOffers) {
+    //         modal.remove();
+    //         updateRoute('');
+    //     }
+    // }, [hasOffers, modal, updateRoute]);
 
     const handleOfferEdit = (id:string) => {
         // TODO: implement
