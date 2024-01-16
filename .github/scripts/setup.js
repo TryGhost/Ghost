@@ -121,7 +121,14 @@ async function runAndStream(command, args, options) {
     await runAndStream('yarn', ['knex-migrator', 'init'], {cwd: coreFolder});
 
     if (resetData) {
-        console.log(chalk.blue(`Resetting all data`));
-        await runAndStream('yarn', ['reset:data'], {cwd: rootFolder});
+        const xxl = process.argv.includes('--xxl');
+
+        if (xxl) {
+            console.log(chalk.blue(`Resetting all data (with xxl)`));
+            await runAndStream('yarn', ['reset:data:xxl'], {cwd: rootFolder});
+        } else {
+            console.log(chalk.blue(`Resetting all data`));
+            await runAndStream('yarn', ['reset:data'], {cwd: rootFolder});
+        }
     }
 })();
