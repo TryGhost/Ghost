@@ -28,7 +28,7 @@
   "dependencies": {
     "@tryghost/debug": "0.1.26",
     "@tryghost/errors": "1.2.26",
-    "cookies": "0.8.0",
+    "cookies": "0.9.1",
     "jsonwebtoken": "8.5.1"
   }
 }

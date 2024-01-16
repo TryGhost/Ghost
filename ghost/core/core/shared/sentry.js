@@ -4,15 +4,6 @@ const SentryKnexTracingIntegration = require('./SentryKnexTracingIntegration');
 const sentryConfig = config.get('sentry');
 const errors = require('@tryghost/errors');
 
-// Import Sentry's profiling integration if available
-let ProfilingIntegration;
-try {
-    ({ProfilingIntegration} = require('@sentry/profiling-node'));
-} catch (err) {
-    logging.warn('Sentry Profiling Integration not available');
-    ProfilingIntegration = null;
-}
-
 const beforeSend = function (event, hint) {
     try {
         const exception = hint.originalException;
@@ -69,7 +60,12 @@ const beforeSend = function (event, hint) {
 if (sentryConfig && !sentryConfig.disabled) {
     const Sentry = require('@sentry/node');
     const version = require('@tryghost/version').full;
-    const environment = config.get('env');
+
+    let environment = config.get('PRO_ENV');
+    if (!environment) {
+        environment = config.get('env');
+    }
+
     const sentryInitConfig = {
         dsn: sentryConfig.dsn,
         release: 'ghost@' + version,
@@ -82,12 +78,22 @@ if (sentryConfig && !sentryConfig.disabled) {
     // Enable tracing if sentry.tracing.enabled is true
     if (sentryConfig.tracing?.enabled === true) {
         sentryInitConfig.integrations.push(new Sentry.Integrations.Http({tracing: true}));
-        sentryInitConfig.integrations.push(new Sentry.Integrations.Express());
         sentryInitConfig.tracesSampleRate = parseFloat(sentryConfig.tracing.sampleRate) || 0.0;
         // Enable profiling, if configured, only if tracing is also configured
-        if (ProfilingIntegration && sentryConfig.profiling?.enabled === true) {
-            sentryInitConfig.integrations.push(new ProfilingIntegration());
-            sentryInitConfig.profilesSampleRate = parseFloat(sentryConfig.profiling.sampleRate) || 0.0;
+        if (sentryConfig.profiling?.enabled === true) {
+            // Import Sentry's profiling integration if available
+            let ProfilingIntegration;
+            try {
+                ({ProfilingIntegration} = require('@sentry/profiling-node'));
+            } catch (err) {
+                logging.warn('Sentry Profiling Integration not available');
+                ProfilingIntegration = null;
+            }
+
+            if (ProfilingIntegration) {
+                sentryInitConfig.integrations.push(new ProfilingIntegration());
+                sentryInitConfig.profilesSampleRate = parseFloat(sentryConfig.profiling.sampleRate) || 0.0;
+            }
         }
     }
     Sentry.init(sentryInitConfig);
@@ -109,6 +115,7 @@ if (sentryConfig && !sentryConfig.disabled) {
         }),
         tracingHandler: Sentry.Handlers.tracingHandler(),
         captureException: Sentry.captureException,
+        captureMessage: Sentry.captureMessage,
         beforeSend: beforeSend,
         initQueryTracing: (knex) => {
             if (sentryConfig.tracing?.enabled === true) {
