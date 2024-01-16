@@ -30,12 +30,12 @@ function PostImage({image, layout, columns, isLoading}) {
                 )}></div>
             }
             <ImgPlaceholderIcon className={clsx(
-                'absolute h-10 w-10 shrink-0 text-grey/80 dark:text-grey/50',
+                'absolute size-10 shrink-0 text-grey/80 dark:text-grey/50',
                 image && 'hidden',
-                layout === 'list' && 'md:h-9 md:w-9 lg:h-10 lg:w-10 xl:h-12 xl:w-12',
-                (layout === 'grid' && columns === 1) && 'md:h-12 md:w-12 lg:h-14 lg:w-14 xl:h-20 xl:w-20',
-                (layout === 'grid' && columns === 2) && 'lg:h-12 lg:w-12 xl:h-14 xl:w-14',
-                (layout === 'grid' && columns === 3) && 'xl:h-12 xl:w-12',
+                layout === 'list' && 'md:size-9 lg:size-10 xl:size-12',
+                (layout === 'grid' && columns === 1) && 'md:size-12 lg:size-14 xl:size-20',
+                (layout === 'grid' && columns === 2) && 'lg:size-12 xl:size-14',
+                (layout === 'grid' && columns === 3) && 'xl:size-12',
             )} />
         </div>
     );
@@ -44,7 +44,7 @@ function PostImage({image, layout, columns, isLoading}) {
 function PostTitle({title, layout, columns}) {
     return (
         <div className={clsx(
-            'text-lg font-bold leading-tight tracking-normal text-black xs:text-xl sm:text-2xl dark:text-grey-100',
+            'text-lg font-bold leading-tight tracking-normal text-black dark:text-grey-100 xs:text-xl sm:text-2xl',
             layout === 'list' && 'md:text-xl lg:text-2xl',
             (layout === 'grid' && columns === 1) && 'lg:text-3xl xl:text-4xl',
             (layout === 'grid' && columns === 2) && 'md:text-xl lg:text-2xl',

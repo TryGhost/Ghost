@@ -48,7 +48,7 @@ function UnsplashImage({payload,
                 </div>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                        <img alt="author" className="mr-2 h-8 w-8 rounded-full" src={user.profile_image.small} />
+                        <img alt="author" className="mr-2 size-8 rounded-full" src={user.profile_image.small} />
                         <div className="mr-2 truncate font-sans text-sm font-medium text-white">{user.name}</div>
                     </div>
                     <UnsplashButton label="Insert image" data-kg-unsplash-insert-button onClick={(e) => {

@@ -10,7 +10,7 @@ export function IconButton({className, onClick, label, dataTestId, Icon}) {
             type="button"
             onClick={onClick}
         >
-            <Icon className="h-4 w-4" />
+            <Icon className="size-4" />
         </button>
     );
 }

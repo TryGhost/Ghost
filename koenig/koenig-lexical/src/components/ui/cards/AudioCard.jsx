@@ -113,7 +113,7 @@ function AudioThumbnail({
     } else if (src) {
         return (
             <div className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
-                <img alt="Audio thumbnail" className="h-full w-full rounded-sm object-cover transition ease-in" data-testid="audio-thumbnail" src={src} />
+                <img alt="Audio thumbnail" className="size-full rounded-sm object-cover transition ease-in" data-testid="audio-thumbnail" src={src} />
                 {isEditing && (
                     <div className="absolute right-2 top-2 flex opacity-0 transition-all group-hover:opacity-100">
                         <IconButton dataTestId='remove-thumbnail' Icon={DeleteIcon} onClick={removeThumbnail} />
@@ -131,12 +131,12 @@ function AudioThumbnail({
         return (
             <div className="group flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
                 <button
-                    className="flex h-20 w-20 items-center justify-center"
+                    className="flex size-20 items-center justify-center"
                     data-testid="upload-thumbnail"
                     type="button"
                     onClick={() => openFileSelection({fileInputRef: fileInputRef})}
                 >
-                    {(isEditing && <FilePlaceholderIcon className="ease-inx h-6 w-6 text-white transition-all duration-75 group-hover:scale-105" />) || <AudioFileIcon className="h-6 w-6 text-white" />}
+                    {(isEditing && <FilePlaceholderIcon className="ease-inx size-6 text-white transition-all duration-75 group-hover:scale-105" />) || <AudioFileIcon className="size-6 text-white" />}
                 </button>
                 <ImageUploadForm
                     disabled={!isEditing}

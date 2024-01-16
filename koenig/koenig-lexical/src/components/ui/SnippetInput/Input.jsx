@@ -14,7 +14,7 @@ export const Input = ({value, onChange, onClear, onKeyDown, arrowStyles}) => {
                 onKeyDown={onKeyDown}
             />
             <button aria-label="Close" className="absolute right-3 cursor-pointer" type="button" onClick={onClear}>
-                <CloseIcon className="h-3 w-3 stroke-2 text-grey" />
+                <CloseIcon className="size-3 stroke-2 text-grey" />
             </button>
 
             {/* Arrow block. Used div instead of pseudo-element. Arrow requires dynamic values for position,

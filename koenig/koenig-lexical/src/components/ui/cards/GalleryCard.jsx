@@ -59,7 +59,7 @@ function GalleryImage({image, deleteImage, position, isDragging}) {
         >
             <img
                 alt={image.alt}
-                className="pointer-events-none block h-full w-full"
+                className="pointer-events-none block size-full"
                 height={image.height}
                 src={image.previewSrc || image.src}
                 width={image.width}

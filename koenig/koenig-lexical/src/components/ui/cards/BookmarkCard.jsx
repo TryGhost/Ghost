@@ -39,7 +39,7 @@ export function BookmarkCard({
                     </div>
                     {thumbnail &&
                         (<div className={'grow-1 relative m-0 min-w-[33%]'} data-testid="bookmark-thumbnail-container">
-                            <img alt="" className="absolute inset-0 h-full w-full rounded-r-[.3rem] object-cover" data-testid="bookmark-thumbnail" src={thumbnail}/>
+                            <img alt="" className="absolute inset-0 size-full rounded-r-[.3rem] object-cover" data-testid="bookmark-thumbnail" src={thumbnail}/>
                         </div>)
                     }
                     <div className="absolute inset-0 z-50 mt-0"></div>
@@ -72,7 +72,7 @@ export function BookmarkCard({
 
 export function BookmarkIcon({src}) {
     return (
-        <img alt="" className="mr-2 h-5 w-5 shrink-0" data-testid="bookmark-icon" src={src}/>
+        <img alt="" className="mr-2 size-5 shrink-0" data-testid="bookmark-icon" src={src}/>
     );
 }
 

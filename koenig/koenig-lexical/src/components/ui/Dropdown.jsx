@@ -20,7 +20,7 @@ function Item({item, selected, onChange}) {
 
     return (
         <li key={item.name} className={`${selectionClass} !mb-1 hover:bg-grey-100 dark:hover:bg-grey-950`}>
-            <button className="h-full w-full cursor-pointer px-3 py-1 text-left dark:text-white" type="button" onMouseDownCapture={event => handleOptionMouseDown(event, item.name)}>{item.label}</button>
+            <button className="size-full cursor-pointer px-3 py-1 text-left dark:text-white" type="button" onMouseDownCapture={event => handleOptionMouseDown(event, item.name)}>{item.label}</button>
         </li>
     );
 }
@@ -73,7 +73,7 @@ export function Dropdown({value, menu, onChange, dataTestId}) {
                 onMouseDownCapture={preventLoseFocus}
             >
                 {trigger}
-                <ArrowIcon className={`absolute right-2 top-4 h-2 w-2 text-grey-600 ${open && 'rotate-180'}`} />
+                <ArrowIcon className={`absolute right-2 top-4 size-2 text-grey-600${open && 'rotate-180'}`} />
             </button>
             {open && (
                 <DropdownContainer>

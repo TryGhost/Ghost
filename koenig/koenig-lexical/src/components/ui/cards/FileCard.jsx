@@ -71,7 +71,7 @@ function PopulatedFileCard({isEditing, title, titlePlaceholder, desc, descPlaceh
                     </div>
                 </div>
                 <div className={`!mt-0 flex w-full max-w-[96px] items-center justify-center rounded bg-grey-200 dark:bg-grey-900 ${((title && desc) || isEditing) ? 'h-[96px]' : (title || desc) ? 'h-[64px]' : 'h-[40px]'}`}>
-                    <FileUploadIcon className={`text-green transition-all duration-75 ease-in ${((title || desc) || isEditing) ? 'h-6 w-6' : 'h-5 w-5'}`} />
+                    <FileUploadIcon className={`text-green transition-all duration-75 ease-in ${((title || desc) || isEditing) ? 'size-6' : 'size-5'}`} />
                 </div>
             </div>
             {!isEditing && <div className="absolute inset-0 z-50">

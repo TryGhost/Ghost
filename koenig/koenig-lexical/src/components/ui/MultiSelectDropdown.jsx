@@ -22,7 +22,7 @@ function Item({item, selected, onChange}) {
     return (
         <li key={item.name} className={`${selectionClass} !mb-1 hover:bg-grey-100 dark:hover:bg-grey-950`} >
             <button
-                className="h-full w-full cursor-pointer px-3 py-1 text-left dark:text-white"
+                className="size-full cursor-pointer px-3 py-1 text-left dark:text-white"
                 data-testid="multiselect-dropdown-item"
                 type="button"
                 onMouseDownCapture={handleOptionMouseDown}
@@ -116,14 +116,14 @@ export function MultiSelectDropdown({placeholder = '', items = [], availableItem
                         onMouseDownCapture={event => handleDeselect(event, item)}
                     >
                         {item.label}
-                        <CloseIcon className="ml-2 mt-[1px] h-2 w-2" />
+                        <CloseIcon className="ml-2 mt-[1px] size-2" />
                     </button>
                 ))}
 
                 <div className="flex-1">
                     <input
                         ref={inputRef}
-                        className="h-full w-full min-w-[5rem] appearance-none bg-transparent px-0 leading-none outline-none"
+                        className="size-full min-w-[5rem] appearance-none bg-transparent px-0 leading-none outline-none"
                         placeholder={selectedItems.length === 0 ? placeholder : ''}
                         value={filter}
                         onBlur={handleBlur}
@@ -133,7 +133,7 @@ export function MultiSelectDropdown({placeholder = '', items = [], availableItem
                     />
                 </div>
 
-                <ArrowIcon className={`absolute right-2 top-4 h-2 w-2 text-grey-600 ${open && 'rotate-180'}`} />
+                <ArrowIcon className={`absolute right-2 top-4 size-2 text-grey-600${open && 'rotate-180'}`} />
             </div>
             {open && !!filteredItems.length && (
                 <DropdownContainer>

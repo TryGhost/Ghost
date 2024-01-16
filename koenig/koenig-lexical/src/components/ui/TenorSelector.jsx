@@ -300,7 +300,7 @@ const TenorSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLo
         >
             <header className="p-6">
                 <div className="relative w-full">
-                    <SearchIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-2 text-grey-500 dark:text-grey-800" />
+                    <SearchIcon className="absolute left-4 top-1/2 size-4 -translate-y-2 text-grey-500 dark:text-grey-800" />
                     <input
                         ref={searchRef}
                         className="h-10 w-full rounded-full border border-grey-300 pl-10 pr-8 font-sans text-md font-normal text-black focus:border-green focus:shadow-insetgreen dark:border-grey-800 dark:bg-grey-950 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green"

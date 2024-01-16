@@ -64,14 +64,14 @@ export function ToolbarMenuItem({label, isActive, onClick, icon, dataTestId, hid
         <li className="m-0 flex p-0 first:m-0" {...props}>
             <button
                 aria-label={label}
-                className="flex h-9 w-9 cursor-pointer items-center justify-center transition-opacity hover:opacity-75"
+                className="flex size-9 cursor-pointer items-center justify-center transition-opacity hover:opacity-75"
                 data-kg-active={isActive}
                 data-testid={dataTestId}
                 title={label}
                 type="button"
                 onClick={onClick}
             >
-                <Icon className={` h-4 w-4 ${isActive ? 'fill-green' : 'fill-white'} `} />
+                <Icon className={` size-4 ${isActive ? 'fill-green' : 'fill-white'} `} />
             </button>
         </li>
     );

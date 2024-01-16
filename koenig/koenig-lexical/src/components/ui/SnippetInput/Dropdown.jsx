@@ -25,7 +25,7 @@ export const Dropdown = ({
                     onClick={onCreateSnippet}
                 >
                     <span>Create &quot;{value}&ldquo;</span>
-                    <PlusIcon className="h-3 w-3 stroke-green stroke-[3px]" />
+                    <PlusIcon className="size-3 stroke-green stroke-[3px]" />
                 </button>
             </li>
 
@@ -71,8 +71,8 @@ const DropdownItem = ({onClick, name, active, index}) => {
                 onClick={() => onClick(name)}
             >
                 <span>{name}</span>
-                <div className="h-5 w-5 fill-grey-900">
-                    <ReplaceIcon className="h-4 w-4 fill-grey-900 dark:fill-grey-600" />
+                <div className="size-5 fill-grey-900">
+                    <ReplaceIcon className="size-4 fill-grey-900 dark:fill-grey-600" />
                 </div>
             </button>
         </li>

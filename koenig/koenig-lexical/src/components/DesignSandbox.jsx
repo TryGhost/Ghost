@@ -149,7 +149,7 @@ const DesignSandbox = () => {
         return (
             <li className="m-0 flex p-0 first:m-0" {...props}>
                 <div
-                    className="flex h-9 w-9 items-center justify-center"
+                    className="flex size-9 items-center justify-center"
                     type="button"
                 >
                     <Icon className="fill-white" />
@@ -171,10 +171,10 @@ const DesignSandbox = () => {
         return (
             <button
                 aria-label="Add a card"
-                className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-grey bg-white transition-all ease-linear hover:border-grey-900 md:h-9 md:w-9"
+                className="group relative flex size-7 cursor-pointer items-center justify-center rounded-full border border-grey bg-white transition-all ease-linear hover:border-grey-900 md:size-9"
                 type="button"
             >
-                <PlusIcon className="h-4 w-4 stroke-grey-800 stroke-2 group-hover:stroke-grey-900" />
+                <PlusIcon className="size-4 stroke-grey-800 stroke-2 group-hover:stroke-grey-900" />
             </button>
         );
     }
@@ -232,7 +232,7 @@ const DesignSandbox = () => {
         return (
             <div className="flex cursor-pointer flex-row items-center border border-transparent px-4 py-2 text-grey-800 hover:bg-grey-100" {...props}>
                 <div className="flex items-center">
-                    <Icon className="h-7 w-7" />
+                    <Icon className="size-7" />
                 </div>
                 <div className="flex flex-col">
                     <div className="m-0 ml-4 truncate text-[1.3rem] font-normal leading-[1.333em] tracking-[.02rem] text-grey-900">{label}</div>
@@ -246,7 +246,7 @@ const DesignSandbox = () => {
         return (
             <div className="flex cursor-pointer flex-row items-center border border-transparent px-4 py-2 text-grey-800 hover:bg-grey-100" {...props}>
                 <div className="flex items-center">
-                    <Icon className="h-7 w-7" />
+                    <Icon className="size-7" />
                 </div>
                 <div className="flex flex-col">
                     <div className="m-0 ml-4 truncate text-[1.3rem] font-normal leading-[1.333em] tracking-[.02rem] text-grey-900">{label}</div>
@@ -327,7 +327,7 @@ const DesignSandbox = () => {
                 <figure className="cursor-pointer border border-transparent" {...props}>
                     <div className="h-100 relative flex items-center justify-center border border-grey-100 bg-grey-50 before:pb-[62.5%]">
                         <button className="group flex flex-col items-center justify-center p-20" type="button">
-                            <Icon className="h-32 w-32 opacity-80 transition-all ease-linear group-hover:scale-105 group-hover:opacity-100" />
+                            <Icon className="size-32 opacity-80 transition-all ease-linear group-hover:scale-105 group-hover:opacity-100" />
                             <p className="mt-4 text-sm font-normal text-grey-700 group-hover:text-grey-800">{desc}</p>
                         </button>
                     </div>

@@ -65,9 +65,9 @@ function useDragDropReorder(editor, isEditable) {
 
         const GhostElement = () => {
             return (
-                <div className="absolute flex h-16 w-16 flex-col items-center justify-center rounded bg-white shadow-sm" style={style}>
+                <div className="absolute flex size-16 flex-col items-center justify-center rounded bg-white shadow-sm" style={style}>
                     <div className="flex items-center">
-                        <Icon className="h-8 w-8" />
+                        <Icon className="size-8" />
                     </div>
                 </div>
             );

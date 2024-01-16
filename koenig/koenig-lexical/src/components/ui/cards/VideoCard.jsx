@@ -55,11 +55,11 @@ function PopulatedVideoCard({
             <div className="not-kg-prose relative" data-testid="video-card-populated">
                 <div>
                     <img alt="Video thumbnail" className="mx-auto" src={thumbnail} />
-                    {customThumbnail && <img alt="Video custom thumbnail" className="absolute inset-0 h-full w-full bg-white object-cover" src={customThumbnail} />}
+                    {customThumbnail && <img alt="Video custom thumbnail" className="absolute inset-0 size-full bg-white object-cover" src={customThumbnail} />}
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/0 via-black/5 to-black/30">
                     {videoUploader.isLoading || (
-                        <button className="flex h-20 w-20 items-center justify-center rounded-full bg-black/50" type="button">
+                        <button className="flex size-20 items-center justify-center rounded-full bg-black/50" type="button">
                             <PlayIcon className="h-auto w-5 fill-white" />
                         </button>
                     )}

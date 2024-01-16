@@ -84,11 +84,11 @@ export function ColorPicker({value, eyedropper, hasTransparentOption, onChange})
                     <HexColorInput aria-label="Color value" className='z-50 w-full bg-transparent' color={hexValue} onChange={onChange} />
                     {eyedropper && !!window.EyeDropper && (
                         <button
-                            className="absolute inset-y-0 right-3 z-50 my-auto h-4 w-4 p-[1px]"
+                            className="absolute inset-y-0 right-3 z-50 my-auto size-4 p-[1px]"
                             type="button"
                             onClick={openColorPicker}
                         >
-                            <EyedropperIcon className="h-full w-full" />
+                            <EyedropperIcon className="size-full" />
                         </button>
                     )}
                 </div>
@@ -120,7 +120,7 @@ function ColorSwatch({hex, accent, transparent, title, isSelected, onSelect}) {
         <button
             ref={ref}
             className={clsx(
-                `relative flex h-5 w-5 shrink-0 items-center rounded-full border border-grey-200 dark:border-grey-800`,
+                `relative flex size-5 shrink-0 items-center rounded-full border border-grey-200 dark:border-grey-800`,
                 isSelected && 'outline outline-2 outline-green'
             )}
             style={{backgroundColor}}
@@ -155,7 +155,7 @@ export function ColorIndicator({value, swatches, onSwatchChange, onTogglePicker,
                     customContent ? <Fragment key={swatch.title}>{customContent}</Fragment> : <ColorSwatch key={swatch.title} isSelected={selectedSwatch === swatch.title} onSelect={onSwatchChange} {...swatch} />
                 ))}
             </div>
-            <button aria-label="Pick color" className="relative h-6 w-6 rounded-full border border-grey-200 dark:border-grey-800" type="button" onClick={onTogglePicker}>
+            <button aria-label="Pick color" className="relative size-6 rounded-full border border-grey-200 dark:border-grey-800" type="button" onClick={onTogglePicker}>
                 <div className='absolute inset-0 rounded-full bg-[conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))]' />
                 {value && !selectedSwatch && (
                     <div className="absolute inset-[3px] overflow-hidden rounded-full border border-white dark:border-grey-950" style={{backgroundColor}}>

@@ -30,8 +30,8 @@ export function ToggleCard({
                             textClassName={'koenig-lexical-heading heading-xsmall whitespace-normal text-black dark:text-grey-50 opacity-100'}
                         />
                     </div>
-                    <div className='z-20 !mt-[-1px] ml-auto flex h-8 w-8 shrink-0 items-center justify-center'>
-                        <ArrowDownIcon className={'h-4 w-4 stroke-2 text-grey-400 dark:text-grey/30'} />
+                    <div className='z-20 !mt-[-1px] ml-auto flex size-8 shrink-0 items-center justify-center'>
+                        <ArrowDownIcon className={'size-4 stroke-2 text-grey-400 dark:text-grey/30'} />
                     </div>
                 </div>
                 <div className={'!mt-2 w-full'}>

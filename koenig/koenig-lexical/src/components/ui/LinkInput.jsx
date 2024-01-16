@@ -76,7 +76,7 @@ export function LinkInput({href, update, cancel, arrowStyles}) {
                         setHref('');
                         inputRef.current.focus();
                     }}>
-                        <CloseIcon className="h-3 w-3 stroke-2 text-grey" />
+                        <CloseIcon className="size-3 stroke-2 text-grey" />
                     </button>
                 )
             }

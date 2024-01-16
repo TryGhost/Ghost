@@ -22,7 +22,7 @@ export function EmailCard({htmlEditor, htmlEditorInitialState, isEditing}) {
                 <div className="!-mx-3 !mt-3 flex items-center justify-center bg-grey-100 p-2 font-sans text-sm font-normal leading-none text-grey-600 dark:bg-grey-950 dark:text-grey-800">
                     Only visible when delivered by email, this card will not be published on your site.
                     <a href="https://ghost.org/help/cards/#email-content" rel="noopener noreferrer" target="_blank">
-                        <HelpIcon className="ml-1 mt-[1px] h-4 w-4 stroke-[1.2px] text-grey-600 dark:text-grey-800" />
+                        <HelpIcon className="ml-1 mt-[1px] size-4 stroke-[1.2px] text-grey-600 dark:text-grey-800" />
                     </a>
                 </div>
             }

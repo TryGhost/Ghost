@@ -15,7 +15,7 @@ function UnsplashButton({icon, label, ...props}) {
             onClick={e => e.stopPropagation()}
             {...props}
         >
-            {icon && <Icon className={`h-4 w-4 fill-red stroke-[3px] ${label && 'mr-1'}`} />}
+            {icon && <Icon className={`size-4 fill-red stroke-[3px]${label && 'mr-1'}`} />}
             {label && <span>{label}</span>}
         </a>
     );

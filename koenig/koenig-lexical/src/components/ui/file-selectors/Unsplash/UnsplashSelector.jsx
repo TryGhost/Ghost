@@ -11,7 +11,7 @@ function UnsplashSelector({closeModal, handleSearch, children, galleryRef}) {
             <div ref={galleryRef} className="not-kg-prose fixed inset-8 z-50 overflow-hidden rounded bg-white shadow-xl" data-kg-modal="unsplash">
                 <button className="absolute right-6 top-6 cursor-pointer" type="button">
                     <CloseIcon
-                        className="h-4 w-4 stroke-2 text-grey-400"
+                        className="size-4 stroke-2 text-grey-400"
                         data-kg-modal-close-button
                         onClick={() => closeModal()}
                     />
@@ -23,7 +23,7 @@ function UnsplashSelector({closeModal, handleSearch, children, galleryRef}) {
                             Unsplash
                         </h1>
                         <div className="relative w-full max-w-sm">
-                            <SearchIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-2 text-grey-700" />
+                            <SearchIcon className="absolute left-4 top-1/2 size-4 -translate-y-2 text-grey-700" />
                             <input className="h-10 w-full rounded-full border border-grey-300 pl-10 pr-8 font-sans text-md font-normal text-black focus:border-grey-400 focus-visible:outline-none" placeholder="Search free high-resolution photos" autoFocus data-kg-unsplash-search onChange={handleSearch} />
                         </div>
                     </header>
