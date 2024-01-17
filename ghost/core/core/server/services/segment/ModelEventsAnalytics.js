@@ -51,21 +51,6 @@ module.exports = class ModelEventsAnalytics {
      */
     #toTrack = [
         {
-            event: 'post.published',
-            name: 'Post Published'
-        },
-        {
-            event: 'page.published',
-            name: 'Page Published'
-        },
-        {
-            event: 'theme.uploaded',
-            name: 'Theme Uploaded',
-            // {keyOnSuppliedEventData: keyOnTrackedEventData}
-            // - used to extract specific properties from event data and give them meaningful names
-            data: {name: 'name'}
-        },
-        {
             event: 'integration.added',
             name: 'Custom Integration Added'
         }

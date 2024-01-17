@@ -53,7 +53,8 @@ describe('ModelEventsAnalytics', function () {
 
             modelEventsAnalytics.subscribeToEvents();
 
-            assert(eventStub.callCount === 4);
+            // as per #toTrack Array
+            assert(eventStub.callCount === 1);
             assert(loggingStub.callCount === 0);
         });
 
@@ -83,27 +84,8 @@ describe('ModelEventsAnalytics', function () {
             events.emit('page.published');
             events.emit('integration.added');
 
-            assert(analyticsStub.callCount === 4);
+            assert(analyticsStub.callCount === 1);
             assert(analyticsStub.getCall(0).calledWithExactly({
-                userId: '1234',
-                properties: {email: 'john@test.com'},
-                event: 'Pro: Theme Uploaded',
-                name: 'Custom Super Theme'
-            }));
-
-            assert(analyticsStub.getCall(1).calledWithExactly({
-                userId: '1234',
-                properties: {email: 'john@test.com'},
-                event: 'Pro: Post Published'
-            }));
-
-            assert(analyticsStub.getCall(2).calledWithExactly({
-                userId: '1234',
-                properties: {email: 'john@test.com'},
-                event: 'Pro: Page Published'
-            }));
-
-            assert(analyticsStub.getCall(3).calledWithExactly({
                 userId: '1234',
                 properties: {email: 'john@test.com'},
                 event: 'Pro: Custom Integration Added'
@@ -112,7 +94,7 @@ describe('ModelEventsAnalytics', function () {
             events.emit('post.unpublished');
 
             // Analytics should not be called again
-            assert(analyticsStub.callCount === 4);
+            assert(analyticsStub.callCount === 1);
             assert(loggingStub.callCount === 0);
         });
 
