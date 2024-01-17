@@ -214,7 +214,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         const internalKey = this._buildKey(key);
         debug('set', internalKey);
         try {
-            return await this.cache.set(this._buildKey(key), value);
+            return await this.cache.set(internalKey, value);
         } catch (err) {
             logging.error(err);
         }
