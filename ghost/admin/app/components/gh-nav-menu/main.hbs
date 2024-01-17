@@ -116,12 +116,6 @@
                                 </LinkTo>
                             {{/if}}
                         </li>
-
-                        {{#if this.settings.paidMembersEnabled}}
-                            <li>
-                                <LinkTo @route="offers" @current-when="offers offer offer.new" @alt="Offers" data-test-nav="offers">{{svg-jar "percentage"}}Offers</LinkTo>
-                            </li>
-                        {{/if}}
                     {{/if}}
                     {{#if (feature "adminXDemo")}}
                         <li>
