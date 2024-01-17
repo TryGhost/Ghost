@@ -11,6 +11,13 @@ import {tracked} from '@glimmer/tracking';
 
 const DEBOUNCE_MS = 200;
 
+function mapResource(resource) {
+    return {
+        id: resource.id,
+        title: resource.title
+    };
+}
+
 export default class GhResourceSelect extends Component {
     @service store;
 
@@ -130,13 +137,6 @@ export default class GhResourceSelect extends Component {
         const posts = yield this.store.query('post', {filter: 'status:published', limit: '25', fields: 'id,title'});
         const pages = yield this.store.query('page', {filter: 'status:published', limit: '25', fields: 'id,title'});
 
-        function mapResource(resource) {
-            return {
-                id: resource.id,
-                title: resource.title
-            };
-        }
-
         if (posts.length > 0) {
             options.push({
                 groupName: 'Posts',
@@ -164,18 +164,11 @@ export default class GhResourceSelect extends Component {
         if (this.args.type === 'email') {
             const posts = yield this.store.query('post', {filter: '(status:published,status:sent)+newsletter_id:-null+title:~\'' + searchTerm.replace('\'', '\\\'') + '\'', limit: '10', fields: 'id,title'});
             options.push(...posts.map(mapResource));
-            return;
+            return options;
         }
 
         const posts = yield this.store.query('post', {filter: 'status:published+title:~\'' + searchTerm.replace('\'', '\\\'') + '\'', limit: '10', fields: 'id,title'});
         const pages = yield this.store.query('page', {filter: 'status:published+title:~\'' + searchTerm.replace('\'', '\\\'') + '\'', limit: '10', fields: 'id,title'});
-
-        function mapResource(resource) {
-            return {
-                id: resource.id,
-                title: resource.title
-            };
-        }
 
         if (posts.length > 0) {
             options.push(...posts.map(mapResource));
