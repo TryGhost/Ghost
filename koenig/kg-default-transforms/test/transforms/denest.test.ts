@@ -1,6 +1,6 @@
 import {assertTransform, createEditor} from '../utils';
 import {$createParagraphNode, LexicalEditor, ParagraphNode, TextNode} from 'lexical';
-import {ImageNode} from '@tryghost/kg-default-nodes';
+import {ExtendedHeadingNode, ImageNode} from '@tryghost/kg-default-nodes';
 import {registerDenestTransform} from '../../';
 import {$createListItemNode, $createListNode, ListItemNode, ListNode} from '@lexical/list';
 import {$createHeadingNode, HeadingNode} from '@lexical/rich-text';
@@ -753,5 +753,116 @@ describe('Denest transform', function () {
         const editor = createEditor({nodes: [ParagraphNode, TextNode]});
 
         assertTransform(editor, registerTransforms, unchangedState, unchangedState);
+    });
+
+    it('handles lists inside headings', function () {
+        const registerTransforms = (editor: LexicalEditor) => {
+            registerDenestTransform(editor, ParagraphNode, () => ($createParagraphNode()));
+            registerDenestTransform(editor, HeadingNode, node => ($createHeadingNode(node.getTag())));
+            registerDenestTransform(editor, ExtendedHeadingNode, node => ($createHeadingNode(node.getTag())));
+            registerDenestTransform(editor, ListNode, node => ($createListNode(node.getListType(), node.getStart())));
+            registerDenestTransform(editor, ListItemNode, () => ($createListItemNode()));
+        };
+
+        const before = {
+            root: {
+                children: [
+                    {
+                        children: [
+                            {
+                                children: [
+                                    {
+                                        children: [
+                                            {
+                                                detail: 0,
+                                                format: 0,
+                                                mode: 'normal',
+                                                style: '',
+                                                text: 'This should be plain text',
+                                                type: 'extended-text',
+                                                version: 1
+                                            }
+                                        ],
+                                        direction: 'ltr',
+                                        format: '',
+                                        indent: 0,
+                                        type: 'listitem',
+                                        version: 1,
+                                        value: 1
+                                    }
+                                ],
+                                direction: 'ltr',
+                                format: '',
+                                indent: 0,
+                                type: 'list',
+                                version: 1,
+                                listType: 'number',
+                                start: 1,
+                                tag: 'ol'
+                            }
+                        ],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'heading',
+                        version: 1,
+                        tag: 'h3'
+                    }
+                ],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        };
+
+        const after = {
+            root: {
+                children: [
+                    {
+                        children: [
+                            {
+                                children: [
+                                    {
+                                        detail: 0,
+                                        format: 0,
+                                        mode: 'normal',
+                                        style: '',
+                                        text: 'This should be plain text',
+                                        type: 'extended-text',
+                                        version: 1
+                                    }
+                                ],
+                                checked: undefined,
+                                direction: 'ltr',
+                                format: '',
+                                indent: 0,
+                                type: 'listitem',
+                                version: 1,
+                                value: 1
+                            }
+                        ],
+                        direction: 'ltr',
+                        format: '',
+                        indent: 0,
+                        type: 'list',
+                        version: 1,
+                        listType: 'number',
+                        start: 1,
+                        tag: 'ol'
+                    }
+                ],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        };
+
+        const editor = createEditor();
+
+        assertTransform(editor, registerTransforms, before, after);
     });
 });

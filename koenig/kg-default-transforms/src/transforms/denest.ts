@@ -1,5 +1,5 @@
-import {$isListItemNode, $isListNode} from '@lexical/list';
-import {ElementNode, $createParagraphNode, LexicalEditor, LexicalNode, Klass, $getRoot} from 'lexical';
+import {$isListItemNode, $isListNode, ListNode} from '@lexical/list';
+import {ElementNode, $createParagraphNode, LexicalEditor, LexicalNode, Klass, $getRoot, $isRootNode} from 'lexical';
 
 export type CreateNodeFn<T extends LexicalNode> = (originalNode: T) => T;
 
@@ -20,10 +20,20 @@ export type CreateNodeFn<T extends LexicalNode> = (originalNode: T) => T;
 // children from the passed-in node and inserting them after the node's top-level parent. We need
 // to move the nested nodes rather than remove them so we don't lose any pasted/imported content.
 
+// lists can only be top-level or nested inside list items
+function isValidListNode(node: ListNode) {
+    const parent = node.getParent();
+    return $isRootNode(parent) || $isListItemNode(parent);
+}
+
 export function denestTransform<T extends ElementNode>(node: T, createNode: CreateNodeFn<T>) {
     const children = node.getChildren();
 
     const hasInvalidChild = children.some((child: LexicalNode) => {
+        if ($isListNode(child) && !isValidListNode(child)) {
+            return true;
+        }
+
         return child.isInline && !child.isInline() && !$isListNode(child) && !$isListItemNode(child);
     });
 
@@ -44,7 +54,7 @@ export function denestTransform<T extends ElementNode>(node: T, createNode: Crea
 
     // pull any non-inline children out into the temp paragraph
     children.forEach((child: LexicalNode) => {
-        if (!$isListNode(child) && !$isListItemNode(child) && child.isInline && !child.isInline()) {
+        if (($isListNode(child) && !isValidListNode(child)) || !$isListNode(child) && !$isListItemNode(child) && child.isInline && !child.isInline()) {
             if (currentElementNode.getChildrenSize() > 0) {
                 tempParagraph.append(currentElementNode);
                 currentElementNode = createNode(node);
