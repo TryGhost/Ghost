@@ -238,8 +238,7 @@ const pipeline = (apiController, apiUtils, apiType) => {
             const cacheKey = stringify(cacheKeyData);
 
             if (apiImpl.cache) {
-                const response = await apiImpl.cache.get(cacheKey);
-
+                const response = await apiImpl.cache.get(cacheKey, getResponse);
                 if (response) {
                     return Promise.resolve(response);
                 }
