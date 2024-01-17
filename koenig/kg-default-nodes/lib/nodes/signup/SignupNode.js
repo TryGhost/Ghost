@@ -18,7 +18,7 @@ export class SignupNode extends generateDecoratorNode({nodeType: 'signup',
         {name: 'labels', default: []},
         {name: 'layout', default: 'wide'},
         {name: 'subheader', default: '', wordCount: true},
-        {name: 'successMessage', default: 'Email sent! Check your inbox to completes your signup.'},
+        {name: 'successMessage', default: 'Email sent! Check your inbox to complete your signup.'},
         {name: 'swapped', default: false}
     ]}) {
     /* override */
