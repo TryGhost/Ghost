@@ -211,6 +211,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         <Select
                             options={tierOptions}
                             selectedOption={selectedTier}
+                            testId='tier-cadence-select-offers'
                             title='Tier — Cadence'
                             onSelect={(e) => {
                                 if (e) {
@@ -241,6 +242,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                         controlClasses={{menu: 'w-20 right-0'}}
                                         options={amountOptions}
                                         selectedOption={overrides.type === 'percent' ? amountOptions[0] : amountOptions[1]}
+                                        testId='amount-type-select-offers'
                                         onSelect={(e) => {
                                             handleAmountTypeChange(e?.value || '');
                                         }}
@@ -250,6 +252,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             <Select
                                 options={filteredDurationOptions}
                                 selectedOption={filteredDurationOptions.find(option => option.value === overrides.duration)}
+                                testId='duration-select-offers'
                                 title='Duration'
                                 onSelect={e => handleDurationChange(e?.value || '')}
                             />
