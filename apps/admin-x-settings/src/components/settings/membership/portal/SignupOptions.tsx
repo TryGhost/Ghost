@@ -99,15 +99,15 @@ const SignupOptions: React.FC<{
         });
     }
 
-    const paidActiveTiersResult = getPaidActiveTiers(localTiers) || [];
+    const paidActiveTiers = getPaidActiveTiers(localTiers) || [];
 
     const defaultPlanOptions: SelectOption[] = [
         {value: 'yearly', label: 'Yearly'},
         {value: 'monthly', label: 'Monthly'}
     ];
 
-    if (paidActiveTiersResult.length > 0 && isStripeEnabled) {
-        paidActiveTiersResult.forEach((tier) => {
+    if (isStripeEnabled && paidActiveTiers.length > 0) {
+        paidActiveTiers.forEach((tier) => {
             tiersCheckboxes.push({
                 checked: (tier.visibility === 'public'),
                 label: tier.name,
@@ -116,6 +116,8 @@ const SignupOptions: React.FC<{
             });
         });
     }
+
+    const arePaidTiersVisible = isStripeEnabled && paidActiveTiers.length > 0 && paidActiveTiers.some(tier => tier.visibility === 'public');
 
     return <div className='mt-7'><Form>
         <Toggle
@@ -131,7 +133,7 @@ const SignupOptions: React.FC<{
             title='Tiers available at signup'
         />
 
-        {isStripeEnabled && localTiers.some(tier => tier.visibility === 'public') && (
+        {arePaidTiersVisible && (
             <>
                 <CheckboxGroup
                     checkboxes={[
@@ -156,7 +158,7 @@ const SignupOptions: React.FC<{
                     ]}
                     title='Prices available at signup'
                 />
-                {(hasPortalImprovements && (portalPlans.includes('yearly') && portalPlans.includes('monthly'))) &&
+                {(hasPortalImprovements && portalPlans.includes('yearly') && portalPlans.includes('monthly')) &&
                     <Select
                         options={defaultPlanOptions}
                         selectedOption={defaultPlanOptions.find(option => option.value === portalDefaultPlan)}
