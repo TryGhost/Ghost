@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {Button} from '../Button';
 import {ButtonGroupSetting, InputSetting, InputUrlSetting, SettingsPanel} from '../SettingsPanel';
+import {ReadOnlyOverlay} from '../ReadOnlyOverlay';
 
 export function ButtonCard({
     alignment,
@@ -37,6 +38,7 @@ export function ButtonCard({
                     <Button dataTestId="button-card-btn" href={buttonUrl} placeholder={buttonPlaceholder} value={buttonText} />
                 </div>
             </div>
+            <ReadOnlyOverlay />
             {isEditing && (
                 <SettingsPanel>
                     <ButtonGroupSetting
