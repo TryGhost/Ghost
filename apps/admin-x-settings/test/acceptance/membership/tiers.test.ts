@@ -54,8 +54,6 @@ test.describe('Tier settings', async () => {
 
         await modal.getByRole('button', {name: 'Save & close'}).click();
 
-        await page.pause();
-
         // await expect(section.getByTestId('tier-card').filter({hasText: /Plus/})).toHaveText(/Plus tier/);
         // await expect(section.getByTestId('tier-card').filter({hasText: /Plus/})).toHaveText(/\$8\/month/);
 

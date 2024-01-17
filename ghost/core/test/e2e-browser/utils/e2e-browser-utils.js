@@ -249,71 +249,6 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, en
  * @param {number} options.amount
  * @returns {Promise<object>} Unique offer name
  */
-// const createOffer = async (page, {name, tierName, offerType, amount, discountType = null, discountDuration = 3}) => {
-//     await page.goto('/ghost');
-//     await page.locator('.gh-nav a[href="#/offers/"]').click();
-
-//     // Keep offer names unique & <= 40 characters
-//     let offerName = `${name} (${new ObjectID().toHexString().slice(0, 40 - name.length - 3)})`;
-
-//     // Archive other offers to keep the list tidy
-//     // We only need 1 offer to be active at a time
-//     // Either the list of active offers loads, or the CTA when no offers exist
-//     while (await Promise.race([
-//         page.locator('.gh-offers-list .gh-list-header').filter({hasText: 'active'}).waitFor({state: 'visible', timeout: 1000}).then(() => true),
-//         page.locator('.gh-offers-list-cta').waitFor({state: 'visible', timeout: 1000}).then(() => false)
-//     ]).catch(() => false)) {
-//         const listItem = page.locator('.gh-offers-list .gh-list-row:not(.header)').first();
-//         await listItem.locator('a[href^="#/offers/"]').last().click();
-//         await page.getByRole('button', {name: 'Archive offer'}).click();
-//         await page
-//             .locator('.modal-content')
-//             .filter({hasText: 'Archive offer'})
-//             .first()
-//             .getByRole('button', {name: 'Archive'})
-//             .click();
-
-//         // TODO: Use a more resilient selector
-//         const statusDropdown = await page.getByRole('button', {name: 'Archived offers'});
-//         await statusDropdown.waitFor({
-//             state: 'visible',
-//             timeout: 1000
-//         });
-//         await statusDropdown.click();
-//         await page.getByRole('option', {name: 'Active offers'}).click();
-//     }
-
-//     await page.getByRole('link', {name: 'New offer'}).click();
-//     await page.locator('input#name').fill(offerName);
-
-//     if (offerType === 'freeTrial') {
-//         await page.getByRole('button', {name: 'Free trial Give free access for a limited time.'}).click();
-//         await page.locator('input#trial-duration').fill(`${amount}`);
-//     } else if (offerType === 'discount') {
-//         await page.locator('input#amount').fill(`${amount}`);
-//         if (discountType === 'multiple-months') {
-//             await page.locator('[data-test-select="offer-duration"]').selectOption('repeating');
-//             await page.locator('input#duration-months').fill(discountDuration.toString());
-//         }
-
-//         if (discountType === 'forever') {
-//             await page.locator('[data-test-select="offer-duration"]').selectOption('forever');
-//         }
-//     }
-
-// const priceId = await page.locator(`.gh-select-product-cadence>select>option`).getByText(`${tierName} - Monthly`).getAttribute('value');
-// await page.locator('.gh-select-product-cadence>select').selectOption(priceId);
-
-//     await page.getByRole('button', {name: 'Save'}).click();
-//     // Wait for the "Saved" button, ensures that next clicks don't trigger the unsaved work modal
-//     await page.getByRole('button', {name: 'Saved'}).waitFor({
-//         state: 'visible',
-//         timeout: 10000
-//     });
-//     await page.locator('.gh-nav a[href="#/offers/"]').click();
-
-//     return offerName;
-// };
 
 const createOffer = async (page, {name, tierName, offerType, amount, discountType = null, discountDuration = 3}) => {
     await page.goto('/ghost');
@@ -324,11 +259,33 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
     // Tiers request can take time, so waiting until there is no connections before interacting with them
     await page.waitForLoadState('networkidle');
 
+    const hasExistingOffers = await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).isVisible();
+    const isCTA = await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).isVisible();
     // Archive other offers to keep the list tidy
     // We only need 1 offer to be active at a time
     // Either the list of active offers loads, or the CTA when no offers exist
-    await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).click();
+    if (hasExistingOffers && !isCTA) {
+        await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+        await page.waitForLoadState('networkidle');
 
+        // Selector for the elements with data-testid 'offer-item'
+        // const offerItemsSelector = '[data-testid="offer-item"]';
+        await page.getByTestId('offer-item').nth(0).click();
+        await page.getByRole('button', {name: 'Archive offer'}).click();
+
+        const confirmModal = page.getByTestId('confirmation-modal');
+        await confirmModal.getByRole('button', {name: 'Archive'}).click();
+    }
+
+    if (isCTA) {
+        await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).click();
+    } else {
+        await page.getByText('New offer').click();
+    }
+
+    // const newOfferButton = await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}) || await page.getByTestId('offers').getByRole('button', {name: 'New offer'});
+    // await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).click();
+    // await newOfferButton.click();
     await page.getByLabel('Offer name').fill(offerName);
 
     if (offerType === 'freeTrial') {

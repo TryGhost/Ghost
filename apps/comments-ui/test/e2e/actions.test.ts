@@ -90,9 +90,6 @@ test.describe('Actions', async () => {
         await replyButton.click();
         const editor = frame.getByTestId('form-editor');
         await expect(editor).toBeVisible();
-
-        await page.pause();
-
         // Wait for focused
         await waitEditorFocused(editor);
 

@@ -29,11 +29,6 @@ test.describe('Portal', () => {
             await sharedPage.goto('/ghost/#/settings/offers');
             await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
 
-            // // open offer details page
-            // await sharedPage.locator(`[data-test-offer="${offerName}"] a`).first().click();
-
-            // // fetch offer url from portal settings and open it
-            // const portalUrl = await sharedPage.locator('[data-test-input="offer-portal-url"]').inputValue();
             await sharedPage.goto(offerLink);
 
             const portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
@@ -73,7 +68,6 @@ test.describe('Portal', () => {
 
             // // Ensure the offer redemption count was bumped
             await sharedPage.goto('/ghost/#/settings/offers');
-            await sharedPage.pause();
             // await sharedPage.locator('.gh-nav a[href="#/offers/"]').click();
             const locator = sharedPage.locator(`[data-test-offer="${offerName}"]`);
             await expect(locator).toContainText('1 redemption');
@@ -268,46 +262,36 @@ test.describe('Portal', () => {
             await expect(sharedPage.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
         });
 
-        // test('Archiving an offer', async ({sharedPage}) => {
-        //     await sharedPage.goto('/ghost');
+        test('Archiving an offer', async ({sharedPage}) => {
+            await sharedPage.goto('/ghost');
 
-        //     // Create a new tier to attach offer to
-        //     const tierName = 'Archive Test Tier';
-        //     await createTier(sharedPage, {
-        //         name: tierName,
-        //         monthlyPrice: 6,
-        //         yearlyPrice: 60
-        //     });
+            // Create a new tier to attach offer to
+            const tierName = 'Archive Test Tier';
+            await createTier(sharedPage, {
+                name: tierName,
+                monthlyPrice: 6,
+                yearlyPrice: 60
+            });
 
-        //     // Create an offer. This will be archived
-        //     const offerName = await createOffer(sharedPage, {
-        //         name: 'To be archived',
-        //         tierName: tierName,
-        //         offerType: 'discount',
-        //         amount: 10
-        //     });
+            // Create an offer. This will be archived
+            const {offerLink} = await createOffer(sharedPage, {
+                name: 'To be archived',
+                tierName: tierName,
+                offerType: 'discount',
+                amount: 10
+            });
 
-        //     // Archive all existing offers by creating a new offer. Using the createOffer util auto-archives all existing offers
-        //     await createOffer(sharedPage, {
-        //         name: 'Dummy Active Offer',
-        //         tierName: tierName,
-        //         offerType: 'discount',
-        //         amount: 10
-        //     });
-
-        //     // Check if the offer appears in the archive list
-        //     await sharedPage.locator('.gh-contentfilter-menu-trigger').click();
-        //     await sharedPage.getByRole('option', {name: 'Archived offers'}).click();
-        //     await expect(sharedPage.getByRole('link', {name: offerName}), 'Should have an archived offer').toBeVisible();
-
-        //     // Go to the offer and grab the offer URL
-        //     await sharedPage.locator('.gh-offers-list .gh-list-row').filter({hasText: offerName}).click();
-        //     const portalUrl = await sharedPage.locator('input#url').inputValue();
-
-        //     // Open the offer URL and make sure portal popup doesn't load
-        //     await sharedPage.goto(portalUrl);
-        //     const portalPopup = await sharedPage.locator('[data-testid="portal-popup-frame"]').isVisible();
-        //     await expect(portalPopup).toBeFalsy();
-        // });
+            // Archive all existing offers by creating a new offer. Using the createOffer util auto-archives all existing offers
+            await createOffer(sharedPage, {
+                name: 'Dummy Active Offer',
+                tierName: tierName,
+                offerType: 'discount',
+                amount: 10
+            });
+            // Open the offer URL and make sure portal popup doesn't load
+            await sharedPage.goto(offerLink);
+            const portalPopup = await sharedPage.locator('[data-testid="portal-popup-frame"]').isVisible();
+            await expect(portalPopup).toBeFalsy();
+        });
     });
 });
