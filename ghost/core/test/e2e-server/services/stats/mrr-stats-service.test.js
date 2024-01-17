@@ -53,7 +53,7 @@ describe('MRR Stats Service', function () {
 
     describe('getCurrentMrr', function () {
         it('Always returns at least one currency', async function () {
-            const result = await statsService.mrr.getCurrentMrr();
+            const result = await statsService.api.mrr.getCurrentMrr();
             result.should.eql([
                 {
                     currency: 'usd', // need to check capital usage here!
