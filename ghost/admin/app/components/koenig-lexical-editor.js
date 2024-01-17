@@ -58,7 +58,7 @@ class ErrorHandler extends React.Component {
             });
         }
 
-        console.error(error, errorInfo); // eslint-disable-line
+        console.error(error); // eslint-disable-line
     }
 
     render() {
