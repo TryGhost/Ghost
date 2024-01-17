@@ -250,7 +250,15 @@ const Sidebar: React.FC<{
                 <Form className='mt-6' gap='sm' margins='lg' title='Email info'>
                     <TextField placeholder={siteTitle} title="Sender name" value={newsletter.sender_name || ''} onChange={e => updateNewsletter({sender_name: e.target.value})} />
                     {renderSenderEmailField()}
+                    {/* Banner - when changing sender address */}
+                    {/* <Banner className='-mt-2 p-3 text-sm' color='yellow'>
+                    We&lsquo;ve sent a confirmation email to <span className='font-semibold'>dzvlais@gmail.com</span>. Until the address has been verified, newsletters will be sent from the <span className='font-semibold'>noreply@localhost</span>.
+                    </Banner> */}
                     <ReplyToEmailField clearError={clearError} errors={errors} newsletter={newsletter} updateNewsletter={updateNewsletter} validate={validate} />
+                    {/* Banner - when changing reply-to address */}
+                    {/* <Banner className='-mt-2 p-3 text-sm' color='yellow'>
+                    We&lsquo;ve sent a confirmation email to <span className='font-semibold'>dzvlais@gmail.com</span>. Until the address has been verified, replies will continue to go to <span className='font-semibold'>noreply@localhost</span>.
+                    </Banner> */}
                 </Form>
                 <Form className='mt-6' gap='sm' margins='lg' title='Member settings'>
                     <Toggle
