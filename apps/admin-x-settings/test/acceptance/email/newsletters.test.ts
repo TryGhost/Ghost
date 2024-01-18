@@ -244,10 +244,8 @@ test.describe('Newsletter settings', async () => {
                 await replyToEmail.fill('test@test.com');
                 await modal.getByRole('button', {name: 'Save'}).click();
 
-                await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm reply-to address/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/sent a confirmation email to test@test.com/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/replies will continue to go to support@example.com/);
+                await expect(page.getByTestId('toast-neutral')).toHaveCount(1);
+                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to test@test.com/);
             });
         });
 
@@ -340,10 +338,8 @@ test.describe('Newsletter settings', async () => {
 
                 // There is a verification popup for the new reply-to address
                 await modal.getByRole('button', {name: 'Save'}).click();
-                await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm reply-to address/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/sent a confirmation email to hermione@granger.com/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/replies will continue to go to support@example.com/);
+                await expect(page.getByTestId('toast-neutral')).toHaveCount(1);
+                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to hermione@granger.com/);
             });
         });
     });
