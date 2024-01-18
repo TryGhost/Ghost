@@ -1,5 +1,5 @@
 import {DateTime} from 'luxon';
-import {toArray} from 'lodash';
+import toArray from 'lodash/toArray';
 
 export default function render(node, document, options) {
     const metadata = node.metadata;
