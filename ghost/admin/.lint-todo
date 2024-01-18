@@ -351,4 +351,3 @@ add|ember-template-lint|no-passed-in-event-handlers|50|48|50|48|138f75fcc7408e61
 add|ember-template-lint|no-passed-in-event-handlers|76|48|76|48|8fb95409c6333d15490f0777239f6e04641215e6|1697068800000|1707440400000|1712620800000|app/templates/settings/integrations/slack.hbs
 add|ember-template-lint|require-valid-alt-text|24|20|24|20|a500be6114ce681e610b6fec7d2a6cea2f4555f7|1697068800000|1707440400000|1712620800000|app/templates/settings/integrations/slack.hbs
 add|ember-template-lint|no-action|51|56|51|56|2b83cff3852a6f3cb1f2d2613e1bb611e1af4996|1697068800000|1707440400000|1712620800000|app/templates/settings/integrations/unsplash.hbs
-remove|ember-template-lint|no-unknown-arguments-for-builtin-components|118|95|118|95|b8aae2daed1c14cf280800b3d282d11fb14851a4|1697068800000|1707440400000|1712620800000|app/components/gh-nav-menu/main.hbs

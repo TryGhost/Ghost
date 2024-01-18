@@ -1,6 +1,6 @@
-import NiceModal from '@ebay/nice-modal-react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/PortalFrame';
-// import useFeatureFlag from '../../../../hooks/useFeatureFlag';
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
@@ -177,11 +177,20 @@ const Sidebar: React.FC<{
 
 const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     const {siteData} = useGlobalData();
+    const modal = useModal();
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
+    const hasOffers = useFeatureFlag('adminXOffers');
     const {mutateAsync: editOffer} = useEditOffer();
 
     const [href, setHref] = useState<string>('');
+
+    useEffect(() => {
+        if (!hasOffers) {
+            modal.remove();
+            updateRoute('');
+        }
+    }, [hasOffers, modal, updateRoute]);
 
     const {data: {offers: offerById = []} = {}} = useBrowseOffersById(id ? id : '');
 

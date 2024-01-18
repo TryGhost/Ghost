@@ -44,7 +44,7 @@ const ALPHA_FEATURES = [
     'tipsAndDonations',
     'importMemberTier',
     'lexicalIndicators',
-    // 'adminXOffers',
+    'adminXOffers',
     'filterEmailDisabled',
     'adminXDemo',
     'newEmailAddresses',

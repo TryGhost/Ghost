@@ -103,7 +103,7 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
             <p className='mt-3 max-w-[510px] text-[1.6rem]'>You can share the link anywhere. In your newsletter, social media, a podcast, or in-person. It all just works.</p>
             <div className='mt-8 flex w-full max-w-md flex-col gap-8'>
                 <div className='flex flex-col-reverse gap-2'>
-                    <TextField name='offer-url' type='url' value={offerLink} disabled />
+                    <TextField type='url' value={offerLink} disabled />
                     <Button color='green' label={isCopied ? 'Copied!' : 'Copy link'} fullWidth onClick={handleCopyClick} />
                 </div>
                 <div className='flex items-center gap-4 text-xs font-medium before:h-px before:grow before:bg-grey-300 before:content-[""] after:h-px after:grow after:bg-grey-300 after:content-[""] dark:before:bg-grey-800 dark:after:bg-grey-800'>OR</div>

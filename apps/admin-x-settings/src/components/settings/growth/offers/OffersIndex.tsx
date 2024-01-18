@@ -1,3 +1,4 @@
+import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {ButtonGroup, ButtonProps} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
@@ -9,11 +10,11 @@ import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {numberWithCommas} from '../../../../utils/helpers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
+import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useModal} from '@ebay/nice-modal-react';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useSortingState} from '../../../providers/SettingsAppProvider';
-import {useState} from 'react';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
@@ -60,6 +61,7 @@ export const getOfferDiscount = (type: string, amount: number, cadence: string, 
         break;
     };
 
+    // Check if updatedPrice is negative, if so, set it to 0
     if (updatedPrice < 0) {
         updatedPrice = 0;
     }
@@ -92,6 +94,7 @@ export const CopyLinkButton: React.FC<{offerCode: string}> = ({offerCode}) => {
 export const OffersIndexModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
+    const hasOffers = useFeatureFlag('adminXOffers');
     const {data: {offers: allOffers = []} = {}} = useBrowseOffers({
         searchParams: {
             limit: 'all'
@@ -120,6 +123,13 @@ export const OffersIndexModal = () => {
     const sortOption = offersSorting?.option || 'date-added';
     const sortDirection = offersSorting?.direction || 'desc';
 
+    useEffect(() => {
+        if (!hasOffers) {
+            modal.remove();
+            updateRoute('');
+        }
+    }, [hasOffers, modal, updateRoute]);
+
     const handleOfferEdit = (id:string) => {
         // TODO: implement
         sessionStorage.setItem('editOfferPageSource', 'offersIndex');
@@ -135,6 +145,7 @@ export const OffersIndexModal = () => {
             case 'redemptions':
                 return multiplier * (offer1.redemption_count - offer2.redemption_count);
             default:
+                // 'date-added' or unknown option, use default sorting
                 return multiplier * ((offer1.created_at ? new Date(offer1.created_at).getTime() : 0) - (offer2.created_at ? new Date(offer2.created_at).getTime() : 0));
             }
         });
@@ -153,6 +164,7 @@ export const OffersIndexModal = () => {
             }
             {sortedOffers.filter((offer) => {
                 const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
+                //Check to filter out offers with archived offerTier
                 return (selectedTab === 'active' && (offer.status === 'active' && offerTier && offerTier.active === true)) ||
                 (selectedTab === 'archived' && (offer.status === 'archived' || (offerTier && offerTier.active === false)));
             }).map((offer) => {
@@ -167,7 +179,7 @@ export const OffersIndexModal = () => {
                 const {discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
 
                 return (
-                    <tr className={`group relative scale-100 border-b border-b-grey-200 dark:border-grey-800`} data-testid="offer-item">
+                    <tr className={`group relative scale-100 border-b border-b-grey-200 dark:border-grey-800`}>
                         <td className={`${isTierArchived ? 'opacity-50' : ''} p-0`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5 pl-0`} onClick={!isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {}}><span className='font-semibold'>{offer?.name}</span><br /><span className='text-sm text-grey-700'>{offerTier.name} {getOfferCadence(offer.cadence)}</span></a></td>
                         <td className={`${isTierArchived ? 'opacity-50' : ''} whitespace-nowrap p-0 text-sm`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5`} onClick={!isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {}}><span className='text-[1.3rem] font-medium uppercase'>{discountOffer}</span><br /><span className='text-grey-700'>{offer.type !== 'trial' ? getOfferDuration(offer.duration) : 'Trial period'}</span></a></td>
                         <td className={`${isTierArchived ? 'opacity-50' : ''} whitespace-nowrap p-0 text-sm`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5`} onClick={!isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {}}><span className='font-medium'>{updatedPriceWithCurrency}</span> {offer.type !== 'trial' ? <span className='relative text-xs text-grey-700 before:absolute before:-inset-x-0.5 before:top-1/2 before:rotate-[-20deg] before:border-t before:content-[""]'>{originalPriceWithCurrency}</span> : null}</a></td>

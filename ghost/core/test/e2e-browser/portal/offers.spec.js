@@ -18,7 +18,7 @@ test.describe('Portal', () => {
             });
 
             // add a new offer with free trial
-            const {offerName, offerLink} = await createOffer(sharedPage, {
+            const offerName = await createOffer(sharedPage, {
                 name: 'Black Friday Special',
                 tierName,
                 offerType: 'freeTrial',
@@ -26,10 +26,14 @@ test.describe('Portal', () => {
             });
 
             // check that offer was added in the offer list screen
-            await sharedPage.goto('/ghost/#/settings/offers');
-            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
+            await expect(sharedPage.locator(`[data-test-offer="${offerName}"]`), 'Should have free-trial offer').toBeVisible();
 
-            await sharedPage.goto(offerLink);
+            // open offer details page
+            await sharedPage.locator(`[data-test-offer="${offerName}"] a`).first().click();
+
+            // fetch offer url from portal settings and open it
+            const portalUrl = await sharedPage.locator('[data-test-input="offer-portal-url"]').inputValue();
+            await sharedPage.goto(portalUrl);
 
             const portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -62,15 +66,14 @@ test.describe('Portal', () => {
             await sharedPage.goto('/ghost');
             await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
 
-            // // 1 member, should be Testy, on Portal Tier
+            // 1 member, should be Testy, on Portal Tier
             await expect(sharedPage.getByRole('link', {name: 'Testy McTesterson testy+trial@example.com'}), 'Should have 1 paid member').toBeVisible();
             await expect(sharedPage.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
 
-            // // Ensure the offer redemption count was bumped
-            await sharedPage.goto('/ghost/#/settings/offers');
-            // await sharedPage.locator('.gh-nav a[href="#/offers/"]').click();
-            const locator = sharedPage.locator(`[data-test-offer="${offerName}"]`);
-            await expect(locator).toContainText('1 redemption');
+            // Ensure the offer redemption count was bumped
+            await sharedPage.locator('.gh-nav a[href="#/offers/"]').click();
+            const locator = sharedPage.locator(`[data-test-offer="${offerName}"]`).locator('[data-test-list="redemption-count"]').locator('span');
+            await expect(locator).toContainText('1');
         });
 
         test('Creates and uses a one-time discount Offer', async ({sharedPage}) => {
@@ -87,7 +90,7 @@ test.describe('Portal', () => {
             });
 
             // Creates a one-time discount offer for 10% off
-            const {offerName, offerLink} = await createOffer(sharedPage, {
+            const offerName = await createOffer(sharedPage, {
                 name: 'Black Friday Special',
                 tierName: tierName,
                 offerType: 'discount',
@@ -95,13 +98,14 @@ test.describe('Portal', () => {
             });
 
             // check that offer was added in the offer list screen
-            await sharedPage.goto('/ghost/#/settings/offers');
-            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
+            await expect(sharedPage.locator(`[data-test-offer="${offerName}"]`), 'Should have free-trial offer').toBeVisible();
+
             // open offer details page
-            // await sharedPage.locator(`[data-test-offer="${offerName}"] a`).first().click();
+            await sharedPage.locator(`[data-test-offer="${offerName}"] a`).first().click();
 
             // fetch offer url from portal settings and open it
-            await sharedPage.goto(offerLink);
+            const portalUrl = await sharedPage.locator('[data-test-input="offer-portal-url"]').inputValue();
+            await sharedPage.goto(portalUrl);
 
             const portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -151,7 +155,7 @@ test.describe('Portal', () => {
             });
 
             // Creates a one-time discount offer for 10% off
-            const {offerName, offerLink} = await createOffer(sharedPage, {
+            const offerName = await createOffer(sharedPage, {
                 name: 'Black Friday Special',
                 tierName: tierName,
                 offerType: 'discount',
@@ -161,10 +165,14 @@ test.describe('Portal', () => {
             });
 
             // check that offer was added in the offer list screen
-            await sharedPage.goto('/ghost/#/settings/offers');
-            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
+            await expect(sharedPage.locator(`[data-test-offer="${offerName}"]`), 'Should have free-trial offer').toBeVisible();
 
-            await sharedPage.goto(offerLink);
+            // open offer details page
+            await sharedPage.locator(`[data-test-offer="${offerName}"] a`).first().click();
+
+            // fetch offer url from portal settings and open it
+            const portalUrl = await sharedPage.locator('[data-test-input="offer-portal-url"]').inputValue();
+            await sharedPage.goto(portalUrl);
 
             const portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -215,7 +223,7 @@ test.describe('Portal', () => {
             });
 
             // Creates a one-time discount offer for 10% off
-            const {offerName, offerLink} = await createOffer(sharedPage, {
+            const offerName = await createOffer(sharedPage, {
                 name: 'Black Friday Special',
                 tierName: tierName,
                 offerType: 'discount',
@@ -224,10 +232,14 @@ test.describe('Portal', () => {
             });
 
             // check that offer was added in the offer list screen
-            await sharedPage.goto('/ghost/#/settings/offers');
-            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
+            await expect(sharedPage.locator(`[data-test-offer="${offerName}"]`), 'Should have free-trial offer').toBeVisible();
 
-            await sharedPage.goto(offerLink);
+            // open offer details page
+            await sharedPage.locator(`[data-test-offer="${offerName}"] a`).first().click();
+
+            // fetch offer url from portal settings and open it
+            const portalUrl = await sharedPage.locator('[data-test-input="offer-portal-url"]').inputValue();
+            await sharedPage.goto(portalUrl);
 
             const portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -274,7 +286,7 @@ test.describe('Portal', () => {
             });
 
             // Create an offer. This will be archived
-            const {offerLink} = await createOffer(sharedPage, {
+            const offerName = await createOffer(sharedPage, {
                 name: 'To be archived',
                 tierName: tierName,
                 offerType: 'discount',
@@ -288,8 +300,18 @@ test.describe('Portal', () => {
                 offerType: 'discount',
                 amount: 10
             });
+
+            // Check if the offer appears in the archive list
+            await sharedPage.locator('.gh-contentfilter-menu-trigger').click();
+            await sharedPage.getByRole('option', {name: 'Archived offers'}).click();
+            await expect(sharedPage.getByRole('link', {name: offerName}), 'Should have an archived offer').toBeVisible();
+
+            // Go to the offer and grab the offer URL
+            await sharedPage.locator('.gh-offers-list .gh-list-row').filter({hasText: offerName}).click();
+            const portalUrl = await sharedPage.locator('input#url').inputValue();
+
             // Open the offer URL and make sure portal popup doesn't load
-            await sharedPage.goto(offerLink);
+            await sharedPage.goto(portalUrl);
             const portalPopup = await sharedPage.locator('[data-testid="portal-popup-frame"]').isVisible();
             await expect(portalPopup).toBeFalsy();
         });
