@@ -5,7 +5,6 @@ import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-sup
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn} from '@ember/test-helpers';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
-import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {selectChoose} from 'ember-power-select/test-support';
 import {setupApplicationTest} from 'ember-mocha';
@@ -573,7 +572,6 @@ describe('Acceptance: Editor', function () {
         });
 
         it('handles TKs in title', async function () {
-            enableLabsFlag(this.server, 'tkReminders');
             let post = this.server.create('post', {authors: [author]});
 
             await visit(`/editor/post/${post.id}`);

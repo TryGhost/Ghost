@@ -28,11 +28,11 @@ class MembersFeedbackImporter extends TableImporter {
         const openedAt = new Date(this.model.opened_at);
         const laterOn = new Date(this.model.opened_at);
         laterOn.setMinutes(laterOn.getMinutes() + 60);
-        const feedbackTime = new Date(openedAt.valueOf() + (Math.random() * (laterOn.valueOf() - openedAt.valueOf())));
+        const feedbackTime = faker.date.between(openedAt, laterOn);
 
         const postId = this.emails.find(email => email.id === this.model.email_id).post_id;
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             score: luck(70) ? 1 : 0,
             member_id: this.model.member_id,
             post_id: postId,

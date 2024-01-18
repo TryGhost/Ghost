@@ -3,6 +3,8 @@ const Command = require('./command');
 const DataGenerator = require('@tryghost/data-generator');
 const config = require('../shared/config');
 
+const schemaTables = require('../server/data/schema').tables;
+
 module.exports = class DataGeneratorCommand extends Command {
     setup() {
         this.help('Generates random data to populate the database for development & testing');
@@ -32,6 +34,8 @@ module.exports = class DataGeneratorCommand extends Command {
     }
 
     async handle(argv = {}) {
+        // If we can't stream, throw an error while creating the connection
+        process.env.REQUIRE_INFILE_STREAM = '1';
         const knex = require('../server/data/db/connection');
 
         const tables = (argv.tables ? argv.tables.split(',') : []).map(table => ({
@@ -72,6 +76,7 @@ module.exports = class DataGeneratorCommand extends Command {
             baseUrl: config.getSiteUrl(),
             clearDatabase: argv['clear-database'],
             tables,
+            schemaTables,
             withDefault: argv['with-default'],
             printDependencies: argv['print-dependencies'],
             quantities,

@@ -10,7 +10,6 @@ import {htmlSafe} from '@ember/template';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tagName} from '@ember-decorators/component';
-import {task} from 'ember-concurrency';
 
 @classic
 @tagName('')
@@ -33,7 +32,6 @@ export default class Main extends Component.extend(ShortcutsMixin) {
 
     iconStyle = '';
     iconClass = '';
-    memberCountLoading = true;
     shortcuts = null;
 
     @match('router.currentRouteName', /^settings\.integration/)
@@ -69,10 +67,6 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     didReceiveAttrs() {
         super.didReceiveAttrs(...arguments);
         this._setIconStyle();
-
-        if (this.session.user && this.session.user.isAdmin) {
-            this._loadMemberCountsTask.perform();
-        }
     }
 
     didInsertElement() {
@@ -113,17 +107,6 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     toggleExploreWindow() {
         this.explore.openExploreWindow();
     }
-
-    @task(function* () {
-        try {
-            this.set('memberCountLoading', true);
-            yield this.membersStats.fetchMemberCount();
-            this.set('memberCountLoading', false);
-        } catch (e) {
-            return false;
-        }
-    })
-        _loadMemberCountsTask;
 
     _setIconStyle() {
         let icon = this.icon;

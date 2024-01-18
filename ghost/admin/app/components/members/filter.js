@@ -342,9 +342,6 @@ export default class MembersFilter extends Component {
 
         if (filter.$and) {
             parsedFilters.push(...this.parseNqlFilters(filter.$and));
-        } else if (filter.yg) {
-            // Single filter grouped in backets
-            parsedFilters.push(...this.parseNqlFilter(filter.yg));
         } else {
             const filterKeys = Object.keys(filter);
             const validKeys = this.filterProperties.map(prop => prop.name);

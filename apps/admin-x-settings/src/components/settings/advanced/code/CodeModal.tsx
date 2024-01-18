@@ -65,6 +65,7 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
 
     return <Modal
         afterClose={afterClose}
+        backDropClick={false}
         cancelLabel='Close'
         footer={<></>}
         height='full'

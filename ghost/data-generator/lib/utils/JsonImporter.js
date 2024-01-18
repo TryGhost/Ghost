@@ -1,5 +1,3 @@
-const {faker} = require('@faker-js/faker');
-
 class JsonImporter {
     constructor(knex, transaction) {
         this.knex = knex;
@@ -25,7 +23,7 @@ class JsonImporter {
     }) {
         for (const obj of data) {
             if (!('id' in obj)) {
-                obj.id = faker.database.mongodbObjectId();
+                obj.id = this.fastFakeObjectId();
             }
         }
         if (rows.findIndex(row => row === 'id') === -1) {

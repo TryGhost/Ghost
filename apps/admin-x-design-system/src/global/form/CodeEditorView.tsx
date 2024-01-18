@@ -1,5 +1,5 @@
 import {Extension} from '@codemirror/state';
-import CodeMirror, {ReactCodeMirrorProps, ReactCodeMirrorRef} from '@uiw/react-codemirror';
+import CodeMirror, {ReactCodeMirrorProps, ReactCodeMirrorRef, BasicSetupOptions} from '@uiw/react-codemirror';
 import clsx from 'clsx';
 import React, {FocusEventHandler, forwardRef, useEffect, useId, useRef, useState} from 'react';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
@@ -49,6 +49,9 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
     const sizeRef = useRef<HTMLDivElement>(null);
     const [width, setWidth] = useState(100);
     const [resolvedExtensions, setResolvedExtensions] = React.useState<Extension[] | null>(null);
+    const [basicSetup, setBasicSetup] = useState<BasicSetupOptions>({
+        crosshairCursor: false
+    });
     const {setFocusState} = useFocusContext();
 
     const handleFocus: FocusEventHandler<HTMLDivElement> = (e) => {
@@ -63,6 +66,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
 
     useEffect(() => {
         Promise.all(extensions).then(setResolvedExtensions);
+        setBasicSetup(setup => ({setup, searchKeymap: false}));
     }, [extensions]);
 
     useEffect(() => {
@@ -90,6 +94,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
         {resolvedExtensions && <div className={height === 'full' ? 'h-full' : ''} style={{width}}>
             <CodeMirror
                 ref={ref}
+                basicSetup={basicSetup}
                 className={styles}
                 extensions={resolvedExtensions}
                 height={height === 'full' ? '100%' : height}

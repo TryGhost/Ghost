@@ -14,7 +14,7 @@ class OffersImporter extends TableImporter {
     }
 
     async import(quantity = this.defaultQuantity) {
-        this.products = await this.transaction.select('id', 'currency').from('products');
+        this.products = await this.transaction.select('id', 'currency').from('products').where('type', 'paid');
         this.names = ['Black Friday', 'Free Trial'];
         this.count = 0;
 
@@ -22,7 +22,7 @@ class OffersImporter extends TableImporter {
     }
 
     generate() {
-        const name = this.names.shift();
+        const name = this.names.pop();
 
         const product = this.products[faker.datatype.number({
             min: 0,
@@ -47,7 +47,7 @@ class OffersImporter extends TableImporter {
         // created_at: {type: 'dateTime', nullable: false},
         // updated_at: {type: 'dateTime', nullable: true}
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             active: true,
             name,
             code: slugify(name),

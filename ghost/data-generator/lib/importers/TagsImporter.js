@@ -28,7 +28,7 @@ class TagsImporter extends TableImporter {
         const twoYearsAgo = new Date();
         twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             name: name,
             slug: `${slugify(name)}-${faker.random.numeric(3)}`,
             description: faker.lorem.sentence(),

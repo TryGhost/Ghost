@@ -20,7 +20,7 @@ class StripeProductsImporter extends TableImporter {
 
     generate() {
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             product_id: this.model.id,
             stripe_product_id: faker.datatype.hexadecimal({
                 length: 64,
