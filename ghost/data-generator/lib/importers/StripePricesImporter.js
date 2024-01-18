@@ -54,7 +54,7 @@ class StripePricesImporter extends TableImporter {
         }
 
         return Object.assign({}, {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             stripe_price_id: faker.datatype.hexadecimal({
                 length: 64,
                 prefix: ''

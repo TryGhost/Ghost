@@ -19,7 +19,13 @@ module.exports = function getSiteProperties() {
 
     if (config.get('client_sentry') && !config.get('client_sentry').disabled) {
         siteProperties.sentry_dsn = config.get('client_sentry').dsn;
-        siteProperties.sentry_env = config.get('env');
+
+        let environment = config.get('PRO_ENV');
+        if (!environment) {
+            environment = config.get('env');
+        }
+
+        siteProperties.sentry_env = environment;
     }
 
     return siteProperties;

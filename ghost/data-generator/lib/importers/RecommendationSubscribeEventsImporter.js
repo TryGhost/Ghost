@@ -21,7 +21,7 @@ class RecommendationSubscribeEventsImporter extends TableImporter {
         // Not unique
         const member = luck(1) ? null : faker.helpers.arrayElement(this.members);
         return {
-            id: faker.database.mongodbObjectId(),
+            id: this.fastFakeObjectId(),
             recommendation_id: this.model.id,
             member_id: member?.id ?? null,
             created_at: faker.date.past()
