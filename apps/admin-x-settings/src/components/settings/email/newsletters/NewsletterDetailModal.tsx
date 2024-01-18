@@ -1,5 +1,5 @@
 import NewsletterPreview from './NewsletterPreview';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
@@ -197,28 +197,15 @@ const Sidebar: React.FC<{
 
         // Pro users with custom sending domains
         if (hasSendingDomain(config)) {
-            let sendingEmail = newsletter.sender_email || ''; // Do not use the rendered address here, because this field is editable and we otherwise can't have an empty field
-
-            // It is possible we have an invalid saved email address, in that case it won't get used
-            // so we should display as if we are using the default = an empty address
-            if (sendingEmail && sendingEmail !== newsletterAddress) {
-                sendingEmail = '';
-            }
-
-            const sendingEmailUsername = sendingEmail?.split('@')[0] || '';
-
             return (
                 <TextField
                     error={Boolean(errors.sender_email)}
                     hint={errors.sender_email}
                     placeholder={defaultEmailAddress}
-                    rightPlaceholder={sendingEmailUsername ? `@${sendingDomain(config)}` : `` }
                     title="Sender email address"
-                    value={sendingEmailUsername || ''}
+                    value={newsletter.sender_email || ''}
                     onChange={(e) => {
-                        const username = e.target.value?.split('@')[0];
-                        const newEmail = username ? `${username}@${sendingDomain(config)}` : '';
-                        updateNewsletter({sender_email: newEmail});
+                        updateNewsletter({sender_email: e.target.value});
                     }}
                     onKeyDown={() => clearError('sender_email')}
                 />
@@ -516,42 +503,29 @@ const Sidebar: React.FC<{
 };
 
 const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: boolean;}> = ({newsletter, onlyOne}) => {
-    const modal = useModal();
-    const {settings, config} = useGlobalData();
+    const {config} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
-    const [supportEmailAddress, defaultEmailAddress] = getSettingValues<string>(settings, ['support_email_address', 'default_email_address']);
 
     const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError, okProps} = useForm({
         initialState: newsletter,
         savingDelay: 500,
         onSave: async () => {
-            const {newsletters: [updatedNewsletter], meta: {sent_email_verification: [emailToVerify] = []} = {}} = await editNewsletter(formState); ``;
-            const previousFrom = renderSenderEmail(updatedNewsletter, config, defaultEmailAddress);
-            const previousReplyTo = renderReplyToEmail(updatedNewsletter, config, supportEmailAddress, defaultEmailAddress) || previousFrom;
-
-            let title;
-            let prompt;
+            const {meta: {sent_email_verification: [emailToVerify] = []} = {}} = await editNewsletter(formState); ``;
+            let toastMessage;
 
             if (emailToVerify && emailToVerify === 'sender_email') {
-                title = 'Confirm newsletter email address';
-                prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_email}</strong>. Until the address has been verified, newsletters will be sent from the {updatedNewsletter.sender_email ? ' previous' : ' default'} email address{previousFrom ? ` (${previousFrom})` : ''}.</>;
+                toastMessage = <div>We&lsquo;ve sent a confirmation email to the new address.</div>;
             } else if (emailToVerify && emailToVerify === 'sender_reply_to') {
-                title = 'Confirm reply-to address';
-                prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_reply_to}</strong>. Until the address has been verified, replies will continue to go to {previousReplyTo}.</>;
+                toastMessage = <div>We&lsquo;ve sent a confirmation email to the new address.</div>;
             }
 
-            if (title && prompt) {
-                NiceModal.show(ConfirmationModal, {
-                    title: title,
-                    prompt: prompt,
-                    cancelLabel: '',
-                    onOk: (confirmModal) => {
-                        confirmModal?.remove();
-                        modal.remove();
-                        updateRoute('newsletters');
-                    }
+            if (toastMessage) {
+                showToast({
+                    icon: 'email',
+                    message: toastMessage,
+                    type: 'neutral'
                 });
             }
         },
@@ -565,6 +539,8 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
 
             if (formState.sender_email && !validator.isEmail(formState.sender_email)) {
                 newErrors.sender_email = 'Invalid email';
+            } else if (formState.sender_email && hasSendingDomain(config) && formState.sender_email.split('@')[1] !== sendingDomain(config)) {
+                newErrors.sender_email = `Email must end with @${sendingDomain(config)}`;
             }
 
             if (formState.sender_reply_to && !validator.isEmail(formState.sender_reply_to) && !['newsletter', 'support'].includes(formState.sender_reply_to)) {

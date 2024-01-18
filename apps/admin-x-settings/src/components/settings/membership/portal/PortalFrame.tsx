@@ -11,6 +11,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
         selectedTab = 'signup';
     }
     const iframeRef = useRef<HTMLIFrameElement>(null);
+    const [hasLoaded, setHasLoaded] = useState<boolean>(false);
     const [isInvisible, setIsInvisible] = useState<boolean>(true);
 
     // Handler for making the iframe visible, memoized with useCallback
@@ -37,13 +38,15 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
             }
         };
 
-        window.addEventListener('message', messageListener, true);
+        if (hasLoaded) {
+            window.addEventListener('message', messageListener, true);
+        }
 
         return () => {
             window.removeEventListener('message', messageListener, true);
             onDestroyed?.();
         };
-    }, [href, onDestroyed, makeVisible]);
+    }, [href, onDestroyed, makeVisible, hasLoaded]);
 
     if (!href) {
         return null;
@@ -59,7 +62,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
                 src={href}
                 title="Portal Preview"
                 width="100%"
-                onLoad={makeVisible}
+                onLoad={() => setHasLoaded(true)}
             />
         </>
     );

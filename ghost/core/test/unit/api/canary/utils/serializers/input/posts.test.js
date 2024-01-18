@@ -232,7 +232,10 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 should.equal(null, postData.mobiledoc);
             });
 
-            it.skip('transforms html when html is present in data and source options', function () { // eslint-disable-line
+            it('transforms html when html is present in data and source options', function () {
+                // JSDOM require is sometimes very slow on CI causing random timeouts
+                this.timeout(4000);
+
                 const apiConfig = {};
                 const lexical = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
                 const frame = {
@@ -262,6 +265,9 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             });
 
             it('preserves html cards in transformed html', function () {
+                // JSDOM require is sometimes very slow on CI causing random timeouts
+                this.timeout(4000);
+
                 const apiConfig = {};
                 const frame = {
                     options: {

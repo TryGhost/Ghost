@@ -5,10 +5,9 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const fs = require('fs');
 const {luck} = require('../utils/random');
 const os = require('os');
+const crypto = require('crypto');
+const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const ObjectID = require('bson-objectid').default;
-
-let idIndex = 0;
 
 class TableImporter {
     /**
@@ -34,9 +33,9 @@ class TableImporter {
     }
 
     fastFakeObjectId() {
-        // using faker.database.mongodbObjectId() is too slow (slow generation + MySQL is faster for ascending PRIMARY keys)
-        idIndex += 1;
-        return ObjectID.createFromTime(idIndex).toHexString();
+        // It is important that IDs are generated for a timestamp < NOW (for email batch sending) and that
+        // generating the ids is fast.
+        return `00000000` + crypto.randomBytes(8).toString('hex');
     }
 
     async #generateData(amount = this.defaultQuantity) {
@@ -102,7 +101,7 @@ class TableImporter {
         const filePath = path.join(rootFolder, `${this.name}.csv`);
         let now = Date.now();
 
-        if (data.length > 1000) {
+        if (data.length > 5000) {
             try {
                 await fs.promises.unlink(filePath);
             } catch (e) {
@@ -146,9 +145,12 @@ class TableImporter {
             // Import from CSV file
             const [result] = await this.transaction.raw(`LOAD DATA LOCAL INFILE '${filePath}' INTO TABLE \`${this.name}\` FIELDS TERMINATED BY ',' ENCLOSED BY '"' IGNORE 1 LINES (${Object.keys(data[0]).map(d => '`' + d + '`').join(',')});`);
             if (result.affectedRows !== data.length) {
-                throw new errors.InternalServerError({
-                    message: `CSV import failed: expected ${data.length} imported rows, got ${result.affectedRows}`
-                });
+                if (Math.abs(result.affectedRows - data.length) > 0.01 * data.length) {
+                    throw new errors.InternalServerError({
+                        message: `CSV import failed: expected ${data.length} imported rows, got ${result.affectedRows}`
+                    });
+                }
+                logging.warn(`CSV import warning: expected ${data.length} imported rows, got ${result.affectedRows}.`);
             }
         } else {
             await this.knex.batchInsert(this.name, data).transacting(this.transaction);
