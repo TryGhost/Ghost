@@ -1,4 +1,3 @@
-import {NewslettersResponseType} from '@tryghost/admin-x-framework/api/newsletters';
 import {chooseOptionInSelect, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
@@ -123,51 +122,8 @@ test.describe('Newsletter settings', async () => {
                 await modal.getByLabel('Sender email').fill('test@test.com');
                 await modal.getByRole('button', {name: 'Save'}).click();
 
-                await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm newsletter email address/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/default email address \(default@example.com\)/);
-            });
-
-            test('Displays the current email when changing sender address', async ({page}) => {
-                const response = {
-                    ...responseFixtures.newsletters,
-                    newsletters: [{
-                        ...responseFixtures.newsletters.newsletters[0],
-                        sender_email: 'current@test.com'
-                    }]
-                } satisfies NewslettersResponseType;
-
-                await mockApi({page, requests: {
-                    ...globalDataRequests,
-                    browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response},
-                    editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[0].id}/?include=count.active_members%2Ccount.posts`, response: {
-                        newsletters: response.newsletters,
-                        meta: {
-                            sent_email_verification: ['sender_email']
-                        }
-                    }}
-                }});
-
-                await page.goto('/');
-
-                const section = page.getByTestId('newsletters');
-
-                await section.getByText('Awesome newsletter').click();
-
-                const modal = page.getByTestId('newsletter-modal');
-
-                await modal.getByLabel('Sender email').fill('not-an-email');
-                await modal.getByRole('button', {name: 'Save'}).click();
-
-                await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
-                await expect(modal).toHaveText(/Invalid email/);
-
-                await modal.getByLabel('Sender email').fill('test@test.com');
-                await modal.getByRole('button', {name: 'Save'}).click();
-
-                await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm newsletter email address/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/previous email address \(current@test.com\)/);
+                await expect(page.getByTestId('toast-neutral')).toHaveCount(1);
+                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to the new address/);
             });
         });
 
@@ -245,7 +201,7 @@ test.describe('Newsletter settings', async () => {
                 await modal.getByRole('button', {name: 'Save'}).click();
 
                 await expect(page.getByTestId('toast-neutral')).toHaveCount(1);
-                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to test@test.com/);
+                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to the new address/);
             });
         });
 
@@ -339,7 +295,7 @@ test.describe('Newsletter settings', async () => {
                 // There is a verification popup for the new reply-to address
                 await modal.getByRole('button', {name: 'Save'}).click();
                 await expect(page.getByTestId('toast-neutral')).toHaveCount(1);
-                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to hermione@granger.com/);
+                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to the new address/);
             });
         });
     });
