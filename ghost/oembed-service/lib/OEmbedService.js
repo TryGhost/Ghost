@@ -26,10 +26,10 @@ const findUrlWithProvider = (url) => {
     // providers list is not always up to date with scheme or www vs non-www
     let baseUrl = url.replace(/^\/\/|^https?:\/\/(?:www\.)?/, '');
     let testUrls = [
-        `http://${baseUrl}`,
         `https://${baseUrl}`,
-        `http://www.${baseUrl}`,
-        `https://www.${baseUrl}`
+        `https://www.${baseUrl}`,
+        `http://${baseUrl}`,
+        `http://www.${baseUrl}`
     ];
 
     for (let testUrl of testUrls) {
