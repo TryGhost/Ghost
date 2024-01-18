@@ -13,6 +13,7 @@ import {LinkInput} from '../components/ui/LinkInput';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {dataSrcToFile} from '../utils/dataSrcToFile.js';
+import {getImageDimensions} from '../utils/getImageDimensions.js';
 import {getImageFilenameFromSrc} from '../utils/getImageFilenameFromSrc';
 import {imageUploadHandler} from '../utils/imageUploadHandler';
 import {isGif} from '../utils/isGif';
@@ -89,6 +90,7 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
     }, [editor, imageUploader.isLoading, imageUploader.upload, nodeKey, src]);
 
     React.useEffect(() => {
+        // If an initial file is provided, upload it
         const uploadInitialFile = async (file) => {
             if (file && !src) {
                 await imageUploadHandler([file], nodeKey, editor, imageUploader.upload);
@@ -96,6 +98,20 @@ export function ImageNodeComponent({nodeKey, initialFile, src, altText, captionE
         };
 
         uploadInitialFile(initialFile);
+
+        // If we're given a URL instead of a file, populate the image dimensions
+        const populateImageDimensions = async () => {
+            if (src && !initialFile && !triggerFileDialog) {
+                const {width, height} = await getImageDimensions(src);
+                editor.update(() => {
+                    const node = $getNodeByKey(nodeKey);
+                    node.width = width;
+                    node.height = height;
+                });
+            }
+        };
+
+        populateImageDimensions();
 
         // We only do this for init
         // eslint-disable-next-line react-hooks/exhaustive-deps

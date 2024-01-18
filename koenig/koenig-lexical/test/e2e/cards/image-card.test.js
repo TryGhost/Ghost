@@ -1,6 +1,8 @@
+import fs from 'fs-extra';
 import path from 'path';
 import {
     assertHTML,
+    assertRootChildren,
     createDataTransfer,
     createSnippet,
     ctrlOrCmd,
@@ -154,6 +156,39 @@ test.describe('Image card', async () => {
         await fileChooser.setFiles([filePath]);
 
         await expect(await page.getByTestId('image-card-populated')).toBeVisible();
+    });
+
+    test('can get image height and width from external URL', async function () {
+        await page.route('https://example.com/large-image.png', route => route.fulfill({
+            status: 200,
+            contentType: 'image/png',
+            body: fs.readFileSync(__dirname + '/../fixtures/large-image.png')
+        }));
+        await focusEditor(page);
+        await page.keyboard.type('/image https://example.com/large-image.png');
+        await page.keyboard.press('Enter');
+        // Wait for card to be rendered before checking height and width
+        await expect(await page.getByTestId('image-card-populated')).toBeVisible();
+        // Check that the image has the correct height and width populated
+        await assertRootChildren(page, JSON.stringify([{
+            type: 'image',
+            version: 1,
+            src: 'https://example.com/large-image.png',
+            width: 248,
+            height: 248,
+            title: '',
+            alt: '',
+            caption: '',
+            cardWidth: 'regular',
+            href: ''
+        },{
+            children: [],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1
+        }]));
     });
 
     // test.fixme('can get image width and height');
