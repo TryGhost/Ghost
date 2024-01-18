@@ -1,10 +1,10 @@
 import FloatingToolbar from './FloatingToolbar';
 import React from 'react';
+import debounce from 'lodash/debounce';
 import {$createRangeSelection, $getNearestNodeFromDOMNode, $setSelection} from 'lexical';
 import {$isLinkNode} from '@lexical/link';
 import {LinkToolbar} from './LinkToolbar';
 import {TOGGLE_LINK_COMMAND} from '@lexical/link';
-import {debounce} from 'lodash';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function FloatingLinkToolbar({anchorElem, onEditLink, disabled}) {

@@ -1,5 +1,5 @@
 import React, {useLayoutEffect} from 'react';
-import {debounce} from 'lodash';
+import debounce from 'lodash/debounce';
 
 /**
  * Note: when using the DropdownContainer, make sure the input and the dropdown both are in a relative container with a defined z-index (or new stacking context)

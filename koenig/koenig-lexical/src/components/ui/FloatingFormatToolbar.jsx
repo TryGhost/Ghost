@@ -1,10 +1,10 @@
 import FloatingToolbar from '../../components/ui/FloatingToolbar';
 import FormatToolbar from './FormatToolbar';
 import React from 'react';
+import debounce from 'lodash/debounce';
 import {$getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, DELETE_CHARACTER_COMMAND} from 'lexical';
 import {LinkActionToolbar} from './LinkActionToolbar.jsx';
 import {SnippetActionToolbar} from './SnippetActionToolbar';
-import {debounce} from 'lodash-es';
 import {mergeRegister} from '@lexical/utils';
 
 // don't show the toolbar until the mouse has moved a certain distance,

@@ -1,7 +1,7 @@
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
+import pick from 'lodash/pick';
 import {getImageFilenameFromSrc} from '../utils/getImageFilenameFromSrc';
-import {pick} from 'lodash-es';
 
 export default function useGalleryReorder({images, updateImages, isSelected = false, maxImages = 9, disabled = false}) {
     const koenig = React.useContext(KoenigComposerContext);

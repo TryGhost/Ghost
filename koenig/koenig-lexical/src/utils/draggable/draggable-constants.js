@@ -1,4 +1,4 @@
-import {kebabCase} from 'lodash-es';
+import kebabCase from 'lodash/kebabCase';
 
 // we use data attributes rather than classes even though they can be slower
 // because in many instances our draggable/droppable element's classes attribute

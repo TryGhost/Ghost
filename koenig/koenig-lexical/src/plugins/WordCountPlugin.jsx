@@ -1,8 +1,8 @@
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
+import throttle from 'lodash/throttle';
 import {$getRoot, $isElementNode} from 'lexical';
 import {mergeRegister} from '@lexical/utils';
-import {throttle} from 'lodash';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {utils} from '@tryghost/helpers';
 

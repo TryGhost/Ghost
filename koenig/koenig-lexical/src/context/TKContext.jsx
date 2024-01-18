@@ -1,5 +1,5 @@
 import React from 'react';
-import {throttle} from 'lodash';
+import throttle from 'lodash/throttle';
 
 const Context = React.createContext({});
 

@@ -1,4 +1,4 @@
-import {debounce} from 'lodash';
+import debounce from 'lodash/debounce';
 import {useRef, useState} from 'react';
 
 const API_URL = 'https://tenor.googleapis.com';

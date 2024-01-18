@@ -1,5 +1,5 @@
+import debounce from 'lodash/debounce';
 import useMovable from './useMovable.js';
-import {debounce} from 'lodash';
 import {useCallback, useLayoutEffect, useRef} from 'react';
 
 const CARD_SPACING = 20; // default distance between card and settings panel

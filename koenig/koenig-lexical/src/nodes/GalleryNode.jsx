@@ -1,11 +1,11 @@
 import GalleryCardIcon from '../assets/icons/kg-card-type-gallery.svg?react';
 import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
+import pick from 'lodash/pick';
 import {$generateHtmlFromNodes} from '@lexical/html';
 import {GalleryNode as BaseGalleryNode} from '@tryghost/kg-default-nodes';
 import {GalleryNodeComponent} from './GalleryNodeComponent';
 import {KoenigCardWrapper, MINIMAL_NODES} from '../index.js';
 import {createCommand} from 'lexical';
-import {pick} from 'lodash-es';
 import {populateNestedEditor, setupNestedEditor} from '../utils/nested-editors';
 
 export const INSERT_GALLERY_COMMAND = createCommand();
