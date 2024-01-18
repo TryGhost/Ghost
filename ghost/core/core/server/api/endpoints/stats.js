@@ -48,7 +48,10 @@ module.exports = {
         },
         cache: statsService.cache,
         generateCacheKeyData() {
-            return 'getSubscriptionCountHistory';
+            return {
+                method: 'subscriptions'
+
+            };
         },
         async query() {
             return await statsService.api.getSubscriptionCountHistory();
