@@ -207,7 +207,7 @@
     "moment": "2.24.0",
     "moment-timezone": "0.5.23",
     "multer": "1.4.4",
-    "mysql2": "3.7.0",
+    "mysql2": "3.7.1",
     "nconf": "0.12.1",
     "newrelic": "11.9.0",
     "node-jose": "2.2.0",
