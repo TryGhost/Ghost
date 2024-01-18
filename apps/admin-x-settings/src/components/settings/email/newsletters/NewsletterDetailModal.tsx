@@ -535,10 +535,11 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
             }
 
             if (title && prompt) {
-                if (newEmailAddressesFlag) {
+                if (newEmailAddressesFlag || isManagedEmail(config)) {
                     showToast({
                         icon: 'email',
-                        message: toastMessage
+                        message: toastMessage,
+                        type: 'neutral'
                     });
                 } else {
                     NiceModal.show(ConfirmationModal, {
