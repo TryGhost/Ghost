@@ -1,5 +1,5 @@
 import NewsletterPreview from './NewsletterPreview';
-import NiceModal, {useModal} from '@ebay/nice-modal-react';
+import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
@@ -503,56 +503,30 @@ const Sidebar: React.FC<{
 };
 
 const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: boolean;}> = ({newsletter, onlyOne}) => {
-    const modal = useModal();
-    const {settings, config} = useGlobalData();
+    const {config} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
-    const [supportEmailAddress, defaultEmailAddress] = getSettingValues<string>(settings, ['support_email_address', 'default_email_address']);
-    const newEmailAddressesFlag = useFeatureFlag('newEmailAddresses');
 
     const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError, okProps} = useForm({
         initialState: newsletter,
         savingDelay: 500,
         onSave: async () => {
-            const {newsletters: [updatedNewsletter], meta: {sent_email_verification: [emailToVerify] = []} = {}} = await editNewsletter(formState); ``;
-            const previousFrom = renderSenderEmail(updatedNewsletter, config, defaultEmailAddress);
-            const previousReplyTo = renderReplyToEmail(updatedNewsletter, config, supportEmailAddress, defaultEmailAddress) || previousFrom;
-
-            /* TODO: Remove title, prompt, NiceModal */
-            let title;
-            let prompt;
+            const {meta: {sent_email_verification: [emailToVerify] = []} = {}} = await editNewsletter(formState); ``;
             let toastMessage;
 
             if (emailToVerify && emailToVerify === 'sender_email') {
-                title = 'Confirm newsletter email address';
-                prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_email}</strong>. Until the address has been verified, newsletters will be sent from the {updatedNewsletter.sender_email ? ' previous' : ' default'} email address{previousFrom ? ` (${previousFrom})` : ''}.</>;
-                toastMessage = <div>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_email}</strong>.</div>;
+                toastMessage = <div>We&lsquo;ve sent a confirmation email to the new address.</div>;
             } else if (emailToVerify && emailToVerify === 'sender_reply_to') {
-                title = 'Confirm reply-to address';
-                prompt = <>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_reply_to}</strong>. Until the address has been verified, replies will continue to go to {previousReplyTo}.</>;
-                toastMessage = <div>We&lsquo;ve sent a confirmation email to <strong>{formState.sender_reply_to}</strong>.</div>;
+                toastMessage = <div>We&lsquo;ve sent a confirmation email to the new address.</div>;
             }
 
-            if (title && prompt) {
-                if (newEmailAddressesFlag || isManagedEmail(config)) {
-                    showToast({
-                        icon: 'email',
-                        message: toastMessage,
-                        type: 'neutral'
-                    });
-                } else {
-                    NiceModal.show(ConfirmationModal, {
-                        title: title,
-                        prompt: prompt,
-                        cancelLabel: '',
-                        onOk: (confirmModal) => {
-                            confirmModal?.remove();
-                            modal.remove();
-                            updateRoute('newsletters');
-                        }
-                    });
-                }
+            if (toastMessage) {
+                showToast({
+                    icon: 'email',
+                    message: toastMessage,
+                    type: 'neutral'
+                });
             }
         },
         onSaveError: handleError,

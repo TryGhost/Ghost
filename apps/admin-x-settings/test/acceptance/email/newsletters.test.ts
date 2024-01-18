@@ -245,7 +245,7 @@ test.describe('Newsletter settings', async () => {
                 await modal.getByRole('button', {name: 'Save'}).click();
 
                 await expect(page.getByTestId('toast-neutral')).toHaveCount(1);
-                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to test@test.com/);
+                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to the new address/);
             });
         });
 
@@ -339,7 +339,7 @@ test.describe('Newsletter settings', async () => {
                 // There is a verification popup for the new reply-to address
                 await modal.getByRole('button', {name: 'Save'}).click();
                 await expect(page.getByTestId('toast-neutral')).toHaveCount(1);
-                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to hermione@granger.com/);
+                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to the new address/);
             });
         });
     });
