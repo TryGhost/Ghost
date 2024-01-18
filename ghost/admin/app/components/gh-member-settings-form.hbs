@@ -123,9 +123,9 @@
                                     <h3 class="gh-membertier-name" data-test-text="tier-name" style="align-items:center !important; justify-content:flex-start !important;">
                                         {{tier.name}}
                                         {{#if (eq sub.status "canceled")}}
-                                            <span class="gh-badge archived" data-test-text="member-subscription-status">Cancelled</span>
+                                            <span class="gh-badge archived" data-test-text="member-subscription-status">Canceled</span>
                                         {{else if sub.cancel_at_period_end}}
-                                            <span class="gh-badge archived" data-test-text="member-subscription-status">Cancelled</span>
+                                            <span class="gh-badge archived" data-test-text="member-subscription-status">Canceled</span>
                                         {{else if sub.compExpiry}}
                                             <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
                                         {{else if sub.trialUntil}}
@@ -147,9 +147,9 @@
                                             {{/if}}
                                         {{/if}}
 
-                                        {{#if (eq sub.status "canceled")}}
+                                        {{#if sub.hasEnded}}
                                             <span class="gh-cp-membertier-renewal">Ended {{sub.validUntil}}</span>
-                                        {{else if sub.cancel_at_period_end}}
+                                        {{else if sub.willEndSoon}}
                                             <span class="gh-cp-membertier-renewal">Has access until {{sub.validUntil}}</span>
                                         {{else if sub.compExpiry}}
                                             <span class="gh-cp-membertier-renewal">Expires {{sub.compExpiry}}</span>
