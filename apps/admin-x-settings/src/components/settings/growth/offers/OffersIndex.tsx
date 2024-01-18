@@ -1,4 +1,3 @@
-// import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {ButtonGroup, ButtonProps} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
@@ -61,7 +60,6 @@ export const getOfferDiscount = (type: string, amount: number, cadence: string, 
         break;
     };
 
-    // Check if updatedPrice is negative, if so, set it to 0
     if (updatedPrice < 0) {
         updatedPrice = 0;
     }
@@ -94,7 +92,6 @@ export const CopyLinkButton: React.FC<{offerCode: string}> = ({offerCode}) => {
 export const OffersIndexModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
-    // const hasOffers = useFeatureFlag('adminXOffers');
     const {data: {offers: allOffers = []} = {}} = useBrowseOffers({
         searchParams: {
             limit: 'all'
@@ -123,13 +120,6 @@ export const OffersIndexModal = () => {
     const sortOption = offersSorting?.option || 'date-added';
     const sortDirection = offersSorting?.direction || 'desc';
 
-    // useEffect(() => {
-    //     if (!hasOffers) {
-    //         modal.remove();
-    //         updateRoute('');
-    //     }
-    // }, [hasOffers, modal, updateRoute]);
-
     const handleOfferEdit = (id:string) => {
         // TODO: implement
         sessionStorage.setItem('editOfferPageSource', 'offersIndex');
@@ -145,7 +135,6 @@ export const OffersIndexModal = () => {
             case 'redemptions':
                 return multiplier * (offer1.redemption_count - offer2.redemption_count);
             default:
-                // 'date-added' or unknown option, use default sorting
                 return multiplier * ((offer1.created_at ? new Date(offer1.created_at).getTime() : 0) - (offer2.created_at ? new Date(offer2.created_at).getTime() : 0));
             }
         });
@@ -164,7 +153,6 @@ export const OffersIndexModal = () => {
             }
             {sortedOffers.filter((offer) => {
                 const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
-                //Check to filter out offers with archived offerTier
                 return (selectedTab === 'active' && (offer.status === 'active' && offerTier && offerTier.active === true)) ||
                 (selectedTab === 'archived' && (offer.status === 'archived' || (offerTier && offerTier.active === false)));
             }).map((offer) => {

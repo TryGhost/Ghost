@@ -177,20 +177,11 @@ const Sidebar: React.FC<{
 
 const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     const {siteData} = useGlobalData();
-    // const modal = useModal();
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
-    // const hasOffers = useFeatureFlag('adminXOffers');
     const {mutateAsync: editOffer} = useEditOffer();
 
     const [href, setHref] = useState<string>('');
-
-    // useEffect(() => {
-    //     if (!hasOffers) {
-    //         modal.remove();
-    //         updateRoute('');
-    //     }
-    // }, [hasOffers, modal, updateRoute]);
 
     const {data: {offers: offerById = []} = {}} = useBrowseOffersById(id ? id : '');
 
