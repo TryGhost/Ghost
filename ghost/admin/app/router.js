@@ -82,10 +82,10 @@ Router.map(function () {
     this.route('member', {path: '/members/:member_id'});
     this.route('members-activity');
 
-    // this.route('offers');
+    this.route('offers');
 
-    // this.route('offer.new', {path: '/offers/new'});
-    // this.route('offer', {path: '/offers/:offer_id'});
+    this.route('offer.new', {path: '/offers/new'});
+    this.route('offer', {path: '/offers/:offer_id'});
 
     this.route('error404', {path: '/*path'});
 

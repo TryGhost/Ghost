@@ -27,11 +27,9 @@ export interface ButtonProps extends Omit<HTMLProps<HTMLButtonElement>, 'label' 
     loadingIndicatorColor?: LoadingIndicatorColor;
     outlineOnMobile?: boolean;
     onClick?: (e?:React.MouseEvent<HTMLElement>) => void;
-    testId?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
-    testId,
     size = 'md',
     label = '',
     hideLabel = false,
@@ -144,7 +142,6 @@ const Button: React.FC<ButtonProps> = ({
     </>;
 
     const buttonElement = React.createElement(tag, {className: className,
-        'data-testid': testId,
         disabled: disabled,
         type: 'button',
         onClick: onClick,
