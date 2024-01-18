@@ -17,6 +17,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {Object} [config.clusterConfig] - redis cluster config used in case no cache instance provided
      * @param {Object} [config.storeConfig] - extra redis client config used in case no cache instance provided
      * @param {Number} [config.ttl] - default cached value Time To Live (expiration) in *seconds*
+     * @param {Number} [config.refreshAheadFactor] - 0-1 number to use to determine how old (as a percentage of ttl) an entry should be before refreshing it
      * @param {String} [config.keyPrefix] - prefix to use when building a unique cache key, e.g.: 'some_id:image-sizes:'
      * @param {Boolean} [config.reuseConnection] - specifies if the redis store/connection should be reused within the process
      */
@@ -57,6 +58,9 @@ class AdapterCacheRedis extends BaseCacheAdapter {
             });
         }
 
+        this.ttl = config.ttl;
+        this.refreshAheadFactor = config.refreshAheadFactor || 0;
+        this.currentlyExecutingBackgroundRefreshes = new Set();
         this.keyPrefix = config.keyPrefix;
         this._keysPattern = config.keyPrefix ? `${config.keyPrefix}*` : '';
         this.redisClient = this.cache.store.getClient();
@@ -134,11 +138,67 @@ class AdapterCacheRedis extends BaseCacheAdapter {
 
     /**
      *
-     * @param {String} key
+     * @param {String} internalKey
      */
-    async get(key) {
+    async shouldRefresh(internalKey) {
+        if (this.refreshAheadFactor === 0) {
+            debug(`shouldRefresh ${internalKey}: false - refreshAheadFactor = 0`);
+            return false;
+        }
+        if (this.refreshAheadFactor === 1) {
+            debug(`shouldRefresh ${internalKey}: true - refreshAheadFactor = 1`);
+            return true;
+        }
         try {
-            return await this.cache.get(this._buildKey(key));
+            const ttlRemainingForEntry = await this.cache.ttl(internalKey);
+            const shouldRefresh = ttlRemainingForEntry < this.refreshAheadFactor * this.ttl;
+            debug(`shouldRefresh ${internalKey}: ${shouldRefresh} - TTL remaining = ${ttlRemainingForEntry}`);
+            return shouldRefresh;
+        } catch (err) {
+            logging.error(err);
+            return false;
+        }
+    }
+
+    /**
+     *
+     * @param {string} key
+     * @param {() => Promise<any>} [fetchData] An optional function to fetch the data, which will be used in the case of a cache MISS or a background refresh
+     */
+    async get(key, fetchData) {
+        const internalKey = this._buildKey(key);
+        try {
+            const result = await this.cache.get(internalKey);
+            debug(`get ${internalKey}: Cache ${result ? 'HIT' : 'MISS'}`);
+            if (!fetchData) {
+                return result;
+            }
+            if (result) {
+                const shouldRefresh = await this.shouldRefresh(internalKey);
+                const isRefreshing = this.currentlyExecutingBackgroundRefreshes.has(internalKey);
+                if (isRefreshing) {
+                    debug(`Background refresh already happening for ${internalKey}`);
+                }
+                if (!isRefreshing && shouldRefresh) {
+                    debug(`Doing background refresh for ${internalKey}`);
+                    this.currentlyExecutingBackgroundRefreshes.add(internalKey);
+                    fetchData().then(async (data) => {
+                        await this.set(key, data); // We don't use `internalKey` here because `set` handles it
+                        this.currentlyExecutingBackgroundRefreshes.delete(internalKey);
+                    }).catch((error) => {
+                        this.currentlyExecutingBackgroundRefreshes.delete(internalKey);
+                        logging.error({
+                            message: 'There was an error refreshing cache data in the background',
+                            error: error
+                        });
+                    });
+                }
+                return result;
+            } else {
+                const data = await fetchData();
+                await this.set(key, data); // We don't use `internalKey` here because `set` handles it
+                return data;
+            }
         } catch (err) {
             logging.error(err);
         }
@@ -150,9 +210,10 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {*} value
      */
     async set(key, value) {
-        debug('set', key);
+        const internalKey = this._buildKey(key);
+        debug('set', internalKey);
         try {
-            return await this.cache.set(this._buildKey(key), value);
+            return await this.cache.set(internalKey, value);
         } catch (err) {
             logging.error(err);
         }

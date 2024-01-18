@@ -238,35 +238,28 @@ const pipeline = (apiController, apiUtils, apiType) => {
             const cacheKey = stringify(cacheKeyData);
 
             if (apiImpl.cache) {
-                const response = await apiImpl.cache.get(cacheKey);
-
+                const response = await apiImpl.cache.get(cacheKey, getResponse);
                 if (response) {
                     return Promise.resolve(response);
                 }
             }
 
-            return Promise.resolve()
-                .then(() => {
-                    return STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
-                })
-                .then(() => {
-                    return STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame);
-                })
-                .then(() => {
-                    return STAGES.permissions(apiUtils, apiConfig, apiImpl, frame);
-                })
-                .then(() => {
-                    return STAGES.query(apiUtils, apiConfig, apiImpl, frame);
-                })
-                .then((response) => {
-                    return STAGES.serialisation.output(response, apiUtils, apiConfig, apiImpl, frame);
-                })
-                .then(async () => {
-                    if (apiImpl.cache) {
-                        await apiImpl.cache.set(cacheKey, frame.response);
-                    }
-                    return frame.response;
-                });
+            async function getResponse() {
+                await STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
+                await STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame);
+                await STAGES.permissions(apiUtils, apiConfig, apiImpl, frame);
+                const response = await STAGES.query(apiUtils, apiConfig, apiImpl, frame);
+                await STAGES.serialisation.output(response, apiUtils, apiConfig, apiImpl, frame);
+                return frame.response;
+            }
+
+            const response = await getResponse();
+
+            if (apiImpl.cache) {
+                await apiImpl.cache.set(cacheKey, response);
+            }
+
+            return response;
         };
 
         Object.assign(obj[method], apiImpl);
