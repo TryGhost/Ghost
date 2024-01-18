@@ -19,19 +19,19 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
             if (iframeRef.current) {
                 setIsInvisible(false);
             }
-        }, 100); // Delay to allow scripts to render
+        }, 200); // Delay to allow scripts to render
     }, [iframeRef]); // Dependencies for useCallback
 
     // Effect for attaching message listener
     useEffect(() => {
-        const messageListener = (event: MessageEvent) => {
+        const messageListener = async (event: MessageEvent) => {
             if (!href) {
                 return;
             }
             const originURL = new URL(event.origin);
 
             if (originURL.origin === new URL(href).origin) {
-                if (event.data === 'portal-ready' || event.data.type === 'portal-ready') {
+                if (await event.data === 'portal-ready' || await event.data.type === 'portal-ready') {
                     makeVisible();
                 }
             }
