@@ -197,28 +197,15 @@ const Sidebar: React.FC<{
 
         // Pro users with custom sending domains
         if (hasSendingDomain(config)) {
-            let sendingEmail = newsletter.sender_email || ''; // Do not use the rendered address here, because this field is editable and we otherwise can't have an empty field
-
-            // It is possible we have an invalid saved email address, in that case it won't get used
-            // so we should display as if we are using the default = an empty address
-            if (sendingEmail && sendingEmail !== newsletterAddress) {
-                sendingEmail = '';
-            }
-
-            const sendingEmailUsername = sendingEmail?.split('@')[0] || '';
-
             return (
                 <TextField
                     error={Boolean(errors.sender_email)}
                     hint={errors.sender_email}
                     placeholder={defaultEmailAddress}
-                    rightPlaceholder={sendingEmailUsername ? `@${sendingDomain(config)}` : `` }
                     title="Sender email address"
-                    value={sendingEmailUsername || ''}
+                    value={newsletter.sender_email || ''}
                     onChange={(e) => {
-                        const username = e.target.value?.split('@')[0];
-                        const newEmail = username ? `${username}@${sendingDomain(config)}` : '';
-                        updateNewsletter({sender_email: newEmail});
+                        updateNewsletter({sender_email: e.target.value});
                     }}
                     onKeyDown={() => clearError('sender_email')}
                 />
@@ -573,6 +560,8 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
 
             if (formState.sender_email && !validator.isEmail(formState.sender_email)) {
                 newErrors.sender_email = 'Invalid email';
+            } else if (formState.sender_email && hasSendingDomain(config) && formState.sender_email.split('@')[1] !== sendingDomain(config)) {
+                newErrors.sender_email = `Email must end with @${sendingDomain(config)}`;
             }
 
             if (formState.sender_reply_to && !validator.isEmail(formState.sender_reply_to) && !['newsletter', 'support'].includes(formState.sender_reply_to)) {

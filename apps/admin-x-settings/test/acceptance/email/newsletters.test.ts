@@ -252,7 +252,7 @@ test.describe('Newsletter settings', async () => {
         });
 
         test.describe('For Ghost (Pro) users with custom sending domain', () => {
-            test('Allow sender address to be changed partially (username but not domain name)', async ({page}) => {
+            test('The sender email address can be changed partially (username but not domain name)', async ({page}) => {
                 await mockApi({page, requests: {
                     ...globalDataRequests,
                     browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
@@ -284,11 +284,20 @@ test.describe('Newsletter settings', async () => {
                 const modal = page.getByTestId('newsletter-modal');
                 const senderEmail = modal.getByLabel('Sender email');
 
-                // The sender email field should keep the username part of the email address
-                await senderEmail.fill('harry@potter.com');
-                expect(await senderEmail.inputValue()).toBe('harry');
+                // Error case #1: add invalid email address
+                await senderEmail.fill('Harry Potter');
+                await modal.getByRole('button', {name: 'Save'}).click();
+                await expect(page.getByTestId('toast-error').first()).toHaveText(/Can't save newsletter/);
+                await expect(modal).toHaveText(/Invalid email/);
 
-                // The new username is saved without a confirmation popup
+                // Error case #2: the sender email address doesn't match the custom sending domain
+                await senderEmail.fill('harry@potter.com');
+                await modal.getByRole('button', {name: 'Save'}).click();
+                await expect(page.getByTestId('toast-error').first()).toHaveText(/Can't save newsletter/);
+                await expect(modal).toHaveText(/Email must end with @customdomain.com/);
+
+                // But can have any address on the same domain, without verification
+                await senderEmail.fill('harry@customdomain.com');
                 await modal.getByRole('button', {name: 'Save'}).click();
                 await expect(page.getByTestId('confirmation-modal')).toHaveCount(0);
             });
