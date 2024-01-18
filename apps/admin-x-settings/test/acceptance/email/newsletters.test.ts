@@ -1,4 +1,3 @@
-import {NewslettersResponseType} from '@tryghost/admin-x-framework/api/newsletters';
 import {chooseOptionInSelect, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
