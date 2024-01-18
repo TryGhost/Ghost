@@ -1,11 +1,11 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi, responseFixtures, settingsWithStripe, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Offers Modal', () => {
-    test.beforeEach(async () => {
-        toggleLabsFlag('adminXOffers', true);
-    });
+    // test.beforeEach(async () => {
+    //     toggleLabsFlag('adminXOffers', true);
+    // });
 
     test('Offers Modal is available', async ({page}) => {
         await mockApi({page, requests: {
