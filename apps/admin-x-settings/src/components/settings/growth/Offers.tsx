@@ -11,11 +11,11 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const OfferContainer: React.FC<{offerTitle: string, tier: Tier, cadence: string, redemptions: number, type: string, amount: number, currency: string, offerId: string, offerCode: string, goToOfferEdit: (offerId: string) => void}> = (
     {offerTitle, tier, cadence, redemptions, type, amount, currency, offerId, offerCode, goToOfferEdit}) => {
-    const {discountColor, discountOffer} = getOfferDiscount(type, amount, cadence, currency || 'USD', tier);
-    return <div className='group flex h-full cursor-pointer flex-col justify-between gap-4 break-words rounded-sm border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800 min-[900px]:min-h-[187px]' data-test-offer={offerTitle} onClick={() => goToOfferEdit(offerId)}>
+    const {discountOffer} = getOfferDiscount(type, amount, cadence, currency || 'USD', tier);
+    return <div className='group flex h-full cursor-pointer flex-col justify-between gap-4 break-words rounded-sm border border-transparent bg-grey-100 p-5 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800 min-[900px]:min-h-[187px]' onClick={() => goToOfferEdit(offerId)}>
         <span className='text-[1.65rem] font-bold leading-tight tracking-tight'>{offerTitle}</span>
         <div className='flex flex-col'>
-            <span className={`text-sm font-semibold uppercase ${discountColor}`}>{discountOffer}</span>
+            <span className={`text-sm font-semibold uppercase`}>{discountOffer}</span>
             <div className='flex gap-1 text-xs'>
                 <span className='font-semibold'>{tier.name}</span>
                 <span className='text-grey-700'>{cadence === 'month' ? 'monthly' : 'yearly'}</span>

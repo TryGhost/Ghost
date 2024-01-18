@@ -621,7 +621,7 @@ const AddOfferModal = () => {
     />;
 
     const iframe = <PortalFrame
-        href={href}
+        href={href || ''}
     />;
     return <PreviewModalContent
         afterClose={() => {
