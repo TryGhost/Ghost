@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {ReactComponent as SpinnerIcon} from '../../../../assets/icons/spinner.svg';
 
 type PortalFrameProps = {
     href: string;
@@ -53,7 +54,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     }
 
     return (
-        <>
+        <>{!hasLoaded && <div className="flex h-screen items-center justify-center"><span><SpinnerIcon className="mb-6 h-20 w-20" /></span></div>}
             <iframe
                 ref={iframeRef}
                 className={!isInvisible ? '' : 'hidden'}
@@ -62,7 +63,10 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
                 src={href}
                 title="Portal Preview"
                 width="100%"
-                onLoad={() => setHasLoaded(true)}
+                onLoad={() => {
+                    setHasLoaded(true);
+                    makeVisible();
+                }}
             />
         </>
     );
