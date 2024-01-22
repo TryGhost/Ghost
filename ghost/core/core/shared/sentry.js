@@ -57,6 +57,27 @@ const beforeSend = function (event, hint) {
     }
 };
 
+const ALLOWED_HTTP_TRANSACTIONS = [
+    '/ghost/api',
+    '/members/api'
+].map((path) => {
+    // Sentry names HTTP transactions like: "<HTTP_METHOD> <PATH>" i.e. "GET /ghost/api/content/settings"
+    return new RegExp(`^(GET|POST|PUT|DELETE)\\s(?<path>${path}\\/.+)`);
+});
+
+const beforeSendTransaction = function (event) {
+    // Drop transactions that are not in the allowed list
+    for (const transaction of ALLOWED_HTTP_TRANSACTIONS) {
+        const match = event.transaction.match(transaction);
+
+        if (match?.groups?.path) {
+            return event;
+        }
+    }
+
+    return null;
+};
+
 if (sentryConfig && !sentryConfig.disabled) {
     const Sentry = require('@sentry/node');
     const version = require('@tryghost/version').full;
@@ -72,7 +93,8 @@ if (sentryConfig && !sentryConfig.disabled) {
         environment: environment,
         maxValueLength: 1000,
         integrations: [],
-        beforeSend
+        beforeSend,
+        beforeSendTransaction
     };
 
     // Enable tracing if sentry.tracing.enabled is true
@@ -117,6 +139,7 @@ if (sentryConfig && !sentryConfig.disabled) {
         captureException: Sentry.captureException,
         captureMessage: Sentry.captureMessage,
         beforeSend: beforeSend,
+        beforeSendTransaction: beforeSendTransaction,
         initQueryTracing: (knex) => {
             if (sentryConfig.tracing?.enabled === true) {
                 const integration = new SentryKnexTracingIntegration(knex);
