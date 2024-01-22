@@ -1,5 +1,5 @@
 {
-    "(Save {{highestYearlyDiscount}}%)": "(Kaydet %{{highestYearlyDiscount}})",
+    "(save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} gün ücretsiz",
     "{{amount}} off": "{{amount}} indirim",
     "{{amount}} off for first {{number}} months.": "İlk {{number}} ay için {{amount}} indirim.",

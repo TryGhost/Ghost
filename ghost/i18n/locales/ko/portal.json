@@ -1,5 +1,5 @@
 {
-    "(Save {{highestYearlyDiscount}}%)": "",
+    "(save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}}일 무료",
     "{{amount}} off": "{{amount}} 할인",
     "{{amount}} off for first {{number}} months.": "첫 {{number}}개월 {{amount}} 할인",

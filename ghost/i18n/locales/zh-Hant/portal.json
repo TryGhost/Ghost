@@ -1,5 +1,5 @@
 {
-    "(Save {{highestYearlyDiscount}}%)": "",
+    "(save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} 天免費",
     "{{amount}} off": "{{amount}} 元優惠",
     "{{amount}} off for first {{number}} months.": "前 {{number}} 個月有 {{amount}} 元折扣優惠",

@@ -1,5 +1,5 @@
 {
-    "(Save {{highestYearlyDiscount}}%)": "",
+    "(save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} zile gratis",
     "{{amount}} off": "{{amount}} redus",
     "{{amount}} off for first {{number}} months.": "{{amount}} redus pentru primele {{number}} luni.",

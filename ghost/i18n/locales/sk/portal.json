@@ -1,5 +1,5 @@
 {
-    "(Save {{highestYearlyDiscount}}%)": "",
+    "(save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} dní zdarma",
     "{{amount}} off": "{{amount}} zľava",
     "{{amount}} off for first {{number}} months.": "Zľava {{amount}} pre prvé {{number}} mesiace.",
