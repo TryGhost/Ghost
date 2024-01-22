@@ -215,11 +215,7 @@ class EmailRenderer {
         if (newsletter.get('sender_reply_to') === 'support') {
             return this.#settingsHelpers.getMembersSupportAddress();
         }
-        if (newsletter.get('sender_reply_to') === 'newsletter') {
-            if (this.#emailAddressService.managedEmailEnabled) {
-                // Don't duplicate the same replyTo addres if it already in the FROM address
-                return null;
-            }
+        if (newsletter.get('sender_reply_to') === 'newsletter' && !this.#emailAddressService.managedEmailEnabled) {
             return this.getFromAddress(post, newsletter);
         }
 

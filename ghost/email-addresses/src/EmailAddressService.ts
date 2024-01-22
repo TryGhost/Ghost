@@ -131,6 +131,7 @@ export class EmailAddressService {
                 from: address.from
             };
         }
+
         return address;
     }
 
