@@ -895,7 +895,7 @@ function ProductPriceSwitch({selectedInterval, setSelectedInterval, products}) {
                     }}
                 >
                     {t('Yearly')}
-                    {(highestYearlyDiscount > 0) && <span className='gh-portal-maximum-discount'>{t('(Save {{highestYearlyDiscount}}%)', {highestYearlyDiscount})}</span>}
+                    {(highestYearlyDiscount > 0) && <span className='gh-portal-maximum-discount'>{t('(save {{highestYearlyDiscount}}%)', {highestYearlyDiscount})}</span>}
                 </button>
             </div>
         </div>
