@@ -54,7 +54,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     }
 
     return (
-        <>{!hasLoaded && <div className="flex h-screen items-center justify-center"><span><LoadingIndicator /></span></div>}
+        <>{!hasLoaded && <div className="flex h-screen items-center justify-center mt-[-5%]"><span><LoadingIndicator /></span></div>}
             <iframe
                 ref={iframeRef}
                 className={!isInvisible ? '' : 'hidden'}
