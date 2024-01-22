@@ -19,7 +19,8 @@ export type OfferType = 'percent' | 'fixed' | 'trial';
 
 export const createRedemptionFilterUrl = (id: string): string => {
     const baseHref = '/ghost/#/members';
-    return `${baseHref}?filter=${encodeURIComponent('offer_redemptions:' + id)}`;
+    const filterValue = `offer_redemptions:[${id}]`;
+    return `${baseHref}?filter=${encodeURIComponent(filterValue)}`;
 };
 
 export const getOfferCadence = (cadence: string): string => {

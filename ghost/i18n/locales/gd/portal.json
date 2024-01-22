@@ -1,5 +1,5 @@
 {
-    "(Save {{highestYearlyDiscount}}%)": "",
+    "(save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}}l an-asgaidh",
     "{{amount}} off": "{{amount}} dheth",
     "{{amount}} off for first {{number}} months.": "{{amount}} dheth fad {{number}}m",
