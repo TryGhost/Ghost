@@ -1,5 +1,5 @@
 {
-    "(Save {{highestYearlyDiscount}}%)": "(Risparmia il {{highestYearlyDiscount}}%)",
+    "(save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} giorni gratis",
     "{{amount}} off": "{{amount}} in meno",
     "{{amount}} off for first {{number}} months.": "{{amount}} in meno per i primi {{number}} mesi.",

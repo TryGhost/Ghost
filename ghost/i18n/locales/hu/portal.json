@@ -1,5 +1,5 @@
 {
-    "(Save {{highestYearlyDiscount}}%)": "",
+    "(save {{highestYearlyDiscount}}%)": "",
     "{{amount}} days free": "{{amount}} napig ingyen",
     "{{amount}} off": "{{amount}} kedvezmény",
     "{{amount}} off for first {{number}} months.": "{{amount}} kedvezmény az első {{number}} hónapig.",
