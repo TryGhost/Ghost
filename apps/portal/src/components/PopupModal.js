@@ -131,6 +131,15 @@ class PopupContent extends React.Component {
         );
     }
 
+    sendPortalPreviewReadyEvent() {
+        if (window.self !== window.parent) {
+            window.parent.postMessage({
+                type: 'portal-preview-ready',
+                payload: {}
+            }, '*');
+        }
+    }
+
     render() {
         const {page, pageQuery, site, customSiteUrl} = this.context;
         const products = getSiteProducts({site});
@@ -202,6 +211,7 @@ class PopupContent extends React.Component {
         }
 
         const containerClassName = `${className} ${popupWidthStyle} ${pageClass}`;
+        this.sendPortalPreviewReadyEvent();
         return (
             <>
                 <div className={'gh-portal-popup-wrapper ' + pageClass} onClick={e => this.handlePopupClose(e)}>
