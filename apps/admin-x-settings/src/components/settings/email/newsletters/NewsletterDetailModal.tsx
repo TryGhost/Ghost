@@ -44,19 +44,13 @@ const ReplyToEmailField: React.FC<{
             if (!foundValue) {
                 updateNewsletter({sender_reply_to: 'newsletter'});
             }
-        } else {
-            if (newsletter.sender_reply_to === 'newsletter' || newsletter.sender_reply_to === 'support') {
-                // Transform sender_reply_to to the rendered value (string)
-                setSenderReplyTo(senderReplyTo);
-                updateNewsletter({sender_reply_to: senderReplyTo});
-            }
         }
-    }, [config, replyToEmails, updateNewsletter, newsletter.sender_reply_to, senderReplyTo, newEmailAddressesFlag, defaultEmailAddress, supportEmailAddress]);
+    }, [config, replyToEmails, updateNewsletter, newsletter.sender_reply_to, newEmailAddressesFlag]);
 
     const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setSenderReplyTo(e.target.value || '');
-        updateNewsletter({sender_reply_to: e.target.value || defaultEmailAddress});
-    }, [updateNewsletter, setSenderReplyTo, defaultEmailAddress]);
+        setSenderReplyTo(e.target.value);
+        updateNewsletter({sender_reply_to: e.target.value || 'newsletter'});
+    }, [updateNewsletter, setSenderReplyTo]);
 
     // Self-hosters, or legacy Pro users
     if (!isManagedEmail(config) && !newEmailAddressesFlag) {
@@ -71,7 +65,13 @@ const ReplyToEmailField: React.FC<{
         );
     }
 
-    // Managed email
+    const onBlur = () => {
+        // Update the senderReplyTo to the rendered value again
+        const rendered = renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || '';
+        setSenderReplyTo(rendered);
+    };
+
+    // Pro users without custom sending domains
     return (
         <TextField
             error={Boolean(errors.sender_reply_to)}
@@ -79,6 +79,7 @@ const ReplyToEmailField: React.FC<{
             placeholder={newsletterAddress || ''}
             title="Reply-to email"
             value={senderReplyTo}
+            onBlur={onBlur}
             onChange={onChange}
             onKeyDown={() => clearError('sender_reply_to')}
         />
@@ -105,15 +106,7 @@ const Sidebar: React.FC<{
     const [siteTitle] = getSettingValues(localSettings, ['title']) as string[];
     const handleError = useHandleError();
 
-    const [senderEmail, setSenderEmail] = useState(renderSenderEmail(newsletter, config, defaultEmailAddress) || '');
-
-    // Clear the sender email field if the sending domain don't match
-    useEffect(() => {
-        if (isManagedEmail(config) && hasSendingDomain(config) && senderEmail.split('@')[1] !== sendingDomain(config)) {
-            setSenderEmail('');
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
 
     const fontOptions: SelectOption[] = [
         {value: 'serif', label: 'Elegant serif', className: 'font-serif'},
@@ -193,13 +186,10 @@ const Sidebar: React.FC<{
                 <TextField
                     error={Boolean(errors.sender_email)}
                     hint={errors.sender_email}
-                    placeholder={senderEmail || ''}
+                    placeholder={newsletterAddress || ''}
                     title="Sender email address"
-                    value={senderEmail || ''}
-                    onChange={(e) => {
-                        setSenderEmail(e.target.value || '');
-                        updateNewsletter({sender_email: e.target.value});
-                    }}
+                    value={newsletter.sender_email || ''}
+                    onChange={e => updateNewsletter({sender_email: e.target.value})}
                     onKeyDown={() => clearError('sender_email')}
                 />
             );
@@ -213,9 +203,8 @@ const Sidebar: React.FC<{
                     hint={errors.sender_email}
                     placeholder={defaultEmailAddress}
                     title="Sender email address"
-                    value={senderEmail || ''}
+                    value={newsletter.sender_email || ''}
                     onChange={(e) => {
-                        setSenderEmail(e.target.value || '');
                         updateNewsletter({sender_email: e.target.value});
                     }}
                     onKeyDown={() => clearError('sender_email')}
