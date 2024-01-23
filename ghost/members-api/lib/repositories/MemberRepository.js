@@ -401,7 +401,7 @@ module.exports = class MemberRepository {
         // By default subscribe to all active auto opt-in newsletters with members visibility
         //TODO: Will mostly need to be updated later for paid-only newsletters
         browseOptions.filter = 'status:active+subscribe_on_signup:true+visibility:members';
-        const newsletters = await this._newslettersService.browse(browseOptions);
+        const newsletters = await this._newslettersService.getAll(browseOptions);
         return newsletters || [];
     }
 

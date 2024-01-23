@@ -487,10 +487,10 @@ module.exports = class RouterController {
                 if (requestedNewsletters && requestedNewsletters.length > 0 && requestedNewsletters.every(newsletter => newsletter.name !== undefined)) {
                     const newsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
                     const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
-                    const newsletters = await this._newslettersService.browse({
+                    const newsletters = (await this._newslettersService.getAll({
                         filter: `name:[${newsletterNamesFilter}]`,
                         columns: ['id','name','status']
-                    });
+                    }));
 
                     if (newsletters.length !== newsletterNames.length) { //check for invalid newsletters
                         const validNewsletters = newsletters.map(newsletter => newsletter.name);
