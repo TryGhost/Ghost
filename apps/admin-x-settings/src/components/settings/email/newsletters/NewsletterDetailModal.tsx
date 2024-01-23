@@ -55,8 +55,8 @@ const ReplyToEmailField: React.FC<{
 
     const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setSenderReplyTo(e.target.value || '');
-        updateNewsletter({sender_reply_to: e.target.value || 'newsletter'});
-    }, [updateNewsletter, setSenderReplyTo]);
+        updateNewsletter({sender_reply_to: e.target.value || defaultEmailAddress});
+    }, [updateNewsletter, setSenderReplyTo, defaultEmailAddress]);
 
     // Self-hosters, or legacy Pro users
     if (!isManagedEmail(config) && !newEmailAddressesFlag) {
