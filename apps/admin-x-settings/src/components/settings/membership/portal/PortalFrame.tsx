@@ -18,7 +18,6 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     const makeVisible = useCallback(() => {
         setTimeout(() => {
             if (iframeRef.current) {
-                setHasLoaded(true);
                 setIsInvisible(false);
             }
         }, 200);
@@ -32,7 +31,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
             const originURL = new URL(event.origin);
 
             if (originURL.origin === new URL(href).origin) {
-                if (event.data === 'portal-ready' || event.data.type === 'portal-ready') {
+                if (event?.data?.type === 'portal-preview-ready') {
                     makeVisible();
                 }
             }
@@ -61,6 +60,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
                 title="Portal Preview"
                 width="100%"
                 onLoad={() => {
+                    setHasLoaded(true);
                 }}
             />
         </>
