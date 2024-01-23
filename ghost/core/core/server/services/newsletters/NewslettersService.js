@@ -92,7 +92,7 @@ class NewslettersService {
      * @public
      * @param {Object} options data (id, uuid, slug...)
      * @param {Object} [options] options
-     * @returns {Promise<object>} JSONified Newsletter models
+     * @returns {Promise<object>}
      */
     async read(data, options = {}) {
         const newsletter = await this.NewsletterModel.findOne(data, options);
@@ -108,11 +108,14 @@ class NewslettersService {
     /**
      * @public
      * @param {Object} [options] options
-     * @returns {Promise<object>} JSONified Newsletter models
+     * @returns {Promise<object>}
      */
     async browse(options = {}) {
-        let newsletters = await this.NewsletterModel.findAll(options);
+        return await this.NewsletterModel.findPage(options);
+    }
 
+    async getAll(options = {}) {
+        const newsletters = await this.NewsletterModel.findAll(options);
         return newsletters.toJSON();
     }
 
@@ -298,6 +301,10 @@ class NewslettersService {
                 }
 
                 if (validated.verificationEmailRequired) {
+                    if (type === 'replyTo' && email === newsletter.get('sender_email')) {
+                        // This is some custom behaviour that allows swapping sender_email to sender_reply_to without requiring validation again
+                        continue;
+                    }
                     delete cleanedAttrs[property];
                     emailsToVerify.push({email, property});
                 }
@@ -308,6 +315,18 @@ class NewslettersService {
             if (!this.labs.isSet('audienceFeedback')) {
                 // Not allowed to set to true
                 cleanedAttrs.feedback_enabled = false;
+            }
+        }
+
+        // If one of the properties was changed, we need to reset sender_email in case it was not changed but is invalid in the database
+        // which can happen after a config change (= auto correcting behaviour)
+        const didChangeReplyTo = newsletter && attrs.sender_reply_to !== undefined && newsletter.get('sender_reply_to') !== attrs.sender_reply_to;
+        const didChangeSenderEmail = newsletter && (attrs.sender_email !== undefined && newsletter.get('sender_email') !== attrs.sender_email);
+        if (didChangeReplyTo && !didChangeSenderEmail && newsletter.get('sender_email')) {
+            const validated = this.emailAddressService.service.validate(newsletter.get('sender_email'), 'from');
+            if (!validated.allowed) {
+                logging.info(`Resetting sender_email for newsletter ${newsletter.id} because it became invalid`);
+                cleanedAttrs.sender_email = null;
             }
         }
 

@@ -2884,6 +2884,183 @@ Object {
 }
 `;
 
+exports[`Newsletters API Managed email with custom sending domain Auto correcting invalid domains Browse returns sender_email as sender_reply_to in case we cannot send from sender_email and sender_reply_to is set to newsletter 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "5375",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Managed email with custom sending domain Auto correcting invalid domains Does not reset sender_email when editing the newsletter (not the reply-to address) 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "My changed newsletter name",
+      "sender_email": null,
+      "sender_name": "Jamie",
+      "sender_reply_to": "notvalid@acme.com",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Managed email with custom sending domain Auto correcting invalid domains Does not reset sender_email when editing the newsletter (not the reply-to address) 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "924",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Managed email with custom sending domain Auto correcting invalid domains Read returns sender_email as sender_reply_to in case we cannot send from sender_email and sender_reply_to is set to newsletter 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "My changed newsletter name",
+      "sender_email": null,
+      "sender_name": "Jamie",
+      "sender_reply_to": "notvalid@acme.com",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Managed email with custom sending domain Auto correcting invalid domains Read returns sender_email as sender_reply_to in case we cannot send from sender_email and sender_reply_to is set to newsletter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "924",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Managed email with custom sending domain Auto correcting invalid domains Resets sender_email when editing the newsletter reply_to address 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "My changed newsletter name",
+      "sender_email": null,
+      "sender_name": "Jamie",
+      "sender_reply_to": "support",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Managed email with custom sending domain Auto correcting invalid domains Resets sender_email when editing the newsletter reply_to address 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "914",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Newsletters API Managed email with custom sending domain Can clear sender_email 1: [body] 1`] = `
 Object {
   "newsletters": Array [
@@ -2897,10 +3074,10 @@ Object {
       "footer_content": null,
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
+      "name": "My changed newsletter name",
       "sender_email": null,
       "sender_name": "Jamie",
-      "sender_reply_to": "anything@sendingdomain.com",
+      "sender_reply_to": "newsletter",
       "show_badge": true,
       "show_comment_cta": true,
       "show_feature_image": true,
@@ -2929,7 +3106,7 @@ exports[`Newsletters API Managed email with custom sending domain Can clear send
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "923",
+  "content-length": "917",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2952,10 +3129,10 @@ Object {
       "footer_content": null,
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
-      "sender_email": "default@email.com",
+      "name": "My changed newsletter name",
+      "sender_email": null,
       "sender_name": "Jamie",
-      "sender_reply_to": "anything@sendingdomain.com",
+      "sender_reply_to": "existing@acme.com",
       "show_badge": true,
       "show_comment_cta": true,
       "show_feature_image": true,
@@ -2984,7 +3161,7 @@ exports[`Newsletters API Managed email with custom sending domain Can keep sende
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "938",
+  "content-length": "924",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3012,8 +3189,8 @@ Object {
       "footer_content": null,
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
-      "sender_email": "default@email.com",
+      "name": "My changed newsletter name",
+      "sender_email": null,
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
@@ -3044,7 +3221,7 @@ exports[`Newsletters API Managed email with custom sending domain Can set newsle
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "977",
+  "content-length": "972",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3326,8 +3503,8 @@ Object {
       "footer_content": null,
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
-      "sender_email": "default@email.com",
+      "name": "My changed newsletter name",
+      "sender_email": null,
       "sender_name": "Jamie",
       "sender_reply_to": "anything@sendingdomain.com",
       "show_badge": true,
@@ -3358,7 +3535,7 @@ exports[`Newsletters API Managed email with custom sending domain Can set newsle
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "938",
+  "content-length": "933",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3381,8 +3558,8 @@ Object {
       "footer_content": null,
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
-      "sender_email": "default@email.com",
+      "name": "My changed newsletter name",
+      "sender_email": null,
       "sender_name": "Jamie",
       "sender_reply_to": "support",
       "show_badge": true,
@@ -3413,7 +3590,7 @@ exports[`Newsletters API Managed email with custom sending domain Can set newsle
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "919",
+  "content-length": "914",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3436,8 +3613,8 @@ Object {
       "footer_content": null,
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
-      "sender_email": "default@email.com",
+      "name": "My changed newsletter name",
+      "sender_email": null,
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
@@ -3468,7 +3645,7 @@ exports[`Newsletters API Managed email with custom sending domain Can set newsle
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "922",
+  "content-length": "917",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3491,10 +3668,10 @@ Object {
       "footer_content": null,
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
+      "name": "My changed newsletter name",
       "sender_email": "anything@sendingdomain.com",
       "sender_name": "Jamie",
-      "sender_reply_to": "anything@sendingdomain.com",
+      "sender_reply_to": "newsletter",
       "show_badge": true,
       "show_comment_cta": true,
       "show_feature_image": true,
@@ -3523,7 +3700,7 @@ exports[`Newsletters API Managed email with custom sending domain Can set sender
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "947",
+  "content-length": "941",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3657,6 +3834,467 @@ Object {
 }
 `;
 
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Browse returns sender_email as sender_reply_to in case we cannot send from sender_email and sender_reply_to is set to newsletter 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "5365",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Can switch sender_email to sender_reply_to without validation 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Daily newsletter",
+      "sender_email": null,
+      "sender_name": "Jamie",
+      "sender_reply_to": "notvalid@acme.com",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Can switch sender_email to sender_reply_to without validation 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "914",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Does not reset sender_email when editing the newsletter (not the reply-to address) 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "My changed newsletter name",
+      "sender_email": null,
+      "sender_name": "Jamie",
+      "sender_reply_to": "notvalid@acme.com",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Does not reset sender_email when editing the newsletter (not the reply-to address) 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "924",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Does not reset sender_email when editing the newsletter address (not the reply-to address) 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "My changed newsletter name",
+      "sender_email": null,
+      "sender_name": "Jamie",
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Does not reset sender_email when editing the newsletter address (not the reply-to address) 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "917",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Read returns sender_email as sender_reply_to in case we cannot send from sender_email and sender_reply_to is set to newsletter 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Daily newsletter",
+      "sender_email": null,
+      "sender_name": "Jamie",
+      "sender_reply_to": "notvalid@acme.com",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Read returns sender_email as sender_reply_to in case we cannot send from sender_email and sender_reply_to is set to newsletter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "914",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Resets sender_email when editing the newsletter reply_to address 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Daily newsletter",
+      "sender_email": null,
+      "sender_name": "Jamie",
+      "sender_reply_to": "support",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Resets sender_email when editing the newsletter reply_to address 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "904",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Resets sender_email when editing the newsletter reply_to address in combination with keeping sender email 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "sent_email_verification": Array [
+      "sender_reply_to",
+    ],
+  },
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Daily newsletter",
+      "sender_email": null,
+      "sender_name": "Jamie",
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Resets sender_email when editing the newsletter reply_to address in combination with keeping sender email 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "962",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Resets sender_email when editing the newsletter reply_to address in combination with resetting sender email 1: [body] 1`] = `
+Object {
+  "meta": Object {
+    "sent_email_verification": Array [
+      "sender_reply_to",
+    ],
+  },
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Daily newsletter",
+      "sender_email": null,
+      "sender_name": "Jamie",
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Resets sender_email when editing the newsletter reply_to address in combination with resetting sender email 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "962",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-cache-invalidate": "/*",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Returns sender_email as sender_reply_to in case we cannot send from sender_email and sender_reply_to is set to newsletter 1: [body] 1`] = `
+Object {
+  "newsletters": Array [
+    Object {
+      "background_color": "light",
+      "body_font_category": "serif",
+      "border_color": null,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "description": null,
+      "feedback_enabled": false,
+      "footer_content": null,
+      "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Daily newsletter",
+      "sender_email": "notvalid@acme.com",
+      "sender_name": "Jamie",
+      "sender_reply_to": "newsletter",
+      "show_badge": true,
+      "show_comment_cta": true,
+      "show_feature_image": true,
+      "show_header_icon": true,
+      "show_header_name": true,
+      "show_header_title": true,
+      "show_latest_posts": false,
+      "show_post_title_section": true,
+      "show_subscription_details": false,
+      "slug": "daily-newsletter",
+      "sort_order": 1,
+      "status": "active",
+      "subscribe_on_signup": false,
+      "title_alignment": "center",
+      "title_color": null,
+      "title_font_category": "serif",
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "visibility": "members",
+    },
+  ],
+}
+`;
+
+exports[`Newsletters API Managed email without custom sending domain Auto correcting invalid domains Returns sender_email as sender_reply_to in case we cannot send from sender_email and sender_reply_to is set to newsletter 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "922",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Newsletters API Managed email without custom sending domain Can clear sender_email 1: [body] 1`] = `
 Object {
   "newsletters": Array [
@@ -3726,9 +4364,9 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "jamie@example.com",
+      "sender_email": null,
       "sender_name": "Jamie",
-      "sender_reply_to": "newsletter",
+      "sender_reply_to": "existing@acme.com",
       "show_badge": true,
       "show_comment_cta": true,
       "show_feature_image": true,
@@ -3757,7 +4395,7 @@ exports[`Newsletters API Managed email without custom sending domain Can keep se
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "922",
+  "content-length": "914",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3896,7 +4534,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "jamie@example.com",
+      "sender_email": null,
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
@@ -3927,7 +4565,7 @@ exports[`Newsletters API Managed email without custom sending domain Can set new
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "977",
+  "content-length": "962",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4155,7 +4793,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "jamie@example.com",
+      "sender_email": null,
       "sender_name": "Jamie",
       "sender_reply_to": "support",
       "show_badge": true,
@@ -4186,7 +4824,7 @@ exports[`Newsletters API Managed email without custom sending domain Can set new
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "919",
+  "content-length": "904",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4210,7 +4848,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "jamie@example.com",
+      "sender_email": null,
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
@@ -4241,7 +4879,7 @@ exports[`Newsletters API Managed email without custom sending domain Can set new
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "922",
+  "content-length": "907",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4265,7 +4903,7 @@ Object {
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Daily newsletter",
-      "sender_email": "jamie@example.com",
+      "sender_email": null,
       "sender_name": "Jamie",
       "sender_reply_to": "default@email.com",
       "show_badge": true,
@@ -4296,7 +4934,7 @@ exports[`Newsletters API Managed email without custom sending domain Can set new
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "929",
+  "content-length": "914",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4498,7 +5136,7 @@ Object {
       "footer_content": null,
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
+      "name": "My changed newsletter name",
       "sender_email": "hello@acme.com",
       "sender_name": "Jamie",
       "sender_reply_to": "hello@acme.com",
@@ -4530,7 +5168,7 @@ exports[`Newsletters API Self hoster without managed email Can change sender_ema
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "923",
+  "content-length": "933",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4553,7 +5191,7 @@ Object {
       "footer_content": null,
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
+      "name": "My changed newsletter name",
       "sender_email": null,
       "sender_name": "Jamie",
       "sender_reply_to": "hello@acme.com",
@@ -4585,7 +5223,7 @@ exports[`Newsletters API Self hoster without managed email Can clear sender_emai
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "911",
+  "content-length": "921",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4663,8 +5301,8 @@ Object {
       "footer_content": null,
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
-      "sender_email": "anything@sendingdomain.com",
+      "name": "My changed newsletter name",
+      "sender_email": null,
       "sender_name": "Jamie",
       "sender_reply_to": "hello@acme.com",
       "show_badge": true,
@@ -4695,7 +5333,7 @@ exports[`Newsletters API Self hoster without managed email Can set newsletter re
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "935",
+  "content-length": "921",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4718,8 +5356,8 @@ Object {
       "footer_content": null,
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
-      "sender_email": "anything@sendingdomain.com",
+      "name": "My changed newsletter name",
+      "sender_email": null,
       "sender_name": "Jamie",
       "sender_reply_to": "support",
       "show_badge": true,
@@ -4750,7 +5388,7 @@ exports[`Newsletters API Self hoster without managed email Can set newsletter re
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "928",
+  "content-length": "914",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4773,8 +5411,8 @@ Object {
       "footer_content": null,
       "header_image": "http://127.0.0.1:2369/content/images/2022/05/test.jpg",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Daily newsletter",
-      "sender_email": "anything@sendingdomain.com",
+      "name": "My changed newsletter name",
+      "sender_email": null,
       "sender_name": "Jamie",
       "sender_reply_to": "newsletter",
       "show_badge": true,
@@ -4805,7 +5443,7 @@ exports[`Newsletters API Self hoster without managed email Can set newsletter re
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "931",
+  "content-length": "917",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

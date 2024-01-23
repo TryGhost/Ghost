@@ -219,7 +219,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             const newsletter = createJsonModel(testUtils.DataGenerator.forKnex.createNewsletter({
                 name: 'Full newsletter',
-                slug: 'full-newsletter'
+                slug: 'full-newsletter',
+                sender_email: null,
+                sender_reply_to: 'newsletter'
             }));
 
             const mapped = mappers.newsletters(newsletter, frame);

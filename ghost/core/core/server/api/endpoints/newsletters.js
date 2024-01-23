@@ -1,4 +1,3 @@
-const models = require('../../models');
 const allowedIncludes = ['count.posts', 'count.members', 'count.active_members'];
 
 const newslettersService = require('../../services/newsletters');
@@ -27,7 +26,7 @@ module.exports = {
         },
         permissions: true,
         query(frame) {
-            return models.Newsletter.findPage(frame.options);
+            return newslettersService.browse(frame.options);
         }
     },
 
