@@ -44,7 +44,7 @@ test.describe('Announcement Bar', async () => {
 
         const iframesHandleHome = await page.$$('[data-testid="announcement-bar-preview-iframe"] > iframe');
         const textExistsInHomeIframes = await checkTextInIframes(iframesHandleHome, 'homepage preview');
-        await expect(textExistsInHomeIframes).toBeTruthy();
+        expect(textExistsInHomeIframes).toBeTruthy();
 
         const modal = page.getByTestId('announcement-bar-modal');
         await modal.getByTestId('design-toolbar').getByRole('tab', {name: 'Post'}).click();
