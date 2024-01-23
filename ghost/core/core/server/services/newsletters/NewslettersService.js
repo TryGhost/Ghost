@@ -114,6 +114,11 @@ class NewslettersService {
         return await this.NewsletterModel.findPage(options);
     }
 
+    async getAll(options = {}) {
+        const newsletters = await this.NewsletterModel.findAll(options);
+        return newsletters.toJSON();
+    }
+
     /**
      * @public
      * @param {object} attrs model properties
