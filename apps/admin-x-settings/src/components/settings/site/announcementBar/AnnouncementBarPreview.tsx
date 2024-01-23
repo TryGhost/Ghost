@@ -28,7 +28,7 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
         }
 
         fetch(url, {
-            method: 'GET',
+            method: 'POST',
             headers: {
                 'Content-Type': 'text/html;charset=utf-8',
                 'x-ghost-preview': getPreviewData(
