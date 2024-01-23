@@ -8030,10 +8030,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/koenig-lexical@1.0.11":
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.0.11.tgz#7cc17317e4116d0facb3add82fefd104d076d764"
-  integrity sha512-jmDYNv1jy4xUmjH/xXVZUzPNhKp7jd4rX8rAZwLxD4p+Eegh99LTBD8JMYSQmVDuWAkrILFlSCHZt7Y4O6uNuw==
+"@tryghost/koenig-lexical@1.0.12":
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.0.12.tgz#08019d4c17584f049ac04f435aadae59a8bc6e03"
+  integrity sha512-1o+FEJNC6fVCj7lSvrntWu35W+bet9/WzUpzAujAJ8NU+tKPzu016Wtr/T50A7KI1AViMvbZOIS5XbPo4jUIHA==
   dependencies:
     lodash "^4.17.21"
 
