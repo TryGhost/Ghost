@@ -5,7 +5,6 @@
 //
 // Defaults to words="50"
 
-const e = require('express');
 const {SafeString} = require('../services/handlebars');
 const {metaData} = require('../services/proxy');
 const _ = require('lodash');
