@@ -61,7 +61,6 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
                 title="Portal Preview"
                 width="100%"
                 onLoad={() => {
-                    setHasLoaded(true);
                 }}
             />
         </>
