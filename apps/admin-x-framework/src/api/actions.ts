@@ -132,7 +132,7 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
 
             return {
                 isExternal: true,
-                route: 'editor.edit',
+                route: `editor/${resourceType}/${action.resource.id}`,
                 models: [resourceType, action.resource.id]
             };
         case 'integration':
@@ -145,10 +145,10 @@ export const getLinkTarget = (action: Action): InternalLink | ExternalLink | und
             if (!action.resource || !action.resource.id) {
                 return;
             }
-
+            // replace with Settings route once Offers X GA is released
             return {
                 isExternal: true,
-                route: 'offer',
+                route: `offers/${action.resource.id}`,
                 models: [action.resource.id]
             };
         case 'tag':
