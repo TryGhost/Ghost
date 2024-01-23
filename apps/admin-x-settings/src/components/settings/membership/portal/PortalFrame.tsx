@@ -18,6 +18,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     const makeVisible = useCallback(() => {
         setTimeout(() => {
             if (iframeRef.current) {
+                setHasLoaded(true);
                 setIsInvisible(false);
             }
         }, 200);
