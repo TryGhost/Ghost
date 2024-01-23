@@ -257,7 +257,7 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
     }, [formState, siteData]);
 
     const iframe = <PortalFrame
-        href={href}
+        href={href || ''}
     />;
 
     return offerById ? <PreviewModalContent

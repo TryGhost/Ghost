@@ -47,7 +47,6 @@ const ALPHA_FEATURES = [
     'adminXOffers',
     'filterEmailDisabled',
     'adminXDemo',
-    'tkReminders',
     'newEmailAddresses',
     'portalImprovements'
 ];

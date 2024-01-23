@@ -1,19 +1,10 @@
-import {Config, hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
+import {Config, hasSendingDomain, isManagedEmail} from '@tryghost/admin-x-framework/api/config';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 
 export const renderSenderEmail = (newsletter: Newsletter, config: Config, defaultEmailAddress: string|undefined) => {
     if (isManagedEmail(config) && !hasSendingDomain(config) && defaultEmailAddress) {
         // Not changeable: sender_email is ignored
         return defaultEmailAddress;
-    }
-
-    if (isManagedEmail(config) && hasSendingDomain(config)) {
-        // Only return sender_email if the domain names match
-        if (newsletter.sender_email?.split('@')[1] === sendingDomain(config)) {
-            return newsletter.sender_email;
-        } else {
-            return defaultEmailAddress || '';
-        }
     }
 
     return newsletter.sender_email || defaultEmailAddress || '';

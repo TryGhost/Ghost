@@ -58,7 +58,7 @@ class ErrorHandler extends React.Component {
             });
         }
 
-        console.error(error, errorInfo); // eslint-disable-line
+        console.error(error); // eslint-disable-line
     }
 
     render() {
@@ -537,7 +537,7 @@ export default class KoenigLexicalEditor extends Component {
                             multiplayerEndpoint={multiplayerEndpoint}
                             onError={this.onError}
                             darkMode={this.feature.nightShift}
-                            isTKEnabled={this.feature.tkReminders}
+                            isTKEnabled={true}
                         >
                             <KoenigEditor
                                 editorResource={this.editorResource}
@@ -548,7 +548,7 @@ export default class KoenigLexicalEditor extends Component {
                                 registerAPI={this.args.registerAPI}
                             />
                             <WordCountPlugin editorResource={this.editorResource} onChange={this.args.updateWordCount} />
-                            {this.feature.tkReminders && <TKCountPlugin editorResource={this.editorResource} onChange={this.args.updatePostTkCount} />}
+                            <TKCountPlugin editorResource={this.editorResource} onChange={this.args.updatePostTkCount} />
                         </KoenigComposer>
                     </Suspense>
                 </ErrorHandler>

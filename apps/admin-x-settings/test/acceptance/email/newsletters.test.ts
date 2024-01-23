@@ -1,4 +1,3 @@
-import {NewslettersResponseType} from '@tryghost/admin-x-framework/api/newsletters';
 import {chooseOptionInSelect, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
@@ -123,51 +122,8 @@ test.describe('Newsletter settings', async () => {
                 await modal.getByLabel('Sender email').fill('test@test.com');
                 await modal.getByRole('button', {name: 'Save'}).click();
 
-                await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm newsletter email address/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/default email address \(default@example.com\)/);
-            });
-
-            test('Displays the current email when changing sender address', async ({page}) => {
-                const response = {
-                    ...responseFixtures.newsletters,
-                    newsletters: [{
-                        ...responseFixtures.newsletters.newsletters[0],
-                        sender_email: 'current@test.com'
-                    }]
-                } satisfies NewslettersResponseType;
-
-                await mockApi({page, requests: {
-                    ...globalDataRequests,
-                    browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response},
-                    editNewsletter: {method: 'PUT', path: `/newsletters/${responseFixtures.newsletters.newsletters[0].id}/?include=count.active_members%2Ccount.posts`, response: {
-                        newsletters: response.newsletters,
-                        meta: {
-                            sent_email_verification: ['sender_email']
-                        }
-                    }}
-                }});
-
-                await page.goto('/');
-
-                const section = page.getByTestId('newsletters');
-
-                await section.getByText('Awesome newsletter').click();
-
-                const modal = page.getByTestId('newsletter-modal');
-
-                await modal.getByLabel('Sender email').fill('not-an-email');
-                await modal.getByRole('button', {name: 'Save'}).click();
-
-                await expect(page.getByTestId('toast-error')).toHaveText(/Can't save newsletter/);
-                await expect(modal).toHaveText(/Invalid email/);
-
-                await modal.getByLabel('Sender email').fill('test@test.com');
-                await modal.getByRole('button', {name: 'Save'}).click();
-
-                await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm newsletter email address/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/previous email address \(current@test.com\)/);
+                await expect(page.getByTestId('toast-neutral')).toHaveCount(1);
+                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to the new address/);
             });
         });
 
@@ -244,15 +200,13 @@ test.describe('Newsletter settings', async () => {
                 await replyToEmail.fill('test@test.com');
                 await modal.getByRole('button', {name: 'Save'}).click();
 
-                await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm reply-to address/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/sent a confirmation email to test@test.com/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/replies will continue to go to support@example.com/);
+                await expect(page.getByTestId('toast-neutral')).toHaveCount(1);
+                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to the new address/);
             });
         });
 
         test.describe('For Ghost (Pro) users with custom sending domain', () => {
-            test('Allow sender address to be changed partially (username but not domain name)', async ({page}) => {
+            test('The sender email address can be changed partially (username but not domain name)', async ({page}) => {
                 await mockApi({page, requests: {
                     ...globalDataRequests,
                     browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
@@ -284,11 +238,20 @@ test.describe('Newsletter settings', async () => {
                 const modal = page.getByTestId('newsletter-modal');
                 const senderEmail = modal.getByLabel('Sender email');
 
-                // The sender email field should keep the username part of the email address
-                await senderEmail.fill('harry@potter.com');
-                expect(await senderEmail.inputValue()).toBe('harry');
+                // Error case #1: add invalid email address
+                await senderEmail.fill('Harry Potter');
+                await modal.getByRole('button', {name: 'Save'}).click();
+                await expect(page.getByTestId('toast-error').first()).toHaveText(/Can't save newsletter/);
+                await expect(modal).toHaveText(/Invalid email/);
 
-                // The new username is saved without a confirmation popup
+                // Error case #2: the sender email address doesn't match the custom sending domain
+                await senderEmail.fill('harry@potter.com');
+                await modal.getByRole('button', {name: 'Save'}).click();
+                await expect(page.getByTestId('toast-error').first()).toHaveText(/Can't save newsletter/);
+                await expect(modal).toHaveText(/Email must end with @customdomain.com/);
+
+                // But can have any address on the same domain, without verification
+                await senderEmail.fill('harry@customdomain.com');
                 await modal.getByRole('button', {name: 'Save'}).click();
                 await expect(page.getByTestId('confirmation-modal')).toHaveCount(0);
             });
@@ -331,10 +294,8 @@ test.describe('Newsletter settings', async () => {
 
                 // There is a verification popup for the new reply-to address
                 await modal.getByRole('button', {name: 'Save'}).click();
-                await expect(page.getByTestId('confirmation-modal')).toHaveCount(1);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/Confirm reply-to address/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/sent a confirmation email to hermione@granger.com/);
-                await expect(page.getByTestId('confirmation-modal')).toHaveText(/replies will continue to go to support@example.com/);
+                await expect(page.getByTestId('toast-neutral')).toHaveCount(1);
+                await expect(page.getByTestId('toast-neutral')).toHaveText(/sent a confirmation email to the new address/);
             });
         });
     });

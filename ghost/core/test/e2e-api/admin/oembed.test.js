@@ -58,6 +58,31 @@ describe('Oembed API', function () {
         should.exist(res.body.html);
     });
 
+    it('does not use http preferentially to https', async function () {
+        const httpMock = nock('https://odysee.com')
+            .get('/$/oembed')
+            .query({url: 'http://odysee.com/@BarnabasNagy:5/At-Last-(Playa):2', format: 'json'})
+            .reply(200, 'The URL is invalid or is not associated with any claim.');
+
+        const httpsMock = nock('https://odysee.com')
+            .get('/$/oembed')
+            .query({url: 'https://odysee.com/@BarnabasNagy:5/At-Last-(Playa):2', format: 'json'})
+            .reply(200, {
+                html: '<iframe></iframe>',
+                type: 'rich',
+                version: '1.0'
+            });
+
+        const res = await request.get(localUtils.API.getApiQuery('oembed/?url=https%3A%2F%2Fodysee.com%2F%40BarnabasNagy%3A5%2FAt-Last-%28Playa%29%3A2'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private);
+
+        httpMock.isDone().should.be.false();
+        httpsMock.isDone().should.be.true();
+        should.exist(res.body.html);
+    });
+
     it('errors with a useful message when embedding is disabled', async function () {
         const requestMock = nock('https://www.youtube.com')
             .get('/oembed')

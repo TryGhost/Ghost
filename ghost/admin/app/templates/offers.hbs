@@ -92,7 +92,7 @@
                                     <span class="midgrey strike ml2">{{currency-symbol offer.finalCurrency}}{{gh-price-amount offer.originalPrice}}</span>
                                 {{/if}}
                             </LinkTo>
-                            <LinkTo @route="members" @query={{hash filter=(concat "offer_redemptions:" offer.id)}} class="gh-list-data" data-test-list="redemption-count">
+                            <LinkTo @route="members" @query={{hash filter=(concat "offer_redemptions:[" offer.id "]")}} class="gh-list-data" data-test-list="redemption-count">
                                 <span class="midgrey">{{offer.redemptionCount}}</span>
                             </LinkTo>
                             <div class="gh-list-data gh-list-cellwidth-10 gh-list-chevron">
