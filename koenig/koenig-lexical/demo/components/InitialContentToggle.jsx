@@ -36,7 +36,7 @@ const InitialContentToggle = ({defaultContent, setTitle, searchParams, setSearch
             <button className="absolute right-6 top-4 z-20 block h-[22px] w-[42px] cursor-pointer rounded-full bg-black transition-all ease-in-out" type="button" onClick={toggle}>
                 <EyeOpenIcon className="absolute left-[6px] top-[5px] size-3 text-white" />
                 <EyeClosedIcon className="absolute right-[6px] top-[5px] size-3 text-white" />
-                <div className={`absolute top-[2px] size-[18px] rounded-full bg-white transition-all ease-in-out${isOn ? 'left-[22px]' : 'left-[2px]'}`}></div>
+                <div className={`absolute top-[2px] size-[18px] rounded-full bg-white transition-all ease-in-out ${isOn ? 'left-[22px]' : 'left-[2px]'}`}></div>
             </button>
         </>
     );

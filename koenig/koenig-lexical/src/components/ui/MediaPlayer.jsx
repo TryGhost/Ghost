@@ -6,7 +6,7 @@ import UnmuteIcon from '../../assets/icons/kg-unmute.svg?react';
 export function MediaPlayer({type, duration, theme, ...args}) {
     return (
         <div className="mt-auto flex w-full items-center py-2" {...args}>
-            <PlayIcon className={`mr-2 size-[1.4rem]${theme === 'light' ? 'fill-white' : 'fill-black dark:fill-white'}`} />
+            <PlayIcon className={`mr-2 size-[1.4rem] ${theme === 'light' ? 'fill-white' : 'fill-black dark:fill-white'}`} />
             <div className={`mb-[1px] font-sans text-sm font-medium ${theme === 'light' ? 'text-white/60' : 'text-black/50 dark:text-white/50'} `}>
                 <span className={`${theme === 'light' ? 'text-white' : 'text-black dark:text-white'}`}>0:00 </span>
                 / <span data-testid="media-duration">{duration}</span>

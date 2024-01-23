@@ -73,7 +73,7 @@ export function Dropdown({value, menu, onChange, dataTestId}) {
                 onMouseDownCapture={preventLoseFocus}
             >
                 {trigger}
-                <ArrowIcon className={`absolute right-2 top-4 size-2 text-grey-600${open && 'rotate-180'}`} />
+                <ArrowIcon className={`absolute right-2 top-4 size-2 text-grey-600 ${open && 'rotate-180'}`} />
             </button>
             {open && (
                 <DropdownContainer>

@@ -133,7 +133,7 @@ export function MultiSelectDropdown({placeholder = '', items = [], availableItem
                     />
                 </div>
 
-                <ArrowIcon className={`absolute right-2 top-4 size-2 text-grey-600${open && 'rotate-180'}`} />
+                <ArrowIcon className={`absolute right-2 top-4 size-2 text-grey-600 ${open && 'rotate-180'}`} />
             </div>
             {open && !!filteredItems.length && (
                 <DropdownContainer>
