@@ -262,14 +262,14 @@ describe('Email addresses', function () {
             assertFromAddress('"Default Address" <default@sendingdomain.com>', 'support@address.com');
         });
 
-        it('[NEWSLETTER] Does not allow to send a newsletter from any configured email address, instead uses mail.from', async function () {
+        it('[NEWSLETTER] Does not allow to send a newsletter from any email address (instead uses mail.from), but allows reply-to to be set', async function () {
             await configureNewsletter({
                 sender_email: 'anything@possible.com',
                 sender_name: 'Anything Possible',
                 sender_reply_to: 'newsletter'
             });
             await sendNewsletter();
-            await assertFromAddressNewsletter('"Anything Possible" <default@sendingdomain.com>');
+            await assertFromAddressNewsletter('"Anything Possible" <default@sendingdomain.com>', '"Anything Possible" <anything@possible.com>');
         });
 
         it('[NEWSLETTER] Does allow to send a newsletter from a custom sending domain', async function () {
@@ -358,14 +358,14 @@ describe('Email addresses', function () {
             assertFromAddress('"Example Site" <default@sendingdomain.com>', 'hello@acme.com');
         });
 
-        it('[NEWSLETTER] Does not allow to send a newsletter from any configured email address, instead uses mail.from', async function () {
+        it('[NEWSLETTER] Does not allow to send a newsletter from any email address (instead uses mail.from), but allow reply-to to be set', async function () {
             await configureNewsletter({
                 sender_email: 'anything@possible.com',
                 sender_name: 'Anything Possible',
                 sender_reply_to: 'newsletter'
             });
             await sendNewsletter();
-            await assertFromAddressNewsletter('"Anything Possible" <default@sendingdomain.com>');
+            await assertFromAddressNewsletter('"Anything Possible" <default@sendingdomain.com>', '"Anything Possible" <anything@possible.com>');
         });
 
         it('[NEWSLETTER] Does allow to set the replyTo address to any address', async function () {
