@@ -258,7 +258,7 @@ module.exports = class PostmarkClient {
         const bulkEmailConfig = this.#config.get('bulkEmail');
         const bulkEmailSetting = {
             apiToken: this.#settings.get('postmark_api_token'),
-            streamId: this.#settings.get('postmark_stream_id') ?? 'outbound'
+            streamId: this.#settings.get('postmark_stream_id') ?? 'broadcast'
         };
 
         const hasPostmarkConfig = !!(bulkEmailConfig?.postmark);
