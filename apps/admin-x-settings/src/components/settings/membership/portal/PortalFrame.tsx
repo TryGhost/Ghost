@@ -20,7 +20,6 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
             }
         }, 300);
     }, [iframeRef]);
-
     useEffect(() => {
         const messageListener = (event: MessageEvent) => {
             if (!href) {
