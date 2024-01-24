@@ -18,7 +18,6 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     const makeVisible = useCallback(() => {
         setTimeout(() => {
             if (iframeRef.current) {
-                setHasLoaded(true);
                 setIsInvisible(false);
             }
         }, 500);
@@ -51,16 +50,22 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     }
 
     return (
-        <>{!hasLoaded && isInvisible && <div className="mt-[-7%] flex h-screen items-center justify-center"><span><LoadingIndicator /></span></div>}
+        <>
+            {isInvisible && (
+                <div className="mt-[-7%] flex h-screen items-center justify-center">
+                    <span><LoadingIndicator /></span>
+                </div>
+            ) }
             <iframe
                 ref={iframeRef}
-                className={!isInvisible && hasLoaded ? '' : 'hidden'}
+                className={hasLoaded && !isInvisible ? '' : 'hidden'}
                 data-testid="portal-preview"
                 height="100%"
                 src={href}
                 title="Portal Preview"
                 width="100%"
                 onLoad={() => {
+                    setHasLoaded(true);
                 }}
             />
         </>
