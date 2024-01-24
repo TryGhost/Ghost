@@ -143,20 +143,24 @@
                                         {{else}}
                                             {{#if (or (eq sub.price.nickname "Monthly") (eq sub.price.nickname "Yearly"))}}
                                             {{else}}
-                                                <span class="gh-cp-membertier-pricelabel">{{sub.price.nickname}}</span><span class="gh-cp-membertier-renewal"> &ndash;</span>
+                                                <span class="gh-cp-membertier-pricelabel">{{sub.price.nickname}}</span><span class="gh-cp-membertier-renewal"> &ndash; </span>
                                             {{/if}}
                                         {{/if}}
 
-                                        {{#if sub.hasEnded}}
-                                            <span class="gh-cp-membertier-renewal">Ended {{sub.validUntil}}</span>
-                                        {{else if sub.willEndSoon}}
-                                            <span class="gh-cp-membertier-renewal">Has access until {{sub.validUntil}}</span>
-                                        {{else if sub.compExpiry}}
-                                            <span class="gh-cp-membertier-renewal">Expires {{sub.compExpiry}}</span>
-                                        {{else if sub.trialUntil}}
-                                            <span class="gh-cp-membertier-renewal">Ends {{sub.trialUntil}}</span>
+                                        {{#if sub.isComplimentary}}
+                                            {{#if sub.compExpiry}}
+                                                <span class="gh-cp-membertier-renewal">Expires {{sub.compExpiry}}</span>
+                                            {{/if}}
                                         {{else}}
-                                            <span class="gh-cp-membertier-renewal">Renews {{sub.validUntil}}</span>
+                                            {{#if sub.hasEnded}}
+                                                <span class="gh-cp-membertier-renewal">Ended {{sub.validUntil}}</span>
+                                            {{else if sub.willEndSoon}}
+                                                <span class="gh-cp-membertier-renewal">Has access until {{sub.validUntil}}</span>
+                                            {{else if sub.trialUntil}}
+                                                <span class="gh-cp-membertier-renewal">Ends {{sub.trialUntil}}</span>
+                                            {{else}}
+                                                <span class="gh-cp-membertier-renewal">Renews {{sub.validUntil}}</span>
+                                            {{/if}}
                                         {{/if}}
                                     </div>
                                     <Member::SubscriptionDetailBox @sub={{sub}} @index={{index}} />
