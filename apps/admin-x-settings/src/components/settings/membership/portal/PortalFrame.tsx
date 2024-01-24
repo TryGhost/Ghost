@@ -18,6 +18,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     const makeVisible = useCallback(() => {
         setTimeout(() => {
             if (iframeRef.current) {
+                setHasLoaded(true);
                 setIsInvisible(false);
             }
         }, 300);
@@ -60,7 +61,6 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
                 title="Portal Preview"
                 width="100%"
                 onLoad={() => {
-                    setHasLoaded(true);
                 }}
             />
         </>
