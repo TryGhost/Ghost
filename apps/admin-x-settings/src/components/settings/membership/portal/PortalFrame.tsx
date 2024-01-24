@@ -14,7 +14,6 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [hasLoaded, setHasLoaded] = useState<boolean>(false);
     const [isInvisible, setIsInvisible] = useState<boolean>(true);
-
     const makeVisible = useCallback(() => {
         setTimeout(() => {
             if (iframeRef.current) {
@@ -22,29 +21,24 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
             }
         }, 300);
     }, [iframeRef]);
-
     useEffect(() => {
         const messageListener = (event: MessageEvent) => {
             if (!href) {
                 return;
             }
             const originURL = new URL(event.origin);
-
             if (originURL.origin === new URL(href).origin) {
                 if (event?.data?.type === 'portal-preview-ready') {
                     makeVisible();
                 }
             }
         };
-
         window.addEventListener('message', messageListener, true);
-
         return () => {
             window.removeEventListener('message', messageListener, true);
             onDestroyed?.();
         };
     }, [href, onDestroyed, makeVisible, hasLoaded]);
-
     if (!href) {
         return null;
     }
