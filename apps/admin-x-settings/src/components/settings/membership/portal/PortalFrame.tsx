@@ -21,7 +21,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
                 setHasLoaded(true);
                 setIsInvisible(false);
             }
-        }, 300);
+        }, 500);
     }, [iframeRef]);
 
     useEffect(() => {
