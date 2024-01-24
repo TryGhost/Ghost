@@ -6,7 +6,6 @@ type PortalFrameProps = {
     onDestroyed?: () => void;
     selectedTab?: string;
 }
-
 const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab}) => {
     if (!selectedTab) {
         selectedTab = 'signup';
@@ -21,6 +20,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
             }
         }, 300);
     }, [iframeRef]);
+
     useEffect(() => {
         const messageListener = (event: MessageEvent) => {
             if (!href) {
@@ -54,9 +54,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
                 title="Portal Preview"
                 width="100%"
                 onLoad={() => {
-                    setTimeout(() => {
-                        setHasLoaded(true);
-                    }, 300);
+                    setHasLoaded(true);
                 }}
             />
         </>
