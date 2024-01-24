@@ -228,7 +228,6 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, en
                 await portalSettings.getByLabel('Yearly').first().check();
             }
             await portalSettings.getByRole('button', {name: 'Save'}).click();
-            await page.waitForLoadState('networkidle');
             await portalSettings.getByRole('button', {name: 'Close'}).click();
         }
 
