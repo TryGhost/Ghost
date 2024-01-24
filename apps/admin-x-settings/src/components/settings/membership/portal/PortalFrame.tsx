@@ -6,7 +6,6 @@ type PortalFrameProps = {
     onDestroyed?: () => void;
     selectedTab?: string;
 }
-
 const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab}) => {
     if (!selectedTab) {
         selectedTab = 'signup';
