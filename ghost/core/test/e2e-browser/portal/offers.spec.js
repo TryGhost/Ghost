@@ -26,7 +26,8 @@ test.describe('Portal', () => {
             });
 
             // check that offer was added in the offer list screen
-            await sharedPage.goto('/ghost/#/settings/offers');
+            await sharedPage.goto('/ghost');
+            await sharedPage.locator('[data-test-nav="settings"]').click();
             await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
 
             await sharedPage.goto(offerLink);
@@ -95,7 +96,8 @@ test.describe('Portal', () => {
             });
 
             // check that offer was added in the offer list screen
-            await sharedPage.goto('/ghost/#/settings/offers');
+            await sharedPage.goto('/ghost');
+            await sharedPage.locator('[data-test-nav="settings"]').click();
             await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
             // open offer details page
             // await sharedPage.locator(`[data-test-offer="${offerName}"] a`).first().click();
@@ -160,8 +162,8 @@ test.describe('Portal', () => {
                 discountDuration: 3
             });
 
-            // check that offer was added in the offer list screen
-            await sharedPage.goto('/ghost/#/settings/offers');
+            await sharedPage.goto('/ghost');
+            await sharedPage.locator('[data-test-nav="settings"]').click();
             await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
 
             await sharedPage.goto(offerLink);
@@ -224,7 +226,8 @@ test.describe('Portal', () => {
             });
 
             // check that offer was added in the offer list screen
-            await sharedPage.goto('/ghost/#/settings/offers');
+            await sharedPage.goto('/ghost');
+            await sharedPage.locator('[data-test-nav="settings"]').click();
             await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
 
             await sharedPage.goto(offerLink);
