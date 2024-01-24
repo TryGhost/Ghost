@@ -266,7 +266,6 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
     // Either the list of active offers loads, or the CTA when no offers exist
     if (hasExistingOffers && !isCTA) {
         await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
-        await page.waitForLoadState('networkidle');
 
         // Selector for the elements with data-testid 'offer-item'
         // const offerItemsSelector = '[data-testid="offer-item"]';
