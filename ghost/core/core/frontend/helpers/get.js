@@ -7,6 +7,7 @@ const {hbs} = require('../services/handlebars');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const Sentry = require('@sentry/node');
 
 const _ = require('lodash');
 const jsonpath = require('jsonpath');
@@ -206,32 +207,47 @@ module.exports = async function get(resource, options) {
 
     // Parse the options we're going to pass to the API
     apiOptions = parseOptions(ghostGlobals, this, apiOptions);
+    let apiOptionsString = Object.entries(apiOptions)
+        .map(([key, value]) => ` ${key}="${value}"`)
+        .join('');
     apiOptions.context = {member: data.member};
-
     try {
-        const response = await makeAPICall(resource, controllerName, action, apiOptions);
+        const spanName = `{{#get "${resource}"${apiOptionsString}}} ${data.member ? 'member' : 'public'}`;
+        const result = await Sentry.startSpan({
+            op: 'frontend.helpers.get', 
+            name: spanName,
+            tags: {
+                resource,
+                ...apiOptions,
+                context: data.member ? 'member' : 'public'
+            }
+        }, async (span) => {
+            const response = await makeAPICall(resource, controllerName, action, apiOptions);
 
-        // prepare data properties for use with handlebars
-        if (response[resource] && response[resource].length) {
-            response[resource].forEach(prepareContextResource);
-        }
-
-        // used for logging details of slow requests
-        returnedRowsCount = response[resource] && response[resource].length;
-
-        // block params allows the theme developer to name the data using something like
-        // `{{#get "posts" as |result pageInfo|}}`
-        const blockParams = [response[resource]];
-        if (response.meta && response.meta.pagination) {
-            response.pagination = response.meta.pagination;
-            blockParams.push(response.meta.pagination);
-        }
-
-        // Call the main template function
-        return options.fn(response, {
-            data: data,
-            blockParams: blockParams
+            // prepare data properties for use with handlebars
+            if (response[resource] && response[resource].length) {
+                response[resource].forEach(prepareContextResource);
+            }
+    
+            // used for logging details of slow requests
+            returnedRowsCount = response[resource] && response[resource].length;
+            span?.setTag('returnedRows', returnedRowsCount);
+    
+            // block params allows the theme developer to name the data using something like
+            // `{{#get "posts" as |result pageInfo|}}`
+            const blockParams = [response[resource]];
+            if (response.meta && response.meta.pagination) {
+                response.pagination = response.meta.pagination;
+                blockParams.push(response.meta.pagination);
+            }
+    
+            // Call the main template function
+            return options.fn(response, {
+                data: data,
+                blockParams: blockParams
+            });
         });
+        return result;
     } catch (error) {
         logging.error(error);
         data.error = error.message;
