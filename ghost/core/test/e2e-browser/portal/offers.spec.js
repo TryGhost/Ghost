@@ -32,8 +32,8 @@ test.describe('Portal', () => {
 
             await sharedPage.goto(offerLink);
 
-            const portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
-            const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
+            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
 
             // check offer title is shown on portal
             await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with free-trial offer').toBeVisible();
@@ -105,8 +105,8 @@ test.describe('Portal', () => {
             // fetch offer url from portal settings and open it
             await sharedPage.goto(offerLink);
 
-            const portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
-            const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
+            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
 
             // check offer title is visible on portal page
             await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
@@ -168,8 +168,8 @@ test.describe('Portal', () => {
 
             await sharedPage.goto(offerLink);
 
-            const portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
-            const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
+            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
 
             // check offer details are shown on portal page
             await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
@@ -232,8 +232,8 @@ test.describe('Portal', () => {
 
             await sharedPage.goto(offerLink);
 
-            const portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
-            const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
+            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
 
             // check offer details are shown on portal page
             await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
