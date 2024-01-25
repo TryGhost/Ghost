@@ -223,7 +223,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     <TextField
                         autoComplete='off'
                         autoFocus={isFreeTier}
-                        placeholder={isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content'}
+                        placeholder={isFreeTier ? `Free preview` : 'Full access to premium content'}
                         title='Description'
                         value={formState.description || ''}
                         onChange={e => updateForm(state => ({...state, description: e.target.value}))}

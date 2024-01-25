@@ -111,7 +111,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
                     </div>
                     <div className="flex-column flex w-full flex-1">
                         <div className="flex-1">
-                            <div className={`mt-4 w-full text-[1.55rem] font-semibold leading-snug text-grey-900 ${!description && 'opacity-30'}`}>{description || (isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content')}</div>
+                            <div className={`mt-4 w-full text-[1.55rem] font-semibold leading-snug text-grey-900 ${!description && 'opacity-30'}`}>{description || (isFreeTier ? `Free preview` : 'Full access to premium content')}</div>
                             <TierBenefits benefits={benefits} />
                         </div>
                     </div>
