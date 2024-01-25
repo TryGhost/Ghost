@@ -213,7 +213,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         autoComplete='off'
                         error={Boolean(errors.name)}
                         hint={errors.name}
-                        placeholder='Bronze'
+                        placeholder={isFreeTier ? 'Free' : 'Bronze'}
                         title='Name'
                         value={formState.name || ''}
                         autoFocus
