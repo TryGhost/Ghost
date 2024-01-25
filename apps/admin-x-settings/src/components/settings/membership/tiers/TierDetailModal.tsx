@@ -352,16 +352,6 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             </div>
             <div className='sticky top-[96px] hidden shrink-0 basis-[380px] min-[920px]:!visible min-[920px]:!block'>
                 <TierDetailPreview isFreeTier={isFreeTier} tier={formState} />
-
-                {hasPortalImprovements &&
-                    <Form className=' mt-0' gap='none'>
-                        <Hint className=''>
-                            <p className='inline-block'>{(formState.visibility === 'public') ? 'Visible' : 'Not visible'} at signup. You can change this in {tier ? <Button className='text-xs font-normal' color='green' label='Portal settings' link onClick={() => {
-                                updateRoute('portal/edit');
-                            }}/> : <span className='font-semibold'>Portal settings</span>}.</p>
-                        </Hint>
-                    </Form>
-                }
             </div>
         </div>
     </Modal>;
