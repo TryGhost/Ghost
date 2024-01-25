@@ -294,7 +294,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     </>)}
                     <URLTextField
                         baseUrl={siteData?.url}
-                        hint='Redirect to this URL after signup for premium membership'
+                        hint={`Redirect to this URL after signup ${isFreeTier ? '' : ' for premium membership'}`}
                         placeholder={siteData?.url}
                         title='Welcome page'
                         value={formState.welcome_page_url || null}
