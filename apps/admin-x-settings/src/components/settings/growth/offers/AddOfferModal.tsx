@@ -1,5 +1,4 @@
 import PortalFrame from '../../membership/portal/PortalFrame';
-import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
@@ -11,7 +10,6 @@ import {useAddOffer} from '@tryghost/admin-x-framework/api/offers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEffect, useMemo, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
-import {useModal} from '@ebay/nice-modal-react';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 // we should replace this with a library
@@ -211,6 +209,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                         <Select
                             options={tierOptions}
                             selectedOption={selectedTier}
+                            testId='tier-cadence-select-offers'
                             title='Tier — Cadence'
                             onSelect={(e) => {
                                 if (e) {
@@ -241,6 +240,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                                         controlClasses={{menu: 'w-20 right-0'}}
                                         options={amountOptions}
                                         selectedOption={overrides.type === 'percent' ? amountOptions[0] : amountOptions[1]}
+                                        testId='amount-type-select-offers'
                                         onSelect={(e) => {
                                             handleAmountTypeChange(e?.value || '');
                                         }}
@@ -250,6 +250,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
                             <Select
                                 options={filteredDurationOptions}
                                 selectedOption={filteredDurationOptions.find(option => option.value === overrides.duration)}
+                                testId='duration-select-offers'
                                 title='Duration'
                                 onSelect={e => handleDurationChange(e?.value || '')}
                             />
@@ -316,9 +317,7 @@ const AddOfferModal = () => {
     ];
 
     const [href, setHref] = useState<string>('');
-    const modal = useModal();
     const {updateRoute} = useRouting();
-    const hasOffers = useFeatureFlag('adminXOffers');
     const {data: {tiers} = {}} = useBrowseTiers();
     const activeTiers = getPaidActiveTiers(tiers || []);
     const tierCadenceOptions = getTiersCadences(activeTiers);
@@ -555,13 +554,6 @@ const AddOfferModal = () => {
             }
         }));
     };
-
-    useEffect(() => {
-        if (!hasOffers) {
-            modal.remove();
-            updateRoute('');
-        }
-    }, [hasOffers, modal, updateRoute]);
 
     const cancelAddOffer = () => {
         if (allOffers.length > 0) {

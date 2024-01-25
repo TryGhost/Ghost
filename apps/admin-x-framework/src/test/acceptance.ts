@@ -72,8 +72,7 @@ const defaultLabFlags = {
     outboundLinkTagging: false,
     announcementBar: false,
     signupForm: false,
-    members: false,
-    adminXOffers: false
+    members: false
 };
 
 // Inject defaultLabFlags into responseFixtures.settings and config
