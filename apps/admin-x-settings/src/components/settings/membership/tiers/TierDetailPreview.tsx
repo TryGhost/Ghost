@@ -1,10 +1,8 @@
 import React, {useState} from 'react';
 import clsx from 'clsx';
-import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Button, Heading, Icon} from '@tryghost/admin-x-design-system';
 import {TierFormState} from './TierDetailModal';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {numberWithCommas} from '../../../../utils/helpers';
 
 interface TierDetailPreviewProps {
@@ -70,8 +68,6 @@ const DiscountLabel: React.FC<{discount: number}> = ({discount}) => {
 
 const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier}) => {
     const [showingYearly, setShowingYearly] = useState(false);
-    const {localSettings} = useSettingGroup();
-    const siteTitle = getSettingValues(localSettings, ['title']) as string[];
 
     const name = tier?.name || '';
     const description = tier?.description || '';
@@ -111,7 +107,7 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
                     </div>
                     <div className="flex-column flex w-full flex-1">
                         <div className="flex-1">
-                            <div className={`mt-4 w-full text-[1.55rem] font-semibold leading-snug text-grey-900 ${!description && 'opacity-30'}`}>{description || (isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content')}</div>
+                            <div className={`mt-4 w-full text-[1.55rem] font-semibold leading-snug text-grey-900 ${!description && 'opacity-30'}`}>{description || (isFreeTier ? `Free preview` : 'Full access to premium content')}</div>
                             <TierBenefits benefits={benefits} />
                         </div>
                     </div>
