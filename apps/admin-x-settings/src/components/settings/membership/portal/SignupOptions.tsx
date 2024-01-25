@@ -162,7 +162,7 @@ const SignupOptions: React.FC<{
                     <Select
                         options={defaultPlanOptions}
                         selectedOption={defaultPlanOptions.find(option => option.value === portalDefaultPlan)}
-                        title='Price preselected at signup'
+                        title='Default price at signup'
                         onSelect={(option) => {
                             updateSetting('portal_default_plan', option?.value ?? 'yearly');
                         }}

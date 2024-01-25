@@ -3,7 +3,7 @@ import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './TierDetailPreview';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Button, ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Hint, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
+import {Button, ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
@@ -213,7 +213,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         autoComplete='off'
                         error={Boolean(errors.name)}
                         hint={errors.name}
-                        placeholder='Bronze'
+                        placeholder={isFreeTier ? 'Free' : 'Bronze'}
                         title='Name'
                         value={formState.name || ''}
                         autoFocus
@@ -252,7 +252,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     <CurrencyField
                                         error={Boolean(errors.monthly_price)}
                                         hint={errors.monthly_price}
-                                        placeholder='1'
+                                        placeholder='5'
                                         rightPlaceholder={`${formState.currency}/month`}
                                         title='Monthly price'
                                         valueInCents={formState.monthly_price || ''}
@@ -263,7 +263,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     <CurrencyField
                                         error={Boolean(errors.yearly_price)}
                                         hint={errors.yearly_price}
-                                        placeholder='10'
+                                        placeholder='50'
                                         rightPlaceholder={`${formState.currency}/year`}
                                         title='Yearly price'
                                         valueInCents={formState.yearly_price || ''}
@@ -294,7 +294,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     </>)}
                     <URLTextField
                         baseUrl={siteData?.url}
-                        hint='Redirect to this URL after signup for premium membership'
+                        hint={`Redirect to this URL after signup ${isFreeTier ? '' : ' for premium membership'}`}
                         placeholder={siteData?.url}
                         title='Welcome page'
                         value={formState.welcome_page_url || null}
@@ -352,16 +352,6 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             </div>
             <div className='sticky top-[96px] hidden shrink-0 basis-[380px] min-[920px]:!visible min-[920px]:!block'>
                 <TierDetailPreview isFreeTier={isFreeTier} tier={formState} />
-
-                {hasPortalImprovements &&
-                    <Form className=' mt-0' gap='none'>
-                        <Hint className=''>
-                            <p className='inline-block'>{(formState.visibility === 'public') ? 'Visible' : 'Not visible'} at signup. You can change this in {tier ? <Button className='text-xs font-normal' color='green' label='Portal settings' link onClick={() => {
-                                updateRoute('portal/edit');
-                            }}/> : <span className='font-semibold'>Portal settings</span>}.</p>
-                        </Hint>
-                    </Form>
-                }
             </div>
         </div>
     </Modal>;
