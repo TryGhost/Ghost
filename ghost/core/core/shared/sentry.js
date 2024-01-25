@@ -58,11 +58,15 @@ const beforeSend = function (event, hint) {
 };
 
 const ALLOWED_HTTP_TRANSACTIONS = [
-    '/ghost/api',
-    '/members/api'
+    '/ghost/api', // any Ghost API call
+    '/members/api', // any Members API call
+    '/:slug', // any frontend post/page
+    '/author', // any frontend author page
+    '/tag' // any frontend tag page
 ].map((path) => {
     // Sentry names HTTP transactions like: "<HTTP_METHOD> <PATH>" i.e. "GET /ghost/api/content/settings"
-    return new RegExp(`^(GET|POST|PUT|DELETE)\\s(?<path>${path}\\/.+)`);
+    // Match any of the paths above with any HTTP method, and also the homepage "GET /"
+    return new RegExp(`^(GET|POST|PUT|DELETE)\\s(?<path>${path}\\/.+|\\/$)`);
 });
 
 const beforeSendTransaction = function (event) {

@@ -156,7 +156,7 @@ describe('UNIT: sentry', function () {
         });
     });
 
-    describe('beforeTransaction', function () {
+    describe('beforeSendTransaction', function () {
         it('filters transactions based on an allow list', function () {
             sentry = require('../../../core/shared/sentry');
 
@@ -166,7 +166,11 @@ describe('UNIT: sentry', function () {
                 {transaction: 'GET /ghost/api/settings'},
                 {transaction: 'PUT /members/api/member'},
                 {transaction: 'POST /ghost/api/tiers'},
-                {transaction: 'DELETE /members/api/member'}
+                {transaction: 'DELETE /members/api/member'},
+                {transaction: 'GET /'},
+                {transaction: 'GET /:slug/options(edit)?/'},
+                {transaction: 'GET /author/:slug'},
+                {transaction: 'GET /tag/:slug'}
             ];
 
             allowedTransactions.forEach((transaction) => {
