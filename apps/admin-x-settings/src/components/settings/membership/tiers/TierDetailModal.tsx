@@ -252,7 +252,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     <CurrencyField
                                         error={Boolean(errors.monthly_price)}
                                         hint={errors.monthly_price}
-                                        placeholder='1'
+                                        placeholder='5'
                                         rightPlaceholder={`${formState.currency}/month`}
                                         title='Monthly price'
                                         valueInCents={formState.monthly_price || ''}
@@ -263,7 +263,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     <CurrencyField
                                         error={Boolean(errors.yearly_price)}
                                         hint={errors.yearly_price}
-                                        placeholder='10'
+                                        placeholder='50'
                                         rightPlaceholder={`${formState.currency}/year`}
                                         title='Yearly price'
                                         valueInCents={formState.yearly_price || ''}
