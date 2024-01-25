@@ -26,7 +26,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const [hasFreeTrial, setHasFreeTrial] = React.useState(!!tier?.trial_days);
     const handleError = useHandleError();
     const {localSettings, siteData} = useSettingGroup();
-    const [siteTitle, portalPlansJson] = getSettingValues(localSettings, ['title', 'portal_plans']) as string[];
+    const [portalPlansJson] = getSettingValues(localSettings, ['title', 'portal_plans']) as string[];
     const hasPortalImprovements = useFeatureFlag('portalImprovements');
     const allowNameChange = !isFreeTier || hasPortalImprovements;
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
