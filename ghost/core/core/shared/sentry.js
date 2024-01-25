@@ -57,6 +57,31 @@ const beforeSend = function (event, hint) {
     }
 };
 
+const ALLOWED_HTTP_TRANSACTIONS = [
+    '/ghost/api', // any Ghost API call
+    '/members/api', // any Members API call
+    '/:slug', // any frontend post/page
+    '/author', // any frontend author page
+    '/tag' // any frontend tag page
+].map((path) => {
+    // Sentry names HTTP transactions like: "<HTTP_METHOD> <PATH>" i.e. "GET /ghost/api/content/settings"
+    // Match any of the paths above with any HTTP method, and also the homepage "GET /"
+    return new RegExp(`^(GET|POST|PUT|DELETE)\\s(?<path>${path}\\/.+|\\/$)`);
+});
+
+const beforeSendTransaction = function (event) {
+    // Drop transactions that are not in the allowed list
+    for (const transaction of ALLOWED_HTTP_TRANSACTIONS) {
+        const match = event.transaction.match(transaction);
+
+        if (match?.groups?.path) {
+            return event;
+        }
+    }
+
+    return null;
+};
+
 if (sentryConfig && !sentryConfig.disabled) {
     const Sentry = require('@sentry/node');
     const version = require('@tryghost/version').full;
