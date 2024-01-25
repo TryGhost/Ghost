@@ -257,6 +257,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                         title='Monthly price'
                                         valueInCents={formState.monthly_price || ''}
                                         hideTitle
+                                        onBlur={event => ((event.target.value === '') ? updateForm(state => ({...state, monthly_price: 0})) : null)}
                                         onChange={price => updateForm(state => ({...state, monthly_price: price}))}
                                         onKeyDown={() => clearError('monthly_price')}
                                     />
@@ -268,6 +269,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                         title='Yearly price'
                                         valueInCents={formState.yearly_price || ''}
                                         hideTitle
+                                        onBlur={event => ((event.target.value === '') ? updateForm(state => ({...state, yearly_price: 0})) : null)}
                                         onChange={price => updateForm(state => ({...state, yearly_price: price}))}
                                         onKeyDown={() => clearError('yearly_price')}
                                     />
