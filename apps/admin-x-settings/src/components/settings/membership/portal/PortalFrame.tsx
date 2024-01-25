@@ -20,7 +20,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
             if (iframeRef.current) {
                 setIsInvisible(false);
             }
-        }, 200);
+        }, 300);
     }, [iframeRef]);
 
     useEffect(() => {
@@ -50,7 +50,7 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     }
 
     return (
-        <>{!hasLoaded && isInvisible && <div className="mt-[-7%] flex h-screen items-center justify-center"><span><LoadingIndicator /></span></div>}
+        <>{isInvisible && <div className="mt-[-7%] flex h-screen items-center justify-center"><span><LoadingIndicator /></span></div>}
             <iframe
                 ref={iframeRef}
                 className={!isInvisible && hasLoaded ? '' : 'hidden'}
