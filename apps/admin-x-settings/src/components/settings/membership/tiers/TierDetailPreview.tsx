@@ -80,8 +80,10 @@ const TierDetailPreview: React.FC<TierDetailPreviewProps> = ({tier, isFreeTier})
     const currencySymbol = currency ? getSymbol(currency) : '$';
     const benefits = tier?.benefits || [];
 
-    const monthlyPrice = currencyToDecimal(tier?.monthly_price ?? 500);
-    const yearlyPrice = currencyToDecimal(tier?.yearly_price ?? 5000);
+    const defaultMonthlyPrice = isFreeTier ? 0 : 500;
+    const defaultYearlyPrice = isFreeTier ? 0 : 5000;
+    const monthlyPrice = currencyToDecimal(tier?.monthly_price ?? defaultMonthlyPrice);
+    const yearlyPrice = currencyToDecimal(tier?.yearly_price ?? defaultYearlyPrice);
     const yearlyDiscount = tier?.monthly_price && tier?.yearly_price
         ? Math.ceil(((monthlyPrice * 12 - yearlyPrice) / (monthlyPrice * 12)) * 100)
         : 0;
