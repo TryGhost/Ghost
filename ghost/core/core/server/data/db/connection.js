@@ -6,6 +6,7 @@ const fs = require('fs');
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
+const instrumentConnectionPool = require('./instrument-connection-pool');
 let knexInstance;
 
 // @TODO:
@@ -62,16 +63,7 @@ function configure(dbConfig) {
 
 if (!knexInstance && config.get('database') && config.get('database').client) {
     knexInstance = knex(configure(config.get('database')));
-    const startTimes = {}
-    knexInstance.client.pool.on('acquireRequest', function acquireRequest(eventId) {
-        startTimes[eventId] = Date.now();
-        logging.info('Ghost is requesting a connection from the database pool. EventID: ', eventId);
-    })
-    knexInstance.client.pool.on('acquireSuccess', function acquireSuccess(eventId, resource) {
-        const duration = Date.now() - startTimes[eventId];
-        delete startTimes[eventId];
-        logging.info('Ghost has acquired a connection from the database pool. EventID: ', eventId, ' Connection ID: ', resource.connectionId, ' Duration: ', duration, 'ms');
-    });
+    instrumentConnectionPool(knexInstance);
 }
 
 module.exports = knexInstance;
