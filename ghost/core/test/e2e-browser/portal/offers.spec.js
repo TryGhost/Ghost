@@ -30,7 +30,8 @@ test.describe('Portal', () => {
             await sharedPage.locator('[data-test-nav="settings"]').click();
             await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
 
-            await sharedPage.goto(offerLink);
+            let lastSlug = offerLink.split('/').pop();
+            await sharedPage.goto(`/${lastSlug}`);
 
             const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -103,7 +104,8 @@ test.describe('Portal', () => {
             // await sharedPage.locator(`[data-test-offer="${offerName}"] a`).first().click();
 
             // fetch offer url from portal settings and open it
-            await sharedPage.goto(offerLink);
+            let lastSlug = offerLink.split('/').pop();
+            await sharedPage.goto(`/${lastSlug}`);
 
             const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -165,8 +167,8 @@ test.describe('Portal', () => {
             await sharedPage.goto('/ghost');
             await sharedPage.locator('[data-test-nav="settings"]').click();
             await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
-
-            await sharedPage.goto(offerLink);
+            let lastSlug = offerLink.split('/').pop();
+            await sharedPage.goto(`/${lastSlug}`);
 
             const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -230,7 +232,8 @@ test.describe('Portal', () => {
             await sharedPage.locator('[data-test-nav="settings"]').click();
             await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
 
-            await sharedPage.goto(offerLink);
+            let lastSlug = offerLink.split('/').pop();
+            await sharedPage.goto(`/${lastSlug}`);
 
             const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -292,7 +295,8 @@ test.describe('Portal', () => {
                 amount: 10
             });
             // Open the offer URL and make sure portal popup doesn't load
-            await sharedPage.goto(offerLink);
+            let lastSlug = offerLink.split('/').pop();
+            await sharedPage.goto(`/${lastSlug}`);
             const portalPopup = await sharedPage.locator('[data-testid="portal-popup-frame"]').isVisible();
             await expect(portalPopup).toBeFalsy();
         });
