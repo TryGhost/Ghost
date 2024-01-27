@@ -32,11 +32,11 @@ test.describe('Portal', () => {
 
             await sharedPage.goto(offerLink);
 
-            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
-            const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
-
             // Wait for the load state to ensure the page has loaded completely
             await sharedPage.waitForLoadState('load');
+
+            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
 
             // check offer title is shown on portal
             await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with free-trial offer').toBeVisible();
