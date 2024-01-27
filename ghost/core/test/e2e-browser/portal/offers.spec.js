@@ -5,7 +5,6 @@ const {deleteAllMembers, createTier, createOffer, completeStripeSubscription} = 
 test.describe('Portal', () => {
     test.describe('Offers', () => {
         test('Creates and uses a free-trial Offer', async ({sharedPage}) => {
-            // reset members by deleting all existing
             await sharedPage.goto('/ghost');
             await deleteAllMembers(sharedPage);
 
@@ -76,7 +75,6 @@ test.describe('Portal', () => {
         });
 
         test('Creates and uses a one-time discount Offer', async ({sharedPage}) => {
-            // reset members by deleting all existing
             await sharedPage.goto('/ghost');
             await deleteAllMembers(sharedPage);
 
@@ -101,7 +99,6 @@ test.describe('Portal', () => {
             await sharedPage.locator('[data-test-nav="settings"]').click();
             await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
             // open offer details page
-            // await sharedPage.locator(`[data-test-offer="${offerName}"] a`).first().click();
 
             // fetch offer url from portal settings and open it
             let lastSlug = offerLink.split('/').pop();
