@@ -431,8 +431,7 @@ export function getSiteProducts({site, pageQuery}) {
     }
     if (hasFreeProductPrice({site})) {
         products.unshift({
-            id: 'free',
-            type: 'free'
+            id: 'free'
         });
     }
     return products;
@@ -451,8 +450,11 @@ export function getFreeProductBenefits({site}) {
 }
 
 export function getFreeTierTitle({site}) {
-    const freeProduct = getFreeProduct({site});
-    return freeProduct?.name || 'Free';
+    if (hasOnlyFreeProduct({site})) {
+        return 'Free membership';
+    } else {
+        return 'Free';
+    }
 }
 
 export function getFreeTierDescription({site}) {
