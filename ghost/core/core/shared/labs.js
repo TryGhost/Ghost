@@ -22,8 +22,7 @@ const GA_FEATURES = [
     'signupForm',
     'recommendations',
     'listUnsubscribeHeader',
-    'filterEmailDisabled',
-    'portalImprovements'
+    'filterEmailDisabled'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -46,8 +45,10 @@ const ALPHA_FEATURES = [
     'importMemberTier',
     'lexicalIndicators',
     // 'adminXOffers',
+    'filterEmailDisabled',
     'adminXDemo',
-    'newEmailAddresses'
+    'newEmailAddresses',
+    'portalImprovements'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
