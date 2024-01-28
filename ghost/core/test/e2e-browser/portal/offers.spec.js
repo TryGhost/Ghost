@@ -35,10 +35,14 @@ test.describe('Portal', () => {
             // Wait for the load state to ensure the page has loaded completely
             await sharedPage.waitForLoadState('load');
 
+            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'attached'});
+
             const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
 
             // check offer title is shown on portal
+            // await sharedPage.waitForSelector('.gh-portal-offer-title', {state: 'attached'});
+
             await expect(await portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with free-trial offer').toBeVisible();
             await expect(await portalFrame.getByRole('heading', {name: offerName}), 'URL should open Portal with free-trial offer').toBeVisible();
 
@@ -111,6 +115,8 @@ test.describe('Portal', () => {
             // Wait for the load state to ensure the page has loaded completely
             await sharedPage.waitForLoadState('load');
 
+            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'attached'});
+
             const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
 
@@ -176,6 +182,8 @@ test.describe('Portal', () => {
 
             // Wait for the load state to ensure the page has loaded completely
             await sharedPage.waitForLoadState('load');
+
+            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'attached'});
 
             const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -243,6 +251,8 @@ test.describe('Portal', () => {
 
             // Wait for the load state to ensure the page has loaded completely
             await sharedPage.waitForLoadState('load');
+
+            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'attached'});
 
             const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
             const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
