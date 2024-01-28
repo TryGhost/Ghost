@@ -28,7 +28,7 @@ test.describe('Portal', () => {
             // check that offer was added in the offer list screen
             await sharedPage.goto('/ghost');
             await sharedPage.locator('[data-test-nav="settings"]').click();
-            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
+            await expect(await sharedPage.getByTestId('offers')).toContainText(offerName);
 
             await sharedPage.goto(offerLink);
 
@@ -39,8 +39,8 @@ test.describe('Portal', () => {
             const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
 
             // check offer title is shown on portal
-            await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with free-trial offer').toBeVisible();
-            await expect(portalFrame.getByRole('heading', {name: offerName}), 'URL should open Portal with free-trial offer').toBeVisible();
+            await expect(await portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with free-trial offer').toBeVisible();
+            await expect(await portalFrame.getByRole('heading', {name: offerName}), 'URL should open Portal with free-trial offer').toBeVisible();
 
             // fill member details and click start trial
             await portalFrame.locator('[data-test-input="input-name"]').fill('Testy McTesterson');
@@ -67,13 +67,13 @@ test.describe('Portal', () => {
             await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
 
             // // 1 member, should be Testy, on Portal Tier
-            await expect(sharedPage.getByRole('link', {name: 'Testy McTesterson testy+trial@example.com'}), 'Should have 1 paid member').toBeVisible();
-            await expect(sharedPage.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
+            await expect(await sharedPage.getByRole('link', {name: 'Testy McTesterson testy+trial@example.com'}), 'Should have 1 paid member').toBeVisible();
+            await expect(await sharedPage.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
 
             // // Ensure the offer redemption count was bumped
             await sharedPage.goto('/ghost/#/settings/offers');
             // await sharedPage.locator('.gh-nav a[href="#/offers/"]').click();
-            const locator = sharedPage.locator(`[data-test-offer="${offerName}"]`);
+            const locator = await sharedPage.locator(`[data-test-offer="${offerName}"]`);
             await expect(locator).toContainText('1 redemption');
         });
 
@@ -115,7 +115,7 @@ test.describe('Portal', () => {
             const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
 
             // check offer title is visible on portal page
-            await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(await portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
 
             // fill member details and continue
             await portalFrame.locator('#input-name').fill('Testy McTesterson');
@@ -134,15 +134,15 @@ test.describe('Portal', () => {
             // wait for site to load and open portal
             await portalTriggerButton.click();
             // Discounted price should not be visible for member for one-time offers
-            await expect(portalFrame.locator('text=$5.40/month'), 'Portal should not show discounted price').not.toBeVisible();
+            await expect(await portalFrame.locator('text=$5.40/month'), 'Portal should not show discounted price').not.toBeVisible();
 
             // go to members list on admin
             await sharedPage.goto('/ghost');
             await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
 
             // 1 member, should be Testy, on Portal Tier
-            await expect(sharedPage.getByRole('link', {name: 'Testy McTesterson testy+oneoff@example.com'}), 'Should have 1 paid member').toBeVisible();
-            await expect(sharedPage.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
+            await expect(await sharedPage.getByRole('link', {name: 'Testy McTesterson testy+oneoff@example.com'}), 'Should have 1 paid member').toBeVisible();
+            await expect(await sharedPage.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
         });
 
         test('Creates and uses a multiple-months discount Offer', async ({sharedPage}) => {
@@ -170,7 +170,7 @@ test.describe('Portal', () => {
 
             await sharedPage.goto('/ghost');
             await sharedPage.locator('[data-test-nav="settings"]').click();
-            await expect(sharedPage.getByTestId('offers')).toContainText(offerName);
+            await expect(await sharedPage.getByTestId('offers')).toContainText(offerName);
 
             await sharedPage.goto(offerLink);
 
@@ -181,9 +181,9 @@ test.describe('Portal', () => {
             const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
 
             // check offer details are shown on portal page
-            await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
-            await expect(portalFrame.locator('text=10% off for first 3 months.'), 'URL should open Portal with discount offer').toBeVisible();
-            await expect(portalFrame.locator('text=$5.40'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(await portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(await portalFrame.locator('text=10% off for first 3 months.'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(await portalFrame.locator('text=$5.40'), 'URL should open Portal with discount offer').toBeVisible();
 
             // fill member details and continue
             await portalFrame.locator('#input-name').fill('Testy McTesterson');
@@ -203,13 +203,13 @@ test.describe('Portal', () => {
             await portalTriggerButton.click();
 
             // Discounted price should not be visible for member for one-time offers
-            await expect(portalFrame.locator('text=$5.40/month'), 'Portal should show discounted price').toBeVisible();
+            await expect(await portalFrame.locator('text=$5.40/month'), 'Portal should show discounted price').toBeVisible();
             await sharedPage.goto('/ghost');
             await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
 
             // 1 member, should be Testy, on Portal Tier
-            await expect(sharedPage.getByRole('link', {name: 'Testy McTesterson testy+multi@example.com'}), 'Should have 1 paid member').toBeVisible();
-            await expect(sharedPage.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
+            await expect(await sharedPage.getByRole('link', {name: 'Testy McTesterson testy+multi@example.com'}), 'Should have 1 paid member').toBeVisible();
+            await expect(await sharedPage.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
         });
 
         test('Creates and uses a forever discount Offer', async ({sharedPage}) => {
@@ -248,9 +248,9 @@ test.describe('Portal', () => {
             const portalFrame = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
 
             // check offer details are shown on portal page
-            await expect(portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
-            await expect(portalFrame.locator('text=10% off forever.'), 'URL should open Portal with discount offer').toBeVisible();
-            await expect(portalFrame.locator('text=$5.40'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(await portalFrame.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(await portalFrame.locator('text=10% off forever.'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(await portalFrame.locator('text=$5.40'), 'URL should open Portal with discount offer').toBeVisible();
 
             // fill member details and continue
             await portalFrame.locator('#input-name').fill('Testy McTesterson');
@@ -273,8 +273,8 @@ test.describe('Portal', () => {
             await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
 
             // 1 member, should be Testy, on Portal Tier
-            await expect(sharedPage.getByRole('link', {name: 'Testy McTesterson testy+forever@example.com'}), 'Should have 1 paid member').toBeVisible();
-            await expect(sharedPage.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
+            await expect(await sharedPage.getByRole('link', {name: 'Testy McTesterson testy+forever@example.com'}), 'Should have 1 paid member').toBeVisible();
+            await expect(await sharedPage.getByRole('link', {name: tierName}), `Paid member should be on ${tierName}`).toBeVisible();
         });
 
         test('Archiving an offer', async ({sharedPage}) => {

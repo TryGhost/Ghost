@@ -271,7 +271,7 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
         await page.getByTestId('offer-item').nth(0).click();
         await page.getByRole('button', {name: 'Archive offer'}).click();
 
-        const confirmModal = page.getByTestId('confirmation-modal');
+        const confirmModal = await page.getByTestId('confirmation-modal');
         await confirmModal.getByRole('button', {name: 'Archive'}).click();
     }
 
