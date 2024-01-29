@@ -18945,10 +18945,10 @@ i18next-parser@8.8.0:
     vinyl-fs "^3.0.2"
     vue-template-compiler "^2.6.11"
 
-i18next@23.7.20:
-  version "23.7.20"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.7.20.tgz#d558da5b563973ed88c7c21d3670bee6a094b03b"
-  integrity sha512-6qykxPpFPuzxC/VlVCXn3JxkHY5VCxf1w+/8Hz+Wxu4ZvfB+m3sbVruJ3C/rDWlE0Z1GCZTR6sBHIx7KGp0yXA==
+i18next@23.8.0:
+  version "23.8.0"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.8.0.tgz#87e1d258eac2b0a774ec583b498342abc23ad402"
+  integrity sha512-1H+39doU9dQZrRprpnZ2aZetbX9I1N3bM/YGHN/ZkMJ//wJqrxDEqgI5mmSsh/rglsFBiNxI6UtFZfUO2A6XbA==
   dependencies:
     "@babel/runtime" "^7.23.2"
 
