@@ -64,7 +64,7 @@ function configure(dbConfig) {
 
 if (!knexInstance && config.get('database') && config.get('database').client) {
     knexInstance = knex(configure(config.get('database')));
-    if (config.get('performanceMonitoring:connectionPool')) {
+    if (config.get('telemetry:connectionPool')) {
         const instrumentation = new ConnectionPoolInstrumentation({knex: knexInstance, logging, metrics, config});
         instrumentation.instrument();
     }

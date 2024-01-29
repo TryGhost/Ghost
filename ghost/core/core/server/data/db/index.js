@@ -10,7 +10,7 @@ Object.defineProperty(exports, 'knex', {
     configurable: true,
     get: function get() {
         connection = connection || require('./connection');
-        if (config.get('performanceMonitoring:connectionPool')) {
+        if (config.get('telemetry:connectionPool')) {
             const instrumentation = new ConnectionPoolInstrumentation({knex: connection, logging, metrics, config});
             instrumentation.instrument();
         }
