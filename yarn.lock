@@ -23012,10 +23012,10 @@ mysql2@3.2.0:
     seq-queue "^0.0.5"
     sqlstring "^2.3.2"
 
-mysql2@3.9.0:
-  version "3.9.0"
-  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.9.0.tgz#92fce31d7b13b5724bc56e18e270a9a1c984a0ff"
-  integrity sha512-yS7FtbnO9sYqUZbjaiUwflh1bJAENJ3DQ9aHEYj9G+Hi15+FP7UKaTDNe6SeXx/LpkU6coAQ6vIYQaAmsFA+qQ==
+mysql2@3.9.1:
+  version "3.9.1"
+  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.9.1.tgz#d1d7dee5ea55ba07f18c445267b2846f6faf9c68"
+  integrity sha512-3njoWAAhGBYy0tWBabqUQcLtczZUxrmmtc2vszQUekg3kTJyZ5/IeLC3Fo04u6y6Iy5Sba7pIIa2P/gs8D3ZeQ==
   dependencies:
     denque "^2.1.0"
     generate-function "^2.3.1"
