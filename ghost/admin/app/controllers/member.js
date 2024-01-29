@@ -176,9 +176,6 @@ export default class MemberController extends Controller {
     *saveTask() {
         let {member, scratchMember} = this;
 
-        console.log(`scratch member`, scratchMember);
-        console.log(`member`, member);
-
         // if Cmd+S is pressed before the field loses focus make sure we're
         // saving the intended property values
         let scratchProps = scratchMember.getProperties(SCRATCH_PROPS);
@@ -193,8 +190,6 @@ export default class MemberController extends Controller {
 
             // replace 'member.new' route with 'member' route
             if (this.router.currentRouteName === 'member.new') {
-                console.log(`** trying to refresh count`);
-                
                 // force update the member count; this otherwise only updates every minute
                 yield this.membersCountCache.count({});
             }
