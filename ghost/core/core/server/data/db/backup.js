@@ -45,6 +45,12 @@ const readBackup = async (filename) => {
  * @returns {Promise<String>}
  */
 const backup = async function backup(options = {}) {
+    // do not create backup if disabled in config (this is intended for large customers who will OOM node)
+    if (config.get('disableJSBackups')) {
+        logging.info('Database backup is disabled in Ghost config');
+        return '';
+    }
+
     logging.info('Creating database backup');
 
     const filename = await exporter.fileName(options);
