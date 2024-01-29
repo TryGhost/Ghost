@@ -4,7 +4,7 @@ class ConnectionPoolInstrumentation {
         this.pool = this.knex.client.pool;
         this.logging = logging;
         this.metrics = metrics;
-        this.enabled = config.get('performanceMonitoring:connectionPool');
+        this.enabled = config.get('telemetry:connectionPool');
         this.requestStartTimes = {};
         this.createStartTimes = {};
     }

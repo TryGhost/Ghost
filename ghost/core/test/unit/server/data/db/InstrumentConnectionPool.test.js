@@ -22,7 +22,7 @@ describe('ConnectionPoolInstrumentation', function () {
         const logging = {};
         const metrics = {};
         const config = {
-            get: sinon.stub().returns(true)
+            get: sinon.stub().withArgs('telemetry:connectionPool').returns(true)
         };
         const instrumentation = new ConnectionPoolInstrumentation({knex, logging, metrics, config});
         const result = instrumentation.getPoolMetrics();
@@ -52,7 +52,7 @@ describe('ConnectionPoolInstrumentation', function () {
             metric: sinon.stub()
         };
         const config = {
-            get: sinon.stub().returns(true)
+            get: sinon.stub().withArgs('telemetry:connectionPool').returns(true)
         };
         const instrumentation = new ConnectionPoolInstrumentation({knex, logging, metrics, config});
         instrumentation.handleCreateRequest(1);
@@ -80,7 +80,7 @@ describe('ConnectionPoolInstrumentation', function () {
             metric: sinon.stub()
         };
         const config = {
-            get: sinon.stub().returns(true)
+            get: sinon.stub().withArgs('telemetry:connectionPool').returns(true)
         };
         const instrumentation = new ConnectionPoolInstrumentation({knex, logging, metrics, config});
         instrumentation.handleCreateRequest(1);
@@ -107,7 +107,7 @@ describe('ConnectionPoolInstrumentation', function () {
             metric: sinon.stub()
         };
         const config = {
-            get: sinon.stub().returns(true)
+            get: sinon.stub().withArgs('telemetry:connectionPool').returns(true)
         };
         const instrumentation = new ConnectionPoolInstrumentation({knex, logging, metrics, config});
         instrumentation.handleAcquireRequest(1);
@@ -135,7 +135,7 @@ describe('ConnectionPoolInstrumentation', function () {
             metric: sinon.stub()
         };
         const config = {
-            get: sinon.stub().returns(true)
+            get: sinon.stub().withArgs('telemetry:connectionPool').returns(true)
         };
         const instrumentation = new ConnectionPoolInstrumentation({knex, logging, metrics, config});
         instrumentation.handleAcquireRequest(1);
@@ -162,7 +162,7 @@ describe('ConnectionPoolInstrumentation', function () {
             metric: sinon.stub()
         };
         const config = {
-            get: sinon.stub().returns(true)
+            get: sinon.stub().withArgs('telemetry:connectionPool').returns(true)
         };
         const instrumentation = new ConnectionPoolInstrumentation({knex, logging, metrics, config});
         instrumentation.handleRelease(1);
@@ -191,7 +191,7 @@ describe('ConnectionPoolInstrumentation', function () {
             metric: sinon.stub()
         };
         const config = {
-            get: sinon.stub().returns(true)
+            get: sinon.stub().withArgs('telemetry:connectionPool').returns(true)
         };
         const instrumentation = new ConnectionPoolInstrumentation({knex, logging, metrics, config});
         instrumentation.instrument();
@@ -219,7 +219,7 @@ describe('ConnectionPoolInstrumentation', function () {
             metric: sinon.stub()
         };
         const config = {
-            get: sinon.stub().returns(false)
+            get: sinon.stub().withArgs('telemetry:connectionPool').returns(false)
         };
         const instrumentation = new ConnectionPoolInstrumentation({knex, logging, metrics, config});
         instrumentation.instrument();
