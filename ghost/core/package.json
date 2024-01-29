@@ -181,7 +181,7 @@
     "express-jwt": "8.4.1",
     "express-lazy-router": "1.0.6",
     "express-query-boolean": "2.0.0",
-    "express-session": "1.17.3",
+    "express-session": "1.18.0",
     "fs-extra": "11.2.0",
     "ghost-storage-base": "1.0.0",
     "glob": "8.1.0",
