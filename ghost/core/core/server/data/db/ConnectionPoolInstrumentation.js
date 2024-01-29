@@ -24,7 +24,8 @@ class ConnectionPoolInstrumentation {
         this.createStartTimes[eventId] = Date.now();
         const poolMetrics = this.getPoolMetrics();
         this.logging.debug(`[ConnectionPool] Creating a connection. EventID: ${eventId} Pending Creates: ${poolMetrics.numPendingCreates} Free: ${poolMetrics.numFree} Used: ${poolMetrics.numUsed}`);
-        this.metrics.metric('connection-pool-create-request', {
+        this.metrics.metric('metrics-connection-pool', {
+            event: 'create-request',
             eventId,
             ...poolMetrics
         });
@@ -36,7 +37,8 @@ class ConnectionPoolInstrumentation {
         // Delete the start time so we don't leak memory
         delete this.createStartTimes[eventId];
         this.logging.debug(`[ConnectionPool] Created a connection. EventID: ${eventId} Connection ID: ${resource.connectionId} Time to Create: ${timeToCreate}ms`);
-        this.metrics.metric('connection-pool-create-success', {
+        this.metrics.metric('metrics-connection-pool', {
+            event: 'create-success',
             eventId,
             connectionId: resource.connectionId,
             knexUid: resource.__knexUid,
@@ -51,7 +53,8 @@ class ConnectionPoolInstrumentation {
         delete this.createStartTimes[eventId];
         const poolMetrics = this.getPoolMetrics();
         this.logging.error(`[ConnectionPool] Failed to create a connection. EventID: ${eventId} Time to Create: ${timeToFail}ms`, err);
-        this.metrics.metric('connection-pool-create-fail', {
+        this.metrics.metric('metrics-connection-pool', {
+            event: 'create-fail',
             eventId,
             timeToFail,
             ...poolMetrics
@@ -63,7 +66,8 @@ class ConnectionPoolInstrumentation {
         this.requestStartTimes[eventId] = Date.now();
         const poolMetrics = this.getPoolMetrics();
         this.logging.debug(`[ConnectionPool] Acquiring a connection. EventID: ${eventId} Pending Acquires: ${poolMetrics.numPendingAcquires} Free: ${poolMetrics.numFree} Used: ${poolMetrics.numUsed}`);
-        this.metrics.metric('connection-pool-acquire-request', {
+        this.metrics.metric('metrics-connection-pool', {
+            event: 'acquire-request',
             eventId,
             ...poolMetrics
         });
@@ -77,7 +81,8 @@ class ConnectionPoolInstrumentation {
         // Track when the connection was acquired for calculating lifetime upon release
         resource.connectionAcquired = Date.now();
         this.logging.debug(`[ConnectionPool] Acquired a connection. EventID: ${eventId} Connection ID: ${resource.connectionId} Time to Acquire: ${timeToAcquire}ms`);
-        this.metrics.metric('connection-pool-acquire-success', {
+        this.metrics.metric('metrics-connection-pool', {
+            event: 'acquire-success',
             eventId,
             connectionId: resource.connectionId,
             knexUid: resource.__knexUid,
@@ -92,7 +97,8 @@ class ConnectionPoolInstrumentation {
         delete this.requestStartTimes[eventId];
         const poolMetrics = this.getPoolMetrics();
         this.logging.error(`[ConnectionPool] Failed to acquire a connection. EventID: ${eventId} Time to Acquire: ${timeToFail}ms`, err);
-        this.metrics.metric('connection-pool-acquire-fail', {
+        this.metrics.metric('metrics-connection-pool', {
+            event: 'acquire-fail',
             eventId,
             timeToFail,
             ...poolMetrics
@@ -102,7 +108,8 @@ class ConnectionPoolInstrumentation {
     handleRelease(resource) {
         const lifetime = Date.now() - resource.connectionAcquired;
         this.logging.debug(`[ConnectionPool] Released a connection. Connection ID: ${resource.connectionId} Lifetime: ${lifetime}ms`);
-        this.metrics.metric('connection-pool-release', {
+        this.metrics.metric('metrics-connection-pool', {
+            event: 'release',
             connectionId: resource.connectionId,
             knexUid: resource.__knexUid,
             lifetime
