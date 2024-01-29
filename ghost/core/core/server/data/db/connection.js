@@ -64,8 +64,10 @@ function configure(dbConfig) {
 
 if (!knexInstance && config.get('database') && config.get('database').client) {
     knexInstance = knex(configure(config.get('database')));
-    const instrumentation = new ConnectionPoolInstrumentation({knex: knexInstance, logging, metrics, config});
-    instrumentation.instrument();
+    if (config.get('performanceMonitoring:connectionPool')) {
+        const instrumentation = new ConnectionPoolInstrumentation({knex: knexInstance, logging, metrics, config});
+        instrumentation.instrument();
+    }
 }
 
 module.exports = knexInstance;
