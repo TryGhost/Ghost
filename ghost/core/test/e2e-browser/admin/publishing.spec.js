@@ -618,11 +618,6 @@ test.describe('Updating post access', () => {
             email: 'test@recipient.com'
         });
 
-        // NOTE: without the refresh, this test cannot be run in isolation because the member count (cache) isn't updated quickly enough, making the button to publish+send disabled (because there are no members)
-        //  this also means that any retries will fail
-        //  the reason is sometimes works is because the member count will carry over from previous tests via recycling the browser session, such that the cache count is >0
-        await page.reload();
-
         // go to publish a post
         await createPostDraft(page, {title: 'Published in timezones', body: 'Published in timezones'});
         await page.locator('[data-test-button="publish-flow"]').first().click();

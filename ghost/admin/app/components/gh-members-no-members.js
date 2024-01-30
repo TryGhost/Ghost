@@ -8,6 +8,7 @@ export default class GhMembersNoMembersComponent extends Component {
     @service store;
     @service notifications;
     @service settings;
+    @service membersCountCache;
 
     @action
     addYourself() {
@@ -38,6 +39,9 @@ export default class GhMembersNoMembersComponent extends Component {
                 }
             );
 
+            // force update the member count; this otherwise only updates every minute
+            yield this.membersCountCache.count({});
+            
             return member;
         } catch (error) {
             if (error) {
