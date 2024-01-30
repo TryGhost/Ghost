@@ -15,6 +15,7 @@ export default class MemberController extends Controller {
     @service session;
     @service dropdown;
     @service membersStats;
+    @service membersCountCache;
     @service modals;
     @service notifications;
     @service router;
@@ -139,6 +140,7 @@ export default class MemberController extends Controller {
             afterDelete: () => {
                 this.membersStats.invalidate();
                 this.members.refreshData();
+                this.membersCountCache.clear();
                 this.transitionToRoute('members');
             }
         });
@@ -181,11 +183,17 @@ export default class MemberController extends Controller {
         Object.assign(member, scratchProps);
 
         try {
+            const clearCountCache = member.isNew; // clear cache for adding new members so the count is updated without waiting for a refresh
+
             yield member.save();
             member.updateLabels();
             this.members.refreshData();
 
             this.setInitialRelationshipValues();
+
+            if (clearCountCache) {
+                this.membersCountCache.clear();
+            }
 
             // replace 'member.new' route with 'member' route
             this.replaceRoute('member', member);
