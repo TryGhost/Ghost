@@ -140,6 +140,7 @@ export default class MemberController extends Controller {
             afterDelete: () => {
                 this.membersStats.invalidate();
                 this.members.refreshData();
+                this.membersCountCache.clear();
                 this.transitionToRoute('members');
             }
         });
@@ -182,18 +183,19 @@ export default class MemberController extends Controller {
         Object.assign(member, scratchProps);
 
         try {
+            const clearCountCache = member.isNew; // clear cache for adding new members so the count is updated without waiting for a refresh
+
             yield member.save();
             member.updateLabels();
             this.members.refreshData();
 
             this.setInitialRelationshipValues();
 
-            // replace 'member.new' route with 'member' route
-            if (this.router.currentRouteName === 'member.new') {
-                // force update the member count; this otherwise only updates every minute
-                yield this.membersCountCache.count({});
+            if (clearCountCache) {
+                this.membersCountCache.clear();
             }
 
+            // replace 'member.new' route with 'member' route
             this.replaceRoute('member', member);
 
             return member;
