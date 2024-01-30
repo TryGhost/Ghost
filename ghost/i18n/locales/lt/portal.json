@@ -1,5 +1,5 @@
 {
-    "(Save {{highestYearlyDiscount}}%)": "(Sutaupyk {{highestYearlyDiscount}}%)",
+    "(save {{highestYearlyDiscount}}%)": "(Sutaupyk {{highestYearlyDiscount}}%)",
     "{{amount}} days free": "{{amount}} d. nemokamai",
     "{{amount}} off": "{{amount}} mažiau",
     "{{amount}} off for first {{number}} months.": "{{amount}} pigiau pirmiems {{number}} mėnesiams.",
