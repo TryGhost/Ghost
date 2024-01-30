@@ -22,7 +22,8 @@ const GA_FEATURES = [
     'signupForm',
     'recommendations',
     'listUnsubscribeHeader',
-    'filterEmailDisabled'
+    'filterEmailDisabled',
+    'newEmailAddresses'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
@@ -47,7 +48,6 @@ const ALPHA_FEATURES = [
     // 'adminXOffers',
     'filterEmailDisabled',
     'adminXDemo',
-    'newEmailAddresses',
     'portalImprovements'
 ];
 
