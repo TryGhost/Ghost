@@ -1,6 +1,6 @@
 import {assertTransform, createEditor} from '../utils';
 import {$createParagraphNode, LexicalEditor, ParagraphNode, TextNode} from 'lexical';
-import {ExtendedHeadingNode, ImageNode} from '@tryghost/kg-default-nodes';
+import {ImageNode, ExtendedHeadingNode} from '@tryghost/kg-default-nodes';
 import {registerDenestTransform} from '../../';
 import {$createListItemNode, $createListNode, ListItemNode, ListNode} from '@lexical/list';
 import {$createHeadingNode, HeadingNode} from '@lexical/rich-text';
@@ -437,6 +437,127 @@ describe('Denest transform', function () {
                         caption: '',
                         cardWidth: 'regular',
                         href: ''
+                    }
+                ],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        };
+
+        const editor = createEditor();
+
+        assertTransform(editor, registerTransforms, before, after);
+    });
+
+    it('handles headings+text inside list items', function () {
+        const registerTransforms = (editor: LexicalEditor) => {
+            registerDenestTransform(editor, ParagraphNode, () => ($createParagraphNode()));
+            registerDenestTransform(editor, HeadingNode, node => ($createHeadingNode(node.getTag())));
+            registerDenestTransform(editor, ExtendedHeadingNode, node => ($createHeadingNode(node.getTag())));
+            registerDenestTransform(editor, ListNode, node => ($createListNode(node.getListType(), node.getStart())));
+            registerDenestTransform(editor, ListItemNode, () => ($createListItemNode()));
+        };
+
+        const before = {
+            root: {
+                children: [
+                    {
+                        children: [
+                            {
+                                children: [
+                                    {
+                                        children: [
+                                            {
+                                                type: 'extended-text',
+                                                text: 'Heading',
+                                                format: 0,
+                                                style: '',
+                                                mode: 0,
+                                                detail: 0
+                                            }
+                                        ],
+                                        type: 'extended-heading',
+                                        format: 0,
+                                        indent: 0,
+                                        dir: null,
+                                        tag: 'h4'
+                                    },
+                                    {
+                                        type: 'extended-text',
+                                        text: 'Paragraph',
+                                        format: 0,
+                                        style: '',
+                                        mode: 0,
+                                        detail: 0
+                                    }
+                                ],
+                                type: 'listitem',
+                                format: 0,
+                                indent: 0,
+                                dir: null,
+                                value: 1,
+                                checked: false
+                            }
+                        ],
+                        type: 'list',
+                        format: 0,
+                        indent: 0,
+                        dir: null,
+                        listType: 'bullet',
+                        tag: 'ul',
+                        start: 1
+                    }
+                ],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        };
+
+        const after = {
+            root: {
+                children: [
+                    {
+                        children: [
+                            {
+                                type: 'extended-text',
+                                text: 'Heading',
+                                format: 0,
+                                style: '',
+                                mode: undefined,
+                                detail: 0,
+                                version: 1
+                            }
+                        ],
+                        direction: undefined,
+                        format: '',
+                        indent: 0,
+                        tag: 'h4',
+                        type: 'extended-heading',
+                        version: 1
+                    },
+                    {
+                        children: [
+                            {
+                                type: 'extended-text',
+                                text: 'Paragraph',
+                                format: 0,
+                                style: '',
+                                mode: undefined,
+                                detail: 0,
+                                version: 1
+                            }
+                        ],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'paragraph',
+                        version: 1
                     }
                 ],
                 direction: null,

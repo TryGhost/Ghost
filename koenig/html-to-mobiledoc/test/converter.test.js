@@ -1,7 +1,7 @@
 // Switch these lines once there are useful utils
 // const testUtils = require('./utils');
 require('./utils');
-const converter = require('../lib/converter');
+const converter = require('../');
 
 describe('Converter test', function () {
     describe('Minimal examples', function () {
@@ -149,6 +149,30 @@ describe('Converter test', function () {
             mobiledoc.sections[1].should.eql([3, 'ul', [[[0, [], 0, 'Big']]]]);
             mobiledoc.sections[2].should.be.an.Array().with.lengthOf(3);
             mobiledoc.sections[2].should.eql([1, 'p', [[0, [], 0, 'World']]]);
+        });
+
+        it('Can convert headings and paragraphs inside list items', function () {
+            const mobiledoc = converter
+                .toMobiledoc(`
+                    <ul>
+                        <li>
+                            <h2>Heading</h2>
+                            <p>Paragraph</p>
+                        </li>
+                    </ul>
+                `, {plugins: []});
+
+            mobiledoc.should.deepEqual({
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [
+                    [3, 'ul', [[[0, [], 0, '']]]],
+                    [1, 'h2', [[0, [], 0, 'Heading']]],
+                    [1, 'p', [[0, [], 0, 'Paragraph']]]
+                ],
+                version: '0.3.1'
+            });
         });
     });
 

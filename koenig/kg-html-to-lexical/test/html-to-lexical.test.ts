@@ -375,6 +375,22 @@ describe('HTMLtoLexical', function () {
             assert.equal(lexical.root.children[0].children[1].children[0].text, 'World');
         });
 
+        it('can convert list items with nested paragraph', function () {
+            const lexical = converter.htmlToLexical('<ul><li><p>Hello</p></li><li><p>World</p></li></ul>', editorConfig);
+
+            assert.ok(lexical.root);
+            assert.equal(lexical.root.children.length, 1);
+            assert.equal(lexical.root.children[0].type, 'list');
+            assert.equal(lexical.root.children[0].listType, 'bullet');
+            assert.equal(lexical.root.children[0].children.length, 2);
+            assert.equal(lexical.root.children[0].children[0].type, 'listitem');
+            assert.equal(lexical.root.children[0].children[0].children.length, 1);
+            assert.equal(lexical.root.children[0].children[0].children[0].text, 'Hello');
+            assert.equal(lexical.root.children[0].children[1].type, 'listitem');
+            assert.equal(lexical.root.children[0].children[1].children.length, 1);
+            assert.equal(lexical.root.children[0].children[1].children[0].text, 'World');
+        });
+
         it('can convert blockquotes', function () {
             const lexical = converter.htmlToLexical('<blockquote>Hello World</blockquote>', editorConfig);
 
@@ -482,6 +498,98 @@ describe('HTMLtoLexical', function () {
             assert.equal(lexical.root.children[0].type, 'paragraph');
             assert.equal(lexical.root.children[0].children.length, 1);
             assert.equal(lexical.root.children[0].children[0].text, 'Hello World');
+        });
+    });
+
+    describe('HTML oddities', function () {
+        it('handles plain text', function () {
+            const lexical = converter.htmlToLexical('Hello World', editorConfig);
+
+            assert.ok(lexical.root);
+            assert.equal(lexical.root.children.length, 1);
+            assert.equal(lexical.root.children[0].type, 'paragraph');
+            assert.equal(lexical.root.children[0].children.length, 1);
+            assert.equal(lexical.root.children[0].children[0].text, 'Hello World');
+        });
+
+        it('handles text with no wrapper element', function () {
+            const lexical = converter.htmlToLexical('<p>Paragraph</p>\nPlain text 1\n<h2>Title</h2>\nPlain text 2', editorConfig);
+
+            assert.ok(lexical.root);
+            assert.equal(lexical.root.children.length, 4);
+            assert.equal(lexical.root.children[0].type, 'paragraph');
+            assert.equal(lexical.root.children[0].children[0].text, 'Paragraph');
+            assert.equal(lexical.root.children[1].type, 'paragraph');
+            assert.equal(lexical.root.children[1].children[0].text, 'Plain text 1');
+            assert.equal(lexical.root.children[2].type, 'extended-heading');
+            assert.equal(lexical.root.children[2].children[0].text, 'Title');
+            assert.equal(lexical.root.children[3].type, 'paragraph');
+            assert.equal(lexical.root.children[3].children[0].text, 'Plain text 2');
+        });
+
+        it('handles heading and paragraph elements inside list items', function () {
+            const html = `
+                <ul>
+                    <li>
+                        <h4>Heading</h4>
+                        <p>Paragraph</p>
+                    </li>
+                </ul>
+            `;
+            const lexical = converter.htmlToLexical(html, editorConfig);
+            assert.ok(lexical.root);
+            assert.equal(lexical.root.children.length, 2);
+            assert.equal(lexical.root.children[0].type, 'extended-heading');
+            assert.equal(lexical.root.children[0].children[0].text, 'Heading');
+            assert.equal(lexical.root.children[1].type, 'paragraph');
+            assert.equal(lexical.root.children[1].children[0].text, 'Paragraph');
+        });
+
+        it('handles heading and non-paragraph text inside list items', function () {
+            const html = `
+                <ul>
+                    <li>
+                        <h4>Heading</h4>
+                        Paragraph
+                    </li>
+                </ul>
+            `;
+            const lexical = converter.htmlToLexical(html, editorConfig);
+            assert.ok(lexical.root);
+            assert.equal(lexical.root.children.length, 2);
+            assert.equal(lexical.root.children[0].type, 'extended-heading');
+            assert.equal(lexical.root.children[0].children[0].text, 'Heading');
+            assert.equal(lexical.root.children[1].type, 'paragraph');
+            assert.equal(lexical.root.children[1].children[0].text, 'Paragraph');
+        });
+
+        it('handles heading and non-paragraph text inside nested list items', function () {
+            const html = `
+                <ul>
+                    <li>
+                        <ul>
+                            <li>
+                                <h4>Heading</h4>
+                                Paragraph
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            `;
+            const lexical = converter.htmlToLexical(html, editorConfig);
+            assert.ok(lexical.root);
+            assert.equal(lexical.root.children.length, 3);
+            // empty list item is left after extracting invalid children
+            // NOTE: if we don't want this it needs to be fixed in the denest transform but we need
+            //       to be careful not to break general editing
+            assert.equal(lexical.root.children[0].type, 'list');
+            assert.equal(lexical.root.children[0].children[0].type, 'listitem');
+            assert.equal(lexical.root.children[0].children[0].children.length, 0);
+            // extracted children
+            assert.equal(lexical.root.children[1].type, 'extended-heading');
+            assert.equal(lexical.root.children[1].children[0].text, 'Heading');
+            assert.equal(lexical.root.children[2].type, 'paragraph');
+            assert.equal(lexical.root.children[2].children[0].text, 'Paragraph');
         });
     });
 

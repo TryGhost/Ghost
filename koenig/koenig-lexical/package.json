@@ -105,6 +105,7 @@
     "fast-average-color": "^9.3.0",
     "jsdom": "23.2.0",
     "lexical": "0.12.2",
+    "lodash": "^4.17.21",
     "luxon": "^3.3.0",
     "pluralize": "^8.0.0",
     "postcss": "8.4.33",
@@ -125,8 +126,5 @@
     "vitest": "1.2.1",
     "y-websocket": "^1.5.0",
     "yjs": "^13.5.50"
-  },
-  "dependencies": {
-    "lodash": "^4.17.21"
   }
 }
