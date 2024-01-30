@@ -14,7 +14,7 @@ export default [
             format: 'cjs',
             sourcemap: true
         },
-        external: dependencies
+        external: id => /lodash/.test(id) || dependencies.includes(id)
     },
 
     // ES module build
@@ -42,6 +42,6 @@ export default [
                 exclude: ['node_modules/**', '../../node_modules/**']
             })
         ],
-        external: dependencies
+        external: id => /lodash/.test(id) || dependencies.includes(id)
     }
 ];
