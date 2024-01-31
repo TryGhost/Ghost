@@ -28,7 +28,7 @@ export default function EmailReceivingPage() {
             <div className="gh-longform">
                 <h3>{t(`Help! I'm not receiving emails`)}</h3>
 
-                <p>{t(`If you're not receiving the email newsletter you've subscribed to, here are few things to check.`)}</p>
+                <p>{t(`If you're not receiving the email newsletter you've subscribed to, here are a few things to check.`)}</p>
 
                 <h4>{t(`Verify your email address is correct`)}</h4>
 
@@ -64,7 +64,7 @@ export default function EmailReceivingPage() {
                 <p>
                     <Interpolate
                         syntax={SYNTAX_I18NEXT}
-                        string={t(`Send an email to {{senderEmail}} and say hello. This can also help signal to your mail provider that emails to-and-from this address should be trusted.`)}
+                        string={t(`Send an email to {{senderEmail}} and say hello. This can also help signal to your mail provider that emails to and from this address should be trusted.`)}
                         mapping={{
                             senderEmail: <strong>{defaultNewsletterSenderEmail}</strong>
                         }}
