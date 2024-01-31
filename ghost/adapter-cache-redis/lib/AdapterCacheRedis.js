@@ -6,6 +6,25 @@ const cacheManager = require('cache-manager');
 const redisStoreFactory = require('./redis-store-factory');
 const calculateSlot = require('cluster-key-slot');
 
+function deferred() {
+    let value;
+    let err;
+    let resolve = _value => value = _value;
+    let reject = _err => err = _err;
+    const promise = new Promise((_resolve, _reject) => {
+        if (value) {
+            _resolve(value);
+        }
+        if (err) {
+            _reject(err);
+        }
+        resolve = _value => _resolve(_value);
+        reject = _err => _reject(_err);
+    });
+
+    return {resolve, reject, promise};
+}
+
 class AdapterCacheRedis extends BaseCacheAdapter {
     /**
      *
