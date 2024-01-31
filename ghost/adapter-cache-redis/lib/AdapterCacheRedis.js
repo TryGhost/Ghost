@@ -211,6 +211,10 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {() => Promise<any>} [fetchData] An optional function to fetch the data, which will be used in the case of a cache MISS or a background refresh
      */
     async get(key, fetchData) {
+        return this.#get(key, fetchData);
+    }
+
+    async #get(key, fetchData) {
         const internalKey = this._buildKey(key);
         try {
             const result = await this._get(internalKey);
