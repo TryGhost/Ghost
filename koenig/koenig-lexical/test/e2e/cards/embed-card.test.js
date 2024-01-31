@@ -186,24 +186,25 @@ test.describe('Embed card', async () => {
             await expect(page.locator('a[href="https://ghost.org/should-convert-to-link"]')).toBeVisible();
         });
 
-        // todo: test is failing, need to figure if the error in test logic or on code
-        test.skip('paste as link button removes card and inserts text node link', async function () {
+        test('paste as link button removes card and inserts text node link', async function () {
             await focusEditor(page);
             await insertEmbedCard(page);
 
             const urlInput = await page.getByTestId('embed-url');
-            await expect(urlInput).toHaveAttribute('placeholder','Paste URL to add embedded content...');
+            await expect(urlInput).toHaveAttribute('placeholder', 'Paste URL to add embedded content...');
 
-            await urlInput.fill('badurl');
-            await expect(urlInput).toHaveValue('badurl');
+            await urlInput.fill('https://ghost.org/should-convert-to-link');
+            await expect(urlInput).toHaveValue('https://ghost.org/should-convert-to-link');
             await urlInput.press('Enter');
 
-            const retryButton = await page.getByTestId('embed-url-error-pasteAsLink');
-            await retryButton.click();
+            const pasteAsLinkButton = await page.getByTestId('embed-url-error-pasteAsLink');
+            await pasteAsLinkButton.click();
 
             await assertHTML(page, html`
                 <p>
-                    <a href="badurl" dir="ltr"><span data-lexical-text="true">badurl</span></a>
+                    <a href="https://ghost.org/should-convert-to-link" dir="ltr">
+                        <span data-lexical-text="true">https://ghost.org/should-convert-to-link</span>
+                    </a>
                 </p>
                 <p><br /></p>
             `);
@@ -220,8 +221,8 @@ test.describe('Embed card', async () => {
             await expect(urlInput).toHaveValue('badurl');
             await urlInput.press('Enter');
 
-            const retryButton = await page.getByTestId('embed-url-error-close');
-            await retryButton.click();
+            const closeButton = await page.getByTestId('embed-url-error-close');
+            await closeButton.click();
 
             await assertHTML(page, html`<p><br /></p>`);
         });
