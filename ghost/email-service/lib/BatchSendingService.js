@@ -130,8 +130,7 @@ class BatchSendingService {
     async emailJob({emailId}) {
         logging.info(`Starting email job for email ${emailId}`);
 
-        // We'll stop all automatic DB retries after this date
-        const retryCutOffTime = new Date(Date.now() + this.#BEFORE_RETRY_CONFIG.maxTime);
+        const startTime = Date.now();
 
         // Check if email is 'pending' only + change status to submitting in one transaction.
         // This allows us to have a lock around the email job that makes sure an email can only have one active job.
@@ -145,6 +144,12 @@ class BatchSendingService {
             logging.error(`Tried sending email that is not pending or failed ${emailId}`);
             return;
         }
+
+        // We'll stop all automatic DB retries after this date
+        const expectedBatchCount = Math.ceil(email.get('email_count') / 1000);
+        const minimumSecondsPerBatch = 26; // In case of database issues, we make sure we expand the retry window relative to the amount of batches
+        const stopAfter = Math.max(expectedBatchCount * minimumSecondsPerBatch * 1000, this.#BEFORE_RETRY_CONFIG.maxTime);
+        const retryCutOffTime = new Date(startTime + stopAfter);
 
         // Save a strict cutoff time for retries
         email._retryCutOffTime = retryCutOffTime;
@@ -583,18 +588,28 @@ class BatchSendingService {
                 options = {...options, stopAfterDate};
             }
         }
+        const retryCount = (options.retryCount ?? 0);
 
         try {
-            return await func();
+            if (retryCount > 0) {
+                logging.info(`[BULK_EMAIL_DB_RETRY] ${options.description} - Retrying ${retryCount + 1}th try`);
+            } else {
+                logging.info(`[BULK_EMAIL_DB_RETRY] ${options.description} - Started (1st try)`);
+            }
+
+            const response = await func();
+
+            logging.info(`[BULK_EMAIL_DB_RETRY] ${options.description} - Finished (after ${retryCount + 1}${retryCount === 0 ? 'st try' : ' tries'})`);
+
+            return response;
         } catch (e) {
-            const retryCount = (options.retryCount ?? 0);
             const sleep = (options.sleep ?? 0);
             if (retryCount >= options.maxRetries || (options.stopAfterDate && (new Date(Date.now() + sleep)) > options.stopAfterDate)) {
                 if (retryCount > 0) {
                     const ghostError = new errors.EmailError({
                         err: e,
                         code: 'BULK_EMAIL_DB_RETRY',
-                        message: `[BULK_EMAIL_DB_RETRY] ${options.description} - Stopped retrying`,
+                        message: `[BULK_EMAIL_DB_RETRY] ${options.description} - Failed and stopped retrying: ${retryCount >= options.maxRetries ? 'max retries reached' : 'max time reached'}`,
                         context: e.message
                     });
 
@@ -606,7 +621,7 @@ class BatchSendingService {
             const ghostError = new errors.EmailError({
                 err: e,
                 code: 'BULK_EMAIL_DB_RETRY',
-                message: `[BULK_EMAIL_DB_RETRY] ${options.description} - After ${retryCount} retries`,
+                message: `[BULK_EMAIL_DB_RETRY] ${options.description} - Failed (${retryCount + 1}${retryCount === 0 ? 'st' : 'th'} try)`,
                 context: e.message
             });
 
