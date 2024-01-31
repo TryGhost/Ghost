@@ -330,6 +330,14 @@ const completeStripeSubscription = async (page) => {
     await fillInputIfExists(page, '#billingAddressLine2', 'Apt 1');
     await fillInputIfExists(page, '#billingLocality', 'Testville');
 
+    // some regions have a stripe pass checkbox that blocks the submit button
+    if (await page.isVisible('#enableStripePass')) {
+        const checkbox = await page.locator('#enableStripePass');
+        if (await checkbox.isChecked()) {
+            await checkbox.uncheck();
+        }
+    }
+
     // Wait for submit button complete
     await page.waitForSelector('[data-testid="hosted-payment-submit-button"].SubmitButton--complete', {state: 'attached'});
 
