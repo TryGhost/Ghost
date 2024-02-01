@@ -556,10 +556,10 @@ module.exports = class MemberRepository {
         // Keep track of the newsletters that were added and removed of a member so we can generate the corresponding events
         let newslettersToAdd = [];
         let newslettersToRemove = [];
+        let newslettersToIgnore = []; // This is used to keep track of archived newsletters where members are still subscribed to
 
         if (needsNewsletters) {
             const existingNewsletters = initialMember.related('newsletters').models;
-
             // This maps the old subscribed property to the new newsletters field and is only used to keep backward compatibility
             if (!memberData.newsletters) {
                 if (memberData.subscribed === false) {
@@ -572,12 +572,15 @@ module.exports = class MemberRepository {
 
             // only ever populated with active newsletters - never archived ones
             if (memberData.newsletters) {
+                const archivedNewsletters = existingNewsletters.filter(n => n.get('status') === 'archived');
                 const existingNewsletterIds = existingNewsletters
                     .filter(newsletter => newsletter.attributes.status !== 'archived')
                     .map(newsletter => newsletter.id);
                 const incomingNewsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
-
+                newslettersToIgnore = archivedNewsletters.map(n => n.id);
                 newslettersToAdd = _.differenceWith(incomingNewsletterIds, existingNewsletterIds);
+                // make sure newslettersToAdd does not contain newslettersToIgnore (archived newsletters since that creates false events)
+                newslettersToAdd = _.differenceWith(newslettersToAdd, newslettersToIgnore);
                 newslettersToRemove = _.differenceWith(existingNewsletterIds, incomingNewsletterIds);
             }
 
