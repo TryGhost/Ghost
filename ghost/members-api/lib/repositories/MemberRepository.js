@@ -556,7 +556,6 @@ module.exports = class MemberRepository {
         // Keep track of the newsletters that were added and removed of a member so we can generate the corresponding events
         let newslettersToAdd = [];
         let newslettersToRemove = [];
-        // let newslettersToIgnore = []; // This is used to keep track of archived newsletters where members are still subscribed to
 
         if (needsNewsletters) {
             const existingNewsletters = initialMember.related('newsletters').models;
