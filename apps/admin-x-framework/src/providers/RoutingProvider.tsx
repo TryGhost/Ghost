@@ -46,7 +46,6 @@ function getHashPath(basePath: string, urlPath: string | undefined) {
     }
     const regex = new RegExp(`/${basePath}/(.*)`);
     const match = urlPath?.match(regex);
-
     if (match) {
         const afterSettingsX = match[1];
         return afterSettingsX;
@@ -84,7 +83,7 @@ const handleNavigation = (basePath: string, currentRoute: string | undefined, lo
 };
 
 const matchRoute = (pathname: string, routeDefinition: string) => {
-    const regex = new RegExp('^' + routeDefinition.replace(/:(\w+)/, '(?<$1>[^/]+)') + '$');
+    const regex = new RegExp('^' + routeDefinition.replace(/:(\w+)/g, '(?<$1>[^/]+)') + '/?$');
     const match = pathname.match(regex);
     if (match) {
         return match.groups || {};
