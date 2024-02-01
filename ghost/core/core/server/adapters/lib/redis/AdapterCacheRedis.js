@@ -6,25 +6,6 @@ const cacheManager = require('cache-manager');
 const redisStoreFactory = require('./redis-store-factory');
 const calculateSlot = require('cluster-key-slot');
 
-function deferred() {
-    let value;
-    let err;
-    let resolve = _value => value = _value;
-    let reject = _err => err = _err;
-    const promise = new Promise((_resolve, _reject) => {
-        if (value) {
-            _resolve(value);
-        }
-        if (err) {
-            _reject(err);
-        }
-        resolve = _value => _resolve(_value);
-        reject = _err => _reject(_err);
-    });
-
-    return {resolve, reject, promise};
-}
-
 class AdapterCacheRedis extends BaseCacheAdapter {
     /**
      *
@@ -214,21 +195,13 @@ class AdapterCacheRedis extends BaseCacheAdapter {
     async get(key, fetchData) {
         const internalKey = this._buildKey(key);
         if (this.currentlyExecutingReads.has(internalKey)) {
-            return this.currentlyExecutingReads.get(internalKey).promise;
+            return this.currentlyExecutingReads.get(internalKey);
         }
-        const deferredResult = deferred();
-        this.currentlyExecutingReads.set(internalKey, deferredResult);
-        this.#get(key, fetchData)
-            .then((result) => {
-                deferredResult.resolve(result);
-                this.currentlyExecutingReads.delete(key);
-            })
-            .catch((err) => {
-                deferredResult.reject(err);
-                this.currentlyExecutingReads.delete(key);
-            });
-
-        return deferredResult.promise;
+        const resultPromise = this.#get(key, fetchData).finally(() => {
+            this.currentlyExecutingReads.delete(internalKey);
+        });
+        this.currentlyExecutingReads.set(internalKey, resultPromise);
+        return resultPromise;
     }
 
     async #get(key, fetchData) {
