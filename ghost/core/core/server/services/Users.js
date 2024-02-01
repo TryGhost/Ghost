@@ -148,9 +148,13 @@ class Users {
      * @returns
      */
     async destroyUser(frameOptions) {
+        let filename = null;
         const backupPath = await this.dbBackup.backup();
-        const parsedFileName = path.parse(backupPath);
-        const filename = `${parsedFileName.name}${parsedFileName.ext}`;
+
+        if (backupPath) {
+            const parsedFileName = path.parse(backupPath);
+            filename = `${parsedFileName.name}${parsedFileName.ext}`;
+        }
 
         return this.models.Base.transaction(async (t) => {
             frameOptions.transacting = t;
