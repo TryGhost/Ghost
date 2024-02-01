@@ -578,9 +578,9 @@ module.exports = class MemberRepository {
                     .map(newsletter => newsletter.id);
                 const incomingNewsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
                 newslettersToIgnore = archivedNewsletters.map(n => n.id);
-                newslettersToAdd = _.differenceWith(incomingNewsletterIds, existingNewsletterIds);
+
                 // make sure newslettersToAdd does not contain newslettersToIgnore (archived newsletters since that creates false events)
-                newslettersToAdd = _.differenceWith(newslettersToAdd, newslettersToIgnore);
+                newslettersToAdd = _.differenceWith(_.differenceWith(incomingNewsletterIds, existingNewsletterIds), newslettersToIgnore);
                 newslettersToRemove = _.differenceWith(existingNewsletterIds, incomingNewsletterIds);
             }
 
