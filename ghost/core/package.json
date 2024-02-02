@@ -219,8 +219,8 @@
     "xml": "1.0.1",
     "y-protocols": "1.0.6",
     "yjs": "13.6.11",
-    "dompurify": "^2.3.4", // Added dependency
-    "jsdom": "^19.0.0" // Added dependency
+    "dompurify": "^2.3.4",
+    "jsdom": "^19.0.0"
   },
   "optionalDependencies": {
     "@sentry/profiling-node": "1.3.5",
