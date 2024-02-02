@@ -1,18 +1,21 @@
-const {
-    $getRoot,
-    $isElementNode,
-    $isLineBreakNode,
-    $isParagraphNode,
-    $isTextNode
-} = require('lexical');
-const {$isLinkNode} = require('@lexical/link');
-const {$isKoenigCard} = require('@tryghost/kg-default-nodes');
-const TextContent = require('./utils/TextContent');
-const {elementTransformers} = require('./transformers');
+import {ElementNode, LexicalNode} from 'lexical';
+import {$getRoot, $isElementNode, $isLineBreakNode, $isParagraphNode, $isTextNode} from 'lexical';
+import {$isLinkNode} from '@lexical/link';
+// TODO: update once kg-default-nodes is typescript
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const {$isKoenigCard, KoenigDecoratorNode} = require('@tryghost/kg-default-nodes');
+import TextContent from './utils/TextContent';
+import elementTransformers from './transformers';
 
-function $convertToHtmlString(options = {}) {
-    const output = [];
-    const children = $getRoot().getChildren();
+export interface RendererOptions {
+    usedIdAttributes?: Record<string, number>;
+    dom?: import('jsdom').JSDOM,
+    type?: 'inner' | 'outer' | 'value'
+}
+
+export default function $convertToHtmlString(options: RendererOptions = {}): string {
+    const output: string[] = [];
+    const children: LexicalNode[] = $getRoot().getChildren();
 
     options.usedIdAttributes = options.usedIdAttributes || {};
 
@@ -34,9 +37,12 @@ function $convertToHtmlString(options = {}) {
     return output.join('');
 }
 
-function exportTopLevelElementOrDecorator(node, options) {
+function exportTopLevelElementOrDecorator(node: LexicalNode | typeof KoenigDecoratorNode, options: RendererOptions): string | null {
     if ($isKoenigCard(node)) {
+        // NOTE: kg-default-nodes appends type in rare cases to make use of this functionality... with moving to typescript,
+        //  we should change this implementation because it's confusing, or we should override the DOMExportOutput type
         const {element, type} = node.exportDOM(options);
+
         switch (type) {
         case 'inner':
             return element.innerHTML;
@@ -47,6 +53,7 @@ function exportTopLevelElementOrDecorator(node, options) {
         }
     }
 
+    // note: unsure why this type isn't being picked up from the import
     for (const transformer of elementTransformers) {
         if (transformer.export !== null) {
             const result = transformer.export(node, options, _node => exportChildren(_node, options));
@@ -60,7 +67,7 @@ function exportTopLevelElementOrDecorator(node, options) {
     return $isElementNode(node) ? exportChildren(node, options) : null;
 }
 
-function exportChildren(node, options) {
+function exportChildren(node: ElementNode | LexicalNode, options: RendererOptions): string {
     const output = [];
     const children = node.getChildren();
 
@@ -85,7 +92,3 @@ function exportChildren(node, options) {
 
     return output.join('');
 }
-
-module.exports = {
-    $convertToHtmlString
-};

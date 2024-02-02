@@ -1,7 +1,12 @@
-const {$isLinkNode} = require('@lexical/link');
-const {$isTextNode, $isLineBreakNode} = require('lexical');
+import {$isLinkNode} from '@lexical/link';
+import {$isTextNode, $isLineBreakNode} from 'lexical';
+import type {LexicalNode, TextFormatType} from 'lexical';
+import {RendererOptions} from '../convert-to-html-string';
 
-const FORMAT_TAG_MAP = {
+type TextFormatAbbreviation = 'STRONG' | 'EM' | 'S' | 'U' | 'CODE' | 'SUB' | 'SUP' | 'MARK';
+type ExportChildren = (node: LexicalNode, options: RendererOptions) => string;
+
+const FORMAT_TAG_MAP: Record<TextFormatType, TextFormatAbbreviation> = {
     bold: 'STRONG',
     italic: 'EM',
     strikethrough: 'S',
@@ -12,26 +17,44 @@ const FORMAT_TAG_MAP = {
     highlight: 'MARK'
 };
 
+type Entries<T> = {
+    [K in keyof T]: [K, T[K]];
+}[keyof T][];
+
+type RequiredKeys<T, K extends keyof T> = Exclude<T, K> & Required<Pick<T, K>>
+
+const ensureDomProperty = (options: RendererOptions): options is RequiredKeys<RendererOptions, 'dom'> => {
+    return !!options.dom;
+};
+
 // Builds and renders text content, useful to ensure proper format tag opening/closing
 // and html escaping
-class TextContent {
-    constructor(exportChildren, options) {
+export default class TextContent {
+    nodes: LexicalNode[];
+    exportChildren: ExportChildren;
+    options: RequiredKeys<RendererOptions, 'dom'>;
+
+    constructor(exportChildren: ExportChildren, options: RendererOptions) {
+        if (ensureDomProperty(options) === false) {
+            // eslint-disable-next-line ghost/ghost-custom/no-native-error
+            throw new Error('TextContent requires a dom property in the options argument');
+        }
         this.exportChildren = exportChildren;
-        this.options = options;
+        this.options = options as RequiredKeys<RendererOptions, 'dom'>;
 
         this.nodes = [];
     }
 
-    addNode(node) {
+    addNode(node: LexicalNode): void {
         this.nodes.push(node);
     }
 
-    render() {
-        const document = this.options.dom.window.document;
-        const root = document.createElement('div');
+    render(): string {
+        const document: Document = this.options.dom.window.document;
+        const root: HTMLElement = document.createElement('div');
 
         let currentNode = root;
-        const openFormats = [];
+        const openFormats: TextFormatType[] = [];
 
         for (let i = 0; i < this.nodes.length; i++) {
             const node = this.nodes[i];
@@ -56,10 +79,10 @@ class TextContent {
                 }
 
                 // open format tags in correct order
-                const formatsToOpen = [];
+                const formatsToOpen: TextFormatType[] = [];
 
                 // get base list of formats that need to open
-                Object.entries(FORMAT_TAG_MAP).forEach(([format]) => {
+                (Object.entries(FORMAT_TAG_MAP) as Entries<typeof FORMAT_TAG_MAP>).forEach(([format]) => {
                     if (node.hasFormat(format) && !openFormats.includes(format)) {
                         formatsToOpen.push(format);
                     }
@@ -105,7 +128,7 @@ class TextContent {
                 const nextNode = remainingNodes.find(n => $isTextNode(n) || $isLinkNode(n));
                 [...openFormats].forEach((format) => {
                     if (!nextNode || $isLinkNode(nextNode) || !nextNode.hasFormat(format)) {
-                        currentNode = currentNode.parentNode;
+                        currentNode = currentNode.parentNode as HTMLElement;
                         openFormats.pop();
                     }
                 });
@@ -127,7 +150,7 @@ class TextContent {
 
     // PRIVATE -----------------------------------------------------------------
 
-    _buildAnchorElement(anchor, node) {
+    _buildAnchorElement(anchor: HTMLElement, node: LexicalNode) {
         // Only set the href if we have a URL, otherwise we get a link to the current page
         if (node.getURL()) {
             anchor.setAttribute('href', node.getURL());
@@ -138,5 +161,3 @@ class TextContent {
         anchor.innerHTML = this.exportChildren(node, this.options);
     }
 }
-
-module.exports = TextContent;

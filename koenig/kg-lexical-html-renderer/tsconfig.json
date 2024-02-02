@@ -1,0 +1,35 @@
+{
+  // required for tests to find module declarations in the src folder
+  "ts-node": {
+    "files": true
+  },
+  "compilerOptions": {
+    /* Visit https://aka.ms/tsconfig to read more about this file */
+
+    /* Projects */
+    "incremental": true,                      /* Save .tsbuildinfo files to allow for incremental compilation of projects. */
+
+    /* Language and Environment */
+    "target": "es2022",                       /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+
+    /* Modules */
+    "module": "commonjs",                     /* Specify what module code is generated. */
+    "rootDir": "lib",                         /* Specify the root folder within your source files. */
+    "resolveJsonModule": true,                /* Enable importing .json files. */
+
+    /* JavaScript Support */
+    "allowJs": true,                          /* Allow JavaScript files to be a part of your program. Use the 'checkJS' option to get errors from these files. */
+
+    /* Emit */
+    "declaration": true,                      /* Generate .d.ts files from TypeScript and JavaScript files in your project. */
+    "sourceMap": true,                        /* Create source map files for emitted JavaScript files. */
+    "outDir": "build",                        /* Specify an output folder for all emitted files. */
+    "esModuleInterop": true,                  /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+    "forceConsistentCasingInFileNames": true, /* Ensure that casing is correct in imports. */
+
+    /* Type Checking */
+    "strict": true,                           /* Enable all strict type-checking options. */
+    "noImplicitAny": true,                    /* Enable error reporting for expressions and declarations with an implied 'any' type. */
+  },
+  "include": ["lib/**/*"]
+}

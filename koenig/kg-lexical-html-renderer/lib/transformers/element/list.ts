@@ -1,6 +1,9 @@
-const {$isListNode, $isListItemNode} = require('@lexical/list');
+import {$isListNode, $isListItemNode} from '@lexical/list';
+import type {LexicalNode} from 'lexical';
+import type {ExportChildren} from '..';
+import type {RendererOptions} from '../../convert-to-html-string';
 
-const exportList = function (node, options, exportChildren) {
+const exportList = function (node: LexicalNode, options: RendererOptions, exportChildren: ExportChildren): string | null {
     if (!$isListNode(node)) {
         return null;
     }
@@ -17,7 +20,7 @@ const exportList = function (node, options, exportChildren) {
     // </li>
     let liOpen = false;
 
-    const exportListContent = (listNode) => {
+    const exportListContent = (listNode: LexicalNode): string => {
         const output = [];
         const children = listNode.getChildren();
 
@@ -63,7 +66,7 @@ const exportList = function (node, options, exportChildren) {
 };
 
 module.exports = {
-    export(node, options, exportChildren) {
+    export(node: LexicalNode, options: RendererOptions, exportChildren: ExportChildren) {
         return exportList(node, options, exportChildren);
     }
 };
