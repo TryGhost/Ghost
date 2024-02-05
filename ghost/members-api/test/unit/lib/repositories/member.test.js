@@ -143,6 +143,91 @@ describe('MemberRepository', function () {
         });
     });
 
+    describe('newsletter subscriptions', function () {
+        let Member;
+        let MemberProductEvent;
+        let productRepository;
+        let stripeAPIService;
+        let existingNewsletters;
+        let MemberSubscribeEvent;
+
+        beforeEach(async function () {
+            sinon.spy();
+            existingNewsletters = [
+                {
+                    id: 'newsletter_id_123',
+                    attributes: {
+                        status: 'active'
+                    },
+                    get: sinon.stub().withArgs('status').returns('active')
+                },
+                {
+                    id: 'newsletter_id_1234_archive',
+                    attributes: {
+                        status: 'archived'
+                    },
+                    get: sinon.stub().withArgs('status').returns('archived')
+                }
+            ];
+
+            Member = {
+                findOne: sinon.stub().resolves({
+                    get: sinon.stub().returns('member_id_123'),
+                    related: sinon.stub().withArgs('newsletters').returns({
+                        models: existingNewsletters
+                    }),
+                    toJSON: sinon.stub().returns({})
+                }),
+                edit: sinon.stub().resolves({
+                    attributes: {},
+                    _previousAttributes: {}
+                })
+            };
+
+            stripeAPIService = {
+                configured: false
+            };
+
+            MemberSubscribeEvent = {
+                add: sinon.stub().resolves()
+            };
+        });
+
+        it('Does not create false archived newsletter events', async function () {
+            const repo = new MemberRepository({
+                Member,
+                MemberProductEvent,
+                productRepository,
+                stripeAPIService,
+                MemberSubscribeEventModel: MemberSubscribeEvent,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            await repo.update({
+                email: 'test@email.com',
+                newsletters: [{
+                    id: 'newsletter_id_123'
+                },
+                {
+                    id: 'newsletter_id_456'
+                },
+                {
+                    id: 'newsletter_id_new'
+                },
+                {
+                    id: 'newsletter_id_1234_archive'
+                }]
+            },{
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            MemberSubscribeEvent.add.calledTwice.should.be.true();
+        });
+    });
+
     describe('linkSubscription', function (){
         let Member;
         let MemberPaidSubscriptionEvent;
