@@ -42,7 +42,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     }, [apiNewsletters]);
 
     useEffect(() => {
-        if (!verifyEmailToken) {
+        if (!verifyEmailToken || !window.location.href.includes('newsletters')) {
             return;
         }
 
