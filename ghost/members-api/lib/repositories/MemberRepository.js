@@ -559,7 +559,6 @@ module.exports = class MemberRepository {
 
         if (needsNewsletters) {
             const existingNewsletters = initialMember.related('newsletters').models;
-
             // This maps the old subscribed property to the new newsletters field and is only used to keep backward compatibility
             if (!memberData.newsletters) {
                 if (memberData.subscribed === false) {
@@ -572,12 +571,13 @@ module.exports = class MemberRepository {
 
             // only ever populated with active newsletters - never archived ones
             if (memberData.newsletters) {
+                const archivedNewsletters = existingNewsletters.filter(n => n.get('status') === 'archived').map(n => n.id);
                 const existingNewsletterIds = existingNewsletters
                     .filter(newsletter => newsletter.attributes.status !== 'archived')
                     .map(newsletter => newsletter.id);
                 const incomingNewsletterIds = memberData.newsletters.map(newsletter => newsletter.id);
-
-                newslettersToAdd = _.differenceWith(incomingNewsletterIds, existingNewsletterIds);
+                // make sure newslettersToAdd does not contain archived newsletters (since that creates false events)
+                newslettersToAdd = _.differenceWith(_.differenceWith(incomingNewsletterIds, existingNewsletterIds), archivedNewsletters);
                 newslettersToRemove = _.differenceWith(existingNewsletterIds, incomingNewsletterIds);
             }
 

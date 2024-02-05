@@ -292,11 +292,8 @@ async function initAppService() {
  * Services are components that make up part of Ghost and need initializing on boot
  * These services should all be part of core, frontend services should be loaded with the frontend
  * We are working towards this being a service loader, with the ability to make certain services optional
- *
- * @param {object} options
- * @param {object} options.config
  */
-async function initServices({config}) {
+async function initServices() {
     debug('Begin: initServices');
 
     debug('Begin: Services');
@@ -380,11 +377,6 @@ async function initServices({config}) {
         statsService.init()
     ]);
     debug('End: Services');
-
-    // Initialize analytics events
-    if (config.get('segment:key')) {
-        require('./server/services/segment').init();
-    }
 
     debug('End: initServices');
 }
