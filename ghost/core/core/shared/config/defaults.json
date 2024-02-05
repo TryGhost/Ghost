@@ -228,5 +228,6 @@
         },
     "bulkEmail": {
         "batchSize": 1000
-    }
+    },
+    "disableJSBackups": false
 }
