@@ -193,7 +193,7 @@ describe('MemberRepository', function () {
             };
         });
 
-        it('Does create not create archived newsletter events', async function () {
+        it('Does not create false archived newsletter events', async function () {
             const repo = new MemberRepository({
                 Member,
                 MemberProductEvent,
