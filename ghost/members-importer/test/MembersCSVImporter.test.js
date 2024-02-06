@@ -268,7 +268,7 @@ describe('MembersCSVImporter', function () {
             const defaultNewsletters = [
                 {id: 'newsletter_1'},
                 {id: 'newsletter_2'}
-            ]
+            ];
 
             const existingMembers = [
                 {email: 'member_subscribed_true@example.com', newsletters: defaultNewsletters},
@@ -281,11 +281,11 @@ describe('MembersCSVImporter', function () {
                 {email: 'member_not_subscribed_false@example.com', newsletters: []},
                 {email: 'member_not_subscribed_empty@example.com', newsletters: []},
                 {email: 'member_not_subscribed_invalid@example.com', newsletters: []}
-            ]
+            ];
 
             membersRepositoryStub.get = sinon.stub();
 
-            for (existingMember of existingMembers) {
+            for (const existingMember of existingMembers) {
                 const newslettersCollection = {
                     length: existingMember.newsletters.length,
                     toJSON: sinon.stub().returns(existingMember.newsletters)
