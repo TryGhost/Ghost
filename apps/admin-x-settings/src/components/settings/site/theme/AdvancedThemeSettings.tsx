@@ -1,6 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
-import {Button, ButtonProps, ConfirmationModal, List, ListItem, Menu, ModalPage} from '@tryghost/admin-x-design-system';
+import {Button, ButtonProps, ConfirmationModal, List, ListItem, Menu, ModalPage, showToast} from '@tryghost/admin-x-design-system';
 import {Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -51,6 +51,10 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     const handleActivate = async () => {
         try {
             await activateTheme(theme.name);
+            showToast({
+                type: 'success',
+                message: <div><span className='capitalize'>{theme.name}</span> is now your active theme.</div>
+            });
         } catch (e) {
             handleError(e);
         }
