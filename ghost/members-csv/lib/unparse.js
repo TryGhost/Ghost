@@ -48,7 +48,7 @@ const unparse = (rows, columns = DEFAULT_COLUMNS.slice()) => {
             email: row.email,
             name: row.name,
             note: row.note,
-            subscribed_to_emails: row.subscribed_to_emails,
+            subscribed_to_emails: 'subscribed' in row ? row.subscribed : row.subscribed_to_emails,
             complimentary_plan: row.comped || row.complimentary_plan,
             stripe_customer_id: _.get(row, 'subscriptions[0].customer.id') || row.stripe_customer_id,
             created_at: row.created_at,
