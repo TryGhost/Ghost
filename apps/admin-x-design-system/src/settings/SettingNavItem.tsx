@@ -21,8 +21,8 @@ const SettingNavItem = forwardRef<HTMLLIElement, SettingNavItemProps>(function S
     ...props
 }, ref) {
     const classNames = clsx(
-        'w-100 flex h-8 cursor-pointer items-center rounded-md px-2 py-1 text-left text-sm transition-all hover:bg-grey-100 focus:bg-grey-100 dark:text-grey-300 dark:hover:bg-grey-925 dark:focus:bg-grey-900',
-        isCurrent && 'bg-grey-200 dark:bg-grey-900',
+        'w-100 mt-1 flex h-8 cursor-pointer items-center rounded-md px-2 py-1 text-left text-sm font-medium transition-all hover:bg-grey-200 focus:bg-grey-100 dark:text-grey-300 dark:hover:bg-grey-925 dark:focus:bg-grey-900',
+        isCurrent ? 'bg-grey-300 text-black dark:bg-grey-900' : 'text-grey-800',
         !isVisible && 'hidden'
     );
 

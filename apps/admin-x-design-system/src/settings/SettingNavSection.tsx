@@ -1,4 +1,5 @@
 import React from 'react';
+import {Separator} from '..';
 
 export interface SettingNavSectionProps {
     title?: string;
@@ -13,11 +14,14 @@ const SettingNavSection: React.FC<SettingNavSectionProps> = ({title, isVisible, 
 
     return (
         <>
-            {title && <h2 className='mb-4 ml-2 text-[16px] tracking-tight'>{title}</h2>}
+            {title && <h2 className='mb-4 ml-2 text-sm font-semibold tracking-tight text-grey-900'>{title}</h2>}
             {children &&
-                <ul className="mb-14 mt-[-8px]">
+            <>
+                <ul className="-mt-1 mb-7">
                     {children}
                 </ul>
+                <Separator className='mx-2 mb-7 border-grey-300' />
+            </>
             }
         </>
     );
