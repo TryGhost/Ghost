@@ -1042,11 +1042,11 @@ input:focus,
 }
 
 .gh-list-scrolling thead th:first-child {
-    background: linear-gradient(90deg, rgba(16,17,20,1) 90%, rgba(16,17,20,0) 100%);
+    background: linear-gradient(90deg, rgba(21,23,26,1) 90%, rgba(21,23,26,0) 100%);
 }
 
 .gh-list-scrolling tbody .gh-list-data:first-child {
-    background: linear-gradient(90deg, rgba(16,17,20,1) 90%, rgba(16,17,20,0) 100%);
+    background: linear-gradient(90deg, rgba(21,23,26,1) 90%, rgba(21,23,26,0) 100%);
 }
 
 .gh-filter-builder .gh-filters {
