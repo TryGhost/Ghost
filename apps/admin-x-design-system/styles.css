@@ -97,3 +97,7 @@
 .gh-prose-links a {
     color: #30CF43;
 }
+
+.scrollbar-hidden {
+    scrollbar-width: none;
+}
