@@ -5,7 +5,7 @@ import {useScrollSection} from '../hooks/useScrollSection';
 import {useSearch} from './providers/SettingsAppProvider';
 
 const TopLevelGroup: React.FC<Omit<SettingGroupProps, 'isVisible' | 'highlight'> & {keywords: string[]}> = ({keywords, navid, ...props}) => {
-    const {checkVisible} = useSearch();
+    const {checkVisible, noResult} = useSearch();
     const {route} = useRouting();
     const [highlight, setHighlight] = useState(false);
     const {ref} = useScrollSection(navid);
@@ -22,7 +22,7 @@ const TopLevelGroup: React.FC<Omit<SettingGroupProps, 'isVisible' | 'highlight'>
         }
     }, [highlight]);
 
-    return <Base ref={ref} highlight={highlight} isVisible={checkVisible(keywords)} navid={navid} {...props} />;
+    return <Base ref={ref} highlight={highlight} isVisible={checkVisible(keywords) || noResult} navid={navid} {...props} />;
 };
 
 export default TopLevelGroup;

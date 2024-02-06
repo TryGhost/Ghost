@@ -55,9 +55,6 @@ const MainContent: React.FC = () => {
     return (
         <Page>
             {loadingModal && <div className={`fixed inset-0 z-40 h-[calc(100vh-55px)] w-[100vw] tablet:h-[100vh] ${topLevelBackdropClasses}`} />}
-
-            {/* Sidebar */}
-            {/* <div className="sticky -top-px z-20 mt-[-55px] min-w-[260px] grow-0 bg-white pt-[52px] dark:bg-black tablet:fixed tablet:top-[8vmin] tablet:mt-0 tablet:basis-[260px] tablet:pt-0"> */}
             <div className="scrollbar-hidden h-full flex-1 basis-[320px] overflow-y-scroll bg-grey-50 px-8" id="admin-x-settings-sidebar-scroller">
                 <div className="relative w-full dark:bg-black">
                     <Sidebar />

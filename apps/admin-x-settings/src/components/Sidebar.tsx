@@ -31,7 +31,7 @@ const NavItem: React.FC<Omit<SettingNavItemProps, 'isVisible' | 'isCurrent'> & {
 };
 
 const Sidebar: React.FC = () => {
-    const {filter, setFilter, checkVisible} = useSearch();
+    const {filter, setFilter, checkVisible, noResult, setNoResult} = useSearch();
     const {updateRoute} = useRouting();
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const {isAnyTextFieldFocused} = useFocusContext();
@@ -65,6 +65,19 @@ const Sidebar: React.FC = () => {
         }
     }, []);
 
+    useEffect(() => {
+        if (!checkVisible(Object.values(generalSearchKeywords).flat()) &&
+            !checkVisible(Object.values(siteSearchKeywords).flat()) &&
+            !checkVisible(Object.values(membershipSearchKeywords).flat()) &&
+            !checkVisible(Object.values(growthSearchKeywords).flat()) &&
+            !checkVisible(Object.values(emailSearchKeywords).flat()) &&
+            !checkVisible(Object.values(advancedSearchKeywords).flat())) {
+            setNoResult(true);
+        } else {
+            setNoResult(false);
+        }
+    }, [checkVisible, setNoResult, filter]);
+
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
@@ -72,6 +85,7 @@ const Sidebar: React.FC = () => {
     const handleSectionClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
         if (e) {
             setFilter('');
+            setNoResult(false);
             updateRoute(e.currentTarget.id);
         }
     };
@@ -88,7 +102,6 @@ const Sidebar: React.FC = () => {
     };
 
     const navClasses = clsx(
-        //'no-scrollbar hidden pt-10 tablet:!visible tablet:!block tablet:h-[calc(100vh-8vmin-36px)] tablet:overflow-y-auto'
         'pt-10'
     );
 
@@ -115,6 +128,14 @@ const Sidebar: React.FC = () => {
                 }} /> : <div className='absolute right-0 top-[51px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:right-3 tablet:top-[51px] tablet:!block'>/</div>}
             </div>
             <nav className={navClasses} id='admin-x-settings-sidebar'>
+                {noResult &&
+                <div className='ml-2 text-sm text-grey-700'>
+                    <h2 className='mb-4 text-sm font-semibold tracking-tight text-grey-900'>No result</h2>
+                    <div>
+                        {`We couldn't find any setting matching '${filter}'`}.
+                    </div>
+                </div>
+                }
                 <SettingNavSection isVisible={checkVisible(Object.values(generalSearchKeywords).flat())} title="General settings">
                     <NavItem icon='textfield' keywords={generalSearchKeywords.titleAndDescription} navid='general' title="Title & description" onClick={handleSectionClick} />
                     <NavItem icon='world-clock' keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />
