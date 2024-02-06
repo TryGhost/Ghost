@@ -10,7 +10,7 @@ import SiteSettings from './settings/site/SiteSettings';
 const Settings: React.FC = () => {
     return (
         <>
-            <div className='mb-[40vh]'>
+            <div className='mb-[40vh] max-w-[760px] px-10'>
                 <GeneralSettings />
                 <SiteSettings />
                 <MembershipSettings />

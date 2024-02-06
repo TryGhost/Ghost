@@ -88,16 +88,17 @@ const Sidebar: React.FC = () => {
     };
 
     const navClasses = clsx(
-        'no-scrollbar hidden pt-10 tablet:!visible tablet:!block tablet:h-[calc(100vh-8vmin-36px)] tablet:overflow-y-auto'
+        //'no-scrollbar hidden pt-10 tablet:!visible tablet:!block tablet:h-[calc(100vh-8vmin-36px)] tablet:overflow-y-auto'
+        'pt-10'
     );
 
     return (
-        <div data-testid="sidebar">
-            <div className='relative flex content-stretch items-end tablet:h-[36px]'>
-                <Icon className='absolute left-2 top-[10px] z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
+        <div className='ml-auto flex w-[220px] flex-col' data-testid="sidebar">
+            <div className='sticky top-0 flex content-stretch items-end bg-grey-50 tablet:h-20'>
+                <Icon className='absolute left-2 top-[54px] z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                 <TextField
                     autoComplete="off"
-                    className='-mx-1 flex h-9 w-[calc(100%+8px)] items-center rounded-full border border-transparent bg-grey-150 px-[33px] py-1.5 text-sm transition-all hover:bg-grey-100 focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:bg-grey-900 dark:text-white dark:focus:bg-black'
+                    className='flex h-9 w-[calc(100%+8px)] items-center rounded-xl border border-transparent bg-grey-150 px-[33px] py-1.5 text-sm transition-all hover:bg-grey-100 focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:bg-grey-900 dark:text-white dark:focus:bg-black'
                     containerClassName='w-100'
                     inputRef={searchInputRef}
                     placeholder="Search settings"
@@ -111,9 +112,9 @@ const Sidebar: React.FC = () => {
                 {filter ? <Button className='absolute right-3 top-[10px] p-1' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
                     setFilter('');
                     searchInputRef.current?.focus();
-                }} /> : <div className='absolute right-0 top-[20px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:right-3 tablet:top-[7px] tablet:!block'>/</div>}
+                }} /> : <div className='absolute right-0 top-[51px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:right-3 tablet:top-[51px] tablet:!block'>/</div>}
             </div>
-            <div className={navClasses} id='admin-x-settings-sidebar'>
+            <nav className={navClasses} id='admin-x-settings-sidebar'>
                 <SettingNavSection isVisible={checkVisible(Object.values(generalSearchKeywords).flat())} title="General settings">
                     <NavItem icon='textfield' keywords={generalSearchKeywords.titleAndDescription} navid='general' title="Title & description" onClick={handleSectionClick} />
                     <NavItem icon='world-clock' keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />
@@ -173,7 +174,7 @@ const Sidebar: React.FC = () => {
                     About Ghost
                 </a>
                 }
-            </div>
+            </nav>
         </div>
     );
 };
