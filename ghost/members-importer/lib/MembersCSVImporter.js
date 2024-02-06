@@ -178,6 +178,14 @@ module.exports = class MembersCSVImporter {
                         memberValues.subscribed = false;
                     }
 
+                    // Don't overwrite name or note if they are blank in the file
+                    if (!row.name) {
+                        memberValues.name = existingMember.name;
+                    }
+                    if (!row.note) {
+                        memberValues.note = existingMember.note;
+                    }
+
                     member = await membersRepository.update({
                         ...memberValues,
                         labels: existingLabels.concat(memberValues.labels)
