@@ -1,5 +1,5 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {ButtonGroup, CodeEditor, Heading, Modal, TabView} from '@tryghost/admin-x-design-system';
 import {ReactCodeMirrorRef} from '@uiw/react-codemirror';
@@ -62,6 +62,19 @@ const CodeModal: React.FC<CodeModalProps> = ({afterClose}) => {
     ] as const;
 
     const {savingTitle, isSaving, onSaveClick} = useSaveButton(handleSave, true);
+
+    useEffect(() => {
+        const handleCMDS = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault();
+                onSaveClick();
+            }
+        };
+        window.addEventListener('keydown', handleCMDS);
+        return () => {
+            window.removeEventListener('keydown', handleCMDS);
+        };
+    });
 
     return <Modal
         afterClose={afterClose}
