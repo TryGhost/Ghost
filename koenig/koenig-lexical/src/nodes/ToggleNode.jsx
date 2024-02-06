@@ -39,7 +39,7 @@ export class ToggleNode extends BaseToggleNode {
 
         // populate nested editors on initial construction
         if (!dataset.headingEditor && dataset.heading) {
-            populateNestedEditor(this, '__headingEditor', `<p>${dataset.heading}</p>`);
+            populateNestedEditor(this, '__headingEditor', `${dataset.heading}`);
         }
         if (!dataset.contentEditor && dataset.content) {
             populateNestedEditor(this, '__contentEditor', dataset.content);

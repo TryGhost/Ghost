@@ -1,9 +1,9 @@
-import {LexicalNode} from 'lexical';
-import {RendererOptions} from '../convert-to-html-string';
+import {ElementNode} from 'lexical';
+import type {RendererOptions} from '@tryghost/kg-default-nodes';
 
-export type ExportChildren = (node: LexicalNode, options?: RendererOptions) => string;
+export type ExportChildren = (node: ElementNode, options?: RendererOptions) => string;
 export type ElementTransformer = {
-    export: (node: LexicalNode, options: RendererOptions, exportChildren: ExportChildren) => string | null;
+    export: (node: ElementNode, options: RendererOptions, exportChildren: ExportChildren) => string | null;
 };
 
 const elementTransformers: ElementTransformer[] = [

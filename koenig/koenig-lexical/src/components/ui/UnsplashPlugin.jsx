@@ -30,7 +30,7 @@ const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
             node.alt = image.alt;
             const editorState = generateEditorState({
                 editor: node.__captionEditor,
-                initialHtml: `<p>${image.caption}</p>`
+                initialHtml: `${image.caption}`
             });
             node.__captionEditor.setEditorState(editorState);
             const nodeSelection = $createNodeSelection();

@@ -44,7 +44,7 @@ export default story;
 
 const Template = ({display, caption, ...args}) => {
     const captionEditor = createEditor({nodes: MINIMAL_NODES});
-    populateEditor({editor: captionEditor, initialHtml: `<p>${caption}</p>`});
+    populateEditor({editor: captionEditor, initialHtml: `${caption}`});
 
     return (
         <div className="kg-prose">

@@ -47,7 +47,7 @@ export class GalleryNode extends BaseGalleryNode {
         setupNestedEditor(this, '__captionEditor', {editor: dataset.captionEditor, nodes: MINIMAL_NODES});
         // populate nested editors on initial construction
         if (!dataset.captionEditor && caption) {
-            populateNestedEditor(this, '__captionEditor', `<p>${caption}</p>`);
+            populateNestedEditor(this, '__captionEditor', `${caption}`);
         }
     }
 

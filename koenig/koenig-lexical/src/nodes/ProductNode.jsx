@@ -40,7 +40,7 @@ export class ProductNode extends BaseProductNode {
 
         // populate nested editors on initial construction
         if (!dataset.productTitleEditor && dataset.productTitle) {
-            populateNestedEditor(this, '__productTitleEditor', `<p>${dataset.productTitle}</p>`); // we serialize with no wrapper
+            populateNestedEditor(this, '__productTitleEditor', `${dataset.productTitle}`); // we serialize with no wrapper
         }
         if (!dataset.productDescriptionEditor) {
             populateNestedEditor(this, '__productDescriptionEditor', dataset.productDescription);

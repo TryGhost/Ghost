@@ -51,17 +51,17 @@ export class SignupNode extends BaseSignupNode {
 
         // populate nested editors on initial construction
         if (!dataset.headerTextEditor && dataset.header) {
-            populateNestedEditor(this, '__headerTextEditor', `<p>${dataset.header}</p>`);
+            populateNestedEditor(this, '__headerTextEditor', `${dataset.header}`);
         }
 
         // populate nested editors on initial construction
         if (!dataset.subheaderTextEditor && dataset.subheader) {
-            populateNestedEditor(this, '__subheaderTextEditor', `<p>${dataset.subheader}</p>`);
+            populateNestedEditor(this, '__subheaderTextEditor', `${dataset.subheader}`);
         }
 
         // populate nested editors on initial construction
         if (!dataset.disclaimerTextEditor && dataset.disclaimer) {
-            populateNestedEditor(this, '__disclaimerTextEditor', `<p>${dataset.disclaimer}</p>`);
+            populateNestedEditor(this, '__disclaimerTextEditor', `${dataset.disclaimer}`);
         }
     }
 

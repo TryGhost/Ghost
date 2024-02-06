@@ -25,27 +25,17 @@ export const HtmlOutputPlugin = ({html = '', setHtml}) => {
 
             const nodes = $generateNodesFromDOM(editor, dom);
 
-            let isEmpty = true;
-            nodes.forEach((node) => {
-                // There are few recent issues related to $generateNodesFromDOM
-                // https://github.com/facebook/lexical/issues/2807
-                // https://github.com/facebook/lexical/issues/3677
-                // As a temporary fix, checking node content to remove additional spaces and br
-                if (node.getTextContent().trim()) {
-                    isEmpty = false;
-                }
-            });
+            // There are few recent issues related to $generateNodesFromDOM
+            // https://github.com/facebook/lexical/issues/2807
+            // As a temporary fix, checking node content to remove additional spaces and br
+            const filteredNodes = nodes.filter(n => n.getTextContent().trim());
 
             // Select the root
             $getRoot().select();
-
-            if (isEmpty) {
-                $getRoot().clear();
-                return;
-            }
+            $getRoot().clear();
 
             // Insert them at a selection.
-            $insertNodes(nodes);
+            $insertNodes(filteredNodes);
         });
         // We only do this for init
         // eslint-disable-next-line react-hooks/exhaustive-deps

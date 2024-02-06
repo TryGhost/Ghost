@@ -1,5 +1,5 @@
 import {$isListItemNode, $isListNode} from '@lexical/list';
-import {ElementNode, $createParagraphNode, LexicalEditor, LexicalNode, Klass, $getRoot, $isRootNode} from 'lexical';
+import {ElementNode, $createParagraphNode, LexicalEditor, LexicalNode, Klass, $getRoot, $isRootNode, $isTextNode, $isLineBreakNode} from 'lexical';
 
 export type CreateNodeFn<T extends LexicalNode> = (originalNode: T) => T;
 
@@ -43,6 +43,9 @@ function $isInvalidListItemNode(node: LexicalNode) {
 // non-inline nodes can only exist at top-level inside a root node
 // ignore list and list item nodes because they aren't inline but can be nested inside each other
 function $isInvalidChildNode(node: LexicalNode) {
+    if ($isLineBreakNode(node) || $isTextNode(node)) { // line break and text nodes don't have an isInline method
+        return false;
+    }
     return $isInvalidListNode(node)
         || $isInvalidListItemNode(node)
         || node.isInline && !node.isInline() && !$isListNode(node) && !$isListItemNode(node);
@@ -97,7 +100,7 @@ export function denestTransform<T extends ElementNode>(node: T, createNode: Crea
     // meaning first child needs to be inserted last to maintain order.
     tempParagraph.getChildren().reverse().forEach((child) => {
         // ensure we don't add list items directly into root node
-        // TODO: can we handle this elsewhere/more genericly?
+        // TODO: can we handle this elsewhere/more generically?
         if ($isRootNode(parent.getParent()) && $isListItemNode(child)) {
             const paragraphNode = $createParagraphNode();
             paragraphNode.append(...child.getChildren());

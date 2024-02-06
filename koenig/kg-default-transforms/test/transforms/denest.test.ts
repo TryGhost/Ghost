@@ -456,7 +456,7 @@ describe('Denest transform', function () {
         const registerTransforms = (editor: LexicalEditor) => {
             registerDenestTransform(editor, ParagraphNode, () => ($createParagraphNode()));
             registerDenestTransform(editor, HeadingNode, node => ($createHeadingNode(node.getTag())));
-            registerDenestTransform(editor, ExtendedHeadingNode, node => ($createHeadingNode(node.getTag())));
+            registerDenestTransform(editor, ExtendedHeadingNode, (node: ExtendedHeadingNode) => ($createHeadingNode(node.getTag())));
             registerDenestTransform(editor, ListNode, node => ($createListNode(node.getListType(), node.getStart())));
             registerDenestTransform(editor, ListItemNode, () => ($createListItemNode()));
         };
@@ -880,7 +880,7 @@ describe('Denest transform', function () {
         const registerTransforms = (editor: LexicalEditor) => {
             registerDenestTransform(editor, ParagraphNode, () => ($createParagraphNode()));
             registerDenestTransform(editor, HeadingNode, node => ($createHeadingNode(node.getTag())));
-            registerDenestTransform(editor, ExtendedHeadingNode, node => ($createHeadingNode(node.getTag())));
+            registerDenestTransform(editor, ExtendedHeadingNode, (node: ExtendedHeadingNode) => ($createHeadingNode(node.getTag())));
             registerDenestTransform(editor, ListNode, node => ($createListNode(node.getListType(), node.getStart())));
             registerDenestTransform(editor, ListItemNode, () => ($createListItemNode()));
         };

@@ -49,7 +49,7 @@ export class VideoNode extends BaseVideoNode {
         setupNestedEditor(this, '__captionEditor', {editor: dataset.captionEditor, nodes: MINIMAL_NODES});
         // populate nested editors on initial construction
         if (!dataset.captionEditor && dataset.caption) {
-            populateNestedEditor(this, '__captionEditor', `<p>${dataset.caption}</p>`);
+            populateNestedEditor(this, '__captionEditor', `${dataset.caption}`);
         }
     }
 

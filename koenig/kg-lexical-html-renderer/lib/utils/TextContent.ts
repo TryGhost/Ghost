@@ -1,10 +1,10 @@
-import {$isLinkNode} from '@lexical/link';
-import {$isTextNode, $isLineBreakNode} from 'lexical';
-import type {LexicalNode, TextFormatType} from 'lexical';
-import {RendererOptions} from '../convert-to-html-string';
+import {$isLinkNode, LinkNode} from '@lexical/link';
+import {$isTextNode, $isLineBreakNode, TextNode} from 'lexical';
+import type {ElementNode, LexicalNode, TextFormatType} from 'lexical';
+import type {RendererOptions} from '@tryghost/kg-default-nodes';
 
 type TextFormatAbbreviation = 'STRONG' | 'EM' | 'S' | 'U' | 'CODE' | 'SUB' | 'SUP' | 'MARK';
-type ExportChildren = (node: LexicalNode, options: RendererOptions) => string;
+type ExportChildren = (node: ElementNode, options: RendererOptions) => string;
 
 const FORMAT_TAG_MAP: Record<TextFormatType, TextFormatAbbreviation> = {
     bold: 'STRONG',
@@ -93,14 +93,14 @@ export default class TextContent {
                 const remainingNodes = this.nodes.slice(i + 1);
                 // avoid checking any nodes after a link node because those cause all formats to close
                 const nextLinkNodeIndex = remainingNodes.findIndex(n => $isLinkNode(n));
-                let remainingSortNodes = nextLinkNodeIndex === -1 ? remainingNodes : remainingNodes.slice(0, nextLinkNodeIndex);
+                const remainingSortNodes = nextLinkNodeIndex === -1 ? remainingNodes : remainingNodes.slice(0, nextLinkNodeIndex);
 
                 // ensure we're only working with text nodes as they're the only ones that can open/close formats
-                remainingSortNodes = remainingSortNodes.filter(n => $isTextNode(n));
+                const remainingSortedTextNodes = remainingSortNodes.filter(n => $isTextNode(n)) as TextNode[];
 
                 formatsToOpen.sort((a, b) => {
-                    const aIndex = remainingSortNodes.findIndex(n => n.hasFormat(a));
-                    const bIndex = remainingSortNodes.findIndex(n => n.hasFormat(b));
+                    const aIndex = remainingSortedTextNodes.findIndex(n => n.hasFormat(a));
+                    const bIndex = remainingSortedTextNodes.findIndex(n => n.hasFormat(b));
 
                     if (aIndex === -1) {
                         return 1;
@@ -127,7 +127,7 @@ export default class TextContent {
                 // links are their own formatting islands so all formats need to close before a link
                 const nextNode = remainingNodes.find(n => $isTextNode(n) || $isLinkNode(n));
                 [...openFormats].forEach((format) => {
-                    if (!nextNode || $isLinkNode(nextNode) || !nextNode.hasFormat(format)) {
+                    if (!nextNode || $isLinkNode(nextNode) || (nextNode instanceof TextNode && !nextNode.hasFormat(format))) {
                         currentNode = currentNode.parentNode as HTMLElement;
                         openFormats.pop();
                     }
@@ -150,13 +150,13 @@ export default class TextContent {
 
     // PRIVATE -----------------------------------------------------------------
 
-    _buildAnchorElement(anchor: HTMLElement, node: LexicalNode) {
+    _buildAnchorElement(anchor: HTMLElement, node: LinkNode) {
         // Only set the href if we have a URL, otherwise we get a link to the current page
         if (node.getURL()) {
             anchor.setAttribute('href', node.getURL());
         }
         if (node.getRel()) {
-            anchor.setAttribute('rel', node.getRel());
+            anchor.setAttribute('rel', node.getRel() || '');
         }
         anchor.innerHTML = this.exportChildren(node, this.options);
     }

@@ -1,10 +1,10 @@
 import {$isParagraphNode} from 'lexical';
-import type {LexicalNode} from 'lexical';
+import type {ElementNode} from 'lexical';
 import type {ExportChildren} from '..';
-import type {RendererOptions} from '../../convert-to-html-string';
+import type {RendererOptions} from '@tryghost/kg-default-nodes';
 
 module.exports = {
-    export(node: LexicalNode, options: RendererOptions, exportChildren: ExportChildren) {
+    export(node: ElementNode, options: RendererOptions, exportChildren: ExportChildren) {
         if (!$isParagraphNode(node)) {
             return null;
         }

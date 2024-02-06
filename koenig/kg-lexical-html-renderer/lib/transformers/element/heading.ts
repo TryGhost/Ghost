@@ -1,11 +1,11 @@
 import {$isHeadingNode} from '@lexical/rich-text';
 import generateId from '../../utils/generate-id';
-import type {LexicalNode} from 'lexical';
+import type {RendererOptions} from '@tryghost/kg-default-nodes';
+import type {ElementNode} from 'lexical';
 import type {ExportChildren} from '..';
-import type {RendererOptions} from '../../convert-to-html-string';
 
 module.exports = {
-    export(node: LexicalNode, options: RendererOptions, exportChildren: ExportChildren) {
+    export(node: ElementNode, options: RendererOptions, exportChildren: ExportChildren) {
         if (!$isHeadingNode(node)) {
             return null;
         }

@@ -63,10 +63,10 @@ export class HeaderNode extends BaseHeaderNode {
 
         // populate nested editors on initial construction
         if (!dataset.headerTextEditor && dataset.header) {
-            populateNestedEditor(this, '__headerTextEditor', `<p>${dataset.header}</p>`); // we serialize with no wrapper
+            populateNestedEditor(this, '__headerTextEditor', `${dataset.header}`); // we serialize with no wrapper
         }
         if (!dataset.subheaderTextEditor && dataset.subheader) {
-            populateNestedEditor(this, '__subheaderTextEditor', `<p>${dataset.subheader}</p>`); // we serialize with no wrapper
+            populateNestedEditor(this, '__subheaderTextEditor', `${dataset.subheader}`); // we serialize with no wrapper
         }
     }
 

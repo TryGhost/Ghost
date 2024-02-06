@@ -1,9 +1,10 @@
 import {$isListNode, $isListItemNode} from '@lexical/list';
-import type {LexicalNode} from 'lexical';
+import type {ElementNode} from 'lexical';
+import type {ListNode} from '@lexical/list';
+import type {RendererOptions} from '@tryghost/kg-default-nodes';
 import type {ExportChildren} from '..';
-import type {RendererOptions} from '../../convert-to-html-string';
 
-const exportList = function (node: LexicalNode, options: RendererOptions, exportChildren: ExportChildren): string | null {
+const exportList = function (node: ElementNode, options: RendererOptions, exportChildren: ExportChildren): string | null {
     if (!$isListNode(node)) {
         return null;
     }
@@ -20,7 +21,7 @@ const exportList = function (node: LexicalNode, options: RendererOptions, export
     // </li>
     let liOpen = false;
 
-    const exportListContent = (listNode: LexicalNode): string => {
+    const exportListContent = (listNode: ListNode): string => {
         const output = [];
         const children = listNode.getChildren();
 
@@ -66,7 +67,7 @@ const exportList = function (node: LexicalNode, options: RendererOptions, export
 };
 
 module.exports = {
-    export(node: LexicalNode, options: RendererOptions, exportChildren: ExportChildren) {
+    export(node: ElementNode, options: RendererOptions, exportChildren: ExportChildren) {
         return exportList(node, options, exportChildren);
     }
 };

@@ -188,7 +188,7 @@ export default story;
 
 const Template = ({display, header = 'Featured posts', ...args}) => {
     const headerEditor = createEditor({nodes: MINIMAL_NODES});
-    populateEditor({editor: headerEditor, initialHtml: `<p>${header}</p>`});
+    populateEditor({editor: headerEditor, initialHtml: `${header}`});
 
     return (
         <div className="kg-prose">

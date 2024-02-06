@@ -37,7 +37,7 @@ export class CalloutNode extends BaseCalloutNode {
 
         // populate nested editors on initial construction
         if (!dataset.calloutTextEditor && dataset.calloutText) {
-            populateNestedEditor(this, '__calloutTextEditor', `<p>${dataset.calloutText}</p>`); // we serialize with no wrapper
+            populateNestedEditor(this, '__calloutTextEditor', `${dataset.calloutText}`); // we serialize with no wrapper
         }
     }
 

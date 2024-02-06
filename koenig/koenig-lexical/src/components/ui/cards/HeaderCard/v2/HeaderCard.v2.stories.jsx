@@ -47,8 +47,8 @@ const Template = ({display, header, subheader, ...args}) => {
     const headerTextEditor = createEditor({nodes: MINIMAL_NODES});
     const subheaderTextEditor = createEditor({nodes: MINIMAL_NODES});
 
-    populateEditor({editor: headerTextEditor, initialHtml: `<p>${header}</p>`});
-    populateEditor({editor: subheaderTextEditor, initialHtml: `<p>${subheader}</p>`});
+    populateEditor({editor: headerTextEditor, initialHtml: `${header}`});
+    populateEditor({editor: subheaderTextEditor, initialHtml: `${subheader}`});
 
     return (<div className="kg-prose">
         <div className="mx-auto my-8 w-full min-w-[initial]">

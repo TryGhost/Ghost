@@ -1,17 +1,9 @@
 import {ElementNode, LexicalNode} from 'lexical';
 import {$getRoot, $isElementNode, $isLineBreakNode, $isParagraphNode, $isTextNode} from 'lexical';
 import {$isLinkNode} from '@lexical/link';
-// TODO: update once kg-default-nodes is typescript
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const {$isKoenigCard, KoenigDecoratorNode} = require('@tryghost/kg-default-nodes');
+import {$isKoenigCard, RendererOptions} from '@tryghost/kg-default-nodes';
 import TextContent from './utils/TextContent';
 import elementTransformers from './transformers';
-
-export interface RendererOptions {
-    usedIdAttributes?: Record<string, number>;
-    dom?: import('jsdom').JSDOM,
-    type?: 'inner' | 'outer' | 'value'
-}
 
 export default function $convertToHtmlString(options: RendererOptions = {}): string {
     const output: string[] = [];
@@ -37,7 +29,7 @@ export default function $convertToHtmlString(options: RendererOptions = {}): str
     return output.join('');
 }
 
-function exportTopLevelElementOrDecorator(node: LexicalNode | typeof KoenigDecoratorNode, options: RendererOptions): string | null {
+function exportTopLevelElementOrDecorator(node: LexicalNode, options: RendererOptions): string | null {
     if ($isKoenigCard(node)) {
         // NOTE: kg-default-nodes appends type in rare cases to make use of this functionality... with moving to typescript,
         //  we should change this implementation because it's confusing, or we should override the DOMExportOutput type
@@ -47,19 +39,25 @@ function exportTopLevelElementOrDecorator(node: LexicalNode | typeof KoenigDecor
         case 'inner':
             return element.innerHTML;
         case 'value':
-            return element.value;
+            if ('value' in element) {
+                return element.value;
+            }
+
+            return '';
         default:
             return element.outerHTML;
         }
     }
 
-    // note: unsure why this type isn't being picked up from the import
-    for (const transformer of elementTransformers) {
-        if (transformer.export !== null) {
-            const result = transformer.export(node, options, _node => exportChildren(_node, options));
+    if ($isElementNode(node)) {
+        // note: unsure why this type isn't being picked up from the import
+        for (const transformer of elementTransformers) {
+            if (transformer.export !== null) {
+                const result = transformer.export(node, options, _node => exportChildren(_node, options));
 
-            if (result !== null) {
-                return result;
+                if (result !== null) {
+                    return result;
+                }
             }
         }
     }
@@ -67,7 +65,7 @@ function exportTopLevelElementOrDecorator(node: LexicalNode | typeof KoenigDecor
     return $isElementNode(node) ? exportChildren(node, options) : null;
 }
 
-function exportChildren(node: ElementNode | LexicalNode, options: RendererOptions): string {
+function exportChildren(node: ElementNode, options: RendererOptions): string {
     const output = [];
     const children = node.getChildren();
 

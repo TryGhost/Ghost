@@ -10,7 +10,6 @@ export const $insertAndSelectNode = ({selectedNode, newNode}) => {
     const selectedIsEmpty = selectedNode.getTextContent() === '';
 
     selectedNode
-        .getTopLevelElementOrThrow()
         .insertAfter(newNode);
 
     if (selectedIsParagraph && selectedIsEmpty) {
@@ -24,6 +23,6 @@ export const $insertAndSelectNode = ({selectedNode, newNode}) => {
     // always follow the inserted card with a blank paragraph when inserting at end of document
     if (!newNode.getNextSibling()) {
         const paragraph = $createParagraphNode();
-        newNode.getTopLevelElementOrThrow().insertAfter(paragraph);
+        newNode.insertAfter(paragraph);
     }
 };

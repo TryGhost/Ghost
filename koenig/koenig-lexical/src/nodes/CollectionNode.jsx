@@ -35,7 +35,7 @@ export class CollectionNode extends BaseCollectionNode {
         // populate nested editors on initial construction
         const header = dataset.header || this.header; // dataset is not set when inserting a new card
         if (!dataset.headerEditor && header) {
-            populateNestedEditor(this, '__headerEditor', `<p>${header}</p>`);
+            populateNestedEditor(this, '__headerEditor', `${header}`);
         }
     }
 

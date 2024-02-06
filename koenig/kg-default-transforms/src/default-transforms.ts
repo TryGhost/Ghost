@@ -23,7 +23,7 @@ export function registerDefaultTransforms(editor: LexicalEditor) {
         // fix invalid nesting of nodes
         registerDenestTransform(editor, ParagraphNode, () => ($createParagraphNode())),
         registerDenestTransform(editor, HeadingNode, node => ($createHeadingNode(node.getTag()))),
-        registerDenestTransform(editor, ExtendedHeadingNode, node => ($createHeadingNode(node.getTag()))),
+        registerDenestTransform(editor, ExtendedHeadingNode, (node: ExtendedHeadingNode) => ($createHeadingNode(node.getTag()))),
         registerDenestTransform(editor, QuoteNode, () => ($createQuoteNode())),
         registerDenestTransform(editor, ListNode, node => ($createListNode(node.getListType(), node.getStart()))),
         registerDenestTransform(editor, ListItemNode, () => ($createListItemNode())),

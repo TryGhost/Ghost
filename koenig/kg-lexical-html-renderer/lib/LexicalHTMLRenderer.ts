@@ -60,7 +60,11 @@ export default class LexicalHTMLRenderer {
 
         // fetch dynamic data
         const renderData = new Map();
-        await Promise.all(dynamicDataNodes.map(async (node: LexicalNode) => {
+        await Promise.all(dynamicDataNodes.map(async (node) => {
+            if (!node.getDynamicData) {
+                return;
+            }
+
             const {key, data} = await node.getDynamicData(options);
             renderData.set(key, data);
         }));

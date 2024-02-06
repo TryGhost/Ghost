@@ -40,10 +40,10 @@ export default story;
 
 const Template = ({display, heading, content, ...args}) => {
     const headingEditor = createEditor({nodes: MINIMAL_NODES});
-    populateEditor({editor: headingEditor, initialHtml: `<p>${heading}</p>`});
+    populateEditor({editor: headingEditor, initialHtml: `${heading}`});
 
     const contentEditor = createEditor({nodes: BASIC_NODES});
-    populateEditor({editor: contentEditor, initialHtml: `<p>${content}</p>`});
+    populateEditor({editor: contentEditor, initialHtml: `${content}`});
 
     return (
         <div className="kg-prose">

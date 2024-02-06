@@ -1,8 +1,5 @@
-import {RendererOptions} from '../convert-to-html-string';
-
-// TODO: update to import when converted to typescript, for now disable next line
-// eslint-disable-next-line
-const {slugify} = require('@tryghost/kg-utils');
+import type {RendererOptions} from '@tryghost/kg-default-nodes';
+import {slugify} from '@tryghost/kg-utils';
 
 function generateId(text: string, options: RendererOptions) {
     if (!options.usedIdAttributes) {

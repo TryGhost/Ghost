@@ -1,18 +1,16 @@
-import type {EditorState, LexicalNode} from 'lexical';
-
 import {$getRoot} from 'lexical';
-// TODO: update to import when this is moved to typescript
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const {$isKoenigCard} = require('@tryghost/kg-default-nodes');
+import {$isKoenigCard, KoenigDecoratorNode} from '@tryghost/kg-default-nodes';
 
-export default function getDynamicDataNodes(editorState: EditorState) {
-    const dynamicNodes: LexicalNode[] = [];
+import type {EditorState} from 'lexical';
+
+export default function getDynamicDataNodes(editorState: EditorState): KoenigDecoratorNode[] {
+    const dynamicNodes: KoenigDecoratorNode[] = [];
 
     editorState.read(() => {
         const root = $getRoot();
         const nodes = root.getChildren();
 
-        nodes.forEach((node: LexicalNode) => {
+        nodes.forEach((node) => {
             if ($isKoenigCard(node) && node.hasDynamicData?.()) {
                 dynamicNodes.push(node);
             }

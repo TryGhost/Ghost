@@ -8,7 +8,6 @@ export default function generateEditorState({editor, initialHtml}) {
         editor.update(() => {
             const parser = new DOMParser();
             const dom = parser.parseFromString(initialHtml, 'text/html');
-
             const nodes = $generateNodesFromDOM(editor, dom);
 
             // There are few recent issues related to $generateNodesFromDOM
@@ -19,10 +18,8 @@ export default function generateEditorState({editor, initialHtml}) {
 
             // Select the root
             $getRoot().select();
-
-            if (filteredNodes.length === 0) {
-                $getRoot().clear();
-            }
+            // Clear existing content (we initialize an editor with an empty p node so it is focusable if there's no content)
+            $getRoot().clear();
 
             // Insert them at a selection.
             $insertNodes(filteredNodes);

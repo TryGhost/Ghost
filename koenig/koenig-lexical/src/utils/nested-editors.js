@@ -44,6 +44,7 @@ export function populateNestedEditor(node, editorProperty, html) {
         editor: nestedEditor,
         initialHtml: html
     });
+    
     nestedEditor.setEditorState(editorState, {tag: 'history-merge'}); // use history merge to prevent undo clearing the initial state
 
     // store the initial state separately as it's passed in to `<CollaborationPlugin />`

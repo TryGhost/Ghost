@@ -49,9 +49,9 @@ const Template = ({display, heading, subheader, disclaimer, ...args}) => {
     const disclaimerTextEditor = createEditor({nodes: MINIMAL_NODES});
     const cardWidth = args.layout === 'split' ? 'full' : args.layout;
 
-    populateEditor({editor: headerTextEditor, initialHtml: `<p>${heading}</p>`});
-    populateEditor({editor: subheaderTextEditor, initialHtml: `<p>${subheader}</p>`});
-    populateEditor({editor: disclaimerTextEditor, initialHtml: `<p>${disclaimer}</p>`});
+    populateEditor({editor: headerTextEditor, initialHtml: `${heading}`});
+    populateEditor({editor: subheaderTextEditor, initialHtml: `${subheader}`});
+    populateEditor({editor: disclaimerTextEditor, initialHtml: `${disclaimer}`});
 
     return (<div className="kg-prose">
         <div className="mx-auto my-8 min-w-[initial] max-w-[740px]">

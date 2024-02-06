@@ -327,22 +327,22 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     const nextSibling = cardNode.getNextSibling();
 
                     if (direction === 'backward' && previousSibling) {
-                        if (previousSibling.selectEnd) {
-                            previousSibling.selectEnd();
-                        } else if ($isDecoratorNode(previousSibling)) {
+                        if ($isDecoratorNode(previousSibling)) {
                             const nodeSelection = $createNodeSelection();
                             nodeSelection.add(previousSibling.getKey());
                             $setSelection(nodeSelection);
+                        } else if (previousSibling.selectEnd) { // decorator nodes have selectEnd, so this needs to come after that check
+                            previousSibling.selectEnd();
                         } else {
                             cardNode.selectPrevious();
                         }
                     } else if (nextSibling) {
-                        if (nextSibling.selectStart) {
-                            nextSibling.selectStart();
-                        } else if ($isDecoratorNode(nextSibling)) {
+                        if ($isDecoratorNode(nextSibling)) {
                             const nodeSelection = $createNodeSelection();
                             nodeSelection.add(nextSibling.getKey());
                             $setSelection(nodeSelection);
+                        } else if (nextSibling.selectStart) { // decorator nodes have selectStart, so this needs to come after that check
+                            nextSibling.selectStart();
                         } else {
                             cardNode.selectNext();
                         }
@@ -432,7 +432,8 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         event.preventDefault();
                         const cardNode = $getNodeByKey(selectedCardKey);
                         const paragraphNode = $createParagraphNode();
-                        cardNode.getTopLevelElementOrThrow().insertAfter(paragraphNode);
+                        // cardNode.getTopLevelElementOrThrow().insertAfter(paragraphNode);
+                        cardNode.insertAfter(paragraphNode);
                         paragraphNode.select();
                         return true;
                     }
@@ -747,8 +748,14 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     }
 
                     const firstNode = selection.getNodes()[0];
-                    const topLevelElement = firstNode.getTopLevelElement();
-                    const previousSibling = topLevelElement.getPreviousSibling();
+                    let previousSibling;
+
+                    if (!$isKoenigCard(firstNode)) {
+                        const topLevelElement = firstNode.getTopLevelElement();
+                        previousSibling = topLevelElement.getPreviousSibling();
+                    } else {
+                        previousSibling = firstNode.getPreviousSibling();
+                    }
 
                     if ($isDecoratorNode(previousSibling)) {
                         event.preventDefault();
@@ -776,8 +783,14 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
 
                     const selectedNodes = selection.getNodes();
                     const lastNode = selectedNodes[selectedNodes.length - 1];
-                    const topLevelElement = lastNode.getTopLevelElement();
-                    const nextSibling = topLevelElement.getNextSibling();
+
+                    let nextSibling;
+                    if ($isKoenigCard(lastNode)) {
+                        nextSibling = lastNode.getNextSibling();
+                    } else {
+                        const topLevelElement = lastNode.getTopLevelElement();
+                        nextSibling = topLevelElement.getNextSibling();
+                    }
 
                     if ($isDecoratorNode(nextSibling)) {
                         event.preventDefault();

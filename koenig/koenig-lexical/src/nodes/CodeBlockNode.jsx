@@ -26,7 +26,7 @@ export class CodeBlockNode extends BaseCodeBlockNode {
 
         // populate nested editors on initial construction
         if (!dataset.captionEditor && dataset.caption) {
-            populateNestedEditor(this, '__captionEditor', `<p>${dataset.caption}</p>`); // we serialize with no wrapper
+            populateNestedEditor(this, '__captionEditor', `${dataset.caption}`); // we serialize with no wrapper
         }
     }
 
