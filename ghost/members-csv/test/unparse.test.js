@@ -13,7 +13,7 @@ describe('unparse', function () {
 
         assert.ok(result);
 
-        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers\r\n,email@example.com,Sam Memberino,Early supporter,false,,,,,,`;
+        const expected = `id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers\r\n,email@example.com,Sam Memberino,Early supporter,,,,,,,`;
         assert.equal(result, expected);
     });
 
