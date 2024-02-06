@@ -63,7 +63,7 @@ const MainContent: React.FC = () => {
                     <Sidebar />
                 </div>
             </div>
-            <div className="relative h-full flex-1 basis-[800px] overflow-y-scroll pt-10" id="admin-x-settings-scroller">
+            <div className="relative h-full flex-1 basis-[800px] overflow-y-scroll pt-12" id="admin-x-settings-scroller">
                 <Settings />
             </div>
         </Page>
