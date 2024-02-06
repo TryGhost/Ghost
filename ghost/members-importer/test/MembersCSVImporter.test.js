@@ -610,6 +610,30 @@ describe('MembersCSVImporter', function () {
             assert.deepEqual(membersRepositoryStub.update.args[0][0].newsletters, newsletters);
         });
 
+        it('does not overwrite name or note fields for existing members when left blank in the import file', async function () {
+            const importer = buildMockImporterInstance();
+
+            const member = {
+                name: 'John Bloggs',
+                note: 'A note',
+                related: sinon.stub()
+            };
+
+            member.related.withArgs('labels').returns(null);
+            member.related.withArgs('newsletters').returns({length: 0});
+
+            membersRepositoryStub.get = sinon.stub();
+
+            membersRepositoryStub.get
+                .withArgs({email: 'test@example.com'})
+                .resolves(member);
+
+            await importer.perform(`${csvPath}/single-column-with-header.csv`);
+
+            assert.equal(membersRepositoryStub.update.args[0][0].name, 'John Bloggs');
+            assert.equal(membersRepositoryStub.update.args[0][0].note, 'A note');
+        });
+
         it('does not add subscriptions for existing member when they do not have any subscriptions', async function () {
             const importer = buildMockImporterInstance();
 
