@@ -42,8 +42,8 @@ const MainContent: React.FC = () => {
     if (isEditorUser(currentUser)) {
         return (
             <Page>
-                <div className='w-full'>
-                    <Heading className='mb-10'>Settings</Heading>
+                <div className='mx-auto w-full max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10' id="admin-x-settings-scroller">
+                    <Heading className='mb-[5vmin]'>Settings</Heading>
                     <Users highlight={false} keywords={[]} />
                 </div>
             </Page>
