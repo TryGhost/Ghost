@@ -23052,10 +23052,10 @@ neo-async@^2.5.0, neo-async@^2.6.1, neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-newrelic@11.10.2:
-  version "11.10.2"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-11.10.2.tgz#81a55a4448480954d248739fceb57d1c855f2fcd"
-  integrity sha512-L0Yu6ssLPPU7tb30+YZwzpdgd+JJBpJAEGcE6f8T37JT+yPKQnRgumiqMGMLEXUj5xnUE66doOpgTuUmXVpyCw==
+newrelic@11.10.3:
+  version "11.10.3"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-11.10.3.tgz#1881cb1fc6af0210226886891405fee103b9bbde"
+  integrity sha512-oJdOhw9ZzyhKcm+pFR9SGOAdHUnS0QcQbM7/o1lZxpTomN/QNDEJpM06V1SMjq+3g5bt9Ej+2yki/waDAsib2g==
   dependencies:
     "@grpc/grpc-js" "^1.9.4"
     "@grpc/proto-loader" "^0.7.5"
