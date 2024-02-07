@@ -107,12 +107,12 @@ const Sidebar: React.FC = () => {
 
     return (
         <div className='ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]' data-testid="sidebar">
-            <div className='sticky top-0 flex content-stretch items-end bg-grey-50 tablet:h-28 xl:h-20'>
+            <div className='sticky top-0 flex content-stretch items-end bg-grey-50 dark:bg-grey-975 tablet:h-28 dark:tablet:bg-black xl:h-20'>
                 <div className='relative w-full'>
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                     <TextField
                         autoComplete="off"
-                        className='flex h-10 w-full items-center rounded-lg border border-grey-200 bg-white px-[33px] py-1.5 text-[14px] shadow-xs transition-all hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:bg-grey-900 dark:text-white dark:focus:bg-black'
+                        className='flex h-10 w-full items-center rounded-lg border border-grey-200 bg-white px-[33px] py-1.5 text-[14px] shadow-xs transition-all hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:border-grey-950 dark:bg-grey-950 dark:text-white dark:placeholder:text-grey-800 dark:focus:bg-black'
                         containerClassName='w-100'
                         inputRef={searchInputRef}
                         placeholder="Search settings"
@@ -126,13 +126,13 @@ const Sidebar: React.FC = () => {
                     {filter ? <Button className='absolute right-3 top-3 p-1' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
                         setFilter('');
                         searchInputRef.current?.focus();
-                    }} /> : <div className='absolute -right-1 top-[9px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:right-3 tablet:!block'>/</div>}
+                    }} /> : <div className='absolute -right-1 top-[9px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:border-grey-800 dark:bg-grey-900 dark:text-grey-500 dark:shadow-[0px_1px_#626D79] tablet:!visible tablet:right-3 tablet:!block'>/</div>}
                 </div>
             </div>
             <nav className={navClasses} id='admin-x-settings-sidebar'>
                 {noResult &&
                 <div className='ml-2 text-base text-grey-700'>
-                    <h2 className='mb-2 text-base font-semibold tracking-normal text-grey-900'>No result</h2>
+                    <h2 className='mb-2 text-base font-semibold tracking-normal text-grey-900 dark:text-white'>No result</h2>
                     <div>
                         {`We couldn't find any setting matching '${filter}'`}.
                     </div>
