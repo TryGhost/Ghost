@@ -143,8 +143,8 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
     });
 
     const containerClasses = clsx(
-        'relative flex-col gap-6 rounded-xl transition-all hover:border-grey-200 hover:shadow-sm',
-        border && 'border p-5 md:p-7',
+        'relative flex-col gap-6 rounded-xl transition-all hover:border-grey-200',
+        border && 'border p-5 hover:shadow-sm md:p-7',
         isVisible ? 'flex' : 'hidden',
         (highlight && highlightOnModalClose) && 'border-grey-200 shadow-sm',
         !isEditing ? 'is-not-editing group/setting-group' : 'border-grey-200 shadow-sm',
