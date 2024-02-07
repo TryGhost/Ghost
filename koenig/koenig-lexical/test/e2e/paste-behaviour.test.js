@@ -105,6 +105,44 @@ test.describe('Paste behaviour', async () => {
             `);
         });
 
+        test('pasted on selected text containing formats converts to link', async function () {
+            await focusEditor(page);
+            await page.keyboard.type('Text with ');
+            await page.keyboard.press(`${ctrlOrCmd()}+B`);
+            await page.keyboard.type('bold');
+            await page.keyboard.press(`${ctrlOrCmd()}+B`);
+            await page.keyboard.type(' and ');
+            await page.keyboard.press(`${ctrlOrCmd()}+I`);
+            await page.keyboard.type('italic');
+            await page.keyboard.press(`${ctrlOrCmd()}+I`);
+            await page.keyboard.type(' text.');
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <span data-lexical-text="true">Text with </span>
+                    <strong data-lexical-text="true">bold</strong>
+                    <span data-lexical-text="true"> and </span>
+                    <em data-lexical-text="true">italic</em>
+                    <span data-lexical-text="true"> text.</span>
+                </p>
+            `);
+
+            await page.keyboard.press(`${ctrlOrCmd()}+A`);
+            await pasteText(page, 'https://ghost.org');
+
+            await assertHTML(page, html`
+                <p dir="ltr">
+                    <a href="https://ghost.org" dir="ltr">
+                        <span data-lexical-text="true">Text with </span>
+                        <strong data-lexical-text="true">bold</strong>
+                        <span data-lexical-text="true"> and </span>
+                        <em data-lexical-text="true">italic</em>
+                        <span data-lexical-text="true"> text.</span>
+                    </a>
+                </p>
+            `);
+        });
+
         test('pasted on selected text within a nested editor converts to link', async function () {
             await focusEditor(page);
             await page.keyboard.type('/callout', {delay: 10});

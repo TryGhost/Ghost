@@ -3,7 +3,7 @@ import {$createAsideNode, $isAsideNode} from '../nodes/AsideNode';
 import {$createCodeBlockNode} from '../nodes/CodeBlockNode';
 import {$createEmbedNode} from '../nodes/EmbedNode';
 import {$createHeadingNode, $createQuoteNode, $isQuoteNode} from '@lexical/rich-text';
-import {$createLinkNode, $isLinkNode} from '@lexical/link';
+import {$createLinkNode, $isLinkNode, TOGGLE_LINK_COMMAND} from '@lexical/link';
 import {
     $createNodeSelection,
     $createParagraphNode,
@@ -1310,14 +1310,9 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     const nodeContent = node.getTextContent();
 
                     if (selectionContent.length > 0) {
-                        const link = linkMatch[1];
+                        const url = linkMatch[1];
                         if ($isRangeSelection(selection)) {
-                            const textNode = selection.extract()[0];
-                            const linkNode = $createLinkNode(link);
-                            const linkTextNode = $createTextNode(selectionContent);
-                            linkTextNode.setFormat(textNode.getFormat());
-                            linkNode.append(linkTextNode);
-                            textNode.replace(linkNode);
+                            editor.dispatchCommand(TOGGLE_LINK_COMMAND, {url, rel: null});
                         }
                         return true;
                     }
