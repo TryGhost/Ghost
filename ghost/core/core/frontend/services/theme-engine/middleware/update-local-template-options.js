@@ -15,13 +15,6 @@ function updateLocalTemplateOptions(req, res, next) {
     // @TODO: it would be nicer if this was proper middleware somehow...
     const previewData = preview.handle(req, Object.keys(customThemeSettingsCache.getAll()));
 
-    // @WIP to check if we can access private sites via cookies in Settings.. but abit hacky
-    if (req && req.headers && req.headers['x-ghost-preview']) {
-        res.setHeader('Access-Control-Allow-Origin', siteData.url); // Specify the allowed origin or handle dynamically
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST'); // Include POST in the allowed methods
-        res.setHeader('Access-Control-Allow-Credentials', 'true'); // Allow credentials including cookies
-    }
-
     // strip custom off of preview data so it doesn't get merged into @site
     const customData = previewData.custom;
     delete previewData.custom;
