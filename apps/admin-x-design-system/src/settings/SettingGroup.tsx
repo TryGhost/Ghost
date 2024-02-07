@@ -76,7 +76,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         onSave?.();
     };
 
-    styles += ' border-grey-250 dark:border-grey-800';
+    styles += ' border-grey-250 dark:border-grey-925';
 
     const viewButtons: ButtonProps[] = [];
 

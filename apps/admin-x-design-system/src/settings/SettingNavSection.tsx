@@ -20,7 +20,7 @@ const SettingNavSection: React.FC<SettingNavSectionProps> = ({title, isVisible, 
                 <ul className="-mt-1 mb-7">
                     {children}
                 </ul>
-                <Separator className='mx-2 mb-7 border-grey-300' />
+                <Separator className='mx-2 mb-7 border-grey-300 dark:border-grey-950' />
             </>
             }
         </>
