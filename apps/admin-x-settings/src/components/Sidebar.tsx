@@ -131,8 +131,8 @@ const Sidebar: React.FC = () => {
             </div>
             <nav className={navClasses} id='admin-x-settings-sidebar'>
                 {noResult &&
-                <div className='ml-2 text-sm text-grey-700'>
-                    <h2 className='mb-4 text-sm font-semibold tracking-tight text-grey-900'>No result</h2>
+                <div className='ml-2 text-base text-grey-700'>
+                    <h2 className='mb-2 text-base font-semibold tracking-normal text-grey-900'>No result</h2>
                     <div>
                         {`We couldn't find any setting matching '${filter}'`}.
                     </div>
