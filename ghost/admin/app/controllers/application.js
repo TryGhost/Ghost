@@ -18,12 +18,6 @@ export default class ApplicationController extends Controller {
     }
 
     get showScriptExtension() {
-        const {session} = this;
-
-        if (!session.isAuthenticated || !session.user) {
-            return false;
-        }
-
         return this.config.clientExtensions?.script;
     }
 
