@@ -11,7 +11,7 @@ export default class HomeRoute extends Route {
 
         if (transition.to?.queryParams?.firstStart === 'true') {
             if (transition.to?.queryParams?.distinctId) {
-                const event = new CustomEvent('trackEvent', {detail: {type: 'firstStart', distinctId: transition.to.queryParams.distinctId}});
+                const event = new CustomEvent('identify', {detail: { distinctId: transition.to.queryParams.distinctId}});
                 window.dispatchEvent(event);
             }
             return this.router.transitionTo('setup.done');
