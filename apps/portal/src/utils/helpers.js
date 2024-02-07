@@ -29,8 +29,12 @@ export function isCookiesDisabled() {
     return !(navigator && navigator.cookieEnabled);
 }
 
+export function siteIsNotInIframe() {
+    return window.parent === window.parent.parent;
+}
+
 export function disableFunctionalityDueToCookies() {
-    return isCookiesDisabled();
+    return isCookiesDisabled && siteIsNotInIframe();
 }
 
 export function isSentryEventAllowed({event: sentryEvent}) {
