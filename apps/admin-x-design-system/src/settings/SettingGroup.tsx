@@ -76,7 +76,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         onSave?.();
     };
 
-    styles += ' border-grey-200 dark:border-grey-800';
+    styles += ' border-grey-250 dark:border-grey-800';
 
     const viewButtons: ButtonProps[] = [];
 
@@ -143,10 +143,10 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
     });
 
     const containerClasses = clsx(
-        'relative flex-col gap-6 rounded-lg transition-all',
-        border && 'border p-5 shadow-sm md:p-7',
+        'relative flex-col gap-6 rounded-xl transition-all',
+        border && 'border p-5 md:p-7',
         isVisible ? 'flex' : 'hidden',
-        (highlight && highlightOnModalClose) && 'before:pointer-events-none before:absolute before:inset-[1px] before:animate-setting-highlight-fade-out before:rounded before:shadow-[0_0_0_3px_rgba(48,207,67,0.45)]',
+        (highlight && highlightOnModalClose) && 'before:pointer-events-none before:absolute before:inset-[1px] before:animate-setting-highlight-fade-out before:rounded-xl before:shadow-[0_0_0_3px_rgba(48,207,67,0.45)]',
         !isEditing && 'is-not-editing group/setting-group',
         styles
     );
