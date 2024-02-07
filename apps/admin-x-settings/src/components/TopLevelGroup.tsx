@@ -18,7 +18,7 @@ const TopLevelGroup: React.FC<Omit<SettingGroupProps, 'isVisible' | 'highlight'>
         if (highlight) {
             setTimeout(() => {
                 setHighlight(false);
-            }, 3000);
+            }, 2000);
         }
     }, [highlight]);
 
