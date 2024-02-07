@@ -29,6 +29,10 @@ export function isCookiesDisabled() {
     return !(navigator && navigator.cookieEnabled);
 }
 
+export function disableFunctionalityDueToCookies() {
+    return isCookiesDisabled();
+}
+
 export function isSentryEventAllowed({event: sentryEvent}) {
     const frames = sentryEvent?.exception?.values?.[0]?.stacktrace?.frames || [];
     const fileNames = frames.map(frame => frame.filename).filter(filename => !!filename);

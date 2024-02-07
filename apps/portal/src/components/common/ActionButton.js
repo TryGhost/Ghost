@@ -1,5 +1,5 @@
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
-import {isCookiesDisabled} from '../../utils/helpers';
+import {disableFunctionalityDueToCookies} from '../../utils/helpers';
 
 export const ActionButtonStyles = `
     .gh-portal-btn-main {
@@ -94,7 +94,7 @@ function ActionButton({
     if (classes) {
         className += (' ' + classes);
     }
-    if (isCookiesDisabled()) {
+    if (disableFunctionalityDueToCookies()) {
         disabled = true;
     }
     const loaderClassName = isPrimary ? 'gh-portal-loadingicon' : 'gh-portal-loadingicon dark';

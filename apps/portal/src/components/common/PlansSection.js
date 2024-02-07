@@ -1,8 +1,8 @@
-import {isCookiesDisabled} from '../../utils/helpers';
+import {disableFunctionalityDueToCookies} from '../../utils/helpers';
 import ProductsSection, {ChangeProductSection} from './ProductsSection';
 
 export function MultipleProductsPlansSection({products, selectedPlan, onPlanSelect, onPlanCheckout, changePlan = false}) {
-    const cookiesDisabled = isCookiesDisabled();
+    const cookiesDisabled = disableFunctionalityDueToCookies();
     /**Don't allow plans selection if cookies are disabled */
     if (cookiesDisabled) {
         onPlanSelect = () => {};

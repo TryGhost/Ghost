@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, getSupportAddress, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier, isComplimentaryMember} from '../../utils/helpers';
+import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, getSupportAddress, formatNumber, disableFunctionalityDueToCookies, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier, isComplimentaryMember} from '../../utils/helpers';
 import AppContext from '../../AppContext';
 import calculateDiscount from '../../utils/discount';
 import Interpolate from '@doist/react-interpolate';
@@ -652,7 +652,7 @@ function FreeProductCard({products, handleChooseSignup, error}) {
 
     let disabled = (action === 'signup:running') ? true : false;
 
-    if (isCookiesDisabled()) {
+    if (disableFunctionalityDueToCookies()) {
         disabled = true;
     }
 
@@ -760,7 +760,7 @@ function ProductCard({product, products, selectedInterval, handleChooseSignup, e
 
     let disabled = (['signup:running', 'checkoutPlan:running'].includes(action)) ? true : false;
 
-    if (isCookiesDisabled()) {
+    if (disableFunctionalityDueToCookies()) {
         disabled = true;
     }
 

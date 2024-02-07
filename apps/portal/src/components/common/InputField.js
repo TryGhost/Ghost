@@ -1,6 +1,6 @@
 import {useEffect, useRef} from 'react';
 import {hasMode} from '../../utils/check-mode';
-import {isCookiesDisabled} from '../../utils/helpers';
+import {disableFunctionalityDueToCookies} from '../../utils/helpers';
 
 export const InputFieldStyles = `
     .gh-portal-input {
@@ -99,7 +99,7 @@ function InputField({
     id = id || `input-${name}`;
     const labelClasses = hideLabel ? 'gh-portal-input-label hidden' : 'gh-portal-input-label';
     const inputClasses = errorMessage ? 'gh-portal-input error' : 'gh-portal-input';
-    if (isCookiesDisabled()) {
+    if (disableFunctionalityDueToCookies()) {
         disabled = true;
     }
 

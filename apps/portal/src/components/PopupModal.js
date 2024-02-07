@@ -6,7 +6,7 @@ import {getFrameStyles} from './Frame.styles';
 import Pages, {getActivePage} from '../pages';
 import PopupNotification from './common/PopupNotification';
 import PoweredBy from './common/PoweredBy';
-import {getSiteProducts, isInviteOnlySite, isCookiesDisabled, hasFreeProductPrice} from '../utils/helpers';
+import {getSiteProducts, isInviteOnlySite, disableFunctionalityDueToCookies, hasFreeProductPrice} from '../utils/helpers';
 
 const StylesWrapper = () => {
     return {
@@ -40,7 +40,7 @@ const StylesWrapper = () => {
 };
 
 function CookieDisabledBanner({message}) {
-    const cookieDisabled = isCookiesDisabled();
+    const cookieDisabled = disableFunctionalityDueToCookies();
     if (cookieDisabled) {
         return (
             <div className='gh-portal-cookiebanner'>{message}</div>
