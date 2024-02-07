@@ -102,30 +102,32 @@ const Sidebar: React.FC = () => {
     };
 
     const navClasses = clsx(
-        'pt-10'
+        'hidden pt-10 tablet:!visible tablet:!block'
     );
 
     return (
-        <div className='ml-auto flex w-[220px] flex-col' data-testid="sidebar">
-            <div className='sticky top-0 flex content-stretch items-end bg-grey-50 tablet:h-20'>
-                <Icon className='absolute left-2 top-[54px] z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
-                <TextField
-                    autoComplete="off"
-                    className='flex h-9 w-[calc(100%+8px)] items-center rounded-lg border border-transparent bg-grey-200 px-[33px] py-1.5 text-sm transition-all hover:bg-grey-150 focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:bg-grey-900 dark:text-white dark:focus:bg-black'
-                    containerClassName='w-100'
-                    inputRef={searchInputRef}
-                    placeholder="Search settings"
-                    title="Search"
-                    value={filter}
-                    clearBg
-                    hideTitle
-                    unstyled
-                    onChange={updateSearch}
-                />
-                {filter ? <Button className='absolute right-3 top-[53px] p-1' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
-                    setFilter('');
-                    searchInputRef.current?.focus();
-                }} /> : <div className='absolute right-0 top-[51px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:right-3 tablet:top-[51px] tablet:!block'>/</div>}
+        <div className='ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]' data-testid="sidebar">
+            <div className='sticky top-0 flex content-stretch items-end bg-grey-50 tablet:h-28 xl:h-20'>
+                <div className='relative w-full'>
+                    <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
+                    <TextField
+                        autoComplete="off"
+                        className='shadow-xs flex h-10 w-full items-center rounded-lg border border-grey-200 bg-white px-[33px] py-1.5 text-sm transition-all hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:bg-grey-900 dark:text-white dark:focus:bg-black'
+                        containerClassName='w-100'
+                        inputRef={searchInputRef}
+                        placeholder="Search settings"
+                        title="Search"
+                        value={filter}
+                        clearBg
+                        hideTitle
+                        unstyled
+                        onChange={updateSearch}
+                    />
+                    {filter ? <Button className='absolute right-3 top-3 p-1' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
+                        setFilter('');
+                        searchInputRef.current?.focus();
+                    }} /> : <div className='absolute -right-1 top-[9px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:right-3 tablet:!block'>/</div>}
+                </div>
             </div>
             <nav className={navClasses} id='admin-x-settings-sidebar'>
                 {noResult &&

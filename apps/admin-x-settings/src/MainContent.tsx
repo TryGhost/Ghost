@@ -11,12 +11,12 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Page: React.FC<{children: ReactNode}> = ({children}) => {
     return <>
-        <div className='sticky top-0 z-30 px-[5vmin] py-4 tablet:fixed tablet:px-6'>
+        <div className='sticky top-0 z-30 bg-white px-[5vmin] py-4 tablet:fixed tablet:bg-transparent tablet:px-6'>
             <ExitSettingsButton />
         </div>
 
         {/* <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] pb-[12vmin] tablet:flex-row tablet:items-start tablet:gap-x-10 tablet:py-[8vmin]" id="admin-x-settings-content"> */}
-        <div className="fixed left-0 top-0 flex h-full w-full" id="admin-x-settings-content">
+        <div className="w-full tablet:fixed tablet:left-0 tablet:top-0 tablet:flex tablet:h-full" id="admin-x-settings-content">
             {children}
         </div>
     </>;
@@ -55,12 +55,12 @@ const MainContent: React.FC = () => {
     return (
         <Page>
             {loadingModal && <div className={`fixed inset-0 z-40 h-[calc(100vh-55px)] w-[100vw] tablet:h-[100vh] ${topLevelBackdropClasses}`} />}
-            <div className="scrollbar-hidden h-full flex-1 basis-[320px] overflow-y-scroll bg-grey-50 px-8" id="admin-x-settings-sidebar-scroller">
+            <div className="scrollbar-hidden fixed inset-x-0 top-[52px] z-[999] flex-1 basis-[320px] px-8 tablet:relative tablet:inset-x-auto tablet:top-auto tablet:h-full tablet:overflow-y-scroll tablet:bg-grey-50" id="admin-x-settings-sidebar-scroller">
                 <div className="relative w-full dark:bg-black">
                     <Sidebar />
                 </div>
             </div>
-            <div className="relative h-full flex-1 basis-[800px] overflow-y-scroll pt-12" id="admin-x-settings-scroller">
+            <div className="relative h-full flex-1 overflow-y-scroll pt-12 tablet:basis-[800px]" id="admin-x-settings-scroller">
                 <Settings />
             </div>
         </Page>
