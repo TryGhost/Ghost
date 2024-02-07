@@ -112,7 +112,7 @@ const Sidebar: React.FC = () => {
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                     <TextField
                         autoComplete="off"
-                        className='shadow-xs flex h-10 w-full items-center rounded-lg border border-grey-200 bg-white px-[33px] py-1.5 text-[14px] transition-all hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:bg-grey-900 dark:text-white dark:focus:bg-black'
+                        className='flex h-10 w-full items-center rounded-lg border border-grey-200 bg-white px-[33px] py-1.5 text-[14px] shadow-xs transition-all hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:bg-grey-900 dark:text-white dark:focus:bg-black'
                         containerClassName='w-100'
                         inputRef={searchInputRef}
                         placeholder="Search settings"
