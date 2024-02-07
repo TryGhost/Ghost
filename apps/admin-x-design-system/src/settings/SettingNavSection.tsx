@@ -14,7 +14,7 @@ const SettingNavSection: React.FC<SettingNavSectionProps> = ({title, isVisible, 
 
     return (
         <>
-            {title && <h2 className='mb-4 ml-2 text-[14px] font-semibold text-grey-900'>{title}</h2>}
+            {title && <h2 className='mb-4 ml-2 text-[14px] font-semibold tracking-normal text-grey-900'>{title}</h2>}
             {children &&
             <>
                 <ul className="-mt-1 mb-7">
