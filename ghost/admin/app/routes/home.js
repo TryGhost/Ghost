@@ -1,4 +1,5 @@
 import Route from '@ember/routing/route';
+import {loadToolbar} from '../utils/analytics';
 import {inject as service} from '@ember/service';
 
 export default class HomeRoute extends Route {
@@ -9,10 +10,7 @@ export default class HomeRoute extends Route {
     beforeModel(transition) {
         super.beforeModel(...arguments);
 
-        const toolbarJSON = new URLSearchParams(window.location.hash.substring(1)).get('__posthog');
-        if (toolbarJSON) {
-            window.posthog?.loadToolbar(JSON.parse(toolbarJSON));
-        }
+        loadToolbar();
 
         if (transition.to?.queryParams?.firstStart === 'true') {
             return this.router.transitionTo('setup.done');
