@@ -16,13 +16,13 @@ export function trackEvent(eventName, props = {}) {
  * @returns {void}
  */
 export function loadToolbar() {
-    const toolbarJSON = new URLSearchParams(window.location?.hash?.substring(1)).get('__posthog');
-    if (toolbarJSON && window.posthog) {
-        try {
-            window.posthog.loadToolbar(JSON.parse(toolbarJSON));
-        } catch (e) {
-            // fail silently
+    try {
+        const toolbarJSON = new URLSearchParams(window.location.hash.substring(1)).get('__posthog');
+        if (toolbarJSON && window.posthog) {
+                window.posthog.loadToolbar(JSON.parse(toolbarJSON));
         }
+    } catch (e) {
+        // fail silently
     }
 }
 
