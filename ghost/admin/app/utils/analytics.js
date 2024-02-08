@@ -19,7 +19,7 @@ export function loadToolbar() {
     try {
         const toolbarJSON = new URLSearchParams(window.location.hash.substring(1)).get('__posthog');
         if (toolbarJSON && window.posthog) {
-                window.posthog.loadToolbar(JSON.parse(toolbarJSON));
+            window.posthog.loadToolbar(JSON.parse(toolbarJSON));
         }
     } catch (e) {
         // fail silently
