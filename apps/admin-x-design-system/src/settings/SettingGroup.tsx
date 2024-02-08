@@ -76,13 +76,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         onSave?.();
     };
 
-    if (saveState === 'unsaved') {
-        styles += ' border-green';
-    } else if (isEditing){
-        styles += ' border-grey-700 dark:border-grey-600';
-    } else {
-        styles += ' border-grey-300 dark:border-grey-800 hover:border-grey-500';
-    }
+    styles += ' border-grey-250 dark:border-grey-925';
 
     const viewButtons: ButtonProps[] = [];
 
@@ -149,11 +143,11 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
     });
 
     const containerClasses = clsx(
-        'relative flex-col gap-6 rounded-lg transition-all',
-        border && 'border p-5 md:p-7',
+        'relative flex-col gap-6 rounded-xl transition-all hover:border-grey-200',
+        border && 'border p-5 hover:shadow-sm md:p-7',
         isVisible ? 'flex' : 'hidden',
-        (highlight && highlightOnModalClose) && 'before:pointer-events-none before:absolute before:inset-[1px] before:animate-setting-highlight-fade-out before:rounded before:shadow-[0_0_0_3px_rgba(48,207,67,0.45)]',
-        !isEditing && 'is-not-editing group/setting-group',
+        (highlight && highlightOnModalClose) && 'border-grey-200 shadow-sm',
+        !isEditing ? 'is-not-editing group/setting-group' : 'border-grey-200 shadow-sm',
         styles
     );
 

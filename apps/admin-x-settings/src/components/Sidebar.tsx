@@ -31,7 +31,7 @@ const NavItem: React.FC<Omit<SettingNavItemProps, 'isVisible' | 'isCurrent'> & {
 };
 
 const Sidebar: React.FC = () => {
-    const {filter, setFilter, checkVisible} = useSearch();
+    const {filter, setFilter, checkVisible, noResult, setNoResult} = useSearch();
     const {updateRoute} = useRouting();
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const {isAnyTextFieldFocused} = useFocusContext();
@@ -65,6 +65,19 @@ const Sidebar: React.FC = () => {
         }
     }, []);
 
+    useEffect(() => {
+        if (!checkVisible(Object.values(generalSearchKeywords).flat()) &&
+            !checkVisible(Object.values(siteSearchKeywords).flat()) &&
+            !checkVisible(Object.values(membershipSearchKeywords).flat()) &&
+            !checkVisible(Object.values(growthSearchKeywords).flat()) &&
+            !checkVisible(Object.values(emailSearchKeywords).flat()) &&
+            !checkVisible(Object.values(advancedSearchKeywords).flat())) {
+            setNoResult(true);
+        } else {
+            setNoResult(false);
+        }
+    }, [checkVisible, setNoResult, filter]);
+
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
@@ -72,6 +85,7 @@ const Sidebar: React.FC = () => {
     const handleSectionClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
         if (e) {
             setFilter('');
+            setNoResult(false);
             updateRoute(e.currentTarget.id);
         }
     };
@@ -88,32 +102,42 @@ const Sidebar: React.FC = () => {
     };
 
     const navClasses = clsx(
-        'no-scrollbar hidden pt-10 tablet:!visible tablet:!block tablet:h-[calc(100vh-8vmin-36px)] tablet:overflow-y-auto'
+        'hidden pt-10 tablet:!visible tablet:!block'
     );
 
     return (
-        <div data-testid="sidebar">
-            <div className='relative flex content-stretch items-end tablet:h-[36px]'>
-                <Icon className='absolute left-2 top-[10px] z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
-                <TextField
-                    autoComplete="off"
-                    className='-mx-1 flex h-9 w-[calc(100%+8px)] items-center rounded-full border border-transparent bg-grey-150 px-[33px] py-1.5 text-sm transition-all hover:bg-grey-100 focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:bg-grey-900 dark:text-white dark:focus:bg-black'
-                    containerClassName='w-100'
-                    inputRef={searchInputRef}
-                    placeholder="Search settings"
-                    title="Search"
-                    value={filter}
-                    clearBg
-                    hideTitle
-                    unstyled
-                    onChange={updateSearch}
-                />
-                {filter ? <Button className='absolute right-3 top-[10px] p-1' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
-                    setFilter('');
-                    searchInputRef.current?.focus();
-                }} /> : <div className='absolute right-0 top-[20px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:bg-grey-800 dark:text-grey-500 tablet:!visible tablet:right-3 tablet:top-[7px] tablet:!block'>/</div>}
+        <div className='ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]' data-testid="sidebar">
+            <div className='sticky top-0 flex content-stretch items-end bg-grey-50 dark:bg-grey-975 tablet:h-28 dark:tablet:bg-black xl:h-20'>
+                <div className='relative w-full'>
+                    <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
+                    <TextField
+                        autoComplete="off"
+                        className='flex h-10 w-full items-center rounded-lg border border-grey-200 bg-white px-[33px] py-1.5 text-[14px] shadow-xs transition-all hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_1px_rgba(48,207,67,1)] focus:outline-2 dark:border-grey-950 dark:bg-grey-950 dark:text-white dark:placeholder:text-grey-800 dark:focus:bg-black'
+                        containerClassName='w-100'
+                        inputRef={searchInputRef}
+                        placeholder="Search settings"
+                        title="Search"
+                        value={filter}
+                        clearBg
+                        hideTitle
+                        unstyled
+                        onChange={updateSearch}
+                    />
+                    {filter ? <Button className='absolute right-3 top-3 p-1' icon='close' iconColorClass='text-grey-700 !w-[10px] !h-[10px]' size='sm' unstyled onClick={() => {
+                        setFilter('');
+                        searchInputRef.current?.focus();
+                    }} /> : <div className='absolute -right-1 top-[9px] hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider text-grey-600 shadow-[0px_1px_#CED4D9] dark:border-grey-800 dark:bg-grey-900 dark:text-grey-500 dark:shadow-[0px_1px_#626D79] tablet:!visible tablet:right-3 tablet:!block'>/</div>}
+                </div>
             </div>
-            <div className={navClasses} id='admin-x-settings-sidebar'>
+            <nav className={navClasses} id='admin-x-settings-sidebar'>
+                {noResult &&
+                <div className='ml-2 text-base text-grey-700'>
+                    <h2 className='mb-2 text-base font-semibold tracking-normal text-black dark:text-white'>No result</h2>
+                    <div>
+                        {`We couldn't find any setting matching '${filter}'`}.
+                    </div>
+                </div>
+                }
                 <SettingNavSection isVisible={checkVisible(Object.values(generalSearchKeywords).flat())} title="General settings">
                     <NavItem icon='textfield' keywords={generalSearchKeywords.titleAndDescription} navid='general' title="Title & description" onClick={handleSectionClick} />
                     <NavItem icon='world-clock' keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />
@@ -166,14 +190,14 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 {!filter &&
-                <a className='mb-10 ml-1 flex cursor-pointer items-center gap-1.5 pl-1 text-sm !font-normal' onClick={() => {
+                <a className='w-100 mb-10 mt-1 flex h-[38px] cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-grey-800 transition-all hover:bg-grey-200 focus:bg-grey-100 dark:text-grey-600 dark:hover:bg-grey-950 dark:focus:bg-grey-925' onClick={() => {
                     updateRoute('about');
                 }}>
-                    <img alt='Ghost Logo' className='h-[18px] w-[18px]' src={GhostLogo} />
+                    <img alt='Ghost Logo' className='mr-[7px] h-[18px] w-[18px]' src={GhostLogo} />
                     About Ghost
                 </a>
                 }
-            </div>
+            </nav>
         </div>
     );
 };

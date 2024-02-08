@@ -5,10 +5,13 @@ export interface SearchService {
     setFilter: (value: string) => void;
     checkVisible: (keywords: string[]) => boolean;
     highlightKeywords: (text: ReactNode) => ReactNode;
+    noResult: boolean;
+    setNoResult: (value: boolean) => void;
 }
 
 const useSearchService = () => {
     const [filter, setFilter] = useState('');
+    const [noResult, setNoResult] = useState(false);
 
     const checkVisible = (keywords: string[]) => {
         if (!keywords.length) {
@@ -47,7 +50,9 @@ const useSearchService = () => {
         filter,
         setFilter,
         checkVisible,
-        highlightKeywords
+        highlightKeywords,
+        noResult,
+        setNoResult
     };
 };
 

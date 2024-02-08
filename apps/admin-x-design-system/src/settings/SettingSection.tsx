@@ -10,7 +10,7 @@ export interface SettingSectionProps {
 
 const SettingSection: React.FC<SettingSectionProps> = ({title, isVisible = true, children}) => {
     const containerClassNames = clsx(
-        'mb-[16vh]',
+        'mb-[10vh]',
         isVisible ? '' : 'hidden'
     );
 
@@ -18,7 +18,7 @@ const SettingSection: React.FC<SettingSectionProps> = ({title, isVisible = true,
         <div className={containerClassNames}>
             {title && <SettingSectionHeader title={title} />}
             {children &&
-                <div className="mb-[100px] flex flex-col gap-12">
+                <div className="mb-10 flex flex-col gap-12">
                     {children}
                 </div>
             }

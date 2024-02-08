@@ -43,7 +43,14 @@ interface SettingsAppContextType {
 const SettingsAppContext = createContext<SettingsAppContextType>({
     officialThemes: [],
     zapierTemplates: [],
-    search: {filter: '', setFilter: () => {}, checkVisible: () => true, highlightKeywords: () => ''},
+    search: {
+        filter: '',
+        setFilter: () => {},
+        checkVisible: () => true,
+        highlightKeywords: () => '',
+        noResult: false,
+        setNoResult: () => {}
+    },
     sortingState: []
 });
 
