@@ -270,6 +270,13 @@ class DataGenerator {
             });
             await tableImporter.finalise();
         }
+
+        // Re-enable the redo log because it's a persisted global
+        // Leaving it disabled can break the database in the event of an unexpected shutdown
+        // See https://dev.mysql.com/doc/refman/8.0/en/innodb-redo-log.html#innodb-disable-redo-logging
+        if (!DatabaseInfo.isSQLite(this.knex)) {
+            await transaction.raw('ALTER INSTANCE ENABLE INNODB REDO_LOG;');
+        }
     }
 }
 
