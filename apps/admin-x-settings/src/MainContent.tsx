@@ -11,11 +11,10 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Page: React.FC<{children: ReactNode}> = ({children}) => {
     return <>
-        <div className='sticky top-0 z-30 px-[5vmin] py-4 tablet:fixed tablet:px-6'>
+        <div className='sticky top-0 z-30 bg-white px-[5vmin] py-4 dark:bg-grey-975 tablet:fixed tablet:bg-transparent tablet:px-6 dark:tablet:bg-transparent xl:p-12'>
             <ExitSettingsButton />
         </div>
-
-        <div className="mx-auto flex max-w-[1080px] flex-col px-[5vmin] pb-[12vmin] tablet:flex-row tablet:items-start tablet:gap-x-10 tablet:py-[8vmin]" id="admin-x-settings-content">
+        <div className="w-full dark:bg-grey-975 tablet:fixed tablet:left-0 tablet:top-0 tablet:flex tablet:h-full" id="admin-x-settings-content">
             {children}
         </div>
     </>;
@@ -43,8 +42,8 @@ const MainContent: React.FC = () => {
     if (isEditorUser(currentUser)) {
         return (
             <Page>
-                <div className='w-full'>
-                    <Heading className='mb-10'>Settings</Heading>
+                <div className='mx-auto w-full max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10' id="admin-x-settings-scroller">
+                    <Heading className='mb-[5vmin]'>Settings</Heading>
                     <Users highlight={false} keywords={[]} />
                 </div>
             </Page>
@@ -54,14 +53,12 @@ const MainContent: React.FC = () => {
     return (
         <Page>
             {loadingModal && <div className={`fixed inset-0 z-40 h-[calc(100vh-55px)] w-[100vw] tablet:h-[100vh] ${topLevelBackdropClasses}`} />}
-
-            {/* Sidebar */}
-            <div className="sticky -top-px z-20 mt-[-55px] min-w-[260px] grow-0 bg-white pt-[52px] dark:bg-black tablet:fixed tablet:top-[8vmin] tablet:mt-0 tablet:basis-[260px] tablet:pt-0">
-                <div className="relative w-full bg-white dark:bg-black">
+            <div className="no-scrollbar fixed inset-x-0 top-[52px] z-[999] flex-1 basis-[320px] bg-white px-8 pb-8 dark:bg-grey-975 tablet:relative tablet:inset-x-auto tablet:top-auto tablet:h-full tablet:overflow-y-scroll tablet:bg-grey-50 tablet:pb-0 dark:tablet:bg-black" id="admin-x-settings-sidebar-scroller">
+                <div className="relative w-full">
                     <Sidebar />
                 </div>
             </div>
-            <div className="relative flex-auto pt-[10vmin] tablet:ml-[330px] tablet:pt-0">
+            <div className="relative h-full flex-1 overflow-y-scroll pt-11 tablet:basis-[800px]" id="admin-x-settings-scroller">
                 <Settings />
             </div>
         </Page>
