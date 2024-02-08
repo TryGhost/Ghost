@@ -1033,7 +1033,7 @@ input:focus,
 
 /* Opacity needed to display correctly in Safari */
 ::selection {
-    background: rgb(55, 59, 67, 0.99);
+    background: rgba(88, 101, 116, 0.99);
 }
 
 .gh-whats-new-badge-account {
