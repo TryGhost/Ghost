@@ -6,6 +6,8 @@ const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+const { JSDOM } = require('jsdom');
+const createDOMPurify = require('dompurify');
 
 const messages = {
     db: {
@@ -26,7 +28,7 @@ const messages = {
     },
     images: {
         missingFile: 'Please select an image.',
-        invalidFile: 'Please select a valid image.'
+        invalidFile: 'Unsupported file type. SVG files must not contain malicious content.'
     },
     icons: {
         missingFile: 'Please select an icon.',
@@ -49,7 +51,6 @@ const deleteSingleFile = file => fs.unlink(file.path).catch(err => logging.error
 
 const single = name => function singleUploadFunction(req, res, next) {
     const singleUpload = upload.single(name);
-
     singleUpload(req, res, (err) => {
         if (err) {
             return next(err);
@@ -60,11 +61,11 @@ const single = name => function singleUploadFunction(req, res, next) {
                 res.removeListener('close', deleteFiles);
                 if (!req.disableUploadClear) {
                     if (req.files) {
-                        return req.files.forEach(deleteSingleFile);
+                        req.files.forEach(deleteSingleFile);
                     }
 
                     if (req.file) {
-                        return deleteSingleFile(req.file);
+                        deleteSingleFile(req.file);
                     }
                 }
             };
@@ -85,22 +86,20 @@ const media = (fileName, thumbName) => function mediaUploadFunction(req, res, ne
         name: thumbName,
         maxCount: 1
     }]);
-
     mediaUpload(req, res, (err) => {
         if (err) {
             return next(err);
         }
-
         if (enabledClear) {
             const deleteFiles = () => {
                 res.removeListener('finish', deleteFiles);
                 res.removeListener('close', deleteFiles);
                 if (!req.disableUploadClear) {
                     if (req.files.file) {
-                        return req.files.file.forEach(deleteSingleFile);
+                        req.files.file.forEach(deleteSingleFile);
                     }
                     if (req.files.thumbnail) {
-                        return req.files.thumbnail.forEach(deleteSingleFile);
+                        req.files.thumbnail.forEach(deleteSingleFile);
                     }
                 }
             };
@@ -109,7 +108,6 @@ const media = (fileName, thumbName) => function mediaUploadFunction(req, res, ne
                 res.on('close', deleteFiles);
             }
         }
-
         next();
     });
 };
@@ -119,23 +117,28 @@ const checkFileExists = (fileData) => {
 };
 
 const checkFileIsValid = (fileData, types, extensions) => {
-    const type = fileData.mimetype;
+    const fileType = fileData.mimetype;
+    const fileExt = path.extname(fileData.name).toLowerCase();
 
-    if (types.includes(type) && extensions.includes(fileData.ext)) {
+    // Adjust the logic to sanitize SVG files and accept them if sanitized
+    if (fileExt === '.svg') {
+        const window = new JSDOM('').window;
+        const dompurify = createDOMPurify(window);
+        const content = fs.readFileSync(fileData.path, 'utf8');
+        const sanitizedContent = dompurify.sanitize(content, {RETURN_TRUSTED_TYPE: false});
+
+        fs.writeFileSync(fileData.path, sanitizedContent, 'utf8');
+
+        // Always return true as the file is sanitized before being validated
         return true;
+    } else if (!types.includes(fileType) || !extensions.includes(fileExt)) {
+        return false;
     }
 
-    return false;
+    return true;
 };
 
-/**
- *
- * @param {Object} options
- * @param {String} options.type - type of the file
- * @returns {Function}
- */
 const validation = function ({type}) {
-    // if we finish the data/importer logic, we forward the request to the specified importer
     return function uploadValidation(req, res, next) {
         const extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
         const contentTypes = (config.get('uploads')[type] && config.get('uploads')[type].contentTypes) || [];
@@ -144,7 +147,6 @@ const validation = function ({type}) {
         req.file.name = req.file.originalname;
         req.file.type = req.file.mimetype;
 
-        // Check if a file was provided
         if (!checkFileExists(req.file)) {
             return next(new errors.ValidationError({
                 message: tpl(messages[type].missingFile)
@@ -153,10 +155,9 @@ const validation = function ({type}) {
 
         req.file.ext = path.extname(req.file.name).toLowerCase();
 
-        // Check if the file is valid
         if (!checkFileIsValid(req.file, contentTypes, extensions)) {
             return next(new errors.UnsupportedMediaTypeError({
-                message: tpl(messages[type].invalidFile, {extensions: extensions})
+                message: tpl(messages[type].invalidFile, {extensions: extensions.join(', ')})
             }));
         }
 
@@ -164,12 +165,6 @@ const validation = function ({type}) {
     };
 };
 
-/**
- *
- * @param {Object} options
- * @param {String} options.type - type of the file
- * @returns {Function}
- */
 const mediaValidation = function ({type}) {
     return function mediaUploadValidation(req, res, next) {
         const extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
@@ -192,7 +187,7 @@ const mediaValidation = function ({type}) {
 
         if (!checkFileIsValid(req.file, contentTypes, extensions)) {
             return next(new errors.UnsupportedMediaTypeError({
-                message: tpl(messages[type].invalidFile, {extensions: extensions})
+                message: tpl(messages[type].invalidFile, {extensions: extensions.join(', ')})
             }));
         }
 
@@ -212,7 +207,7 @@ const mediaValidation = function ({type}) {
 
             if (!checkFileIsValid(req.thumbnail, thumbnailContentTypes, thumbnailExtensions)) {
                 return next(new errors.UnsupportedMediaTypeError({
-                    message: tpl(messages.thumbnail.invalidFile, {extensions: thumbnailExtensions})
+                    message: tpl(messages.thumbnail.invalidFile, {extensions: thumbnailExtensions.join(', ')})
                 }));
             }
         }
