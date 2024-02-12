@@ -76,6 +76,32 @@ ghost install
 
 Check out our [official documentation](https://ghost.org/docs/) for more information about our [recommended hosting stack](https://ghost.org/docs/hosting/) & properly [upgrading Ghost](https://ghost.org/docs/update/), plus everything you need to develop your own Ghost [themes](https://ghost.org/docs/themes/) or work with [our API](https://ghost.org/docs/content-api/).
 
+## Getting Started
+
+After installing Ghost, follow these steps to get started:
+
+1. Open your web browser and navigate to http://localhost:2368.
+2. Follow the on-screen instructions to set up your Ghost blog, including creating an admin account and configuring basic settings.
+3. Once the setup is complete, you can start creating and publishing content on your Ghost blog.
+
+For more detailed instructions and advanced configuration options, refer to the [official documentation](https://ghost.org/docs/).
+
+
+### Usage Examples
+
+Here are some common tasks and usage examples to help you get started with Ghost:
+
+#### Creating a New Post
+
+To create a new post, follow these steps:
+
+1. Log in to your Ghost admin dashboard.
+2. Click on the "Posts" menu and then click "New Post."
+3. Enter the title and content of your post.
+4. Optionally, add tags, select a featured image, and configure other settings.
+5. Click "Save" to publish your post.
+
+
 ### Contributors & advanced developers
 
 For anyone wishing to contribute to Ghost or to hack/customize core files we recommend following our full development setup guides: [Contributor guide](https://ghost.org/docs/contributing/) • [Developer setup](https://ghost.org/docs/install/source/)
