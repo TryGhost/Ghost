@@ -27,7 +27,8 @@ const codeMirrorClasses = [
     '[&_.cm-gutters]:bg-grey-75 dark:[&_.cm-gutters]:bg-grey-950',
     '[&_.cm-gutters]:text-grey-600 dark:[&_.cm-gutters]:text-grey-500',
     '[&_.cm-gutters]:border-grey-500 dark:[&_.cm-gutters]:border-grey-800',
-    '[&_.cm-cursor]:border-grey-900 dark:[&_.cm-cursor]:border-grey-75'
+    '[&_.cm-cursor]:border-grey-900 dark:[&_.cm-cursor]:border-grey-75',
+    'dark:[&_.cm-tooltip-autocomplete.cm-tooltip_ul_li:not([aria-selected])]:bg-grey-975'
 ].join(' ');
 
 // Meant to be imported asynchronously to avoid including CodeMirror in the main bundle
