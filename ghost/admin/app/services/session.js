@@ -7,6 +7,7 @@ import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
+import {identifyUser, resetUser} from '../utils/analytics';
 
 export default class SessionService extends ESASessionService {
     @service configManager;
@@ -46,6 +47,9 @@ export default class SessionService extends ESASessionService {
             this.settings.fetch(),
             this.membersUtils.fetch()
         ]);
+
+        // Identify the user to our analytics service upon successful login
+        await identifyUser(this.user);
 
         // Theme management requires features to be loaded
         this.themeManagement.fetch().catch(console.error); // eslint-disable-line no-console
@@ -100,12 +104,18 @@ export default class SessionService extends ESASessionService {
      * If failed, it will be handled by the redirect to sign in.
      */
     async requireAuthentication(transition, route) {
+        
+        if (this.isAuthenticated) {
+            identifyUser(this.user);
+        }
+
         // Only when ember session invalidated
         if (!this.isAuthenticated) {
             transition.abort();
 
             if (this.user) {
                 await this.setup();
+                identifyUser(this.user);
                 this.notifications.clearAll();
                 transition.retry();
             }
@@ -116,6 +126,9 @@ export default class SessionService extends ESASessionService {
 
     handleInvalidation() {
         let transition = this.appLoadTransition;
+
+        // Reset the PostHog user when the session is invalidated (e.g. signout, token expiry, etc.)
+        resetUser();
 
         if (transition) {
             transition.send('authorizationFailed');
