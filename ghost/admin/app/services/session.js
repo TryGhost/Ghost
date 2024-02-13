@@ -2,12 +2,12 @@ import ESASessionService from 'ember-simple-auth/services/session';
 import RSVP from 'rsvp';
 import {configureScope} from '@sentry/ember';
 import {getOwner} from '@ember/application';
+import {identifyUser, resetUser} from '../utils/analytics';
 import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
-import {identifyUser, resetUser} from '../utils/analytics';
 
 export default class SessionService extends ESASessionService {
     @service configManager;
@@ -104,7 +104,6 @@ export default class SessionService extends ESASessionService {
      * If failed, it will be handled by the redirect to sign in.
      */
     async requireAuthentication(transition, route) {
-        
         if (this.isAuthenticated) {
             identifyUser(this.user);
         }

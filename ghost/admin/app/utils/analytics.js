@@ -36,7 +36,6 @@ export function trackEvent(eventName, props = {}) {
     window.plausible(eventName, {props: props});
 }
 
-
 /**
  * Calls posthog.identify() with a hashed email address as the distinct_id
  * 
@@ -68,11 +67,9 @@ export async function identifyUser(user) {
             if (user.get('createdAtUTC')) {
                 props.created_at = user.get('createdAtUTC').toISOString();
             }
-            console.log('Identifying user with hashed email', hashedEmail, props);
             window.posthog.identify(hashedEmail, props);
         }
     }
-    
 }
 
 /**
@@ -83,7 +80,6 @@ export async function identifyUser(user) {
  */
 export function resetUser() {
     if (window.posthog) {
-        console.log('Resetting posthog user');
         window.posthog.reset();
     }
 }
