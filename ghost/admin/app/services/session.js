@@ -104,7 +104,7 @@ export default class SessionService extends ESASessionService {
      * If failed, it will be handled by the redirect to sign in.
      */
     async requireAuthentication(transition, route) {
-        if (this.isAuthenticated) {
+        if (this.isAuthenticated && this.user) {
             identifyUser(this.user);
         }
 
