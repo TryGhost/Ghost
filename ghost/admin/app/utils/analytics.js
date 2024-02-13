@@ -9,7 +9,7 @@
  */
 async function hashEmail(email) {
     try {
-        const digest = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(email));
+        const digest = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(email.trim().toLowerCase()));
         const hashArray = Array.from(new Uint8Array(digest));
         const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         // Double-check that the hash is a valid sha256 hex string before returning it, else return null
