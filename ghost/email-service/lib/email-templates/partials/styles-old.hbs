@@ -269,8 +269,14 @@ figcaption {
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     font-size: 13px;
-    padding-top: 5px;
+    padding-top: 20px;
+    padding-bottom: 10px;
     line-height: 1.5em;
+    color: {{secondaryTextColor}};
+}
+
+figcaption a {
+    text-decoration: none!important;
 }
 
 code {
@@ -438,14 +444,16 @@ figure blockquote p {
 
 .feature-image-with-caption {
     padding-bottom: 10px;
+    font-size: 13px;
 }
 
 .feature-image-caption {
     width: 100%;
+    padding-top: 5px;
     padding-bottom: 30px;
     text-align: center;
     font-size: 13px;
-    color: #738a94;
+    color: {{secondaryTextColor}};
 }
 
 /* -------------------------------------
@@ -1529,6 +1537,10 @@ a[data-flickr-embed] img {
     table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
         line-height: 1.3em !important;
     }
+
+   .feature-image-caption {
+        font-size: 13px!important;
+   }
 
 }
 
