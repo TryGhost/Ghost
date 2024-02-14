@@ -264,7 +264,7 @@ module.exports = {
                 sm: '0.3rem',
                 DEFAULT: '0.4rem',
                 md: '0.6rem',
-                lg: '0.8rem',
+                lg: '0.7rem',
                 xl: '1.2rem',
                 '2xl': '1.6rem',
                 '3xl': '2.4rem',
