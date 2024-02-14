@@ -1,5 +1,6 @@
 import debounce from 'lodash/debounce';
 import useMovable from './useMovable.js';
+import {getScrollParent} from '../utils/getScrollParent.js';
 import {useCallback, useLayoutEffect, useRef} from 'react';
 
 const CARD_SPACING = 20; // default distance between card and settings panel
@@ -30,6 +31,23 @@ const getSelectedCardOrigin = () => {
     return origin;
 };
 
+function getWindowWidthAdjustment(panelElem) {
+    if (!panelElem) {
+        return 0;
+    }
+
+    return parseInt(window.getComputedStyle(panelElem).getPropertyValue('--kg-breakout-adjustment') || 0, 10);
+}
+
+function getViewportDimensions(panelElem) {
+    const windowWidthAdjustment = getWindowWidthAdjustment(panelElem);
+
+    return {
+        width: window.innerWidth - windowWidthAdjustment,
+        height: window.innerHeight
+    };
+}
+
 function keepWithinSpacing(panelElem, {x, y, origin = {x: 0, y: 0}, topSpacing, bottomSpacing, rightSpacing, leftSpacing, lastSpacing}) {
     origin = getSelectedCardOrigin();
 
@@ -37,7 +55,7 @@ function keepWithinSpacing(panelElem, {x, y, origin = {x: 0, y: 0}, topSpacing, 
         return {x: x + origin.x, y: y + origin.y};
     }
 
-    const windowWidthAdjustment = parseInt(window.getComputedStyle(panelElem).getPropertyValue('--kg-breakout-adjustment') || 0, 10);
+    const windowWidthAdjustment = getWindowWidthAdjustment(panelElem);
 
     // Take previous position into account, and adjust the spacing to allow negative spacing if the previous position was offscreen
     if (lastSpacing && lastSpacing.top < topSpacing) {
@@ -86,15 +104,12 @@ function keepWithinSpacing(panelElem, {x, y, origin = {x: 0, y: 0}, topSpacing, 
 }
 
 function keepWithinSpacingOnDrag(panelElem, {x, y, origin}) {
-    const width = panelElem.offsetWidth;
-    const height = panelElem.offsetHeight;
+    const DISTANCE_FROM_BOUNDARY = 10;
 
-    // Make sure at least 40px is still visible
-    const MINIMUM_VISIBLE = isMobile() ? 100 : 40;
-    const topSpacing = MINIMUM_VISIBLE - height;
-    const bottomSpacing = MINIMUM_VISIBLE - height;
-    const rightSpacing = MINIMUM_VISIBLE - width;
-    const leftSpacing = MINIMUM_VISIBLE - width;
+    const topSpacing = DISTANCE_FROM_BOUNDARY;
+    const bottomSpacing = DISTANCE_FROM_BOUNDARY;
+    const rightSpacing = DISTANCE_FROM_BOUNDARY;
+    const leftSpacing = DISTANCE_FROM_BOUNDARY;
 
     // Last spacing is ignored
     return keepWithinSpacing(panelElem, {x, y, origin, topSpacing, bottomSpacing, rightSpacing, leftSpacing, lastSpacing: undefined});
@@ -106,7 +121,7 @@ function keepWithinSpacingOnResize(panelElem, {x, y, origin, lastSpacing}) {
 
 export default function useSettingsPanelReposition({positionToRef} = {}, cardWidth) {
     const {ref, getPosition, setPosition} = useMovable({adjustOnResize: keepWithinSpacingOnResize, adjustOnDrag: keepWithinSpacingOnDrag});
-    const previousViewport = useRef({width: window.innerWidth, height: window.innerHeight});
+    const previousViewport = useRef(getViewportDimensions(ref.current));
     const previousCardWidth = useRef(cardWidth);
     const previousCardOrigin = useRef({x: 0, y: 0});
 
@@ -153,10 +168,12 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
     const onResize = useCallback((panelElem) => {
         let {x, y, lastSpacing} = getPosition();
 
+        const viewport = getViewportDimensions(panelElem);
+
         // If the viewport size has increased, move the panel towards the initial position instead of keeping it in the same place
         // This increases the UX when the viewport is too small and the user resizes or rotates the screen -> it will move towards the preferred position so that it is fully visible
-        if (window.innerHeight > previousViewport.current.height) {
-            const heightIncrease = window.innerHeight - previousViewport.current.height;
+        if (viewport.height > previousViewport.current.height) {
+            const heightIncrease = viewport.height - previousViewport.current.height;
             const initialPosition = getInitialPosition(panelElem);
             if (initialPosition) {
                 if (initialPosition.y > y) {
@@ -165,8 +182,8 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
             }
         }
 
-        if (window.innerWidth > previousViewport.current.width) {
-            const widthIncrease = window.innerWidth - previousViewport.current.width;
+        if (viewport.width > previousViewport.current.width) {
+            const widthIncrease = viewport.width - previousViewport.current.width;
             const initialPosition = getInitialPosition(panelElem);
             if (initialPosition) {
                 if (initialPosition.x > x) {
@@ -177,24 +194,44 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
 
         setPosition(keepWithinSpacingOnResize(panelElem, {x, y, lastSpacing}));
 
-        previousViewport.current = {width: window.innerWidth, height: window.innerHeight};
+        previousViewport.current = viewport;
     }, [getInitialPosition, setPosition, getPosition]);
 
+    // reposition on scroll container resize, covers two cases:
+    // 1. window is resized
+    // 2. sidebar is opened/closed
     useLayoutEffect(() => {
-        if (!ref) {
+        if (!ref.current) {
             return;
         }
 
-        const panelRepositionDebounced = debounce(() => {
+        const container = getScrollParent(ref.current) || document.body;
+        let prevWidth = 0;
+
+        const panelRepositionDebounced = debounce((newWidth) => {
+            prevWidth = newWidth;
             onResize(ref.current);
         }, 100, {leading: true, trailing: true});
-        window.addEventListener('resize', panelRepositionDebounced);
+
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.contentBoxSize) {
+                    const width = entry.contentBoxSize[0].inlineSize;
+                    if (typeof width === 'number' && width !== prevWidth) {
+                        panelRepositionDebounced(width);
+                    }
+                }
+            }
+        });
+
+        resizeObserver.observe(container);
 
         return () => {
-            window.removeEventListener('resize', panelRepositionDebounced);
+            resizeObserver.disconnect();
         };
     }, [onResize, ref]);
 
+    // position on first render
     useLayoutEffect(() => {
         if (!ref || !ref.current) {
             return;
