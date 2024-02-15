@@ -151,7 +151,11 @@ const ThemeList:React.FC<ThemeSettingProps> = ({
             return 1; // b comes before a
         } else {
             // Both have the same active status, sort alphabetically
-            return a.name.localeCompare(b.name);
+            if (a.package?.name && b.package?.name) {
+                return a.package.name.localeCompare(b.package.name);
+            } else {
+                return a.name.localeCompare(b.name);
+            }
         }
     });
 
