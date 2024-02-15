@@ -10,6 +10,7 @@ const config = {
     reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
     use: {
         video: 'retain-on-failure',
+        trace: 'retain-on-failure',
         // Use a single browser since we can't simultaneously test multiple browsers
         browserName: 'chromium',
         headless: !process.env.PLAYWRIGHT_DEBUG,
