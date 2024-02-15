@@ -4,7 +4,7 @@ const {deleteAllMembers, createTier, createOffer, completeStripeSubscription} = 
 
 test.describe('Portal', () => {
     test.setTimeout(90000); // override the default 60s in the config as these retries can run close to 60s
-    test.describe.only('Offers', () => {
+    test.describe('Offers', () => {
         test('Creates and uses a free-trial Offer', async ({sharedPage}) => {
             // reset members by deleting all existing
             await sharedPage.goto('/ghost');
