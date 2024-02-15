@@ -121,14 +121,21 @@ async function runAndStream(command, args, options) {
     await runAndStream('yarn', ['knex-migrator', 'init'], {cwd: coreFolder});
 
     if (resetData) {
-        const xxl = process.argv.includes('--xxl');
 
-        if (xxl) {
-            console.log(chalk.blue(`Resetting all data (with xxl)`));
-            await runAndStream('yarn', ['reset:data:xxl'], {cwd: rootFolder});
+        const {populate} = await inquirer.prompt({name: 'populate', type:'confirm', message: 'Do you want to populate the database with test data?', default: false});
+        if (populate) {
+            // ask if we want to populate the database with XXL test data or not
+            const {xxl} = await inquirer.prompt({name: 'xxl', type:'confirm', message: 'Do you want to populate the database with XXL test data?', default: false});
+            if (xxl) {
+                console.log(chalk.blue(`Resetting all data (with xxl)`));
+                await runAndStream('yarn', ['reset:data:xxl'], {cwd: rootFolder});
+            } else {
+                console.log(chalk.blue(`Resetting all data`));
+                await runAndStream('yarn', ['reset:data'], {cwd: rootFolder});
+            }
         } else {
-            console.log(chalk.blue(`Resetting all data`));
-            await runAndStream('yarn', ['reset:data'], {cwd: rootFolder});
+            console.log(chalk.blue(`Done! . Run 'yarn dev' to start the server`));
+            return;
         }
     }
 })();
