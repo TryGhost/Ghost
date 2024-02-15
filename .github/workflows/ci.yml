@@ -879,7 +879,7 @@ jobs:
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: admin-coverage
 
@@ -896,7 +896,7 @@ jobs:
 
       - name: Restore E2E coverage
         if: contains(needs.job_database-tests.result, 'success')
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: e2e-coverage
 
