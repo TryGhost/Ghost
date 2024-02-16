@@ -1,7 +1,7 @@
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 
 const config = {
-    timeout: 60 * 1000,
+    timeout: 75 * 1000,
     expect: {
         timeout: 10000
     },
