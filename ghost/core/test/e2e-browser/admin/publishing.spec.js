@@ -328,7 +328,7 @@ test.describe('Publishing', () => {
 
     test.describe('Schedule post', () => {
         // Post should be published to web and sent as a newsletter at the scheduled time
-        test('Publish and Email', async ({sharedPage}) => {
+        test('Scheduled Publish and Email', async ({sharedPage}) => {
             const postData = {
                 // This title should be unique
                 title: 'Scheduled post publish+email test',
@@ -362,7 +362,7 @@ test.describe('Publishing', () => {
         });
 
         // Post should be published to web only at the scheduled time
-        test('Publish only', async ({sharedPage}) => {
+        test('Scheduled Publish only', async ({sharedPage}) => {
             const postData = {
                 title: 'Scheduled post test',
                 body: 'This is my scheduled post body.'
@@ -392,7 +392,7 @@ test.describe('Publishing', () => {
         });
 
         // Post should be published to web only at the scheduled time
-        test('Email only', async ({sharedPage}) => {
+        test('Scheduled Email only', async ({sharedPage}) => {
             const postData = {
                 title: 'Scheduled email only test',
                 body: 'This is my scheduled post body.'
