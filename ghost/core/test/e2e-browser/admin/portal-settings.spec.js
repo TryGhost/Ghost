@@ -20,7 +20,7 @@ test.describe('Portal Settings', () => {
             const modal = await openPortalLinks(sharedPage);
 
             // fetch portal default url from input
-            const portalUrl = await modal.getByLabel('Default').inputValue();
+            const portalUrl = await modal.getByLabel('Default:').inputValue();
             await sharedPage.goto(portalUrl);
 
             const portalFrame = sharedPage.locator('[data-testid="portal-popup-frame"]');
