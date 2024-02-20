@@ -44,7 +44,7 @@ export function trackEvent(eventName, props = {}) {
  */
 export async function identifyUser(user) {
     // Return early if window.posthog doesn't exist
-    if (!window.posthog) {
+    if (!window.posthog?.__loaded) {
         return;
     }
     // User the user exists and has an email address, identify them in PostHog
@@ -79,7 +79,7 @@ export async function identifyUser(user) {
  * @returns {void}
  */
 export function resetUser() {
-    if (window.posthog) {
+    if (window.posthog?.__loaded) {
         window.posthog.reset();
     }
 }
