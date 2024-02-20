@@ -10,12 +10,8 @@ const ThemeSetting: React.FC<{
     setting: CustomThemeSetting,
     setSetting: <Setting extends CustomThemeSetting>(value: Setting['value']) => void
 }> = ({setting, setSetting}) => {
-    // Initialize a single object state to hold all text field values
     const [fieldValues, setFieldValues] = useState<{ [key: string]: string | null }>({});
-
-    // Update local state with the setting value on component mount or when the setting changes
     useEffect(() => {
-        // Convert setting.value to a string, regardless of its original type
         const valueAsString = setting.value === null ? '' : String(setting.value);
         setFieldValues(values => ({...values, [setting.key]: valueAsString}));
     }, [setting]);
