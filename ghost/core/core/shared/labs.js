@@ -47,7 +47,6 @@ const ALPHA_FEATURES = [
     'importMemberTier',
     'lexicalIndicators',
     // 'adminXOffers',
-    'filterEmailDisabled',
     'adminXDemo'
 ];
 
