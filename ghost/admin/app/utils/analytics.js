@@ -39,7 +39,7 @@ export function trackEvent(eventName, props = {}) {
     };
     window.plausible(eventName, {props: props});
 
-    if (window.posthog) {
+    if (isPosthogLoaded()) {
         window.posthog.capture(eventName, props);
     }
 }
