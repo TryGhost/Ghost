@@ -1,5 +1,9 @@
 // Wrapper function for Plausible event
 
+function isPosthogLoaded() {
+    return window.posthog?.__loaded;
+}
+
 /**
  * Hashes a user's email address so we can use it as a distinct_id in PostHog without storing the email address itself
  * 
@@ -44,7 +48,7 @@ export function trackEvent(eventName, props = {}) {
  */
 export async function identifyUser(user) {
     // Return early if window.posthog doesn't exist
-    if (!window.posthog?.__loaded) {
+    if (!isPosthogLoaded()) {
         return;
     }
     // User the user exists and has an email address, identify them in PostHog
@@ -79,7 +83,7 @@ export async function identifyUser(user) {
  * @returns {void}
  */
 export function resetUser() {
-    if (window.posthog?.__loaded) {
+    if (isPosthogLoaded()) {
         window.posthog.reset();
     }
 }
