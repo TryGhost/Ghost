@@ -42,6 +42,8 @@ test.describe('Portal', () => {
                 await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
             } catch (e) {
                 await sharedPage.goto(offerLink);
+                // Wait for the load state to ensure the page has loaded completely
+                await sharedPage.waitForLoadState('load');
 
                 // Wait for the load state to ensure the page has loaded completely
                 portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
@@ -134,6 +136,8 @@ test.describe('Portal', () => {
                 await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
             } catch (e) {
                 await sharedPage.goto(offerLink);
+                // Wait for the load state to ensure the page has loaded completely
+                await sharedPage.waitForLoadState('load');
 
                 // Wait for the load state to ensure the page has loaded completely
                 portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
@@ -217,6 +221,8 @@ test.describe('Portal', () => {
                 await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
             } catch (e) {
                 await sharedPage.goto(offerLink);
+                // Wait for the load state to ensure the page has loaded completely
+                await sharedPage.waitForLoadState('load');
 
                 // Wait for the load state to ensure the page has loaded completely
                 portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
