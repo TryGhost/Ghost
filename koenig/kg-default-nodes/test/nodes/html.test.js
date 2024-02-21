@@ -149,6 +149,22 @@ describe('HtmlNode', function () {
             // do not prettify, it will add a closing tag to the compared string causing a false pass
             element.value.should.equal('\n<!--kg-card-begin: html-->\n<div style="color:red">\n<!--kg-card-end: html-->\n');
         }));
+
+        it('renders html entities', editorTest(function () {
+            const htmlNode = $createHtmlNode({html: '<p>&lt;pre&gt;Test&lt;/pre&gt;</p>'});
+            const {element, type} = htmlNode.exportDOM(exportOptions);
+            type.should.equal('value');
+
+            element.value.should.equal('\n<!--kg-card-begin: html-->\n<p>&lt;pre&gt;Test&lt;/pre&gt;</p>\n<!--kg-card-end: html-->\n');
+        }));
+
+        it('handles single-quote attributes', editorTest(function () {
+            const htmlNode = $createHtmlNode({html: '<div data-graph-name=\'The "all-in" cost of a grant\'>Test</div>'});
+            const {element, type} = htmlNode.exportDOM(exportOptions);
+            type.should.equal('value');
+
+            element.value.should.equal('\n<!--kg-card-begin: html-->\n<div data-graph-name=\'The "all-in" cost of a grant\'>Test</div>\n<!--kg-card-end: html-->\n');
+        }));
     });
 
     describe('importDOM', function () {

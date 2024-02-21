@@ -120,4 +120,22 @@ describe('Cards', function () {
 `;
         renderedInput.should.equal(expected);
     });
+
+    it('renders HTML card with html entities and single-quote attributes', async function () {
+        lexicalState.root.children.push({
+            type: 'html',
+            html: '<p>&lt;pre&gt;Test&lt;/pre&gt;</p>\n<div data-graph-name=\'The "all-in" cost of a grant\'>Test</div>'
+        });
+
+        const renderer = new Renderer({nodes});
+        const renderedInput = await renderer.render(JSON.stringify(lexicalState), options);
+
+        const expected = `
+<!--kg-card-begin: html-->
+<p>&lt;pre&gt;Test&lt;/pre&gt;</p>
+<div data-graph-name='The "all-in" cost of a grant'>Test</div>
+<!--kg-card-end: html-->
+`;
+        renderedInput.should.equal(expected);
+    });
 });
