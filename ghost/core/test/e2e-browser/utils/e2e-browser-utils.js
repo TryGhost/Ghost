@@ -250,64 +250,72 @@ const createTier = async (page, {name, monthlyPrice, yearlyPrice, trialDays}, en
  */
 
 const createOffer = async (page, {name, tierName, offerType, amount, discountType = null, discountDuration = 3}) => {
-    await page.goto('/ghost');
-    await page.locator('[data-test-nav="settings"]').click();
+    let offerName;
+    let offerLink;
+    await test.step('Create an offer', async () => {
+        await page.goto('/ghost');
+        await page.locator('[data-test-nav="settings"]').click();
 
-    // Keep offer names unique & <= 40 characters
-    let offerName = `${name} (${new ObjectID().toHexString().slice(0, 40 - name.length - 3)})`;
-    // Tiers request can take time, so waiting until there is no connections before interacting with them
-    await page.waitForLoadState('networkidle');
+        // Keep offer names unique & <= 40 characters
+        offerName = `${name} (${new ObjectID().toHexString().slice(0, 40 - name.length - 3)})`;
+        // Tiers request can take time, so waiting until there is no connections before interacting with them
+        await page.waitForLoadState('networkidle');
 
-    const hasExistingOffers = await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).isVisible();
-    const isCTA = await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).isVisible();
-    // Archive other offers to keep the list tidy
-    // We only need 1 offer to be active at a time
-    // Either the list of active offers loads, or the CTA when no offers exist
-    if (hasExistingOffers && !isCTA) {
-        await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+        const hasExistingOffers = await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).isVisible();
+        const isCTA = await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).isVisible();
+        // Archive other offers to keep the list tidy
+        // We only need 1 offer to be active at a time
+        // Either the list of active offers loads, or the CTA when no offers exist
+        if (hasExistingOffers && !isCTA) {
+            await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
 
-        // Selector for the elements with data-testid 'offer-item'
-        // const offerItemsSelector = '[data-testid="offer-item"]';
-        await page.getByTestId('offer-item').nth(0).click();
-        await page.getByRole('button', {name: 'Archive offer'}).click();
+            // Selector for the elements with data-testid 'offer-item'
+            // const offerItemsSelector = '[data-testid="offer-item"]';
+            await page.getByTestId('offer-item').nth(0).click();
+            await page.getByRole('button', {name: 'Archive offer'}).click();
 
-        const confirmModal = await page.getByTestId('confirmation-modal');
-        await confirmModal.getByRole('button', {name: 'Archive'}).click();
-    }
-
-    if (isCTA) {
-        await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).click();
-    } else {
-        await page.getByText('New offer').click();
-    }
-
-    // const newOfferButton = await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}) || await page.getByTestId('offers').getByRole('button', {name: 'New offer'});
-    // await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).click();
-    // await newOfferButton.click();
-    await page.getByLabel('Offer name').fill(offerName);
-
-    if (offerType === 'freeTrial') {
-        // await page.getByRole('button', {name: 'Free trial Give free access for a limited time.'}).click();
-        await page.getByText('Give free access for a limited time').click();
-        await page.getByLabel('Trial duration').fill(`${amount}`);
-    } else if (offerType === 'discount') {
-        await page.getByLabel('Amount off').fill(`${amount}`);
-        if (discountType === 'multiple-months') {
-            await chooseOptionInSelect(page.getByTestId('duration-select-offers'), `Multiple-months`);
-            await page.getByLabel('Duration in months').fill(discountDuration.toString());
-            // await page.locator('[data-test-select="offer-duration"]').selectOption('repeating');
-            // await page.locator('input#duration-months').fill(discountDuration.toString());
+            const confirmModal = await page.getByTestId('confirmation-modal');
+            await confirmModal.getByRole('button', {name: 'Archive'}).click();
         }
 
-        if (discountType === 'forever') {
-            await chooseOptionInSelect(page.getByTestId('duration-select-offers'), `Forever`);
+        if (isCTA) {
+            await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).click();
+        } else {
+            await page.getByText('New offer').click();
         }
-    }
 
-    await chooseOptionInSelect(page.getByTestId('tier-cadence-select-offers'), `${tierName} - Monthly`);
-    await page.getByRole('button', {name: 'Publish'}).click();
-    await page.waitForLoadState('networkidle');
-    const offerLink = await page.locator('input[name="offer-url"]').inputValue();
+        // const newOfferButton = await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}) || await page.getByTestId('offers').getByRole('button', {name: 'New offer'});
+        // await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).click();
+        // await newOfferButton.click();
+        await page.getByLabel('Offer name').fill(offerName);
+
+        if (offerType === 'freeTrial') {
+            // await page.getByRole('button', {name: 'Free trial Give free access for a limited time.'}).click();
+            await page.getByText('Give free access for a limited time').click();
+            await page.getByLabel('Trial duration').fill(`${amount}`);
+        } else if (offerType === 'discount') {
+            await page.getByLabel('Amount off').fill(`${amount}`);
+            if (discountType === 'multiple-months') {
+                await chooseOptionInSelect(page.getByTestId('duration-select-offers'), `Multiple-months`);
+                await page.getByLabel('Duration in months').fill(discountDuration.toString());
+                // await page.locator('[data-test-select="offer-duration"]').selectOption('repeating');
+                // await page.locator('input#duration-months').fill(discountDuration.toString());
+            }
+
+            if (discountType === 'forever') {
+                await chooseOptionInSelect(page.getByTestId('duration-select-offers'), `Forever`);
+            }
+        }
+
+        await chooseOptionInSelect(page.getByTestId('tier-cadence-select-offers'), `${tierName} - Monthly`);
+        await page.getByRole('button', {name: 'Publish'}).click();
+        await page.waitForLoadState('networkidle');
+
+        const offerLinkInput = await page.locator('input[name="offer-url"]');
+        // sometimes offer link is not generated, and if so the rest of the test will fail
+        await expect(offerLinkInput).not.toBeEmpty();
+        offerLink = await offerLinkInput.inputValue();
+    });
 
     return {offerName, offerLink};
 };

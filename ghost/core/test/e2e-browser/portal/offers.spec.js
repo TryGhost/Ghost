@@ -3,6 +3,7 @@ const test = require('../fixtures/ghost-test');
 const {deleteAllMembers, createTier, createOffer, completeStripeSubscription} = require('../utils');
 
 test.describe('Portal', () => {
+    test.setTimeout(90000); // override the default 60s in the config as these retries can run close to 60s
     test.describe('Offers', () => {
         test('Creates and uses a free-trial Offer', async ({sharedPage}) => {
             // reset members by deleting all existing
@@ -33,9 +34,11 @@ test.describe('Portal', () => {
             await sharedPage.goto(offerLink);
 
             // Wait for the load state to ensure the page has loaded completely
-            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            let portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            await expect(portalTriggerButton).toBeVisible();
+
             // Wait for the iframe to be attached to the DOM
-            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'attached'});
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
 
             // Use the frameLocator to interact with elements inside the frame
             const portalFrameLocator = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -113,9 +116,12 @@ test.describe('Portal', () => {
             // Wait for the load state to ensure the page has loaded completely
             await sharedPage.waitForLoadState('load');
 
-            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            // Wait for the load state to ensure the page has loaded completely
+            let portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            await expect(portalTriggerButton).toBeVisible();
+
             // Wait for the iframe to be attached to the DOM
-            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'attached'});
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
 
             // Use the frameLocator to interact with elements inside the frame
             const portalFrameLocator = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -184,9 +190,12 @@ test.describe('Portal', () => {
             // Wait for the load state to ensure the page has loaded completely
             await sharedPage.waitForLoadState('load');
 
-            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            // Wait for the load state to ensure the page has loaded completely
+            let portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            await expect(portalTriggerButton).toBeVisible();
+
             // Wait for the iframe to be attached to the DOM
-            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'attached'});
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
 
             // Use the frameLocator to interact with elements inside the frame
             const portalFrameLocator = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -256,9 +265,12 @@ test.describe('Portal', () => {
             // Wait for the load state to ensure the page has loaded completely
             await sharedPage.waitForLoadState('load');
 
-            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            // Wait for the load state to ensure the page has loaded completely
+            let portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            await expect(portalTriggerButton).toBeVisible();
+
             // Wait for the iframe to be attached to the DOM
-            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'attached'});
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
 
             // Use the frameLocator to interact with elements inside the frame
             const portalFrameLocator = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
