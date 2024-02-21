@@ -66,6 +66,9 @@ typings/
 # dotenv environment variables file
 .env
 
+# direnv
+.direnv
+
 # IDE
 .idea/*
 *.iml
