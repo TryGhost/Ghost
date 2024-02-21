@@ -60,8 +60,7 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, class
     }, [visibleIframeIndex, iframes]);
 
     useEffect(() => {
-        const invisibleIframeIndex = visibleIframeIndex === 0 ? 1 : 0;
-        const iframe = iframes[invisibleIframeIndex].current;
+        const iframe = iframes[visibleIframeIndex].current;
 
         if (iframe) {
             iframe.contentWindow?.scrollTo(0, scrollPosition);
