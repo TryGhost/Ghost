@@ -26,6 +26,9 @@ test.describe('Portal', () => {
                 amount: 14
             });
 
+            // sometimes offer link is not generated, and if so the rest of the test will fail
+            await expect(offerLink).not.toBeEmpty();
+
             // check that offer was added in the offer list screen
             await sharedPage.goto('/ghost');
             await sharedPage.locator('[data-test-nav="settings"]').click();
@@ -38,18 +41,7 @@ test.describe('Portal', () => {
             await expect(portalTriggerButton).toBeVisible();
 
             // Wait for the iframe to be attached to the DOM
-            try {
-                await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
-            } catch (e) {
-                await sharedPage.goto(offerLink);
-                // Wait for the load state to ensure the page has loaded completely
-                await sharedPage.waitForLoadState('load');
-
-                // Wait for the load state to ensure the page has loaded completely
-                portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
-                await expect(portalTriggerButton).toBeVisible();
-                await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
-            }
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
 
             // Use the frameLocator to interact with elements inside the frame
             const portalFrameLocator = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -114,6 +106,9 @@ test.describe('Portal', () => {
                 amount: 10
             });
 
+            // sometimes offer link is not generated, and if so the rest of the test will fail
+            await expect(offerLink).not.toBeEmpty();
+
             // check that offer was added in the offer list screen
             await sharedPage.goto('/ghost');
             await sharedPage.locator('[data-test-nav="settings"]').click();
@@ -132,18 +127,7 @@ test.describe('Portal', () => {
             await expect(portalTriggerButton).toBeVisible();
 
             // Wait for the iframe to be attached to the DOM
-            try {
-                await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
-            } catch (e) {
-                await sharedPage.goto(offerLink);
-                // Wait for the load state to ensure the page has loaded completely
-                await sharedPage.waitForLoadState('load');
-
-                // Wait for the load state to ensure the page has loaded completely
-                portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
-                await expect(portalTriggerButton).toBeVisible();
-                await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
-            }
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
 
             // Use the frameLocator to interact with elements inside the frame
             const portalFrameLocator = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -203,6 +187,9 @@ test.describe('Portal', () => {
                 discountDuration: 3
             });
 
+            // sometimes offer link is not generated, and if so the rest of the test will fail
+            await expect(offerLink).not.toBeEmpty();
+
             await sharedPage.goto('/ghost');
             await sharedPage.locator('[data-test-nav="settings"]').click();
             await expect(await sharedPage.getByTestId('offers')).toContainText(offerName);
@@ -217,18 +204,7 @@ test.describe('Portal', () => {
             await expect(portalTriggerButton).toBeVisible();
 
             // Wait for the iframe to be attached to the DOM
-            try {
-                await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
-            } catch (e) {
-                await sharedPage.goto(offerLink);
-                // Wait for the load state to ensure the page has loaded completely
-                await sharedPage.waitForLoadState('load');
-
-                // Wait for the load state to ensure the page has loaded completely
-                portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
-                await expect(portalTriggerButton).toBeVisible();
-                await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
-            }
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
 
             // Use the frameLocator to interact with elements inside the frame
             const portalFrameLocator = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -288,6 +264,9 @@ test.describe('Portal', () => {
                 amount: 10
             });
 
+            // sometimes offer link is not generated, and if so the rest of the test will fail
+            await expect(offerLink).not.toBeEmpty();
+
             // check that offer was added in the offer list screen
             await sharedPage.goto('/ghost');
             await sharedPage.locator('[data-test-nav="settings"]').click();
@@ -303,19 +282,7 @@ test.describe('Portal', () => {
             await expect(portalTriggerButton).toBeVisible();
 
             // Wait for the iframe to be attached to the DOM
-            try {
-                await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
-            } catch (e) {
-                await sharedPage.goto('/ghost');
-                await sharedPage.goto(offerLink);
-                // Wait for the load state to ensure the page has loaded completely
-                await sharedPage.waitForLoadState('load');
-
-                // Wait for the load state to ensure the page has loaded completely
-                portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
-                await expect(portalTriggerButton).toBeVisible();
-                await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
-            }
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
 
             // Use the frameLocator to interact with elements inside the frame
             const portalFrameLocator = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
@@ -369,6 +336,9 @@ test.describe('Portal', () => {
                 offerType: 'discount',
                 amount: 10
             });
+
+            // sometimes offer link is not generated, and if so the rest of the test will fail
+            await expect(offerLink).not.toBeEmpty();
 
             // Archive all existing offers by creating a new offer. Using the createOffer util auto-archives all existing offers
             await createOffer(sharedPage, {
