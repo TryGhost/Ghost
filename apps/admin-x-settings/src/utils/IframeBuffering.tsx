@@ -45,7 +45,6 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, class
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [generateContent]);
 
-    // track the scroll position of the visible iframe and set scroll position of the invisible iframe
     useEffect(() => {
         const iframe = iframes[visibleIframeIndex].current;
         const onScroll = () => {
