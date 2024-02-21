@@ -310,7 +310,11 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
         await chooseOptionInSelect(page.getByTestId('tier-cadence-select-offers'), `${tierName} - Monthly`);
         await page.getByRole('button', {name: 'Publish'}).click();
         await page.waitForLoadState('networkidle');
-        offerLink = await page.locator('input[name="offer-url"]').inputValue();
+
+        const offerLinkInput = await page.locator('input[name="offer-url"]');
+        // sometimes offer link is not generated, and if so the rest of the test will fail
+        await expect(offerLinkInput).not.toBeEmpty();
+        offerLink = await offerLinkInput.inputValue();
     });
 
     return {offerName, offerLink};
