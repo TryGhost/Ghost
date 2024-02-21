@@ -29,6 +29,6 @@
     "@tryghost/http-cache-utils": "0.1.11",
     "@tryghost/tpl": "0.1.26",
     "lodash": "4.17.21",
-    "semver": "7.5.4"
+    "semver": "7.6.0"
   }
 }
