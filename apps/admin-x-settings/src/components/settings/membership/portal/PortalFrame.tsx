@@ -5,9 +5,10 @@ type PortalFrameProps = {
     href: string;
     onDestroyed?: () => void;
     selectedTab?: string;
+    portalParent?: string;
 }
 
-const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab}) => {
+const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab, portalParent}) => {
     if (!selectedTab) {
         selectedTab = 'signup';
     }
@@ -49,11 +50,19 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
         return null;
     }
 
+    let loaderClassNames = 'mt-[-7%] flex h-screen items-center justify-center';
+    let loaderVisibility = 'hidden';
+
+    if (portalParent === 'preview') {
+        loaderClassNames = 'absolute z-50 mt-[-7%] flex h-screen items-center justify-center';
+        loaderVisibility = 'invisible';
+    }
+
     return (
-        <>{isInvisible && <div className="mt-[-7%] flex h-screen items-center justify-center"><span><LoadingIndicator /></span></div>}
+        <>{isInvisible && <div className={loaderClassNames}><span><LoadingIndicator /></span></div>}
             <iframe
                 ref={iframeRef}
-                className={!isInvisible && hasLoaded ? '' : 'hidden'}
+                className={!isInvisible && hasLoaded ? '' : loaderVisibility}
                 data-testid="portal-preview"
                 height="100%"
                 src={href}

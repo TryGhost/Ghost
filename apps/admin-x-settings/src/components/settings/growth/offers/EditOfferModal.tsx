@@ -249,6 +249,7 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
 
     const iframe = <PortalFrame
         href={href || ''}
+        portalParent='offers'
     />;
 
     return offerById ? <PreviewModalContent
