@@ -18591,10 +18591,10 @@ html-to-text@8.2.1:
     minimist "^1.2.6"
     selderee "^0.6.0"
 
-html-validate@8.9.1:
-  version "8.9.1"
-  resolved "https://registry.yarnpkg.com/html-validate/-/html-validate-8.9.1.tgz#7554bc56971786da162d6b5e40b1e1a32857ee26"
-  integrity sha512-2tWa2FtFALooZ5wMDbY+HS0BieoiRfS5IeiG2XeM6bb3Jx4dmN1HFPFt0v3j7r3SpNxEVKiXYLdkBZI3kkca/g==
+html-validate@8.10.0:
+  version "8.10.0"
+  resolved "https://registry.yarnpkg.com/html-validate/-/html-validate-8.10.0.tgz#6c1306fafd14bf632e088ae746d035c9c40794f3"
+  integrity sha512-mgVA+N3pLSoGkTzfb/j+Tr6C28lC04g1KtzplbCWuzKCkS14H+HHrEev/ene29NpIsikx2J1SfJR8xdRz2qkJA==
   dependencies:
     "@babel/code-frame" "^7.10.0"
     "@html-validate/stylish" "^4.1.0"
@@ -18602,7 +18602,7 @@ html-validate@8.9.1:
     ajv "^8.0.0"
     deepmerge "4.3.1"
     glob "^10.0.0"
-    ignore "5.3.0"
+    ignore "5.3.1"
     kleur "^4.1.0"
     minimist "^1.2.0"
     prompts "^2.0.0"
@@ -18942,10 +18942,10 @@ iferr@^0.1.5:
   resolved "https://registry.yarnpkg.com/iferr/-/iferr-0.1.5.tgz#c60eed69e6d8fdb6b3104a1fcbca1c192dc5b501"
   integrity sha512-DUNFN5j7Tln0D+TxzloUjKB+CtVu6myn0JEFak6dG18mNt9YkQ6lzGCdafwofISZ1lLF3xRHJ98VKy9ynkcFaA==
 
-ignore@5.3.0, ignore@^5.0.4, ignore@^5.1.1, ignore@^5.2.0, ignore@^5.2.4:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.3.0.tgz#67418ae40d34d6999c95ff56016759c718c82f78"
-  integrity sha512-g7dmpshy+gD7mh88OC9NwSGTKoc3kyLAZQRU1mt53Aw/vnvfXnbC+F/7F7QoYVKbV+KNvJx8wArewKy1vXMtlg==
+ignore@5.3.1, ignore@^5.0.4, ignore@^5.1.1, ignore@^5.2.0, ignore@^5.2.4:
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.3.1.tgz#5073e554cd42c5b33b394375f538b8593e34d4ef"
+  integrity sha512-5Fytz/IraMjqpwfd34ke28PTVMjZjJG2MPn5t7OE4eUCUNf8BAa7b5WUS9/Qvr6mwOQS7Mk6vdsMno5he+T8Xw==
 
 ignore@^4.0.6:
   version "4.0.6"
