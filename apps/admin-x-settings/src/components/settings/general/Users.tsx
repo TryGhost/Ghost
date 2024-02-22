@@ -269,7 +269,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         >
             <Owner user={ownerUser} />
             {/* if there are no users besides the owner user, hide the tabs*/}
-            {(users.length > 1 || invites) && <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />}
+            {(users.length > 1 || invites.length > 0) && <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />}
             {hasNextPage && <Button
                 label={`Load more (showing ${users.length}/${totalUsers} users)`}
                 link
