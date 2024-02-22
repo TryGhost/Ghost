@@ -12,10 +12,11 @@ class SlackNotificationsServiceWrapper {
      * @param {string} deps.siteUrl
      * @param {boolean} deps.isEnabled
      * @param {URL} deps.webhookUrl
+     * @param {number} deps.minThreshold
      *
      * @returns {import('@tryghost/slack-notifications/lib/SlackNotificationsService')}
      */
-    static create({siteUrl, isEnabled, webhookUrl}) {
+    static create({siteUrl, isEnabled, webhookUrl, minThreshold}) {
         const {
             SlackNotificationsService,
             SlackNotifications
@@ -32,7 +33,8 @@ class SlackNotificationsServiceWrapper {
             logging,
             config: {
                 isEnabled,
-                webhookUrl
+                webhookUrl,
+                minThreshold
             },
             slackNotifications
         });
@@ -49,8 +51,9 @@ class SlackNotificationsServiceWrapper {
         const siteUrl = urlUtils.getSiteUrl();
         const isEnabled = !!(hostSettings?.milestones?.enabled && hostSettings?.milestones?.url);
         const webhookUrl = hostSettings?.milestones?.url;
+        const minThreshold = hostSettings?.milestones?.minThreshold ? parseInt(hostSettings.milestones.minThreshold) : 0;
 
-        this.#api = SlackNotificationsServiceWrapper.create({siteUrl, isEnabled, webhookUrl});
+        this.#api = SlackNotificationsServiceWrapper.create({siteUrl, isEnabled, webhookUrl, minThreshold});
 
         this.#api.subscribeEvents();
     }
