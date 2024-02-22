@@ -229,27 +229,32 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         {
             id: 'users-admins',
             title: 'Administrators',
-            contents: (<UsersList groupname='administrators' users={adminUsers} />)
+            contents: (<UsersList groupname='administrators' users={adminUsers} />),
+            counter: adminUsers.length ? adminUsers.length : undefined
         },
         {
             id: 'users-editors',
             title: 'Editors',
-            contents: (<UsersList groupname='editors' users={editorUsers} />)
+            contents: (<UsersList groupname='editors' users={editorUsers} />),
+            counter: editorUsers.length ? editorUsers.length : undefined
         },
         {
             id: 'users-authors',
             title: 'Authors',
-            contents: (<UsersList groupname='authors' users={authorUsers} />)
+            contents: (<UsersList groupname='authors' users={authorUsers} />),
+            counter: authorUsers.length ? authorUsers.length : undefined
         },
         {
             id: 'users-contributors',
             title: 'Contributors',
-            contents: (<UsersList groupname='contributors' users={contributorUsers} />)
+            contents: (<UsersList groupname='contributors' users={contributorUsers} />),
+            counter: contributorUsers.length ? contributorUsers.length : undefined
         },
         {
             id: 'users-invited',
             title: 'Invited',
-            contents: (<InvitesUserList users={invites} />)
+            contents: (<InvitesUserList users={invites} />),
+            counter: invites.length ? invites.length : undefined
         }
     ];
 
@@ -263,7 +268,8 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
             title='Staff'
         >
             <Owner user={ownerUser} />
-            <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />
+            {/* if there are no users besides the owner user, hide the tabs*/}
+            {users.length > 1 && <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />}
             {hasNextPage && <Button
                 label={`Load more (showing ${users.length}/${totalUsers} users)`}
                 link
