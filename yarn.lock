@@ -27277,10 +27277,10 @@ sane@^4.0.0, sane@^4.1.0:
     minimist "^1.1.1"
     walker "~1.0.5"
 
-sanitize-html@2.12.0:
-  version "2.12.0"
-  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.12.0.tgz#79ddc542ca18fcb122ea4360c9d1e27b98432309"
-  integrity sha512-2pq2H0b4npSaMPrRuauYVml1Q3BzaL67Y8WDOk9gsqoS8gS+VFZcgwF1ITJbfOCHgw1sUQMG14KwXyVE+75tSg==
+sanitize-html@2.12.1:
+  version "2.12.1"
+  resolved "https://registry.yarnpkg.com/sanitize-html/-/sanitize-html-2.12.1.tgz#280a0f5c37305222921f6f9d605be1f6558914c7"
+  integrity sha512-Plh+JAn0UVDpBRP/xEjsk+xDCoOvMBwQUf/K+/cBAVuTbtX8bj2VB7S1sL1dssVpykqp0/KPSesHrqXtokVBpA==
   dependencies:
     deepmerge "^4.2.2"
     escape-string-regexp "^4.0.0"
