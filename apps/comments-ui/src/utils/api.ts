@@ -122,7 +122,11 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 return json;
             },
             browse({page, postId}: {page: number, postId: string}) {
-                firstCommentsLoadedAt = firstCommentsLoadedAt ?? new Date().toISOString();
+                // use the most recent round 10sec timestamp to fetch comments so we can have some caching
+                const now = Date.now();
+                const timestamp = (new Date(now - (now % 10000))).toISOString();
+
+                firstCommentsLoadedAt = firstCommentsLoadedAt ?? timestamp;
 
                 const filter = encodeURIComponent(`post_id:'${postId}'+created_at:<=${firstCommentsLoadedAt}`);
                 const order = encodeURIComponent('created_at DESC, id DESC');
