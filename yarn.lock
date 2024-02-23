@@ -29060,10 +29060,10 @@ terser-webpack-plugin@^5.3.10:
     serialize-javascript "^6.0.1"
     terser "^5.26.0"
 
-terser@5.27.2, terser@^5.26.0, terser@^5.7.0:
-  version "5.27.2"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.27.2.tgz#577a362515ff5635f98ba149643793a3973ba77e"
-  integrity sha512-sHXmLSkImesJ4p5apTeT63DsV4Obe1s37qT8qvwHRmVxKTBH7Rv9Wr26VcAMmLbmk9UliiwK8z+657NyJHHy/w==
+terser@5.28.0, terser@^5.26.0, terser@^5.7.0:
+  version "5.28.0"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.28.0.tgz#5b335fdb45f2ebf4061bf55df9e6600eb4d2b48e"
+  integrity sha512-UK1n2JZN6gqfwmjzcikRp+uF/7jdwPXO7M0k/Hnqxzj3T5POL4YBVrv5Y4MKixTzBq4OmH7FfEYRxcy/Eh7YhA==
   dependencies:
     "@jridgewell/source-map" "^0.3.3"
     acorn "^8.8.2"
