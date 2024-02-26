@@ -16,7 +16,7 @@ module.exports = {
     docName: 'slugs',
     generate: {
         headers: {
-            cacheInvalidate: true
+            cacheInvalidate: false
         },
         options: [
             'include',
