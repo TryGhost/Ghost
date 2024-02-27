@@ -99,12 +99,12 @@ test.describe('Auth Frame', async () => {
         // Check comment2 is replaced with a hidden message
         const secondComment = comments.nth(1);
         await expect(secondComment).toHaveText('This comment has been hidden.');
-        await expect(secondComment).not.toContainText('This is comment 4');
+        await expect(secondComment).not.toContainText('This is comment 2');
 
         // Check can show it again
         await moreButtons.nth(1).click();
         await moreButtons.nth(1).getByText('Show comment').click();
-        await expect(secondComment).toContainText('This is comment 4');
+        await expect(secondComment).toContainText('This is comment 2');
     });
 
     test('has admin options when signed in to Ghost admin and as a member', async ({page}) => {
@@ -156,12 +156,12 @@ test.describe('Auth Frame', async () => {
         // Check comment2 is replaced with a hidden message
         const secondComment = comments.nth(1);
         await expect(secondComment).toHaveText('This comment has been hidden.');
-        await expect(secondComment).not.toContainText('This is comment 4');
+        await expect(secondComment).not.toContainText('This is comment 2');
 
         // Check can show it again
         await moreButtons.nth(1).click();
         await moreButtons.nth(1).getByText('Show comment').click();
-        await expect(secondComment).toContainText('This is comment 4');
+        await expect(secondComment).toContainText('This is comment 2');
     });
 });
 
