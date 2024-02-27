@@ -62,10 +62,10 @@ export class MockedApi {
             const bDate = new Date(b.created_at).getTime();
 
             if (aDate === bDate) {
-                return a.id > b.id ? 1 : -1;
+                return a.id > b.id ? -1 : 1;
             }
 
-            return aDate > bDate ? 1 : -1;
+            return aDate > bDate ? -1 : 1;
         });
 
         let filteredComments = this.comments;
