@@ -28,7 +28,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
     }
 
     // To fix pagination when we create new comments (or people post comments after you loaded the page, we need to only load comments creatd AFTER the page load)
-    let firstCommentsLoadedAt: null | string = null;
+    let firstCommentCreatedAt: null | string = null;
 
     const api = {
         site: {
@@ -122,17 +122,18 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 return json;
             },
             browse({page, postId}: {page: number, postId: string}) {
-                // use the most recent round 10sec timestamp to fetch comments so we can have some caching
-                const now = Date.now();
-                const timestamp = (new Date(now - (now % 10000))).toISOString();
+                let filterString = `post_id:'${postId}'`;
 
-                firstCommentsLoadedAt = firstCommentsLoadedAt ?? timestamp;
+                if (firstCommentCreatedAt) {
+                    filterString += `+created_at:<=${firstCommentCreatedAt}`;
+                }
 
-                const filter = encodeURIComponent(`post_id:'${postId}'+created_at:<=${firstCommentsLoadedAt}`);
+                const filter = encodeURIComponent(filterString);
                 const order = encodeURIComponent('created_at DESC, id DESC');
 
                 const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=5&order=${order}&filter=${filter}&page=${page}`});
-                return makeRequest({
+
+                const response = makeRequest({
                     url,
                     method: 'GET',
                     headers: {
@@ -146,6 +147,17 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                         throw new Error('Failed to fetch comments');
                     }
                 });
+
+                if (!firstCommentCreatedAt) {
+                    response.then((body) => {
+                        const firstComment = body.comments[0];
+                        if (firstComment) {
+                            firstCommentCreatedAt = firstComment.created_at;
+                        }
+                    });
+                }
+
+                return response;
             },
             async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId: string; limit?: number | 'all'}) {
                 const filter = encodeURIComponent(`id:>'${afterReplyId}'`);
