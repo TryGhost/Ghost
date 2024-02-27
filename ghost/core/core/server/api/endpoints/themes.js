@@ -91,7 +91,7 @@ module.exports = {
                 const {theme, themeOverridden} = await themeService.api.installFromGithub(frame.options.ref);
 
                 if (themeOverridden) {
-                    this.headers.cacheInvalidate = true;
+                    frame.setHeader('X-Cache-Invalidate', '/*');
                 }
 
                 events.emit('theme.uploaded', {name: theme.name});
@@ -125,8 +125,7 @@ module.exports = {
             return themeService.api.setFromZip(zip)
                 .then(({theme, themeOverridden}) => {
                     if (themeOverridden) {
-                        // CASE: clear cache
-                        this.headers.cacheInvalidate = true;
+                        frame.setHeader('X-Cache-Invalidate', '/*');
                     }
                     events.emit('theme.uploaded', {name: theme.name});
                     return theme;
