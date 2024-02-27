@@ -1,5 +1,5 @@
 import fs from 'fs';
-import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, pasteHtml, pasteText} from '../utils/e2e';
+import {assertHTML, ctrlOrCmd, focusEditor, html, initialize, insertCard, paste, pasteHtml, pasteText} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 test.describe('Paste behaviour', async () => {
@@ -437,6 +437,60 @@ test.describe('Paste behaviour', async () => {
                     <span data-lexical-text="true">Nested Google heading</span>
                 </h1>
             `);
+        });
+    });
+
+    test.describe('Inside cards', function () {
+        test('pasting inside HTML card CodeMirror editor works', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'html'});
+
+            await expect(page.locator('.cm-content[contenteditable="true"]')).toBeVisible();
+
+            await paste(page, {
+                'text/plain': 'ignore default Lexical behaviour',
+                'text/html': '<meta charset=\'utf-8\'><div style="color: #abb2bf;background-color: #282c34;font-family: \'Operator Mono Lig\', Menlo, Monaco, \'Courier New\', monospace;font-weight: normal;font-size: 12px;line-height: 14px;white-space: pre;"><div><span style="color: #7f848e;font-style: italic;">ignore default Lexical behaviour</span></div></div>'
+            });
+
+            await assertHTML(page, html`
+                <div data-lexical-decorator="true" contenteditable="false">
+                  <div><svg></svg></div>
+                  <div
+                    data-kg-card-editing="true"
+                    data-kg-card-selected="true"
+                    data-kg-card="html">
+                    <div>
+                      <div>
+                        <div>
+                          <div aria-live="polite"></div>
+                          <div tabindex="-1">
+                            <div aria-hidden="true">
+                              <div>
+                                <div>9</div>
+                                <div>1</div>
+                              </div>
+                            </div>
+                            <div
+                              spellcheck="false"
+                              autocorrect="off"
+                              autocapitalize="off"
+                              translate="no"
+                              contenteditable="true"
+                              role="textbox"
+                              aria-multiline="true"
+                              data-language="html">
+                              <div>ignore default Lexical behaviour</div>
+                            </div>
+                            <div aria-hidden="true"><div></div></div>
+                            <div aria-hidden="true"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p><br /></p>
+            `, {ignoreCardContents: false});
         });
     });
 });

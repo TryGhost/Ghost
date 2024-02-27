@@ -264,11 +264,17 @@ export async function assertRootChildren(page, expectedState) {
     expect(actual).toEqual(expected);
 }
 
-export async function pasteText(page, text, mimeType = 'text/plain') {
+export async function paste(page, data) {
+    const setDataCommands = Object.keys(data).map((mimeType) => {
+        return `
+            dataTransfer.setData('${mimeType}', ${JSON.stringify(data[mimeType])});
+        `;
+    });
+
     const pasteCommand = `
-        const text = ${JSON.stringify(text)};
         const dataTransfer = new DataTransfer();
-        dataTransfer.setData('${mimeType}', text);
+
+        ${setDataCommands.join('\n')};
 
         document.activeElement.dispatchEvent(new ClipboardEvent('paste', {
             clipboardData: dataTransfer,
@@ -282,12 +288,16 @@ export async function pasteText(page, text, mimeType = 'text/plain') {
     await page.evaluate(pasteCommand);
 }
 
+export async function pasteText(page, content) {
+    await paste(page, {'text/plain': content});
+}
+
 export async function pasteHtml(page, content) {
-    await pasteText(page, content, 'text/html');
+    await paste(page, {'text/html': content});
 }
 
 export async function pasteLexical(page, content) {
-    await pasteText(page, content, 'application/x-lexical-editor');
+    await paste(page, {'application/x-lexical-editor': content});
 }
 
 export async function dragMouse(

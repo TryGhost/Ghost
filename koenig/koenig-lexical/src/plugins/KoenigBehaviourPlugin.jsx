@@ -1270,7 +1270,13 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                     // avoid Koenig behaviours when an inner element (e.g. a card input) has focus
                     // and event wasn't triggered from nested editor
                     if (document.activeElement !== editor.getRootElement() && !isNested) {
-                        return false;
+                        // ignore default Lexical behaviour when inside an inner input or contenteditable,
+                        // without this paste events inside CodeMirror for example will replace the card
+                        if (shouldIgnoreEvent(clipboardEvent)) {
+                            return true;
+                        } else {
+                            return false;
+                        }
                     }
 
                     const text = clipboardEvent?.clipboardData?.getData(MIME_TEXT_PLAIN);
