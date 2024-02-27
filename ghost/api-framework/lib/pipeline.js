@@ -188,6 +188,8 @@ const pipeline = (apiController, apiUtils, apiType) => {
     return keys.reduce((obj, method) => {
         const apiImpl = _.cloneDeep(apiController)[method];
 
+        Object.freeze(apiImpl.headers);
+
         obj[method] = async function wrapper() {
             const apiConfig = {docName, method};
             let options;
