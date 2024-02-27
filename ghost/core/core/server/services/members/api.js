@@ -27,6 +27,24 @@ const ghostMailer = new mail.GhostMailer();
 
 module.exports = createApiInstance;
 
+function trimLeadingWhitespace(strings, ...values) {
+    // Interweave the strings with the
+    // substitution vars first.
+    let output = '';
+    for (let i = 0; i < values.length; i++) {
+        output += strings[i] + values[i];
+    }
+    output += strings[values.length];
+
+    // Split on newlines.
+    const lines = output.split(/(?:\r\n|\n|\r)/);
+
+    // Rip out the leading whitespace on each line.
+    return lines.map((line) => {
+        return line.trimStart();
+    }).join('\n').trim();
+}
+
 function createApiInstance(config) {
     const membersApiInstance = MembersApi({
         tokenConfig: config.getTokenConfig(),
@@ -75,7 +93,7 @@ function createApiInstance(config) {
                 const siteTitle = settingsCache.get('title');
                 switch (type) {
                 case 'subscribe':
-                    return `
+                    return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
                         ${t('You\'re one tap away from subscribing to {{siteTitle}} — please confirm your email address with this link:', {siteTitle, interpolation: {escapeValue: false}})}
@@ -92,7 +110,7 @@ function createApiInstance(config) {
                         ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be subscribed.')}
                         `;
                 case 'signup':
-                    return `
+                    return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
                         ${t('Tap the link below to complete the signup process for {{siteTitle}}, and be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
@@ -109,7 +127,7 @@ function createApiInstance(config) {
                         ${t('If you did not make this request, you can simply delete this message.')} ${t('You will not be signed up, and no account will be created for you.')}
                         `;
                 case 'signup-paid':
-                    return `
+                    return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
                         ${t('Thank you for subscribing to {{siteTitle}}. Tap the link below to be automatically signed in:', {siteTitle, interpolation: {escapeValue: false}})}
@@ -126,7 +144,7 @@ function createApiInstance(config) {
                         ${t('Thank you for subscribing to {{siteTitle}}!', {siteTitle, interpolation: {escapeValue: false}})}
                         `;
                 case 'updateEmail':
-                    return `
+                    return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
                         ${t('Please confirm your email address with this link:')}
@@ -142,7 +160,7 @@ function createApiInstance(config) {
                         `;
                 case 'signin':
                 default:
-                    return `
+                    return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
                         ${t('Welcome back! Use this link to securely sign in to your {{siteTitle}} account:', {siteTitle, interpolation: {escapeValue: false}})}
