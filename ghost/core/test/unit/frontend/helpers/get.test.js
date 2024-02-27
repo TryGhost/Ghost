@@ -22,9 +22,7 @@ describe('{{#get}} helper', function () {
     });
 
     beforeEach(function () {
-        fn = sinon.spy(function () {
-            return '';
-        });
+        fn = sinon.spy();
         inverse = sinon.spy();
 
         locals = {root: {}, globalProp: {foo: 'bar'}};
