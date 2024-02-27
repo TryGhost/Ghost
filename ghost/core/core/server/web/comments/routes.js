@@ -11,8 +11,6 @@ module.exports = function apiRoutes() {
     const router = express.Router('comment api');
     router.use(bodyParser.json({limit: '50mb'}));
 
-    // Global handling for member session, ensures a member is logged in to the frontend
-
     const countsCache = shared.middleware.cacheControl(
         'public',
         {maxAge: config.get('caching:commentsCountAPI:maxAge')}
