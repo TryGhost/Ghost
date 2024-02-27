@@ -9,6 +9,7 @@ const _ = require('lodash');
  * easiest to use. We always have access to the original input, we never loose track of it.
  */
 class Frame {
+    #headers = {};
     constructor(obj = {}) {
         this.original = obj;
 
@@ -27,6 +28,7 @@ class Frame {
         this.user = {};
         this.file = {};
         this.files = [];
+        this.#headers = {};
         this.apiType = null;
         this.docName = null;
         this.method = null;
@@ -94,6 +96,14 @@ class Frame {
         debug('original', this.original);
         debug('options', this.options);
         debug('data', this.data);
+    }
+
+    setHeader(header, value) {
+        this.#headers[header] = value;
+    }
+
+    getHeaders() {
+        return Object.assign({}, this.#headers);
     }
 }
 
