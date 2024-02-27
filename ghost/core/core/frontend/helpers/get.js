@@ -2,7 +2,7 @@
 // Usage: `{{#get "posts" limit="5"}}`, `{{#get "tags" limit="all"}}`
 // Fetches data from the API
 const {config, api, prepareContextResource} = require('../services/proxy');
-const {hbs} = require('../services/handlebars');
+const {hbs, SafeString} = require('../services/handlebars');
 
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -154,7 +154,7 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
                         }
                     }));
 
-                    resolve({[resource]: []});
+                    resolve({[resource]: [], '@@ABORTED_GET_HELPER@@': true});
                 }, threshold);
             });
 
@@ -242,10 +242,16 @@ module.exports = async function get(resource, options) {
             }
     
             // Call the main template function
-            return options.fn(response, {
+            const rendered = options.fn(response, {
                 data: data,
                 blockParams: blockParams
             });
+
+            if (response['@@ABORTED_GET_HELPER@@']) {
+                return new SafeString(`<span data-aborted-get-helper>Could not load content</span>` + rendered);
+            } else {
+                return rendered;
+            }
         });
         return result;
     } catch (error) {
