@@ -170,7 +170,9 @@ module.exports = {
                         }));
                     }
 
-                    this.headers.cacheInvalidate = shouldInvalidateCacheAfterChange(model);
+                    if (shouldInvalidateCacheAfterChange(model)) {
+                        frame.setHeader('X-Cache-Invalidate', '/*');
+                    }
 
                     return model;
                 });

@@ -87,7 +87,7 @@ module.exports = {
 
     edit: {
         headers: {
-            cacheInvalidate: false
+            cacheInvalidate: true
         },
         options: [
             'id'
@@ -110,15 +110,6 @@ module.exports = {
                     message: tpl(messages.collectionNotFound)
                 });
             }
-
-            // @NOTE: cache invalidation has to be done manually for now
-            //        because the model's wasChanged is not returned from
-            //        the service using in-memory repository layer
-            // if (model.wasChanged()) {
-            this.headers.cacheInvalidate = true;
-            // } else {
-            //     this.headers.cacheInvalidate = false;
-            // }
 
             return model;
         }
