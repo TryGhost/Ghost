@@ -571,7 +571,12 @@ test.describe('Updating post access', () => {
         await page.locator('[data-test-date-time-picker-datepicker]').click();
         await page.locator('.ember-power-calendar-nav-control--previous').click();
         await page.locator('.ember-power-calendar-day', {hasText: '15'}).click();
-        await page.locator('[data-test-date-time-picker-time-input]').fill('12:00');
+        const dateTimePickerInput = await page.locator('[data-test-date-time-picker-time-input]');
+        dateTimePickerInput.fill('12:00');
+        await page.keyboard.press('Tab');
+
+        // test will not work if the field is not filled appropriately
+        await expect(dateTimePickerInput).toHaveValue('12:00');
 
         await publishPost(page);
         await closePublishFlow(page);
