@@ -92,7 +92,7 @@ module.exports = class CommentsController {
 
         const postId = result?.get('post_id');
         if (postId) {
-            frame.setHeader('X-Cache-Invalidate', `/api/members/comments/post/${result.get('post_id')}/`);
+            frame.setHeader('X-Cache-Invalidate', `/api/members/comments/post/${postId}/`);
         }
 
         return result;
@@ -124,7 +124,7 @@ module.exports = class CommentsController {
 
         const postId = result?.get('post_id');
         if (postId) {
-            frame.setHeader('X-Cache-Invalidate', `/api/members/comments/post/${result.get('post_id')}/`);
+            frame.setHeader('X-Cache-Invalidate', `/api/members/comments/post/${postId}/`);
         }
 
         return result;
