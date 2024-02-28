@@ -319,18 +319,38 @@ describe('Comments API', function () {
             });
 
             it('Can browse all comments of a post (legacy)', async function () {
+                // uses explicit order to match db ordering
                 await membersAgent
-                    .get(`/api/comments/?filter=post_id:'${postId}'`)
+                    .get(`/api/comments/?filter=post_id:'${postId}'&order=id%20ASC`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
                         etag: anyEtag
                     })
                     .matchBodySnapshot({
-                        comments: [commentMatcherWithReplies({replies: 1}), commentMatcher]
+                        comments: [
+                            commentMatcherWithReplies({replies: 1}),
+                            commentMatcher
+                        ]
                     });
             });
 
             it('Can browse all comments of a post', async function () {
+                // uses explicit order to match db ordering
+                await membersAgent
+                    .get(`/api/comments/post/${postId}/?order=id%20ASC`)
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        comments: [
+                            commentMatcherWithReplies({replies: 1}),
+                            commentMatcher
+                        ]
+                    });
+            });
+
+            it('Can browse all comments of a post with default order', async function () {
                 await membersAgent
                     .get(`/api/comments/post/${postId}/`)
                     .expectStatus(200)
@@ -338,7 +358,10 @@ describe('Comments API', function () {
                         etag: anyEtag
                     })
                     .matchBodySnapshot({
-                        comments: [commentMatcherWithReplies({replies: 1}), commentMatcher]
+                        comments: [
+                            commentMatcher,
+                            commentMatcherWithReplies({replies: 1})
+                        ]
                     });
             });
 
