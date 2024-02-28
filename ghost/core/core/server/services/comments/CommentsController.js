@@ -152,11 +152,20 @@ module.exports = class CommentsController {
     async like(frame) {
         this.#checkMember(frame);
 
-        return await this.service.likeComment(
+        const result = await this.service.likeComment(
             frame.options.id,
             frame.options?.context?.member,
             frame.options
         );
+
+        const comment = await this.service.getCommentByID(frame.options.id);
+
+        const postId = comment?.get('post_id');
+        if (postId) {
+            frame.setHeader('X-Cache-Invalidate', `/api/members/comments/post/${postId}/`);
+        }
+
+        return result;
     }
 
     /**
@@ -165,11 +174,19 @@ module.exports = class CommentsController {
     async unlike(frame) {
         this.#checkMember(frame);
 
-        return await this.service.unlikeComment(
+        const result = await this.service.unlikeComment(
             frame.options.id,
             frame.options?.context?.member,
             frame.options
         );
+
+        const comment = await this.service.getCommentByID(frame.options.id);
+
+        const postId = comment?.get('post_id');
+        if (postId) {
+            frame.setHeader('X-Cache-Invalidate', `/api/members/comments/post/${postId}/`);
+        }
+        return result;
     }
 
     /**
