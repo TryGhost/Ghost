@@ -21,6 +21,7 @@ module.exports = function apiRoutes() {
     router.use(membersService.middleware.loadMemberSession);
 
     router.get('/', http(api.commentsMembers.browse));
+    router.get('/post/:post_id', http(api.commentsMembers.browse));
     router.get('/:id', http(api.commentsMembers.read));
     router.post('/', http(api.commentsMembers.add));
     router.put('/:id', http(api.commentsMembers.edit));
