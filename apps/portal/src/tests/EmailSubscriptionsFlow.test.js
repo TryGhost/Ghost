@@ -65,7 +65,7 @@ const setup = async ({site, member = null, newsletters}) => {
 
 describe('Newsletter Subscriptions', () => {
     test('list newsletters to subscribe to', async () => {
-        const {ghostApi, popupFrame, triggerButtonFrame, accountHomeTitle, manageSubscriptionsButton, popupIframeDocument} = await setup({
+        const {popupFrame, triggerButtonFrame, accountHomeTitle, manageSubscriptionsButton, popupIframeDocument} = await setup({
             site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
             member: FixtureMember.subbedToNewsletter,
             newsletters: Newsletters
@@ -88,6 +88,24 @@ describe('Newsletter Subscriptions', () => {
         expect(emailPreferences).toBeInTheDocument();
     });
 
+    // test('toggle subscribing to a newsletter', async () => {
+    //     const {popupFrame, triggerButtonFrame, accountHomeTitle, manageSubscriptionsButton, popupIframeDocument} = await setup({
+    //         site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
+    //         member: FixtureMember.subbedToNewsletter,
+    //         newsletters: Newsletters
+    //     });
+    //     expect(popupFrame).toBeInTheDocument();
+    //     expect(triggerButtonFrame).toBeInTheDocument();
+    //     expect(accountHomeTitle).toBeInTheDocument();
+    //     expect(manageSubscriptionsButton).toBeInTheDocument();
+
+    //     await userEvent.click(manageSubscriptionsButton);
+
+    //     const newsletter1 = within(popupIframeDocument).queryByText('Newsletter 1');
+    //     const newsletter2 = within(popupIframeDocument).queryByText('Newsletter 2');
+    //     const emailPreferences = within(popupIframeDocument).queryByText('Email preferences');
+    // });
+
     test('unsubscribe from all newsletters', async () => {
         const {ghostApi, popupFrame, triggerButtonFrame, accountHomeTitle, manageSubscriptionsButton, popupIframeDocument} = await setup({
             site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
@@ -106,4 +124,20 @@ describe('Newsletter Subscriptions', () => {
 
         expect(ghostApi.member.update).toHaveBeenCalled();
     });
+
+    // test('unsubscribe via email link', async () => {
+    //     // Mock window.location
+    //     Object.defineProperty(window, 'location', {
+    //         value: new URL(`https://portal.localhost/?uuid=${FixtureMember.subbedToNewsletter.uuid}&newsletter=${Newsletters[0].id}&action=unsubscribe`),
+    //         writable: true
+    //     });
+
+    //     const {ghostApi, popupFrame, triggerButtonFrame, accountHomeTitle, manageSubscriptionsButton, popupIframeDocument} = await setup({
+    //         site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
+    //         member: FixtureMember.subbedToNewsletter,
+    //         newsletters: Newsletters
+    //     });
+
+    //     expect(popupFrame).toBeInTheDocument();
+    // });
 });
