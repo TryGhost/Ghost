@@ -319,8 +319,9 @@ describe('Comments API', function () {
             });
 
             it('Can browse all comments of a post (legacy)', async function () {
+                // uses explicit order to match db ordering
                 await membersAgent
-                    .get(`/api/comments/?filter=post_id:'${postId}'`)
+                    .get(`/api/comments/?filter=post_id:'${postId}'&order=id%20ASC`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
                         etag: anyEtag
@@ -331,8 +332,9 @@ describe('Comments API', function () {
             });
 
             it('Can browse all comments of a post', async function () {
+                // uses explicit order to match db ordering
                 await membersAgent
-                    .get(`/api/comments/post/${postId}/`)
+                    .get(`/api/comments/post/${postId}/?order=id%20ASC`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
                         etag: anyEtag
