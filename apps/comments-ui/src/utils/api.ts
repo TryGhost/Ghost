@@ -127,12 +127,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     filter = `created_at:<=${firstCommentCreatedAt}`;
                 }
 
-                const order = 'created_at DESC, id DESC';
-
                 const params = new URLSearchParams();
 
                 params.set('limit', '5');
-                params.set('order', order);
                 if (filter) {
                     params.set('filter', filter);
                 }
@@ -166,9 +163,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             },
             async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId: string; limit?: number | 'all'}) {
                 const filter = encodeURIComponent(`id:>'${afterReplyId}'`);
-                const order = encodeURIComponent('created_at ASC, id ASC');
 
-                const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?limit=${limit ?? 5}&order=${order}&filter=${filter}`});
+                const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?limit=${limit ?? 5}&filter=${filter}`});
                 const res = await makeRequest({
                     url,
                     method: 'GET',
