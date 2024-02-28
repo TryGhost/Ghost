@@ -163,6 +163,9 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
                     initSetup();
+                    if (iframeRef.current) {
+                        observer.unobserve(iframeRef.current);
+                    }
                 }
             });
         }, {
