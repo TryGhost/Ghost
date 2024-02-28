@@ -74,20 +74,28 @@ module.exports = class CommentsController {
     async edit(frame) {
         this.#checkMember(frame);
 
+        let result;
         if (frame.data.comments[0].status === 'deleted') {
-            return await this.service.deleteComment(
+            result = await this.service.deleteComment(
                 frame.options.id,
                 frame?.options?.context?.member?.id,
                 frame.options
             );
+        } else {
+            result = await this.service.editCommentContent(
+                frame.options.id,
+                frame?.options?.context?.member?.id,
+                frame.data.comments[0].html,
+                frame.options
+            );
         }
 
-        return await this.service.editCommentContent(
-            frame.options.id,
-            frame?.options?.context?.member?.id,
-            frame.data.comments[0].html,
-            frame.options
-        );
+        const postId = result?.get('post_id');
+        if (postId) {
+            frame.setHeader('X-Cache-Invalidate', `/api/members/comments/post/${result.get('post_id')}/`);
+        }
+
+        return result;
     }
 
     /**
@@ -97,21 +105,29 @@ module.exports = class CommentsController {
         this.#checkMember(frame);
         const data = frame.data.comments[0];
 
+        let result;
         if (data.parent_id) {
-            return await this.service.replyToComment(
+            result = await this.service.replyToComment(
                 data.parent_id,
+                frame.options.context.member.id,
+                data.html,
+                frame.options
+            );
+        } else {
+            result = await this.service.commentOnPost(
+                data.post_id,
                 frame.options.context.member.id,
                 data.html,
                 frame.options
             );
         }
 
-        return await this.service.commentOnPost(
-            data.post_id,
-            frame.options.context.member.id,
-            data.html,
-            frame.options
-        );
+        const postId = result?.get('post_id');
+        if (postId) {
+            frame.setHeader('X-Cache-Invalidate', `/api/members/comments/post/${result.get('post_id')}/`);
+        }
+
+        return result;
     }
 
     async destroy() {
