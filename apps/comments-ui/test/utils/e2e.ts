@@ -130,6 +130,7 @@ export async function initialize({mockedApi, page, bodyStyle, ...options}: {
 
     await page.waitForSelector('iframe');
 
+    // wait for data to be loaded because our tests expect it
     const iframeElement = await page.locator(commentsFrameSelector).elementHandle();
     if (!iframeElement) {
         throw new Error('iframe not found');
