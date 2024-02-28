@@ -382,7 +382,9 @@ describe('Comments API', function () {
                     .matchHeaderSnapshot({
                         etag: anyEtag,
                         location: anyLocationFor('comments'),
-                        'x-cache-invalidate': matchers.anyString
+                        'x-cache-invalidate': matchers.stringMatching(
+                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
+                        )
                     })
                     .matchBodySnapshot({
                         comments: [commentMatcher]
