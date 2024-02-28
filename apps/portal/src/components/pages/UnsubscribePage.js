@@ -41,9 +41,12 @@ async function updateMemberNewsletters({api, memberUuid, newsletters, enableComm
     }
 }
 
+// NOTE: This modal is available even if not logged in, but because it's possible to also be logged in while making modifications,
+//  we need to update the member data in the context if logged in.
 export default function UnsubscribePage() {
-    const {site, pageData, onAction, t} = useContext(AppContext);
+    const {site, pageData, member: loggedInMember, onAction, t} = useContext(AppContext);
     const api = setupGhostApi({siteUrl: site.url});
+    // member is the member data fetched from the API based on the uuid and its state is limited to just this modal, not all of Portal
     const [member, setMember] = useState();
     const [loading, setLoading] = useState(true);
     const siteNewsletters = getSiteNewsletters({site});
@@ -56,6 +59,7 @@ export default function UnsubscribePage() {
     const {comments_enabled: commentsEnabled} = site;
     const {enable_comment_notifications: enableCommentNotifications = false} = member || {};
 
+    // This handles the url query param actions that ultimately launch this component/modal
     useEffect(() => {
         const ghostApi = setupGhostApi({siteUrl: site.url});
         (async () => {
@@ -86,6 +90,10 @@ export default function UnsubscribePage() {
                     newsletters: []
                 });
                 setSubscribedNewsletters(updatedData.newsletters);
+                // Update the member data in the context if logged in
+                if (loggedInMember) {
+                    loggedInMember.newsletters = updatedData.newsletters;
+                }
             } else if (pageData.newsletterUuid) {
                 // Unsubscribe link for a specific newsletter
                 const updatedData = await updateMemberNewsletters({
@@ -96,6 +104,10 @@ export default function UnsubscribePage() {
                     })
                 });
                 setSubscribedNewsletters(updatedData.newsletters);
+                // Update the member data in the context if logged in
+                if (loggedInMember) {
+                    loggedInMember.newsletters = updatedData.newsletters;
+                }
             } else if (pageData.comments && commentsEnabled) {
                 // Unsubscribe link for comments
                 const updatedData = await updateMemberNewsletters({
@@ -105,6 +117,9 @@ export default function UnsubscribePage() {
                 });
 
                 setMember(updatedData);
+                if (loggedInMember) {
+                    loggedInMember.enable_comment_notifications = false;
+                }
             }
         })();
     }, [commentsEnabled, pageData.uuid, pageData.newsletterUuid, pageData.comments, site.url, siteNewsletters?.length]);
@@ -229,10 +244,16 @@ export default function UnsubscribePage() {
                 setSubscribedNewsletters(newsletters);
                 setHasInteracted(true);
                 await api.member.updateNewsletters({uuid: pageData.uuid, newsletters});
+                if (loggedInMember) {
+                    loggedInMember.newsletters = newsletters;
+                }
             }}
             updateCommentNotifications={async (enabled) => {
                 const updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, enableCommentNotifications: enabled});
                 setMember(updatedMember);
+                if (loggedInMember) {
+                    loggedInMember.enable_comment_notifications = enabled;
+                }
             }}
             unsubscribeAll={async () => {
                 setHasInteracted(true);
@@ -243,6 +264,10 @@ export default function UnsubscribePage() {
                 });
                 const updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
                 setMember(updatedMember);
+                if (loggedInMember) {
+                    loggedInMember.newsletters = [];
+                    loggedInMember.enable_comment_notifications = false;
+                }
             }}
             isPaidMember={member?.status !== 'free'}
             isCommentsEnabled={commentsEnabled !== 'off'}
