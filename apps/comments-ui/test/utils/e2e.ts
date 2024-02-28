@@ -31,7 +31,7 @@ function authFrameMain() {
         }
 
         if (!d) {
-            return
+            return;
         }
         const data: {uid: string, action: string} = d;
 
@@ -126,10 +126,22 @@ export async function initialize({mockedApi, page, bodyStyle, ...options}: {
         document.body.appendChild(scriptTag);
     }, {url, options});
 
+    const commentsFrameSelector = 'iframe[title="comments-frame"]';
+
     await page.waitForSelector('iframe');
 
+    const iframeElement = await page.locator(commentsFrameSelector).elementHandle();
+    if (!iframeElement) {
+        throw new Error('iframe not found');
+    }
+    const iframe = await iframeElement.contentFrame();
+    if (!iframe) {
+        throw new Error('iframe contentFrame not found');
+    }
+    await iframe.waitForSelector('[data-loaded="true"]');
+
     return {
-        frame: page.frameLocator('iframe[title="comments-frame"]')
+        frame: page.frameLocator(commentsFrameSelector)
     };
 }
 
