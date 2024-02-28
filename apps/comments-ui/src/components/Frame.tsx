@@ -57,7 +57,7 @@ const ResizableFrame = React.forwardRef<HTMLIFrameElement, React.PropsWithChildr
     );
 });
 
-type CommentsFrameProps = Record<string, never>;
+type CommentsFrameProps = Record<never, any>;
 
 export const CommentsFrame = React.forwardRef<HTMLIFrameElement, React.PropsWithChildren<CommentsFrameProps>>(function CommentsFrame({children}, ref: React.ForwardedRef<HTMLIFrameElement>) {
     const style = {
