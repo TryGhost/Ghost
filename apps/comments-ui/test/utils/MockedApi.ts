@@ -166,29 +166,28 @@ export class MockedApi {
         });
 
         await page.route(`${path}/members/api/comments/*`, async (route) => {
-            if (route.request().method() === 'POST') {
-                const payload = JSON.parse(route.request().postData());
+            const payload = JSON.parse(route.request().postData());
 
-                this.#lastCommentDate = new Date();
-                this.addComment({
-                    ...payload.comments[0],
-                    member: this.member
-                });
-                return await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify({
-                        comments: [
-                            this.comments[this.comments.length - 1]
-                        ]
-                    })
-                });
-            }
+            this.#lastCommentDate = new Date();
+            this.addComment({
+                ...payload.comments[0],
+                member: this.member
+            });
+            return await route.fulfill({
+                status: 200,
+                body: JSON.stringify({
+                    comments: [
+                        this.comments[this.comments.length - 1]
+                    ]
+                })
+            });
+        });
 
+        await page.route(`${path}/members/api/comments/post/*/*`, async (route) => {
             const url = new URL(route.request().url());
 
             const p = parseInt(url.searchParams.get('page') ?? '1');
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
-            const order = url.searchParams.get('order') ?? '';
             const filter = url.searchParams.get('filter') ?? '';
 
             await route.fulfill({
@@ -196,7 +195,6 @@ export class MockedApi {
                 body: JSON.stringify(this.browseComments({
                     page: p,
                     limit,
-                    order,
                     filter
                 }))
             });
