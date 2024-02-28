@@ -381,7 +381,8 @@ describe('Comments API', function () {
                     .expectStatus(201)
                     .matchHeaderSnapshot({
                         etag: anyEtag,
-                        location: anyLocationFor('comments')
+                        location: anyLocationFor('comments'),
+                        'x-cache-invalidate': matchers.anyString
                     })
                     .matchBodySnapshot({
                         comments: [commentMatcher]
