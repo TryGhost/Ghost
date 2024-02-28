@@ -35,6 +35,22 @@ module.exports = class CommentsController {
      * @param {Frame} frame
      */
     async browse(frame) {
+        if (frame.options.post_id) {
+            if (frame.options.filter) {
+                frame.options.mongoTransformer = function (query) {
+                    return {
+                        $and: [
+                            {
+                                post_id: frame.options.post_id
+                            },
+                            query
+                        ]
+                    };
+                };
+            } else {
+                frame.options.filter = `post_id:${frame.options.post_id}`;
+            }
+        }
         return this.service.getComments(frame.options);
     }
 

@@ -211,9 +211,21 @@ describe('Comments API', function () {
                 sinon.restore();
             });
 
-            it('Can browse all comments of a post', async function () {
+            it('Can browse all comments of a post (legacy)', async function () {
                 await membersAgent
                     .get(`/api/comments/?filter=post_id:'${postId}'`)
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        comments: [commentMatcherWithReplies({replies: 1})]
+                    });
+            });
+
+            it('Can browse all comments of a post', async function () {
+                await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
                         etag: anyEtag
@@ -306,9 +318,21 @@ describe('Comments API', function () {
                 await testCanCommentOnPost(member);
             });
 
-            it('Can browse all comments of a post', async function () {
+            it('Can browse all comments of a post (legacy)', async function () {
                 await membersAgent
                     .get(`/api/comments/?filter=post_id:'${postId}'`)
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        comments: [commentMatcherWithReplies({replies: 1}), commentMatcher]
+                    });
+            });
+
+            it('Can browse all comments of a post', async function () {
+                await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
                         etag: anyEtag
