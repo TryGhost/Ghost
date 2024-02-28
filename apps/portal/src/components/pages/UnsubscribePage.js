@@ -59,6 +59,38 @@ export default function UnsubscribePage() {
     const {comments_enabled: commentsEnabled} = site;
     const {enable_comment_notifications: enableCommentNotifications = false} = member || {};
 
+    const updateNewsletters = async (newsletters) => {
+        const updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, newsletters});
+        setSubscribedNewsletters(updatedData.newsletters);
+        // Keep the member data in sync if logged in
+        if (loggedInMember) {
+            loggedInMember.newsletters = updatedData.newsletters;
+        }
+    };
+
+    const updateCommentNotifications = async (enabled) => {
+        const updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, enableCommentNotifications: enabled});
+        setMember(updatedData);
+        // Keep the member data in sync if logged in
+        if (loggedInMember) {
+            loggedInMember.enable_comment_notifications = enabled;
+        }
+    };
+
+    const unsubscribeAll = async () => {
+        setSubscribedNewsletters([]);
+        onAction('showPopupNotification', {
+            action: 'updated:success',
+            message: t(`Unsubscribed from all emails.`)
+        });
+        const updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
+        setMember(updatedMember);
+        if (loggedInMember) {
+            loggedInMember.newsletters = [];
+            loggedInMember.enable_comment_notifications = false;
+        }
+    };
+
     // This handles the url query param actions that ultimately launch this component/modal
     useEffect(() => {
         const ghostApi = setupGhostApi({siteUrl: site.url});
@@ -84,42 +116,15 @@ export default function UnsubscribePage() {
             setSubscribedNewsletters(memberNewsletters);
             if (siteNewsletters?.length === 1 && !commentsEnabled && !pageData.newsletterUuid) {
                 // Unsubscribe from all the newsletters, because we only have one
-                const updatedData = await updateMemberNewsletters({
-                    api: ghostApi,
-                    memberUuid: pageData.uuid,
-                    newsletters: []
-                });
-                setSubscribedNewsletters(updatedData.newsletters);
-                // Update the member data in the context if logged in
-                if (loggedInMember) {
-                    loggedInMember.newsletters = updatedData.newsletters;
-                }
+                await updateNewsletters([]);
             } else if (pageData.newsletterUuid) {
                 // Unsubscribe link for a specific newsletter
-                const updatedData = await updateMemberNewsletters({
-                    api: ghostApi,
-                    memberUuid: pageData.uuid,
-                    newsletters: memberNewsletters?.filter((d) => {
-                        return d.uuid !== pageData.newsletterUuid;
-                    })
-                });
-                setSubscribedNewsletters(updatedData.newsletters);
-                // Update the member data in the context if logged in
-                if (loggedInMember) {
-                    loggedInMember.newsletters = updatedData.newsletters;
-                }
+                await updateNewsletters(memberNewsletters?.filter((d) => {
+                    return d.uuid !== pageData.newsletterUuid;
+                }));
             } else if (pageData.comments && commentsEnabled) {
                 // Unsubscribe link for comments
-                const updatedData = await updateMemberNewsletters({
-                    api: ghostApi,
-                    memberUuid: pageData.uuid,
-                    enableCommentNotifications: false
-                });
-
-                setMember(updatedData);
-                if (loggedInMember) {
-                    loggedInMember.enable_comment_notifications = false;
-                }
+                await updateCommentNotifications(false);
             }
         })();
     }, [commentsEnabled, pageData.uuid, pageData.newsletterUuid, pageData.comments, site.url, siteNewsletters?.length]);
@@ -241,33 +246,13 @@ export default function UnsubscribePage() {
             notification={HeaderNotification}
             subscribedNewsletters={subscribedNewsletters}
             updateSubscribedNewsletters={async (newsletters) => {
-                setSubscribedNewsletters(newsletters);
+                await updateNewsletters(newsletters);
                 setHasInteracted(true);
-                await api.member.updateNewsletters({uuid: pageData.uuid, newsletters});
-                if (loggedInMember) {
-                    loggedInMember.newsletters = newsletters;
-                }
             }}
-            updateCommentNotifications={async (enabled) => {
-                const updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, enableCommentNotifications: enabled});
-                setMember(updatedMember);
-                if (loggedInMember) {
-                    loggedInMember.enable_comment_notifications = enabled;
-                }
-            }}
+            updateCommentNotifications={updateCommentNotifications}
             unsubscribeAll={async () => {
+                await unsubscribeAll();
                 setHasInteracted(true);
-                setSubscribedNewsletters([]);
-                onAction('showPopupNotification', {
-                    action: 'updated:success',
-                    message: t(`Unsubscribed from all emails.`)
-                });
-                const updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
-                setMember(updatedMember);
-                if (loggedInMember) {
-                    loggedInMember.newsletters = [];
-                    loggedInMember.enable_comment_notifications = false;
-                }
             }}
             isPaidMember={member?.status !== 'free'}
             isCommentsEnabled={commentsEnabled !== 'off'}
