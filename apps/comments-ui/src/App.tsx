@@ -29,6 +29,8 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         popup: null
     });
 
+    const contentBoxRef = React.createRef<HTMLElement>();
+
     const api = React.useMemo(() => {
         return setupGhostApi({
             siteUrl: options.siteUrl,
@@ -129,8 +131,9 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         };
     };
 
-    /** Initialize comments setup on load, fetch data and setup state*/
+    /** Initialize comments setup once in viewport, fetch data and setup state*/
     const initSetup = async () => {
+        console.log('initSetup');
         try {
             // Fetch data from API, links, preview, dev sources
             const {member} = await api.init();
@@ -155,15 +158,38 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         }
     };
 
+    /** Delay initialization until comments block is in viewport */
     useEffect(() => {
-        initSetup();
-    }, []);
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    initSetup();
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        });
+
+        console.log(contentBoxRef.current);
+
+        if (contentBoxRef.current) {
+            observer.observe(contentBoxRef.current);
+        }
+
+        return () => {
+            if (contentBoxRef.current) {
+                observer.unobserve(contentBoxRef.current);
+            }
+        };
+    }, [contentBoxRef.current]);
 
     const done = state.initStatus === 'success';
 
     return (
         <AppContext.Provider value={context}>
-            <CommentsFrame>
+            <CommentsFrame ref={contentBoxRef}>
                 <ContentBox done={done} />
             </CommentsFrame>
             <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/>
