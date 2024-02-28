@@ -1,3 +1,4 @@
+const assert = require('assert').strict;
 const should = require('should');
 const sinon = require('sinon');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
@@ -394,12 +395,13 @@ describe('{{#get}} helper', function () {
         it('should log an error and return safely if it hits the timeout threshold', async function () {
             configUtils.set('optimization:getHelper:timeout:threshold', 1);
 
-            await get.call(
+            const result = await get.call(
                 {},
                 'posts',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             );
 
+            assert(result.toString().includes('data-aborted-get-helper'));
             // A log message will be output
             logging.error.calledOnce.should.be.true();
             // The get helper gets called with an empty array of results
