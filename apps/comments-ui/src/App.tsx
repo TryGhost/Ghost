@@ -29,7 +29,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
         popup: null
     });
 
-    const contentBoxRef = React.createRef<HTMLElement>();
+    const iframeRef = React.createRef<HTMLIFrameElement>();
 
     const api = React.useMemo(() => {
         return setupGhostApi({
@@ -133,7 +133,6 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
 
     /** Initialize comments setup once in viewport, fetch data and setup state*/
     const initSetup = async () => {
-        console.log('initSetup');
         try {
             // Fetch data from API, links, preview, dev sources
             const {member} = await api.init();
@@ -172,24 +171,22 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             threshold: 0.1
         });
 
-        console.log(contentBoxRef.current);
-
-        if (contentBoxRef.current) {
-            observer.observe(contentBoxRef.current);
+        if (iframeRef.current) {
+            observer.observe(iframeRef.current);
         }
 
         return () => {
-            if (contentBoxRef.current) {
-                observer.unobserve(contentBoxRef.current);
+            if (iframeRef.current) {
+                observer.unobserve(iframeRef.current);
             }
         };
-    }, [contentBoxRef.current]);
+    }, [iframeRef.current]);
 
     const done = state.initStatus === 'success';
 
     return (
         <AppContext.Provider value={context}>
-            <CommentsFrame ref={contentBoxRef}>
+            <CommentsFrame ref={iframeRef}>
                 <ContentBox done={done} />
             </CommentsFrame>
             <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/>
