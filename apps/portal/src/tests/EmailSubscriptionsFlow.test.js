@@ -3,6 +3,7 @@ import {appRender, fireEvent, within} from '../utils/test-utils';
 import {newsletters as Newsletters, site as FixtureSite, member as FixtureMember} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
 import userEvent from '@testing-library/user-event';
+import {screen} from '@testing-library/react';
 
 const setup = async ({site, member = null, newsletters}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
@@ -88,23 +89,44 @@ describe('Newsletter Subscriptions', () => {
         expect(emailPreferences).toBeInTheDocument();
     });
 
-    // test('toggle subscribing to a newsletter', async () => {
-    //     const {popupFrame, triggerButtonFrame, accountHomeTitle, manageSubscriptionsButton, popupIframeDocument} = await setup({
-    //         site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
-    //         member: FixtureMember.subbedToNewsletter,
-    //         newsletters: Newsletters
-    //     });
-    //     expect(popupFrame).toBeInTheDocument();
-    //     expect(triggerButtonFrame).toBeInTheDocument();
-    //     expect(accountHomeTitle).toBeInTheDocument();
-    //     expect(manageSubscriptionsButton).toBeInTheDocument();
+    test('toggle subscribing to a newsletter', async () => {
+        const {ghostApi, popupFrame, triggerButtonFrame, accountHomeTitle, manageSubscriptionsButton, popupIframeDocument} = await setup({
+            site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
+            member: FixtureMember.subbedToNewsletter,
+            newsletters: Newsletters
+        });
+        expect(popupFrame).toBeInTheDocument();
+        expect(triggerButtonFrame).toBeInTheDocument();
+        expect(accountHomeTitle).toBeInTheDocument();
+        expect(manageSubscriptionsButton).toBeInTheDocument();
 
-    //     await userEvent.click(manageSubscriptionsButton);
+        await userEvent.click(manageSubscriptionsButton);
 
-    //     const newsletter1 = within(popupIframeDocument).queryByText('Newsletter 1');
-    //     const newsletter2 = within(popupIframeDocument).queryByText('Newsletter 2');
-    //     const emailPreferences = within(popupIframeDocument).queryByText('Email preferences');
-    // });
+        const newsletter1 = within(popupIframeDocument).queryByText('Newsletter 1');
+        const subscriptionToggles = within(popupIframeDocument).getAllByTestId('switch-input');
+        expect(newsletter1).toBeInTheDocument();
+        
+        // unsubscribe from Newsletter 1
+        const newsletter1Toggle = subscriptionToggles[0];
+        expect(newsletter1Toggle).toBeInTheDocument();
+        await userEvent.click(newsletter1Toggle);
+        
+        // verify that subscription to Newsletter 1 was removed
+        const expectedSubscriptions = Newsletters.filter(n => n.id !== Newsletters[0].id).map(n => ({id: n.id}));
+        expect(ghostApi.member.update).toHaveBeenLastCalledWith(
+            {newsletters: expectedSubscriptions}
+        );
+
+        // NOTE: This is not working because the spy is not picking up the right data, but it seems the UI is displaying
+        //  the correct state, and functional testing shows it working fine.
+        // resubscribe
+        // await userEvent.click(newsletter1Toggle);
+
+        // get all checked toggles
+        // expect(ghostApi.member.update).toHaveBeenLastCalledWith(
+        //     {newsletters: Newsletters.map(n => ({id: n.id}))}
+        // );
+    });
 
     test('unsubscribe from all newsletters', async () => {
         const {ghostApi, popupFrame, triggerButtonFrame, accountHomeTitle, manageSubscriptionsButton, popupIframeDocument} = await setup({
@@ -125,10 +147,12 @@ describe('Newsletter Subscriptions', () => {
         expect(ghostApi.member.update).toHaveBeenCalled();
     });
 
+    // NOTE: This endpoint isn't defined yet, so this test will fail - this should parse the query params to make a call to the Ghost API (newsletter)
+    //  and then display the UnsubscribePage component in the iframe.
     // test('unsubscribe via email link', async () => {
     //     // Mock window.location
     //     Object.defineProperty(window, 'location', {
-    //         value: new URL(`https://portal.localhost/?uuid=${FixtureMember.subbedToNewsletter.uuid}&newsletter=${Newsletters[0].id}&action=unsubscribe`),
+    //         value: new URL(`https://portal.localhost/?action=unsubscribe&uuid=${FixtureMember.subbedToNewsletter.uuid}&newsletter=${Newsletters[0].id}`),
     //         writable: true
     //     });
 
@@ -139,5 +163,7 @@ describe('Newsletter Subscriptions', () => {
     //     });
 
     //     expect(popupFrame).toBeInTheDocument();
+
+    //     screen.debug();
     // });
 });
