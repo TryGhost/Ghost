@@ -90,9 +90,14 @@ module.exports = class CommentsController {
             );
         }
 
-        const postId = result?.get('post_id');
-        if (postId) {
-            frame.setHeader('X-Cache-Invalidate', `/api/members/comments/post/${postId}/`);
+        if (result) {
+            const postId = result.get('post_id');
+            const parentId = result.get('parent_id');
+            const pathsToInvalidate = [
+                postId ? `/api/members/comments/post/${postId}/` : null,
+                parentId ? `/api/members/comments/${parentId}/replies/` : null
+            ].filter(path => path !== null);
+            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
         }
 
         return result;
@@ -122,9 +127,14 @@ module.exports = class CommentsController {
             );
         }
 
-        const postId = result?.get('post_id');
-        if (postId) {
-            frame.setHeader('X-Cache-Invalidate', `/api/members/comments/post/${postId}/`);
+        if (result) {
+            const postId = result.get('post_id');
+            const parentId = result.get('parent_id');
+            const pathsToInvalidate = [
+                postId ? `/api/members/comments/post/${postId}/` : null,
+                parentId ? `/api/members/comments/${parentId}/replies/` : null
+            ].filter(path => path !== null);
+            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
         }
 
         return result;
@@ -160,9 +170,14 @@ module.exports = class CommentsController {
 
         const comment = await this.service.getCommentByID(frame.options.id);
 
-        const postId = comment?.get('post_id');
-        if (postId) {
-            frame.setHeader('X-Cache-Invalidate', `/api/members/comments/post/${postId}/`);
+        if (comment) {
+            const postId = comment.get('post_id');
+            const parentId = comment.get('parent_id');
+            const pathsToInvalidate = [
+                postId ? `/api/members/comments/post/${postId}/` : null,
+                parentId ? `/api/members/comments/${parentId}/replies/` : null
+            ].filter(path => path !== null);
+            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
         }
 
         return result;
@@ -182,10 +197,16 @@ module.exports = class CommentsController {
 
         const comment = await this.service.getCommentByID(frame.options.id);
 
-        const postId = comment?.get('post_id');
-        if (postId) {
-            frame.setHeader('X-Cache-Invalidate', `/api/members/comments/post/${postId}/`);
+        if (comment) {
+            const postId = comment.get('post_id');
+            const parentId = comment.get('parent_id');
+            const pathsToInvalidate = [
+                postId ? `/api/members/comments/post/${postId}/` : null,
+                parentId ? `/api/members/comments/${parentId}/replies/` : null
+            ].filter(path => path !== null);
+            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
         }
+
         return result;
     }
 
