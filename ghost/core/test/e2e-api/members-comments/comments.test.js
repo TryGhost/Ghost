@@ -327,7 +327,10 @@ describe('Comments API', function () {
                         etag: anyEtag
                     })
                     .matchBodySnapshot({
-                        comments: [commentMatcherWithReplies({replies: 1}), commentMatcher]
+                        comments: [
+                            commentMatcherWithReplies({replies: 1}),
+                            commentMatcher
+                        ]
                     });
             });
 
@@ -340,7 +343,25 @@ describe('Comments API', function () {
                         etag: anyEtag
                     })
                     .matchBodySnapshot({
-                        comments: [commentMatcherWithReplies({replies: 1}), commentMatcher]
+                        comments: [
+                            commentMatcherWithReplies({replies: 1}),
+                            commentMatcher
+                        ]
+                    });
+            });
+
+            it('Can browse all comments of a post with default order', async function () {
+                await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        comments: [
+                            commentMatcher,
+                            commentMatcherWithReplies({replies: 1})
+                        ]
                     });
             });
 
