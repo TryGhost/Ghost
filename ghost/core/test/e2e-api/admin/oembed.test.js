@@ -224,29 +224,31 @@ describe('Oembed API', function () {
 
         it('should replace icon URL when it returns 404', async function () {
             // Mock the page so it contains a readable icon URL
-            nock('http://example.com')
+            const pageMock = nock('http://example.com')
                 .get('/page-with-icon')
-                .reply(200, {
-                    icon: 'http://example.com/icon.svg'
-                });
+                .reply(
+                    200,
+                    '<html><head><title>TESTING</title><link rel="icon" href="http://example.com/icon.svg"></head><body></body></html>',
+                    {'content-type': 'text/html'}
+                );
 
             // Mock the icon URL to return 404
-            nock('http://example.com')
+            nock('http://example.com/')
                 .head('/icon.svg')
                 .reply(404);
 
-            const url = encodeURIComponent('http://example.com/page-with-icon');
-            const res = await request.get(localUtils.API.getApiQuery(`oembed/?type=bookmark&url=${url}`))
+            const url = encodeURIComponent(' http://example.com/page-with-icon\t '); // Whitespaces are to make sure urls are trimmed
+            const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200);
 
             // Check that the icon URL mock was loaded
-            nock.isDone().should.be.true();
+            pageMock.isDone().should.be.true();
 
             // Check that the substitute icon URL is returned in place of the original
-            res.body.icon.should.equal('https://static.ghost.org/v5.0.0/images/link-icon.svg');
+            res.body.metadata.icon.should.eql('https://static.ghost.org/v5.0.0/images/link-icon.svg');
         });
     });
 
