@@ -20,19 +20,6 @@ Object {
 .post-title-link-left {
   text-align: left;
 }
-.comment-link {
-  color: #000000;
-  color: rgba(0, 0, 0, 0.5);
-  font-size: 13px;
-  letter-spacing: 0.1px;
-  text-decoration: none;
-}
-.comment-link img {
-  width: 16px;
-  height: 16px;
-  margin-bottom: 1px;
-  vertical-align: middle;
-}
 .view-online-link {
   word-wrap: none;
   white-space: nowrap;
@@ -169,7 +156,6 @@ table.body .post-meta-left.view-online-mobile .view-online {
   }
 
   table.body .view-online-link,
-table.body .comment-link,
 table.body .footer,
 table.body .footer a {
     font-size: 12px !important;
@@ -624,19 +610,6 @@ Object {
 .post-title-link-left {
   text-align: left;
 }
-.comment-link {
-  color: #000000;
-  color: rgba(0, 0, 0, 0.5);
-  font-size: 13px;
-  letter-spacing: 0.1px;
-  text-decoration: none;
-}
-.comment-link img {
-  width: 16px;
-  height: 16px;
-  margin-bottom: 1px;
-  vertical-align: middle;
-}
 .view-online-link {
   word-wrap: none;
   white-space: nowrap;
@@ -773,7 +746,6 @@ table.body .post-meta-left.view-online-mobile .view-online {
   }
 
   table.body .view-online-link,
-table.body .comment-link,
 table.body .footer,
 table.body .footer a {
     font-size: 12px !important;
@@ -1228,19 +1200,6 @@ Object {
 .post-title-link-left {
   text-align: left;
 }
-.comment-link {
-  color: #000000;
-  color: rgba(0, 0, 0, 0.5);
-  font-size: 13px;
-  letter-spacing: 0.1px;
-  text-decoration: none;
-}
-.comment-link img {
-  width: 16px;
-  height: 16px;
-  margin-bottom: 1px;
-  vertical-align: middle;
-}
 .view-online-link {
   word-wrap: none;
   white-space: nowrap;
@@ -1377,7 +1336,6 @@ table.body .post-meta-left.view-online-mobile .view-online {
   }
 
   table.body .view-online-link,
-table.body .comment-link,
 table.body .footer,
 table.body .footer a {
     font-size: 12px !important;
