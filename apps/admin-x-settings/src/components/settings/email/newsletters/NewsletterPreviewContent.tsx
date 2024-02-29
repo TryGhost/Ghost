@@ -136,13 +136,8 @@ const NewsletterPreviewContent: React.FC<{
                                         <p className="pb-2" style={{color: secondaryTextColor}}>
                                             By {authorPlaceholder}
                                             <span className="before:pl-0.5 before:pr-1 before:content-['•']">{currentDate}</span>
-                                            {showCommentCta && (
-                                                <span className="before:pl-0.5 before:pr-1 before:content-['•']">
-                                                    <Icon className="mt-[-2px] inline-block" colorClass="text-grey-600" name="comment" size="sm"/>
-                                                </span>
-                                            )}
                                         </p>
-                                        <p className="pb-2" style={{color: secondaryTextColor}}><span>View in browser</span></p>
+                                        <p className="pb-2 underline" style={{color: secondaryTextColor}}><span>View in browser</span></p>
                                     </div>
                                 </div>
                             )}

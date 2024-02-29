@@ -760,7 +760,7 @@ describe('Batch sending tests', function () {
             await matchEmailSnapshot();
         });
 
-        it('Shows 3 comment buttons for published posts without feedback enabled', async function () {
+        it('Shows 2 comment buttons for published posts without feedback enabled', async function () {
             mockSetting('comments_enabled', 'all');
             mockSetting('email_track_clicks', false); // Disable link replacement for this test
 
@@ -774,11 +774,11 @@ describe('Batch sending tests', function () {
             });
 
             // Currently the link is not present in plaintext version (because no text)
-            assert.equal(html.match(/#ghost-comments/g).length, 3, 'Every email should have 3 buttons to comments');
+            assert.equal(html.match(/#ghost-comments/g).length, 2, 'Every email should have 2 buttons to comments');
             await matchEmailSnapshot();
         });
 
-        it('Shows 3 comment buttons for published posts with feedback enabled', async function () {
+        it('Shows 2 comment buttons for published posts with feedback enabled', async function () {
             mockSetting('comments_enabled', 'all');
             mockSetting('email_track_clicks', false); // Disable link replacement for this test
 
@@ -793,7 +793,7 @@ describe('Batch sending tests', function () {
                 });
 
                 // Currently the link is not present in plaintext version (because no text)
-                assert.equal(html.match(/#ghost-comments/g).length, 3, 'Every email should have 3 buttons to comments');
+                assert.equal(html.match(/#ghost-comments/g).length, 2, 'Every email should have 2 buttons to comments');
                 await matchEmailSnapshot();
             } finally {
                 // undo
