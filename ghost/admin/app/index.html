@@ -29,11 +29,17 @@
     <meta name="msapplication-square310x310logo" content="assets/img/large.png" />
 
     <!-- variables that we don't want postcss-custom-properties to remove -->
+    <!-- we want the darkmode loader to initiate as fast as possible so we keep it directly in the head -->
     <style>
         :root {
             --editor-sidebar-width: 0px;
         }
+        .dark-mode {
+        background-color: #15171a !important; /* A deep, dark charcoal */
+        background-size: cover !important;
+        }
     </style>
+
 
     <link integrity="" rel="stylesheet" href="{{rootURL}}assets/vendor.css">
     <link integrity="" rel="stylesheet" href="{{rootURL}}assets/ghost.css" title="light">
@@ -54,6 +60,17 @@
     {{content-for "body"}}
 
     {{content-for "body-footer"}}
+
+    <script>
+        // This is an experiment to get the dark mode loader.
+        // It needs to initiate as fast as possible.
+        (function() {
+            const darkMode = localStorage.getItem('ghost-darkMode');
+            if (darkMode === 'true') {
+                document.querySelector('.gh-loading-content').classList.add('dark-mode');
+            }
+        })();
+    </script>
 
     <script src="{{rootURL}}assets/vendor.js"></script>
     <script src="{{rootURL}}assets/ghost.js"></script>

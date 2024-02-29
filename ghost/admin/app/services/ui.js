@@ -64,6 +64,8 @@ export default class UiService extends Service {
     }
 
     get backgroundColor() {
+        const nightShift = this.feature.nightShift ? true : false;
+        localStorage.setItem('ghost-darkMode', nightShift.toString());
         // hardcoded background colors because
         // grabbing color from .gh-main with getComputedStyle always returns #ffffff
         return this.feature.nightShift ? '#151719' : '#ffffff';
