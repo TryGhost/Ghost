@@ -114,7 +114,9 @@ class ActiveTheme {
         siteApp.set('views', this.path);
         const hbsEngine = engine.configure(this.partialsPath, this.path);
         siteApp.engine('hbs', function (view, opts, done) {
-            hbsEngine(view, opts, done);
+            hbsEngine(view, opts, function (err, res) {
+                return done(err, res);
+            });
         });
 
         this._mounted = true;
