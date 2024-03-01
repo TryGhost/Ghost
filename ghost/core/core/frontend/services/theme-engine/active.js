@@ -115,7 +115,7 @@ class ActiveTheme {
         const hbsEngine = engine.configure(this.partialsPath, this.path);
         siteApp.engine('hbs', function (view, opts, done) {
             hbsEngine(view, opts, function (err, res) {
-                return done(err, res);
+                return done(err, res, {fuckyeah: true});
             });
         });
 

@@ -32,7 +32,9 @@ module.exports = function renderer(req, res, data) {
     }
 
     // Render Call
-    res.render(res._template, data, function (err, html) {
+    res.render(res._template, data, function (err, html, renderInfo) {
+        console.log('!!!!!!!!');
+        console.log(renderInfo);
         if (err) {
             if (err.code === 'ENOENT') {
                 return req.next(
