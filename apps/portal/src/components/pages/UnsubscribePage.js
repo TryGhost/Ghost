@@ -65,7 +65,6 @@ export default function UnsubscribePage() {
         } else {
             await updateMemberNewsletters({api, memberUuid: pageData.uuid, newsletters});
         }
-        // console.log(`--noupdate`)
         setSubscribedNewsletters(newsletters);
     };
 
@@ -102,7 +101,6 @@ export default function UnsubscribePage() {
     // This handles the url query param actions that ultimately launch this component/modal
     useEffect(() => {
         (async () => {
-            console.log(`mounting UnsubscribePage`)
             let memberData;
             try {
                 memberData = await api.member.newsletters({uuid: pageData.uuid});
