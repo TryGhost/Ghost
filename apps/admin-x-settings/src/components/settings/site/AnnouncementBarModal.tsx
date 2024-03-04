@@ -119,7 +119,6 @@ const AnnouncementBarModal: React.FC = () => {
     const visibilitySettings = JSON.parse(announcementVisibility?.toString() || '[]') as string[];
     const {updateRoute} = useRouting();
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
-    const [announcementContentState, setAnnouncementContentState] = useState(announcementContent);
 
     const toggleColorSwatch = (e: string | null) => {
         updateSetting('announcement_background', e);
@@ -135,10 +134,6 @@ const AnnouncementBarModal: React.FC = () => {
         updateSetting('announcement_visibility', JSON.stringify(visibilitySettings));
     };
 
-    const announcementTextHandler = useCallback((e:string) => {
-        setAnnouncementContentState(e);
-    }, []);
-
     const updateAnnouncementDebouncedRef = useRef(
         debounce((value: string) => {
             updateSetting('announcement_content', value);
@@ -150,7 +145,6 @@ const AnnouncementBarModal: React.FC = () => {
         announcementBackgroundColor={announcementBackgroundColor}
         announcementContent={announcementContent}
         announcementTextHandler={(e) => {
-            announcementTextHandler(e);
             updateAnnouncementDebouncedRef.current(e);
         }}
         paidMembersEnabled={paidMembersEnabled}
