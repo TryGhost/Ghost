@@ -452,6 +452,7 @@ ul.nostyle li {
     padding-right: 60px;
     padding-left: 0;
     z-index: 99;
+    width: 500px;
 }
 
 .gh-list-scrolling thead th:first-child::before,
@@ -479,6 +480,7 @@ ul.nostyle li {
 .gh-list-scrolling tbody .gh-list-data {
     border-top: none;
     border-bottom: var(--whitegrey) 1px solid;
+    width: 150px;
 }
 
 .gh-list-scrolling tbody tr:hover > a:first-of-type {
