@@ -947,6 +947,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
     const activeInterval = getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval});
 
     const isComplimentary = isComplimentaryMember({member});
+    const hasOnlyFree = hasOnlyFreeProduct({site});
 
     useEffect(() => {
         setSelectedProduct(defaultProductId);
@@ -978,6 +979,11 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
         className += ' gh-portal-upgrade-product';
     }
 
+    // If site doesn't have paid products then don't return an empty container
+    if (hasOnlyFree) {
+        return null;
+    }
+
     let finalProduct = products.find(p => p.id === selectedProduct)?.id || products.find(p => p.type === 'paid')?.id;
     return (
         <ProductsContext.Provider value={{
@@ -987,7 +993,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
         }}>
             <section className={className}>
 
-                {(!(hasOnlyFreeProduct({site})) ?
+                {(!(hasOnlyFree) ?
                     <ProductPriceSwitch
                         products={products}
                         selectedInterval={activeInterval}
