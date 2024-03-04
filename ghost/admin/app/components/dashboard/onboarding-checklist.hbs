@@ -1,0 +1,78 @@
+<section class="gh-dashboard-section">
+    <article class="gh-dashboard-box gh-dashboard-onboarding-box">
+        <div class="gh-dashboard-onboarding-box-message">
+            <div>
+                {{!-- {{svg-jar "confetti"}} --}}
+                <h3 class="gh-dashboard-metric-label">Welcome to your new Ghost publication!</h3>
+                <p>Let’s set you up for success.</p>
+            </div>
+        </div>
+        <div class="gh-dashboard-list">
+            <div class="gh-dashboard-list-body">
+                <div class="gh-dashboard-onboarding-item gh-dashboard-onboarding-item--completed" {{on 'click' this.completeStep}}>                                                    
+                    <div class="gh-dashboard-onboarding-item-content">
+                        {{svg-jar "rocket" }}
+                        <span class="gh-dashboard-list-text">Start a new Ghost publication</span>
+                    </div>
+                    {{!-- <div class="gh-dashboard-onboarding-item-action">
+                        {{svg-jar "arrow-right" }}
+                    </div> --}}
+                    <div class="gh-dashboard-onboarding-item-checkmark">
+                        {{svg-jar "check-2" }}
+                    </div>
+                </div>
+                <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup" class={{if this.customizePublication "gh-dashboard-onboarding-item--completed"}} {{on 'click' (fn this.completeStep "customizePublication")}}>  
+                    <div class="gh-dashboard-onboarding-item" {{on 'click' this.completeStep}}>                                                 
+                            <div class="gh-dashboard-onboarding-item-content">
+                                {{svg-jar "brush" }}
+                                <div class="gh-dashboard-onboarding-item-details">
+                                    <span class="gh-dashboard-onboarding-item-title">Make the publication your own</span>
+                                    <span class="gh-dashboard-onboarding-item-description">Match the look and feel to your style and make it yours.</span>
+                                </div>
+                            </div>
+                            <div class="gh-dashboard-onboarding-item-action">
+                                {{svg-jar "arrow-right" }}
+                            </div>
+                    </div>
+                </LinkTo>
+                <LinkTo @route="lexical-editor.new" @model="post"> 
+                    <div class="gh-dashboard-onboarding-item">                                          
+                        <div class="gh-dashboard-onboarding-item-content">
+                            {{svg-jar "writing" }}
+                            <div class="gh-dashboard-onboarding-item-details">
+                                <span class="gh-dashboard-onboarding-item-title">Create your first post</span>
+                            </div>
+                        </div>
+                        <div class="gh-dashboard-onboarding-item-action">
+                            {{svg-jar "arrow-right" }}
+                        </div>
+                    </div>
+                </LinkTo>
+                <LinkTo @route="members">
+                    <div class="gh-dashboard-onboarding-item">                                                    
+                        <div class="gh-dashboard-onboarding-item-content">
+                            {{svg-jar "member-add" }}
+                            <div class="gh-dashboard-onboarding-item-details">
+                                <span class="gh-dashboard-onboarding-item-title">Build your audience</span>
+                            </div>
+                        </div>
+                        <div class="gh-dashboard-onboarding-item-action">
+                            {{svg-jar "arrow-right" }}
+                        </div>
+                    </div>
+                </LinkTo>
+                <div class="gh-dashboard-onboarding-item">                                                    
+                    <div class="gh-dashboard-onboarding-item-content">
+                        {{svg-jar "megaphone" }}
+                        <div class="gh-dashboard-onboarding-item-details">
+                            <span class="gh-dashboard-onboarding-item-title">Share your publication</span>
+                        </div>
+                    </div>
+                    <div class="gh-dashboard-onboarding-item-action">
+                        {{svg-jar "arrow-right" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+</section>

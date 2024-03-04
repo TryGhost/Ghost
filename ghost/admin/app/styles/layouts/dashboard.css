@@ -2760,3 +2760,131 @@ Dashboard Mentions */
     font-size: 1.4rem;
     font-weight: 500;
 }
+
+/* ---------------------------------
+Onboarding checklist */
+
+.gh-dashboard-onboarding-box {
+    display: grid;
+    grid-gap: 24px;
+    grid-template-columns: 1fr 2fr;
+    text-align: center;
+}
+
+.gh-dashboard-onboarding-box-message {
+    margin-right: 24px;
+    border-right: 1px solid #ebeef0;
+    padding-right: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.gh-dashboard-onboarding-item {
+    padding: 12px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ebeef0;
+}
+
+/* .gh-dashboard-onboarding-item:last-child {
+    border-bottom: 0 none;
+} */
+
+.gh-dashboard-onboarding-item:hover {
+    background: linear-gradient(315deg,#fafafb 60%,#fff);
+}
+
+.gh-dashboard-onboarding-item--completed .gh-dashboard-onboarding-item-content {
+    opacity: 0.3;
+}
+
+.gh-dashboard-onboarding-item-content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    min-width: 0;
+}
+
+.gh-dashboard-onboarding-item-details {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.gh-dashboard-onboarding-item-title {
+    font-weight: 600;
+    font-size: 1.5rem;
+    letter-spacing: 0;
+    color: #394047;
+    padding: 0 32px 0 0;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
+.gh-dashboard-onboarding-item-description {
+    font-weight: 400;
+    color: #626d79!important;
+}
+
+.gh-dashboard-onboarding-item-action {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    min-width: 0;
+}
+
+.gh-dashboard-onboarding-item-content svg {
+    width: 20px;
+    min-width: 20px;
+    height: auto;
+    margin: 2px 16px 0 0;
+    color: #ae5aef;
+}
+
+.gh-dashboard-onboarding-item-content svg path {
+    stroke: #ae5aef;
+    stroke-width: 1.5 !important;
+}
+
+.gh-dashboard-onboarding-item--completed .gh-dashboard-onboarding-item-content svg {
+    color: var(--middarkgrey);
+}
+
+.gh-dashboard-onboarding-item--completed .gh-dashboard-onboarding-item-content svg path {
+    stroke: var(--middarkgrey);
+}
+
+.gh-dashboard-onboarding-item-action {
+    display: flex;
+}
+
+.gh-dashboard-onboarding-item-action svg {
+    width: 14px;
+    min-width: 14px;
+    height: 14px;
+    margin-right: 1rem;
+}
+
+.gh-dashboard-onboarding-item-action svg path {
+    fill: var(--midlightgrey);
+}
+
+.gh-dashboard-onboarding-item-checkmark {
+    display: flex;
+}
+
+.gh-dashboard-onboarding-item-checkmark svg {
+    width: 14px;
+    height: auto;
+    margin-right: 1rem;
+}
+
+.gh-dashboard-onboarding-item-checkmark svg path {
+    stroke: var(--green);
+}

@@ -55,7 +55,12 @@ const features = [{
     title: 'New email addresses',
     description: 'For self hosters, forces the usage of the mail.from config as from address for all outgoing emails',
     flag: 'newEmailAddresses'
-}];
+},{
+    title: 'Onboarding checklist',
+    description: 'Onboarding checklist that helps new customers get started',
+    flag: 'onboardingChecklist'
+}
+];
 
 const AlphaFeatures: React.FC = () => {
     return (
