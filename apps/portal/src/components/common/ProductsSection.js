@@ -947,6 +947,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
     const activeInterval = getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval});
 
     const isComplimentary = isComplimentaryMember({member});
+    const hasOnlyFree = hasOnlyFreeProduct({site});
 
     useEffect(() => {
         setSelectedProduct(defaultProductId);
@@ -979,7 +980,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
     }
 
     // If site doesn't have paid products then don't return an empty container
-    if (hasOnlyFreeProduct({site})) {
+    if (hasOnlyFree) {
         return null;
     }
 
@@ -992,7 +993,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
         }}>
             <section className={className}>
 
-                {(!(hasOnlyFreeProduct({site})) ?
+                {(!(hasOnlyFree) ?
                     <ProductPriceSwitch
                         products={products}
                         selectedInterval={activeInterval}
