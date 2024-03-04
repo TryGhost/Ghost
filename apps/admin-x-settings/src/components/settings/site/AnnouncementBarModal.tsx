@@ -1,8 +1,9 @@
 import AnnouncementBarPreview from './announcementBar/AnnouncementBarPreview';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useCallback, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {CheckboxGroup, ColorIndicator, Form, HtmlField, PreviewModalContent, Tab, showToast} from '@tryghost/admin-x-design-system';
+import {debounce} from '@tryghost/admin-x-design-system';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
@@ -118,7 +119,6 @@ const AnnouncementBarModal: React.FC = () => {
     const visibilitySettings = JSON.parse(announcementVisibility?.toString() || '[]') as string[];
     const {updateRoute} = useRouting();
     const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
-    const [announcementContentState, setAnnouncementContentState] = useState(announcementContent);
 
     const toggleColorSwatch = (e: string | null) => {
         updateSetting('announcement_background', e);
@@ -134,28 +134,24 @@ const AnnouncementBarModal: React.FC = () => {
         updateSetting('announcement_visibility', JSON.stringify(visibilitySettings));
     };
 
-    const announcementTextHandler = useCallback((e:string) => {
-        setAnnouncementContentState(e);
-    }, []);
+    const updateAnnouncementDebouncedRef = useRef(
+        debounce((value: string) => {
+            updateSetting('announcement_content', value);
+        }, 500)
+    );
 
     const sidebar = <Sidebar
         accentColor={accentColor}
         announcementBackgroundColor={announcementBackgroundColor}
         announcementContent={announcementContent}
         announcementTextHandler={(e) => {
-            announcementTextHandler(e);
+            updateAnnouncementDebouncedRef.current(e);
         }}
         paidMembersEnabled={paidMembersEnabled}
         toggleColorSwatch={toggleColorSwatch}
         toggleVisibility={toggleVisibility}
         visibility={announcementVisibility as string[]}
-        onBlur={() => {
-            if (announcementContentState) {
-                updateSetting('announcement_content', announcementContentState);
-            } else {
-                updateSetting('announcement_content', null);
-            }
-        }}
+        onBlur={() => {}}
     />;
 
     const {data: {posts: [latestPost]} = {posts: []}} = useBrowsePosts({
