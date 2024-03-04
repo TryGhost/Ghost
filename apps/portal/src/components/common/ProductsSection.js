@@ -978,6 +978,11 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
         className += ' gh-portal-upgrade-product';
     }
 
+    // If site doesn't have paid products then don't return an empty container
+    if (hasOnlyFreeProduct({site})) {
+        return null;
+    }
+
     let finalProduct = products.find(p => p.id === selectedProduct)?.id || products.find(p => p.type === 'paid')?.id;
     return (
         <ProductsContext.Provider value={{
