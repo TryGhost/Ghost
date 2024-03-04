@@ -1,6 +1,6 @@
 import AnnouncementBarPreview from './announcementBar/AnnouncementBarPreview';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {CheckboxGroup, ColorIndicator, Form, HtmlField, PreviewModalContent, Tab, showToast} from '@tryghost/admin-x-design-system';
 import {debounce} from '@tryghost/admin-x-design-system';
