@@ -7,8 +7,6 @@ import {screen} from '@testing-library/react';
 
 const setup = async ({site, member = null, newsletters}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
-    // console.log(newsletters);
-    // console.log(site);
     ghostApi.init = jest.fn(() => {
         return Promise.resolve({
             site,
@@ -146,24 +144,4 @@ describe('Newsletter Subscriptions', () => {
 
         expect(ghostApi.member.update).toHaveBeenCalled();
     });
-
-    // NOTE: This endpoint isn't defined yet, so this test will fail - this should parse the query params to make a call to the Ghost API (newsletter)
-    //  and then display the UnsubscribePage component in the iframe.
-    // test('unsubscribe via email link', async () => {
-    //     // Mock window.location
-    //     Object.defineProperty(window, 'location', {
-    //         value: new URL(`https://portal.localhost/?action=unsubscribe&uuid=${FixtureMember.subbedToNewsletter.uuid}&newsletter=${Newsletters[0].id}`),
-    //         writable: true
-    //     });
-
-    //     const {ghostApi, popupFrame, triggerButtonFrame, accountHomeTitle, manageSubscriptionsButton, popupIframeDocument} = await setup({
-    //         site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
-    //         member: FixtureMember.subbedToNewsletter,
-    //         newsletters: Newsletters
-    //     });
-
-    //     expect(popupFrame).toBeInTheDocument();
-
-    //     screen.debug();
-    // });
 });
