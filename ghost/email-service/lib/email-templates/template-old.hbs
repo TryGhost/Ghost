@@ -121,9 +121,14 @@
                                                     {{/if}}
                                                 ></td>
                                             </tr>
-                                            {{#if post.feature_image_caption }}
+
+                                             {{#if post.feature_image_caption }}
                                                 <tr>
-                                                    <td class="feature-image-caption" align="center">{{{post.feature_image_caption}}}</td>
+                                                    <td class="feature-image-caption" align="center">
+                                                        <div style="font-size: 13px; text-align: center; padding: 0; margin: 0;">
+                                                            {{{post.feature_image_caption}}}
+                                                        </div>
+                                                    </td>
                                                 </tr>
                                             {{/if}}
                                         {{/if}}
