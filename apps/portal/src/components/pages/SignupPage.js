@@ -153,7 +153,7 @@ footer.gh-portal-signin-footer {
 
 .gh-portal-content.signup.single-field .gh-portal-input,
 .gh-portal-content.signin .gh-portal-input {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .gh-portal-content.signup.single-field + .gh-portal-signup-footer,
