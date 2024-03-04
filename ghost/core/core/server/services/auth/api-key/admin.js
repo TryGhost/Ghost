@@ -159,7 +159,7 @@ const authenticateWithToken = async function apiKeyAuthenticateWithToken(req, re
         try {
             jwt.verify(token, secret, options);
         } catch (err) {
-            if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError') {
+            if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError' || err.name === 'NotBeforeError') {
                 return next(new errors.UnauthorizedError({
                     message: tpl(messages.invalidTokenWithMessage, {message: err.message}),
                     code: 'INVALID_JWT',
