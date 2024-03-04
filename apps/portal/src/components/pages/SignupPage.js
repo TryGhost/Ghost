@@ -204,11 +204,19 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
 .gh-portal-signup-terms-wrapper {
     width: 100%;
     max-width: 420px;
-    margin: -16px auto 36px;
+    margin: 0 auto;
 }
 
-.gh-portal-signup-terms-wrapper.free-only {
-    margin: -16px auto 0;
+.signup.single-field .gh-portal-signup-terms-wrapper {
+    margin-top: -16px;
+}
+
+.gh-portal-signup-terms {
+    margin: -16px 0 36px;
+}
+
+.gh-portal-signup-terms-wrapper.free-only .gh-portal-signup-terms {
+    margin: -16px 0 0;
 }
 
 .gh-portal-products + .gh-portal-signup-terms-wrapper.free-only {
@@ -499,6 +507,7 @@ class SignupPage extends React.Component {
 
     renderSignupTerms() {
         const {site} = this.context;
+
         if (site.portal_signup_terms_html === null || site.portal_signup_terms_html === '') {
             return null;
         }
