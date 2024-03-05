@@ -32,7 +32,7 @@ function SuccessIcon({show, checked}) {
     classNames.push('gh-portal-checkmark-container');
 
     return (
-        <div className={classNames.join(' ')}>
+        <div className={classNames.join(' ')} data-testid='checkmark-container'>
             <CheckmarkIcon className='gh-portal-checkmark-icon' alt='' />
         </div>
     );

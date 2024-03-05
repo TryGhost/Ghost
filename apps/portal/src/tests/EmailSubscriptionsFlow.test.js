@@ -3,22 +3,35 @@ import {appRender, fireEvent, within} from '../utils/test-utils';
 import {newsletters as Newsletters, site as FixtureSite, member as FixtureMember} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
 import userEvent from '@testing-library/user-event';
-import {screen} from '@testing-library/react';
 
-const setup = async ({site, member = null, newsletters}) => {
+const setup = async ({site, member = null, newsletters}, loggedOut = false) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
     ghostApi.init = jest.fn(() => {
         return Promise.resolve({
             site,
-            member,
+            member: loggedOut ? null : member,
             newsletters
         });
     });
 
-    ghostApi.member.update = jest.fn(() => {
+    ghostApi.member.update = jest.fn(({newsletters: newNewsletters}) => {
         return Promise.resolve({
-            newsletters: [],
+            newsletters: newNewsletters,
             enable_comment_notifications: false
+        });
+    });
+
+    ghostApi.member.newsletters = jest.fn(() => {
+        return Promise.resolve({
+            newsletters
+        });
+    });
+
+    ghostApi.member.updateNewsletters = jest.fn(({uuid: memberUuid, newsletters: newNewsletters, enableCommentNotifications}) => {
+        return Promise.resolve({
+            uuid: memberUuid,
+            newsletters: newNewsletters,
+            enable_comment_notifications: enableCommentNotifications
         });
     });
 
@@ -27,6 +40,7 @@ const setup = async ({site, member = null, newsletters}) => {
     );
 
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
+    const triggerButton = within(triggerButtonFrame.contentDocument).getByTestId('portal-trigger-button');
     const popupFrame = utils.queryByTitle(/portal-popup/i);
     const popupIframeDocument = popupFrame.contentDocument;
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
@@ -46,6 +60,7 @@ const setup = async ({site, member = null, newsletters}) => {
         popupIframeDocument,
         popupFrame,
         triggerButtonFrame,
+        triggerButton,
         siteTitle,
         emailInput,
         nameInput,
@@ -101,10 +116,10 @@ describe('Newsletter Subscriptions', () => {
         await userEvent.click(manageSubscriptionsButton);
 
         const newsletter1 = within(popupIframeDocument).queryByText('Newsletter 1');
-        const subscriptionToggles = within(popupIframeDocument).getAllByTestId('switch-input');
         expect(newsletter1).toBeInTheDocument();
-        
+
         // unsubscribe from Newsletter 1
+        const subscriptionToggles = within(popupIframeDocument).getAllByTestId('switch-input');
         const newsletter1Toggle = subscriptionToggles[0];
         expect(newsletter1Toggle).toBeInTheDocument();
         await userEvent.click(newsletter1Toggle);
@@ -114,16 +129,20 @@ describe('Newsletter Subscriptions', () => {
         expect(ghostApi.member.update).toHaveBeenLastCalledWith(
             {newsletters: expectedSubscriptions}
         );
+        const subscriptionToggleContainers = within(popupIframeDocument).getAllByTestId('checkmark-container');
+        const newsletter1ToggleContainer = subscriptionToggleContainers[0];
+        expect(newsletter1ToggleContainer).toBeInTheDocument();
+        expect(newsletter1ToggleContainer).not.toHaveClass('gh-portal-toggle-checked');
+        const newsletter2ToggleContainer = subscriptionToggleContainers[1];
+        expect(newsletter2ToggleContainer).toBeInTheDocument();
+        expect(newsletter2ToggleContainer).toHaveClass('gh-portal-toggle-checked');
 
-        // NOTE: This is not working because the spy is not picking up the right data, but it seems the UI is displaying
-        //  the correct state, and functional testing shows it working fine.
-        // resubscribe
-        // await userEvent.click(newsletter1Toggle);
-
-        // get all checked toggles
-        // expect(ghostApi.member.update).toHaveBeenLastCalledWith(
-        //     {newsletters: Newsletters.map(n => ({id: n.id}))}
-        // );
+        // resubscribe to Newsletter 1
+        await userEvent.click(newsletter1Toggle);
+        expect(newsletter1ToggleContainer).toHaveClass('gh-portal-toggle-checked');
+        expect(ghostApi.member.update).toHaveBeenLastCalledWith(
+            {newsletters: Newsletters.reverse().map(n => ({id: n.id}))}
+        );
     });
 
     test('unsubscribe from all newsletters', async () => {
@@ -143,5 +162,88 @@ describe('Newsletter Subscriptions', () => {
         fireEvent.click(unsubscribeAllButton);
 
         expect(ghostApi.member.update).toHaveBeenCalled();
+    });
+
+    describe('from the unsubscribe link > UnsubscribePage', () => {
+        test('unsubscribe via email link while not logged in', async () => {
+            // Mock window.location
+            Object.defineProperty(window, 'location', {
+                value: new URL(`https://portal.localhost/?action=unsubscribe&uuid=${FixtureMember.subbedToNewsletter.uuid}&newsletter=${Newsletters[0].uuid}`),
+                writable: true
+            });
+
+            const {ghostApi, popupFrame, popupIframeDocument} = await setup({
+                site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
+                member: FixtureMember.subbedToNewsletter,
+                newsletters: Newsletters
+            }, true);
+
+            expect(ghostApi.member.newsletters).toHaveBeenLastCalledWith(
+                {uuid: FixtureMember.subbedToNewsletter.uuid}
+            );
+            expect(popupFrame).toBeInTheDocument();
+            // Verify the local state shows the newsletter as unsubscribed
+            let newsletterToggles = within(popupIframeDocument).queryAllByTestId('checkmark-container');
+            let newsletter1Toggle = newsletterToggles[0];
+            let newsletter2Toggle = newsletterToggles[1];
+
+            expect(newsletter1Toggle).toBeInTheDocument();
+            expect(newsletter2Toggle).toBeInTheDocument();
+            expect(newsletter1Toggle).not.toHaveClass('gh-portal-toggle-checked');
+            expect(newsletter2Toggle).toHaveClass('gh-portal-toggle-checked');
+        });
+
+        test('unsubscribe via email link while logged in', async () => {
+            // Mock window.location
+            Object.defineProperty(window, 'location', {
+                value: new URL(`https://portal.localhost/?action=unsubscribe&uuid=${FixtureMember.subbedToNewsletter.uuid}&newsletter=${Newsletters[0].uuid}`),
+                writable: true
+            });
+
+            const {ghostApi, popupFrame, popupIframeDocument, triggerButton, queryByTitle, queryByTestId} = await setup({
+                site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
+                member: FixtureMember.subbedToNewsletter,
+                newsletters: Newsletters
+            });
+
+            // Verify the API was hit to collect subscribed newsletters
+            expect(ghostApi.member.newsletters).toHaveBeenLastCalledWith(
+                {uuid: FixtureMember.subbedToNewsletter.uuid}
+            );
+            // Verify the local state shows the newsletter as unsubscribed
+            let newsletterToggles = within(popupIframeDocument).queryAllByTestId('checkmark-container');
+            let newsletter1Toggle = newsletterToggles[0];
+            let newsletter2Toggle = newsletterToggles[1];
+
+            expect(newsletter1Toggle).toBeInTheDocument();
+            expect(newsletter2Toggle).toBeInTheDocument();
+            expect(newsletter1Toggle).not.toHaveClass('gh-portal-toggle-checked');
+            expect(newsletter2Toggle).toHaveClass('gh-portal-toggle-checked');
+
+            // Close the UnsubscribePage popup frame
+            const popupCloseButton = within(popupIframeDocument).queryByTestId('close-popup');
+            await userEvent.click(popupCloseButton);
+            expect(popupFrame).not.toBeInTheDocument();
+            
+            // Reopen Portal and go to the unsubscribe page
+            await userEvent.click(triggerButton);
+            // We have a new popup frame - can't use the old locator from setup
+            const newPopupFrame = queryByTitle(/portal-popup/i);
+            expect(newPopupFrame).toBeInTheDocument();
+            const newPopupIframeDocument = newPopupFrame.contentDocument;
+            
+            // Open the NewsletterManagement page
+            const manageSubscriptionsButton = within(newPopupIframeDocument).queryByRole('button', {name: 'Manage'});
+            await userEvent.click(manageSubscriptionsButton);
+
+            // Verify that the unsubscribed newsletter is shown as unsubscribed in the new popup
+            newsletterToggles = within(newPopupIframeDocument).queryAllByTestId('checkmark-container');
+            newsletter1Toggle = newsletterToggles[0];
+            newsletter2Toggle = newsletterToggles[1];
+            expect(newsletter1Toggle).toBeInTheDocument();
+            expect(newsletter2Toggle).toBeInTheDocument();
+            expect(newsletter1Toggle).not.toHaveClass('gh-portal-toggle-checked');
+            expect(newsletter2Toggle).toHaveClass('gh-portal-toggle-checked');
+        });
     });
 });
