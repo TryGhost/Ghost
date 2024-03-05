@@ -90,7 +90,6 @@ describe('Newsletter Subscriptions', () => {
         expect(manageSubscriptionsButton).toBeInTheDocument();
 
         // unsure why fireEvent has no effect here
-        // await fireEvent.click(manageSubscriptionsButton);
         await userEvent.click(manageSubscriptionsButton);
 
         const newsletter1 = within(popupIframeDocument).queryByText('Newsletter 1');
@@ -145,7 +144,7 @@ describe('Newsletter Subscriptions', () => {
         );
     });
 
-    test('unsubscribe from all newsletters', async () => {
+    test('unsubscribe from all newsletters when logged in', async () => {
         const {ghostApi, popupFrame, triggerButtonFrame, accountHomeTitle, manageSubscriptionsButton, popupIframeDocument} = await setup({
             site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
             member: FixtureMember.subbedToNewsletter,
@@ -161,7 +160,16 @@ describe('Newsletter Subscriptions', () => {
 
         fireEvent.click(unsubscribeAllButton);
 
-        expect(ghostApi.member.update).toHaveBeenCalled();
+        expect(ghostApi.member.update).toHaveBeenCalledWith({newsletters: []});
+        // Verify the local state shows the newsletter as unsubscribed
+        let newsletterToggles = within(popupIframeDocument).queryAllByTestId('checkmark-container');
+        let newsletter1Toggle = newsletterToggles[0];
+        let newsletter2Toggle = newsletterToggles[1];
+
+        expect(newsletter1Toggle).toBeInTheDocument();
+        expect(newsletter2Toggle).toBeInTheDocument();
+        expect(newsletter1Toggle).not.toHaveClass('gh-portal-toggle-checked');
+        expect(newsletter2Toggle).not.toHaveClass('gh-portal-toggle-checked');
     });
 
     describe('from the unsubscribe link > UnsubscribePage', () => {
@@ -200,7 +208,7 @@ describe('Newsletter Subscriptions', () => {
                 writable: true
             });
 
-            const {ghostApi, popupFrame, popupIframeDocument, triggerButton, queryByTitle, queryByTestId} = await setup({
+            const {ghostApi, popupFrame, popupIframeDocument, triggerButton, queryByTitle} = await setup({
                 site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
                 member: FixtureMember.subbedToNewsletter,
                 newsletters: Newsletters
