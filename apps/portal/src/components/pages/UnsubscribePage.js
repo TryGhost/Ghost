@@ -48,7 +48,6 @@ export default function UnsubscribePage() {
     const [member, setMember] = useState();
     const [loading, setLoading] = useState(true);
     const siteNewsletters = getSiteNewsletters({site});
-    // const api = setupGhostApi({siteUrl: site.url});
     const defaultNewsletters = siteNewsletters.filter((d) => {
         return d.subscribe_on_signup;
     });
