@@ -7,7 +7,8 @@
     display: flex;
     width: 100%;
     min-height: 96px;
-    border-radius: 3px;
+    border-radius: 6px;
+    padding: 4px;
     box-shadow: inset 0 0 0 1px rgba(124, 139, 154, 0.25);
 }
 
@@ -25,7 +26,7 @@
     background: transparent;
     object-fit: cover;
     aspect-ratio: 1/1;
-    border-radius: 2px;
+    border-radius: 3px;
 }
 
 .kg-audio-thumbnail.placeholder {
@@ -55,8 +56,8 @@
     padding: 8px 12px;
     border: none;
     font-family: inherit;
-    font-size: 1.15em;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 600;
     line-height: 1.15em;
     background: transparent;
 }
@@ -72,9 +73,9 @@
     min-width: 38px;
     padding: 0 4px;
     font-family: inherit;
-    font-size: .85em;
+    font-size: 12.5px;
     font-weight: 500;
-    line-height: 1.4em;
+    line-height: 1em;
     white-space: nowrap;
 }
 
@@ -82,9 +83,9 @@
     width: 56px;
     color: #ababab;
     font-family: inherit;
-    font-size: .85em;
+    font-size: 12.5px;
     font-weight: 500;
-    line-height: 1.4em;
+    line-height: 1em;
     white-space: nowrap;
 }
 
@@ -127,9 +128,9 @@
     min-width: 37px;
     padding: 0 4px;
     font-family: inherit;
-    font-size: .85em;
+    font-size: 12.5px;
     font-weight: 600;
-    line-height: 1.4em;
+    line-height: 1em;
     text-align: left;
     background: transparent;
     white-space: nowrap;

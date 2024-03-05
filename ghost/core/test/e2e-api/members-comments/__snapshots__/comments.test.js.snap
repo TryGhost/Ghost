@@ -147,7 +147,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
   "x-powered-by": "Express",
 }
 `;
@@ -2183,7 +2183,7 @@ Object {
   "access-control-allow-origin": "*",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
   "x-powered-by": "Express",
 }
 `;
@@ -2449,7 +2449,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
   "x-powered-by": "Express",
 }
 `;
@@ -2490,7 +2490,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
   "x-powered-by": "Express",
 }
 `;
@@ -2531,7 +2531,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
   "x-powered-by": "Express",
 }
 `;
@@ -2572,7 +2572,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
+  "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/replies\\\\//,
   "x-powered-by": "Express",
 }
 `;
@@ -3034,7 +3034,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
   "x-powered-by": "Express",
 }
 `;
@@ -3075,7 +3075,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
   "x-powered-by": "Express",
 }
 `;
@@ -3116,7 +3116,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
   "x-powered-by": "Express",
 }
 `;
@@ -3834,7 +3834,7 @@ Object {
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
   "vary": "Accept-Encoding",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/",
+  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6df/, /api/members/comments/6195c6a1e792de832cd08144/replies/",
   "x-powered-by": "Express",
 }
 `;
