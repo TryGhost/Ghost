@@ -3,12 +3,12 @@ import {action} from '@ember/object';
 import {tracked} from '@glimmer/tracking';
 
 export default class OnboardingChecklist extends Component {
-    @service myStateService;
-
     @tracked customizePublication = false;
     @tracked createPost = false;
     @tracked buildAudience = false;
     @tracked tellWorld = false;
+
+    @tracked showMemberTierModal = false;
 
     @action
     completeStep(step) {

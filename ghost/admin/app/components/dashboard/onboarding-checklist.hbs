@@ -3,69 +3,69 @@
         <div class="gh-dashboard-onboarding-box-message">
             <div>
                 {{!-- {{svg-jar "confetti"}} --}}
-                <h3 class="gh-dashboard-metric-label">Welcome to your new Ghost publication!</h3>
+                <h3 class="gh-dashboard-onboarding-heading">Welcome to your new Ghost publication 🎉</h3>
                 <p>Let’s set you up for success.</p>
             </div>
+            <span>Have a question? Visit our <a href="#">Help Center</a></span>
         </div>
-        <div class="gh-dashboard-list">
-            <div class="gh-dashboard-list-body">
-                <div class="gh-dashboard-onboarding-item gh-dashboard-onboarding-item--completed" {{on 'click' this.completeStep}}>                                                    
+        <div class="gh-dashboard-onboarding-items">
+            <div>
+                {{!-- Step 1 --}}
+                <div class="gh-dashboard-onboarding-item gh-dashboard-onboarding-item--completed">                                                    
                     <div class="gh-dashboard-onboarding-item-content">
                         {{svg-jar "rocket" }}
                         <span class="gh-dashboard-list-text">Start a new Ghost publication</span>
                     </div>
-                    {{!-- <div class="gh-dashboard-onboarding-item-action">
-                        {{svg-jar "arrow-right" }}
-                    </div> --}}
                     <div class="gh-dashboard-onboarding-item-checkmark">
                         {{svg-jar "check-2" }}
                     </div>
                 </div>
-                <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup" class={{if this.customizePublication "gh-dashboard-onboarding-item--completed"}} {{on 'click' (fn this.completeStep "customizePublication")}}>  
-                    <div class="gh-dashboard-onboarding-item" {{on 'click' this.completeStep}}>                                                 
+                {{!-- Step 2 --}}
+                <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup" class="gh-dashboard-onboarding-item gh-dashboard-onboarding-item--default">  
                             <div class="gh-dashboard-onboarding-item-content">
                                 {{svg-jar "brush" }}
                                 <div class="gh-dashboard-onboarding-item-details">
-                                    <span class="gh-dashboard-onboarding-item-title">Make the publication your own</span>
+                                    <span class="gh-dashboard-onboarding-item-title">Customize your publication</span>
                                     <span class="gh-dashboard-onboarding-item-description">Match the look and feel to your style and make it yours.</span>
                                 </div>
                             </div>
                             <div class="gh-dashboard-onboarding-item-action">
                                 {{svg-jar "arrow-right" }}
                             </div>
-                    </div>
                 </LinkTo>
-                <LinkTo @route="lexical-editor.new" @model="post"> 
-                    <div class="gh-dashboard-onboarding-item">                                          
+                {{!-- Step 3 --}}
+                <LinkTo @route="lexical-editor.new" @model="post" class="gh-dashboard-onboarding-item"> 
                         <div class="gh-dashboard-onboarding-item-content">
                             {{svg-jar "writing" }}
                             <div class="gh-dashboard-onboarding-item-details">
                                 <span class="gh-dashboard-onboarding-item-title">Create your first post</span>
+                                <span class="gh-dashboard-onboarding-item-description">Explore the editor and tell your story — or a preview of what’s to come.</span>
                             </div>
                         </div>
                         <div class="gh-dashboard-onboarding-item-action">
                             {{svg-jar "arrow-right" }}
                         </div>
-                    </div>
                 </LinkTo>
-                <LinkTo @route="members">
-                    <div class="gh-dashboard-onboarding-item">                                                    
+                {{!-- Step 4 --}}
+                <LinkTo @route="members" class="gh-dashboard-onboarding-item">
                         <div class="gh-dashboard-onboarding-item-content">
                             {{svg-jar "member-add" }}
                             <div class="gh-dashboard-onboarding-item-details">
                                 <span class="gh-dashboard-onboarding-item-title">Build your audience</span>
+                                <span class="gh-dashboard-onboarding-item-description">Add members and grow your readership.</span>
                             </div>
                         </div>
                         <div class="gh-dashboard-onboarding-item-action">
                             {{svg-jar "arrow-right" }}
                         </div>
-                    </div>
                 </LinkTo>
-                <div class="gh-dashboard-onboarding-item">                                                    
+                {{!-- Step 5 --}}
+                <div role="button" {{on "click" (toggle-action "showShareModal" this)}} class="gh-dashboard-onboarding-item">                                                    
                     <div class="gh-dashboard-onboarding-item-content">
                         {{svg-jar "megaphone" }}
                         <div class="gh-dashboard-onboarding-item-details">
                             <span class="gh-dashboard-onboarding-item-title">Share your publication</span>
+                            <span class="gh-dashboard-onboarding-item-description">Share your publication on social media.</span>
                         </div>
                     </div>
                     <div class="gh-dashboard-onboarding-item-action">
@@ -76,3 +76,10 @@
         </div>
     </article>
 </section>
+
+{{#if this.showShareModal}}
+<GhFullscreenModal @modal="share"
+    @close={{this.close}}
+    @modifier="action wide"
+     />
+{{/if}}

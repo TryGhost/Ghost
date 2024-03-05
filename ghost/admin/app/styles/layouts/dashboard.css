@@ -2768,16 +2768,26 @@ Onboarding checklist */
     display: grid;
     grid-gap: 24px;
     grid-template-columns: 1fr 2fr;
-    text-align: center;
 }
 
 .gh-dashboard-onboarding-box-message {
-    margin-right: 24px;
-    border-right: 1px solid #ebeef0;
-    padding-right: 24px;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.gh-dashboard-onboarding-heading {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.3;
+    padding: 0;
+    color: #15171a;
+    letter-spacing: -.3px;
+}
+
+.gh-dashboard-onboarding-items {
+    border-left: 1px solid #ebeef0;
+    padding-left: 24px;
 }
 
 .gh-dashboard-onboarding-item {
@@ -2788,11 +2798,16 @@ Onboarding checklist */
     border-bottom: 1px solid #ebeef0;
 }
 
-/* .gh-dashboard-onboarding-item:last-child {
-    border-bottom: 0 none;
-} */
+.gh-dashboard-onboarding-item:first-child {
+    margin-top: -12px;
+}
 
-.gh-dashboard-onboarding-item:hover {
+.gh-dashboard-onboarding-item:last-child {
+    border-bottom: 0 none;
+    margin-bottom: -12px;
+}
+
+.gh-dashboard-onboarding-item:not(.gh-dashboard-onboarding-item--completed):hover {
     background: linear-gradient(315deg,#fafafb 60%,#fff);
 }
 
@@ -2826,9 +2841,17 @@ Onboarding checklist */
     margin-bottom: 0;
 }
 
-.gh-dashboard-onboarding-item-description {
+.gh-dashboard-onboarding-items:hover .gh-dashboard-onboarding-item:hover .gh-dashboard-onboarding-item-description,
+.gh-dashboard-onboarding-items .gh-dashboard-onboarding-item--default .gh-dashboard-onboarding-item-description {
+    height: 20px;
+}
+
+.gh-dashboard-onboarding-item-description, .gh-dashboard-onboarding-items:hover .gh-dashboard-onboarding-item-description {
     font-weight: 400;
     color: #626d79!important;
+    height: 0;
+    overflow: hidden;
+    transition: height .15s;
 }
 
 .gh-dashboard-onboarding-item-action {
