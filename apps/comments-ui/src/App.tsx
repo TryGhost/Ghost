@@ -192,7 +192,7 @@ const App: React.FC<AppProps> = ({scriptTag}) => {
             <CommentsFrame ref={iframeRef}>
                 <ContentBox done={done} />
             </CommentsFrame>
-            <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/>
+            {state.comments.length > 0 ? <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/> : null}
             <PopupBox />
         </AppContext.Provider>
     );
