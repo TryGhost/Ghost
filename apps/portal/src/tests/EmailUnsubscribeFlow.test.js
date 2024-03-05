@@ -88,7 +88,7 @@ describe('Unsubscripe From Email', () => {
         const popupCloseButton = within(popupIframeDocument).queryByTestId('close-popup');
 
         // TODO: Clicking the close button doesn't seem to be closing the popup.
-        userEvent.click(popupCloseButton);
+        await userEvent.click(popupCloseButton);
 
         await expect(popupFrame).not.toBeInTheDocument();
         
