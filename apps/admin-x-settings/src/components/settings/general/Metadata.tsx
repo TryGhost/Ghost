@@ -1,7 +1,7 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {GoogleLogo, Heading, Icon, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {GoogleLogo, Icon, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 interface SearchEnginePreviewProps {
