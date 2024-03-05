@@ -2,7 +2,6 @@ import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import {useContext, useEffect, useState} from 'react';
 import {getSiteNewsletters} from '../../utils/helpers';
-import setupGhostApi from '../../utils/api';
 import NewsletterManagement from '../common/NewsletterManagement';
 import CloseButton from '../common/CloseButton';
 import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
@@ -44,8 +43,7 @@ async function updateMemberNewsletters({api, memberUuid, newsletters, enableComm
 // NOTE: This modal is available even if not logged in, but because it's possible to also be logged in while making modifications,
 //  we need to update the member data in the context if logged in.
 export default function UnsubscribePage() {
-    const {site, pageData, member: loggedInMember, onAction, t} = useContext(AppContext);
-    const api = setupGhostApi({siteUrl: site.url});
+    const {site, api, pageData, member: loggedInMember, onAction, t} = useContext(AppContext);
     // member is the member data fetched from the API based on the uuid and its state is limited to just this modal, not all of Portal
     const [member, setMember] = useState();
     const [loading, setLoading] = useState(true);
@@ -60,44 +58,51 @@ export default function UnsubscribePage() {
     const {enable_comment_notifications: enableCommentNotifications = false} = member || {};
 
     const updateNewsletters = async (newsletters) => {
-        const updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, newsletters});
-        setSubscribedNewsletters(updatedData.newsletters);
-        // Keep the member data in sync if logged in
         if (loggedInMember) {
-            loggedInMember.newsletters = updatedData.newsletters;
+            // when we have a member logged in, we need to update the newsletters in the context
+            onAction('updateNewsletterPreference', {newsletters});
+        } else {
+            await updateMemberNewsletters({api, memberUuid: pageData.uuid, newsletters});
         }
+        setSubscribedNewsletters(newsletters);
     };
 
     const updateCommentNotifications = async (enabled) => {
-        const updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, enableCommentNotifications: enabled});
-        setMember(updatedData);
-        // Keep the member data in sync if logged in
+        let updatedData;
         if (loggedInMember) {
-            loggedInMember.enable_comment_notifications = enabled;
+            // when we have a member logged in, we need to update the newsletters in the context
+            await onAction('updateNewsletterPreference', {enableCommentNotifications: enabled});
+            updatedData = {...loggedInMember, enable_comment_notifications: enabled};
+        } else {
+            updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, enableCommentNotifications: enabled});
         }
+        setMember(updatedData);
     };
 
     const unsubscribeAll = async () => {
+        let updatedMember;
+        if (loggedInMember) {
+            await onAction('updateNewsletterPreference', {newsletters: [], enableCommentNotifications: false});
+            updatedMember = {...loggedInMember};
+            updatedMember.newsletters = [];
+            updatedMember.enable_comment_notifications = false;
+        } else {
+            updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
+        }
         setSubscribedNewsletters([]);
+        setMember(updatedMember);
         onAction('showPopupNotification', {
             action: 'updated:success',
             message: t(`Unsubscribed from all emails.`)
         });
-        const updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
-        setMember(updatedMember);
-        if (loggedInMember) {
-            loggedInMember.newsletters = [];
-            loggedInMember.enable_comment_notifications = false;
-        }
     };
 
     // This handles the url query param actions that ultimately launch this component/modal
     useEffect(() => {
-        const ghostApi = setupGhostApi({siteUrl: site.url});
         (async () => {
             let memberData;
             try {
-                memberData = await ghostApi.member.newsletters({uuid: pageData.uuid});
+                memberData = await api.member.newsletters({uuid: pageData.uuid});
                 setMember(memberData ?? null);
                 setLoading(false);
             } catch (e) {

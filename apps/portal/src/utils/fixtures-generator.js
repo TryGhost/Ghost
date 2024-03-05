@@ -121,7 +121,8 @@ export function getMemberData({
     email_suppression = {
         suppressed: false,
         info: null
-    }
+    },
+    newsletters = []
 } = {}) {
     return {
         uuid: `member_${objectId()}`,
@@ -132,8 +133,44 @@ export function getMemberData({
         subscribed,
         avatar_image,
         subscriptions,
-        email_suppression
+        email_suppression,
+        newsletters
     };
+}
+
+export function getNewsletterData({
+    id = `${objectId()}`,
+    uuid = `${objectId()}`,
+    name = 'Newsletter',
+    description = 'Newsletter description',
+    slug = 'newsletter',
+    sender_email = null,
+    subscribe_on_signup = true,
+    visibility = 'members',
+    sort_order = 0
+}) {
+    return {
+        id,
+        uuid,
+        name,
+        description,
+        slug,
+        sender_email,
+        subscribe_on_signup,
+        visibility,
+        sort_order
+    };
+}
+
+export function getNewslettersData({numOfNewsletters = 3} = {}) {
+    const newsletters = [];
+    for (let i = 0; i < numOfNewsletters; i++) {
+        newsletters.push(getNewsletterData({
+            name: `Newsletter ${i + 1}`,
+            description: `Newsletter ${i + 1} description`
+        }));
+    }
+    return newsletters.slice(0, numOfNewsletters);
 }
 
 export function getProductsData({numOfProducts = 3} = {}) {
