@@ -159,10 +159,10 @@ describe('Posts Bulk API', function () {
 
             const products = await models.Product.findAll();
 
-            const freeTier = products.models[0];
-            const paidTier = products.models[1];
+            const tier1 = products.models[0];
+            const tier2 = products.models[1];
 
-            assert(freeTier.id && paidTier.id);
+            assert(tier1.id && tier2.id);
 
             // Check all the posts that should be affected
             const changedPosts = await models.Post.findPage({filter, limit: 1, status: 'all'});
@@ -179,12 +179,10 @@ describe('Posts Bulk API', function () {
                             visibility: 'tiers',
                             tiers: [
                                 {
-                                    id: freeTier.id,
-                                    type: freeTier.get('type')
+                                    id: tier1.id
                                 },
                                 {
-                                    id: paidTier.id,
-                                    type: paidTier.get('type')
+                                    id: tier2.id
                                 }
                             ]
                         }
@@ -201,7 +199,7 @@ describe('Posts Bulk API', function () {
 
             for (const post of posts) {
                 assert(post.get('visibility') === 'tiers', `Expect post ${post.id} to have access 'tiers'`);
-                assert.equal(post.related('tiers').length, 1); // Only the paid tier, not the free tier
+                assert.equal(post.related('tiers').length, 2);
             }
         });
 
