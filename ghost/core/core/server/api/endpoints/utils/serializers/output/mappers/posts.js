@@ -62,8 +62,12 @@ module.exports = async (model, frame, options = {}) => {
             jsonModel.tiers = tiersData || [];
         }
 
-        if (['tiers', 'paid'].includes(jsonModel.visibility) && jsonModel.tiers) {
+        if (jsonModel.visibility === 'paid' && jsonModel.tiers) {
             jsonModel.tiers = tiersData ? tiersData.filter(t => t.type === 'paid') : [];
+        }
+
+        if (jsonModel.visibility === 'tiers' && Array.isArray(jsonModel.tiers)) {
+            jsonModel.tiers = jsonModel.tiers.filter(t => t.type === 'paid');
         }
 
         if (!['members', 'public', 'paid', 'tiers'].includes(jsonModel.visibility)) {
