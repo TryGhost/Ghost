@@ -1026,8 +1026,7 @@ describe('Comments API', function () {
                 visibility: 'tiers',
                 tiers: [
                     {
-                        id: product.id,
-                        type: product.get('type')
+                        id: product.id
                     }
                 ]
             }, {id: post.id});

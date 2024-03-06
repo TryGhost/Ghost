@@ -1000,16 +1000,16 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
-        // If visibility is set to specific tiers, make sure we are only saving paid tiers
-        if (this.get('visibility') === 'tiers' && this.get('tiers')) {
-            const paidTiers = this.get('tiers').filter(t => t.type === 'paid');
-            this.set('tiers', paidTiers);
-        }
-
         if (this.get('tiers')) {
             this.set('tiers', this.get('tiers').map(t => ({
                 id: t.id
             })));
+
+            // Don't associate the free tier with the post
+            const freeTier = await ghostBookshelf.model('Product').findOne({type: 'free'}, {require: false});
+            if (freeTier) {
+                this.set('tiers', this.get('tiers').filter(t => t.id !== freeTier.id));
+            }
         }
 
         if (labs.isSet('collectionsCard') && this.get('type') === 'post' && (newStatus === 'published' || olderStatus === 'published')) {

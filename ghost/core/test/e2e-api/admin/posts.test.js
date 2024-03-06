@@ -704,7 +704,10 @@ describe('Posts API', function () {
                                 id: pageResponse.id,
                                 updated_at: pageResponse.updated_at,
                                 visibility: 'tiers',
-                                tiers: [freeTier, paidTier]
+                                tiers: [
+                                    {id: freeTier.id},
+                                    {id: paidTier.id}
+                                ]
                             }]
                         })
                         .expectStatus(200)
