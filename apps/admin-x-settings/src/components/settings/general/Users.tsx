@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import clsx from 'clsx';
+import useQueryParams from '../../../hooks/useQueryParams';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import {Avatar, Button, List, ListItem, NoValueLabel, TabView, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {User, hasAdminAccess, isContributorUser, isEditorUser} from '@tryghost/admin-x-framework/api/users';
@@ -211,7 +212,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         hasNextPage,
         fetchNextPage
     } = useStaffUsers();
-    const {route, updateRoute} = useRouting();
+    const {updateRoute} = useRouting();
 
     const showInviteModal = () => {
         updateRoute('staff/invite');
@@ -223,18 +224,36 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         }} />
     );
 
-    let defaultTab = route.startsWith('/') ? route.split('/')[2] : route.split('/')[1];
-    defaultTab = defaultTab || 'administrators';
+    // let defaultTab = route.startsWith('/') ? route.split('/')[2] : route.split('/')[1];
+    // defaultTab = defaultTab || 'administrators';
+    // const [selectedTab, setSelectedTab] = useState(defaultTab);
+
+    // console.log('////////// ' + selectedTab);
+
+    // useEffect(() => {
+    //     let tab = route.startsWith('/') ? route.split('/')[2] : route.split('/')[1];
+    //     if (tab) {
+    //         setSelectedTab(tab);
+    //     }
+    // }, [route]);
+
+    // const updateSelectedTab = (newTab: string) => {
+    //     updateRoute(`staff/${newTab}`);
+    //     setSelectedTab(newTab);
+    // };
+
+    const tabParam = useQueryParams().getParam('tab');
+    const defaultTab = tabParam || 'administrators';
     const [selectedTab, setSelectedTab] = useState(defaultTab);
 
     useEffect(() => {
-        let tab = route.startsWith('/') ? route.split('/')[2] : route.split('/')[1];
-        tab = tab || 'administrators';
-        setSelectedTab(tab);
-    }, [route]);
+        if (tabParam) {
+            setSelectedTab(tabParam);
+        }
+    }, [tabParam]);
 
     const updateSelectedTab = (newTab: string) => {
-        updateRoute(`staff/${newTab}`);
+        updateRoute(`staff?tab=${newTab}`);
         setSelectedTab(newTab);
     };
 
@@ -282,7 +301,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         >
             <Owner user={ownerUser} />
             {/* if there are no users besides the owner user, hide the tabs*/}
-            {(users.length > 1 || invites.length > 0) && <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={updateSelectedTab} />}
+            {(users.length > 1 || invites.length > 0) && <TabView selectedTab={selectedTab} tabs={tabs} testId='user-tabview' onTabChange={updateSelectedTab} />}
             {hasNextPage && <Button
                 label={`Load more (showing ${users.length}/${totalUsers} users)`}
                 link
