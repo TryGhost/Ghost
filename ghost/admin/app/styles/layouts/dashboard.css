@@ -2972,7 +2972,7 @@ Share publication modal */
 .gh-share-links {
     list-style: none;
     padding: 0;
-    margin: 0;
+    margin: 40px 0 0;
 }
 
 .gh-share-links li { 
@@ -2980,4 +2980,30 @@ Share publication modal */
     border-bottom: 1px solid var(--whitegrey);
     display: flex; 
     flex-direction: row;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--darkgrey);
+    line-height: 1.5;
+    width: 100%;
+}
+
+.gh-share-links li span {
+    display: block;
+}
+
+.gh-share-links li span svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--midgrey);
+}
+
+span.tip {
+    font-size: 1.2rem;
+    font-weight: 400;
+    line-height: 1.5;
+    padding: 0;
+    margin-top: 8px;
+    color: var(--midgrey);
+    width: 100%;
+    display: block;
 }
