@@ -271,12 +271,12 @@ class PostsService {
             }
             let tiers = undefined;
             if (data.meta.visibility === 'tiers') {
-                if (!Array.isArray(data.meta.tiers) || data.meta.tiers.some(tier => tier.type === 'free')) {
+                if (!Array.isArray(data.meta.tiers)) {
                     throw new errors.IncorrectUsageError({
                         message: tpl(messages.invalidTiers)
                     });
                 }
-                tiers = data.meta.tiers;
+                tiers = data.meta.tiers.filter(t => t.type === 'paid');
             }
             return await this.#updatePosts({visibility: data.meta.visibility, tiers}, {filter: options.filter, context: options.context});
         }
