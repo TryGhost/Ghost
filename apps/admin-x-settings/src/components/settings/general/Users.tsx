@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import clsx from 'clsx';
 import useStaffUsers from '../../../hooks/useStaffUsers';
@@ -211,7 +211,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         hasNextPage,
         fetchNextPage
     } = useStaffUsers();
-    const {updateRoute} = useRouting();
+    const {route, updateRoute} = useRouting();
 
     const showInviteModal = () => {
         updateRoute('staff/invite');
@@ -223,35 +223,48 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         }} />
     );
 
-    const [selectedTab, setSelectedTab] = useState('users-admins');
+    let defaultTab = route.startsWith('/') ? route.split('/')[2] : route.split('/')[1];
+    defaultTab = defaultTab || 'administrators';
+    const [selectedTab, setSelectedTab] = useState(defaultTab);
+
+    useEffect(() => {
+        let tab = route.startsWith('/') ? route.split('/')[2] : route.split('/')[1];
+        tab = tab || 'administrators';
+        setSelectedTab(tab);
+    }, [route]);
+
+    const updateSelectedTab = (newTab: string) => {
+        updateRoute(`staff/${newTab}`);
+        setSelectedTab(newTab);
+    };
 
     const tabs = [
         {
-            id: 'users-admins',
+            id: 'administrators',
             title: 'Administrators',
             contents: (<UsersList groupname='administrators' users={adminUsers} />),
             counter: adminUsers.length ? adminUsers.length : undefined
         },
         {
-            id: 'users-editors',
+            id: 'editors',
             title: 'Editors',
             contents: (<UsersList groupname='editors' users={editorUsers} />),
             counter: editorUsers.length ? editorUsers.length : undefined
         },
         {
-            id: 'users-authors',
+            id: 'authors',
             title: 'Authors',
             contents: (<UsersList groupname='authors' users={authorUsers} />),
             counter: authorUsers.length ? authorUsers.length : undefined
         },
         {
-            id: 'users-contributors',
+            id: 'contributors',
             title: 'Contributors',
             contents: (<UsersList groupname='contributors' users={contributorUsers} />),
             counter: contributorUsers.length ? contributorUsers.length : undefined
         },
         {
-            id: 'users-invited',
+            id: 'invited',
             title: 'Invited',
             contents: (<InvitesUserList users={invites} />),
             counter: invites.length ? invites.length : undefined
@@ -269,7 +282,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         >
             <Owner user={ownerUser} />
             {/* if there are no users besides the owner user, hide the tabs*/}
-            {(users.length > 1 || invites.length > 0) && <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={setSelectedTab} />}
+            {(users.length > 1 || invites.length > 0) && <TabView selectedTab={selectedTab} tabs={tabs} onTabChange={updateSelectedTab} />}
             {hasNextPage && <Button
                 label={`Load more (showing ${users.length}/${totalUsers} users)`}
                 link
