@@ -271,7 +271,7 @@ class PostsService {
                         message: tpl(messages.invalidTiers)
                     });
                 }
-                tiers = data.meta.tiers;
+                tiers = data.meta.tiers.filter(t => t.type === 'paid');
             }
             return await this.#updatePosts({visibility: data.meta.visibility, tiers}, {filter: options.filter, context: options.context});
         }
