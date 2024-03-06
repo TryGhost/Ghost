@@ -1,1 +1,96 @@
-henlou
+
+  <header class="modal-header">
+      <h1>Share your publication</h1>
+      <p>Let the world discover your publication. Share it with your network and start building a community of readers.</p>
+  </header>
+  <button type="button" class="close" title="Close">{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+  {{!-- <div class="modal-body">
+    <div class="gh-post-bookmark-container">
+      <div class="gh-post-bookmark">
+        {{#let (or @post.featureImage (get-setting "coverImage")) as |imageUrl|}}
+        <div class="gh-post-bookmark-title">{{get-setting "title"}}</div>
+        <div class="gh-post-bookmark-description truncate">{{ get-setting "description"}}</div>
+        <div class="gh-post-bookmark-details">
+          {{#if (get-setting "icon")}}
+            <div class="gh-post-bookmark-site-icon"><img src={{get-setting "icon"}} alt="" role="presentation" /></div>
+          {{/if}}
+          <div class="gh-post-bookmark-site-title">{{get-setting "title"}}</div>
+          <div class="gh-post-bookmark-authors">Daniël van der Winden</div>
+        </div>
+
+        {{#if imageUrl}}
+            <div class="gh-post-bookmark-image">
+              <img src={{imageUrl}} alt="" role="presentation" />
+            </div>
+          {{/if}}
+        {{/let}}
+      </div>
+    </div>
+    <span>You can set your publication icon, cover image and description in Settings</span>
+
+    <ul>
+      <li>
+        <span>Icon</span>
+        <p>Copy a link to your publication</p>
+      </li>
+      <li>
+        <span>Icon</span>
+        <p>Share on X</p>
+      </li>
+      <li>
+        <span>Icon</span>
+        <p>Share on Facebook</p>
+      </li>
+      <li>
+        <span>Icon</span>
+        <p>Share on LinkedIn</p>
+      </li>
+    </ul>
+  </div> --}}
+
+    <div class="modal-body">
+      <div class="gh-site-preview-container">
+        <div class="gh-site-preview">
+          {{#let (or @post.featureImage (get-setting "coverImage")) as |imageUrl|}}
+          <div class="gh-site-preview-title">{{get-setting "title"}}</div>
+          <div class="gh-site-preview-description truncate">{{ get-setting "description"}}</div>
+          <div class="gh-site-preview-details">
+            {{#if (get-setting "icon")}}
+              <div class="gh-site-icon"><img src={{get-setting "icon"}} alt="" role="presentation" /></div>
+            {{/if}}
+            <div class="gh-site-title">{{get-setting "title"}}
+              <span>•</span>
+            </div>
+            <div class="gh-authors">Daniël van der Winden</div>
+          </div>
+
+          {{#if imageUrl}}
+              <div class="gh-site-image">
+                <img src={{imageUrl}} alt="" role="presentation" />
+              </div>
+            {{/if}}
+          {{/let}}
+        </div>
+      </div>
+      <span>You can set your publication icon, cover image and description in Settings</span>
+
+      <ul class="gh-share-links">
+        <li>
+          <span>Icon</span>
+          <p>Copy a link to your publication</p>
+        </li>
+        <li>
+          <span>Icon</span>
+          <p>Share on X</p>
+        </li>
+        <li>
+          <span>Icon</span>
+          <p>Share on Facebook</p>
+        </li>
+        <li>
+          <span>Icon</span>
+          <p>Share on LinkedIn</p>
+        </li>
+      </ul>
+  </div>
