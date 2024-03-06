@@ -31,38 +31,38 @@ const UnsplashImage: FC<UnsplashImageProps> = ({payload, srcUrl, links, likes, u
     };
 
     return (
-        <div 
+        <div
             className={`relative mb-6 block bg-grey-100 ${zoomed ? 'h-full w-[max-content] cursor-zoom-out' : 'w-full cursor-zoom-in'}`}
-            data-kg-unsplash-gallery-item 
+            data-kg-unsplash-gallery-item
             onClick={handleClick}>
             <img
                 alt={alt}
-                className={`${zoomed ? 'h-full w-auto object-contain' : ''}`}
+                className={`${zoomed ? 'h-full w-auto object-contain' : 'block h-auto'}`}
                 height={height}
                 loading='lazy'
                 src={srcUrl}
                 width={width}
-                data-kg-unsplash-gallery-img 
+                data-kg-unsplash-gallery-img
             />
             <div className="absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/5 via-black/5 to-black/30 p-5 opacity-0 transition-all ease-in-out hover:opacity-100">
-                <div className="flex items-center justify-end">
+                <div className="flex items-center justify-end gap-3">
                     <UnsplashButton
                         data-kg-button="unsplash-like"
-                        href={`${links.html}/?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit`} 
-                        icon="heart" 
-                        label={likes.toString()} 
-                        rel="noopener noreferrer" 
-                        target="_blank" 
+                        href={`${links.html}/?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit`}
+                        icon="heart"
+                        label={likes.toString()}
+                        rel="noopener noreferrer"
+                        target="_blank"
                     />
                     <UnsplashButton
                         data-kg-button="unsplash-download"
-                        href={`${links.download}/?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit&amp;force=true`} 
-                        icon="download" 
+                        href={`${links.download}/?utm_source=ghost&amp;utm_medium=referral&amp;utm_campaign=api-credit&amp;force=true`}
+                        icon="download"
                     />
                 </div>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                        <img alt="author" className="mr-2 h-8 w-8 rounded-full" src={user.profile_image.small} />
+                        <img alt="author" className="mr-2 h-8 w-8 rounded-full" src={user.profile_image.medium} />
                         <div className="mr-2 truncate font-sans text-sm font-medium text-white">{user.name}</div>
                     </div>
                     <UnsplashButton label="Insert image" data-kg-unsplash-insert-button onClick={(e) => {
