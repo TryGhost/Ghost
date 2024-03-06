@@ -132,7 +132,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                         unsplashButtonClassName='!top-1 !right-1 z-50'
                         unsplashEnabled={unsplashEnabled}
                         onDelete={() => updateSetting('cover_image', null)}
-                        onUpload={async (file) => {
+                        onUpload={async (file: any) => {
                             try {
                                 updateSetting('cover_image', getImageUrl(await uploadImage({file})));
                             } catch (e) {
