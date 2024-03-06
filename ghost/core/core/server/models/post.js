@@ -1004,6 +1004,12 @@ Post = ghostBookshelf.Model.extend({
             this.set('tiers', this.get('tiers').map(t => ({
                 id: t.id
             })));
+
+            // Don't associate the free tier with the post
+            const freeTier = await ghostBookshelf.model('Product').findOne({type: 'free'}, {require: false, transacting: options.transacting ?? undefined});
+            if (freeTier) {
+                this.set('tiers', this.get('tiers').filter(t => t.id !== freeTier.id));
+            }
         }
 
         if (labs.isSet('collectionsCard') && this.get('type') === 'post' && (newStatus === 'published' || olderStatus === 'published')) {
