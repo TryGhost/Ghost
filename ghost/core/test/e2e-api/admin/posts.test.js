@@ -675,7 +675,7 @@ describe('Posts API', function () {
         describe('Access', function () {
             describe('Visibility is set to tiers', function () {
                 it('Saves only paid tiers', async function () {
-                    const page = {
+                    const post = {
                         title: 'Test Page',
                         status: 'draft'
                     };
@@ -687,20 +687,20 @@ describe('Posts API', function () {
                     const paidTier = products.models[1];
 
                     const {body: pageBody} = await agent
-                        .post('/pages/', {
+                        .post('/posts/', {
                             headers: {
                                 'content-type': 'application/json'
                             }
                         })
-                        .body({pages: [page]})
+                        .body({posts: [post]})
                         .expectStatus(201);
 
-                    const [pageResponse] = pageBody.pages;
+                    const [pageResponse] = pageBody.posts;
 
                     await agent
-                        .put(`/pages/${pageResponse.id}`)
+                        .put(`/posts/${pageResponse.id}`)
                         .body({
-                            pages: [{
+                            posts: [{
                                 id: pageResponse.id,
                                 updated_at: pageResponse.updated_at,
                                 visibility: 'tiers',
@@ -717,9 +717,11 @@ describe('Posts API', function () {
                             'x-cache-invalidate': anyString
                         })
                         .matchBodySnapshot({
-                            pages: [Object.assign({}, matchPostShallowIncludes, {
+                            posts: [Object.assign({}, matchPostShallowIncludes, {
                                 published_at: null,
-                                tiers: [{id: paidTier.id, ...tierSnapshot}]
+                                tiers: [
+                                    {type: paidTier.get('type'), ...tierSnapshot}
+                                ]
                             })]
                         });
                 });

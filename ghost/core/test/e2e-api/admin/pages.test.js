@@ -333,7 +333,9 @@ describe('Pages API', function () {
                         .matchBodySnapshot({
                             pages: [Object.assign({}, matchPageShallowIncludes, {
                                 published_at: null,
-                                tiers: [{id: paidTier.id, ...tierSnapshot}]
+                                tiers: [
+                                    {type: paidTier.get('type'), ...tierSnapshot}
+                                ]
                             })]
                         });
                 });
