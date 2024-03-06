@@ -285,6 +285,62 @@ describe('Pages API', function () {
                 })
                 .expectStatus(200);
         });
+
+        describe('Access', function () {
+            describe('Visibility is set to tiers', function () {
+                it('Saves only paid tiers', async function () {
+                    const page = {
+                        title: 'Test Page',
+                        status: 'draft'
+                    };
+
+                    // @ts-ignore
+                    const products = await models.Product.findAll();
+
+                    const freeTier = products.models[0];
+                    const paidTier = products.models[1];
+
+                    const {body: pageBody} = await agent
+                        .post('/pages/', {
+                            headers: {
+                                'content-type': 'application/json'
+                            }
+                        })
+                        .body({pages: [page]})
+                        .expectStatus(201);
+
+                    const [pageResponse] = pageBody.pages;
+
+                    await agent
+                        .put(`/pages/${pageResponse.id}`)
+                        .body({
+                            pages: [{
+                                id: pageResponse.id,
+                                updated_at: pageResponse.updated_at,
+                                visibility: 'tiers',
+                                tiers: [
+                                    {id: freeTier.id},
+                                    {id: paidTier.id}
+                                ]
+                            }]
+                        })
+                        .expectStatus(200)
+                        .matchHeaderSnapshot({
+                            'content-version': anyContentVersion,
+                            etag: anyEtag,
+                            'x-cache-invalidate': anyString
+                        })
+                        .matchBodySnapshot({
+                            pages: [Object.assign({}, matchPageShallowIncludes, {
+                                published_at: null,
+                                tiers: [
+                                    {type: paidTier.get('type'), ...tierSnapshot}
+                                ]
+                            })]
+                        });
+                });
+            });
+        });
     });
 
     describe('Copy', function () {
