@@ -130,6 +130,11 @@ class PostsService {
             }
         }
 
+        // If the visibility is set to specific tiers, make sure that only paid tiers can be set
+        if (frame.data.posts[0] && frame.data.posts[0].visibility === 'tiers' && Array.isArray(frame.data.posts[0].tiers)) {
+            frame.data.posts[0].tiers = frame.data.posts[0].tiers.filter(t => t.type === 'paid');
+        }
+
         if (this.isSet('collections') && frame.data.posts[0].collections) {
             const existingCollections = await this.collectionsService.getCollectionsForPost(frame.options.id);
             for (const collection of frame.data.posts[0].collections) {
@@ -266,7 +271,7 @@ class PostsService {
             }
             let tiers = undefined;
             if (data.meta.visibility === 'tiers') {
-                if (!Array.isArray(data.meta.tiers)) {
+                if (!Array.isArray(data.meta.tiers) || data.meta.tiers.some(tier => tier.type === 'free')) {
                     throw new errors.IncorrectUsageError({
                         message: tpl(messages.invalidTiers)
                     });
