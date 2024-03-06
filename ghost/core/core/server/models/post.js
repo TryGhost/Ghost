@@ -1006,7 +1006,7 @@ Post = ghostBookshelf.Model.extend({
             })));
 
             // Don't associate the free tier with the post
-            const freeTier = await ghostBookshelf.model('Product').findOne({type: 'free'}, {require: false});
+            const freeTier = await ghostBookshelf.model('Product').findOne({type: 'free'}, {require: false, transacting: options.transacting ?? undefined});
             if (freeTier) {
                 this.set('tiers', this.get('tiers').filter(t => t.id !== freeTier.id));
             }
