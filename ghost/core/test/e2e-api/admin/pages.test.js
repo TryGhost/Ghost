@@ -287,8 +287,8 @@ describe('Pages API', function () {
         });
 
         describe('Access', function () {
-            describe('Visibility is set to tiers', function() {
-                it('Does not allow to attach the free tier', async function() {
+            describe('Visibility is set to tiers', function () {
+                it('Saves only paid tiers', async function () {
                     const page = {
                         title: 'Test Page',
                         status: 'draft'
