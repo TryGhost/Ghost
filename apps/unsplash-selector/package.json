@@ -20,7 +20,8 @@
       "import": "./dist/unsplash-selector.js",
       "require": "./dist/unsplash-selector.umd.js",
       "types": "./types/index.d.ts"
-    }
+    },
+    "./styles/index.css": "./dist/index.css"
   },
   "publishConfig": {
     "access": "public",
@@ -33,7 +34,7 @@
     "lint": "eslint src --ext .js,.ts,.jsx,.tsx --cache",
     "test": "vitest run"
   },
-  "dependencies": {
+  "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

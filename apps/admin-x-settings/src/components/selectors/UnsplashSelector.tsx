@@ -1,4 +1,5 @@
-import Portal from '../../utils/portal'; ;
+import '@tryghost/unsplash-selector/styles/index.css';
+import Portal from '../../utils/portal';
 import {DefaultHeaderTypes, PhotoType, UnsplashSearchModal} from '@tryghost/unsplash-selector';
 
 interface UnsplashModalProps {
