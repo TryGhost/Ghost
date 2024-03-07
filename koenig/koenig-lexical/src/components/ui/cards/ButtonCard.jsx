@@ -34,8 +34,8 @@ export function ButtonCard({
     return (
         <>
             <div className="inline-block w-full">
-                <div className={`my-3 flex h-10 items-center ${isEditing || buttonUrl ? 'opacity-100' : 'opacity-50'} ${alignment === 'left' ? 'justify-start' : 'justify-center'} `} data-testid="button-card">
-                    <Button dataTestId="button-card-btn" href={buttonUrl} placeholder={buttonPlaceholder} value={buttonText} />
+                <div className={`my-3 flex items-center ${isEditing || buttonUrl ? 'opacity-100' : 'opacity-50'} ${alignment === 'left' ? 'justify-start' : 'justify-center'} `} data-testid="button-card">
+                    <Button dataTestId="button-card-btn" href={buttonUrl} placeholder={buttonPlaceholder} shrink={true} value={buttonText} />
                 </div>
             </div>
             <ReadOnlyOverlay />
