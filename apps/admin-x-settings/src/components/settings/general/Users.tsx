@@ -224,24 +224,6 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         }} />
     );
 
-    // let defaultTab = route.startsWith('/') ? route.split('/')[2] : route.split('/')[1];
-    // defaultTab = defaultTab || 'administrators';
-    // const [selectedTab, setSelectedTab] = useState(defaultTab);
-
-    // console.log('////////// ' + selectedTab);
-
-    // useEffect(() => {
-    //     let tab = route.startsWith('/') ? route.split('/')[2] : route.split('/')[1];
-    //     if (tab) {
-    //         setSelectedTab(tab);
-    //     }
-    // }, [route]);
-
-    // const updateSelectedTab = (newTab: string) => {
-    //     updateRoute(`staff/${newTab}`);
-    //     setSelectedTab(newTab);
-    // };
-
     const tabParam = useQueryParams().getParam('tab');
     const defaultTab = tabParam || 'administrators';
     const [selectedTab, setSelectedTab] = useState(defaultTab);
