@@ -1,1 +1,21 @@
 @import '@tryghost/admin-x-design-system/styles.css';
+
+/* Only settings related overrides */
+.gh-update-banner ~ * #admin-x-settings-content {
+    top: 48px;
+}
+
+.gh-update-banner ~ * #done-button-container {
+    top: 48px;
+}
+
+@media (max-width: 860px) {
+    .gh-update-banner ~ * #admin-x-settings-sidebar-scroller {
+        position: sticky;
+        margin-bottom: -60px;
+    }
+
+    .gh-update-banner ~ * #done-button-container {
+        top: 0;
+    }
+}
