@@ -29,6 +29,8 @@ module.exports = function setupMembersApp() {
     // Currently global handling for signing in with ?token= magiclinks
     membersApp.use(middleware.createSessionFromMagicLink);
 
+    membersApp.use(middleware.accessInfoSession);
+
     // Routing
 
     // Webhooks

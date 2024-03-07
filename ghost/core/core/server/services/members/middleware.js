@@ -11,10 +11,34 @@ const {
 } = require('./utils');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const onHeaders = require('on-headers');
 
 const messages = {
     missingUuid: 'Missing uuid.',
     invalidUuid: 'Invalid uuid.'
+};
+
+const accessInfoSession = async function accessInfoSession(req, res, next) {
+    if (!('member' in req)) {
+        await new Promise((resolve) => {
+            loadMemberSession(req, res, resolve);
+        });
+    }
+    onHeaders(res, function () {
+        let activeSubscription;
+        if (req.member) {
+            activeSubscription = req.member.subscriptions.find(sub => sub.status === 'active');
+        }
+        const maxAge = req.member ? 3600 : 0;
+        const memberTier = activeSubscription.tier.slug || 'free';
+        const accessCookie = `ghost-access=${memberTier}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
+
+        const existingCookies = res.getHeader('Set-Cookie') || [];
+        const cookiesToSet = [accessCookie].concat(existingCookies);
+
+        res.setHeader('Set-Cookie', cookiesToSet);
+    });
+    next();
 };
 
 // @TODO: This piece of middleware actually belongs to the frontend, not to the member app
@@ -322,5 +346,6 @@ module.exports = {
     updateMemberData,
     updateMemberNewsletters,
     deleteSession,
+    accessInfoSession,
     deleteSuppression
 };
