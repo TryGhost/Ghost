@@ -1966,21 +1966,6 @@
     "@lezer/common" "^1.0.2"
     "@lezer/css" "^1.0.0"
 
-"@codemirror/lang-html@6.4.5":
-  version "6.4.5"
-  resolved "https://registry.yarnpkg.com/@codemirror/lang-html/-/lang-html-6.4.5.tgz#4cf014da02624a8a4365ef6c8e343f35afa0c784"
-  integrity sha512-dUCSxkIw2G+chaUfw3Gfu5kkN83vJQN8gfQDp9iEHsIZluMJA0YJveT12zg/28BJx+uPsbQ6VimKCgx3oJrZxA==
-  dependencies:
-    "@codemirror/autocomplete" "^6.0.0"
-    "@codemirror/lang-css" "^6.0.0"
-    "@codemirror/lang-javascript" "^6.0.0"
-    "@codemirror/language" "^6.4.0"
-    "@codemirror/state" "^6.0.0"
-    "@codemirror/view" "^6.2.2"
-    "@lezer/common" "^1.0.0"
-    "@lezer/css" "^1.1.0"
-    "@lezer/html" "^1.3.0"
-
 "@codemirror/lang-html@^6.4.5":
   version "6.4.8"
   resolved "https://registry.yarnpkg.com/@codemirror/lang-html/-/lang-html-6.4.8.tgz#961db9b1037efcb1d0f50ae6082e5a367fa1470c"
@@ -2044,11 +2029,6 @@
   resolved "https://registry.yarnpkg.com/@codemirror/state/-/state-6.2.1.tgz#6dc8d8e5abb26b875e3164191872d69a5e85bd73"
   integrity sha512-RupHSZ8+OjNT38zU9fKH2sv+Dnlr8Eb8sl4NOnnqz95mCFTZUaiRP8Xv5MeeaG0px2b8Bnfe7YGwCV3nsBhbuw==
 
-"@codemirror/state@^6.4.0":
-  version "6.4.1"
-  resolved "https://registry.yarnpkg.com/@codemirror/state/-/state-6.4.1.tgz#da57143695c056d9a3c38705ed34136e2b68171b"
-  integrity sha512-QkEyUiLhsJoZkbumGZlswmAhA7CBU02Wrz7zvH4SrcifbsqwlXShVXg65f3v/ts57W3dqyamEriMhij1Z3Zz4A==
-
 "@codemirror/theme-one-dark@^6.0.0":
   version "6.1.2"
   resolved "https://registry.yarnpkg.com/@codemirror/theme-one-dark/-/theme-one-dark-6.1.2.tgz#fcef9f9cfc17a07836cb7da17c9f6d7231064df8"
@@ -2065,15 +2045,6 @@
   integrity sha512-0yVhPSyKWwYDy6Xwd7aDoj8ZXtdoHwC7El4z1/JJpIimrtDR5CVGY4lvQ0r2hP11ezB+eCHexZ6Zbz6rPUe06A==
   dependencies:
     "@codemirror/state" "^6.1.4"
-    style-mod "^4.1.0"
-    w3c-keyname "^2.2.4"
-
-"@codemirror/view@^6.2.2":
-  version "6.25.1"
-  resolved "https://registry.yarnpkg.com/@codemirror/view/-/view-6.25.1.tgz#826ea345fd757dbeeab6a6165c1823e851c67d16"
-  integrity sha512-2LXLxsQnHDdfGzDvjzAwZh2ZviNJm7im6tGpa0IONIDnFd8RZ80D2SNi8PDi6YjKcMoMRK20v6OmKIdsrwsyoQ==
-  dependencies:
-    "@codemirror/state" "^6.4.0"
     style-mod "^4.1.0"
     w3c-keyname "^2.2.4"
 
@@ -7486,19 +7457,19 @@
   resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.0.21.tgz#7133b467a3fed86aae7ad1f90ad1f4dad9f22f1a"
   integrity sha512-hUn8qW1DKlTHDCjVmrkgJcGkeClobJU6mj7TD40uRuTU+5cpyQvDWtM174QK4hxOO4OFCqdWRXf3byAQ2N1vmA==
 
-"@tryghost/limit-service@1.2.10":
-  version "1.2.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.10.tgz#9e1c8b21eddc3de8c5b8a9b029ba4915ec1ac625"
-  integrity sha512-Spnlkf7uQqwmfy5npkrwWJCcNN3II5oQiyQPy8QhhVk/UlLvzpTpYneHBJmIn4mFRxKrWC7xzSXIRMlb13ClBA==
+"@tryghost/limit-service@1.2.12":
+  version "1.2.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.12.tgz#f6cfd592cd0ca26b9d81c02f3e5455426dd00789"
+  integrity sha512-CoUzuzwhFFxiSHGeUPzm7ku1xuDoC9Gygm4DjzTUPLgQSpiEnz64TrMqJBjxYpV9Jc0PV47GEya5wIdlsPdEvg==
   dependencies:
     "@tryghost/errors" "^1.2.26"
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/limit-service@1.2.12":
-  version "1.2.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.12.tgz#f6cfd592cd0ca26b9d81c02f3e5455426dd00789"
-  integrity sha512-CoUzuzwhFFxiSHGeUPzm7ku1xuDoC9Gygm4DjzTUPLgQSpiEnz64TrMqJBjxYpV9Jc0PV47GEya5wIdlsPdEvg==
+"@tryghost/limit-service@^1.2.10":
+  version "1.2.13"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.2.13.tgz#ad5f0556a0c00694df2ded54e7baecba121e99ee"
+  integrity sha512-YpIKLyTDgsLvbOudA+7XBXs+DgLOHmGz7TZtrZpv6xZW55rJLNiFVUtK+3Ffz+tGseYW9pvXQ+4gIrwrpG5iBA==
   dependencies:
     "@tryghost/errors" "^1.2.26"
     lodash "^4.17.21"
