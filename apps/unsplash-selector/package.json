@@ -29,7 +29,8 @@
     "dev": "vite",
     "build": "concurrently \"vite build\" \"tsc -p tsconfig.declaration.json\"",
     "preview": "vite preview",
-    "lint": "eslint src --ext .js,.ts,.jsx,.tsx --cache"
+    "lint": "eslint src --ext .js,.ts,.jsx,.tsx --cache",
+    "test": "vitest run"
   },
   "dependencies": {
     "react": "^18.2.0",

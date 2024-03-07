@@ -1,8 +1,10 @@
-import MasonryService from '../../../src/unsplash/masonry/MasonryService';
-import {IUnsplashService, UnsplashService} from '../../../src/unsplash/UnsplashService';
-import {InMemoryUnsplashProvider} from '../../../src/unsplash/api/InMemoryUnsplashProvider';
-import {PhotoUseCases} from '../../../src/unsplash/photo/PhotoUseCase';
-import {fixturePhotos} from '../../../src/unsplash/api/unsplashFixtures';
+import {beforeEach, describe, expect, it} from 'vitest';
+
+import MasonryService from '../src/masonry/MasonryService';
+import {IUnsplashService, UnsplashService} from '../src/UnsplashService';
+import {InMemoryUnsplashProvider} from '../src/api/InMemoryUnsplashProvider';
+import {PhotoUseCases} from '../src/photo/PhotoUseCase';
+import {fixturePhotos} from '../src/api/unsplashFixtures';
 
 describe('UnsplashService', () => {
     let unsplashService: IUnsplashService;

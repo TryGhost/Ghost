@@ -32,7 +32,7 @@ const UnsplashImage: FC<UnsplashImageProps> = ({payload, srcUrl, links, likes, u
 
     return (
         <div
-            className={`relative mb-6 block bg-grey-100 ${zoomed ? 'h-full w-[max-content] cursor-zoom-out' : 'w-full cursor-zoom-in'}`}
+            className={`bg-grey-100 relative mb-6 block ${zoomed ? 'h-full w-[max-content] cursor-zoom-out' : 'w-full cursor-zoom-in'}`}
             data-kg-unsplash-gallery-item
             onClick={handleClick}>
             <img
@@ -62,7 +62,7 @@ const UnsplashImage: FC<UnsplashImageProps> = ({payload, srcUrl, links, likes, u
                 </div>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                        <img alt="author" className="mr-2 h-8 w-8 rounded-full" src={user.profile_image.medium} />
+                        <img alt="author" className="mr-2 size-8 rounded-full" src={user.profile_image.medium} />
                         <div className="mr-2 truncate font-sans text-sm font-medium text-white">{user.name}</div>
                     </div>
                     <UnsplashButton label="Insert image" data-kg-unsplash-insert-button onClick={(e) => {

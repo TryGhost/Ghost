@@ -1,7 +1,7 @@
-import {ChangeEvent, FunctionComponent, ReactNode} from 'react';
 import CloseIcon from '../assets/kg-close.svg?react';
 import SearchIcon from '../assets/kg-search.svg?react';
 import UnsplashIcon from '../assets/kg-card-type-unsplash.svg?react';
+import {ChangeEvent, FunctionComponent, ReactNode} from 'react';
 
 interface UnsplashSelectorProps {
     closeModal: () => void;
@@ -16,7 +16,7 @@ const UnsplashSelector: FunctionComponent<UnsplashSelectorProps> = ({closeModal,
             <div className="not-kg-prose fixed inset-8 z-50 overflow-hidden rounded bg-white shadow-xl" data-kg-modal="unsplash">
                 <button className="absolute right-6 top-6 cursor-pointer" type="button">
                     <CloseIcon
-                        className="h-4 w-4 stroke-2 text-grey-400"
+                        className="text-grey-400 size-4 stroke-2"
                         data-kg-modal-close-button
                         onClick={() => closeModal()}
                     />
@@ -28,8 +28,8 @@ const UnsplashSelector: FunctionComponent<UnsplashSelectorProps> = ({closeModal,
                             Unsplash
                         </h1>
                         <div className="relative w-full max-w-sm">
-                            <SearchIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-2 text-grey-700" />
-                            <input className="h-10 w-full rounded-full border border-solid border-grey-300 pl-10 pr-8 font-sans text-md font-normal text-black focus:border-grey-400 focus-visible:outline-none" placeholder="Search free high-resolution photos" autoFocus data-kg-unsplash-search onChange={handleSearch} />
+                            <SearchIcon className="text-grey-700 absolute left-4 top-1/2 size-4 -translate-y-2" />
+                            <input className="border-grey-300 focus:border-grey-400 h-10 w-full rounded-full border border-solid pl-10 pr-8 font-sans text-md font-normal text-black focus-visible:outline-none" placeholder="Search free high-resolution photos" autoFocus data-kg-unsplash-search onChange={handleSearch} />
                         </div>
                     </header>
                     {children}

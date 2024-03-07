@@ -169,20 +169,20 @@ const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageIns
         }
     }
     return (
-            <UnsplashSelector
-                closeModal={onClose}
-                handleSearch={handleSearch}
-            >
-                <UnsplashGallery
-                    dataset={dataset}
-                    error={null}
-                    galleryRef={galleryRef}
-                    insertImage={insertImage}
-                    isLoading={isLoading}
-                    selectImg={selectImg}
-                    zoomed={zoomedImg}
-                />
-            </UnsplashSelector>
+        <UnsplashSelector
+            closeModal={onClose}
+            handleSearch={handleSearch}
+        >
+            <UnsplashGallery
+                dataset={dataset}
+                error={null}
+                galleryRef={galleryRef}
+                insertImage={insertImage}
+                isLoading={isLoading}
+                selectImg={selectImg}
+                zoomed={zoomedImg}
+            />
+        </UnsplashSelector>
     );
 };
 
