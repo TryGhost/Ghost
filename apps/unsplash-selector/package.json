@@ -18,7 +18,8 @@
   "exports": {
     ".": {
       "import": "./dist/unsplash-selector.js",
-      "require": "./dist/unsplash-selector.umd.js"
+      "require": "./dist/unsplash-selector.umd.js",
+      "types": "./types/index.d.ts"
     }
   },
   "publishConfig": {

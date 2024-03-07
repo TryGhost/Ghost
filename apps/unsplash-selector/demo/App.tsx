@@ -16,9 +16,7 @@ const App = () => {
         <UnsplashSearchModal
             unsplashConf={unsplashConfig}
             onClose={() => {}}
-            onImageInsert={(image) => {
-                console.log(image); // eslint-disable-line no-console
-            }}
+            onImageInsert={() => {}}
         />
     );
 };
