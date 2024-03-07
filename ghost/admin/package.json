@@ -38,7 +38,7 @@
     "@ember/test-helpers": "2.9.4",
     "@embroider/macros": "1.13.4",
     "@glimmer/component": "1.1.2",
-    "@html-next/vertical-collection": "3.0.0",
+    "@html-next/vertical-collection": "3.1.0",
     "@sentry/ember": "7.86.0",
     "@sentry/integrations": "7.86.0",
     "@tryghost/color-utils": "0.2.0",
