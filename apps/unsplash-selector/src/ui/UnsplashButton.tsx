@@ -1,6 +1,6 @@
 import React, {HTMLProps} from 'react';
-import {ReactComponent as DownloadIcon} from '../assets/kg-download.svg';
-import {ReactComponent as UnsplashHeartIcon} from '../assets/kg-unsplash-heart.svg';
+import DownloadIcon from '../assets/kg-download.svg?react';
+import UnsplashHeartIcon from '../assets/kg-unsplash-heart.svg?react';
 
 // Define the available icon types
 type ButtonIconType = 'heart' | 'download';

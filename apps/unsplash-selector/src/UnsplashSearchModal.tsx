@@ -1,5 +1,4 @@
 import MasonryService from './masonry/MasonryService';
-import Portal from './portal';
 import React, {useMemo, useRef, useState} from 'react';
 import UnsplashGallery from './ui/UnsplashGallery';
 import UnsplashSelector from './ui/UnsplashSelector';
@@ -170,7 +169,6 @@ const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageIns
         }
     }
     return (
-        <Portal classNames='admin-x-settings'>
             <UnsplashSelector
                 closeModal={onClose}
                 handleSearch={handleSearch}
@@ -185,7 +183,6 @@ const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageIns
                     zoomed={zoomedImg}
                 />
             </UnsplashSelector>
-        </Portal>
     );
 };
 

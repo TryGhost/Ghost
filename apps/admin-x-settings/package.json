@@ -37,11 +37,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@codemirror/lang-html": "^6.4.5",
+    "@codemirror/lang-html": "6.4.5",
     "@tryghost/color-utils": "0.2.0",
-    "@tryghost/limit-service": "^1.2.10",
+    "@tryghost/limit-service": "1.2.10",
     "@tryghost/nql": "0.12.1",
     "@tryghost/timezone-data": "0.4.1",
+    "@tryghost/unsplash-selector": "0.0.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "validator": "7.2.0"

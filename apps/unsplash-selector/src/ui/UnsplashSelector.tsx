@@ -1,7 +1,7 @@
 import {ChangeEvent, FunctionComponent, ReactNode} from 'react';
-import {ReactComponent as CloseIcon} from '../assets/kg-close.svg';
-import {ReactComponent as SearchIcon} from '../assets/kg-search.svg';
-import {ReactComponent as UnsplashIcon} from '../assets/kg-card-type-unsplash.svg';
+import CloseIcon from '../assets/kg-close.svg?react';
+import SearchIcon from '../assets/kg-search.svg?react';
+import UnsplashIcon from '../assets/kg-card-type-unsplash.svg?react';
 
 interface UnsplashSelectorProps {
     closeModal: () => void;
