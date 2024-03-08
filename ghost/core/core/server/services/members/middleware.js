@@ -19,18 +19,13 @@ const messages = {
 };
 
 const accessInfoSession = async function accessInfoSession(req, res, next) {
-    if (!('member' in req)) {
-        await new Promise((resolve) => {
-            loadMemberSession(req, res, resolve);
-        });
-    }
     onHeaders(res, function () {
         let activeSubscription;
         if (req.member) {
-            activeSubscription = req.member.subscriptions.find(sub => sub.status === 'active');
+            activeSubscription = req.member.subscriptions?.find(sub => sub.status === 'active');
         }
         const maxAge = req.member ? 3600 : 0;
-        const memberTier = activeSubscription.tier.slug || 'free';
+        const memberTier = activeSubscription && activeSubscription.tier.slug || 'free';
         const accessCookie = `ghost-access=${memberTier}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
 
         const existingCookies = res.getHeader('Set-Cookie') || [];
@@ -116,7 +111,7 @@ const deleteSession = async function deleteSession(req, res) {
 
 const getMemberData = async function getMemberData(req, res) {
     try {
-        const member = await membersService.ssr.getMemberDataFromSession(req, res);
+        const member = req.member;
         if (member) {
             res.json(formattedMemberResponse(member));
         } else {
