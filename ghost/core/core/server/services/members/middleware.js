@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const membersService = require('./service');
@@ -20,16 +21,27 @@ const messages = {
 
 const accessInfoSession = async function accessInfoSession(req, res, next) {
     onHeaders(res, function () {
-        let activeSubscription;
-        if (req.member) {
-            activeSubscription = req.member.subscriptions?.find(sub => sub.status === 'active');
+        if (!req.member) {
+            const accessCookie = `ghost-access=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
+            const hmacCookie = `ghost-access-hmac=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
+            const existingCookies = res.getHeader('Set-Cookie') || [];
+            const cookiesToSet = [accessCookie, hmacCookie].concat(existingCookies);
+
+            res.setHeader('Set-Cookie', cookiesToSet);
+            return;
         }
-        const maxAge = req.member ? 3600 : 0;
+
+        const activeSubscription = req.member.subscriptions?.find(sub => sub.status === 'active');
+
         const memberTier = activeSubscription && activeSubscription.tier.slug || 'free';
+        const memberTierHmac = crypto.createHmac('sha256', '53CR37').update(memberTier).digest('hex');
+
+        const maxAge = 3600;
         const accessCookie = `ghost-access=${memberTier}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
+        const hmacCookie = `ghost-access-hmac=${memberTierHmac}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
 
         const existingCookies = res.getHeader('Set-Cookie') || [];
-        const cookiesToSet = [accessCookie].concat(existingCookies);
+        const cookiesToSet = [accessCookie, hmacCookie].concat(existingCookies);
 
         res.setHeader('Set-Cookie', cookiesToSet);
     });
