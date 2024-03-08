@@ -33,8 +33,6 @@ module.exports = function renderer(req, res, data) {
 
     // Render Call
     res.render(res._template, data, function (err, html, renderInfo) {
-        console.log('!!!!!!!!');
-        console.log(renderInfo);
         if (err) {
             if (err.code === 'ENOENT') {
                 return req.next(
@@ -44,6 +42,17 @@ module.exports = function renderer(req, res, data) {
                 );
             }
             return req.next(err);
+        }
+        if (res.locals.member) {
+            const memberDataUsed = Array.from(renderInfo.dataUsed).filter(property => property.startsWith('@member'));
+            const personalisedMemberDataUsed = memberDataUsed.filter(property => !['@member', '@member.paid'].includes(property));
+
+            // We didn't use any personal data, any member with the same tier as this one should get the same content
+            if (personalisedMemberDataUsed.length === 0) {
+                const activeSubscription = res.locals.member.subscriptions.find(sub => sub.status === 'active');
+                const memberTier = activeSubscription && activeSubscription.tier.slug || 'free';
+                res.setHeader('X-Member-Cache-Tier', memberTier);
+            }
         }
         res.send(html);
     });
