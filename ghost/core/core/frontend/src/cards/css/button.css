@@ -19,9 +19,8 @@
     display: flex;
     position: static;
     align-items: center;
-    padding: 0 1.2em;
-    height: 2.4em;
-    line-height: 1em;
+    padding: .6em 1.2em;
+    line-height: 1.2em;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     font-size: 0.95em;
     font-weight: 600;
