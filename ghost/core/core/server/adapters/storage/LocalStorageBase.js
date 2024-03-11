@@ -149,6 +149,10 @@ class LocalStorageBase extends StorageBase {
                         return next(new errors.NoPermissionError({err: err}));
                     }
 
+                    if (err.name === 'RangeNotSatisfiableError') {
+                        return next(new errors.RangeNotSatisfiableError({err}));
+                    }
+
                     return next(new errors.InternalServerError({err: err}));
                 }
 
