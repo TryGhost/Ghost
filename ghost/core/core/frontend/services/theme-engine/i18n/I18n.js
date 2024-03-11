@@ -14,9 +14,9 @@ const get = require('lodash/get');
 class I18n {
     /**
      * @param {object} [options]
-     * @param {string} basePath - the base path to the translations directory
-     * @param {string} [locale] - a locale string
-     * @param {{dot|fulltext}} [stringMode] - which mode our translation keys use
+     * @param {string} options.basePath - the base path to the translations directory
+     * @param {string} [options.locale] - a locale string
+     * @param {string} [options.stringMode] - which mode our translation keys use
      */
     constructor(options = {}) {
         this._basePath = options.basePath || __dirname;
@@ -100,7 +100,7 @@ class I18n {
     /**
      * Attempt to load strings from a file
      *
-     * @param {sting} [locale]
+     * @param {string} [locale]
      * @returns {object} strings
      */
     _loadStrings(locale) {
@@ -110,7 +110,7 @@ class I18n {
             return this._readTranslationsFile(locale);
         } catch (err) {
             if (err.code === 'ENOENT') {
-                this._handleMissingFileError(locale, err);
+                this._handleMissingFileError(locale);
 
                 if (locale !== this.defaultLocale()) {
                     this._handleFallbackToDefault();
@@ -207,7 +207,7 @@ class I18n {
      */
     _readTranslationsFile(locale) {
         const filePath = path.join(...this._translationFileDirs(), this._translationFileName(locale));
-        const content = fs.readFileSync(filePath);
+        const content = fs.readFileSync(filePath, 'utf8');
         return JSON.parse(content);
     }
 
@@ -276,6 +276,7 @@ class I18n {
     _handleMissingFileError(locale) {
         logging.warn(`i18n was unable to find ${locale}.json.`);
     }
+
     _handleInvalidFileError(locale, err) {
         logging.error(new errors.IncorrectUsageError({
             err,

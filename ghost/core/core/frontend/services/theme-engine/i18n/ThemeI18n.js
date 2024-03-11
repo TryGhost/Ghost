@@ -4,9 +4,9 @@ const I18n = require('./I18n');
 
 class ThemeI18n extends I18n {
     /**
-     * @param {objec} [options]
-     * @param {string} basePath - the base path for the translation directory (e.g. where themes live)
-     * @param {string} [locale] - a locale string
+     * @param {object} [options]
+     * @param {string} options.basePath - the base path for the translation directory (e.g. where themes live)
+     * @param {string} [options.locale] - a locale string
      */
     constructor(options = {}) {
         super(options);
@@ -48,6 +48,7 @@ class ThemeI18n extends I18n {
             logging.warn(`Theme translations file locales/${locale}.json not found.`);
         }
     }
+
     _handleInvalidFileError(locale, err) {
         logging.error(new errors.IncorrectUsageError({
             err,
