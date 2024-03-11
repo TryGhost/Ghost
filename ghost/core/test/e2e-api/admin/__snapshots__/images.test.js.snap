@@ -71,3 +71,21 @@ Object {
   ],
 }
 `;
+
+exports[`Images API Will error when filename is too long 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": "ENAMETOOLONG",
+      "context": "The request could not be understood.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Request not understood error, cannot upload image.",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;

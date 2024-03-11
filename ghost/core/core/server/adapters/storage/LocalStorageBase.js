@@ -58,7 +58,15 @@ class LocalStorageBase extends StorageBase {
         targetFilename = filename;
         await fs.mkdirs(targetDir);
 
-        await fs.copy(file.path, targetFilename);
+        try {
+            await fs.copy(file.path, targetFilename);
+        } catch (err) {
+            if (err.code === 'ENAMETOOLONG') {
+                throw new errors.BadRequestError({err});
+            }
+
+            throw err;
+        }
 
         // The src for the image must be in URI format, not a file system path, which in Windows uses \
         // For local file system storage can use relative path so add a slash
