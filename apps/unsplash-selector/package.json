@@ -2,6 +2,7 @@
   "name": "@tryghost/unsplash-selector",
   "version": "0.0.1",
   "type": "module",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/TryGhost/Ghost/tree/main/apps/unsplash-selector"
@@ -32,13 +33,17 @@
     "build": "concurrently \"vite build\" \"tsc -p tsconfig.declaration.json\"",
     "preview": "vite preview",
     "lint": "eslint src --ext .js,.ts,.jsx,.tsx --cache",
-    "test": "vitest run"
+    "test:unit": "yarn nx build && vitest run",
+    "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' && npx playwright test",
+    "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 yarn test:acceptance --headed",
+    "test:acceptance:full": "ALL_BROWSERS=1 yarn test:acceptance"
   },
   "peerDependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.42.1",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
     "@testing-library/user-event": "^14.5.2",
@@ -70,9 +75,9 @@
           "^build"
         ]
       },
-      "test:unit": {
+      "test:acceptance": {
         "dependsOn": [
-          "test:unit",
+          "test:acceptance",
           "^build"
         ]
       }

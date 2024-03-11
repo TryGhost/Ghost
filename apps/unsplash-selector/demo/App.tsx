@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useMemo} from 'react';
+import {UnsplashProvider} from '../src/api/UnsplashProvider';
 import {UnsplashSearchModal} from '../src/index';
 
 const App = () => {
@@ -12,9 +13,11 @@ const App = () => {
         }
     };
 
+    const unsplashRepo = useMemo(() => new UnsplashProvider(unsplashConfig.defaultHeaders), [unsplashConfig.defaultHeaders]);
+
     return (
         <UnsplashSearchModal
-            unsplashConf={unsplashConfig}
+            unsplashProvider={unsplashRepo}
             onClose={() => {}}
             onImageInsert={() => {}}
         />

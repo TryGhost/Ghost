@@ -34,11 +34,12 @@ describe('UnsplashService', () => {
     });
 
     it('can search for photos', async function () {
-        await unsplashService.updateSearch('cat');
+        await unsplashService.updateSearch('somethingthatshouldnotexist');
         const photos = unsplashService.photos;
         expect(photos.length).toBe(0);
-        await unsplashService.updateSearch('photo');
+        await unsplashService.updateSearch('train station');
         const photos2 = unsplashService.photos;
+        // we only have one photo with the description 'train station' in the dataset
         expect(photos2.length).toBe(1);
     });
 
@@ -50,6 +51,6 @@ describe('UnsplashService', () => {
     it('can load next page', async function () {
         await unsplashService.loadNextPage();
         const photos = unsplashService.photos;
-        expect(photos.length).toBe(2);
+        expect(photos.length).toBe(30);
     });
 });
