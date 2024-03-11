@@ -36,11 +36,9 @@ export class InMemoryUnsplashProvider implements IUnsplashProvider {
 
     public async searchPhotos(term: string): Promise<Photo[]> {
         this.SEARCH_IS_RUNNING = true;
-        console.log(this.photos);
         const filteredPhotos = this.photos.filter(photo => (photo.description && photo.description.toLowerCase().includes(term.toLowerCase())) || 
             (photo.alt_description && photo.alt_description.toLowerCase().includes(term.toLowerCase()))
         );
-        console.log(filteredPhotos);
         this.SEARCH_IS_RUNNING = false;
 
         return filteredPhotos;
