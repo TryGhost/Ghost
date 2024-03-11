@@ -482,7 +482,7 @@ ul.nostyle li {
     border-top: none;
     border-bottom: var(--whitegrey) 1px solid;
     min-width: 150px;
-    column-width: calc(100vw/4);
+    column-width: 40vw;
 }
 
 .gh-list-scrolling tbody tr:hover > a:first-of-type {
@@ -521,9 +521,5 @@ ul.nostyle li {
 
     .gh-list-scrolling tbody .gh-list-data:first-child {
         min-width: 70vw;
-    }
-
-    .gh-list-scrolling tbody .gh-list-data {
-        column-width: 40vw;
     }
 }
