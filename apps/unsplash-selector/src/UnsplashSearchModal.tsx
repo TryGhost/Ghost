@@ -1,16 +1,16 @@
-import MasonryService from './masonry/MasonryService';
+import MasonryService from './api/MasonryService';
 import React, {useMemo, useRef, useState} from 'react';
 import UnsplashGallery from './ui/UnsplashGallery';
 import UnsplashSelector from './ui/UnsplashSelector';
+import {IUnsplashProvider} from './api/IUnsplashProvider';
 import {Photo} from './UnsplashTypes';
-import {PhotoUseCases} from './photo/PhotoUseCase';
-import {UnsplashProvider} from './api/UnsplashProvider';
-import {UnsplashService} from './UnsplashService';
+import {PhotoUseCases} from './api/PhotoUseCase';
+import {UnsplashService} from './api/UnsplashService';
 
 interface UnsplashModalProps {
     onClose: () => void;
     onImageInsert: (image: Photo) => void;
-    unsplashProvider: UnsplashProvider;
+    unsplashProvider: IUnsplashProvider;
   }
 
 const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageInsert, unsplashProvider}) => {

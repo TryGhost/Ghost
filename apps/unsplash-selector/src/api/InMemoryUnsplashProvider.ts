@@ -1,8 +1,9 @@
 // for testing purposes
+import {IUnsplashProvider} from './IUnsplashProvider';
 import {Photo} from '../UnsplashTypes';
 import {fixturePhotos} from './unsplashFixtures';
 
-export class InMemoryUnsplashProvider {
+export class InMemoryUnsplashProvider implements IUnsplashProvider {
     photos: Photo[] = fixturePhotos;
     PAGINATION: { [key: string]: string } = {};
     REQUEST_IS_RUNNING: boolean = false;
@@ -35,8 +36,11 @@ export class InMemoryUnsplashProvider {
 
     public async searchPhotos(term: string): Promise<Photo[]> {
         this.SEARCH_IS_RUNNING = true;
-        const filteredPhotos = this.photos.filter(photo => photo.description?.includes(term) || photo.alt_description?.includes(term)
+        console.log(this.photos);
+        const filteredPhotos = this.photos.filter(photo => (photo.description && photo.description.toLowerCase().includes(term.toLowerCase())) || 
+            (photo.alt_description && photo.alt_description.toLowerCase().includes(term.toLowerCase()))
         );
+        console.log(filteredPhotos);
         this.SEARCH_IS_RUNNING = false;
 
         return filteredPhotos;

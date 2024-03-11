@@ -1,4 +1,4 @@
-import MasonryService from '../../src/masonry/MasonryService';
+import MasonryService from '../../src/api/MasonryService';
 import {Photo} from '../../src/UnsplashTypes';
 import {beforeEach, describe, expect, it} from 'vitest';
 import {fixturePhotos} from '../../src/api/unsplashFixtures';

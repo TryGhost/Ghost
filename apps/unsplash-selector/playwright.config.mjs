@@ -47,7 +47,7 @@ export default defineConfig({
 
     /* Run local dev server before starting the tests */
     webServer: {
-        command: `yarn dev`,
+        command: `VITE_APP_TESTING=true yarn dev`,
         url: `http://localhost:${E2E_PORT}`,
         reuseExistingServer: !process.env.CI,
         timeout: 10000

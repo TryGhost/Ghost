@@ -1,6 +1,6 @@
-import MasonryService from './masonry/MasonryService';
-import {Photo} from './UnsplashTypes';
-import {PhotoUseCases} from './photo/PhotoUseCase';
+import MasonryService from './MasonryService';
+import {Photo} from '../UnsplashTypes';
+import {PhotoUseCases} from './PhotoUseCase';
 
 export interface IUnsplashService {
     loadNew(): Promise<void>;

@@ -1,9 +1,9 @@
 import {beforeEach, describe, expect, it} from 'vitest';
 
-import MasonryService from '../../src/masonry/MasonryService';
-import {IUnsplashService, UnsplashService} from '../../src/UnsplashService';
+import MasonryService from '../../src/api/MasonryService';
+import {IUnsplashService, UnsplashService} from '../../src/api/UnsplashService';
 import {InMemoryUnsplashProvider} from '../../src/api/InMemoryUnsplashProvider';
-import {PhotoUseCases} from '../../src/photo/PhotoUseCase';
+import {PhotoUseCases} from '../../src/api/PhotoUseCase';
 import {fixturePhotos} from '../../src/api/unsplashFixtures';
 
 describe('UnsplashService', () => {

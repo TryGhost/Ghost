@@ -1,11 +1,10 @@
-import {InMemoryUnsplashProvider} from '../api/InMemoryUnsplashProvider';
+import {IUnsplashProvider} from './IUnsplashProvider';
 import {Photo} from '../UnsplashTypes';
-import {UnsplashProvider} from '../api/UnsplashProvider';
 
 export class PhotoUseCases {
-    private _provider: UnsplashProvider | InMemoryUnsplashProvider; // InMemoryUnsplashProvider is for testing purposes
+    private _provider: IUnsplashProvider;
 
-    constructor(provider: UnsplashProvider | InMemoryUnsplashProvider) {
+    constructor(provider: IUnsplashProvider) {
         this._provider = provider;
     }
 

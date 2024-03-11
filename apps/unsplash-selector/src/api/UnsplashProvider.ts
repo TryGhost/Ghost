@@ -1,6 +1,7 @@
 import {DefaultHeaderTypes, Photo} from '../UnsplashTypes';
+import {IUnsplashProvider} from './IUnsplashProvider';
 
-export class UnsplashProvider {
+export class UnsplashProvider implements IUnsplashProvider {
     API_URL: string = 'https://api.unsplash.com';
     HEADERS: DefaultHeaderTypes;
     ERROR: string | null = null;
