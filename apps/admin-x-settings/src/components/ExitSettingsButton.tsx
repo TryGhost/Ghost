@@ -9,7 +9,7 @@ const ExitSettingsButton: React.FC = () => {
     };
 
     return (
-        <Button data-testid="exit-settings" id="done-button" label='&larr; Done' link={true} onClick={() => confirmIfDirty(isDirty, navigateAway)} />
+        <Button data-testid="exit-settings" icon='close' id="done-button" label='' link={true} title='ESC' onClick={() => confirmIfDirty(isDirty, navigateAway)} />
     );
 };
 

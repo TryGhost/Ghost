@@ -2,7 +2,7 @@ import ExitSettingsButton from './components/ExitSettingsButton';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import Users from './components/settings/general/Users';
-import {Heading, topLevelBackdropClasses} from '@tryghost/admin-x-design-system';
+import {Heading, confirmIfDirty, topLevelBackdropClasses, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 import {ReactNode, useEffect} from 'react';
 import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {toast} from 'react-hot-toast';
@@ -11,7 +11,7 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Page: React.FC<{children: ReactNode}> = ({children}) => {
     return <>
-        <div className='sticky top-0 z-30 bg-white px-[5vmin] py-4 dark:bg-grey-975 tablet:fixed tablet:bg-transparent tablet:px-6 dark:tablet:bg-transparent xl:p-12' id="done-button-container">
+        <div className='sticky right-0 top-0 z-30 bg-white px-[5vmin] py-4 dark:bg-grey-975 tablet:fixed tablet:bg-transparent tablet:px-6 dark:tablet:bg-transparent xl:p-12' id="done-button-container">
             <ExitSettingsButton />
         </div>
         <div className="w-full dark:bg-grey-975 tablet:fixed tablet:left-0 tablet:top-0 tablet:flex tablet:h-full" id="admin-x-settings-content">
@@ -23,6 +23,25 @@ const Page: React.FC<{children: ReactNode}> = ({children}) => {
 const MainContent: React.FC = () => {
     const {currentUser} = useGlobalData();
     const {route, updateRoute, loadingModal} = useRouting();
+    const {isDirty} = useGlobalDirtyState();
+
+    const navigateAway = () => {
+        window.location.hash = '/dashboard';
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                confirmIfDirty(isDirty, navigateAway);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);
 
     useEffect(() => {
         // resets any toasts that may have been left open on initial load
