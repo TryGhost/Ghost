@@ -40,7 +40,6 @@ export class InMemoryUnsplashProvider implements IUnsplashProvider {
             (photo.alt_description && photo.alt_description.toLowerCase().includes(term.toLowerCase()))
         );
         this.SEARCH_IS_RUNNING = false;
-
         return filteredPhotos;
     }
 
