@@ -518,4 +518,12 @@ ul.nostyle li {
     .gh-list-scrolling {
         height: calc(100vh - 205px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     }
+
+    .gh-list-scrolling tbody .gh-list-data:first-child {
+        min-width: 70vw;
+    }
+
+    .gh-list-scrolling tbody .gh-list-data {
+        column-width: 40vw;
+    }
 }
