@@ -1,42 +1,22 @@
-import pkg from './package.json';
+import dts from 'vite-plugin-dts';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import {defineConfig} from 'vite';
-import {resolve} from 'path';
-
-const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
+import {peerDependencies} from './package.json';
 
 export default defineConfig({
-    plugins: [svgr(), react()],
     build: {
-        minify: true,
-        sourcemap: true,
-        cssCodeSplit: true,
         lib: {
-            entry: resolve(__dirname, 'src/index.ts'),
-            name: pkg.name,
-            fileName(format) {
-                if (format === 'umd') {
-                    return `${outputFileName}.umd.js`;
-                }
-
-                return `${outputFileName}.js`;
-            }
+            entry: './src/index.ts', // Specifies the entry point for building the library.
+            name: 'kg-unsplash-selector', // Sets the name of the generated library.
+            fileName: format => `index.${format}.js`, // Generates the output file name based on the format.
+            formats: ['cjs', 'es'] // Specifies the output formats (CommonJS and ES modules).
         },
         rollupOptions: {
-            external: [
-                'react',
-                'react-dom'
-            ],
-            output: {
-                globals: {
-                    react: 'React',
-                    'react-dom': 'ReactDOM'
-                }
-            }
+            external: [...Object.keys(peerDependencies)] // Defines external dependencies for Rollup bundling.
         },
-        commonjsOptions: {
-            include: [/packages/, /node_modules/]
-        }
-    }
+        sourcemap: true, // Generates source maps for debugging.
+        emptyOutDir: true // Clears the output directory before building.
+    },
+    plugins: [svgr(), react(), dts()]// Uses the 'vite-plugin-dts' plugin for generating TypeScript declaration files (d.ts).
 });

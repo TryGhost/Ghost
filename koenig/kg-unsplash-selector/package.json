@@ -1,36 +1,24 @@
 {
   "name": "@tryghost/kg-unsplash-selector",
-  "version": "0.0.1",
-  "type": "module",
+  "version": "0.1.8",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/TryGhost/Koenig/tree/master/packages/kg-unsplash-selector"
   },
-  "types": "./types/index.d.ts",
   "author": "Ghost Foundation",
   "files": [
     "LICENSE",
     "README.md",
     "dist/"
   ],
-  "main": "./dist/unsplash-selector.umd.js",
-  "module": "./dist/unsplash-selector.js",
-  "exports": {
-    ".": {
-      "import": "./dist/unsplash-selector.js",
-      "require": "./dist/unsplash-selector.umd.js",
-      "types": "./types/index.d.ts"
-    },
-    "./styles/index.css": "./dist/index.css"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
+  "type": "module",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "concurrently \"vite build\" \"tsc -p tsconfig.declaration.json\"",
+    "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .js,.ts,.jsx,.tsx --cache",
     "test": "yarn test:unit && yarn test:acceptance",
@@ -63,6 +51,7 @@
     "typescript": "5.2.2",
     "vite": "5.1.4",
     "vite-plugin-css-injected-by-js": "3.4.0",
+    "vite-plugin-dts": "^3.7.3",
     "vite-plugin-svgr": "4.2.0",
     "vitest": "1.3.1"
   }
