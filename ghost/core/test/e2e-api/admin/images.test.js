@@ -308,7 +308,14 @@ describe('Images API', function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
         const fileContents = await fs.readFile(originalFilePath);
 
+        const loggingStub = sinon.stub(logging, 'error');
         await uploadImageRequest({fileContents, filename: 'test.png', contentType: 'image/png'})
-            .expectStatus(201);
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+        sinon.assert.calledOnce(loggingStub);
     });
 });
