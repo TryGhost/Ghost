@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-unsplash-selector",
-  "version": "0.1.8",
+  "version": "0.1.11",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "dev": "vite",
+    "dev": "VITE_APP_DEV=true vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .js,.ts,.jsx,.tsx --cache",
@@ -47,6 +47,7 @@
     "eslint-plugin-tailwindcss": "3.14.3",
     "jsdom": "24.0.0",
     "postcss": "8.4.35",
+    "postcss-import": "^16.0.1",
     "tailwindcss": "3.4.1",
     "typescript": "5.2.2",
     "vite": "5.1.4",

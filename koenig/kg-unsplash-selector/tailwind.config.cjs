@@ -166,5 +166,8 @@ module.exports = {
     content: [
         './src/**/*.{js,jsx,ts,tsx}'
     ],
-    plugins: []
+    plugins: [],
+    corePlugins: {
+        preflight: process.env.VITE_APP_TESTING === 'true' || process.env.VITE_APP_DEV === 'true' ? true : false
+    }
 };

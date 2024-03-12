@@ -17,15 +17,17 @@ const App = () => {
     }
 
     return (
-        <UnsplashSearchModal
-            unsplashProviderConfig={unsplashConfig}
-            onClose={() => {
-                alert('not implemented');
-            }}
-            onImageInsert={() => {
-                alert('not implemented');
-            }}
-        />
+        <div>
+            <UnsplashSearchModal
+                unsplashProviderConfig={unsplashConfig}
+                onClose={() => {
+                    alert('not implemented');
+                }}
+                onImageInsert={() => {
+                    alert('not implemented');
+                }}
+            />
+        </div>
     );
 };
 
