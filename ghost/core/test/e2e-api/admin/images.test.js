@@ -301,4 +301,14 @@ describe('Images API', function () {
         await uploadImageCheck({path: originalFilePath, filename: 'a.png', contentType: 'image/png'});
         clock.restore();
     });
+
+    it('Does not return HTTP 500 when image processing fails', async function () {
+        sinon.stub(imageTransform, 'resizeFromPath').rejects(new Error('Image processing failed'));
+
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
+        const fileContents = await fs.readFile(originalFilePath);
+
+        await uploadImageRequest({fileContents, filename: 'test.png', contentType: 'image/png'})
+            .expectStatus(201);
+    });
 });
