@@ -107,7 +107,7 @@ describe('Oembed API', function () {
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private)
-            .expect(401);
+            .expect(422);
 
         requestMock.isDone().should.be.true();
         should.exist(res.body.errors);
