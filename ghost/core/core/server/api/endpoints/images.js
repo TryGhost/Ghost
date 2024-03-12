@@ -33,7 +33,12 @@ module.exports = {
                     width: config.get('imageOptimization:defaultMaxWidth')
                 }, imageOptimizationOptions);
 
-                await imageTransform.resizeFromPath(options);
+                try {
+                    await imageTransform.resizeFromPath(options);
+                } catch (err) {
+                    // If the image processing fails, we just want to store the original image
+                    return store.save(frame.file);
+                }
 
                 // Store the processed/optimized image
                 const processedImageUrl = await store.save({
