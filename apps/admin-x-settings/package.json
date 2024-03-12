@@ -39,6 +39,7 @@
   "dependencies": {
     "@codemirror/lang-html": "^6.4.5",
     "@tryghost/color-utils": "0.2.0",
+    "@tryghost/kg-unsplash-selector": "^0.1.11",
     "@tryghost/limit-service": "^1.2.10",
     "@tryghost/nql": "0.12.1",
     "@tryghost/timezone-data": "0.4.1",
