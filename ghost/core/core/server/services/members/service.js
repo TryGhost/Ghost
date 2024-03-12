@@ -55,7 +55,9 @@ const initMembersCSVImporter = ({stripeAPIService}) => {
         },
         getTierByName: async (name) => {
             const tiers = await tiersService.api.browse({
-                filter: `name:'${name}'`
+                filter: {
+                    name
+                }
             });
 
             if (tiers.data.length > 0) {

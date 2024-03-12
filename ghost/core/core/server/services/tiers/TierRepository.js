@@ -86,7 +86,8 @@ module.exports = class TierRepository {
      * @returns {Promise<import('@tryghost/tiers/lib/Tier')[]>}
      */
     async getAll(options = {}) {
-        const filter = nql(options.filter, {});
+        const filter = nql();
+        filter.filter = options.filter || {};
         return Promise.all(this.#store.slice().filter((item) => {
             return filter.queryJSON(this.toPrimitive(item));
         }).map((tier) => {
