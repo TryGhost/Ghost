@@ -160,6 +160,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, editName,
             <div className="flex items-baseline justify-start">
                 <button
                     className={`group flex max-w-[80%] items-center justify-start whitespace-nowrap text-left font-sans text-[14px] tracking-tight text-[rgba(0,0,0,0.5)] transition duration-150 hover:text-[rgba(0,0,0,0.75)] sm:max-w-[90%] dark:text-[rgba(255,255,255,0.5)] dark:hover:text-[rgba(255,255,255,0.4)] ${!expertise && 'text-[rgba(0,0,0,0.3)] hover:text-[rgba(0,0,0,0.5)] dark:text-[rgba(255,255,255,0.3)]'}`}
+                    data-testid="expertise-button"
                     type="button"
                     onClick={editExpertise}
                 >

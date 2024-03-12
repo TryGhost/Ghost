@@ -105,5 +105,46 @@ test.describe('Actions', async () => {
         await expect(frame.getByTestId('comment-component')).toHaveCount(4);
         await expect(frame.getByText('This is a reply 123')).toHaveCount(1);
     });
+
+    test('Can add expertise', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({name: 'John Doe', expertise: null});
+
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly'
+        });
+
+        const editor = frame.getByTestId('form-editor');
+        await editor.click({force: true});
+        await waitEditorFocused(editor);
+
+        const expertiseButton = frame.getByTestId('expertise-button');
+        await expect(expertiseButton).toBeVisible();
+        await expect(expertiseButton).toHaveText('Add your expertise');
+        await expertiseButton.click();
+
+        const detailsFrame = page.frameLocator('iframe[title="addDetailsPopup"]');
+        const profileModal = detailsFrame.getByTestId('profile-modal');
+        await expect(profileModal).toBeVisible();
+
+        await expect(detailsFrame.getByTestId('name-input')).toHaveValue('John Doe');
+        await expect(detailsFrame.getByTestId('expertise-input')).toHaveValue('');
+
+        await detailsFrame.getByTestId('name-input').fill('Testy McTest');
+        await detailsFrame.getByTestId('expertise-input').fill('Software development');
+
+        await detailsFrame.getByTestId('save-button').click();
+
+        await expect(profileModal).not.toBeVisible();
+
+        await expect(frame.getByTestId('member-name')).toHaveText('Testy McTest');
+        await expect(frame.getByTestId('expertise-button')).toHaveText('Software development');
+    });
 });
 

@@ -159,6 +159,14 @@ export class MockedApi {
                 });
             }
 
+            if (route.request().method() === 'PUT') {
+                const payload = JSON.parse(route.request().postData());
+                this.member = {
+                    ...this.member,
+                    ...payload
+                };
+            }
+
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(this.member)
@@ -200,8 +208,8 @@ export class MockedApi {
             });
         });
 
-         // LIKE a single comment
-         await page.route(`${path}/members/api/comments/*/like/`, async (route) => {
+        // LIKE a single comment
+        await page.route(`${path}/members/api/comments/*/like/`, async (route) => {
             const url = new URL(route.request().url());
             const commentId = url.pathname.split('/').reverse()[2];
 
@@ -232,7 +240,6 @@ export class MockedApi {
                 }))
             });
         });
-
 
         // GET a single comment
         await page.route(`${path}/members/api/comments/*/`, async (route) => {

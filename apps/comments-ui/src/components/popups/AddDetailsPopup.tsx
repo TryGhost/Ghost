@@ -116,7 +116,7 @@ const AddDetailsPopup = (props: Props) => {
     });
 
     return (
-        <div className="shadow-modal relative h-screen w-screen overflow-hidden rounded-none bg-white p-[28px] text-center sm:h-auto sm:w-[720px] sm:rounded-xl sm:p-0" onMouseDown={stopPropagation}>
+        <div className="shadow-modal relative h-screen w-screen overflow-hidden rounded-none bg-white p-[28px] text-center sm:h-auto sm:w-[720px] sm:rounded-xl sm:p-0" data-testid="profile-modal" onMouseDown={stopPropagation}>
             <div className="flex">
                 {!isMobile() &&
                     <div className={`flex w-[40%] flex-col items-center justify-center bg-[#1C1C1C]`}>
@@ -146,6 +146,7 @@ const AddDetailsPopup = (props: Props) => {
                         <input
                             ref={inputNameRef}
                             className={`flex h-[42px] w-full items-center rounded border border-neutral-200 px-3 font-sans text-[16px] outline-0 transition-[border-color] duration-200 focus:border-neutral-300 ${error.name && 'border-red-500 focus:border-red-500'}`}
+                            data-testid="name-input"
                             id="comments-name"
                             maxLength={64}
                             name="name"
@@ -170,6 +171,7 @@ const AddDetailsPopup = (props: Props) => {
                         <input
                             ref={inputExpertiseRef}
                             className={`flex h-[42px] w-full items-center rounded border border-neutral-200 px-3 font-sans text-[16px] outline-0 transition-[border-color] duration-200 focus:border-neutral-300 ${(expertiseCharsLeft === 0) && 'border-red-500 focus:border-red-500'}`}
+                            data-testid="expertise-input"
                             id="comments-expertise"
                             maxLength={maxExpertiseChars}
                             name="expertise"
@@ -191,6 +193,7 @@ const AddDetailsPopup = (props: Props) => {
                         />
                         <button
                             className={`mt-10 flex h-[42px] w-full items-center justify-center rounded-md px-8 font-sans text-[15px] font-semibold text-white opacity-100 transition-opacity duration-200 ease-linear hover:opacity-90`}
+                            data-testid="save-button"
                             style={{backgroundColor: accentColor ?? '#000000'}}
                             type="button"
                             onClick={() => {

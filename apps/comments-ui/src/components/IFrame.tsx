@@ -59,7 +59,9 @@ class IFrame extends Component<any> {
 
     setNode(node: any) {
         this.node = node;
-        this.props.innerRef.current = node;
+        if (this.props.innerRef) {
+            this.props.innerRef.current = node;
+        }
     }
 
     render() {
