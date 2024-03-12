@@ -1,10 +1,10 @@
 import React from 'react';
-import { IUnsplashProvider } from './api/IUnsplashProvider';
+import { DefaultHeaderTypes } from './UnsplashTypes';
 import { Photo } from './UnsplashTypes';
 interface UnsplashModalProps {
     onClose: () => void;
     onImageInsert: (image: Photo) => void;
-    unsplashProvider: IUnsplashProvider;
+    unsplashProviderConfig: DefaultHeaderTypes | null;
 }
 declare const UnsplashSearchModal: React.FC<UnsplashModalProps>;
 export default UnsplashSearchModal;

@@ -2,18 +2,27 @@ import MasonryService from './api/MasonryService';
 import React, {useMemo, useRef, useState} from 'react';
 import UnsplashGallery from './ui/UnsplashGallery';
 import UnsplashSelector from './ui/UnsplashSelector';
-import {IUnsplashProvider} from './api/IUnsplashProvider';
+import {DefaultHeaderTypes} from './UnsplashTypes';
+import {InMemoryUnsplashProvider} from './api/InMemoryUnsplashProvider';
 import {Photo} from './UnsplashTypes';
 import {PhotoUseCases} from './api/PhotoUseCase';
+import {UnsplashProvider} from './api/UnsplashProvider';
 import {UnsplashService} from './api/UnsplashService';
 
 interface UnsplashModalProps {
     onClose: () => void;
     onImageInsert: (image: Photo) => void;
-    unsplashProvider: IUnsplashProvider;
+    unsplashProviderConfig: DefaultHeaderTypes | null;
   }
 
-const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageInsert, unsplashProvider}) => {
+const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageInsert, unsplashProviderConfig}) => {
+    const unsplashProvider = useMemo(() => {
+        if (!unsplashProviderConfig) {
+            return new InMemoryUnsplashProvider();
+        }
+        return new UnsplashProvider(unsplashProviderConfig);
+    },[unsplashProviderConfig]);
+
     const photoUseCase = useMemo(() => new PhotoUseCases(unsplashProvider), [unsplashProvider]);
     const masonryService = useMemo(() => new MasonryService(3), []);
     const UnsplashLib = useMemo(() => new UnsplashService(photoUseCase, masonryService), [photoUseCase, masonryService]);
