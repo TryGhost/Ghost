@@ -76,6 +76,14 @@ export async function mockAdminAuthFrame({admin, page}) {
     });
 }
 
+export async function mockAdminAuthFrame204({admin, page}) {
+    await page.route(admin + 'auth-frame/', async (route) => {
+        await route.fulfill({
+            status: 204
+        });
+    });
+}
+
 export async function initialize({mockedApi, page, bodyStyle, ...options}: {
     mockedApi: MockedApi,
     page: Page,

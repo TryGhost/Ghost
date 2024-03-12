@@ -15,3 +15,8 @@ module.exports.stubAdminFiles = () => {
         fs.ensureFileSync(filePath);
     });
 };
+
+module.exports.stubAuthFrameFiles = (publicPath) => {
+    const filePath = path.resolve(publicPath, 'admin-auth/index.html');
+    fs.ensureFileSync(filePath);
+};
