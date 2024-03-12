@@ -19,3 +19,22 @@
         top: 0;
     }
 }
+
+.admin-x-base {
+    opacity: 1;
+    animation-name: openAnimation;
+    animation-iteration-count: 1;
+    animation-timing-function: ease;
+    animation-duration: 0.35s;
+}
+
+@keyframes openAnimation {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px) scale(1.0);
+    }
+}
