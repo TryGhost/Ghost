@@ -1,5 +1,5 @@
 import React, {useRef, useState} from 'react';
-import UnsplashSelector from '../../../selectors/UnsplashSelector';
+import UnsplashSearchModal from '../../../../unsplash/UnsplashSearchModal';
 import usePinturaEditor from '../../../../hooks/usePinturaEditor';
 import {ColorPickerField, Heading, Hint, ImageUpload, SettingGroupContent, TextField, debounce} from '@tryghost/admin-x-design-system';
 import {SettingValue, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -144,8 +144,10 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                     </ImageUpload>
                     {
                         showUnsplash && unsplashConfig && unsplashEnabled && (
-                            <UnsplashSelector
-                                unsplashProviderConfig={unsplashConfig}
+                            <UnsplashSearchModal
+                                unsplashConf={{
+                                    defaultHeaders: unsplashConfig
+                                }}
                                 onClose={() => {
                                     setShowUnsplash(false);
                                 }}
