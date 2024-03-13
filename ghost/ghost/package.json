@@ -27,7 +27,7 @@
     "mocha": "10.2.0",
     "reflect-metadata": "0.1.13",
     "sinon": "^17.0.1",
-    "ts-node": "10.9.1",
+    "ts-node": "10.9.2",
     "typescript": "5.2.2"
   },
   "dependencies": {
