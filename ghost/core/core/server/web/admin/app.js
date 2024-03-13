@@ -41,6 +41,7 @@ module.exports = function setupAdminApp() {
             if (req.headers.cookie?.includes('ghost-admin-api-session')) {
                 next();
             } else {
+                res.setHeader('Cache-Control', 'public, max-age=0');
                 res.sendStatus(204);
             }
         } catch (err) {

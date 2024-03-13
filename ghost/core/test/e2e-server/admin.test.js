@@ -54,7 +54,8 @@ describe('Admin Routing', function () {
             await request
                 .get('/ghost/auth-frame/')
                 .set('Origin', config.get('url'))
-                .expect(204);
+                .expect(204)
+                .expect('Cache-Control', 'public, max-age=0');
         });
 
         it('Renders static file with admin session cookie', async function () {
