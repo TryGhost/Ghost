@@ -3812,15 +3812,15 @@
   dependencies:
     tslib "2.6.2"
 
-"@newrelic/aws-sdk@^7.1.0":
-  version "7.1.0"
-  resolved "https://registry.yarnpkg.com/@newrelic/aws-sdk/-/aws-sdk-7.1.0.tgz#7e934a44150e87dd88ab3b15690df03a20dfd718"
-  integrity sha512-deP7UC0/rYLuGGeK5ZWB1a6fG6b8I21kaZl8+zpkG3nflsRw+DgDTC7y3iiIoX5DtLodjqWO6pAcroxnpHal8g==
+"@newrelic/aws-sdk@^7.3.0":
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/@newrelic/aws-sdk/-/aws-sdk-7.3.0.tgz#0a0dc1f7cd20bc89f5ed3effec25345eb6f0b1ba"
+  integrity sha512-6HBrd9SlHPeFI2MPH9s3KQUwJnuehHgn0boAtoGloiNL+dm6XbuTiNV1Deo1P2qspsCsf/luBvxM5b37MiGqVg==
 
-"@newrelic/koa@^8.0.1":
-  version "8.0.1"
-  resolved "https://registry.yarnpkg.com/@newrelic/koa/-/koa-8.0.1.tgz#26c1c6a69b15ad4b64a148b6be537ec2ca734206"
-  integrity sha512-GyeZGKPllpUu6gWXRwVP/FlvE9+tU2lOprRiTdoXNM8jdVGL02IfHnvAzrIANoZoUdf3+Vev8NNeCup2Eojcvg==
+"@newrelic/koa@^9.0.0":
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/@newrelic/koa/-/koa-9.0.0.tgz#d0f402ecfcec5871e1d650a6e4b27acb7ccb1517"
+  integrity sha512-3PS14tkK0mNy9z01wZE7U5IYdI57bh/j//n1rCQNvl+5zTeiPsTmaSeKPQ21XI0RXDkSR5P909jIDt05M1+OsA==
 
 "@newrelic/native-metrics@^10.0.0":
   version "10.0.0"
@@ -23215,15 +23215,15 @@ neo-async@^2.5.0, neo-async@^2.6.1, neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-newrelic@11.12.0:
-  version "11.12.0"
-  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-11.12.0.tgz#da389122166bd910bcf92a56dd02bf52429f0323"
-  integrity sha512-02TY9+3bp4FAmVTnajWUJyz0ESu21avajRXbsE+zYxI1XSd0tEr+DoL7z2P1BGH2KsOquoDCjR+J4rY2Q88A1A==
+newrelic@11.13.0:
+  version "11.13.0"
+  resolved "https://registry.yarnpkg.com/newrelic/-/newrelic-11.13.0.tgz#0355cce0a1915c9723b3fdd00b81251a6f26326d"
+  integrity sha512-FUIAaoUWPTpv+TjDfn+mxOd1LPQ9Sduvc4kas1OUYIB4o1RtBhBpZVFz8b6BSJZtY/NZcW4fm7/4J6MT62zI1g==
   dependencies:
     "@grpc/grpc-js" "^1.9.4"
     "@grpc/proto-loader" "^0.7.5"
-    "@newrelic/aws-sdk" "^7.1.0"
-    "@newrelic/koa" "^8.0.1"
+    "@newrelic/aws-sdk" "^7.3.0"
+    "@newrelic/koa" "^9.0.0"
     "@newrelic/ritm" "^7.2.0"
     "@newrelic/security-agent" "^1.0.1"
     "@newrelic/superagent" "^7.0.1"
