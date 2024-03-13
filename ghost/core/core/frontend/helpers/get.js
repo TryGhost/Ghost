@@ -151,7 +151,8 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
                                 const idToFilter = query.id.$ne;
 
                                 // The default limit is 15, the addition order is to cast apiOptions.limit to a number
-                                const limit = apiOptions.limit ? 1 + apiOptions.limit : 16;
+                                let limit = apiOptions.limit;
+                                limit = apiOptions.limit && apiOptions.limit !== 'all' ? 1 + apiOptions.limit : 16;
 
                                 // We replace with id:-null so we don't have to deal with leading/trailing AND operators
                                 const filter = apiOptions.filter.replace(/id:-[a-f0-9A-F]{24}/, 'id:-null');
