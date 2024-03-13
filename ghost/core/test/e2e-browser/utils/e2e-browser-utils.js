@@ -96,10 +96,10 @@ const setupStripe = async (page, stripConnectIntegrationToken) => {
     await expect(modal.getByRole('button', {name: 'Disconnect'})).toBeVisible();
     await modal.getByRole('button', {name: 'Close'}).click();
 
-    await page.getByRole('button', {name: '← Done'}).click();
+    await page.getByTestId('exit-settings').click();
 };
 
-// Setup Mailgun with fake data, for Ghost Admin to allow bulk sending
+// Setup Mailgun with fake data for Ghost Admin to allow bulk sending
 const setupMailgun = async (page) => {
     await page.locator('.gh-nav a[href="#/settings/"]').click();
     const section = page.getByTestId('mailgun');
@@ -110,7 +110,7 @@ const setupMailgun = async (page) => {
     await section.getByRole('button', {name: 'Save'}).click();
     await section.getByText('Mailgun is set up').waitFor();
 
-    await page.getByRole('button', {name: '← Done'}).click();
+    await page.getByTestId('exit-settings').click();
 };
 
 /**
@@ -127,7 +127,7 @@ const enableLabs = async (page) => {
     await section.getByLabel('Webmentions').click();
     await section.getByLabel('Tips & donations').click();
 
-    await page.getByRole('button', {name: '← Done'}).click();
+    await page.getByTestId('exit-settings').click();
 };
 
 /**
