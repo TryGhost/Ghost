@@ -1444,7 +1444,7 @@ describe('Email renderer', function () {
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
                 `%%{unsubscribe_url}%%`,
-                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fghost.org%2F%3Fsource_tracking%3Dsite`
+                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fghost.org%2F%3Fvia%3Dpbg-newsletter%26source_tracking%3Dsite`
             ]);
 
             // Check uuid in replacements
@@ -1499,7 +1499,7 @@ describe('Email renderer', function () {
                 'http://feedback-link.com/?score=1&uuid=%%{uuid}%%',
                 'http://feedback-link.com/?score=0&uuid=%%{uuid}%%',
                 '%%{unsubscribe_url}%%',
-                'https://ghost.org/'
+                'https://ghost.org/?via=pbg-newsletter'
             ]);
         });
 
@@ -1554,7 +1554,7 @@ describe('Email renderer', function () {
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
                 `%%{unsubscribe_url}%%`,
-                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fghost.org%2F%3Fsource_tracking%3Dsite`
+                `http://tracked-link.com/?m=%%{uuid}%%&url=https%3A%2F%2Fghost.org%2F%3Fvia%3Dpbg-newsletter%26source_tracking%3Dsite`
             ]);
 
             // Check uuid in replacements
