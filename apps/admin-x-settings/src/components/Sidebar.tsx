@@ -78,6 +78,26 @@ const Sidebar: React.FC = () => {
         }
     }, [checkVisible, setNoResult, filter]);
 
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && filter) {
+                // Blur the field
+                searchInputRef.current?.blur();
+
+                // Prevent the event from bubbling up to the window level
+                event.stopPropagation();
+            }
+        };
+
+        // Add the event listener to the searchInputRef field
+        searchInputRef.current?.addEventListener('keydown', handleKeyDown);
+
+        // Clean up the event listener when the component unmounts
+        return () => {
+            searchInputRef.current?.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [filter]);
+
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
@@ -107,12 +127,12 @@ const Sidebar: React.FC = () => {
 
     return (
         <div className='ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]' data-testid="sidebar">
-            <div className='sticky top-0 flex content-stretch items-end bg-grey-50 dark:bg-grey-975 tablet:h-28 dark:tablet:bg-black xl:h-20'>
+            <div className='sticky top-0 flex content-stretch items-end dark:bg-grey-975 tablet:h-20 tablet:bg-grey-50 dark:tablet:bg-black xl:h-20'>
                 <div className='relative w-full'>
                     <Icon className='absolute left-3 top-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                     <TextField
                         autoComplete="off"
-                        className='flex h-10 w-full items-center rounded-lg border border-transparent bg-white px-[33px] py-1.5 text-[14px] shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-colors hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] focus:outline-2 dark:border-transparent dark:bg-grey-925 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950'
+                        className='mr-12 flex h-10 w-full items-center rounded-lg border border-transparent bg-white px-[33px] py-1.5 text-[14px] shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-colors hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] focus:outline-2 dark:border-transparent dark:bg-grey-925 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950 tablet:mr-0'
                         containerClassName='w-100'
                         inputRef={searchInputRef}
                         placeholder="Search settings"

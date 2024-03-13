@@ -57,6 +57,7 @@ export default class Main extends Component.extend(ShortcutsMixin) {
         let shortcuts = {};
 
         shortcuts[`${ctrlOrCmd}+k`] = {action: 'openSearchModal'};
+        shortcuts[`${ctrlOrCmd}+,`] = {action: 'openSettings'};
         this.shortcuts = shortcuts;
     }
 
@@ -96,6 +97,11 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @action
     openSearchModal() {
         return this.modals.open(SearchModal);
+    }
+
+    @action
+    openSettings() {
+        this.router.transitionTo('settings-x');
     }
 
     @action
