@@ -99,7 +99,7 @@ const setupStripe = async (page, stripConnectIntegrationToken) => {
     await page.getByTestId('exit-settings').click();
 };
 
-// Setup Mailgun with fake data, for Ghost Admin to allow bulk sending
+// Setup Mailgun with fake data for Ghost Admin to allow bulk sending
 const setupMailgun = async (page) => {
     await page.locator('.gh-nav a[href="#/settings/"]').click();
     const section = page.getByTestId('mailgun');
