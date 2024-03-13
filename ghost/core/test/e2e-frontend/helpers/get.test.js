@@ -100,7 +100,84 @@ describe('e2e {{#get}} helper', function () {
     });
 
     describe('Filter optimisation', function () {
-        it('Returns the correct posts', async function () {
+        it('Returns the correct posts with a solo negative filter', async function () {
+            await get.call({}, 'posts', {
+                hash: {
+                    limit: 1
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            const firstPostUsually = fn.firstCall.args[0].posts[0];
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `id:-${firstPostUsually.id}`,
+                    limit: 5
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.equal(fn.secondCall.args[0].posts.length, 5);
+            const foundFilteredPost = fn.secondCall.args[0].posts.find(post => post.id === firstPostUsually.id);
+            assert.equal(foundFilteredPost, undefined);
+        });
+        it('Returns the correct posts with a sandwiched negative filter', async function () {
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `tag:-hash-hidden+visibility:public`,
+                    limit: 1
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            const firstPostUsually = fn.firstCall.args[0].posts[0];
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `visibility:public+id:-${firstPostUsually.id}+tag:-hash-hidden`,
+                    limit: 5
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.equal(fn.secondCall.args[0].posts.length, 5);
+            const foundFilteredPost = fn.secondCall.args[0].posts.find(post => post.id === firstPostUsually.id);
+            assert.equal(foundFilteredPost, undefined);
+        });
+        it('Returns the correct posts with a prefix negative filter', async function () {
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `tag:-hash-hidden`,
+                    limit: 1
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            const firstPostUsually = fn.firstCall.args[0].posts[0];
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `id:-${firstPostUsually.id}+tag:-hash-hidden`,
+                    limit: 5
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.equal(fn.secondCall.args[0].posts.length, 5);
+            const foundFilteredPost = fn.secondCall.args[0].posts.find(post => post.id === firstPostUsually.id);
+            assert.equal(foundFilteredPost, undefined);
+        });
+        it('Returns the correct posts with a suffix negative filter', async function () {
             await get.call({}, 'posts', {
                 hash: {
                     filter: `tag:-hash-hidden`,
