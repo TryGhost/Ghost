@@ -11,6 +11,7 @@ const Sentry = require('@sentry/node');
 
 const _ = require('lodash');
 const jsonpath = require('jsonpath');
+const nqlLang = require('@tryghost/nql-lang');
 
 const messages = {
     mustBeCalledAsBlock: 'The {\\{{helperName}}} helper must be called as a block. E.g. {{#{helperName}}}...{{/{helperName}}}',
@@ -131,6 +132,53 @@ function parseOptions(globals, data, options) {
  */
 async function makeAPICall(resource, controllerName, action, apiOptions) {
     const controller = api[controllerName];
+    let makeRequest = () => controller[action](apiOptions);
+
+    // Only do the optimisation on posts
+    if (resource === 'posts') {
+        try {
+            const parsedFilter = nqlLang.parse(apiOptions.filter);
+            // Support either `id:blah` or `id:blah+other:stuff`
+            if (parsedFilter.$and || parsedFilter.id) {
+                const queries = parsedFilter.$and || [parsedFilter.id];
+
+                for (const query of queries) {
+                    if ('id' in query) {
+                        if ('$ne' in query.id) {
+                            // This checks that there is only one occurence of a negative id filter
+                            // So we know it's safe to use the `replace` method
+                            if (apiOptions.filter.split('id:-').length === 2) {
+                                const idToFilter = query.id.$ne;
+
+                                // The default limit is 15, the addition order is to cast apiOptions.limit to a number
+                                const limit = apiOptions.limit ? 1 + apiOptions.limit : 16;
+
+                                // We replace with id:-null so we don't have to deal with leading/trailing AND operators
+                                const filter = apiOptions.filter.replace(/id:-[a-f0-9A-F]{24}/, 'id:-null');
+
+                                makeRequest = async () => {
+                                    const result = await controller[action]({
+                                        ...apiOptions,
+                                        limit,
+                                        filter
+                                    });
+
+                                    return {
+                                        ...result,
+                                        posts: result?.posts?.filter((post) => {
+                                            return post.id !== idToFilter;
+                                        }).slice(0, limit - 1) || []
+                                    };
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            logging.warn(err);
+        }
+    }
 
     let timer;
 
@@ -141,7 +189,7 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
             const logLevel = config.get('optimization:getHelper:timeout:level') || 'error';
             const threshold = config.get('optimization:getHelper:timeout:threshold');
 
-            const apiResponse = controller[action](apiOptions);
+            const apiResponse = makeRequest();
 
             const timeout = new Promise((resolve) => {
                 timer = setTimeout(() => {
@@ -161,7 +209,7 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
             response = await Promise.race([apiResponse, timeout]);
             clearTimeout(timer);
         } else {
-            response = await controller[action](apiOptions);
+            response = await makeRequest();
         }
 
         return response;

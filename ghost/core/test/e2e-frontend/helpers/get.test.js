@@ -1,3 +1,4 @@
+const assert = require('assert/strict');
 const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
@@ -96,6 +97,35 @@ describe('e2e {{#get}} helper', function () {
         fn = sinon.spy();
         inverse = sinon.spy();
         locals = {root: {_locals: {}}};
+    });
+
+    describe('Filter optimisation', function () {
+        it('Returns the correct posts', async function () {
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `tag:-hash-hidden`,
+                    limit: 1
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            const firstPostUsually = fn.firstCall.args[0].posts[0];
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `tag:-hash-hidden+id:-${firstPostUsually.id}`,
+                    limit: 5
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.equal(fn.secondCall.args[0].posts.length, 5);
+            const foundFilteredPost = fn.secondCall.args[0].posts.find(post => post.id === firstPostUsually.id);
+            assert.equal(foundFilteredPost, undefined);
+        });
     });
 
     describe('{{access}} property', function () {
