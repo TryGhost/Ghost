@@ -107,6 +107,9 @@ const Modal: React.FC<ModalProps> = ({
                         });
                     }
                 });
+
+                // Prevent the event from bubbling up to the window level
+                event.stopPropagation();
             }
         };
 
