@@ -135,7 +135,7 @@ async function makeAPICall(resource, controllerName, action, apiOptions) {
     let makeRequest = () => controller[action](apiOptions);
 
     // Only do the optimisation on posts
-    if (resource === 'posts') {
+    if (resource === 'posts' && apiOptions.filter) {
         try {
             const parsedFilter = nqlLang.parse(apiOptions.filter);
             // Support either `id:blah` or `id:blah+other:stuff`
