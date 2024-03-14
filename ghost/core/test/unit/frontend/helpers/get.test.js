@@ -39,6 +39,45 @@ describe('{{#get}} helper', function () {
         sinon.restore();
     });
 
+    describe('cacheability optimisation', function () {
+        it('Ignores non posts', function () {
+            const apiOptions = {
+                filter: 'id:-abcdef1234567890abcdef12'
+            };
+            const {
+                options,
+                parseResult
+            } = get.optimiseFilterCacheability('not-posts', apiOptions);
+            assert.equal(options.filter, 'id:-abcdef1234567890abcdef12');
+            assert.deepEqual(parseResult({not: 'modified'}), {not: 'modified'});
+        });
+        it('Changes the filter for simple id negations', function () {
+            const apiOptions = {
+                filter: 'id:-abcdef1234567890abcdef12',
+                limit: 1
+            };
+            const {
+                options,
+                parseResult
+            } = get.optimiseFilterCacheability('posts', apiOptions);
+            assert.equal(options.filter, 'id:-null');
+            assert.deepEqual(parseResult({
+                posts: [{
+                    id: 'abcdef1234567890abcdef12'
+                }, {
+                    id: '1234567890abcdef12345678'
+                }]
+            }), {
+                posts: [{
+                    id: '1234567890abcdef12345678'
+                }],
+                meta: {
+                    cacheabilityOptimisation: true
+                }
+            });
+        });
+    });
+
     describe('context preparation', function () {
         const meta = {pagination: {}};
 
