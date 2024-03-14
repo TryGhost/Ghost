@@ -41,7 +41,7 @@ module.exports = function renderer(req, res, data) {
                     })
                 );
             }
-            req.next(err);
+            return req.next(err);
         }
         res.send(html);
     });
