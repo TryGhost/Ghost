@@ -20,6 +20,7 @@
     "dev": "VITE_APP_DEV=true vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "prepare": "yarn build",
     "lint": "eslint src --ext .js,.ts,.jsx,.tsx --cache",
     "test": "yarn test:unit && yarn test:acceptance",
     "test:unit": "yarn nx build && vitest run",
