@@ -205,7 +205,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         }
 
         const containerClasses = clsx(
-            'min-w-100 absolute inset-y-0 left-0 right-[400px] flex grow flex-col overflow-y-auto',
+            'min-w-100 absolute inset-y-0 left-0 right-[400px] flex w-full grow flex-col overflow-y-auto',
             previewBgClass
         );
 
@@ -275,7 +275,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
             hideXOnMobile
         >
             <div className='flex h-full grow'>
-                <div className={`hidden grow flex-col [@media(min-width:801px)]:!visible [@media(min-width:801px)]:!flex ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
+                <div className={`relative hidden grow flex-col [@media(min-width:801px)]:!visible [@media(min-width:801px)]:!flex ${previewBgColor === 'grey' ? 'bg-grey-50' : 'bg-white'}`}>
                     {preview}
                 </div>
                 {sidebar &&
