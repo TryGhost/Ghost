@@ -220,25 +220,4 @@ describe('RecommendationMetadataService', function () {
             oneClickSubscribe: false
         });
     });
-
-    it('Nullifies oembed data if fetching oembed fails', async function () {
-        nock('https://exampleghostsite.com')
-            .get('/subdirectory/members/api/site')
-            .reply(404);
-
-        nock('https://exampleghostsite.com')
-            .get('/members/api/site')
-            .reply(404);
-
-        fetchOembedDataFromUrl.rejects(new Error('Failed to fetch oembed data'));
-
-        const metadata = await service.fetch(new URL('https://exampleghostsite.com/subdirectory'));
-        assert.deepEqual(metadata, {
-            title: null,
-            excerpt: null,
-            featuredImage: null,
-            favicon: null,
-            oneClickSubscribe: false
-        });
-    });
 });

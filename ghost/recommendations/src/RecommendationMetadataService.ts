@@ -113,19 +113,7 @@ export class RecommendationMetadataService {
         }
 
         // Use the oembed service to fetch metadata
-        let oembed;
-        try {
-            oembed = await this.#oembedService.fetchOembedDataFromUrl(url.toString(), 'mention');
-        } catch (e) {
-            // return default values if oembed fails
-            return {
-                title: null,
-                excerpt: null,
-                featuredImage: null,
-                favicon: null,
-                oneClickSubscribe: false
-            };
-        }
+        const oembed = await this.#oembedService.fetchOembedDataFromUrl(url.toString(), 'mention');
 
         return {
             title: oembed?.metadata?.title || null,
