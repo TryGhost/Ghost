@@ -114,6 +114,7 @@ export class RecommendationMetadataService {
 
         // Use the oembed service to fetch metadata
         const oembed = await this.#oembedService.fetchOembedDataFromUrl(url.toString(), 'mention');
+
         return {
             title: oembed?.metadata?.title || null,
             excerpt: oembed?.metadata?.description || null,
