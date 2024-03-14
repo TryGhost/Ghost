@@ -280,6 +280,20 @@ describe('RecommendationService', function () {
                 url: new URL('http://localhost/newone')
             });
         });
+
+        it('Returns undefined recommendation metadata if metadata fails to fetch', async function () {
+            fetchMetadataStub.rejects(new Error('Metadata failed to fetch'));
+
+            const response = await service.checkRecommendation(new URL('http://localhost/newone'));
+            assert.deepEqual(response, {
+                title: undefined,
+                excerpt: undefined,
+                featuredImage: undefined,
+                favicon: undefined,
+                oneClickSubscribe: false,
+                url: new URL('http://localhost/newone')
+            });
+        });
     });
 
     describe('updateRecommendationsEnabledSetting', function () {
