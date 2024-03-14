@@ -56,6 +56,9 @@ const PortalFrame: React.FC<PortalFrameProps> = ({href, onDestroyed, selectedTab
     if (portalParent === 'preview') {
         loaderClassNames = 'absolute z-50 mt-[-7%] flex h-screen items-center justify-center';
         loaderVisibility = 'invisible';
+    } else if (portalParent === 'offers') {
+        loaderClassNames = 'absolute z-50 flex w-full h-full items-center justify-center';
+        loaderVisibility = 'invisible';
     }
 
     return (
