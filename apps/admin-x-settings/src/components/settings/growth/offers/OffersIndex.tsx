@@ -93,7 +93,7 @@ export const CopyLinkButton: React.FC<{offerCode: string}> = ({offerCode}) => {
 export const OffersIndexModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
-    const {data: {offers: allOffers = []} = {}} = useBrowseOffers({
+    const {data: {offers: allOffers = []} = {}, isFetching: isFetchingOffers} = useBrowseOffers({
         searchParams: {
             limit: 'all'
         }
@@ -260,13 +260,13 @@ export const OffersIndexModal = () => {
                     </div>
                 </div>
             </header>
-            {selectedTab === 'active' && activeOffers.length === 0 ?
+            {selectedTab === 'active' && activeOffers.length === 0 && !isFetchingOffers ?
                 <NoValueLabel icon='tags-block'>
                     No offers found.
                 </NoValueLabel> :
                 null
             }
-            {selectedTab === 'archived' && archivedOffers.length === 0 ?
+            {selectedTab === 'archived' && archivedOffers.length === 0 && !isFetchingOffers ?
                 <NoValueLabel icon='tags-block'>
                     No offers found.
                 </NoValueLabel> :
