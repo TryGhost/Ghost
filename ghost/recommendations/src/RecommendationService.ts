@@ -150,7 +150,22 @@ export class RecommendationService {
             return existing.plain;
         }
 
-        const metadata = await this.recommendationMetadataService.fetch(url);
+        let metadata;
+        try {
+            metadata = await this.recommendationMetadataService.fetch(url);
+        } catch (e) {
+            logging.error('[Recommendations] Failed to fetch metadata for url ' + url, e);
+
+            return {
+                url: url,
+                title: undefined,
+                excerpt: undefined,
+                featuredImage: undefined,
+                favicon: undefined,
+                oneClickSubscribe: false
+            };
+        }
+
         return {
             url: url,
             title: metadata.title ?? undefined,
