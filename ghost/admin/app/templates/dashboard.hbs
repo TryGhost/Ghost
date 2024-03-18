@@ -83,31 +83,38 @@
                 <GhLoadingSpinner />
             {{else}}
                 {{#if this.areMembersEnabled}}
+
+                    {{#if (feature 'onboardingChecklist')}}
+                        <Dashboard::OnboardingChecklist />
+                    {{/if}}
+
                     {{#if this.hasPaidTiers}}
                         <Dashboard::Charts::Overview />
                     {{/if}}
 
-                    <div class="gh-dashboard-group {{if this.isTotalMembersZero 'is-zero'}}">
-                        <Dashboard::Charts::AnchorAttribution />
-                        {{#if this.hasPaidTiers}}
-                            <section class="gh-dashboard-section">
-                                <article class="gh-dashboard-box gh-dashboard-minicharts-attribution">
-                                    <Dashboard::Charts::PaidBreakdown />
-                                    <Dashboard::Charts::PaidMix />
-                                </article>
-                            </section>
-                        {{/if}}
-                        {{#unless this.membersUtils.isMembersInviteOnly}}
-                            <Dashboard::Charts::Attribution />
-                        {{/unless}}
-                        {{#if this.areNewslettersEnabled}}
-                            <Dashboard::Charts::Engagement />
-                        {{/if}}
+                    {{#unless (feature 'onboardingChecklist')}}
+                        <div class="gh-dashboard-group {{if this.isTotalMembersZero 'is-zero'}}">
+                            <Dashboard::Charts::AnchorAttribution />
+                            {{#if this.hasPaidTiers}}
+                                <section class="gh-dashboard-section">
+                                    <article class="gh-dashboard-box gh-dashboard-minicharts-attribution">
+                                        <Dashboard::Charts::PaidBreakdown />
+                                        <Dashboard::Charts::PaidMix />
+                                    </article>
+                                </section>
+                            {{/if}}
+                            {{#unless this.membersUtils.isMembersInviteOnly}}
+                                <Dashboard::Charts::Attribution />
+                            {{/unless}}
+                            {{#if this.areNewslettersEnabled}}
+                                <Dashboard::Charts::Engagement />
+                            {{/if}}
 
-                        {{#if this.isTotalMembersZero}}
-                            <Dashboard::Parts::Zero />
-                        {{/if}}
-                    </div>
+                            {{#if this.isTotalMembersZero}}
+                                <Dashboard::Parts::Zero />
+                            {{/if}}
+                        </div>
+                    {{/unless}}
                 {{/if}}
 
                 <div class="gh-dashboard-recents-mentions">
