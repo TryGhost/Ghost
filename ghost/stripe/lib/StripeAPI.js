@@ -488,6 +488,14 @@ module.exports = class StripeAPI {
             stripeSessionOptions.customer_email = customerEmail;
         }
 
+        // Use the billing address entered during checkout to assess the
+        // customer's location for Stripe Tax. This is also needed to avoid an
+        // error if an existing customer lacks an address. It must not be used
+        // when Stripe does not already have a customer record.
+        if (customer && this._config.enableAutomaticTax) {
+            stripeSessionOptions.customer_update = {address: 'auto'};
+        }
+
         // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
 
@@ -536,6 +544,14 @@ module.exports = class StripeAPI {
                 quantity: 1
             }]
         };
+
+        // Use the billing address entered during checkout to assess the
+        // customer's location for Stripe Tax. This is also needed to avoid an
+        // error if an existing customer lacks an address. It must not be used
+        // when Stripe does not already have a customer record.
+        if (customer && this._config.enableAutomaticTax) {
+            stripeSessionOptions.customer_update = {address: 'auto'};
+        }
 
         // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
