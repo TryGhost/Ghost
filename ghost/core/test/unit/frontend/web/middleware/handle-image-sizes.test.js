@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const storage = require('../../../../../core/server/adapters/storage');
 const activeTheme = require('../../../../../core/frontend/services/theme-engine/active');
 const handleImageSizes = require('../../../../../core/frontend/web/middleware/handle-image-sizes.js');
+const errors = require('@tryghost/errors');
 const imageTransform = require('@tryghost/image-transform');
 
 const fakeResBase = {
@@ -669,6 +670,37 @@ describe('handleImageSizes middleware', function () {
                     typeStub.calledOnceWithExactly('gif').should.be.true();
                 } catch (e) {
                     return done(e);
+                }
+                done();
+            });
+        });
+
+        it('goes to next middleware with no error if source and resized image 404', function (done) {
+            dummyStorage.exists = async function () {
+                return false;
+            };
+            dummyStorage.read = async function () {
+                throw new errors.NotFoundError({
+                    message: 'File not found'
+                });
+            };
+
+            const fakeReq = {
+                url: '/size/w1000/2020/02/test.png',
+                originalUrl: '/2020/02/test.png'
+            };
+
+            const fakeRes = {
+                redirect() {
+                    done(new Error('Should not have called redirect'));
+                },
+                setHeader() {},
+                type: function () {}
+            };
+
+            handleImageSizes(fakeReq, fakeRes, function next(err) {
+                if (err) {
+                    return done(err);
                 }
                 done();
             });

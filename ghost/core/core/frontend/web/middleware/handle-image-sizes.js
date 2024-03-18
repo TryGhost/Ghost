@@ -139,6 +139,11 @@ module.exports = function handleImageSizes(req, res, next) {
         if (err.code === 'SHARP_INSTALLATION' || err.code === 'IMAGE_PROCESSING' || err.errorType === 'NoContentError') {
             return redirectToOriginal();
         }
+
+        if (err.errorType === 'NotFoundError') {
+            return next();
+        }
+
         next(err);
     });
 };
