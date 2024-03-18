@@ -57,6 +57,7 @@ class CanThisResult {
                     let hasUserPermission;
                     let hasApiKeyPermission;
                     let hasMemberPermission = false;
+                    let role;
 
                     const checkPermission = function (perm) {
                         // Look for a matching action type and object type first
@@ -66,6 +67,14 @@ class CanThisResult {
 
                         return true;
                     };
+
+                    if (loadedPermissions.user) {
+                        role = loadedPermissions.user.roles[0].name;
+                    } else if (loadedPermissions.member) {
+                        role = 'Member';
+                    } else if (loadedPermissions.apiKey) {
+                        role = loadedPermissions.apiKey.roles[0].name;
+                    }
 
                     if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'})) {
                         hasUserPermission = true;
@@ -88,7 +97,7 @@ class CanThisResult {
                     // Offer a chance for the TargetModel to override the results
                     if (TargetModel && _.isFunction(TargetModel.permissible)) {
                         return TargetModel.permissible(
-                            modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission
+                            modelId, actType, context, unsafeAttrs, role, hasUserPermission, hasApiKeyPermission, hasMemberPermission
                         );
                     }
 

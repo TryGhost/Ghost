@@ -1474,7 +1474,7 @@ Post = ghostBookshelf.Model.extend({
     },
 
     // NOTE: the `authors` extension is the parent of the post model. It also has a permissible function.
-    permissible: async function permissible(postModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
+    permissible: async function permissible(postModel, action, context, unsafeAttrs, role, hasUserPermission, hasApiKeyPermission) {
         let isContributor;
         let isOwner;
         let isAdmin;
@@ -1496,11 +1496,11 @@ Post = ghostBookshelf.Model.extend({
             return postModel.get('status') === 'draft';
         }
 
-        isContributor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Contributor'});
-        isOwner = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'});
-        isAdmin = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Administrator'});
-        isEditor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'});
-        isIntegration = loadedPermissions.apiKey && _.some(loadedPermissions.apiKey.roles, {name: 'Admin Integration'});
+        isContributor = role === 'Contributor';
+        isOwner = role === 'Owner';
+        isAdmin = role === 'Administrator';
+        isEditor = role === 'Editor';
+        isIntegration = role === 'Admin Integration';
 
         isEdit = (action === 'edit');
         isAdd = (action === 'add');
