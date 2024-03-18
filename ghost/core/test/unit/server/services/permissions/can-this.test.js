@@ -248,7 +248,7 @@ describe('Permissions', function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: [],
-                        roles: undefined
+                        roles: [{name: 'Administrator'}]
                     });
                 });
 
@@ -271,7 +271,7 @@ describe('Permissions', function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
-                        roles: undefined
+                        roles: [{name: 'Administrator'}]
                     });
                 });
 
@@ -292,7 +292,7 @@ describe('Permissions', function () {
                     // Fake the response from providers.user, which contains permissions and roles
                     return Promise.resolve({
                         permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
-                        roles: undefined
+                        roles: [{name: 'Administrator'}]
                     });
                 });
 
@@ -366,7 +366,7 @@ describe('Permissions', function () {
                 // Fake the response from providers.user, which contains permissions and roles
                 return Promise.resolve({
                     permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
-                    roles: undefined
+                    roles: [{name: 'Administrator'}]
                 });
             });
 
@@ -389,7 +389,7 @@ describe('Permissions', function () {
                     permissibleStub.firstCall.args[1].should.eql('edit');
                     permissibleStub.firstCall.args[2].should.be.an.Object();
                     permissibleStub.firstCall.args[3].should.be.an.Object();
-                    permissibleStub.firstCall.args[4].should.be.an.Object();
+                    permissibleStub.firstCall.args[4].should.eql('Administrator');
                     permissibleStub.firstCall.args[5].should.be.true();
                     permissibleStub.firstCall.args[6].should.be.true();
 
@@ -404,7 +404,7 @@ describe('Permissions', function () {
                 // Fake the response from providers.user, which contains permissions and roles
                 return Promise.resolve({
                     permissions: models.Permissions.forge(testUtils.DataGenerator.Content.permissions).models,
-                    roles: undefined
+                    roles: [{name: 'Administrator'}]
                 });
             });
 
@@ -423,7 +423,7 @@ describe('Permissions', function () {
                     permissibleStub.firstCall.args[1].should.eql('edit');
                     permissibleStub.firstCall.args[2].should.be.an.Object();
                     permissibleStub.firstCall.args[3].should.be.an.Object();
-                    permissibleStub.firstCall.args[4].should.be.an.Object();
+                    permissibleStub.firstCall.args[4].should.eql('Administrator');
                     permissibleStub.firstCall.args[5].should.be.true();
                     permissibleStub.firstCall.args[6].should.be.true();
                     permissibleStub.firstCall.args[7].should.be.false();

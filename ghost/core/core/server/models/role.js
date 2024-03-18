@@ -56,7 +56,7 @@ Role = ghostBookshelf.Model.extend({
         return options;
     },
 
-    permissible: function permissible(roleModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
+    permissible: function permissible(roleModelOrId, action, context, unsafeAttrs, role, hasUserPermission, hasApiKeyPermission) {
         // If we passed in an id instead of a model, get the model
         // then check the permissions
         if (_.isNumber(roleModelOrId) || _.isString(roleModelOrId)) {
@@ -78,14 +78,13 @@ Role = ghostBookshelf.Model.extend({
 
         const roleModel = roleModelOrId;
 
-        if (action === 'assign' && loadedPermissions.user) {
-            const {isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
+        if (action === 'assign' && hasUserPermission) {
             let checkAgainst;
-            if (isOwner) {
+            if (role === 'Owner') {
                 checkAgainst = ['Owner', 'Administrator', 'Super Editor', 'Editor', 'Author', 'Contributor'];
-            } else if (isAdmin) {
+            } else if (role === 'Administrator') {
                 checkAgainst = ['Administrator', 'Super Editor', 'Editor', 'Author', 'Contributor'];
-            } else if (isEitherEditor) {
+            } else if (role === 'Editor' || role === 'Super Editor') {
                 checkAgainst = ['Author', 'Contributor'];
             }
 
@@ -93,7 +92,7 @@ Role = ghostBookshelf.Model.extend({
             hasUserPermission = roleModelOrId && _.includes(checkAgainst, roleModel.get('name'));
         }
 
-        if (action === 'assign' && loadedPermissions.apiKey) {
+        if (action === 'assign' && context.api_key) {
             // apiKey cannot 'assign' the 'Owner' role
             if (roleModel.get('name') === 'Owner') {
                 return Promise.reject(new errors.NoPermissionError({

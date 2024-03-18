@@ -157,7 +157,7 @@ const Comment = ghostBookshelf.Model.extend({
         return softDelete();
     },
 
-    async permissible(commentModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission) {
+    async permissible(commentModelOrId, action, context, unsafeAttrs, role, hasUserPermission, hasApiKeyPermission, hasMemberPermission) {
         const self = this;
 
         if (hasUserPermission) {

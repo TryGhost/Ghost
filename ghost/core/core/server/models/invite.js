@@ -54,7 +54,7 @@ Invite = ghostBookshelf.Model.extend({
         return ghostBookshelf.Model.add.call(this, data, options);
     },
 
-    async permissible(inviteModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
+    async permissible(inviteModel, action, context, unsafeAttrs, role, hasUserPermission, hasApiKeyPermission) {
         const isAdd = (action === 'add');
 
         if (!isAdd) {
@@ -90,15 +90,17 @@ Invite = ghostBookshelf.Model.extend({
                 }
 
                 let allowed = [];
-                if (loadedPermissions.user) {
-                    const {isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
-                    if (isOwner || isAdmin) {
-                        allowed = ['Administrator', 'Editor', 'Author', 'Contributor', 'Super Editor'];
-                    } else if (isEitherEditor) {
-                        allowed = ['Author', 'Contributor'];
-                    }
-                } else if (loadedPermissions.apiKey) {
+                if (role === 'Owner' || role === 'Administrator') {
+                    allowed = ['Administrator', 'Editor', 'Author', 'Contributor'];
+                } else if (role === 'Admin Integration') {
                     allowed = ['Editor', 'Author', 'Contributor', 'Super Editor'];
+                } else if (role === 'Editor' || role === 'Super Editor') {
+                    allowed = ['Author', 'Contributor'];
+                }
+
+                // Cannot invite administrators when using an api key
+                if (context.api_key) {
+                    allowed = allowed.filter(item => item !== 'Administrator');
                 }
 
                 if (allowed.indexOf(roleToInvite.get('name')) === -1) {

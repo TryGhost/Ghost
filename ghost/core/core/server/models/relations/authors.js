@@ -302,11 +302,12 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             return reassignPost();
         },
 
-        permissible: function permissible(postModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
+        permissible: function permissible(postModelOrId, action, context, unsafeAttrs, role, hasUserPermission, hasApiKeyPermission) {
             const self = this;
             const postModel = postModelOrId;
+            let isContributor;
+            let isAuthor;
             let origArgs;
-            const {isContributor, isAuthor} = setIsRoles(loadedPermissions);
             let isEdit;
             let isAdd;
             let isDestroy;
@@ -332,6 +333,8 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                     });
             }
 
+            isContributor = role === 'Contributor';
+            isAuthor = role === 'Author';
             isEdit = (action === 'edit');
             isAdd = (action === 'add');
             isDestroy = (action === 'destroy');
@@ -390,7 +393,7 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
                     postModelOrId,
                     action, context,
                     unsafeAttrs,
-                    loadedPermissions,
+                    role,
                     hasUserPermission,
                     hasApiKeyPermission
                 ).then(({excludedAttrs}) => {
