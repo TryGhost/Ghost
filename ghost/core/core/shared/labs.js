@@ -48,7 +48,8 @@ const ALPHA_FEATURES = [
     'importMemberTier',
     'lexicalIndicators',
     // 'adminXOffers',
-    'adminXDemo'
+    'adminXDemo',
+    'onboardingChecklist'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
