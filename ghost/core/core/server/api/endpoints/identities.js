@@ -4,11 +4,16 @@ const jwt = require('jsonwebtoken');
 const jose = require('node-jose');
 const issuer = urlUtils.urlFor('admin', true);
 
-const dangerousPrivateKey = settings.get('ghost_private_key');
-const keyStore = jose.JWK.createKeyStore();
-const keyStoreReady = keyStore.add(dangerousPrivateKey, 'pem');
+let dangerousPrivateKey;
+let keyStore;
+let keyStoreReady;
 
 const getKeyID = async () => {
+    if (!keyStore) {
+        dangerousPrivateKey = settings.get('ghost_private_key');
+        keyStore = jose.JWK.createKeyStore();
+        keyStoreReady = keyStore.add(dangerousPrivateKey, 'pem');
+    }
     const key = await keyStoreReady;
     return key.kid;
 };
