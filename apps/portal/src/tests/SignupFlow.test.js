@@ -265,7 +265,7 @@ describe('Signup', () => {
             expect(siteTitle).toBeInTheDocument();
             expect(emailInput).toBeInTheDocument();
             expect(nameInput).toBeInTheDocument();
-            expect(freePlanTitle).not.toBeInTheDocument();
+            expect(freePlanTitle).toBeInTheDocument();
             expect(monthlyPlanTitle).not.toBeInTheDocument();
             expect(yearlyPlanTitle).not.toBeInTheDocument();
             expect(fullAccessTitle).not.toBeInTheDocument();
@@ -618,9 +618,10 @@ describe('Signup', () => {
             expect(siteTitle).toBeInTheDocument();
             expect(emailInput).toBeInTheDocument();
             expect(nameInput).toBeInTheDocument();
-            expect(freePlanTitle.length).toBe(0);
+            expect(freePlanTitle.length).toBe(1);
             expect(signinButton).toBeInTheDocument();
             expect(submitButton).not.toBeInTheDocument();
+
             submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign up'});
 
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
