@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import React, {useEffect, useRef, useState} from 'react';
 
 type IframeBufferingProps = {
@@ -62,7 +63,15 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, class
         const iframe = iframes[visibleIframeIndex].current;
 
         if (iframe) {
-            iframe.contentWindow?.scrollTo(0, scrollPosition);
+            // refs https://ghost-foundation.sentry.io/issues/5024564293/
+            // Customer reported that code they injected caused Settings to crash.
+            // According to Sentry this the line that caused the crash.
+            // We are adding a try catch block to attempt to catch the error for further investigation and prevent the crash.
+            try {
+                iframe.contentWindow?.scrollTo(0, scrollPosition);
+            } catch (e) {
+                Sentry.captureException(e);
+            }
         }
     }, [scrollPosition, visibleIframeIndex, iframes]);
 

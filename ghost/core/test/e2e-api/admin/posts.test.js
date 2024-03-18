@@ -671,6 +671,62 @@ describe('Posts API', function () {
             should.exist(emptyPageCount);
             emptyPageCount.should.equal(totalPageCount, 'post-update empty page count');
         });
+
+        describe('Access', function () {
+            describe('Visibility is set to tiers', function () {
+                it('Saves only paid tiers', async function () {
+                    const post = {
+                        title: 'Test Page',
+                        status: 'draft'
+                    };
+
+                    // @ts-ignore
+                    const products = await models.Product.findAll();
+
+                    const freeTier = products.models[0];
+                    const paidTier = products.models[1];
+
+                    const {body: pageBody} = await agent
+                        .post('/posts/', {
+                            headers: {
+                                'content-type': 'application/json'
+                            }
+                        })
+                        .body({posts: [post]})
+                        .expectStatus(201);
+
+                    const [pageResponse] = pageBody.posts;
+
+                    await agent
+                        .put(`/posts/${pageResponse.id}`)
+                        .body({
+                            posts: [{
+                                id: pageResponse.id,
+                                updated_at: pageResponse.updated_at,
+                                visibility: 'tiers',
+                                tiers: [
+                                    {id: freeTier.id},
+                                    {id: paidTier.id}
+                                ]
+                            }]
+                        })
+                        .expectStatus(200)
+                        .matchHeaderSnapshot({
+                            'content-version': anyContentVersion,
+                            etag: anyEtag,
+                            'x-cache-invalidate': anyString
+                        })
+                        .matchBodySnapshot({
+                            posts: [Object.assign({}, matchPostShallowIncludes, {
+                                published_at: null,
+                                tiers: [
+                                    {type: paidTier.get('type'), ...tierSnapshot}
+                                ]
+                            })]
+                        });
+                });
+            });
+        });
     });
 
     describe('Delete', function () {

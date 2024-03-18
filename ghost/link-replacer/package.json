@@ -18,13 +18,14 @@
     "lib"
   ],
   "devDependencies": {
+    "@probe.gl/bench": "^4.0.6",
     "c8": "8.0.1",
     "mocha": "10.2.0",
     "should": "13.2.3",
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "cheerio": "0.22.0",
-    "entities": "4.5.0"
+    "entities": "4.5.0",
+    "html5parser": "^2.0.2"
   }
 }
