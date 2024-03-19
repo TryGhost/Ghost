@@ -53,8 +53,8 @@
     "prepack": "node monobundle.js"
   },
   "engines": {
-    "node": "^18.12.1",
-    "cli": "^1.25.0"
+    "node": "^18.12.1 || ^20.11.1",
+    "cli": "^1.26.0"
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
