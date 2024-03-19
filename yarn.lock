@@ -7141,10 +7141,9 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.4.10", "@tryghost/logging@2.4.12", "@tryghost/logging@^2.4.7":
-  version "2.4.12"
-  resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.4.12.tgz#414a4710e400eb1d023052314437c3872f993b7b"
-  integrity sha512-nfGIT6T8PjBD8LWWLM2I09goAxDfzwVHwPX1HtYRoJWyPrZnRvxg+XiXvkoMpIDd9ynNC2nogbUrEVQfMRk6gg==
+"@tryghost/logging@2.4.10", "@tryghost/logging@^2.4.7", "@tryghost/logging@https://github.com/9larsons/framework/raw/main/packages/logging/tryghost-logging-v2.4.11.tgz":
+  version "2.4.11"
+  resolved "https://github.com/9larsons/framework/raw/main/packages/logging/tryghost-logging-v2.4.11.tgz#e5ba8f34d96b36d585947bd24a952a29cc79dea5"
   dependencies:
     "@tryghost/bunyan-rotating-filestream" "^0.0.7"
     "@tryghost/elasticsearch" "^3.0.17"

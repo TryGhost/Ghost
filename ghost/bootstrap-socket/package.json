@@ -24,6 +24,6 @@
     "sinon": "15.2.0"
   },
   "dependencies": {
-    "@tryghost/logging": "2.4.12"
+    "@tryghost/logging": "https://github.com/9larsons/framework/raw/main/packages/logging/tryghost-logging-v2.4.11.tgz"
   }
 }
