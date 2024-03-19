@@ -1,14 +1,12 @@
 const debug = require('@tryghost/debug')('middleware:queue-request');
-const metrics = require('@tryghost/metrics');
 const path = require('node:path');
 const expressQueue = require('express-queue');
 
-const CONCURRENCY_LIMIT = 100;
+const CONCURRENCY_LIMIT = 100; // @todo: Placeholder value until we have a better idea of what this should be
 
 module.exports = function queueRequest(
     config,
-    queueFactory = expressQueue,
-    logMetric = metrics.metric.bind(metrics)
+    queueFactory = expressQueue
 ) {
     config = {
         ...{
@@ -36,26 +34,14 @@ module.exports = function queueRequest(
      *
      * @see https://github.com/search?q=repo:alykoshin/mini-queue%20job._toState&type=code
      */
-
     queue.queue.on('queue', (job) => {
         debug(`Request queued: ${job.data.req.path}`);
-
-        logMetric('request-queue', {
-            event: 'request-queued',
-            queueLength: job.queue.getLength()
-            // @todo: What else do we want to log here?
-        });
     });
 
-    // @todo: This seems to fire even when a request is not queued
     queue.queue.on('complete', (job) => {
         debug(`Request completed: ${job.data.req.path}`);
 
-        logMetric('request-queue', {
-            event: 'request-completed',
-            queueLength: job.queue.getLength()
-            // @todo: What else do we want to log here?
-        });
+        job.data.req.queueDepth = job.queue.getLength();
     });
 
     return (req, res, next) => {

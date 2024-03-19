@@ -14,7 +14,7 @@ describe('Queue request middleware', function () {
 
         queue = sinon.stub();
         queue.queue = {
-            on: sinon.stub(),
+            on: sinon.stub()
         };
 
         queueFactory = sinon.stub().returns(queue);
@@ -74,59 +74,19 @@ describe('Queue request middleware', function () {
         assert(queue.calledWith(req, res, next), 'queue should be called with the correct arguments');
     });
 
-    it('should log metrics when a request is queued', function () {
-        const queueEvent = 'queue';
-        const queueLength = 123;
-        const logMetric = sinon.stub();
-
-        // Assert event listener is added
-        queueRequest(config, queueFactory, logMetric);
-
-        assert(queue.queue.on.calledWith(queueEvent), `"${queueEvent}" event listener should be added`);
-
-        // Assert event listener implementation
-        const listener = queue.queue.on.args.find(arg => arg[0] === queueEvent)[1];
-
-        listener({
-            data: {
-                req: {
-                    path: '/foo/bar'
-                }
-            },
-            queue: {
-                getLength() {
-                    return queueLength;
-                }
-            }
-        });
-
-        assert(logMetric.calledOnce, 'logMetric should be called once');
-        assert(
-            logMetric.calledWith(
-                'request-queue',
-                {
-                    event: 'request-queued',
-                    queueLength: queueLength
-                }
-            ),
-            'logMetric should be called with the correct arguments'
-        );
-    });
-
-    it('should log metrics when a request has completed', function () {
+    it('should record the queue depth on a request when it has completed', function () {
         const queueEvent = 'complete';
         const queueLength = 123;
-        const logMetric = sinon.stub();
 
         // Assert event listener is added
-        queueRequest(config, queueFactory, logMetric);
+        queueRequest(config, queueFactory);
 
         assert(queue.queue.on.calledWith(queueEvent), `"${queueEvent}" event listener should be added`);
 
         const listener = queue.queue.on.args.find(arg => arg[0] === queueEvent)[1];
 
         // Assert event listener implementation
-        listener({
+        const queueJob = {
             data: {
                 req: {
                     path: '/foo/bar'
@@ -137,18 +97,10 @@ describe('Queue request middleware', function () {
                     return queueLength;
                 }
             }
-        });
+        };
 
-        assert(logMetric.calledOnce, 'logMetric should be called once');
-        assert(
-            logMetric.calledWith(
-                'request-queue',
-                {
-                    event: 'request-completed',
-                    queueLength: queueLength
-                }
-            ),
-            'logMetric should be called with the correct arguments'
-        );
+        listener(queueJob);
+
+        assert(queueJob.data.req.queueDepth === queueLength, 'queueDepth should be set on the request');
     });
 });
