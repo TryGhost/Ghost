@@ -957,10 +957,6 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
         onPlanSelect(null, selectedPrice.id);
     }, [selectedPrice.id, onPlanSelect]);
 
-    if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly')) {
-        return null;
-    }
-
     if (products.length === 0) {
         if (isComplimentary) {
             const supportAddress = getSupportAddress({site});
@@ -977,11 +973,6 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
     let className = 'gh-portal-products';
     if (type === 'upgrade') {
         className += ' gh-portal-upgrade-product';
-    }
-
-    // If site doesn't have paid products then don't return an empty container
-    if (hasOnlyFree) {
-        return null;
     }
 
     let finalProduct = products.find(p => p.id === selectedProduct)?.id || products.find(p => p.type === 'paid')?.id;
