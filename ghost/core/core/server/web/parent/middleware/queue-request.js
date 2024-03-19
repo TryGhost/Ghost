@@ -36,12 +36,11 @@ module.exports = function queueRequest(
      */
     queue.queue.on('queue', (job) => {
         debug(`Request queued: ${job.data.req.path}`);
+        job.data.req.queueDepth = job.queue.getLength();
     });
 
     queue.queue.on('complete', (job) => {
         debug(`Request completed: ${job.data.req.path}`);
-
-        job.data.req.queueDepth = job.queue.getLength();
     });
 
     return (req, res, next) => {
