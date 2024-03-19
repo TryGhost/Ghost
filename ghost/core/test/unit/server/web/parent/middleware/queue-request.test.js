@@ -64,8 +64,8 @@ describe('Queue request middleware', function () {
         }, 'queueFactory should be called with the queue limit from the config');
     });
 
-    it('should record the queue depth on a request when it has completed', function () {
-        const queueEvent = 'complete';
+    it('should record the queue depth on a request when it has queued', function () {
+        const queueEvent = 'queue';
         const queueLength = 123;
 
         // Assert event listener is added
