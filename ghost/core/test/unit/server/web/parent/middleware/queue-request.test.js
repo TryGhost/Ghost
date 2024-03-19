@@ -46,19 +46,19 @@ describe('Queue request middleware', function () {
 
         assert.deepEqual(queueFactory.callCount, 1, 'queueFactory should be called once');
         assert.deepEqual(queueFactory.getCall(0).args[0], {
-            activeLimit: queueRequest.DEFAULT_QUEUE_LIMIT,
+            activeLimit: queueRequest.CONCURRENCY_LIMIT,
             queuedLimit: -1
         }, 'queueFactory should be called with the default queue limit');
     });
 
     it('should configure the queue using the queue limit defined in the config', function () {
-        config.limit = 123;
+        config.concurrencyLimit = 123;
 
         queueRequest(config, queueFactory);
 
         assert.deepEqual(queueFactory.callCount, 1, 'queueFactory should be called once');
         assert.deepEqual(queueFactory.getCall(0).args[0], {
-            activeLimit: config.limit,
+            activeLimit: config.concurrencyLimit,
             queuedLimit: -1
         }, 'queueFactory should be called with the queue limit from the config');
     });

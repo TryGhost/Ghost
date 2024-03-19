@@ -3,7 +3,7 @@ const metrics = require('@tryghost/metrics');
 const path = require('node:path');
 const expressQueue = require('express-queue');
 
-const DEFAULT_QUEUE_LIMIT = 100;
+const CONCURRENCY_LIMIT = 100;
 
 module.exports = function queueRequest(
     config,
@@ -12,7 +12,7 @@ module.exports = function queueRequest(
 ) {
     config = {
         ...{
-            limit: DEFAULT_QUEUE_LIMIT
+            concurrencyLimit: CONCURRENCY_LIMIT
         },
         ...config
     };
@@ -21,7 +21,7 @@ module.exports = function queueRequest(
 
     // @see https://github.com/alykoshin/express-queue#usage
     const queue = queueFactory({
-        activeLimit: config.limit,
+        activeLimit: config.concurrencyLimit,
         queuedLimit: -1 // Do not limit the number of queued requests
     });
 
@@ -73,4 +73,4 @@ module.exports = function queueRequest(
     };
 };
 
-module.exports.DEFAULT_QUEUE_LIMIT = DEFAULT_QUEUE_LIMIT;
+module.exports.CONCURRENCY_LIMIT = CONCURRENCY_LIMIT;
