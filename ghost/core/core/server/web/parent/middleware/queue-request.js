@@ -45,12 +45,10 @@ module.exports = function queueRequest(
     });
 
     return (req, res, next) => {
-        const ext = path.extname(req.path);
-        const staticAssetExts = ['.css', '.js', '.map', '.woff2', '.ico']; // @todo: extend this list to include other static asset types
-
-        // Do not queue requests for static assets
-        if (staticAssetExts.some(staticAssetExt => ext.startsWith(staticAssetExt))) {
-            debug(`Request for static asset skipping queue: ${req.path}`);
+        // Do not queue requests for static assets - We assume that any path
+        // with a file extension is a static asset
+        if (path.extname(req.path)) {
+            debug(`Request for assumed static asset skipping queue: ${req.path}`);
 
             return next();
         }

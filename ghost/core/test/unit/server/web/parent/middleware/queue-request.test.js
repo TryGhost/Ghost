@@ -21,24 +21,25 @@ describe('Queue request middleware', function () {
     });
 
     it('should not queue requests for static assets', function () {
-        const staticAssetPaths = [
-            '/foo/bar.css',
-            '/foo/bar.js',
-            '/foo/bar.map',
-            '/foo/bar.woff2',
-            '/foo/bar.ico'
-        ];
+        req.path = '/foo/bar.css'; // Assume any path with a file extension is a static asset
 
         const mw = queueRequest(config, queueFactory);
 
-        for (const path of staticAssetPaths) {
-            req.path = path;
+        mw(req, res, next);
 
-            mw(req, res, next);
-        }
+        assert(next.calledOnce, 'next should be called once');
+        assert.equal(queue.calledOnce, 0, 'queue should not be called');
+    });
 
-        assert.equal(queue.callCount, 0, 'queueFactory should not be called');
-        assert.equal(next.callCount, staticAssetPaths.length, 'next should be called for each static asset');
+    it('should queue the request', function () {
+        req.path = '/foo/bar';
+
+        const mw = queueRequest(config, queueFactory);
+
+        mw(req, res, next);
+
+        assert(queue.calledOnce, 'queue should be called once');
+        assert(queue.calledWith(req, res, next), 'queue should be called with the correct arguments');
     });
 
     it('should configure the queue using the default queue limit', function () {
@@ -61,17 +62,6 @@ describe('Queue request middleware', function () {
             activeLimit: config.concurrencyLimit,
             queuedLimit: -1
         }, 'queueFactory should be called with the queue limit from the config');
-    });
-
-    it('should queue the request', function () {
-        req.path = '/foo/bar';
-
-        const mw = queueRequest(config, queueFactory);
-
-        mw(req, res, next);
-
-        assert(queue.calledOnce, 'queue should be called once');
-        assert(queue.calledWith(req, res, next), 'queue should be called with the correct arguments');
     });
 
     it('should record the queue depth on a request when it has completed', function () {
