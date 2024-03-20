@@ -24,13 +24,20 @@
           {{ get-setting "description"}}
         </div>
 
-        <div class="gh-post-bookmark-details">
-          {{#if (get-setting "icon")}}
-            <div class="gh-site-icon"><img src={{get-setting "icon"}} alt="" role="presentation" /></div>
-          {{/if}}
-
-          <div class="gh-post-bookmark-site-title">
-            {{get-setting "title"}}
+    <div class="modal-body">
+      <div class="gh-site-preview-container">
+        <div class="gh-site-preview">
+          {{#let (or @post.featureImage (get-setting "coverImage")) as |imageUrl|}}
+          <div class="gh-site-preview-title">{{get-setting "title"}}</div>
+          <div class="gh-site-preview-description truncate">{{ get-setting "description"}}</div>
+          <div class="gh-site-preview-details">
+            {{#if (get-setting "icon")}}
+              <div class="gh-site-icon"><img src={{get-setting "icon"}} alt="" role="presentation" /></div>
+            {{/if}}
+            <div class="gh-site-title">{{get-setting "title"}}
+              <span>•</span>
+            </div>
+            <div class="gh-authors">Daniël van der Winden</div>
           </div>
         </div>
       </div>
