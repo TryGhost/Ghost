@@ -1,27 +1,7 @@
   <header class="modal-header">
       <h1>Share your publication</h1>
   </header>
-  <a class="close" href="" role="button" title="Close">
-      {{svg-jar "close"}}
-      <span class="hidden">Close</span>
-  </a>
-
-  <div class="share-card-container">
-    {{#let (or @post.featureImage (get-setting "coverImage")) as |imageUrl|}}
-    {{#if imageUrl}}
-      <div class="share-card-image">
-        <img src={{imageUrl}} alt="" role="presentation" />
-      </div>
-      {{/if}}
-
-      <div class="gh-post-bookmark-content">
-        <div class="gh-post-bookmark-title">
-          {{get-setting "title"}}
-        </div>
-
-        <div class="gh-post-bookmark-text truncate">
-          {{ get-setting "description"}}
-        </div>
+  <a class="close" href="" role="button" title="Close" {{action "closeModal"}}>{{svg-jar "close"}}<span class="hidden">Close</span></a>
 
     <div class="modal-body">
       <div class="gh-site-preview-container">
@@ -95,8 +75,10 @@
           <span>
             {{svg-jar "social-linkedin"}}
           </span>
-        </div>
-      </a>
-    </li>
-  </ul>
-
+          Share on LinkedIn
+          <div class="gh-dashboard-onboarding-item-action">
+            {{svg-jar "arrow-right"}}
+          </div>
+        </li>
+      </ul>
+  </div>
