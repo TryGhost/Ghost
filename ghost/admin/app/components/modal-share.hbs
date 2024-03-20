@@ -42,10 +42,17 @@
 
   <ul class="gh-share-links">
     <li>
+    {{!-- <GhTaskButton
+            data-test-button="copy-share-link"
+            @buttonText="Copy a link to your publication"
+            @task={{this.copySiteUrl}}
+            @successText="Link copied"
+            @successClass="gh-share-link-success"
+            @class="gh-share-link" /> --}}
       <a href="http://google.com" target="_blank" rel="noopener noreferrer" class="gh-share-link" title="Copy link"> 
         <div class="gh-share-link-content">
           <span>
-            {{svg-jar "copy" }}
+            {{svg-jar "link" }}
           </span>
           Copy a link to your publication
         </div>
