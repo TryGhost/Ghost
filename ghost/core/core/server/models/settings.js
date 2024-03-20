@@ -324,16 +324,6 @@ Settings = ghostBookshelf.Model.extend({
         return allSettings;
     },
 
-    permissible: function permissible(modelId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
-        if (hasUserPermission && hasApiKeyPermission) {
-            return Promise.resolve();
-        }
-
-        return Promise.reject(new errors.NoPermissionError({
-            message: tpl(messages.notEnoughPermission)
-        }));
-    },
-
     validators: {
         async all(model) {
             const settingName = model.get('key');
