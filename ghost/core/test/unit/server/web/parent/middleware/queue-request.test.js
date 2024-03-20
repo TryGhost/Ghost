@@ -10,7 +10,9 @@ describe('Queue request middleware', function () {
         req = {};
         res = {};
         next = sinon.stub();
-        config = {};
+        config = {
+            concurrencyLimit: 123
+        };
 
         queue = sinon.stub();
         queue.queue = {
@@ -18,6 +20,22 @@ describe('Queue request middleware', function () {
         };
 
         queueFactory = sinon.stub().returns(queue);
+    });
+
+    it('should configure the queue using the concurrency limit defined in the config', function () {
+        queueRequest(config, queueFactory);
+
+        assert.deepEqual(queueFactory.callCount, 1, 'queueFactory should be called once');
+        assert.deepEqual(queueFactory.getCall(0).args[0], {
+            activeLimit: config.concurrencyLimit,
+            queuedLimit: -1
+        }, 'queueFactory should be called with the queue limit from the config');
+    });
+
+    it('should throw an error if the concurrency limit is not defined in the config', function () {
+        assert.throws(() => {
+            queueRequest({}, queueFactory);
+        }, /concurrencyLimit must be defined when using queueRequest middleware/, 'error should be thrown');
     });
 
     it('should not queue requests for static assets', function () {
@@ -40,28 +58,6 @@ describe('Queue request middleware', function () {
 
         assert(queue.calledOnce, 'queue should be called once');
         assert(queue.calledWith(req, res, next), 'queue should be called with the correct arguments');
-    });
-
-    it('should configure the queue using the default queue limit', function () {
-        queueRequest(config, queueFactory);
-
-        assert.deepEqual(queueFactory.callCount, 1, 'queueFactory should be called once');
-        assert.deepEqual(queueFactory.getCall(0).args[0], {
-            activeLimit: queueRequest.CONCURRENCY_LIMIT,
-            queuedLimit: -1
-        }, 'queueFactory should be called with the default queue limit');
-    });
-
-    it('should configure the queue using the queue limit defined in the config', function () {
-        config.concurrencyLimit = 123;
-
-        queueRequest(config, queueFactory);
-
-        assert.deepEqual(queueFactory.callCount, 1, 'queueFactory should be called once');
-        assert.deepEqual(queueFactory.getCall(0).args[0], {
-            activeLimit: config.concurrencyLimit,
-            queuedLimit: -1
-        }, 'queueFactory should be called with the queue limit from the config');
     });
 
     it('should record the queue depth on a request when it has queued', function () {

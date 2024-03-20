@@ -1,19 +1,17 @@
 const debug = require('@tryghost/debug')('middleware:queue-request');
+const errors = require('@tryghost/errors');
 const path = require('node:path');
 const expressQueue = require('express-queue');
-
-const CONCURRENCY_LIMIT = 100; // @todo: Placeholder value until we have a better idea of what this should be
 
 module.exports = function queueRequest(
     config,
     queueFactory = expressQueue
 ) {
-    config = {
-        ...{
-            concurrencyLimit: CONCURRENCY_LIMIT
-        },
-        ...config
-    };
+    if (config.concurrencyLimit === undefined) {
+        throw new errors.IncorrectUsageError({
+            message: 'concurrencyLimit must be defined when using queueRequest middleware'
+        });
+    }
 
     debug('Initialising middleware with config:', config);
 
@@ -36,6 +34,7 @@ module.exports = function queueRequest(
      */
     queue.queue.on('queue', (job) => {
         debug(`Request queued: ${job.data.req.path}`);
+
         job.data.req.queueDepth = job.queue.getLength();
     });
 
@@ -55,5 +54,3 @@ module.exports = function queueRequest(
         return queue(req, res, next);
     };
 };
-
-module.exports.CONCURRENCY_LIMIT = CONCURRENCY_LIMIT;
