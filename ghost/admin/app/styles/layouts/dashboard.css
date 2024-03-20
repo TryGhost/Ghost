@@ -3043,7 +3043,7 @@ Share publication modal */
     flex-direction: row;
 }
 
-.share-links li { 
+.gh-share-links li { 
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--darkgrey);
@@ -3066,8 +3066,13 @@ Share publication modal */
     transition: all .3s ease-in-out;
 }
 
-.share-links li a:hover {
-    box-shadow: 0 2px 4px rgb(0 0 0 / 7%);
+a.gh-share-link {
+    color: var(--darkgrey);
+    padding: 16px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ebeef0;
 }
 
 .share-links li span {
@@ -3080,27 +3085,7 @@ Share publication modal */
     width: 20px;
     height: 20px;
     fill: var(--midgrey);
-}
-
-.share-links svg path.social-facebook_svg__fb {
-    fill: var(--midgrey);
-}
-
-.share-links svg path.social-linkedin_svg__linkedin {
-    fill: var(--midgrey);
-}
-
-.share-links a:hover svg path.social-facebook_svg__fb {
-    fill: #1977f3;
-}
-
-
-.share-links a:hover svg path.social-linkedin_svg__linkedin {
-    fill: #007ebb;
-}
-
-.share-links a:hover svg path.social-x_svg__x {
-    fill: var(--black);
+    margin: 0 16px 0 0;
 }
 
 span.tip {
@@ -3117,8 +3102,4 @@ span.tip {
 span.tip a { 
     text-decoration: underline;
     color: var(--midgrey);
-}
-
-span.tip a:hover {
-    color: var(--darkgrey);
 }
