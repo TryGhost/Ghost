@@ -2995,29 +2995,50 @@ Share publication modal */
 .gh-share-links {
     list-style: none;
     padding: 0;
-    margin: 40px 0 0;
+    margin: 32px 0 0 0;
 }
 
 .gh-share-links li { 
-    padding: 8px 0;
-    border-bottom: 1px solid var(--whitegrey);
-    display: flex; 
-    flex-direction: row;
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--darkgrey);
     line-height: 1.5;
     width: 100%;
+    margin: 0;
+}
+
+.gh-share-links li:last-child a {
+    border-bottom: 0 none;
+}
+
+a.gh-share-link {
+    color: var(--darkgrey);
+    padding: 16px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ebeef0;
+}
+
+a.gh-share-link:hover .gh-onboarding-item-action {
+    transform: translateX(5px);
+}
+
+.gh-share-link-content {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .gh-share-links li span {
-    display: block;
+    display: flex;
 }
 
 .gh-share-links li span svg {
     width: 16px;
     height: 16px;
     fill: var(--midgrey);
+    margin: 0 16px 0 0;
 }
 
 span.tip {
@@ -3029,4 +3050,9 @@ span.tip {
     color: var(--midgrey);
     width: 100%;
     display: block;
+}
+
+span.tip a { 
+    text-decoration: underline;
+    color: var(--midgrey);
 }
