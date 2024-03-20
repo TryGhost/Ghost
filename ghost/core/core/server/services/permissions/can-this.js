@@ -59,26 +59,12 @@ class CanThisResult {
                     let hasMemberPermission = false;
 
                     const checkPermission = function (perm) {
-                        let permObjId;
-
                         // Look for a matching action type and object type first
                         if (perm.get('action_type') !== actType || perm.get('object_type') !== objType) {
                             return false;
                         }
 
-                        // Grab the object id (if specified, could be null)
-                        permObjId = perm.get('object_id');
-
-                        // If we didn't specify a model (any thing)
-                        // or the permission didn't have an id scope set
-                        // then the "thing" has permission
-                        if (!modelId || !permObjId) {
-                            return true;
-                        }
-
-                        // Otherwise, check if the id's match
-                        // TODO: String vs Int comparison possibility here?
-                        return modelId === permObjId;
+                        return true;
                     };
 
                     if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'})) {
