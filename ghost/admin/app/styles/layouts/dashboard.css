@@ -3066,6 +3066,10 @@ Share publication modal */
     transition: all .3s ease-in-out;
 }
 
+/* .gh-share-links li .gh-onboarding-item-action svg path {
+    fill: var(--midgrey)
+} */
+
 a.gh-share-link {
     color: var(--darkgrey);
     padding: 16px 0;
