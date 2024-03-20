@@ -3014,7 +3014,7 @@ Share publication modal */
     border-bottom: 0 none;
 }
 
-a.gh-share-link {
+.gh-share-link {
     color: var(--darkgrey);
     padding: 16px 0;
     display: flex;
@@ -3042,6 +3042,7 @@ a.gh-share-link:hover .gh-onboarding-item-action {
     height: 16px;
     fill: var(--midgrey);
     margin: 0 16px 0 0;
+    stroke-width: 1.5;
 }
 
 span.tip {
