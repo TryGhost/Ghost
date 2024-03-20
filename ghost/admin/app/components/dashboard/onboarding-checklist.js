@@ -31,4 +31,13 @@ export default class OnboardingChecklist extends Component {
             break;
         }
     }
+
+    @action
+    close(from) {
+        if (from === 'background') {
+            return;
+        }
+
+        this.router.transitionTo('dashboard');
+    }
 }

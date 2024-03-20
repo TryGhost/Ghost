@@ -2985,7 +2985,7 @@ Share publication modal */
     font-weight: 400;
     line-height: 1.5;
     padding: 0;
-    color: var(--midgrey);
+    color: var(--darkgrey);
     margin-bottom: 24px;
     width: 100%;
 }
