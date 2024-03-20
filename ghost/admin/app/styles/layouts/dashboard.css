@@ -2812,6 +2812,10 @@ Onboarding checklist */
     margin-bottom: -12px;
 }
 
+.gh-onboarding-item:hover {
+    cursor: pointer;
+}
+
 .gh-onboarding-item--next {
     margin: 0px -32px 6px;
     background: white;
@@ -2906,7 +2910,6 @@ Onboarding checklist */
     width: 14px;
     min-width: 14px;
     height: 14px;
-    margin-right: 1rem;
 }
 
 .gh-onboarding-item-action svg path {
@@ -2929,7 +2932,7 @@ Onboarding checklist */
 
 .gh-onboarding-help {
     color: var(--midgrey);
-    margin-top: 40px;
+    margin-top: 24px;
     font-size: 1.5rem;
 }
 
@@ -2965,43 +2968,24 @@ Share publication modal */
     transition: all .3s ease-in-out;
 }
 
-.gh-site-preview {
-
+.gh-post-bookmark {
+    box-shadow: none;
+    border: 1px solid var(--whitegrey);
 }
 
-.gh-site-preview-title {
-    font-size: 1.6rem;
-    font-weight: 700;
-    line-height: 1.3;
-    padding: 0;
-    color: var(--black);
-    letter-spacing: -.3px;
-    margin-bottom: 4px;
-    width: 100%;
-}
-
-.gh-site-preview-description {
-    font-size: 1.4rem;
-    font-weight: 400;
-    line-height: 1.5;
-    padding: 0;
-    color: var(--midgrey);
-    margin-bottom: 24px;
-    width: 100%;
-}
-
-.gh-site-preview-details {
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    display: flex; 
-    flex-direction: row;
+.gh-post-bookmark:hover {
+    box-shadow: none;
+    transform: none;
 }
 
 .gh-site-icon {
     width: 16px;
     height: 16px;
-    margin-bottom: 16px;
+    margin-right: 8px;
+}
+
+.gh-site-icon img {
+    border-radius: 2px;
 }
 
 .gh-site-image {
@@ -3014,29 +2998,50 @@ Share publication modal */
 .gh-share-links {
     list-style: none;
     padding: 0;
-    margin: 40px 0 0;
+    margin: 32px 0 0 0;
 }
 
 .gh-share-links li { 
-    padding: 8px 0;
-    border-bottom: 1px solid var(--whitegrey);
-    display: flex; 
-    flex-direction: row;
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--darkgrey);
     line-height: 1.5;
     width: 100%;
+    margin: 0;
+}
+
+.gh-share-links li:last-child a {
+    border-bottom: 0 none;
+}
+
+a.gh-share-link {
+    color: var(--darkgrey);
+    padding: 16px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ebeef0;
+}
+
+a.gh-share-link:hover .gh-onboarding-item-action {
+    transform: translateX(5px);
+}
+
+.gh-share-link-content {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .gh-share-links li span {
-    display: block;
+    display: flex;
 }
 
 .gh-share-links li span svg {
     width: 16px;
     height: 16px;
     fill: var(--midgrey);
+    margin: 0 16px 0 0;
 }
 
 span.tip {
@@ -3048,4 +3053,13 @@ span.tip {
     color: var(--midgrey);
     width: 100%;
     display: block;
+}
+
+span.tip a { 
+    text-decoration: underline;
+    color: var(--midgrey);
+}
+
+span.tip a:hover {
+    color: var(--darkgrey);
 }
