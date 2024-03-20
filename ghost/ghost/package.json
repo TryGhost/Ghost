@@ -28,7 +28,7 @@
     "reflect-metadata": "0.1.13",
     "sinon": "^17.0.1",
     "ts-node": "10.9.2",
-    "typescript": "5.4.2"
+    "typescript": "5.4.3"
   },
   "dependencies": {
     "@nestjs/common": "10.3.3",
