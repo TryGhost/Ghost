@@ -24,9 +24,9 @@ module.exports = function setupParentApp() {
     parentApp.use(mw.ghostLocals);
 
     // Enable request queuing if configured
-    const queueConfig = config.get('optimization')?.requestQueue;
+    const queueConfig = config.get('optimization:requestQueue');
 
-    if (queueConfig) {
+    if (queueConfig?.enabled === true) {
         parentApp.use(mw.queueRequest(queueConfig));
     }
 
