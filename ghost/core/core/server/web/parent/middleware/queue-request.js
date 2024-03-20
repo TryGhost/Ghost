@@ -1,7 +1,11 @@
-const debug = require('@tryghost/debug')('middleware:queue-request');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const path = require('node:path');
 const expressQueue = require('express-queue');
+
+const debug = (message) => {
+    logging.debug(`[queue-request] ${message}`);
+};
 
 module.exports = function queueRequest(
     config,
@@ -13,7 +17,7 @@ module.exports = function queueRequest(
         });
     }
 
-    debug('Initialising middleware with config:', config);
+    debug(`Initialising queueRequest middleware with config: ${JSON.stringify(config)}`);
 
     // @see https://github.com/alykoshin/express-queue#usage
     const queue = queueFactory({
