@@ -3001,7 +3001,7 @@ Share publication modal */
     margin: 32px 0 0 0;
 }
 
-.gh-share-links li {
+.gh-share-links li { 
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--darkgrey);
@@ -3014,7 +3014,7 @@ Share publication modal */
     border-bottom: 0 none;
 }
 
-.gh-share-link {
+a.gh-share-link {
     color: var(--darkgrey);
     padding: 16px 0;
     display: flex;
@@ -3042,7 +3042,6 @@ a.gh-share-link:hover .gh-onboarding-item-action {
     height: 16px;
     fill: var(--midgrey);
     margin: 0 16px 0 0;
-    stroke-width: 1.5;
 }
 
 span.tip {
@@ -3056,11 +3055,7 @@ span.tip {
     display: block;
 }
 
-span.tip a {
+span.tip a { 
     text-decoration: underline;
     color: var(--midgrey);
-}
-
-span.tip a:hover {
-    color: var(--darkgrey);
 }
