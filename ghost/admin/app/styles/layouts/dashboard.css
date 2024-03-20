@@ -2812,6 +2812,10 @@ Onboarding checklist */
     margin-bottom: -12px;
 }
 
+.gh-onboarding-item:hover {
+    cursor: pointer;
+}
+
 .gh-onboarding-item--next {
     margin: 0px -32px 6px;
     background: white;
@@ -3009,6 +3013,10 @@ Share publication modal */
 .gh-share-links li:last-child a {
     border-bottom: 0 none;
 }
+
+/* .gh-share-links li .gh-onboarding-item-action svg path {
+    fill: var(--midgrey)
+} */
 
 a.gh-share-link {
     color: var(--darkgrey);
