@@ -31,4 +31,9 @@ export default class OnboardingChecklist extends Component {
             break;
         }
     }
+
+    @action
+    closeModal() {
+        this.closeModal();
+    }
 }
