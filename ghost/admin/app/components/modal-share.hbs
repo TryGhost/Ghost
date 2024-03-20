@@ -93,12 +93,53 @@
             <div class="gh-site-icon"><img src={{get-setting "icon"}} alt="" role="presentation" /></div>
           {{/if}}
 
-          <div class="gh-site-title">{{get-setting "title"}}
-              <span>•</span>
+          <div class="gh-post-bookmark-site-title">
+            {{get-setting "title"}}
           </div>
         </div>
       </div>
       {{/let}}
     </div>
   </div>
+
+  <span class="tip">You can set your publication icon, cover image and description in Settings</span>
+
+  <ul class="gh-share-links">
+    <li>
+      <span>
+        {{svg-jar "link"}}
+      </span>
+      Copy a link to your publication
+      <div class="gh-dashboard-onboarding-item-action">
+        {{svg-jar "arrow-right"}}
+      </div>
+    </li>
+    <li>
+      <span>
+        {{svg-jar "social-x"}}
+      </span>
+      Share on X
+      <div class="gh-dashboard-onboarding-item-action">
+        {{svg-jar "arrow-right"}}
+      </div>
+    </li>
+    <li>
+      <span>
+        {{svg-jar "social-facebook"}}
+      </span>
+      Share on Facebook
+      <div class="gh-dashboard-onboarding-item-action">
+        {{svg-jar "arrow-right"}}
+      </div>
+    </li>
+    <li>
+      <span>
+        {{svg-jar "social-linkedin"}}
+      </span>
+      Share on LinkedIn
+      <div class="gh-dashboard-onboarding-item-action">
+        {{svg-jar "arrow-right"}}
+      </div>
+    </li>
+  </ul>
 
