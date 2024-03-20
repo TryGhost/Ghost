@@ -3066,10 +3066,6 @@ Share publication modal */
     transition: all .3s ease-in-out;
 }
 
-/* .gh-share-links li .gh-onboarding-item-action svg path {
-    fill: var(--midgrey)
-} */
-
 a.gh-share-link {
     color: var(--darkgrey);
     padding: 16px 0;
@@ -3106,4 +3102,8 @@ span.tip {
 span.tip a { 
     text-decoration: underline;
     color: var(--midgrey);
+}
+
+span.tip a:hover {
+    color: var(--darkgrey);
 }
