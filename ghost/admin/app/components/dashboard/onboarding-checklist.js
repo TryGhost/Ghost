@@ -39,7 +39,11 @@ export default class OnboardingChecklist extends Component {
     }
 
     @action
-    closeModal() {
-        this.closeModal();
+    close(from) {
+        if (from === 'background') {
+            return;
+        }
+
+        this.router.transitionTo('dashboard');
     }
 }
