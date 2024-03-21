@@ -1,14 +1,20 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {tracked} from '@glimmer/tracking';
 
 export default class OnboardingChecklist extends Component {
+    @inject config;
     @tracked customizePublication = false;
     @tracked createPost = false;
     @tracked buildAudience = false;
     @tracked tellWorld = false;
 
     @tracked showMemberTierModal = false;
+
+    get siteUrl() {
+        return this.config.blogTitle;
+    }
 
     @action
     completeStep(step) {
@@ -30,5 +36,10 @@ export default class OnboardingChecklist extends Component {
         default:
             break;
         }
+    }
+
+    @action
+    closeModal() {
+        this.closeModal();
     }
 }
