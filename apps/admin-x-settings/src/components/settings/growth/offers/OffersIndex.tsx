@@ -1,9 +1,9 @@
 import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {ButtonGroup, ButtonProps} from '@tryghost/admin-x-design-system';
+import {ButtonGroup, ButtonProps, showToast} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {NoValueLabel} from '@tryghost/admin-x-design-system';
 import {SortMenu} from '@tryghost/admin-x-design-system';
-import {Tier, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {Tooltip} from '@tryghost/admin-x-design-system';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -140,6 +140,8 @@ export const OffersIndexModal = () => {
             }
         });
 
+    const paidActiveTiers = getPaidActiveTiers(allTiers || []);
+
     const listLayoutOutput = <div className='overflow-x-auto'>
         <table className='m-0 w-full'>
             {(selectedTab === 'active' && activeOffers.length > 0) || (selectedTab === 'archived' && archivedOffers.length > 0) ?
@@ -198,7 +200,16 @@ export const OffersIndexModal = () => {
             icon: 'add',
             label: 'New offer',
             color: 'green',
-            onClick: () => updateRoute('offers/new')
+            onClick: () => {
+                if (paidActiveTiers.length === 0) {
+                    showToast({
+                        type: 'neutral',
+                        message: 'You must have an active tier to create an offer.'
+                    });
+                } else {
+                    updateRoute('offers/new');
+                }
+            }
         }
     ];
 
