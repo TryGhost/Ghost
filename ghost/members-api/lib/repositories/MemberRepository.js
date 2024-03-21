@@ -1032,9 +1032,11 @@ module.exports = class MemberRepository {
             logging.warn(`Subscription ${subscriptionData.subscription_id} is marked for deletion, skipping linking.`);
 
             if (model) {
+                // Delete all paid subscription events manually for this subscription
+                // This is the only related event without a foreign key constraint
                 await this._MemberPaidSubscriptionEvent.query().where('subscription_id', model.id).delete().transacting(options.transacting);
 
-                // Delete all paid subscription events for this subscription
+                // Delete the subscription in the database because we don't want to show it in the UI or in our data calculations
                 await model.destroy(options);
             }
         } else if (model) {
