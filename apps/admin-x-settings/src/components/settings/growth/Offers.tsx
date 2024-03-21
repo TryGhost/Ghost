@@ -66,17 +66,17 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateRoute(`offers/edit/${offerId}`);
     };
 
-    let offerButtonText = "Manage offers";
+    let offerButtonText = 'Manage offers';
     let offerButtonLink = openOfferListModal;
-    let descriptionButtonText = "Learn more";
-    if(allOffers.length > 0) {
+    let descriptionButtonText = 'Learn more';
+    if (allOffers.length > 0) {
         offerButtonText = 'Manage offers';
         offerButtonLink = openOfferListModal;
-    } else if(paidActiveTiers.length == 0 && allOffers.length == 0) {
+    } else if (paidActiveTiers.length === 0 && allOffers.length === 0) {
         offerButtonText = '';
         offerButtonLink = openTiers;
-        descriptionButtonText = "";
-    } else if(paidActiveTiers.length > 0 && allOffers.length == 0) {
+        descriptionButtonText = '';
+    } else if (paidActiveTiers.length > 0 && allOffers.length === 0) {
         offerButtonText = 'Add offers';
         offerButtonLink = openAddModal;
     }
@@ -113,13 +113,13 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 </div> :
                 null
             }
-            {paidActiveTiers.length == 0 && allOffers.length == 0 ?
+            {paidActiveTiers.length === 0 && allOffers.length === 0 ?
                 (<div>
                     <div className='items-center-mt-1 flex justify-between'>
-                    <>You must have an active tier to create offers.</>
+                        <>You must have an active tier to create an offer.</>
                     </div>
                     <div className='items-center-mt-1 flex justify-between'>
-                    <Button color='green' label='Manage tiers' link linkWithPadding onClick={openTiers} />
+                        <Button color='green' label='Manage tiers' link linkWithPadding onClick={openTiers} />
                     </div>
                 </div>
                 ) : ''
