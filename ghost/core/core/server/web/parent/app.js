@@ -23,6 +23,13 @@ module.exports = function setupParentApp() {
     // @TODO: figure out if this is really needed everywhere? Is it not frontend only...
     parentApp.use(mw.ghostLocals);
 
+    // Enable request queuing if configured
+    const queueConfig = config.get('optimization:requestQueue');
+
+    if (queueConfig?.enabled === true) {
+        parentApp.use(mw.queueRequest(queueConfig));
+    }
+
     debug('ParentApp setup end');
 
     return parentApp;
