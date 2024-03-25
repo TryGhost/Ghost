@@ -31,7 +31,7 @@ const WEBSOCKET_ENDPOINT = params.get('multiplayerEndpoint') || 'ws://localhost:
 const WEBSOCKET_ID = params.get('multiplayerId') || '0';
 
 const cardConfig = {
-    unsplash: {defaultHeaders: defaultUnsplashHeaders},
+    unsplash: defaultUnsplashHeaders,
     fetchEmbed: fetchEmbed,
     tenor: tenorConfig,
     fetchAutocompleteLinks: () => Promise.resolve([

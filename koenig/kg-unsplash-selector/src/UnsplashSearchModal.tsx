@@ -15,7 +15,7 @@ interface UnsplashModalProps {
     unsplashProviderConfig: DefaultHeaderTypes | null;
   }
 
-const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageInsert, unsplashProviderConfig}) => {
+export const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageInsert, unsplashProviderConfig}) => {
     const unsplashProvider = useMemo(() => {
         if (!unsplashProviderConfig) {
             return new InMemoryUnsplashProvider();
@@ -191,5 +191,3 @@ const UnsplashSearchModal : React.FC<UnsplashModalProps> = ({onClose, onImageIns
         </UnsplashSelector>
     );
 };
-
-export default UnsplashSearchModal;

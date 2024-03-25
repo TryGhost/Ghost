@@ -26,7 +26,8 @@ export default (function viteDemoConfig() {
                 '@tryghost/kg-clean-basic-html',
                 '@tryghost/kg-default-transforms',
                 '@tryghost/kg-markdown-html-renderer',
-                '@tryghost/kg-simplemde'
+                '@tryghost/kg-simplemde',
+                '@tryghost/kg-unsplash-selector'
             ]
         },
         build: {

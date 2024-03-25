@@ -1,6 +1,6 @@
 import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
 import React from 'react';
-import UnsplashModal from './UnsplashModal.jsx';
+import UnsplashModal from './file-selectors/UnsplashModal.jsx';
 import generateEditorState from '../../utils/generateEditorState';
 import {$createNodeSelection, $getNodeByKey, $setSelection} from 'lexical';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -11,7 +11,6 @@ const UnsplashPlugin = ({nodeKey, isModalOpen = true}) => {
     const [isOpen, setIsOpen] = React.useState(isModalOpen);
 
     const onClose = () => {
-        // remove the image node from the editor
         if (nodeKey) {
             editor.update(() => {
                 const node = $getNodeByKey(nodeKey);
