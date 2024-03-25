@@ -130,9 +130,12 @@ const InviteUserModal = NiceModal.create(() => {
             updateRoute('staff?tab=invited');
         } catch (e) {
             setSaveState('error');
-
+            let message = 'Your invitation failed to send. If the problem persists, please contact support.';
+            if (e.data?.errors?.[0]?.type === 'EmailError') {
+                message = 'Your invitation failed to send. Please check your Mailgun configuration. If the problem persists, contact support.';
+            }
             showToast({
-                message: `Failed to send invitation to ${email}`,
+                message,
                 type: 'error'
             });
             handleError(e, {withToast: false});
