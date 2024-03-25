@@ -2977,6 +2977,10 @@ Share publication modal */
 
 .share-card-image img {
     border-radius: 6px 6px 0 0;
+    width: 100%;
+    height: 100%;
+    max-height: 196px;
+    object-fit: cover;
 }
 
 .share-card-content {
@@ -2989,59 +2993,64 @@ Share publication modal */
     font-weight: 600;
 }
 
-.share-card-description {
-
+.copy-publication-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 24px;
+    background: #fafafb;
+    border: 1px solid var(--whitegrey);
+    border-radius: 4px;
+    padding: 8px 16px;
+    min-height: 48px;
 }
 
 
 
-.gh-share-links {
+.share-links {
     list-style: none;
     padding: 0;
-    margin: 32px 0 0 0;
+    margin: 16px 0 0 0;
+    display: flex;
+    flex-direction: row;
 }
 
-.gh-share-links li { 
+.share-links li { 
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--darkgrey);
     line-height: 1.5;
     width: 100%;
+    margin: 0 8px 0 0;
+    vertical-align: middle;
+}
+
+.share-links li:last-child {
     margin: 0;
 }
 
-.gh-share-links li:last-child a {
-    border-bottom: 0 none;
+.share-links li a { 
+    display: block;
+    padding: 20px 0;
+    text-align: center;
+    border: 1px solid var(--whitegrey);
+    border-radius: 4px;
 }
 
-a.gh-share-link {
-    color: var(--darkgrey);
-    padding: 16px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #ebeef0;
+.share-links li a:hover {
+    box-shadow: 0 2px 4px rgb(0 0 0 / 7%);
 }
 
-a.gh-share-link:hover .gh-onboarding-item-action {
-    transform: translateX(5px);
+.share-links li span {
+    vertical-align: middle;
+    height: 20px;
+    display: block;
 }
 
-.gh-share-link-content {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-}
-
-.gh-share-links li span {
-    display: flex;
-}
-
-.gh-share-links li span svg {
-    width: 16px;
-    height: 16px;
+.share-links li span svg {
+    width: 20px;
+    height: 20px;
     fill: var(--midgrey);
-    margin: 0 16px 0 0;
 }
 
 span.tip {
