@@ -30,13 +30,13 @@
 
   <div class="copy-publication-link">
     <span>
-      http://danielvanderwinden.ghost.io
+      {{ this.config.blogUrl }}
     </span>
     <GhTaskButton
       data-test-button="copy-share-link"
       @buttonText="Copy"
       @task={{this.copySiteUrl}}
-      @successText="Link copied"
+      @successText="Copied!"
       @successClass="gh-share-link-success"
       @class="gh-share-link" />
     </div>
