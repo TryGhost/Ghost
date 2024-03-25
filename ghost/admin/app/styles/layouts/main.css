@@ -1444,14 +1444,13 @@
     display: flex;
     align-items: center;
     overflow: hidden;
-    margin: -8px 0 0 0;
-    padding: 0;
+    margin: -0.1em 0 0;
+    padding: 0 6px 0 0;
     text-overflow: ellipsis;
-    white-space: nowrap;
     font-size: 3.2rem;
-    line-height: 1.3em;
+    line-height: 1.25em;
     font-weight: 700;
-    letter-spacing: -0.05em;
+    letter-spacing: -0.025em;
     /* match button height to avoid jump on navigation between screens*/
     min-height: 35px;
     color: var(--black);
