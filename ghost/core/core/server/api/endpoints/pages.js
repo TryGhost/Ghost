@@ -122,7 +122,7 @@ module.exports = {
             return models.Post.add(frame.data.pages[0], frame.options)
                 .then((model) => {
                     if (model.get('status') === 'published') {
-                        this.headers.cacheInvalidate = true;
+                        frame.setHeader('X-Cache-Invalidate', '/*');
                     }
 
                     return model;
@@ -166,7 +166,13 @@ module.exports = {
         async query(frame) {
             const model = await models.Post.edit(frame.data.pages[0], frame.options);
 
-            this.headers.cacheInvalidate = postsService.handleCacheInvalidation(model);
+            const cacheInvalidation = postsService.handleCacheInvalidation(model);
+
+            if (cacheInvalidation === true) {
+                frame.setHeader('X-Cache-Invalidate', '/*');
+            } else if (cacheInvalidation.value) {
+                frame.setHeader('X-Cache-Invalidate', cacheInvalidation.value);
+            }
 
             return model;
         }

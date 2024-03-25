@@ -1,0 +1,89 @@
+<div class="gh-onboarding-wrapper">
+    <div class="gh-onboarding-header"> 
+        <video width="100" height="100" loop autoplay muted playsinline preload="metadata" style="width: 100px; height: 100px; margin-bottom: 24px;">
+            <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
+        </video>
+        <h2 class="gh-canvas-title">{{this.siteUrl}} is ready to go!</h2>
+        <p>Let’s set your brand new publication up for success.</p>
+    </div>
+
+    <div class="gh-onboarding-items">
+        <div>
+            {{!-- Step 1 --}}
+            <div class="gh-onboarding-item gh-onboarding-item--completed">                                                    
+                <div class="gh-onboarding-item-content">
+                    {{svg-jar "rocket" }}
+                    <div class="gh-onboarding-item-details">
+                        <span class="gh-onboarding-item-title">Start a new Ghost publication</span>
+                    </div>
+                </div>
+                <div class="gh-onboarding-item-checkmark">
+                    {{svg-jar "check-circle-simple" }}
+                </div>
+            </div>
+            {{!-- Step 2 --}}
+            <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup" class="gh-onboarding-item gh-onboarding-item--next">  
+                        <div class="gh-onboarding-item-content">
+                            {{svg-jar "brush" }}
+                            <div class="gh-onboarding-item-details">
+                                <span class="gh-onboarding-item-title">Customize your publication</span>
+                                <span class="gh-onboarding-item-description">Match the look and feel to your style and make it yours.</span>
+                            </div>
+                        </div>
+                        <div class="gh-onboarding-item-action">
+                            {{svg-jar "arrow-right-tail" }}
+                        </div>
+            </LinkTo>
+            {{!-- Step 3 --}}
+            <LinkTo @route="lexical-editor.new" @model="post" class="gh-onboarding-item"> 
+                    <div class="gh-onboarding-item-content">
+                        {{svg-jar "writing" }}
+                        <div class="gh-onboarding-item-details">
+                            <span class="gh-onboarding-item-title">Create your first post</span>
+                            <span class="gh-onboarding-item-description">Explore the editor and tell your story.</span>
+                        </div>
+                    </div>
+                    <div class="gh-onboarding-item-action">
+                        {{svg-jar "arrow-right-tail" }}
+                    </div>
+            </LinkTo>
+            {{!-- Step 4 --}}
+            <LinkTo @route="members" class="gh-onboarding-item">
+                    <div class="gh-onboarding-item-content">
+                        {{svg-jar "member-add" }}
+                        <div class="gh-onboarding-item-details">
+                            <span class="gh-onboarding-item-title">Build your audience</span>
+                            <span class="gh-onboarding-item-description">Add members and grow your readership.</span>
+                        </div>
+                    </div>
+                    <div class="gh-onboarding-item-action">
+                        {{svg-jar "arrow-right-tail" }}
+                    </div>
+            </LinkTo>
+            {{!-- Step 5 --}}
+            <div role="button" {{on "click" (toggle-action "showShareModal" this)}} class="gh-onboarding-item">                                                    
+                <div class="gh-onboarding-item-content">
+                    {{svg-jar "megaphone" }}
+                    <div class="gh-onboarding-item-details">
+                        <span class="gh-onboarding-item-title">Share your publication</span>
+                        <span class="gh-onboarding-item-description">Share your publication on social media.</span>
+                    </div>
+                </div>
+                <div class="gh-onboarding-item-action">
+                    {{svg-jar "arrow-right-tail" }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p class="gh-onboarding-help">Need some more help? Check out our <a href="https://ghost.org/help?utm_source=admin&utm_campaign=onboarding" target="_blank" rel="noopener noreferrer">Help center</a></p>
+    
+    <a href="#" class="gh-onboarding-skip">Skip onboarding</a>
+</div>
+
+{{#if this.showShareModal}}
+<GhFullscreenModal @modal="share"
+    @close={{this.close}}
+    @modifier="action wide"
+     />
+{{/if}}

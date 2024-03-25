@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {ColorPickerField, Heading, Hint, ImageUpload, Select, SettingGroupContent, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {CustomThemeSetting} from '@tryghost/admin-x-framework/api/customThemeSettings';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
@@ -10,6 +10,21 @@ const ThemeSetting: React.FC<{
     setting: CustomThemeSetting,
     setSetting: <Setting extends CustomThemeSetting>(value: Setting['value']) => void
 }> = ({setting, setSetting}) => {
+    const [fieldValues, setFieldValues] = useState<{ [key: string]: string | null }>({});
+    useEffect(() => {
+        const valueAsString = setting.value === null ? '' : String(setting.value);
+        setFieldValues(values => ({...values, [setting.key]: valueAsString}));
+    }, [setting]);
+
+    const handleBlur = (key: string) => {
+        if (fieldValues[key] !== undefined) {
+            setSetting(fieldValues[key]);
+        }
+    };
+
+    const handleChange = (key: string, value: string) => {
+        setFieldValues(values => ({...values, [key]: value}));
+    };
     const {mutateAsync: uploadImage} = useUploadImage();
     const handleError = useHandleError();
 
@@ -28,8 +43,9 @@ const ThemeSetting: React.FC<{
             <TextField
                 hint={setting.description}
                 title={humanizeSettingKey(setting.key)}
-                value={setting.value || ''}
-                onChange={event => setSetting(event.target.value)}
+                value={fieldValues[setting.key] || ''}
+                onBlur={() => handleBlur(setting.key)}
+                onChange={event => handleChange(setting.key, event.target.value)}
             />
         );
     case 'boolean':

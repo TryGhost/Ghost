@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import React, {useEffect, useRef, useState} from 'react';
 
 type IframeBufferingProps = {
@@ -12,7 +13,8 @@ type IframeBufferingProps = {
 
 const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, className, height, width, parentClassName, testId, addDelay = false}) => {
     const [visibleIframeIndex, setVisibleIframeIndex] = useState(0);
-    const iframes = [useRef<HTMLIFrameElement>(null), useRef<HTMLIFrameElement>(null)];
+    const iframes = [useRef<HTMLIFrameElement>(null), useRef<HTMLIFrameElement>(null)]; // eslint-disable-line
+    const [scrollPosition, setScrollPosition] = useState(0);
 
     useEffect(() => {
         const invisibleIframeIndex = visibleIframeIndex === 0 ? 1 : 0;
@@ -43,6 +45,35 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, class
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [generateContent]);
+
+    useEffect(() => {
+        const iframe = iframes[visibleIframeIndex].current;
+        const onScroll = () => {
+            setScrollPosition(iframe?.contentWindow?.scrollY || 0);
+        };
+
+        iframe?.contentWindow?.addEventListener('scroll', onScroll);
+
+        return () => {
+            iframe?.contentWindow?.removeEventListener('scroll', onScroll);
+        };
+    }, [visibleIframeIndex, iframes]);
+
+    useEffect(() => {
+        const iframe = iframes[visibleIframeIndex].current;
+
+        if (iframe) {
+            // refs https://ghost-foundation.sentry.io/issues/5024564293/
+            // Customer reported that code they injected caused Settings to crash.
+            // According to Sentry this the line that caused the crash.
+            // We are adding a try catch block to attempt to catch the error for further investigation and prevent the crash.
+            try {
+                iframe.contentWindow?.scrollTo(0, scrollPosition);
+            } catch (e) {
+                Sentry.captureException(e);
+            }
+        }
+    }, [scrollPosition, visibleIframeIndex, iframes]);
 
     return (
         <div className={parentClassName} data-testid={testId}>

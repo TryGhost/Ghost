@@ -2760,3 +2760,307 @@ Dashboard Mentions */
     font-size: 1.4rem;
     font-weight: 500;
 }
+
+/* ---------------------------------
+Onboarding checklist */
+
+.gh-onboarding-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    min-height: 100vh;
+    position: relative;
+}
+
+.gh-onboarding-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.gh-onboarding-header p {
+    margin-top: 8px;
+    margin-bottom: 0;
+    color: var(--midgrey);
+    font-size: 1.5rem;
+}
+
+.gh-onboarding-items {
+    max-width: 540px;
+    width: 100%;
+    border-radius: 6px;
+    padding: 16px 24px;
+    /* box-shadow: 0px 0px 16px 4px rgba(0, 0, 0, 0.04); */
+    border: 1px solid #ebeef0;
+    /* box-shadow: -7px -6px 42px 8px rgba(75,225,226,.28),7px 6px 42px 8px rgba(202,103,255,.32); */
+}
+
+.gh-onboarding-item {
+    padding: 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ebeef0;
+}
+
+.gh-onboarding-item:first-child {
+    margin-top: -12px;
+}
+
+.gh-onboarding-item:last-child {
+    border-bottom: 0 none;
+    margin-bottom: -12px;
+}
+
+.gh-onboarding-item:hover {
+    cursor: pointer;
+}
+
+.gh-onboarding-item--next {
+    margin: 0px -32px 6px;
+    background: white;
+    padding: 24px 32px;
+    box-shadow: 0px 1px 0px rgba(17,17,26,0.05), 0px 0px 8px rgba(17,17,26,0.1);
+    border-radius: 6px;
+    border-bottom: none;
+}
+
+.gh-onboarding-item:has(+ .gh-onboarding-item--next) {
+    border-bottom: none;
+}
+
+.gh-onboarding-item:not(.gh-onboarding-item--next) .gh-onboarding-item-description {
+    display: none;
+}
+
+.gh-onboarding-item--completed .gh-onboarding-item-content {
+    opacity: 0.2;
+}
+
+.gh-onboarding-item-content {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-width: 0;
+}
+
+.gh-onboarding-item-details {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.gh-onboarding-item-title {
+    font-weight: 700;
+    font-size: 1.6rem;
+    line-height: 1;
+    letter-spacing: 0;
+    color: #394047;
+    padding: 0 32px 0 0;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
+.gh-onboarding-item-description {
+    font-weight: 400;
+    color: var(--middarkgrey);
+    font-size: 1.5rem;
+    line-height: 1.4;
+    margin-top: 4px;
+}
+
+.gh-onboarding-item-action {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    min-width: 0;
+    transition: transform .15s;
+}
+
+.gh-onboarding-item:hover .gh-onboarding-item-action {
+    transform: translateX(5px);
+}
+
+.gh-onboarding-item-content svg {
+    width: 20px;
+    min-width: 20px;
+    height: auto;
+    margin: 0 16px 0 0;
+    color: #ae5aef;
+}
+
+.gh-onboarding-item-content svg path {
+    stroke: #ae5aef;
+    stroke-width: 1.5 !important;
+}
+
+.gh-onboarding-item--completed .gh-dashboard-onboarding-item-content svg {
+    color: var(--middarkgrey);
+}
+
+.gh-onboarding-item--completed .gh-onboarding-item-content svg path {
+    stroke: var(--middarkgrey);
+}
+
+.gh-onboarding-item-action svg {
+    width: 14px;
+    min-width: 14px;
+    height: 14px;
+}
+
+.gh-onboarding-item-action svg path {
+    fill: #ae5aef;
+}
+
+.gh-onboarding-item-checkmark {
+    display: flex;
+}
+
+.gh-onboarding-item-checkmark svg {
+    width: 20px;
+    height: auto;
+    margin-right: 1rem;
+}
+
+.gh-onboarding-item-checkmark svg path, .gh-onboarding-item-checkmark svg circle {
+    stroke: var(--green);
+}
+
+.gh-onboarding-help {
+    color: var(--midgrey);
+    margin-top: 24px;
+    font-size: 1.5rem;
+}
+
+.gh-onboarding-help a {
+    color: var(--midgrey);
+    text-decoration: underline;
+}
+
+.gh-onboarding-skip {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    bottom: 32px;
+    padding: 1px 14px;
+    border: 1px solid #e6e9eb;
+    color: var(--middarkgrey);
+    border-radius: 3px;
+    transition: all .2s ease;
+    white-space: nowrap;
+    height: 38px;
+    overflow: hidden;
+    transition: all .1s linear;
+}
+
+/* ---------------------------------
+Share publication modal */
+
+.gh-site-preview-container {
+    padding: 24px;
+    border-radius: 6px;
+    border: 1px solid var(--whitegrey);
+    background: var(--white);
+    transition: all .3s ease-in-out;
+}
+
+.gh-post-bookmark {
+    box-shadow: none;
+    border: 1px solid var(--whitegrey);
+}
+
+.gh-post-bookmark:hover {
+    box-shadow: none;
+    transform: none;
+}
+
+.gh-site-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+}
+
+.gh-site-icon img {
+    border-radius: 2px;
+}
+
+.gh-site-image {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin-bottom: 24px;
+}
+
+.gh-share-links {
+    list-style: none;
+    padding: 0;
+    margin: 32px 0 0 0;
+}
+
+.gh-share-links li { 
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--darkgrey);
+    line-height: 1.5;
+    width: 100%;
+    margin: 0;
+}
+
+.gh-share-links li:last-child a {
+    border-bottom: 0 none;
+}
+
+.gh-share-link {
+    color: var(--darkgrey);
+    padding: 16px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ebeef0;
+}
+
+a.gh-share-link:hover .gh-onboarding-item-action {
+    transform: translateX(5px);
+}
+
+.gh-share-link-content {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.gh-share-links li span {
+    display: flex;
+}
+
+.gh-share-links li span svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--midgrey);
+    margin: 0 16px 0 0;
+    stroke-width: 1.5;
+}
+
+span.tip {
+    font-size: 1.2rem;
+    font-weight: 400;
+    line-height: 1.5;
+    padding: 0;
+    margin-top: 8px;
+    color: var(--midgrey);
+    width: 100%;
+    display: block;
+}
+
+span.tip a { 
+    text-decoration: underline;
+    color: var(--midgrey);
+}
+
+span.tip a:hover {
+    color: var(--darkgrey);
+}

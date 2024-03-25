@@ -48,10 +48,6 @@ const features = [{
     description: 'Enables publishers to collect one-time payments',
     flag: 'tipsAndDonations'
 },{
-    title: 'Filter by email disabled',
-    description: 'Allows filtering members by email disabled',
-    flag: 'filterEmailDisabled'
-},{
     title: 'AdminX Demo',
     description: 'Adds a navigation link to the AdminX demo app',
     flag: 'adminXDemo'
@@ -60,9 +56,13 @@ const features = [{
     description: 'For self hosters, forces the usage of the mail.from config as from address for all outgoing emails',
     flag: 'newEmailAddresses'
 },{
-    title: 'Portal improvements',
-    description: 'Adds a bunch of improvements to portal and portal settings',
-    flag: 'portalImprovements'
+    title: 'Onboarding checklist',
+    description: 'Onboarding checklist that helps new customers get started',
+    flag: 'onboardingChecklist'
+},{
+    title: 'NestJS Playground',
+    description: 'Wires up the Ghost NestJS App to the Admin API',
+    flag: 'NestPlayground'
 }];
 
 const AlphaFeatures: React.FC = () => {

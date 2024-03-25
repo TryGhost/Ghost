@@ -947,6 +947,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
     const activeInterval = getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval});
 
     const isComplimentary = isComplimentaryMember({member});
+    const hasOnlyFree = hasOnlyFreeProduct({site});
 
     useEffect(() => {
         setSelectedProduct(defaultProductId);
@@ -955,10 +956,6 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
     useEffect(() => {
         onPlanSelect(null, selectedPrice.id);
     }, [selectedPrice.id, onPlanSelect]);
-
-    if (!portalPlans.includes('monthly') && !portalPlans.includes('yearly')) {
-        return null;
-    }
 
     if (products.length === 0) {
         if (isComplimentary) {
@@ -987,7 +984,7 @@ function ProductsSection({onPlanSelect, products, type = null, handleChooseSignu
         }}>
             <section className={className}>
 
-                {(!(hasOnlyFreeProduct({site})) ?
+                {(!(hasOnlyFree) ?
                     <ProductPriceSwitch
                         products={products}
                         selectedInterval={activeInterval}

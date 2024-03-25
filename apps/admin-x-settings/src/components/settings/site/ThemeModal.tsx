@@ -5,6 +5,7 @@ import OfficialThemes from './theme/OfficialThemes';
 import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
+import useQueryParams from '../../../hooks/useQueryParams';
 import {Breadcrumbs, Button, ConfirmationModal, FileUpload, LimitModal, Modal, PageHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {InstalledTheme, Theme, ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
@@ -57,6 +58,7 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     const {mutateAsync: uploadTheme} = useUploadTheme();
     const limiter = useLimiter();
     const handleError = useHandleError();
+    const refParam = useQueryParams().getParam('ref');
 
     const [uploadConfig, setUploadConfig] = useState<{enabled: boolean; error?: string}>();
 
@@ -78,7 +80,11 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
     }, [limiter]);
 
     const onClose = () => {
-        updateRoute('design/edit');
+        if (refParam) {
+            updateRoute(`design/edit?ref=${refParam}`);
+        } else {
+            updateRoute('design/edit');
+        }
     };
 
     const onThemeUpload = async (file: File) => {
@@ -293,6 +299,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
     const [isInstalling, setInstalling] = useState(false);
     const [installedFromMarketplace, setInstalledFromMarketplace] = useState(false);
     const {updateRoute} = useRouting();
+    const refParam = useQueryParams().getParam('ref');
 
     const modal = useModal();
     const {data: {themes} = {}} = useBrowseThemes();
@@ -349,7 +356,11 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                             });
                         }
                         confirmModal?.remove();
-                        updateRoute('design/edit');
+                        if (refParam) {
+                            updateRoute(`design/edit?ref=${refParam}`);
+                        } else {
+                            updateRoute('design/edit');
+                        }
                     } catch (e) {
                         handleError(e);
                     }
@@ -359,7 +370,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                 }
             });
         }
-    }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute, themes, installedFromMarketplace]);
+    }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute, themes, installedFromMarketplace, refParam]);
 
     if (!themes) {
         return;
@@ -430,7 +441,11 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                 prompt,
                 installedTheme: installedTheme!,
                 onActivate: () => {
-                    updateRoute('design/edit');
+                    if (refParam) {
+                        updateRoute(`design/edit?ref=${refParam}`);
+                    } else {
+                        updateRoute('design/edit');
+                    }
                 }
             });
         };
@@ -439,7 +454,11 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
     return (
         <Modal
             afterClose={() => {
-                updateRoute('design/edit');
+                if (refParam) {
+                    updateRoute(`design/edit?ref=${refParam}`);
+                } else {
+                    updateRoute('design/edit');
+                }
             }}
             animate={false}
             cancelLabel=''

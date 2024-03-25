@@ -1,11 +1,28 @@
-import {MOCKED_SITE_URL, MockedApi, initialize, mockAdminAuthFrame} from '../utils/e2e';
+import {MOCKED_SITE_URL, MockedApi, initialize, mockAdminAuthFrame, mockAdminAuthFrame204} from '../utils/e2e';
 import {expect, test} from '@playwright/test';
 
 const admin = MOCKED_SITE_URL + '/ghost/';
 
 test.describe('Auth Frame', async () => {
-    test('renders the auth frame', async ({page}) => {
+    test('skips rendering the auth frame with no comments', async ({page}) => {
         const mockedApi = new MockedApi({});
+        await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly',
+            admin
+        });
+
+        const iframeElement = await page.locator('iframe[data-frame="admin-auth"]');
+        await expect(iframeElement).toHaveCount(0);
+    });
+
+    test('renders the auth frame when there are comments', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+
         await initialize({
             mockedApi,
             page,
@@ -17,8 +34,11 @@ test.describe('Auth Frame', async () => {
         await expect(iframeElement).toHaveCount(1);
     });
 
-    test('has no admin options', async ({page}) => {
+    test('has no admin options when not signed in to Ghost admin', async ({page}) => {
+        await mockAdminAuthFrame204({page, admin});
+
         const mockedApi = new MockedApi({});
+
         mockedApi.addComment({
             html: '<p>This is comment 1</p>'
         });
@@ -45,7 +65,7 @@ test.describe('Auth Frame', async () => {
         const iframeElement = await page.locator('iframe[data-frame="admin-auth"]');
         await expect(iframeElement).toHaveCount(1);
 
-        const comments =  await frame.getByTestId('comment-component');
+        const comments = await frame.getByTestId('comment-component');
         await expect(comments).toHaveCount(5);
 
         const moreButtons = await frame.getByTestId('more-button');
@@ -86,7 +106,7 @@ test.describe('Auth Frame', async () => {
         await expect(iframeElement).toHaveCount(1);
 
         // Check if more actions button is visible on each comment
-        const comments =  await frame.getByTestId('comment-component');
+        const comments = await frame.getByTestId('comment-component');
         await expect(comments).toHaveCount(5);
 
         const moreButtons = await frame.getByTestId('more-button');
@@ -99,12 +119,12 @@ test.describe('Auth Frame', async () => {
         // Check comment2 is replaced with a hidden message
         const secondComment = comments.nth(1);
         await expect(secondComment).toHaveText('This comment has been hidden.');
-        await expect(secondComment).not.toContainText('This is comment 4');
+        await expect(secondComment).not.toContainText('This is comment 2');
 
         // Check can show it again
         await moreButtons.nth(1).click();
         await moreButtons.nth(1).getByText('Show comment').click();
-        await expect(secondComment).toContainText('This is comment 4');
+        await expect(secondComment).toContainText('This is comment 2');
     });
 
     test('has admin options when signed in to Ghost admin and as a member', async ({page}) => {
@@ -143,7 +163,7 @@ test.describe('Auth Frame', async () => {
         await expect(iframeElement).toHaveCount(1);
 
         // Check if more actions button is visible on each comment
-        const comments =  await frame.getByTestId('comment-component');
+        const comments = await frame.getByTestId('comment-component');
         await expect(comments).toHaveCount(5);
 
         const moreButtons = await frame.getByTestId('more-button');
@@ -156,12 +176,12 @@ test.describe('Auth Frame', async () => {
         // Check comment2 is replaced with a hidden message
         const secondComment = comments.nth(1);
         await expect(secondComment).toHaveText('This comment has been hidden.');
-        await expect(secondComment).not.toContainText('This is comment 4');
+        await expect(secondComment).not.toContainText('This is comment 2');
 
         // Check can show it again
         await moreButtons.nth(1).click();
         await moreButtons.nth(1).getByText('Show comment').click();
-        await expect(secondComment).toContainText('This is comment 4');
+        await expect(secondComment).toContainText('This is comment 2');
     });
 });
 

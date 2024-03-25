@@ -260,17 +260,25 @@ describe('Signup', () => {
                 site: FixtureSite.singleTier.onlyFreePlan
             });
 
+            const freeProduct = FixtureSite.singleTier.onlyFreePlan.products.find(p => p.type === 'free');
+            const benefitText = freeProduct.benefits[0].name;
+
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
             expect(siteTitle).toBeInTheDocument();
             expect(emailInput).toBeInTheDocument();
             expect(nameInput).toBeInTheDocument();
-            expect(freePlanTitle).not.toBeInTheDocument();
             expect(monthlyPlanTitle).not.toBeInTheDocument();
             expect(yearlyPlanTitle).not.toBeInTheDocument();
             expect(fullAccessTitle).not.toBeInTheDocument();
             expect(signinButton).toBeInTheDocument();
             expect(submitButton).not.toBeInTheDocument();
+
+            // Free tier title, description and benefits should render
+            expect(freePlanTitle).toBeInTheDocument();
+            await within(popupIframeDocument).findByText(freeProduct.description);
+            await within(popupIframeDocument).findByText(benefitText);
+
             submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign up'});
 
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
@@ -613,14 +621,22 @@ describe('Signup', () => {
                 site: FixtureSite.multipleTiers.onlyFreePlan
             });
 
+            const freeProduct = FixtureSite.multipleTiers.onlyFreePlan.products.find(p => p.type === 'free');
+            const benefitText = freeProduct.benefits[0].name;
+
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
             expect(siteTitle).toBeInTheDocument();
             expect(emailInput).toBeInTheDocument();
             expect(nameInput).toBeInTheDocument();
-            expect(freePlanTitle.length).toBe(0);
             expect(signinButton).toBeInTheDocument();
             expect(submitButton).not.toBeInTheDocument();
+
+            // Free tier title, description and benefits should render
+            expect(freePlanTitle.length).toBe(1);
+            await within(popupIframeDocument).findByText(freeProduct.description);
+            await within(popupIframeDocument).findByText(benefitText);
+
             submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign up'});
 
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});

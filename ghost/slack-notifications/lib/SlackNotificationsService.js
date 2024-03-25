@@ -27,6 +27,7 @@ const {MilestoneCreatedEvent} = require('@tryghost/milestones');
  * @typedef {object} config
  * @prop {boolean} isEnabled
  * @prop {URL} webhookUrl
+ * @prop {number} minThreshold
  */
 
 module.exports = class SlackNotificationsService {
@@ -71,6 +72,7 @@ module.exports = class SlackNotificationsService {
             && event.data.milestone
             && this.#config.isEnabled
             && this.#config.webhookUrl
+            && this.#config.minThreshold < event.data.milestone.value
         ) {
             try {
                 await this.#slackNotifications.notifyMilestoneReceived(event.data);
