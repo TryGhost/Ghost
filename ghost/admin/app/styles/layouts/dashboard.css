@@ -2960,40 +2960,40 @@ Onboarding checklist */
 /* ---------------------------------
 Share publication modal */
 
-.gh-site-preview-container {
-    padding: 24px;
+.share-card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     border-radius: 6px;
     border: 1px solid var(--whitegrey);
     background: var(--white);
     transition: all .3s ease-in-out;
 }
 
-.gh-post-bookmark {
-    box-shadow: none;
-    border: 1px solid var(--whitegrey);
+.share-card-image {
+    
 }
 
-.gh-post-bookmark:hover {
-    box-shadow: none;
-    transform: none;
+.share-card-image img {
+    border-radius: 6px 6px 0 0;
 }
 
-.gh-site-icon {
-    width: 16px;
-    height: 16px;
-    margin-right: 8px;
-}
-
-.gh-site-icon img {
-    border-radius: 2px;
-}
-
-.gh-site-image {
+.share-card-content {
+    padding: 24px;
     width: 100%;
-    height: auto;
-    border-radius: 6px;
-    margin-bottom: 24px;
 }
+
+.share-card-title {
+    font-size: 1.7rem;
+    font-weight: 600;
+}
+
+.share-card-description {
+
+}
+
+
 
 .gh-share-links {
     list-style: none;
@@ -3045,7 +3045,7 @@ a.gh-share-link:hover .gh-onboarding-item-action {
 }
 
 span.tip {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     font-weight: 400;
     line-height: 1.5;
     padding: 0;
