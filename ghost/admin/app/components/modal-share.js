@@ -10,6 +10,22 @@ export default ModalComponent.extend({
         copyTextToClipboard(this.config.blogUrl);
         yield timeout(1000);
         return true;
-    })
+    }),
+
+    get encodedUrl() {
+        return encodeURIComponent(this.config.blogUrl);
+    },
+
+    get facebookShareUrl() {
+        return `https://www.facebook.com/sharer/sharer.php?u=${this.encodedUrl}`;
+    },
+
+    get linkedInShareUrl() {
+        return `https://www.linkedin.com/sharing/share-offsite/?url=${this.encodedUrl}`;
+    },
+
+    get xShareUrl() {
+        return `https://twitter.com/intent/tweet?url=${this.encodedUrl}`;
+    }
 
 });
