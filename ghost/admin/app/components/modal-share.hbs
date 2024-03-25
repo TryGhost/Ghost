@@ -28,56 +28,43 @@
 
   <span class="tip">You can set your publication’s cover image and description in <a href="settings/design/edit/?ref=share-modal" title="Adjust settings">Settings</a></span>
 
-  <ul class="gh-share-links">
+  <div class="copy-publication-link">
+    <span>
+      http://danielvanderwinden.ghost.io
+    </span>
+    <GhTaskButton
+      data-test-button="copy-share-link"
+      @buttonText="Copy"
+      @task={{this.copySiteUrl}}
+      @successText="Link copied"
+      @successClass="gh-share-link-success"
+      @class="gh-share-link" />
+    </div>
+
+  <ul class="share-links">
     <li>
-      <a href="http://google.com" target="_blank" rel="noopener noreferrer" class="gh-share-link" title="Copy link"> 
-        <div class="gh-share-link-content">
-          <span>
-            {{svg-jar "copy" }}
-          </span>
-          Copy a link to your publication
-        </div>
-        <div class="gh-onboarding-item-action">
-          {{svg-jar "arrow-right-tail"}}
-        </div>
-      </a>
-    </li>
-    <li>
-      <a href="https://twitter.com/intent/tweet?text=This%20is%20an%20example%20of%20a%20pre-written%20tweet" target="_blank" rel="noopener noreferrer" class="gh-share-link" title="Share your publication on X">
-        <div class="gh-share-link-content">
-          <span>
-            {{svg-jar "social-x"}}
-          </span>
-          Share on X
-        </div>
-        <div class="gh-onboarding-item-action">
-          {{svg-jar "arrow-right-tail"}}
-        </div>
+      <a href="https://twitter.com/intent/tweet?text=This%20is%20an%20example%20of%20a%20pre-written%20tweet" target="_blank" rel="noopener noreferrer" class="share-link" title="Share your publication on X">
+        <span>
+          {{svg-jar "social-x"}}
+        </span>
       </a>
     </li>
     <li>
       <a href="http://facebook.com" target="_blank" rel="noopener noreferrer" class="gh-share-link" title="Share your publication on Facebook">
-        <div class="gh-share-link-content">
+        <div class="share-link-content">
           <span>
             {{svg-jar "social-facebook"}}
           </span>
-          Share on Facebook
         </div>
-        <div class="gh-onboarding-item-action">
-          {{svg-jar "arrow-right-tail"}}
-        </div>
+  
       </a>
     </li>
     <li>
       <a href="http://linkedin.com" target="_blank" rel="noopener noreferrer" class="gh-share-link" title="Share your publication on LinkedIn">
-        <div class="gh-share-link-content">
+        <div class="share-link-content">
           <span>
             {{svg-jar "social-linkedin"}}
           </span>
-          Share on LinkedIn
-        </div>
-        <div class="gh-onboarding-item-action">
-          {{svg-jar "arrow-right-tail"}}
         </div>
       </a>
     </li>

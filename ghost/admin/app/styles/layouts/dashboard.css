@@ -2977,6 +2977,10 @@ Share publication modal */
 
 .share-card-image img {
     border-radius: 6px 6px 0 0;
+    width: 100%;
+    height: 100%;
+    max-height: 196px;
+    object-fit: cover;
 }
 
 .share-card-content {
@@ -2989,13 +2993,21 @@ Share publication modal */
     font-weight: 600;
 }
 
-.share-card-description {
-
+.copy-publication-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 24px;
+    background: #fafafb;
+    border: 1px solid var(--whitegrey);
+    border-radius: 4px;
+    padding: 8px 16px;
+    min-height: 48px;
 }
 
 
 
-.gh-share-links {
+.share-links {
     list-style: none;
     padding: 0;
     margin: 16px 0 0 0;
@@ -3003,7 +3015,7 @@ Share publication modal */
     flex-direction: row;
 }
 
-.gh-share-links li { 
+.share-links li { 
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--darkgrey);
@@ -3023,16 +3035,10 @@ Share publication modal */
     text-align: center;
     border: 1px solid var(--whitegrey);
     border-radius: 4px;
-    transition: all .3s ease-in-out;
 }
 
-a.gh-share-link {
-    color: var(--darkgrey);
-    padding: 16px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #ebeef0;
+.share-links li a:hover {
+    box-shadow: 0 2px 4px rgb(0 0 0 / 7%);
 }
 
 .share-links li span {
@@ -3041,11 +3047,10 @@ a.gh-share-link {
     display: block;
 }
 
-.share-links li a span svg {
+.share-links li span svg {
     width: 20px;
     height: 20px;
     fill: var(--midgrey);
-    margin: 0 16px 0 0;
 }
 
 span.tip {
