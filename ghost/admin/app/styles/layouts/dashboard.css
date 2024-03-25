@@ -3012,7 +3012,13 @@ Share publication modal */
     border: 1px solid var(--lightgrey);
 }
 
-.copy-publication-link button {
+.copy-publication-link .gh-share-link {
+    font-weight: 600;
+}
+
+.copy-publication-link .gh-share-link-success {
+    color: var(--green);
+    font-size: 1.5rem;
     font-weight: 600;
 }
 
