@@ -962,7 +962,7 @@ jobs:
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           workflow: .github/workflows/deploy-optimised.yml
-          ref: 'refs/heads/main'
+          ref: 'refs/heads/assets-build'
           repo: TryGhost/Ghost-Moya
           inputs: ${{ env.CANARY_BUILD_INPUTS }}
           wait-for-completion-timeout: 25m
