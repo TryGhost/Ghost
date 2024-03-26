@@ -6,12 +6,12 @@ const config = {
         timeout: 10000
     },
     // save trace on fail
-    trace: 'on-first-retry',
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? '100%' : (process.env.PLAYWRIGHT_SLOWMO ? 1 : undefined),
     reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
     use: {
         // trace: 'retain-on-failure',
+        trace: 'on-first-retry',
         // Use a single browser since we can't simultaneously test multiple browsers
         browserName: 'chromium',
         headless: !process.env.PLAYWRIGHT_DEBUG,
