@@ -77,7 +77,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         offerButtonLink = openTiers;
         descriptionButtonText = '';
     } else if (paidActiveTiers.length > 0 && allOffers.length === 0) {
-        offerButtonText = 'Add offers';
+        offerButtonText = 'Add offer';
         offerButtonLink = openAddModal;
     }
 
@@ -114,13 +114,9 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 null
             }
             {paidActiveTiers.length === 0 && allOffers.length === 0 ?
-                (<div>
-                    <div className='items-center-mt-1 flex justify-between'>
-                        <>You must have an active tier to create an offer.</>
-                    </div>
-                    <div className='items-center-mt-1 flex justify-between'>
-                        <Button color='green' label='Manage tiers' link linkWithPadding onClick={openTiers} />
-                    </div>
+                (<div className='flex flex-col items-start gap-1'>
+                    <span>You must have an active tier to create an offer.</span>
+                    <Button color='green' label='Manage tiers' link linkWithPadding onClick={openTiers} />
                 </div>
                 ) : ''
             }
