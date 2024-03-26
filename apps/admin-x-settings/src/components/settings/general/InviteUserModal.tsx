@@ -8,6 +8,7 @@ import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useEffect, useRef, useState} from 'react';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import { APIError } from '@tryghost/admin-x-framework/errors';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';
 
@@ -130,13 +131,20 @@ const InviteUserModal = NiceModal.create(() => {
             updateRoute('staff?tab=invited');
         } catch (e) {
             setSaveState('error');
-            let message = 'Your invitation failed to send. If the problem persists, please contact support.';
-            if (e.data?.errors?.[0]?.type === 'EmailError') {
-                message = 'Your invitation failed to send. Please check your Mailgun configuration. If the problem persists, contact support.';
+            let message = (<span><strong>Your invitation failed to send.</strong> If the problem persists, please contact support.</span>);
+            if (e instanceof APIError) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let data = e.data as any; // we have unknown data types in the APIError/error classes
+                if (data?.errors?.[0]?.type === 'EmailError') {
+                    message = (<span><strong>Your invitation failed to send.</strong> Please check your Mailgun configuration. If the problem persists, contact support.</span>);
+                }
             }
             showToast({
                 message,
-                type: 'error'
+                type: 'neutral',
+                options: {
+                    duration: 30000
+                }
             });
             handleError(e, {withToast: false});
             return;
