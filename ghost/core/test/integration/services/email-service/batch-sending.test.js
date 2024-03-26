@@ -577,8 +577,8 @@ describe('Batch sending tests', function () {
                     continue;
                 }
 
-                if (href.includes('https://ghost.org/')) {
-                    assert(!href.includes('?m=' + memberUuid), 'ghost.org links should not be tracked');
+                if (href.includes('https://ghost.org/?via=pbg-newsletter')) {
+                    assert(!href.includes('?m=' + memberUuid), 'Powererd by Ghost link should not be tracked');
                     continue;
                 }
 

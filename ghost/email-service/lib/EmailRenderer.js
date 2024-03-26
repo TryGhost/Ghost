@@ -377,8 +377,8 @@ class EmailRenderer {
                     url = this.#outboundLinkTagger.addToUrl(url);
                 }
 
-                // Don't add tracking to ghost.org links, for example from the Powered by Ghost badge
-                if ((url.hostname === 'ghost.org' || url.hostname === 'www.ghost.org') && url.pathname === '/') {
+                // Don't add tracking to the Powered by Ghost badge
+                if (url.hostname === 'ghost.org' && url.pathname === '/' && url.searchParams.get('via') === 'pbg-newsletter') {
                     return url.toString();
                 }
 

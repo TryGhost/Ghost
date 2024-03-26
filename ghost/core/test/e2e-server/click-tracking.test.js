@@ -60,7 +60,7 @@ describe('Click Tracking', function () {
 
         let internalRedirectHappened = false;
         let externalRedirectHappened = false;
-        let ghostRedirectHappened = false;
+        let poweredByGhostIgnored = true;
 
         for (const link of links) {
             const res = await fetchWithoutFollowingRedirect(link.link.from);
@@ -83,15 +83,15 @@ describe('Click Tracking', function () {
 
             assert(redirectedToUrl.searchParams.get('ref'), 'ref should be present on all redirects');
 
-            // Links to ghost.org are not tracked in publisher analytics
-            if (link.link.to.includes('https://ghost.org/')) {
-                ghostRedirectHappened = true;
+            // Powered by Ghost link should not be replaced / tracked
+            if (link.link.to.includes('https://ghost.org/?via=pbg-newsletter')) {
+                poweredByGhostIgnored = false;
             }
         }
 
         assert(internalRedirectHappened);
         assert(externalRedirectHappened);
-        assert(!ghostRedirectHappened);
+        assert(poweredByGhostIgnored);
 
         const {body: {members}} = await agent.get(
             `/members/`

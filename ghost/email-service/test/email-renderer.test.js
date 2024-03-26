@@ -1387,7 +1387,7 @@ describe('Email renderer', function () {
             assert.doesNotMatch(response.html, /is-dark-background/);
         });
 
-        it('replaces all links except the unsubscribe, feedback and ghost.org links', async function () {
+        it('replaces all links except the unsubscribe, feedback and powered by Ghost links', async function () {
             const post = createModel(basePost);
             const newsletter = createModel({
                 header_image: null,
@@ -1424,7 +1424,7 @@ describe('Email renderer', function () {
                     href.should.eql('%%{unsubscribe_url}%%');
                 } else if (href.includes('feedback-link.com')) {
                     href.should.containEql('%%{uuid}%%');
-                } else if (href.includes('https://ghost.org/')) {
+                } else if (href.includes('https://ghost.org/?via=pbg-newsletter')) {
                     href.should.not.containEql('tracked-link.com');
                 } else {
                     href.should.containEql('tracked-link.com');
@@ -1446,7 +1446,7 @@ describe('Email renderer', function () {
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
                 `%%{unsubscribe_url}%%`,
-                `https://ghost.org/?source_tracking=site`
+                `https://ghost.org/?via=pbg-newsletter&source_tracking=site`
             ]);
 
             // Check uuid in replacements
@@ -1501,7 +1501,7 @@ describe('Email renderer', function () {
                 'http://feedback-link.com/?score=1&uuid=%%{uuid}%%',
                 'http://feedback-link.com/?score=0&uuid=%%{uuid}%%',
                 '%%{unsubscribe_url}%%',
-                'https://ghost.org/'
+                'https://ghost.org/?via=pbg-newsletter'
             ]);
         });
 
@@ -1538,7 +1538,7 @@ describe('Email renderer', function () {
                     href.should.eql('%%{unsubscribe_url}%%');
                 } else if (href.includes('feedback-link.com')) {
                     href.should.containEql('%%{uuid}%%');
-                } else if (href.includes('https://ghost.org/')) {
+                } else if (href.includes('https://ghost.org/?via=pbg-newsletter')) {
                     href.should.not.containEql('tracked-link.com');
                 } else {
                     href.should.containEql('tracked-link.com');
@@ -1558,7 +1558,7 @@ describe('Email renderer', function () {
                 `http://feedback-link.com/?score=1&uuid=%%{uuid}%%`,
                 `http://feedback-link.com/?score=0&uuid=%%{uuid}%%`,
                 `%%{unsubscribe_url}%%`,
-                `https://ghost.org/?source_tracking=site`
+                `https://ghost.org/?via=pbg-newsletter&source_tracking=site`
             ]);
 
             // Check uuid in replacements
