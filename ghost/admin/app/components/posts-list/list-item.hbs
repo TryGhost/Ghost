@@ -23,10 +23,10 @@
                         -
                     </span>
                     <span class="gh-content-entry-date">
-                        {{#if this.isHovered}}
-                            {{gh-format-post-time @post.updatedAtUTC format="D MMM YYYY"}}
+                        {{#if (or @post.isDraft @post.isScheduled)}}
+                            {{gh-format-post-time @post.updatedAtUTC absolute=true}}
                         {{else}}
-                            {{gh-format-post-time @post.updatedAtUTC draft=true}}
+                            {{gh-format-post-time @post.publishedAtUTC absolute=true}}
                         {{/if}}
                     </span>
                 </p>
@@ -72,10 +72,11 @@
                         {{/if}}
                         -
                     </span>
-                    <span class="gh-content-entry-date" {{on "mouseover" (fn (mut this.isDateHovered) true)}} {{on "mouseleave" (fn (mut this.isDateHovered) false)}}>
-                        {{gh-format-post-time @post.updatedAtUTC draft=true}}
-                        {{#if this.isDateHovered}}
-                            <span {{css-transition "anim-fade-in-scale"}}>on {{gh-format-post-time @post.updatedAtUTC format="D MMM YYYY"}}</span>
+                    <span class="gh-content-entry-date">
+                        {{#if (or @post.isDraft @post.isScheduled)}}
+                            {{gh-format-post-time @post.updatedAtUTC absolute=true short=true}}
+                        {{else}}
+                            {{gh-format-post-time @post.publishedAtUTC absolute=true}}
                         {{/if}}
                     </span>
                     {{!-- {{#if @post.lexical}}
