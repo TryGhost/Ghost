@@ -7,11 +7,15 @@
   </a>
 
   <div class="share-card-container">
-     {{#let (or @post.featureImage (get-setting "coverImage")) as |imageUrl|}}
+    {{#let (or @post.featureImage (get-setting "coverImage")) as |imageUrl|}}
     {{#if imageUrl}}
       <div class="share-card-image">
         <img src={{imageUrl}} alt="" role="presentation" />
       </div>
+    {{else}}
+    <div class="share-card-image placeholder">
+      {{svg-jar "picture"}}
+    </div>
     {{/if}}
 
     <div class="share-card-content">
