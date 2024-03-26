@@ -141,10 +141,7 @@ const InviteUserModal = NiceModal.create(() => {
             }
             showToast({
                 message,
-                type: 'neutral',
-                options: {
-                    duration: 30000
-                }
+                type: 'neutral'
             });
             handleError(e, {withToast: false});
             return;
