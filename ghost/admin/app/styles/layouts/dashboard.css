@@ -3078,15 +3078,31 @@ Share publication modal */
     display: block;
 }
 
-.share-links li span svg {
+.share-links li a span svg {
     width: 20px;
     height: 20px;
     fill: var(--midgrey);
-    filter: grayscale(100%);
 }
 
-.share-links li a:hover span svg {
-    filter: grayscale(0%);
+.share-links svg path.social-facebook_svg__fb {
+    fill: var(--midgrey);
+}
+
+.share-links svg path.social-linkedin_svg__linkedin {
+    fill: var(--midgrey);
+}
+
+.share-links a:hover svg path.social-facebook_svg__fb {
+    fill: #1977f3;
+}
+
+
+.share-links a:hover svg path.social-linkedin_svg__linkedin {
+    fill: #007ebb;
+}
+
+.share-links a:hover svg path.social-x_svg__x {
+    fill: var(--black);
 }
 
 span.tip {
