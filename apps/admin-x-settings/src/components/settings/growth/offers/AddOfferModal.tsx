@@ -403,7 +403,7 @@ const AddOfferModal = () => {
                 newErrors.amount = 'Enter an amount greater than 0.';
             }
 
-            if (formState.type === 'percent' && (formState.percentAmount < 0 || formState.percentAmount >= 100)) {
+            if (formState.type === 'percent' && (formState.percentAmount < 0 || formState.percentAmount > 100)) {
                 newErrors.amount = 'Amount must be between 0 and 100%.';
             }
 
