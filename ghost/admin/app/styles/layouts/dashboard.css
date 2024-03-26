@@ -2982,6 +2982,22 @@ Share publication modal */
     height: 196px;
 }
 
+.placeholder {
+    width: 100%;
+    height: 196px;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--whitegrey);
+}
+
+.placeholder svg {
+    width: 40px;
+    height: 40px;
+    stroke: var(--lightgrey);
+}
+
 .share-card-content {
     padding: 24px;
     width: 100%;
@@ -3066,11 +3082,11 @@ Share publication modal */
     width: 20px;
     height: 20px;
     fill: var(--midgrey);
-    filter: saturate(0);
+    filter: grayscale(100%);
 }
 
 .share-links li a:hover span svg {
-    filter: saturate(1);
+    filter: grayscale(0%);
 }
 
 span.tip {
