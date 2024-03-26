@@ -1,5 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import validator from 'validator';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {Modal, Radio, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
@@ -8,7 +9,6 @@ import {useBrowseUsers} from '@tryghost/admin-x-framework/api/users';
 import {useEffect, useRef, useState} from 'react';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
-import { APIError } from '@tryghost/admin-x-framework/errors';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor';
 
