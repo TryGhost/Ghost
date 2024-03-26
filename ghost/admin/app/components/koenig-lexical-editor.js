@@ -301,7 +301,7 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const defaultCardConfig = {
-            unsplash: this.settings.unsplash ? unsplashConfig : null,
+            unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
             fetchEmbed,
             fetchCollectionPosts,
