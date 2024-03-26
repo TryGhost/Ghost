@@ -377,6 +377,11 @@ class EmailRenderer {
                     url = this.#outboundLinkTagger.addToUrl(url);
                 }
 
+                // Don't add tracking to ghost.org links, for example from the Powered by Ghost badge
+                if ((url.hostname === 'ghost.org' || url.hostname === 'www.ghost.org') && url.pathname === '/') {
+                    return url.toString();
+                }
+
                 // Add link click tracking
                 url = await this.#linkTracking.service.addTrackingToUrl(url, post, '--uuid--');
 
