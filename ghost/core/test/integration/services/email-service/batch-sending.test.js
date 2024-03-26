@@ -577,6 +577,11 @@ describe('Batch sending tests', function () {
                     continue;
                 }
 
+                if (href.includes('https://ghost.org/?via=pbg-newsletter')) {
+                    assert(!href.includes('?m=' + memberUuid), 'Powererd by Ghost link should not be tracked');
+                    continue;
+                }
+
                 // Check if the link is a tracked link
                 assert(href.includes('?m=' + memberUuid), href + ' is not tracked');
 
