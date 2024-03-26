@@ -84,7 +84,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label={offerButtonText} link linkWithPadding onClick={offerButtonLink}/>}
-            description={<>Create discounts & coupons to boost new subscriptions. {allOffers.length === 0 && <><br /><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">{descriptionButtonText}</a></>}</>}
+            description={<>Create discounts & coupons to boost new subscriptions. {allOffers.length === 0 && <><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">{descriptionButtonText}</a></>}</>}
             keywords={keywords}
             navid='offers'
             testId='offers'
@@ -114,9 +114,10 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 null
             }
             {paidActiveTiers.length === 0 && allOffers.length === 0 ?
-                (<div className='flex flex-col items-start gap-1'>
+                (<div>
                     <span>You must have an active tier to create an offer.</span>
-                    <Button color='green' label='Manage tiers' link linkWithPadding onClick={openTiers} />
+                    {` `}
+                    <Button className='font-normal' color='green' label='Manage tiers' link linkWithPadding onClick={openTiers} />
                 </div>
                 ) : ''
             }
