@@ -31,6 +31,7 @@ module.exports = {
             }
         },
         query({options}) {
+            console.log(options);
             return models.Integration.findPage(options);
         }
     },

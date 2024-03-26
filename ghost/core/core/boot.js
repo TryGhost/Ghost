@@ -400,7 +400,12 @@ async function initNestDependencies() {
     }, {
         provide: 'DomainEvents',
         useValue: require('@tryghost/domain-events')
-    });
+    },
+    {
+        provide: 'Models',
+        useValue: require('./server/models')
+    }
+    );
     for (const provider of providers) {
         GhostNestApp.addProvider(provider);
     }
