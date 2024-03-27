@@ -14,8 +14,8 @@ test.describe('Portal', () => {
 
             await sharedPage.pause();
             // Check success message
-            // const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
-            const portalFrame = await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
+            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
+            const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
             await expect(portalFrame.getByText('Thank you!')).toBeVisible();
         });
 
