@@ -7099,9 +7099,9 @@
     "@tryghost/kg-clean-basic-html" "^4.0.1"
 
 "@tryghost/kg-unsplash-selector@^0.1.11":
-  version "0.1.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/kg-unsplash-selector/-/kg-unsplash-selector-0.1.11.tgz#d5fe973c01217fa5854a528a7b74e6d008b25309"
-  integrity sha512-5guN8Z8vpF2zCvfziKqFvQN/LQGuV2/ZKz+JiDk6dVBOwHZ/flitMDmnlodCNYT141yQE9x9DCrZAC216koHqw==
+  version "0.1.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/kg-unsplash-selector/-/kg-unsplash-selector-0.1.12.tgz#a5c865f218a0c579bc324756e8b5cf708de063ec"
+  integrity sha512-8oHNxBnMFD85+qoCpmzUrHNTVpbSrC0Myd4GX0/f+UKxUWl4/kYFumrReMKIadbzxITN43Gl+lRsd19/a8JbDw==
 
 "@tryghost/kg-utils@^1.0.24":
   version "1.0.24"
