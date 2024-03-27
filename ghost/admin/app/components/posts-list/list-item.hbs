@@ -22,13 +22,15 @@
 
                         -
                     </span>
-                    <span class="gh-content-entry-date">
-                        {{#if (or @post.isDraft @post.isScheduled)}}
-                            {{gh-format-post-time @post.updatedAtUTC absolute=true}}
-                        {{else}}
-                            {{gh-format-post-time @post.publishedAtUTC absolute=true}}
-                        {{/if}}
-                    </span>
+                    {{#if (or @post.isDraft @post.isScheduled)}}
+                        <span class="gh-content-entry-date" title="Updated {{gh-format-post-time @post.updatedAtUTC absolute=true}}">
+                            {{gh-format-post-time @post.updatedAtUTC absolute=true short=true}}
+                        </span>
+                    {{else}}
+                        <span class="gh-content-entry-date" title="Published {{gh-format-post-time @post.publishedAtUTC absolute=true}}">
+                            {{gh-format-post-time @post.publishedAtUTC absolute=true short=true}}
+                        </span>
+                    {{/if}}
                 </p>
                 <p class="gh-content-entry-status">
                     <span class="published">
@@ -72,13 +74,15 @@
                         {{/if}}
                         -
                     </span>
-                    <span class="gh-content-entry-date">
-                        {{#if (or @post.isDraft @post.isScheduled)}}
+                    {{#if (or @post.isDraft @post.isScheduled)}}
+                        <span class="gh-content-entry-date" title="Updated {{gh-format-post-time @post.updatedAtUTC absolute=true}}">
                             {{gh-format-post-time @post.updatedAtUTC absolute=true short=true}}
-                        {{else}}
-                            {{gh-format-post-time @post.publishedAtUTC absolute=true}}
-                        {{/if}}
-                    </span>
+                        </span>
+                    {{else}}
+                        <span class="gh-content-entry-date" title="Published {{gh-format-post-time @post.publishedAtUTC absolute=true}}">
+                            {{gh-format-post-time @post.publishedAtUTC absolute=true short=true}}
+                        </span>
+                    {{/if}}
                     {{!-- {{#if @post.lexical}}
                         <span class="gh-content-entry-date">– Lexical</span>
                     {{/if}} --}}
