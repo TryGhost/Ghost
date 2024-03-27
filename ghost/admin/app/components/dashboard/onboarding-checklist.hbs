@@ -1,5 +1,5 @@
-<div class="gh-onboarding-wrapper">
-    <div class="gh-onboarding-header"> 
+<div class="gh-onboarding-wrapper" data-test-dashboard="onboarding-checklist">
+    <div class="gh-onboarding-header">
         <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;">
             <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
         </video>
@@ -10,7 +10,7 @@
     <div class="gh-onboarding-items">
         <div>
             {{!-- Step 1 --}}
-            <div class="gh-onboarding-item gh-onboarding-item--completed">                                                    
+            <div class="gh-onboarding-item gh-onboarding-item--completed">
                 <div class="gh-onboarding-item-content">
                     {{svg-jar "rocket" }}
                     <div class="gh-onboarding-item-details">
@@ -22,7 +22,7 @@
                 </div>
             </div>
             {{!-- Step 2 --}}
-            <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup" class="gh-onboarding-item gh-onboarding-item--next">  
+            <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup" class="gh-onboarding-item gh-onboarding-item--next">
                         <div class="gh-onboarding-item-content">
                             {{svg-jar "brush" }}
                             <div class="gh-onboarding-item-details">
@@ -35,7 +35,7 @@
                         </div>
             </LinkTo>
             {{!-- Step 3 --}}
-            <LinkTo @route="lexical-editor.new" @model="post" class="gh-onboarding-item"> 
+            <LinkTo @route="lexical-editor.new" @model="post" class="gh-onboarding-item">
                     <div class="gh-onboarding-item-content">
                         {{svg-jar "writing" }}
                         <div class="gh-onboarding-item-details">
@@ -61,7 +61,7 @@
                     </div>
             </LinkTo>
             {{!-- Step 5 --}}
-            <div role="button" {{on "click" (toggle-action "showShareModal" this)}} class="gh-onboarding-item">                                                    
+            <div role="button" {{on "click" (toggle-action "showShareModal" this)}} class="gh-onboarding-item">
                 <div class="gh-onboarding-item-content">
                     {{svg-jar "megaphone" }}
                     <div class="gh-onboarding-item-details">
@@ -79,7 +79,7 @@
     <a href="#" class="gh-onboarding-explore-dashboard">Explore your dashboard</a>
 
     <p class="gh-onboarding-help">Need some more help? Check out our <a href="https://ghost.org/help?utm_source=admin&utm_campaign=onboarding" target="_blank" rel="noopener noreferrer">Help center</a></p>
-    
+
     <a href="#" class="gh-onboarding-skip">Skip onboarding</a>
 </div>
 
