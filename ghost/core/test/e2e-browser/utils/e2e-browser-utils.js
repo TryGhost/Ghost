@@ -260,6 +260,9 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
         offerName = `${name} (${new ObjectID().toHexString().slice(0, 40 - name.length - 3)})`;
         // Tiers request can take time, so waiting until there is no connections before interacting with them
         await page.waitForLoadState('networkidle');
+        // ... and even so, the component updates can take a bit to trickle down, so we should verify that the Tier is fully loaded before proceeding
+        await page.getByTestId('tiers').getByText('No active tiers found').waitFor({state: 'hidden'});
+        await page.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
 
         // only one of these buttons is ever available - either 'Add offer' or 'Manage offers'
         const hasExistingOffers = await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).isVisible();
