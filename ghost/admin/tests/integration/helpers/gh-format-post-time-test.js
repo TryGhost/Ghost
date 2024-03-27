@@ -127,6 +127,17 @@ describe('Integration: Helper: gh-format-post-time', function () {
         this.set('mockDate', mockDate);
 
         await render(hbs`{{gh-format-post-time mockDate absolute=true}}`);
+        expect(this.element).to.have.trimmed.text('16:00 (UTC) 02 Sep 2017');
+    });
+
+    it('returns correct short format if post was published prior to yesterday', async function () {
+        let {mockDate} = setupMockDate({
+            date: '2017-09-02T16:00:00Z',
+            utcDate: '2017-09-06T18:00:00Z'
+        });
+        this.set('mockDate', mockDate);
+
+        await render(hbs`{{gh-format-post-time mockDate absolute=true short=true}}`);
         expect(this.element).to.have.trimmed.text('02 Sep 2017');
     });
 

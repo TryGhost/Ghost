@@ -55,7 +55,7 @@ export function formatPostTime(timeago, {timezone = 'etc/UTC', format, relative,
     }
 
     // Else, render just the date if edited or published, or the time & date if scheduled
-    let f = scheduled ? `[at] HH:mm [${utcOffset}] [on] DD MMM YYYY` : 'DD MMM YYYY';
+    let f = scheduled ? `[at] HH:mm [${utcOffset}] [on] DD MMM YYYY` : (short ? `DD MMM YYYY` : `HH:mm [${utcOffset}] DD MMM YYYY`);
     return time.format(f);
 }
 
