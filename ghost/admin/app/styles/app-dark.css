@@ -1360,3 +1360,18 @@ kbd {
 .gh-update-banner {
     background: var(--main-color-content-greybg);
 }
+
+/* ---------------------------------
+Onboarding checklist */
+
+.gh-onboarding-items {
+    border-color: var(--lightgrey);
+}
+
+.gh-onboarding-item {
+    border-color: var(--lightgrey);
+}
+
+.gh-onboarding-item--next {
+    background: #1c1e21;
+}
