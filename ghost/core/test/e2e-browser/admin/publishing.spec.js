@@ -314,10 +314,12 @@ test.describe('Publishing', () => {
             await adminPage.fill('[data-test-field="custom-excerpt"]', 'Short description and meta');
 
             // save
-            await adminPage.locator('[data-test-button="publish-save"]').first().click();
+            const saveButton = await adminPage.locator('[data-test-button="publish-save"]').first();
+            await expect(saveButton).toHaveText('Update');
+            await saveButton.click();
+            await expect(saveButton).toHaveText('Updated');
 
             // check front-end has new text after reloading
-            await frontendPage.waitForTimeout(300); // let save go through
             await frontendPage.reload();
             await expect(publishedBody).toContainText('This is some updated text.');
             await expect(publishedHeader).toContainText('Jan 7, 2022');
