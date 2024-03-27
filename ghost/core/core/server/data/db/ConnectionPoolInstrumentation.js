@@ -28,7 +28,7 @@ class ConnectionPoolInstrumentation {
         this.metrics.metric('connection-pool', {
             event: 'create-request',
             eventId,
-            siteId: this.siteId,
+            site_id: this.siteId,
             ...poolMetrics
         });
     }
@@ -44,7 +44,7 @@ class ConnectionPoolInstrumentation {
             eventId,
             connectionId: resource.connectionId,
             knexUid: resource.__knexUid,
-            siteId: this.siteId,
+            site_id: this.siteId,
             timeToCreate
         });
     }
@@ -60,7 +60,7 @@ class ConnectionPoolInstrumentation {
             event: 'create-fail',
             eventId,
             timeToFail,
-            siteId: this.siteId,
+            site_id: this.siteId,
             ...poolMetrics
         });
     }
@@ -73,7 +73,7 @@ class ConnectionPoolInstrumentation {
         this.metrics.metric('connection-pool', {
             event: 'acquire-request',
             eventId,
-            siteId: this.siteId,
+            site_id: this.siteId,
             ...poolMetrics
         });
     }
@@ -91,7 +91,7 @@ class ConnectionPoolInstrumentation {
             eventId,
             connectionId: resource.connectionId,
             knexUid: resource.__knexUid,
-            siteId: this.siteId,
+            site_id: this.siteId,
             timeToAcquire
         });
     }
@@ -107,7 +107,7 @@ class ConnectionPoolInstrumentation {
             event: 'acquire-fail',
             eventId,
             timeToFail,
-            siteId: this.siteId,
+            site_id: this.siteId,
             ...poolMetrics
         });
     }
@@ -119,7 +119,7 @@ class ConnectionPoolInstrumentation {
             event: 'release',
             connectionId: resource.connectionId,
             knexUid: resource.__knexUid,
-            siteId: this.siteId,
+            site_id: this.siteId,
             lifetime
         });
     }
