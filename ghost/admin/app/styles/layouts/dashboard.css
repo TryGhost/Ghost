@@ -3027,7 +3027,7 @@ Share publication modal */
     border: 1px solid var(--lightgrey);
 }
 
-.copy-publication-link .gh-share-link {
+.copy-publication-link .gh-btn-icon {
     font-weight: 600;
 }
 
