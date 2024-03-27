@@ -7,6 +7,7 @@ class ConnectionPoolInstrumentation {
         this.enabled = config.get('telemetry:connectionPool');
         this.requestStartTimes = {};
         this.createStartTimes = {};
+        this.siteId = config.get('hostSettings:siteId');
     }
 
     // Get the number of pending creates and acquires plus free and used connections
@@ -27,6 +28,7 @@ class ConnectionPoolInstrumentation {
         this.metrics.metric('connection-pool', {
             event: 'create-request',
             eventId,
+            siteId: this.siteId,
             ...poolMetrics
         });
     }
@@ -42,6 +44,7 @@ class ConnectionPoolInstrumentation {
             eventId,
             connectionId: resource.connectionId,
             knexUid: resource.__knexUid,
+            siteId: this.siteId,
             timeToCreate
         });
     }
@@ -57,6 +60,7 @@ class ConnectionPoolInstrumentation {
             event: 'create-fail',
             eventId,
             timeToFail,
+            siteId: this.siteId,
             ...poolMetrics
         });
     }
@@ -69,6 +73,7 @@ class ConnectionPoolInstrumentation {
         this.metrics.metric('connection-pool', {
             event: 'acquire-request',
             eventId,
+            siteId: this.siteId,
             ...poolMetrics
         });
     }
@@ -86,6 +91,7 @@ class ConnectionPoolInstrumentation {
             eventId,
             connectionId: resource.connectionId,
             knexUid: resource.__knexUid,
+            siteId: this.siteId,
             timeToAcquire
         });
     }
@@ -101,6 +107,7 @@ class ConnectionPoolInstrumentation {
             event: 'acquire-fail',
             eventId,
             timeToFail,
+            siteId: this.siteId,
             ...poolMetrics
         });
     }
@@ -112,6 +119,7 @@ class ConnectionPoolInstrumentation {
             event: 'release',
             connectionId: resource.connectionId,
             knexUid: resource.__knexUid,
+            siteId: this.siteId,
             lifetime
         });
     }
