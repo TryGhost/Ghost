@@ -4,7 +4,7 @@ const {createMember, impersonateMember, completeStripeSubscription} = require('.
 
 test.describe('Portal', () => {
     test.describe('Donations', () => {
-        test.only('Can donate as an anonymous member', async ({sharedPage}) => {
+        test('Can donate as an anonymous member', async ({sharedPage}) => {
             // go to website and open portal
             await sharedPage.goto('/#/portal/support');
 
@@ -38,8 +38,8 @@ test.describe('Portal', () => {
             await completeStripeSubscription(sharedPage);
 
             // Check success message
-            // const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
-            const portalFrame = await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
+            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
+            const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
             await expect(portalFrame.getByText('Thank you!')).toBeVisible();
         });
 
@@ -67,8 +67,8 @@ test.describe('Portal', () => {
             await completeStripeSubscription(sharedPage);
 
             // Check success message
-            // const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
-            const portalFrame = await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
+            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
+            const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
             await expect(portalFrame.getByText('Thank you!')).toBeVisible();
         });
     });
