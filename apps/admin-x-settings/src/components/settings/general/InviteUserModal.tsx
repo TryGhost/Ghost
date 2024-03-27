@@ -1,5 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import validator from 'validator';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {Modal, Radio, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
@@ -127,13 +128,21 @@ const InviteUserModal = NiceModal.create(() => {
             });
 
             modal.remove();
-            updateRoute('staff');
+            updateRoute('staff?tab=invited');
         } catch (e) {
             setSaveState('error');
-
+            let message = (<span><strong>Your invitation failed to send.</strong><br/>If the problem persists, <a href="https://ghost.org/contact"><u>contact support</u>.</a>.</span>);
+            if (e instanceof APIError) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let data = e.data as any; // we have unknown data types in the APIError/error classes
+                if (data?.errors?.[0]?.type === 'EmailError') {
+                    message = (<span><strong>Your invitation failed to send</strong><br/>Please check your Mailgun configuration. If the problem persists, <a href="https://ghost.org/contact"><u>contact support</u>.</a></span>);
+                }
+            }
             showToast({
-                message: `Failed to send invitation to ${email}`,
-                type: 'error'
+                message,
+                type: 'neutral',
+                icon: 'warning'
             });
             handleError(e, {withToast: false});
             return;
