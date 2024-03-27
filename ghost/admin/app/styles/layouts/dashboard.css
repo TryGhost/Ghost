@@ -2791,7 +2791,7 @@ Onboarding checklist */
     border-radius: 6px;
     padding: 16px 24px;
     /* box-shadow: 0px 0px 16px 4px rgba(0, 0, 0, 0.04); */
-    border: 1px solid #ebeef0;
+    border: 1px solid var(--whitegrey);
     /* box-shadow: -7px -6px 42px 8px rgba(75,225,226,.28),7px 6px 42px 8px rgba(202,103,255,.32); */
 }
 
@@ -2800,7 +2800,7 @@ Onboarding checklist */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #ebeef0;
+    border-bottom: 1px solid var(--whitegrey);
 }
 
 .gh-onboarding-item:first-child {
@@ -2818,7 +2818,7 @@ Onboarding checklist */
 
 .gh-onboarding-item--next {
     margin: 0px -32px 6px;
-    background: white;
+    background: var(--white);
     padding: 24px 32px;
     box-shadow: 0px 1px 0px rgba(17,17,26,0.05), 0px 0px 8px rgba(17,17,26,0.1);
     border-radius: 6px;
@@ -2855,7 +2855,7 @@ Onboarding checklist */
     font-size: 1.6rem;
     line-height: 1;
     letter-spacing: 0;
-    color: #394047;
+    color: var(--darkgrey);
     padding: 0 32px 0 0;
     text-decoration: none;
     text-overflow: ellipsis;
@@ -2894,7 +2894,7 @@ Onboarding checklist */
 }
 
 .gh-onboarding-item-content svg path {
-    stroke: #ae5aef;
+    stroke: var(--purple);
     stroke-width: 1.5 !important;
 }
 
@@ -2913,7 +2913,7 @@ Onboarding checklist */
 }
 
 .gh-onboarding-item-action svg path {
-    fill: #ae5aef;
+    fill: var(--purple);
 }
 
 .gh-onboarding-item-checkmark {
@@ -2936,25 +2936,39 @@ Onboarding checklist */
     font-size: 1.5rem;
 }
 
-.gh-onboarding-help a {
-    color: var(--midgrey);
-    text-decoration: underline;
-}
-
 .gh-onboarding-skip {
     display: flex;
     align-items: center;
     position: absolute;
     bottom: 32px;
     padding: 1px 14px;
-    border: 1px solid #e6e9eb;
+    border: 1px solid var(--whitegrey);
     color: var(--middarkgrey);
-    border-radius: 3px;
-    transition: all .2s ease;
+    border-radius: 4px;
     white-space: nowrap;
     height: 38px;
     overflow: hidden;
-    transition: all .1s linear;
+    transition: opacity .1s linear;
+}
+
+.gh-onboarding-explore-dashboard {
+    display: flex;
+    padding: 12px 12px;
+    align-items: center;
+    justify-content: center;
+    background: var(--black);
+    color: var(--white);
+    border-radius: 4px;
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-top: 24px;
+    max-width: 540px;
+    width: 100%;
+    transition: opacity .3s ease-in-out;
+}
+
+.gh-onboarding-explore-dashboard:hover {
+    opacity: 0.9;
 }
 
 /* ---------------------------------
