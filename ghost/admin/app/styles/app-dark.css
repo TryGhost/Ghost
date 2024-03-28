@@ -1380,6 +1380,14 @@ Onboarding checklist */
     background: #1c1e21;
 }
 
+.gh-onboarding-help a:hover {
+    color: var(--black);
+}
+
+.gh-onboarding-skip {
+    color: var(--middarkgrey);
+    border: 1px solid var(--lightgrey);
+}
 
 /* ---------------------------------
 Onboarding checklist: Share publication modal */
