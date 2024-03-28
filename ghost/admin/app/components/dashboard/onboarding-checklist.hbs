@@ -57,11 +57,15 @@
         </div>
     </div>
 
-    <a href="#" class="gh-onboarding-explore-dashboard">Explore your dashboard</a>
+    {{#if this.onboarding.allStepsCompleted}}
+        <a href="#" class="gh-onboarding-explore-dashboard" {{on "click" this.onboarding.completeChecklist}}>Explore your dashboard</a>
+    {{/if}}
 
     <p class="gh-onboarding-help">Need some more help? Check out our <a href="https://ghost.org/help?utm_source=admin&utm_campaign=onboarding" target="_blank" rel="noopener noreferrer">Help center</a></p>
 
-    <a href="#" class="gh-onboarding-skip">Skip onboarding</a>
+    {{#unless this.onboarding.allStepsCompleted}}
+        <a href="#" class="gh-onboarding-skip" {{on "click" this.onboarding.dismissChecklist}}>Skip onboarding</a>
+    {{/unless}}
 </div>
 
 {{#if this.showShareModal}}
