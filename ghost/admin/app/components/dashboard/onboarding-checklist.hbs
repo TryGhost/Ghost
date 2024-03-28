@@ -1,11 +1,15 @@
 <div class="gh-onboarding-wrapper" data-test-dashboard="onboarding-checklist">
     <div class="gh-onboarding-header">
-        <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;" class="gh-onboarding-ghost-logo--light">
-            <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
-        </video>
-        <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;" class="gh-onboarding-ghost-logo--dark">
-            <source src="assets/videos/logo-loader-dark.mp4" type="video/mp4" />
-        </video>
+        {{#if (feature "nightShift")}}
+            <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;" class="gh-onboarding-ghost-logo--dark">
+                <source src="assets/videos/logo-loader-dark.mp4" type="video/mp4" />
+            </video>
+        {{else}}
+            <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;" class="gh-onboarding-ghost-logo--light">
+                <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
+            </video>
+        {{/if}}
+        
         <h2 class="gh-canvas-title">{{this.siteUrl}} is ready to go!</h2>
         <p>Let’s set your brand new publication up for success.</p>
     </div>
