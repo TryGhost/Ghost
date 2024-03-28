@@ -7,7 +7,7 @@ import validator from 'validator';
 import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, SelectOption, Separator, Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
-import {Newsletter, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
+import {Newsletter, browseNewslettersDefaultLimit, useBrowseNewsletters, useEditNewsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -589,7 +589,9 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
 };
 
 const NewsletterDetailModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {data: {newsletters, isEnd} = {}, fetchNextPage} = useBrowseNewsletters();
+    const {data: {newsletters, isEnd} = {}, fetchNextPage} = useBrowseNewsletters({
+        searchParams: {limit: browseNewslettersDefaultLimit}
+    });
     const newsletter = newsletters?.find(({id}) => id === params?.id);
 
     useEffect(() => {
