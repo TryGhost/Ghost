@@ -554,7 +554,7 @@ describe('Members API', function () {
             });
     });
 
-    it('Can filter by signup attribution', async function () {
+    it('Can filter by conversion attribution', async function () {
         await agent
             .get('/members/?filter=conversion:' + fixtureManager.get('posts', 0).id)
             .expectStatus(200)

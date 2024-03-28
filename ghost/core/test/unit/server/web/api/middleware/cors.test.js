@@ -113,7 +113,7 @@ describe('cors', function () {
         done();
     });
 
-    it('should be enabled if the origin matches config.url', function (done) {
+    it('should be enabled if the origin matches config.admin.url', function (done) {
         const origin = 'http://admin:2222';
 
         configUtils.set({

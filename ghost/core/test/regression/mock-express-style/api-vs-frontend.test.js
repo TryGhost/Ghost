@@ -327,7 +327,7 @@ describe('Frontend behavior tests', function () {
         });
 
         describe('assets', function () {
-            it('blog is https, request is http', function () {
+            it('blog is https, request is http (png)', function () {
                 const req = {
                     secure: false,
                     method: 'GET',
@@ -342,7 +342,7 @@ describe('Frontend behavior tests', function () {
                     });
             });
 
-            it('blog is https, request is http', function () {
+            it('blog is https, request is http (css)', function () {
                 const req = {
                     secure: false,
                     method: 'GET',
@@ -562,7 +562,7 @@ describe('Frontend behavior tests', function () {
                 sinon.restore();
             });
 
-            it('serve post', function () {
+            it('serve 404 when there is post with given slug', function () {
                 const req = {
 
                     method: 'GET',
@@ -744,7 +744,7 @@ describe('Frontend behavior tests', function () {
                     });
             });
 
-            it('post without tag', function () {
+            it('post without tag on something collection', function () {
                 const req = {
                     method: 'GET',
                     url: '/something/html-ipsum/',

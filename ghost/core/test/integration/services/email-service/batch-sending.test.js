@@ -272,7 +272,7 @@ describe('Batch sending tests', function () {
         ]);
     });
 
-    it('Splits recipients in free and paid batch when including paid member only content', async function () {
+    it('Splits recipients in free and paid batch when including different paid and free member content', async function () {
         await testEmailBatches({
             mobiledoc: mobileDocWithPaidAndFreeMemberOnly // = different content for paid and free members
         }, null, [

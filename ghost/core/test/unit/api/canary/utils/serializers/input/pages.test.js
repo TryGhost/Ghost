@@ -16,7 +16,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             frame.options.filter.should.eql('type:page');
         });
 
-        it('combine filters', function () {
+        it('combine status+tag filters', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -30,7 +30,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             frame.options.filter.should.eql('(status:published+tag:eins)+type:page');
         });
 
-        it('combine filters', function () {
+        it('only tag filters', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -77,7 +77,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             frame.options.filter.should.eql('type:page');
         });
 
-        it('content api default', function () {
+        it('content api default (with context)', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
