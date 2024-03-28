@@ -62,7 +62,7 @@ jobs:
           echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
 
       - name: Determine added packages
-        uses: dorny/paths-filter@v2.11.1
+        uses: dorny/paths-filter@v2.12.0
         id: added
         with:
           filters: |
