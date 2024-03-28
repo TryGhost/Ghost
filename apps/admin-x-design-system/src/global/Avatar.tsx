@@ -46,15 +46,15 @@ const Avatar: React.FC<AvatarProps> = ({image, label, labelColor, bgColor, size,
 
     if (image) {
         return (
-            <img alt="" className={`inline-flex shrink-0 items-center justify-center rounded-full object-cover font-semibold ${avatarSize} ${className && className}`} src={image}/>
+            <img alt="" className={`inline-flex shrink-0 items-center justify-center rounded object-cover font-semibold ${avatarSize} ${className && className}`} src={image}/>
         );
     } else if (label) {
         return (
-            <div className={`${labelColor && `text-${labelColor}`} inline-flex items-center justify-center rounded-full p-2 font-semibold ${avatarSize} ${className && className}`} style={bgColor ? {backgroundColor: bgColor} : {}}>{label}</div>
+            <div className={`${labelColor && `text-${labelColor}`} inline-flex items-center justify-center rounded p-2 font-semibold ${avatarSize} ${className && className}`} style={bgColor ? {backgroundColor: bgColor} : {}}>{label}</div>
         );
     } else {
         return (
-            <div className={`inline-flex items-center justify-center overflow-hidden rounded-full bg-grey-100 p-1 font-semibold ${avatarSize} ${className && className}`}>
+            <div className={`inline-flex items-center justify-center overflow-hidden rounded bg-grey-100 p-1 font-semibold ${avatarSize} ${className && className}`}>
                 <UserIcon className={`${fallbackPosition} h-full w-full  text-grey-300`} />
             </div>
         );

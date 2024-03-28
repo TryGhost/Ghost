@@ -53,9 +53,9 @@ const ListItem: React.FC<ListItemProps> = ({
             {children ? children :
                 <div className={`flex grow items-center gap-3 ${onClick && 'cursor-pointer'}`} onClick={handleClick}>
                     {avatar && avatar}
-                    <div className={`flex grow flex-col py-3 pr-6`} id={id}>
+                    <div className={`flex grow flex-col py-5 pr-6`} id={id}>
                         <span>{title}</span>
-                        {detail && <span className='text-xs text-grey-700'>{detail}</span>}
+                        {detail && <span className='text-xs text-grey-400'>{detail}</span>}
                     </div>
                 </div>
             }
