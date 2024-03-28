@@ -27,8 +27,20 @@ describe('Acceptance: Onboarding', function () {
             return await authenticateSession();
         });
 
-        it('dashboard shows the checklist', async function () {
+        it('dashboard does not show checklist by default', async function () {
             await visit('/dashboard');
+            expect(currentURL()).to.equal('/dashboard');
+
+            // onboarding isn't shown
+            expect(find('[data-test-dashboard="onboarding-checklist"]'), 'checklist').to.not.exist;
+
+            // other default dashboard elements are visible
+            expect(find('[data-test-dashboard="header"]'), 'header').to.exist;
+            expect(find('[data-test-dashboard="attribution"]'), 'attribution section').to.exist;
+        });
+
+        it('dashboard shows the checklist after accessing setup/done', async function () {
+            await visit('/setup/done');
             expect(currentURL()).to.equal('/dashboard');
 
             // main onboarding list is visible
