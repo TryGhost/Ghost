@@ -368,8 +368,8 @@ describe('{{ghost_head}} helper', function () {
         settingsCache.get.withArgs('comments_enabled').returns('off');
         settingsCache.get.withArgs('members_track_sources').returns(true);
 
-        // Force the usage of a fixed asset hash so we have reliable snapshots
-        configUtils.set('assetHash', 'asset-hash');
+        // disable the random asset hash so we have reliable snapshots
+        configUtils.set('asset_hash', false);
 
         makeFixtures();
     });
