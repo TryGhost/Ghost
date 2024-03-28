@@ -2816,6 +2816,10 @@ Onboarding checklist */
     margin-bottom: -12px;
 }
 
+.gh-onboarding-item:last-child.gh-onboarding-item--next {
+    margin-bottom: -18px;
+}
+
 .gh-onboarding-item:hover {
     cursor: pointer;
 }
