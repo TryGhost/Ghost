@@ -45,7 +45,7 @@
                 />
             </LinkTo>
             {{!-- Step 5 --}}
-            <div role="button" {{on "click" (toggle-action "showShareModal" this)}} class="gh-onboarding-item {{onboarding-step-class "share-publication"}}">
+            <div role="button" {{on "click" this.openShareModal}} class="gh-onboarding-item {{onboarding-step-class "share-publication"}}">
                 <Dashboard::Onboarding::Step
                     @icon="megaphone"
                     @title="Share your publication"
@@ -67,10 +67,3 @@
         <a href="#" class="gh-onboarding-skip" {{on "click" this.onboarding.dismissChecklist}}>Skip onboarding</a>
     {{/unless}}
 </div>
-
-{{#if this.showShareModal}}
-<GhFullscreenModal @modal="share"
-    @close={{this.close}}
-    @modifier="action wide"
-     />
-{{/if}}
