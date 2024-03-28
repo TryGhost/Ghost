@@ -26,6 +26,7 @@ export default class OnboardingService extends Service {
     get isChecklistShown() {
         return this.feature.onboardingChecklist
             && this.session.user.isOwnerOnly
+            && this.checklistStarted
             && !this.checklistCompleted
             && !this.checklistDismissed;
     }
@@ -103,6 +104,11 @@ export default class OnboardingService extends Service {
         settings.completedSteps.push(step);
 
         await this._saveSettings(settings);
+    }
+
+    @action
+    async reset() {
+        await this._saveSettings(undefined);
     }
 
     /* private */
