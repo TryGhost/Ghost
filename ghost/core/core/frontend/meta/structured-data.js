@@ -1,14 +1,7 @@
 const socialUrls = require('@tryghost/social-urls');
 
 function getStructuredData(metaData) {
-    let structuredData;
-    let card = 'summary';
-
-    if (metaData.twitterImage || metaData.coverImage.url) {
-        card = 'summary_large_image';
-    }
-
-    structuredData = {
+    let structuredData = {
         'og:site_name': metaData.site.title,
         'og:type': metaData.ogType,
         'og:title': metaData.ogTitle,
@@ -23,7 +16,7 @@ function getStructuredData(metaData) {
         'article:tag': metaData.keywords,
         'article:publisher': metaData.site.facebook ? socialUrls.facebook(metaData.site.facebook) : undefined,
         'article:author': metaData.authorFacebook ? socialUrls.facebook(metaData.authorFacebook) : undefined,
-        'twitter:card': card,
+        'twitter:card': 'summary',
         'twitter:title': metaData.twitterTitle,
         'twitter:description': metaData.twitterDescription,
         'twitter:url': metaData.canonicalUrl,
