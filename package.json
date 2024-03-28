@@ -114,12 +114,13 @@
     "eslint-plugin-ghost": "3.4.0",
     "eslint-plugin-react": "7.33.0",
     "husky": "8.0.3",
+    "inquirer": "8.2.6",
     "lint-staged": "14.0.1",
     "nx": "16.8.1",
     "rimraf": "5.0.5",
     "ts-node": "10.9.2",
     "typescript": "5.4.3",
-    "inquirer": "8.2.6"
+    "webpack": "^5.91.0"
   },
   "dependencies": {
     "start": "^5.1.0"
