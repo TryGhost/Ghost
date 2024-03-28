@@ -1380,6 +1380,14 @@ Onboarding checklist */
     background: #1c1e21;
 }
 
+.gh-onboarding-ghost-logo--light {
+    display: none;
+}
+
+.gh-onboarding-ghost-logo--dark {
+    display: inline-block;
+}
+
 /* ---------------------------------
 Onboarding checklist: Share publication modal */
 

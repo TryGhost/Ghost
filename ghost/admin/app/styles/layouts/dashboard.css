@@ -2771,7 +2771,7 @@ Onboarding checklist */
     flex-direction: column;
     min-height: 100vh;
     position: relative;
-    background: url(img/gradient-bg.png) no-repeat;
+    /* background: url(img/gradient-bg.png) no-repeat; */
     background-size: contain;
     background-position: center;
 }
@@ -2779,6 +2779,14 @@ Onboarding checklist */
 .gh-onboarding-header {
     text-align: center;
     margin-bottom: 40px;
+}
+
+.gh-onboarding-ghost-logo--light {
+    display: inline-block;
+}
+
+.gh-onboarding-ghost-logo--dark {
+    display: none;
 }
 
 .gh-onboarding-header p {
@@ -2827,6 +2835,7 @@ Onboarding checklist */
     box-shadow: 0px 1px 0px rgba(17,17,26,0.05), 0px 0px 8px rgba(17,17,26,0.1);
     border-radius: 6px;
     border-bottom: none;
+    transition: none;
 }
 
 .gh-onboarding-item:has(+ .gh-onboarding-item--next) {
