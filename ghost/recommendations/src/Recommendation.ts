@@ -121,17 +121,9 @@ export class Recommendation {
             this.description = null;
         }
 
-        this.url = this.cleanURL(this.url);
         this.createdAt.setMilliseconds(0);
         this.updatedAt?.setMilliseconds(0);
     }
-
-    cleanURL(url: URL) {
-        url.search = '';
-        url.hash = '';
-
-        return url;
-    };
 
     static create(data: RecommendationCreateData) {
         const id = data.id ?? ObjectId().toString();

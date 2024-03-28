@@ -12,7 +12,7 @@ export class InMemoryRecommendationRepository extends InMemoryRepository<string,
         //  Query params, hash fragements, protocol and www are ignored.
         const existing = this.store.find((r) => {
             return r.url.hostname.replace('www.', '') === url.hostname.replace('www.', '') &&
-                   r.url.pathname === url.pathname;
+                   r.url.pathname.replace(/\/$/, '') === url.pathname.replace(/\/$/, '');
         }) || null;
 
         return existing;
