@@ -59,6 +59,7 @@ describe('Adapter Cache Redis', function () {
 
             assert.equal(value, 'value from cache');
         });
+
         it('can update the cache in the case of a cache miss', async function () {
             const KEY = 'update-cache-on-miss';
             let cachedValue = null;
@@ -96,6 +97,40 @@ describe('Adapter Cache Redis', function () {
                 assert.equal(value, 'Da Value');
                 break checkSecondRead;
             }
+        });
+
+        it('can wait for execution in the case of duplicate reads', async function () {
+            const KEY = 'wait-for-execution';
+            let cachedValue = null;
+            const redisCacheInstanceStub = {
+                get: function (key) {
+                    assert(key === KEY);
+                    return cachedValue;
+                },
+                set: function (key, value) {
+                    assert(key === KEY);
+                    cachedValue = value;
+                },
+                store: {
+                    getClient: sinon.stub().returns({
+                        on: sinon.stub()
+                    })
+                }
+            };
+            const cache = new RedisCache({
+                cache: redisCacheInstanceStub
+            });
+
+            const fetchData = sinon.stub().resolves('Da Value');
+
+            const readOne = cache.get(KEY, fetchData);
+            const readTwo = cache.get(KEY, fetchData);
+
+            const [valueOne, valueTwo] = await Promise.all([readOne, readTwo]);
+
+            assert.equal(fetchData.callCount, 1, 'The data should only be fetched once');
+            assert.equal(valueOne, 'Da Value');
+            assert.equal(valueTwo, 'Da Value');
         });
 
         it('Can do a background update of the cache', async function () {
