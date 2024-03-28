@@ -391,7 +391,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.contributor,
+                        'Contributor',
                         true,
                         true,
                         false
@@ -419,7 +419,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.contributor,
+                        'Contributor',
                         true,
                         true,
                         false
@@ -446,7 +446,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.contributor,
+                        'Contributor',
                         true,
                         true,
                         false
@@ -476,7 +476,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.contributor,
+                        'Contributor',
                         true,
                         true,
                         false
@@ -505,7 +505,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.contributor,
+                        'Contributor',
                         true,
                         true,
                         false
@@ -534,7 +534,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.contributor,
+                        'Contributor',
                         true,
                         true,
                         false
@@ -563,7 +563,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.contributor,
+                        'Contributor',
                         true,
                         true,
                         false
@@ -589,8 +589,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'add',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        true,
+                        'Contributor',
                         true,
                         true
                     ).then(() => {
@@ -614,7 +613,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'add',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.contributor,
+                        'Contributor',
                         true,
                         true,
                         true
@@ -639,7 +638,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'add',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.contributor,
+                        'Contributor',
                         true,
                         true,
                         true
@@ -664,7 +663,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'add',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.contributor,
+                        'Contributor',
                         true,
                         true,
                         true
@@ -692,7 +691,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'destroy',
                         context,
                         {},
-                        testUtils.permissions.contributor,
+                        'Contributor',
                         true,
                         true,
                         true
@@ -721,7 +720,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'destroy',
                         context,
                         {},
-                        testUtils.permissions.contributor,
+                        'Contributor',
                         true,
                         true,
                         true
@@ -750,7 +749,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'destroy',
                         context,
                         {},
-                        testUtils.permissions.contributor,
+                        'Contributor',
                         true,
                         true,
                         true
@@ -781,7 +780,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.author,
+                        'Author',
                         false,
                         true,
                         true
@@ -811,7 +810,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.author,
+                        'Author',
                         false,
                         false,
                         true
@@ -840,7 +839,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.author,
+                        'Author',
                         false,
                         true,
                         true
@@ -869,7 +868,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.author,
+                        'Author',
                         false,
                         true,
                         true
@@ -897,7 +896,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.author,
+                        'Author',
                         false,
                         true,
                         true
@@ -924,7 +923,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.author,
+                        'Author',
                         false,
                         true,
                         true
@@ -951,7 +950,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.author,
+                        'Author',
                         false,
                         true,
                         true
@@ -974,7 +973,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'add',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.author,
+                        'Author',
                         false,
                         true,
                         true
@@ -1002,7 +1001,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         'add',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.author,
+                        'Author',
                         false,
                         true,
                         true
@@ -1033,7 +1032,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     'edit',
                     context,
                     unsafeAttrs,
-                    testUtils.permissions.editor,
+                    'Editor',
                     false,
                     true,
                     true
@@ -1059,7 +1058,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     'edit',
                     context,
                     unsafeAttrs,
-                    testUtils.permissions.editor,
+                    'Editor',
                     true,
                     true,
                     true
@@ -1084,7 +1083,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     'edit',
                     context,
                     unsafeAttrs,
-                    testUtils.permissions.owner,
+                    'Owner',
                     false,
                     true,
                     true
@@ -1113,7 +1112,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     'edit',
                     context,
                     unsafeAttrs,
-                    testUtils.permissions.admin,
+                    'Administrator',
                     false,
                     true,
                     true

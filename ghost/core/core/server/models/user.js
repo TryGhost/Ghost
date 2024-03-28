@@ -13,6 +13,7 @@ const permissions = require('../services/permissions');
 const urlUtils = require('../../shared/url-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
 const ASSIGNABLE_ROLES = ['Administrator', 'Editor', 'Author', 'Contributor'];
+const models = require('./');
 
 const messages = {
     valueCannotBeBlank: 'Value in [{tableName}.{columnKey}] cannot be blank.',
@@ -777,7 +778,7 @@ User = ghostBookshelf.Model.extend({
         });
     },
 
-    permissible: async function permissible(userModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
+    permissible: async function permissible(userModelOrId, action, context, unsafeAttrs, role, hasUserPermission, hasApiKeyPermission) {
         const self = this;
         const userModel = userModelOrId;
         let origArgs;
@@ -823,10 +824,10 @@ User = ghostBookshelf.Model.extend({
             if (context.user === userModel.get('id')) {
                 // If this is the same user that requests the operation allow it.
                 hasUserPermission = true;
-            } else if (loadedPermissions.user && userModel.hasRole('Owner')) {
+            } else if (userModel.hasRole('Owner')) {
                 // Owner can only be edited by owner
-                hasUserPermission = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'});
-            } else if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
+                hasUserPermission = role === 'Owner';
+            } else if (role === 'Editor') {
                 // If the user we are trying to edit is an Author or Contributor, allow it
                 hasUserPermission = userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
@@ -841,7 +842,7 @@ User = ghostBookshelf.Model.extend({
             }
 
             // Users with the role 'Editor' have complex permissions when the action === 'destroy'
-            if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'})) {
+            if (role === 'Editor') {
                 // Alternatively, if the user we are trying to edit is an Author, allow it
                 hasUserPermission = context.user === userModel.get('id') || userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }
@@ -858,19 +859,26 @@ User = ghostBookshelf.Model.extend({
 
         // CASE: i want to edit roles
         if (action === 'edit' && unsafeAttrs.roles && unsafeAttrs.roles[0]) {
-            let role = unsafeAttrs.roles[0];
-            let roleId = role.id || role;
+            let roleToSet = unsafeAttrs.roles[0];
+            let roleId = roleToSet.id || role;
+            let roleName = roleToSet.name;
+            if (!roleName) {
+                const roleModel = await models.Role.findOne({id: roleId});
+                if (roleModel) {
+                    roleName = roleModel.get('name');
+                }
+            }
             let editedUserId = userModel.id;
             // @NOTE: role id of logged in user
-            let contextRoleId = loadedPermissions.user.roles[0].id;
+            let contextRoleName = role;
 
-            if (roleId !== contextRoleId && editedUserId === context.user) {
+            if (roleName !== contextRoleName && editedUserId === context.user) {
                 return Promise.reject(new errors.NoPermissionError({
                     message: tpl(messages.cannotChangeOwnRole)
                 }));
             }
 
-            if (limitService.isLimited('staff') && userModel.hasRole('Contributor') && role.name !== 'Contributor') {
+            if (limitService.isLimited('staff') && userModel.hasRole('Contributor') && roleToSet.name !== 'Contributor') {
                 // CASE: if your site is limited to a certain number of staff users
                 // Trying to change the role of a contributor, who doesn't count towards the limit, to any other role requires a limit check
                 // To check if it's OK to add one more staff user
@@ -897,12 +905,12 @@ User = ghostBookshelf.Model.extend({
                                 message: tpl(messages.cannotChangeOwnersRole)
                             }));
                         }
-                    } else if (roleId !== contextRoleId) {
+                    } else if (roleName !== contextRoleName) {
                         // CASE: you are trying to change a role, but you are not owner
                         // @NOTE: your role is not the same than the role you try to change (!)
                         // e.g. admin can assign admin role to a user, but not owner
 
-                        return permissions.canThis(context).assign.role(role)
+                        return permissions.canThis(context).assign.role(roleToSet)
                             .then(() => {
                                 if (hasUserPermission && hasApiKeyPermission) {
                                     return Promise.resolve();
