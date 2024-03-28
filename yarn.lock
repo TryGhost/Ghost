@@ -17151,10 +17151,10 @@ flatten@^1.0.2:
   resolved "https://registry.yarnpkg.com/flatten/-/flatten-1.0.3.tgz#c1283ac9f27b368abc1e36d1ff7b04501a30356b"
   integrity sha512-dVsPA/UwQ8+2uoFe5GHtiBMu48dWLTdsuEd7CKGlZlD78r1TTWBvDuFaFGKCo/ZfEr95Uk56vZoX86OsHkUeIg==
 
-flexsearch@0.7.21:
-  version "0.7.21"
-  resolved "https://registry.yarnpkg.com/flexsearch/-/flexsearch-0.7.21.tgz#0f5ede3f2aae67ddc351efbe3b24b69d29e9d48b"
-  integrity sha512-W7cHV7Hrwjid6lWmy0IhsWDFQboWSng25U3VVywpHOTJnnAZNPScog67G+cVpeX9f7yDD21ih0WDrMMT+JoaYg==
+flexsearch@0.7.41:
+  version "0.7.41"
+  resolved "https://registry.yarnpkg.com/flexsearch/-/flexsearch-0.7.41.tgz#952e662f692b41c9f38068a783e8f5f440bfc72e"
+  integrity sha512-nlSsN+cLeoOMEPivjjMuYdMN7WdCKaogCirVZNxQ8a34reoKZvxDxbAtIoAK1ewmkXd5dz8Pb2kwwYJ6b/07PQ==
 
 flow-parser@0.*:
   version "0.205.1"
