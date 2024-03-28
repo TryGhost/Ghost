@@ -111,9 +111,9 @@ function evaluateList(type, expr, obj, data) {
         return prop.trim().toLocaleLowerCase();
     })[type](function (prop) {
         if (prop.match(/^@/)) {
-            return _.has(data, prop.replace(/@/, '')) && !_.isEmpty(_.get(data, prop.replace(/@/, '')));
+            return _.has(data, prop.replace(/@/, '')) && ((_.isInteger(_.get(obj, prop)) && !!_.get(obj, prop)) || !_.isEmpty(_.get(data, prop.replace(/@/, ''))));
         } else {
-            return _.has(obj, prop) && !_.isEmpty(_.get(obj, prop));
+            return _.has(obj, prop) && ((_.isInteger(_.get(obj, prop)) && !!_.get(obj, prop)) || !_.isEmpty(_.get(obj, prop)));
         }
     });
 }
