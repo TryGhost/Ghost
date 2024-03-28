@@ -64,12 +64,17 @@ describe('Adapter Cache Redis', function () {
             let cachedValue = null;
             const redisCacheInstanceStub = {
                 get: function (key) {
-                    assert(key === KEY);
-                    return cachedValue;
+                    if (key === 'prefix_hash') {
+                        return 'prefix_hash';
+                    }
+                    if (key === 'prefix_hash' + KEY) {
+                        return cachedValue;
+                    }
                 },
                 set: function (key, value) {
-                    assert(key === KEY);
-                    cachedValue = value;
+                    if (key === 'prefix_hash' + KEY) {
+                        cachedValue = value;
+                    }
                 },
                 store: {
                     getClient: sinon.stub().returns({
@@ -105,16 +110,22 @@ describe('Adapter Cache Redis', function () {
 
             const redisCacheInstanceStub = {
                 get: function (key) {
-                    assert(key === KEY);
-                    return cachedValue;
+                    if (key === 'prefix_hash') {
+                        return 'prefix_hash';
+                    }
+                    if (key === 'prefix_hash' + KEY) {
+                        return cachedValue;
+                    }
                 },
                 set: function (key, value) {
-                    assert(key === KEY);
-                    cachedValue = value;
+                    if (key === 'prefix_hash' + KEY) {
+                        cachedValue = value;
+                    }
                 },
                 ttl: function (key) {
-                    assert(key === KEY);
-                    return remainingTTL;
+                    if (key === 'prefix_hash' + KEY) {
+                        return remainingTTL;
+                    }
                 },
                 store: {
                     getClient: sinon.stub().returns({
@@ -185,6 +196,11 @@ describe('Adapter Cache Redis', function () {
     describe('set', function () {
         it('can set a value in the cache', async function () {
             const redisCacheInstanceStub = {
+                get: function (key) {
+                    if (key === 'prefix_hash') {
+                        return 'prefix_hash';
+                    }
+                },
                 set: sinon.stub().resolvesArg(1),
                 store: {
                     getClient: sinon.stub().returns({
@@ -199,11 +215,16 @@ describe('Adapter Cache Redis', function () {
             const value = await cache.set('key-here', 'new value');
 
             assert.equal(value, 'new value');
-            assert.equal(redisCacheInstanceStub.set.args[0][0], 'key-here');
+            assert.equal(redisCacheInstanceStub.set.args[0][0], 'prefix_hashkey-here');
         });
 
         it('sets a key based on keyPrefix', async function () {
             const redisCacheInstanceStub = {
+                get: function (key) {
+                    if (key === 'testing-prefix:prefix_hash') {
+                        return 'prefix_hash';
+                    }
+                },
                 set: sinon.stub().resolvesArg(1),
                 store: {
                     getClient: sinon.stub().returns({
@@ -219,14 +240,15 @@ describe('Adapter Cache Redis', function () {
             const value = await cache.set('key-here', 'new value');
 
             assert.equal(value, 'new value');
-            assert.equal(redisCacheInstanceStub.set.args[0][0], 'testing-prefix:key-here');
+            assert.equal(redisCacheInstanceStub.set.args[0][0], 'testing-prefix:prefix_hashkey-here');
         });
     });
 
     describe('reset', function () {
-        it('catches an error when thrown during the reset', async function () {
+        it('Updates the prefix_hash cache input with 0 ttl', async function () {
             const redisCacheInstanceStub = {
                 get: sinon.stub().resolves('value from cache'),
+                set: sinon.stub().resolvesArg(1),
                 store: {
                     getClient: sinon.stub().returns({
                         on: sinon.stub()
@@ -239,7 +261,8 @@ describe('Adapter Cache Redis', function () {
 
             await cache.reset();
 
-            assert.ok(logging.error.calledOnce, 'error was logged');
+            assert.equal(redisCacheInstanceStub.set.args[0][0], 'prefix_hash');
+            assert.deepEqual(redisCacheInstanceStub.set.args[0][2], {ttl: 0});
         });
     });
 });
