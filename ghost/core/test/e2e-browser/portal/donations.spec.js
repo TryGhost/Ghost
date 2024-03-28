@@ -12,7 +12,9 @@ test.describe('Portal', () => {
             await sharedPage.locator('#email').fill('member-donation-test-1@ghost.org');
             await completeStripeSubscription(sharedPage);
 
+            await sharedPage.pause();
             // Check success message
+            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
             const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
             await expect(portalFrame.getByText('Thank you!')).toBeVisible();
         });
@@ -36,6 +38,7 @@ test.describe('Portal', () => {
             await completeStripeSubscription(sharedPage);
 
             // Check success message
+            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
             const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
             await expect(portalFrame.getByText('Thank you!')).toBeVisible();
         });
@@ -64,6 +67,7 @@ test.describe('Portal', () => {
             await completeStripeSubscription(sharedPage);
 
             // Check success message
+            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'visible'});
             const portalFrame = sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
             await expect(portalFrame.getByText('Thank you!')).toBeVisible();
         });

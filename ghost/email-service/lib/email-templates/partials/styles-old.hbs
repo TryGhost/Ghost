@@ -269,8 +269,14 @@ figcaption {
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
     font-size: 13px;
-    padding-top: 5px;
+    padding-top: 10px;
+    padding-bottom: 10px;
     line-height: 1.5em;
+    color: {{secondaryTextColor}};
+}
+
+figcaption a {
+    text-decoration: none!important;
 }
 
 code {
@@ -424,15 +430,19 @@ figure blockquote p {
 }
 
 .feature-image-with-caption {
-    padding-bottom: 10px;
+    width: 100%;
+    padding: 0;
+    font-size: 13px!important;
 }
 
 .feature-image-caption {
     width: 100%;
+    padding-top: 5px;
     padding-bottom: 30px;
     text-align: center;
-    font-size: 13px;
-    color: #738a94;
+    font-size: 13px!important;
+    color: {{secondaryTextColor}};
+    line-height: 1.5em;
 }
 
 /* -------------------------------------
@@ -616,6 +626,10 @@ a[data-flickr-embed] img {
     margin: 0 auto;
     height: auto;
     width: auto;
+}
+
+.kg-image-card span {
+    text-align: center;
 }
 
 .kg-bookmark-container {
@@ -1123,7 +1137,7 @@ a[data-flickr-embed] img {
     color: #738a94;
     margin-top: 20px;
     text-align: center;
-    font-size: 13px;
+    font-size: 13px!important;
     padding-bottom: 10px;
     padding-top: 10px;
     padding-left: 30px;
@@ -1134,6 +1148,7 @@ a[data-flickr-embed] img {
 .footer a {
     color: #738a94;
     text-decoration: underline;
+    font-size: 13px;
 }
 
 /* -------------------------------------
@@ -1373,6 +1388,10 @@ a[data-flickr-embed] img {
     }
 
 
+    table.body .footer p {
+        font-size: 12px !important;
+    }
+
     table.body .view-online-link,
     table.body .footer,
     table.body .footer a {
@@ -1536,6 +1555,10 @@ a[data-flickr-embed] img {
     table.body .kg-header-card.kg-v2 .kg-header-card-subheading {
         line-height: 1.3em !important;
     }
+
+   .feature-image-caption {
+        font-size: 13px!important;
+   }
 
 }
 

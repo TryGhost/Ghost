@@ -6,7 +6,6 @@ import {EditOrAddRecommendation, useCheckRecommendation} from '@tryghost/admin-x
 import {ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Form, LoadingIndicator, Modal, TextField, dismissAllToasts, formatUrl, showToast} from '@tryghost/admin-x-design-system';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {trimSearchAndHash} from '../../../../utils/url';
 
 interface AddRecommendationModalProps {
     recommendation?: EditOrAddRecommendation,
@@ -60,7 +59,6 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
         onSave: async () => {
             let validatedUrl: URL;
             validatedUrl = new URL(formState.url);
-            validatedUrl = trimSearchAndHash(validatedUrl);
 
             // Use the hostname as fallback title
             const defaultTitle = validatedUrl.hostname.replace('www.', '');
