@@ -2771,6 +2771,9 @@ Onboarding checklist */
     flex-direction: column;
     min-height: 100vh;
     position: relative;
+    background: url(img/gradient-bg.png) no-repeat;
+    background-size: contain;
+    background-position: center;
 }
 
 .gh-onboarding-header {
@@ -2793,6 +2796,7 @@ Onboarding checklist */
     /* box-shadow: 0px 0px 16px 4px rgba(0, 0, 0, 0.04); */
     border: 1px solid var(--whitegrey);
     /* box-shadow: -7px -6px 42px 8px rgba(75,225,226,.28),7px 6px 42px 8px rgba(202,103,255,.32); */
+    background: var(--white);
 }
 
 .gh-onboarding-item {
