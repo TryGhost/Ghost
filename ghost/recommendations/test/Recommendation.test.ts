@@ -118,7 +118,7 @@ describe('Recommendation', function () {
             assert.equal(recommendation.description, null);
         });
 
-        it('removes search and hash params', function () {
+        it('keeps search and hash params', function () {
             const recommendation = Recommendation.create({
                 title: 'Test',
                 description: '',
@@ -130,7 +130,7 @@ describe('Recommendation', function () {
                 updatedAt: new Date('2021-01-01T00:00:05Z')
             });
 
-            assert.equal(recommendation.url.toString(), 'https://example.com/');
+            assert.equal(recommendation.url.toString(), 'https://example.com/?query=1#hash');
         });
     });
 
