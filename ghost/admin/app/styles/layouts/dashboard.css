@@ -2927,7 +2927,6 @@ Onboarding checklist */
 .gh-onboarding-item-checkmark svg {
     width: 20px;
     height: auto;
-    margin-right: 1rem;
 }
 
 .gh-onboarding-item-checkmark svg path, .gh-onboarding-item-checkmark svg circle {
