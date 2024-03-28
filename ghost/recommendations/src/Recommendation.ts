@@ -103,15 +103,9 @@ export class Recommendation {
             });
         }
 
-        if (properties.description && properties.description.length > 2000) {
+        if (properties.description && properties.description.length > 200) {
             throw new errors.ValidationError({
-                message: 'Description must be less than 2000 characters'
-            });
-        }
-
-        if (properties.excerpt && properties.excerpt.length > 2000) {
-            throw new errors.ValidationError({
-                message: 'Excerpt must be less than 2000 characters'
+                message: 'Description must be less than 200 characters'
             });
         }
     }
@@ -119,6 +113,14 @@ export class Recommendation {
     clean() {
         if (this.description !== null && this.description.length === 0) {
             this.description = null;
+        }
+
+        if (this.excerpt !== null && this.excerpt.length === 0) {
+            this.excerpt = null;
+        }
+
+        if (this.excerpt !== null && this.excerpt.length > 2000) {
+            this.excerpt = this.excerpt.slice(0, 1997) + '...';
         }
 
         this.createdAt.setMilliseconds(0);
