@@ -2820,6 +2820,14 @@ Onboarding checklist */
     cursor: pointer;
 }
 
+.gh-onboarding-item:hover .gh-onboarding-item-content {
+    opacity: .9;
+}
+
+.gh-onboarding-item--completed:hover .gh-onboarding-item-content {
+    opacity: .24;
+}
+
 .gh-onboarding-item--next {
     margin: 0px -32px 6px;
     background: var(--white);
@@ -2940,6 +2948,10 @@ Onboarding checklist */
     font-size: 1.5rem;
 }
 
+.gh-onboarding-help a:hover {
+    color: var(--darkgrey);
+}
+
 .gh-onboarding-skip {
     display: flex;
     align-items: center;
@@ -2953,6 +2965,11 @@ Onboarding checklist */
     height: 38px;
     overflow: hidden;
     transition: opacity .1s linear;
+}
+
+.gh-onboarding-skip:hover {
+    color: var(--darkgrey);
+    border-color: var(--lightgrey);
 }
 
 .gh-onboarding-explore-dashboard {
