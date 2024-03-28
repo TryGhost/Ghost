@@ -19,7 +19,10 @@ const messages = {
 };
 
 module.exports = function t(text, options) {
-    if (text === undefined && options === undefined) {
+    // checks for smart apostrophes, eg. https://unicode-table.com/en/201C/
+    const quoteTest = /[\u201C\u201D\u201F]/u;
+
+    if ((quoteTest.test(text)) || (text === undefined && options === undefined)) {
         throw new errors.IncorrectUsageError({
             message: tpl(messages.oopsErrorTemplateHasError)
         });
