@@ -2781,14 +2781,6 @@ Onboarding checklist */
     margin-bottom: 40px;
 }
 
-.gh-onboarding-ghost-logo--light {
-    display: inline-block;
-}
-
-.gh-onboarding-ghost-logo--dark {
-    display: none;
-}
-
 .gh-onboarding-header p {
     margin-top: 8px;
     margin-bottom: 0;
