@@ -1,8 +1,15 @@
 <div class="gh-onboarding-wrapper" data-test-dashboard="onboarding-checklist">
     <div class="gh-onboarding-header">
-        <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;">
-            <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
-        </video>
+        {{#if (feature "nightShift")}}
+            <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;" class="gh-onboarding-ghost-logo--dark">
+                <source src="assets/videos/logo-loader-dark.mp4" type="video/mp4" />
+            </video>
+        {{else}}
+            <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;" class="gh-onboarding-ghost-logo--light">
+                <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
+            </video>
+        {{/if}}
+        
         <h2 class="gh-canvas-title">{{this.siteUrl}} is ready to go!</h2>
         <p>Let’s set your brand new publication up for success.</p>
     </div>
@@ -45,7 +52,7 @@
                 />
             </LinkTo>
             {{!-- Step 5 --}}
-            <div role="button" {{on "click" (toggle-action "showShareModal" this)}} class="gh-onboarding-item {{onboarding-step-class "share-publication"}}">
+            <div role="button" {{on "click" this.openShareModal}} class="gh-onboarding-item {{onboarding-step-class "share-publication"}}">
                 <Dashboard::Onboarding::Step
                     @icon="megaphone"
                     @title="Share your publication"
@@ -57,16 +64,13 @@
         </div>
     </div>
 
-    <a href="#" class="gh-onboarding-explore-dashboard">Explore your dashboard</a>
+    {{#if this.onboarding.allStepsCompleted}}
+        <a href="#" class="gh-onboarding-explore-dashboard" {{on "click" this.onboarding.completeChecklist}}>Explore your dashboard</a>
+    {{/if}}
 
-    <p class="gh-onboarding-help">Need some more help? Check out our <a href="https://ghost.org/help?utm_source=admin&utm_campaign=onboarding" target="_blank" rel="noopener noreferrer">Help center</a></p>
+    <p class="gh-onboarding-help">Need some more help? Check out our <a href="https://ghost.org/help?utm_source=admin&utm_campaign=onboarding" target="_blank" rel="noopener noreferrer">Help Center</a></p>
 
-    <a href="#" class="gh-onboarding-skip">Skip onboarding</a>
+    {{#unless this.onboarding.allStepsCompleted}}
+        <a href="#" class="gh-onboarding-skip" {{on "click" this.confirmDismiss}}>Skip onboarding</a>
+    {{/unless}}
 </div>
-
-{{#if this.showShareModal}}
-<GhFullscreenModal @modal="share"
-    @close={{this.close}}
-    @modifier="action wide"
-     />
-{{/if}}

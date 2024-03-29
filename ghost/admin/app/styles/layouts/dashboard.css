@@ -2771,6 +2771,9 @@ Onboarding checklist */
     flex-direction: column;
     min-height: 100vh;
     position: relative;
+    /* background: url(img/gradient-bg.png) no-repeat; */
+    background-size: contain;
+    background-position: center;
 }
 
 .gh-onboarding-header {
@@ -2793,6 +2796,7 @@ Onboarding checklist */
     /* box-shadow: 0px 0px 16px 4px rgba(0, 0, 0, 0.04); */
     border: 1px solid var(--whitegrey);
     /* box-shadow: -7px -6px 42px 8px rgba(75,225,226,.28),7px 6px 42px 8px rgba(202,103,255,.32); */
+    background: var(--white);
 }
 
 .gh-onboarding-item {
@@ -2812,8 +2816,20 @@ Onboarding checklist */
     margin-bottom: -12px;
 }
 
+.gh-onboarding-item:last-child.gh-onboarding-item--next {
+    margin-bottom: -18px;
+}
+
 .gh-onboarding-item:hover {
     cursor: pointer;
+}
+
+.gh-onboarding-item:hover .gh-onboarding-item-content {
+    opacity: .9;
+}
+
+.gh-onboarding-item--completed:hover .gh-onboarding-item-content {
+    opacity: .24;
 }
 
 .gh-onboarding-item--next {
@@ -2823,6 +2839,7 @@ Onboarding checklist */
     box-shadow: 0px 1px 0px rgba(17,17,26,0.05), 0px 0px 8px rgba(17,17,26,0.1);
     border-radius: 6px;
     border-bottom: none;
+    transition: none;
 }
 
 .gh-onboarding-item:has(+ .gh-onboarding-item--next) {
@@ -2923,7 +2940,6 @@ Onboarding checklist */
 .gh-onboarding-item-checkmark svg {
     width: 20px;
     height: auto;
-    margin-right: 1rem;
 }
 
 .gh-onboarding-item-checkmark svg path, .gh-onboarding-item-checkmark svg circle {
@@ -2934,6 +2950,10 @@ Onboarding checklist */
     color: var(--midgrey);
     margin-top: 24px;
     font-size: 1.5rem;
+}
+
+.gh-onboarding-help a:hover {
+    color: var(--darkgrey);
 }
 
 .gh-onboarding-skip {
@@ -2949,6 +2969,11 @@ Onboarding checklist */
     height: 38px;
     overflow: hidden;
     transition: opacity .1s linear;
+}
+
+.gh-onboarding-skip:hover {
+    color: var(--darkgrey);
+    border-color: var(--lightgrey);
 }
 
 .gh-onboarding-explore-dashboard {
