@@ -118,6 +118,9 @@
                         </li>
 
                     {{/if}}
+                    <li>
+                            <LinkTo @route="demo-x" @current-when="demo-x">{{svg-jar "star"}}Profit Management</LinkTo>
+                     </li>
                     {{#if (feature "adminXDemo")}}
                         <li>
                             <LinkTo @route="demo-x" @current-when="demo-x">{{svg-jar "star"}}AdminX Demo</LinkTo>

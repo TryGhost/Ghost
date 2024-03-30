@@ -33,7 +33,7 @@
     "reset:data": "cd ghost/core && node index.js generate-data --clear-database --quantities members:100000,posts:500 --seed 123",
     "reset:data:empty": "cd ghost/core && node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123",
     "reset:data:xxl": "cd ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123",
-    "docker:reset": "docker-compose -f .github/scripts/docker-compose.yml down -v && docker-compose -f .github/scripts/docker-compose.yml up -d --wait",
+    "docker:reset": "docker compose -f .github/scripts/docker-compose.yml down -v && docker compose -f .github/scripts/docker-compose.yml up -d --wait",
     "lint": "nx run-many -t lint",
     "test": "nx run-many -t test",
     "test:unit": "nx run-many -t test:unit",
@@ -46,7 +46,8 @@
     "@tryghost/errors": "1.3.1",
     "@tryghost/logging": "2.4.13",
     "moment": "2.24.0",
-    "moment-timezone": "0.5.23"
+    "moment-timezone": "0.5.23",
+    "string-width": "4.2.3"
   },
   "renovate": {
     "extends": [
