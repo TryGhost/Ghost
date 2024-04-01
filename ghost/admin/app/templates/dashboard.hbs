@@ -91,11 +91,10 @@
                         <Dashboard::OnboardingChecklist />
                     {{/if}}
 
-                    {{#if this.hasPaidTiers}}
-                        <Dashboard::Charts::Overview />
-                    {{/if}}
-
                     {{#unless this.onboarding.isChecklistShown}}
+                        {{#if this.hasPaidTiers}}
+                            <Dashboard::Charts::Overview />
+                        {{/if}}
                         <div class="gh-dashboard-group {{if this.isTotalMembersZero 'is-zero'}}" data-test-dashboard="attribution">
                             <Dashboard::Charts::AnchorAttribution />
                             {{#if this.hasPaidTiers}}
@@ -120,21 +119,23 @@
                     {{/unless}}
                 {{/if}}
 
-                <div class="gh-dashboard-recents-mentions">
-                    <Dashboard::Charts::Recents />
-                </div>
+                {{#unless this.onboarding.isChecklistShown}}
+                    <div class="gh-dashboard-recents-mentions">
+                        <Dashboard::Charts::Recents />
+                    </div>
 
-                <div class="gh-dashboard-split gh-dashboard-box is-secondary">
-                    <Dashboard::Resources::Resources />
-                    <Dashboard::Resources::Newsletter />
-                </div>
+                    <div class="gh-dashboard-split gh-dashboard-box is-secondary">
+                        <Dashboard::Resources::Resources />
+                        <Dashboard::Resources::Newsletter />
+                    </div>
 
-                <Dashboard::Resources::ExploreFeed />
+                    <Dashboard::Resources::ExploreFeed />
 
-                <div class="gh-dashboard-split gh-dashboard-box no-boarder">
-                    <Dashboard::Resources::Community />
-                    <Dashboard::Resources::WhatsNew />
-                </div>
+                    <div class="gh-dashboard-split gh-dashboard-box no-boarder">
+                        <Dashboard::Resources::Community />
+                        <Dashboard::Resources::WhatsNew />
+                    </div>
+                {{/unless}}
             {{/if}}
         </section>
 
