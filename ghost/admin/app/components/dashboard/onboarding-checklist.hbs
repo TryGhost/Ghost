@@ -10,8 +10,11 @@
             </video>
         {{/if}}
         
-        <h2 class="gh-canvas-title">{{this.siteUrl}} is ready to go!</h2>
-        <p>Let’s set your brand new publication up for success.</p>
+        {{#if this.onboarding.allStepsCompleted}}
+            <h2 class="gh-canvas-title">You’re all set.</h2>
+        {{else}}
+            <h2 class="gh-canvas-title">Let’s get started.</h2>
+        {{/if}}
     </div>
 
     <div class="gh-onboarding-items">
@@ -37,8 +40,8 @@
             <LinkTo @route="lexical-editor.new" @model="post" class="gh-onboarding-item {{onboarding-step-class "first-post"}}" {{on "click" (fn this.onboarding.markStepCompleted "first-post")}}>
                 <Dashboard::Onboarding::Step
                     @icon="writing"
-                    @title="Create your first post"
-                    @description="Explore the editor and tell your story."
+                    @title="Explore the editor"
+                    @description="Get to know a writing experience you’ll love."
                     @complete={{is-onboarding-step-completed "first-post"}}
                 />
             </LinkTo>
@@ -56,7 +59,7 @@
                 <Dashboard::Onboarding::Step
                     @icon="megaphone"
                     @title="Share your publication"
-                    @description="Share your publication on social media."
+                    @description="Expand your reach on social media."
                     @complete={{is-onboarding-step-completed "share-publication"}}
                     role="presentation"
                 />
@@ -68,7 +71,7 @@
         <a href="#" class="gh-onboarding-explore-dashboard" {{on "click" this.onboarding.completeChecklist}}>Explore your dashboard</a>
     {{/if}}
 
-    <p class="gh-onboarding-help">Need some more help? Check out our <a href="https://ghost.org/help?utm_source=admin&utm_campaign=onboarding" target="_blank" rel="noopener noreferrer">Help Center</a></p>
+    <p class="gh-onboarding-help">More questions? Check out our <a href="https://ghost.org/help?utm_source=admin&utm_campaign=onboarding" target="_blank" rel="noopener noreferrer">Help Center</a>.</p>
 
     {{#unless this.onboarding.allStepsCompleted}}
         <a href="#" class="gh-onboarding-skip" {{on "click" this.confirmDismiss}}>Skip onboarding</a>

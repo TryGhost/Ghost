@@ -2770,6 +2770,7 @@ Onboarding checklist */
     align-items: center;
     flex-direction: column;
     min-height: 100vh;
+    margin-bottom: -48px;
     position: relative;
     /* background: url(img/gradient-bg.png) no-repeat; */
     background-size: contain;
@@ -2952,8 +2953,12 @@ Onboarding checklist */
     font-size: 1.5rem;
 }
 
+.gh-onboarding-help a {
+    color: #30cf43
+}
+
 .gh-onboarding-help a:hover {
-    color: var(--darkgrey);
+    color: #2bba3c;
 }
 
 .gh-onboarding-skip {
