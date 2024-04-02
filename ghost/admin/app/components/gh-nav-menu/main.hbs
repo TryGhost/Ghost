@@ -17,11 +17,11 @@
         {{#unless this.session.user.isContributor}}
             <div class="gh-nav-top">
                 <ul class="gh-nav-list gh-nav-main">
-                    {{#if (gh-user-can-admin this.session.user)}}
+                    {{!-- {{#if (gh-user-can-admin this.session.user)}}
                     <li class="relative">
                         <LinkTo @route="dashboard" @alt="Dashboard" title="Dashboard" data-test-nav="dashboard">{{svg-jar "house"}} Dashboard</LinkTo>
                     </li>
-                    {{/if}}
+                    {{/if}} --}}
                     <li class="relative">
                         <span {{action "transitionToOrRefreshSite" on="click"}}>
                             <LinkTo @route="site" data-test-nav="site" @current-when={{this.isOnSite}} @preventDefault={{false}}>
@@ -32,13 +32,13 @@
                             <span>{{svg-jar "external"}}</span>
                         </a>
                     </li>
-                    {{#if (gh-user-can-admin this.session.user)}}
+                    {{!-- {{#if (gh-user-can-admin this.session.user)}}
                     <li class="relative">
                         <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active"}} {{on "click" (fn this.toggleExploreWindow "")}} data-test-nav="explore">
                             {{svg-jar "globe-simple"}} Explore
                         </a>
                     </li>
-                    {{/if}}
+                    {{/if}} --}}
                 </ul>
                 <ul class="gh-nav-list gh-nav-manage">
                     <li class="gh-nav-list-new relative">

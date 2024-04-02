@@ -13,8 +13,8 @@ const Settings: React.FC = () => {
             <div className='mb-[40vh] px-8 pt-16 tablet:max-w-[760px] tablet:px-14 tablet:pt-0'>
                 <GeneralSettings />
                 <SiteSettings />
-                <MembershipSettings />
-                <GrowthSettings />
+                {/* <MembershipSettings /> */}
+                {/* <GrowthSettings /> */}
                 <EmailSettings />
                 <AdvancedSettings />
             </div>
