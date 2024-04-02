@@ -1,4 +1,4 @@
-import {authenticateSession} from 'ember-simple-auth/test-support';
+import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {currentURL, find, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {enableLabsFlag} from '../helpers/labs-flag';
@@ -69,6 +69,18 @@ describe('Acceptance: Onboarding', function () {
             // other default dashboard elements are visible
             expect(find('[data-test-dashboard="header"]'), 'header').to.exist;
             expect(find('[data-test-dashboard="attribution"]'), 'attribution section').to.exist;
+        });
+    });
+
+    describe('unauthenticated', function () {
+        beforeEach(async function () {
+            this.server.db.users.remove();
+            await invalidateSession();
+        });
+
+        it('setup is redirected to signin', async function () {
+            await visit('/setup/done');
+            expect(currentURL()).to.equal('/signin');
         });
     });
 });
