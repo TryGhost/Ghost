@@ -61,6 +61,7 @@ const unparse = (rows, columns = DEFAULT_COLUMNS.slice()) => {
     });
 
     return papaparse.unparse(mappedRows, {
+        escapeFormulae: true,
         columns
     });
 };
