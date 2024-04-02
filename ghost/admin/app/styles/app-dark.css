@@ -1392,24 +1392,24 @@ Onboarding checklist */
 /* ---------------------------------
 Onboarding checklist: Share publication modal */
 
-.share-card-container {
+.gh-share-card-container {
     border: 1px solid #394047;
 }
 
-.copy-publication-link {
+.gh-copy-publication-link {
     background: #394047;
     border: none;
 }
 
-.copy-publication-link:hover {
+.gh-copy-publication-link:hover {
     border: none;
     opacity: .8;
 }
 
-.share-links li a { 
+.gh-share-links li a { 
     border: 1px solid #394047;
 }
 
-.share-links li a:hover {
+.gh-share-links li a:hover {
     background: #394047;
 }

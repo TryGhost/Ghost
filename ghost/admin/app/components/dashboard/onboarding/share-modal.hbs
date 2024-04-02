@@ -4,19 +4,19 @@
     </header>
     <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
 
-    <div class="share-card-container">
+    <div class="gh-share-card-container">
         {{#let (get-setting "coverImage") as |imageUrl|}}
             {{#if imageUrl}}
-                <div class="share-card-image">
+                <div class="gh-share-card-image">
                     <img src={{imageUrl}} alt="" role="presentation" />
                 </div>
             {{else}}
-                <div class="share-card-image placeholder">{{svg-jar "picture"}}</div>
+                <div class="gh-share-card-image gh-cover-placeholder">{{svg-jar "picture"}}</div>
             {{/if}}
 
-            <div class="share-card-content">
-                <div class="share-card-title">{{get-setting "title"}}</div>
-                <div class="share-card-description">
+            <div class="gh-share-card-content">
+                <div class="gh-share-card-title">{{get-setting "title"}}</div>
+                <div class="gh-share-card-description">
                     {{get-setting "description"}}
                 </div>
             </div>
@@ -24,9 +24,9 @@
     </div>
 
 
-    <span class="tip">Set your publication's cover image and description in <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup">Design settings</LinkTo>.</span>
+    <span class="gh-tip">Set your publication's cover image and description in <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup">Design settings</LinkTo>.</span>
 
-    <div class="copy-publication-link">
+    <div class="gh-copy-publication-link">
         <span>{{this.config.blogUrl}}</span>
         <GhTaskButton
             data-test-button="copy-share-link"
@@ -38,9 +38,9 @@
         />
     </div>
 
-    <ul class="share-links">
+    <ul class="gh-share-links">
         <li>
-            <a href="https://twitter.com/intent/tweet?url={{this.encodedUrl}}" target="_blank" rel="noopener noreferrer" class="share-link" title="Share your publication on X">
+            <a href="https://twitter.com/intent/tweet?url={{this.encodedUrl}}" target="_blank" rel="noopener noreferrer" class="gh-share-link" title="Share your publication on X">
                 <span>{{svg-jar "social-x"}}</span>
             </a>
         </li>
