@@ -1,4 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
 const should = require('should');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
@@ -174,6 +175,7 @@ describe('sendMagicLink', function () {
     });
 
     it('triggers email alert for free member signup', async function () {
+        mockLabsDisabled('membersSpamPrevention');
         const email = 'newly-created-user-magic-link-test@test.com';
         await membersAgent.post('/api/send-magic-link')
             .body({

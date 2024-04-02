@@ -907,6 +907,7 @@ describe('Members API', function () {
     });
 
     it('Can add and send a signup confirmation email', async function () {
+        mockLabsDisabled('membersSpamPrevention');
         const member = {
             name: 'Send Me Confirmation',
             email: 'member_getting_confirmation@test.com',
