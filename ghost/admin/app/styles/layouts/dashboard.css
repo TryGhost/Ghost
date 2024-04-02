@@ -3004,7 +3004,7 @@ Onboarding checklist */
 /* ---------------------------------
 Share publication modal */
 
-.share-card-container {
+.gh-share-card-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -3015,18 +3015,18 @@ Share publication modal */
     transition: all .3s ease-in-out;
 }
 
-.share-card-image {
+.gh-share-card-image {
     max-height: 196px;
 }
 
-.share-card-image img {
+.gh-share-card-image img {
     border-radius: 6px 6px 0 0;
     object-fit: cover;
     width: 484px;
     height: 196px;
 }
 
-.placeholder {
+.gh-cover-placeholder {
     width: 100%;
     height: 196px;
     border-radius: 6px 6px 0 0;
@@ -3036,23 +3036,23 @@ Share publication modal */
     background: var(--whitegrey);
 }
 
-.placeholder svg {
+.gh-cover-placeholder svg {
     width: 40px;
     height: 40px;
     stroke: var(--lightgrey);
 }
 
-.share-card-content {
+.gh-share-card-content {
     padding: 24px;
     width: 100%;
 }
 
-.share-card-title {
+.gh-share-card-title {
     font-size: 1.7rem;
     font-weight: 600;
 }
 
-.copy-publication-link {
+.gh-copy-publication-link {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -3067,21 +3067,21 @@ Share publication modal */
     transition: all .3s ease-in-out;
 }
 
-.copy-publication-link:hover {
+.gh-copy-publication-link:hover {
     border: 1px solid var(--lightgrey);
 }
 
-.copy-publication-link .gh-btn-icon {
+.gh-copy-publication-link .gh-btn-icon {
     font-weight: 600;
 }
 
-.copy-publication-link .gh-share-link-success {
+.gh-copy-publication-link .gh-share-link-success {
     color: var(--green);
     font-size: 1.5rem;
     font-weight: 600;
 }
 
-.share-links {
+.gh-share-links {
     list-style: none;
     padding: 0;
     margin: 16px 0 0 0;
@@ -3089,7 +3089,7 @@ Share publication modal */
     flex-direction: row;
 }
 
-.share-links li { 
+.gh-share-links li { 
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--darkgrey);
@@ -3099,11 +3099,11 @@ Share publication modal */
     vertical-align: middle;
 }
 
-.share-links li:last-child {
+.gh-share-links li:last-child {
     margin: 0;
 }
 
-.share-links li a { 
+.gh-share-links li a { 
     display: block;
     padding: 20px 0;
     text-align: center;
@@ -3112,44 +3112,44 @@ Share publication modal */
     transition: all .3s ease-in-out;
 }
 
-.share-links li a:hover {
+.gh-share-links li a:hover {
     box-shadow: 0 2px 4px rgb(0 0 0 / 7%);
 }
 
-.share-links li span {
+.gh-share-links li span {
     vertical-align: middle;
     height: 20px;
     display: block;
 }
 
-.share-links li a span svg {
+.gh-share-links li a span svg {
     width: 20px;
     height: 20px;
     fill: var(--midgrey);
 }
 
-.share-links svg path.social-facebook_svg__fb {
+.gh-share-links svg path.social-facebook_svg__fb {
     fill: var(--midgrey);
 }
 
-.share-links svg path.social-linkedin_svg__linkedin {
+.gh-share-links svg path.social-linkedin_svg__linkedin {
     fill: var(--midgrey);
 }
 
-.share-links a:hover svg path.social-facebook_svg__fb {
+.gh-share-links a:hover svg path.social-facebook_svg__fb {
     fill: #1977f3;
 }
 
 
-.share-links a:hover svg path.social-linkedin_svg__linkedin {
+.gh-share-links a:hover svg path.social-linkedin_svg__linkedin {
     fill: #007ebb;
 }
 
-.share-links a:hover svg path.social-x_svg__x {
+.gh-share-links a:hover svg path.social-x_svg__x {
     fill: var(--black);
 }
 
-span.tip {
+span.gh-tip {
     font-size: 1.4rem;
     font-weight: 400;
     line-height: 1.5;
@@ -3160,11 +3160,11 @@ span.tip {
     display: block;
 }
 
-span.tip a { 
+span.gh-tip a { 
     text-decoration: underline;
     color: var(--midgrey);
 }
 
-span.tip a:hover {
+span.gh-tip a:hover {
     color: var(--darkgrey);
 }
