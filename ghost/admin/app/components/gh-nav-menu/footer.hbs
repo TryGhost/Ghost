@@ -44,14 +44,14 @@
                             </li>
                             <li class="divider" role="separator"></li>
                         {{else}}
-                            <li>
+                            {{!-- <li>
                                 <LinkTo @route="whatsnew" @query={{hash entry=null}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="whatsnew">
                                     What's new?
                                     {{#if this.whatsNew.hasNew}}
                                         <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-green br-100"></span></div>
                                     {{/if}}
                                 </LinkTo>
-                            </li>
+                            </li> --}}
                         {{/if}}
 
                         <li>
@@ -61,7 +61,7 @@
                         </li>
 
                         {{#unless this.session.user.isContributor}}
-                            <li class="divider" role="separator"></li>
+                            {{!-- <li class="divider" role="separator"></li>
                             <li>
                                 <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/help?utm_source=admin&utm_campaign=help" target="_blank" rel="noopener noreferrer">
                                     Help center
@@ -71,7 +71,7 @@
                                 <a class="dropdown-item" role="menuitem" tabindex="-1" href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources" target="_blank" rel="noopener noreferrer">
                                     Resources & guides
                                 </a>
-                            </li>
+                            </li> --}}
 
                             {{#if this.showDropdownExtension}}
                                 {{#each this.config.clientExtensions.dropdown.items as |menuItem| }}
