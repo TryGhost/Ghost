@@ -1,7 +1,7 @@
-import Route from '@ember/routing/route';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {inject as service} from '@ember/service';
 
-export default class SetupFinishingTouchesRoute extends Route {
+export default class SetupFinishingTouchesRoute extends AuthenticatedRoute {
     @service feature;
     @service onboarding;
     @service router;
@@ -10,6 +10,8 @@ export default class SetupFinishingTouchesRoute extends Route {
     @service themeManagement;
 
     beforeModel() {
+        super.beforeModel(...arguments);
+
         if (!this.session.user.isOwnerOnly) {
             return;
         }
