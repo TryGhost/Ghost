@@ -2782,6 +2782,10 @@ Onboarding checklist */
     margin-bottom: 40px;
 }
 
+.gh-onboarding-header h2 {
+     justify-content: center;
+}
+
 .gh-onboarding-header p {
     margin-top: 8px;
     margin-bottom: 0;
