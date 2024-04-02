@@ -51,7 +51,7 @@ const CustomView = EmberObject.extend(ValidationEngine, {
 
 const DEFAULT_VIEWS = [{
     route: 'posts',
-    name: 'Drafts',
+    name: 'Đang chờ', // Drafts
     color: 'midgrey',
     icon: 'pen',
     filter: {
@@ -59,7 +59,7 @@ const DEFAULT_VIEWS = [{
     }
 }, {
     route: 'posts',
-    name: 'Scheduled',
+    name: 'Đã lên lịch', // Scheduled
     color: 'midgrey',
     icon: 'clock',
     filter: {
@@ -67,7 +67,7 @@ const DEFAULT_VIEWS = [{
     }
 }, {
     route: 'posts',
-    name: 'Published',
+    name: 'Đã xuất bản', // Published
     color: 'midgray',
     icon: 'published-post',
     filter: {

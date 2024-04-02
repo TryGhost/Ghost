@@ -25,7 +25,7 @@
                     <li class="relative">
                         <span {{action "transitionToOrRefreshSite" on="click"}}>
                             <LinkTo @route="site" data-test-nav="site" @current-when={{this.isOnSite}} @preventDefault={{false}}>
-                                {{svg-jar "view-site"}} View site
+                                {{svg-jar "view-site"}} Xem trang
                             </LinkTo>
                         </span>
                         <a href="{{this.config.blogUrl}}/" class="gh-secondary-action" title="Open site in new tab" target="_blank" rel="noopener noreferrer">
@@ -42,7 +42,7 @@
                 </ul>
                 <ul class="gh-nav-list gh-nav-manage">
                     <li class="gh-nav-list-new relative">
-                        <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts"}} data-test-nav="posts">{{svg-jar "posts"}}Posts</GhLinkToCustomViewsIndex>
+                        <GhLinkToCustomViewsIndex @route="posts" @query={{reset-query-params "posts"}} data-test-nav="posts">{{svg-jar "posts"}}Bài Viết</GhLinkToCustomViewsIndex>
                         <LinkTo @route="lexical-editor.new" @model="post" class="gh-secondary-action gh-nav-new-post" @alt="New post" title="New post" data-test-nav="new-story"><span>{{svg-jar "plus"}}</span></LinkTo>
                         {{#if this.session.user.isAuthorOrContributor}}
                             {{#if this.customViews.forPosts}}
@@ -107,7 +107,7 @@
                                     {{/let}}
                                 </LinkTo>
                             {{else}}
-                                <LinkTo @route="members" @current-when="members member member.new" data-test-nav="members">{{svg-jar "members"}}Members
+                                <LinkTo @route="members" @current-when="members member member.new" data-test-nav="members">{{svg-jar "members"}}Quản lý người dùng
                                     {{#let (members-count-fetcher) as |count|}}
                                         {{#unless count.isLoading}}
                                             <span class="gh-nav-member-count">{{format-number count.count}}</span>
@@ -119,7 +119,7 @@
 
                     {{/if}}
                     <li>
-                            <LinkTo @route="demo-x" @current-when="demo-x">{{svg-jar "star"}}Profit Management</LinkTo>
+                            <LinkTo @route="demo-x" @current-when="demo-x">{{svg-jar "star"}}Quản lý lợi nhuận</LinkTo>
                      </li>
                     {{#if (feature "adminXDemo")}}
                         <li>

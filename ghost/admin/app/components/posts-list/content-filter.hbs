@@ -17,7 +17,7 @@
     </div>
 
     {{#unless @currentUser.isContributor}}
-        <div class="gh-contentfilter-menu gh-contentfilter-visibility {{if @selectedVisibility.value "gh-contentfilter-selected"}}" data-test-visibility-select="true">
+        {{!-- <div class="gh-contentfilter-menu gh-contentfilter-visibility {{if @selectedVisibility.value "gh-contentfilter-selected"}}" data-test-visibility-select="true">
             <PowerSelect
                 @selected={{@selectedVisibility}}
                 @options={{@availableVisibilities}}
@@ -31,7 +31,7 @@
             >
                 {{#if visibility.name}}{{visibility.name}}{{else}}<span class="red">Unknown visibility</span>{{/if}}
             </PowerSelect>
-        </div>
+        </div> --}}
     {{/unless}}
 
     {{#unless @currentUser.isAuthorOrContributor}}

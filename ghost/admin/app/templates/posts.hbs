@@ -23,7 +23,7 @@
             />
 
             <div class="view-actions-top-row">
-                <LinkTo @route="lexical-editor.new" @model="post" class="gh-btn gh-btn-primary" data-test-new-post-button={{true}}><span>New post</span></LinkTo>
+                <LinkTo @route="lexical-editor.new" @model="post" class="gh-btn gh-btn-primary" data-test-new-post-button={{true}}><span>Tạo bài viết mới</span></LinkTo>
             </div>
         </section>
     </GhCanvasHeader>
@@ -37,14 +37,17 @@
                 <div class="no-posts">
                     {{#if this.showingAll}}
                         {{svg-jar "posts-placeholder" class="gh-posts-placeholder"}}
-                        <h4>Start creating content.</h4>
+                        <h4>Bắt đầu tạo nội dung.</h4>
+                        <h4></h4>
                         <LinkTo @route="lexical-editor.new" @model="post" class="gh-btn gh-btn-green" data-test-link="write-a-new-post">
-                            <span>Write a new post</span>
+                            {{!-- <span>Write a new post</span> --}}
+                            <span>Tạo bài viết mới</span>
                         </LinkTo>
                     {{else}}
-                        <h4>No posts match the current filter</h4>
+                        {{!-- <h4>No posts match the current filter</h4> --}}
+                        <h4>Không tìm thấy bài viết phù hợp</h4>
                         <LinkTo @route="posts" @query={{hash type=null author=null tag=null}} class="gh-btn" data-test-link="show-all">
-                            <span>Show all posts</span>
+                            <span>Hiển thị tất cả bài viết</span>
                         </LinkTo>
                     {{/if}}
                 </div>

@@ -7,22 +7,22 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 const TYPES = [{
-    name: 'All posts',
+    name: 'Tất cả bài viết',
     value: null
 }, {
-    name: 'Draft posts',
+    name: 'Bài viết đang chờ duyệt',
     value: 'draft'
 }, {
-    name: 'Published posts',
+    name: 'Bài viết đã xuất bản',
     value: 'published'
 }, {
-    name: 'Email only posts',
+    name: 'Bài viết gửi cho email',
     value: 'sent'
 }, {
-    name: 'Scheduled posts',
+    name: 'Bài viết đã lên lịch',
     value: 'scheduled'
 }, {
-    name: 'Featured posts',
+    name: 'Bài viết nổi bật',
     value: 'featured'
 }];
 
@@ -41,13 +41,13 @@ const VISIBILITIES = [{
 }];
 
 const ORDERS = [{
-    name: 'Newest first',
+    name: 'Mới nhất',
     value: null
 }, {
-    name: 'Oldest first',
+    name: 'Cũ nhất',
     value: 'published_at asc'
 }, {
-    name: 'Recently updated',
+    name: 'Mới cập nhật',
     value: 'updated_at desc'
 }];
 
@@ -133,7 +133,7 @@ export default class PostsController extends Controller {
         const authors = this._availableAuthors;
         const options = authors.toArray();
 
-        options.unshift({name: 'All authors', slug: null});
+        options.unshift({name: 'Tác giả', slug: null});
 
         return options;
     }
