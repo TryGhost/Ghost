@@ -32,7 +32,7 @@ export default class OnboardingChecklist extends Component {
 
     @action
     async confirmDismiss() {
-        this.dismissModal = this.modals.open(DismissModal);
+        this.dismissModal = this.modals.open(DismissModal, {}, {backgroundBlur: true});
 
         const reallyDismiss = await this.dismissModal;
 
