@@ -41,10 +41,16 @@ module.exports = {
     },
 
     async aggregateEmailStats(emailId) {
+        const {totalCount} = await db.knex('emails').select(db.knex.raw('email_count as totalCount')).where('id', emailId).first() || {totalCount: 0};
+        // use IS NULL here because that will typically match far fewer rows than IS NOT NULL making the query faster
+        const [undeliveredCount] = await db.knex('email_recipients').count('id as count').whereRaw('email_id = ? AND delivered_at IS NULL', [emailId]);
+        const [openedCount] = await db.knex('email_recipients').count('id as count').whereRaw('email_id = ? AND opened_at IS NOT NULL', [emailId]);
+        const [failedCount] = await db.knex('email_recipients').count('id as count').whereRaw('email_id = ? AND failed_at IS NOT NULL', [emailId]);
+
         await db.knex('emails').update({
-            delivered_count: db.knex.raw(`(SELECT COUNT(id) FROM email_recipients WHERE email_id = ? AND delivered_at IS NOT NULL)`, [emailId]),
-            opened_count: db.knex.raw(`(SELECT COUNT(id) FROM email_recipients WHERE email_id = ? AND opened_at IS NOT NULL)`, [emailId]),
-            failed_count: db.knex.raw(`(SELECT COUNT(id) FROM email_recipients WHERE email_id = ? AND failed_at IS NOT NULL)`, [emailId])
+            delivered_count: totalCount - undeliveredCount.count,
+            opened_count: openedCount.count,
+            failed_count: failedCount.count
         }).where('id', emailId);
     },
 
@@ -56,15 +62,16 @@ module.exports = {
             .where('emails.track_opens', true)
             .first() || {};
 
+        const [emailCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ?', [memberId]);
+        const [emailOpenedCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ? AND opened_at IS NOT NULL', [memberId]);
+
         const updateQuery = {
-            email_count: db.knex.raw('(SELECT COUNT(id) FROM email_recipients WHERE member_id = ?)', [memberId]),
-            email_opened_count: db.knex.raw('(SELECT COUNT(id) FROM email_recipients WHERE member_id = ? AND opened_at IS NOT NULL)', [memberId])
+            email_count: emailCount.count,
+            email_opened_count: emailOpenedCount.count
         };
 
         if (trackedEmailCount >= MIN_EMAIL_COUNT_FOR_OPEN_RATE) {
-            updateQuery.email_open_rate = db.knex.raw(`
-                ROUND(((SELECT COUNT(id) FROM email_recipients WHERE member_id = ? AND opened_at IS NOT NULL) * 1.0 / ? * 100), 0)
-            `, [memberId, trackedEmailCount]);
+            updateQuery.email_open_rate = Math.round(emailOpenedCount.count / trackedEmailCount * 100);
         }
 
         await db.knex('members')

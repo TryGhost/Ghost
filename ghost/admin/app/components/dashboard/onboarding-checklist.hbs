@@ -1,19 +1,20 @@
 <div class="gh-onboarding-wrapper" data-test-dashboard="onboarding-checklist">
     <div class="gh-onboarding-header">
         {{#if (feature "nightShift")}}
-            <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;" class="gh-onboarding-ghost-logo--dark">
+            <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;" class="gh-onboarding-ghost-logo--dark" {{autoplay}}>
                 <source src="assets/videos/logo-loader-dark.mp4" type="video/mp4" />
             </video>
         {{else}}
-            <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;" class="gh-onboarding-ghost-logo--light">
+            <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;" class="gh-onboarding-ghost-logo--light" {{autoplay}}>
                 <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
             </video>
         {{/if}}
-        
+
         {{#if this.onboarding.allStepsCompleted}}
             <h2 class="gh-canvas-title">You’re all set.</h2>
         {{else}}
-            <h2 class="gh-canvas-title">Let’s get started.</h2>
+            <h2 class="gh-canvas-title">Let’s get started!</h2>
+            <p>Welcome! It's time to set up {{get-setting "title"}}.</p>
         {{/if}}
     </div>
 
@@ -31,8 +32,8 @@
             <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup" class="gh-onboarding-item {{onboarding-step-class "customize-design"}}" {{on "click" (fn this.onboarding.markStepCompleted "customize-design")}}>
                 <Dashboard::Onboarding::Step
                     @icon="brush"
-                    @title="Customize your publication"
-                    @description="Match the look and feel to your style and make it yours."
+                    @title="Customize your design"
+                    @description="Craft a look that reflects your brand and style."
                     @complete={{is-onboarding-step-completed "customize-design"}}
                 />
             </LinkTo>
@@ -74,6 +75,6 @@
     <p class="gh-onboarding-help">More questions? Check out our <a href="https://ghost.org/help?utm_source=admin&utm_campaign=onboarding" target="_blank" rel="noopener noreferrer">Help Center</a>.</p>
 
     {{#unless this.onboarding.allStepsCompleted}}
-        <a href="#" class="gh-onboarding-skip" {{on "click" this.confirmDismiss}}>Skip onboarding</a>
+        <a href="#" class="gh-onboarding-skip" {{on "click" this.onboarding.dismissChecklist}}>Skip onboarding</a>
     {{/unless}}
 </div>
