@@ -1,0 +1,16 @@
+<div class="gh-onboarding-item-content">
+    {{svg-jar @icon}}
+    <div class="gh-onboarding-item-details">
+        <span class="gh-onboarding-item-title">{{@title}}</span>
+        {{#if @description}}
+            <span class="gh-onboarding-item-description">{{@description}}</span>
+        {{/if}}
+    </div>
+</div>
+<div class={{if @complete "gh-onboarding-item-checkmark" "gh-onboarding-item-action"}}>
+    {{#if @complete}}
+        {{svg-jar "check-circle-simple"}}
+    {{else}}
+        {{svg-jar "arrow-right-tail"}}
+    {{/if}}
+</div>

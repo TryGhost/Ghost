@@ -865,14 +865,17 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: false, index: true},
         batch_id: {type: 'string', maxlength: 24, nullable: false, references: 'email_batches.id'},
         processed_at: {type: 'dateTime', nullable: true},
-        delivered_at: {type: 'dateTime', nullable: true, index: true},
-        opened_at: {type: 'dateTime', nullable: true, index: true},
-        failed_at: {type: 'dateTime', nullable: true, index: true},
+        delivered_at: {type: 'dateTime', nullable: true},
+        opened_at: {type: 'dateTime', nullable: true},
+        failed_at: {type: 'dateTime', nullable: true},
         member_uuid: {type: 'string', maxlength: 36, nullable: false},
         member_email: {type: 'string', maxlength: 191, nullable: false},
         member_name: {type: 'string', maxlength: 191, nullable: true},
         '@@INDEXES@@': [
-            ['email_id', 'member_email']
+            ['email_id', 'member_email'],
+            ['email_id', 'delivered_at'],
+            ['email_id', 'opened_at'],
+            ['email_id', 'failed_at']
         ]
     },
     email_recipient_failures: {

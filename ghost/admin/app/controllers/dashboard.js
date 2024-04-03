@@ -18,10 +18,11 @@ const DAYS_OPTIONS = [{
 
 export default class DashboardController extends Controller {
     @service dashboardStats;
-    @service membersUtils;
-    @service store;
-    @service mentionUtils;
     @service feature;
+    @service membersUtils;
+    @service mentionUtils;
+    @service onboarding;
+    @service store;
 
     @tracked mentions = [];
     @tracked hasNewMentions = false;
