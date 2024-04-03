@@ -75,6 +75,6 @@
     <p class="gh-onboarding-help">More questions? Check out our <a href="https://ghost.org/help?utm_source=admin&utm_campaign=onboarding" id="ob-help-center" target="_blank" rel="noopener noreferrer">Help Center</a>.</p>
 
     {{#unless this.onboarding.allStepsCompleted}}
-        <a href="#" class="gh-onboarding-skip" id="ob-skip" {{on "click" this.confirmDismiss}}>Skip onboarding</a>
+        <a href="#" class="gh-onboarding-skip" id="ob-skip" {{on "click" this.onboarding.dismissChecklist}}>Skip onboarding</a>
     {{/unless}}
 </div>
