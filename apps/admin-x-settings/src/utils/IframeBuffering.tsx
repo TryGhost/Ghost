@@ -11,6 +11,19 @@ type IframeBufferingProps = {
   addDelay?: boolean;
 };
 
+function debounce(func: any, wait: number) { // eslint-disable-line
+    let timeout: NodeJS.Timeout;
+
+    return function executedFunction(...args: any) { // eslint-disable-line
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, className, height, width, parentClassName, testId, addDelay = false}) => {
     const [visibleIframeIndex, setVisibleIframeIndex] = useState(0);
     const iframes = [useRef<HTMLIFrameElement>(null), useRef<HTMLIFrameElement>(null)]; // eslint-disable-line
@@ -48,9 +61,10 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, class
 
     useEffect(() => {
         const iframe = iframes[visibleIframeIndex].current;
-        const onScroll = () => {
+
+        const onScroll = debounce(() => {
             setScrollPosition(iframe?.contentWindow?.scrollY || 0);
-        };
+        }, 250);
 
         iframe?.contentWindow?.addEventListener('scroll', onScroll);
 
