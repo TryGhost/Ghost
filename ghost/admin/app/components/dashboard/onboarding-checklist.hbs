@@ -29,7 +29,7 @@
                 />
             </div>
             {{!-- Step 2 --}}
-            <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup" class="gh-onboarding-item {{onboarding-step-class "customize-design"}}" {{on "click" (fn this.onboarding.markStepCompleted "customize-design")}}>
+            <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup" class="gh-onboarding-item {{onboarding-step-class "customize-design"}}" id="ob-customize-design" {{on "click" (fn this.onboarding.markStepCompleted "customize-design")}}>
                 <Dashboard::Onboarding::Step
                     @icon="brush"
                     @title="Customize your design"
@@ -38,16 +38,16 @@
                 />
             </LinkTo>
             {{!-- Step 3 --}}
-            <LinkTo @route="lexical-editor.new" @model="post" class="gh-onboarding-item {{onboarding-step-class "first-post"}}" {{on "click" (fn this.onboarding.markStepCompleted "first-post")}}>
+            <LinkTo @route="lexical-editor.new" @model="post" class="gh-onboarding-item {{onboarding-step-class "first-post"}}" id="ob-first-post" {{on "click" (fn this.onboarding.markStepCompleted "first-post")}}>
                 <Dashboard::Onboarding::Step
                     @icon="writing"
                     @title="Explore the editor"
-                    @description="Get to know a writing experience you’ll love."
+                    @description="Get to know a writing experience you'll love."
                     @complete={{is-onboarding-step-completed "first-post"}}
                 />
             </LinkTo>
             {{!-- Step 4 --}}
-            <LinkTo @route="members" class="gh-onboarding-item {{onboarding-step-class "build-audience"}}" {{on "click" (fn this.onboarding.markStepCompleted "build-audience")}}>
+            <LinkTo @route="members" class="gh-onboarding-item {{onboarding-step-class "build-audience"}}" id="ob-build-audience" {{on "click" (fn this.onboarding.markStepCompleted "build-audience")}}>
                 <Dashboard::Onboarding::Step
                     @icon="member-add"
                     @title="Build your audience"
@@ -56,7 +56,7 @@
                 />
             </LinkTo>
             {{!-- Step 5 --}}
-            <div role="button" {{on "click" this.openShareModal}} class="gh-onboarding-item {{onboarding-step-class "share-publication"}}">
+            <div role="button" {{on "click" this.openShareModal}} class="gh-onboarding-item {{onboarding-step-class "share-publication"}}" id="ob-share-publication">
                 <Dashboard::Onboarding::Step
                     @icon="megaphone"
                     @title="Share your publication"
@@ -69,12 +69,12 @@
     </div>
 
     {{#if this.onboarding.allStepsCompleted}}
-        <a href="#" class="gh-onboarding-explore-dashboard" {{on "click" this.onboarding.completeChecklist}}>Explore your dashboard</a>
+        <a href="#" class="gh-onboarding-explore-dashboard" id="ob-completed" {{on "click" this.onboarding.completeChecklist}}>Explore your dashboard</a>
     {{/if}}
 
-    <p class="gh-onboarding-help">More questions? Check out our <a href="https://ghost.org/help?utm_source=admin&utm_campaign=onboarding" target="_blank" rel="noopener noreferrer">Help Center</a>.</p>
+    <p class="gh-onboarding-help">More questions? Check out our <a href="https://ghost.org/help?utm_source=admin&utm_campaign=onboarding" id="ob-help-center" target="_blank" rel="noopener noreferrer">Help Center</a>.</p>
 
     {{#unless this.onboarding.allStepsCompleted}}
-        <a href="#" class="gh-onboarding-skip" {{on "click" this.onboarding.dismissChecklist}}>Skip onboarding</a>
+        <a href="#" class="gh-onboarding-skip" id="ob-skip" {{on "click" this.onboarding.dismissChecklist}}>Skip onboarding</a>
     {{/unless}}
 </div>
