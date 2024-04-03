@@ -32,8 +32,8 @@
             <LinkTo @route="settings-x.settings-x" @model="design/edit?ref=setup" class="gh-onboarding-item {{onboarding-step-class "customize-design"}}" {{on "click" (fn this.onboarding.markStepCompleted "customize-design")}}>
                 <Dashboard::Onboarding::Step
                     @icon="brush"
-                    @title="Customize your publication"
-                    @description="Match the look and feel to your style and make it yours."
+                    @title="Customize your design"
+                    @description="Craft a look that reflects your own brand and style."
                     @complete={{is-onboarding-step-completed "customize-design"}}
                 />
             </LinkTo>

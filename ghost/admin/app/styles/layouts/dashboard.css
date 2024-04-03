@@ -2875,7 +2875,7 @@ Onboarding checklist */
 .gh-onboarding-item-title {
     font-weight: 700;
     font-size: 1.6rem;
-    line-height: 1;
+    line-height: 1.3;
     letter-spacing: 0;
     color: var(--darkgrey);
     padding: 0 32px 0 0;
