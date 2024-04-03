@@ -2913,6 +2913,7 @@ Onboarding checklist */
     height: auto;
     margin: 0 16px 0 0;
     color: #ae5aef;
+    position: relative;
 }
 
 .gh-onboarding-item-content svg path {
