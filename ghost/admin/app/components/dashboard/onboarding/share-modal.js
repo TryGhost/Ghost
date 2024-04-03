@@ -6,6 +6,10 @@ import {task} from 'ember-concurrency';
 export default class OnboardingShareModal extends Component {
     @inject config;
 
+    static modalOptions = {
+        backgroundBlur: true
+    };
+
     get encodedUrl() {
         return encodeURIComponent(this.config.blogUrl);
     }

@@ -1,5 +1,4 @@
 import Component from '@glimmer/component';
-import DismissModal from './onboarding/dismiss-modal';
 import ShareModal from './onboarding/share-modal';
 import {action} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -11,7 +10,6 @@ export default class OnboardingChecklist extends Component {
 
     @inject config;
 
-    dismissModal = null;
     shareModal = null;
 
     willDestroy() {
@@ -28,18 +26,5 @@ export default class OnboardingChecklist extends Component {
     openShareModal() {
         this.onboarding.markStepCompleted('share-publication');
         this.shareModal = this.modals.open(ShareModal);
-    }
-
-    @action
-    async confirmDismiss() {
-        this.dismissModal = this.modals.open(DismissModal);
-
-        const reallyDismiss = await this.dismissModal;
-
-        if (reallyDismiss === true) {
-            this.onboarding.dismissChecklist();
-        } else {
-            this.dismissModal = null;
-        }
     }
 }
