@@ -59,6 +59,10 @@ const features = [{
     title: 'NestJS Playground',
     description: 'Wires up the Ghost NestJS App to the Admin API',
     flag: 'NestPlayground'
+},{
+    title: 'Prevent Member Spam Signups',
+    description: 'Enables features to help combat spam member signups',
+    flag: 'membersSpamPrevention'
 }];
 
 const AlphaFeatures: React.FC = () => {
