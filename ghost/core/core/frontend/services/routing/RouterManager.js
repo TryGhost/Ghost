@@ -111,11 +111,9 @@ class RouterManager {
         this.siteRouter.mountRouter(unsubscribeRouter.router());
         this.registry.setRouter('unsubscribeRouter', unsubscribeRouter);
 
-        if (labs.isSet('membersSpamPrevention')) {
-            const subscribeRouter = new SubscribeRouter();
-            this.siteRouter.mountRouter(subscribeRouter.router());
-            this.registry.setRouter('subscribeRouter', subscribeRouter);
-        }
+        const subscribeRouter = new SubscribeRouter();
+        this.siteRouter.mountRouter(subscribeRouter.router());
+        this.registry.setRouter('subscribeRouter', subscribeRouter);
         
         if (RESOURCE_CONFIG.QUERY.email) {
             const emailRouter = new EmailRouter(RESOURCE_CONFIG);

@@ -10,8 +10,6 @@ handlebars.registerHelper('asset', assetHelper);
 module.exports = async function subscribeController(req, res) {
     debug('subscribeController');
 
-    const meta_title = settingsCache.get('title');
-
     // Get the query params
     const {query} = req;
     const token = query.token || null;
@@ -22,12 +20,17 @@ module.exports = async function subscribeController(req, res) {
         return res.redirect(301, '/404/');
     }
 
+    // Grab some metadata for rendering the template
+    const meta_title = settingsCache.get('title');
+    const accent_color = settingsCache.get('accent_color');
+
     // Prepare context for rendering template
     const context = {
         token,
         action,
         r: ref,
-        meta_title
+        meta_title,
+        accent_color
     };
     // Compile and render the template
     const rawTemplate = fs.readFileSync(path.resolve(path.join(__dirname, '../../../views/subscribe.hbs'))).toString();

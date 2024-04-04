@@ -10,7 +10,7 @@
 <body>
     <div class="gh-app">
         <div class="gh-viewport">
-            <main class="gh-main" role="main">
+            <main class="gh-main" role="main" id="main">
                 <div class="gh-flow">
                     <div class="gh-flow-content-wrap">
                         <h1>Subscribing to {{meta_title}}</h1>
@@ -19,7 +19,7 @@
                             <input type="hidden" name="token" value="{{token}}" />
                             <input type="hidden" name="action" value="{{action}}" />
                             <input type="hidden" name="r" value="{{r}}" />
-                            <button class="gh-btn gh-btn-blue" type="submit"><span>Subscribe</span></button>
+                            <button class="gh-btn" style="background-color: {{accent_color}}; color: #FFFFFF" type="submit"><span>Subscribe</span></button>
                         </form>
                     </div>
                 </div>
@@ -27,14 +27,10 @@
         </div>
     </div>
     <script>
-        let params = new URL(document.location.toString()).searchParams;
-        let token = params.get('token');
-        let action = params.get('action');
-        let referrer = params.get('r');
-
+        const main = document.getElementById('main');
+        main.style.display = 'none';
         const form = document.getElementById('gh-subscribe-form');
         form.submit();
-
     </script>
 </body>
 </html>

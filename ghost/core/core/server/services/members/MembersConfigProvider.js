@@ -88,7 +88,7 @@ class MembersConfigProvider {
     }
 
     getSigninURL(token, type, referrer) {
-        const relativeUrl = type === 'signup' && labs.isSet('membersSpamPrevention') ? '/subscribe/' : '/members/';
+        const relativeUrl = type === 'signup' && labs.isSet('membersSpamPrevention') ? '/confirm_signup/' : '/members/';
         const siteUrl = this._urlUtils.urlFor({relativeUrl}, true);
         const signinURL = new URL(siteUrl);
         signinURL.searchParams.set('token', token);

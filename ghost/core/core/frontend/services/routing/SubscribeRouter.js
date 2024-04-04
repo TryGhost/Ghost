@@ -11,7 +11,7 @@ class SubscribeRouter extends ParentRouter {
         super('SubscribeRouter');
 
         // @NOTE: hardcoded, not configurable
-        this.route = {value: '/subscribe/'};
+        this.route = {value: '/confirm_signup/'};
         this._registerRoutes();
     }
 
