@@ -52,7 +52,8 @@ module.exports = class RouterController {
         memberAttributionService,
         sendEmailWithMagicLink,
         labsService,
-        newslettersService
+        newslettersService,
+        createMemberFromToken
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -67,6 +68,7 @@ module.exports = class RouterController {
         this._memberAttributionService = memberAttributionService;
         this.labsService = labsService;
         this._newslettersService = newslettersService;
+        this._createMemberFromToken = createMemberFromToken;
     }
 
     async ensureStripe(_req, res, next) {
@@ -554,5 +556,21 @@ module.exports = class RouterController {
             // Let the normal error middleware handle this error
             throw err;
         }
+    }
+
+    async createMemberFromToken(req, res) {
+        const {token} = req.body;
+
+        // If successful, creating the member will return a signin link we can redirect the member to
+        // This will sign them in automatically
+        const signinLink = await this._createMemberFromToken(token);
+
+        if (!signinLink) {
+            res.writeHead(400);
+            return res.end('Bad Request.');
+        }
+
+        // If the member exists, redirect to the members page with the token in the URL to create a session
+        res.redirect(signinLink);
     }
 };

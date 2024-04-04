@@ -29,5 +29,9 @@ module.exports = {
 
     get unsubscribe() {
         return require('./unsubscribe');
+    },
+
+    get subscribe() {
+        return require('./subscribe');
     }
 };

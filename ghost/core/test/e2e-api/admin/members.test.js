@@ -907,6 +907,118 @@ describe('Members API', function () {
     });
 
     it('Can add and send a signup confirmation email', async function () {
+        mockLabsDisabled('membersSpamPrevention');
+        const member = {
+            name: 'Send Me Confirmation',
+            email: 'member_getting_confirmation@test.com',
+            newsletters: [
+                newsletters[0],
+                newsletters[1]
+            ]
+        };
+
+        // Set site title to something with a special character to ensure subject line doesn't get escaped
+        // Refs https://github.com/TryGhost/Team/issues/2895
+        await agent.put('/settings/')
+            .body({
+                settings: [
+                    {
+                        key: 'title',
+                        value: 'Ghost\'s Test Site'
+                    }
+                ]
+            })
+            .expectStatus(200);
+
+        const {body} = await agent
+            .post('/members/?send_email=true&email_type=signup')
+            .body({members: [member]})
+            .expectStatus(201)
+            .matchBodySnapshot({
+                members: [
+                    buildMemberWithoutIncludesSnapshot({
+                        newsletters: 2
+                    })
+                ]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag,
+                location: anyString
+            });
+
+        const newMember = body.members[0];
+
+        emailMockReceiver
+            .assertSentEmailCount(1)
+            .matchHTMLSnapshot([{
+                pattern: queryStringToken('token'),
+                replacement: 'token=REPLACED_TOKEN'
+            }])
+            .matchPlaintextSnapshot([{
+                pattern: queryStringToken('token'),
+                replacement: 'token=REPLACED_TOKEN'
+            }])
+            .matchMetadataSnapshot();
+
+        await assertMemberEvents({
+            eventType: 'MemberStatusEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    from_status: null,
+                    to_status: 'free'
+                }
+            ]
+        });
+
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: [
+                {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[0].id
+                },
+                {
+                    subscribed: true,
+                    source: 'admin',
+                    newsletter_id: newsletters[1].id
+                }
+            ]
+        });
+
+        // @TODO: do we really need to delete this member here?
+        await agent
+            .delete(`members/${body.members[0].id}/`)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .expectStatus(204);
+
+        // There should be no MemberSubscribeEvent remaining.
+        await assertMemberEvents({
+            eventType: 'MemberSubscribeEvent',
+            memberId: newMember.id,
+            asserts: []
+        });
+
+        // Reset the site title to the default
+        await agent.put('/settings/')
+            .body({
+                settings: [
+                    {
+                        key: 'title',
+                        value: 'Ghost'
+                    }
+                ]
+            })
+            .expectStatus(200);
+    });
+
+    it('Can add and send a signup confirmation email with membersSpamPrevention enabled', async function () {
         const member = {
             name: 'Send Me Confirmation',
             email: 'member_getting_confirmation@test.com',

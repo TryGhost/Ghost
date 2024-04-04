@@ -50,7 +50,8 @@ const ALPHA_FEATURES = [
     'lexicalIndicators',
     // 'adminXOffers',
     'adminXDemo',
-    'onboardingChecklist'
+    'onboardingChecklist',
+    'membersSpamPrevention'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

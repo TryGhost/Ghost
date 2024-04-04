@@ -1,4 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
+const {mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
 const assert = require('assert/strict');
 require('should');
@@ -118,6 +119,7 @@ describe('Members Signin', function () {
     });
 
     it('Will create a new member on signup', async function () {
+        mockLabsDisabled('membersSpamPrevention');
         const email = 'not-existent-member@test.com';
         const magicLink = await membersService.api.getMagicLink(email, 'signup');
         const magicLinkUrl = new URL(magicLink);
@@ -146,7 +148,23 @@ describe('Members Signin', function () {
         });
     });
 
+    it('Will not create a new member on signup if membersSpamPrevention is enabled', async function () {
+        const email = 'not-existent-member-spam@test.com';
+        const magicLink = await membersService.api.getMagicLink(email, 'signup');
+        const magicLinkUrl = new URL(magicLink);
+        const token = magicLinkUrl.searchParams.get('token');
+
+        await membersAgent.get(`/?token=${token}&action=signup`)
+            .expectStatus(302)
+            .expectHeader('Location', /success=false/);
+
+        const member = await getMemberByEmail(email, false);
+
+        assert(!member, 'Member should not have been created');
+    });
+
     it('Allows a signin via a signup link', async function () {
+        mockLabsDisabled('membersSpamPrevention');
         // This member should be created by the previous test
         const email = 'not-existent-member@test.com';
 
@@ -158,6 +176,19 @@ describe('Members Signin', function () {
             .expectStatus(302)
             .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
             .expectHeader('Set-Cookie', /members-ssr.*/);
+    });
+
+    it('Allows a signin via a signup link with membersSpamPrevention enabled', async function () {
+        // This member should be created by the previous test
+        const email = 'not-existent-member@test.com';
+
+        const magicLink = await membersService.api.getMagicLink(email, 'signup');
+        const magicLinkUrl = new URL(magicLink);
+        const token = magicLinkUrl.searchParams.get('token');
+
+        await membersAgent.get(`/?token=${token}&action=signup`)
+            .expectStatus(302)
+            .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/);
     });
 
     it('Will not create a new member on signin', async function () {
@@ -193,6 +224,7 @@ describe('Members Signin', function () {
         });
 
         it('Expires a token after 10 minutes of first usage', async function () {
+            mockLabsDisabled('membersSpamPrevention');
             const magicLink = await membersService.api.getMagicLink(email, 'signup');
             const magicLinkUrl = new URL(magicLink);
             const token = magicLinkUrl.searchParams.get('token');
@@ -246,6 +278,7 @@ describe('Members Signin', function () {
         });
 
         it('Expires a token after 3 uses', async function () {
+            mockLabsDisabled('membersSpamPrevention');
             const magicLink = await membersService.api.getMagicLink(email, 'signup');
             const magicLinkUrl = new URL(magicLink);
             const token = magicLinkUrl.searchParams.get('token');
@@ -459,6 +492,7 @@ describe('Members Signin', function () {
         });
 
         it('Will clear rate limits for members auth', async function () {
+            mockLabsDisabled('membersSpamPrevention');
             // Temporary increase the member_login rate limits to a higher number
             // because other wise we would hit user enumeration rate limits (this won't get reset after a succeeded login)
             // We need to do this here otherwise the middlewares are not setup correctly
@@ -548,6 +582,7 @@ describe('Members Signin', function () {
 
     describe('Member attribution', function () {
         it('Will create a member attribution if magic link contains an attribution source', async function () {
+            mockLabsDisabled('membersSpamPrevention');
             const email = 'non-existent-member@test.com';
             const magicLink = await membersService.api.getMagicLink(email, 'signup', {
                 attribution: {

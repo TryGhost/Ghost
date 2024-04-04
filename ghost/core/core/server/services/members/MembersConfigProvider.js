@@ -2,6 +2,7 @@ const logging = require('@tryghost/logging');
 const {URL} = require('url');
 const crypto = require('crypto');
 const createKeypair = require('keypair');
+const labs = require('../../../shared/labs');
 
 class MembersConfigProvider {
     /**
@@ -87,7 +88,8 @@ class MembersConfigProvider {
     }
 
     getSigninURL(token, type, referrer) {
-        const siteUrl = this._urlUtils.urlFor({relativeUrl: '/members/'}, true);
+        const relativeUrl = ['signup', 'subscribe'].includes(type) && labs.isSet('membersSpamPrevention') ? '/confirm_signup/' : '/members/';
+        const siteUrl = this._urlUtils.urlFor({relativeUrl}, true);
         const signinURL = new URL(siteUrl);
         signinURL.searchParams.set('token', token);
         signinURL.searchParams.set('action', type);

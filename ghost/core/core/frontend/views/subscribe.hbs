@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="{{asset "public/ghost.css" hasMinFile="true"}}" />
+</head>
+<body>
+    <div class="gh-app">
+        <div class="gh-viewport">
+            <main class="gh-main" role="main" id="main">
+                <div class="gh-flow">
+                    <div class="gh-flow-content-wrap">
+                        <h1>Subscribing to {{meta_title}}</h1>
+                        <p>If you are not redirected automatically, please click the "Subscribe" button below.</p>
+                        <form id="gh-subscribe-form" action="/members/api/member" method="POST">
+                            <input type="hidden" name="token" value="{{token}}" />
+                            <input type="hidden" name="action" value="{{action}}" />
+                            <input type="hidden" name="r" value="{{r}}" />
+                            <button class="gh-btn" style="background-color: {{accent_color}}; color: #FFFFFF" type="submit"><span>Subscribe</span></button>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+        const main = document.getElementById('main');
+        main.style.display = 'none';
+        const form = document.getElementById('gh-subscribe-form');
+        form.submit();
+    </script>
+</body>
+</html>
