@@ -427,6 +427,7 @@ module.exports = function MembersAPI({
         getMemberIdentityToken,
         getMemberIdentityDataFromTransientId,
         getMemberIdentityData,
+        createMemberFromToken,
         cycleTransientId,
         setMemberGeolocationFromIp,
         getPublicConfig,
