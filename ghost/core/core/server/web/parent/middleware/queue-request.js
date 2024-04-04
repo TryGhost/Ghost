@@ -38,8 +38,6 @@ module.exports = function queueRequest(
      */
     queue.queue.on('queue', (job) => {
         debug(`Request queued: ${job.data.req.path}`);
-
-        job.data.req.queueDepth = job.queue.getLength();
     });
 
     queue.queue.on('complete', (job) => {
@@ -47,6 +45,8 @@ module.exports = function queueRequest(
     });
 
     return (req, res, next) => {
+        req.queueDepth = queue.queue.getLength();
+
         // Do not queue requests for static assets - We assume that any path
         // with a file extension is a static asset
         if (path.extname(req.path)) {

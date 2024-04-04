@@ -16,7 +16,8 @@ describe('Queue request middleware', function () {
 
         queue = sinon.stub();
         queue.queue = {
-            on: sinon.stub()
+            on: sinon.stub(),
+            getLength: sinon.stub().returns(0)
         };
 
         queueFactory = sinon.stub().returns(queue);
@@ -60,33 +61,18 @@ describe('Queue request middleware', function () {
         assert(queue.calledWith(req, res, next), 'queue should be called with the correct arguments');
     });
 
-    it('should record the queue depth on a request when it has queued', function () {
-        const queueEvent = 'queue';
+    it('should record the queue depth on a request', function () {
         const queueLength = 123;
 
-        // Assert event listener is added
-        queueRequest(config, queueFactory);
+        queue.queue.getLength.returns(queueLength);
 
-        assert(queue.queue.on.calledWith(queueEvent), `"${queueEvent}" event listener should be added`);
+        req.path = '/foo/bar';
 
-        const listener = queue.queue.on.args.find(arg => arg[0] === queueEvent)[1];
+        const mw = queueRequest(config, queueFactory);
 
-        // Assert event listener implementation
-        const queueJob = {
-            data: {
-                req: {
-                    path: '/foo/bar'
-                }
-            },
-            queue: {
-                getLength() {
-                    return queueLength;
-                }
-            }
-        };
+        mw(req, res, next);
 
-        listener(queueJob);
-
-        assert(queueJob.data.req.queueDepth === queueLength, 'queueDepth should be set on the request');
+        assert(queue.queue.getLength, 'queue should be called once');
+        assert(req.queueDepth === queueLength, 'queue depth should be set on the request');
     });
 });
