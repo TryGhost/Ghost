@@ -287,7 +287,8 @@ module.exports = function MembersAPI({
         const member = oldEmail ? await getMemberIdentityData(oldEmail) : await getMemberIdentityData(email);
 
         if (member) {
-            return null;
+            const magicLink = getMagicLink(email, 'signin');
+            return magicLink;
         }
 
         // Note: old tokens can still have a missing type (we can remove this after a couple of weeks)
