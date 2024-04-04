@@ -3,11 +3,14 @@ const path = require('path');
 const fs = require('fs');
 const handlebars = require('handlebars');
 const assetHelper = require('../../../helpers/asset');
+const {settingsCache} = require('../../../services/proxy');
 
 handlebars.registerHelper('asset', assetHelper);
 
 module.exports = async function subscribeController(req, res) {
     debug('subscribeController');
+
+    const meta_title = settingsCache.get('title');
 
     // Get the query params
     const {query} = req;
@@ -23,7 +26,8 @@ module.exports = async function subscribeController(req, res) {
     const context = {
         token,
         action,
-        r: ref
+        r: ref,
+        meta_title
     };
     // Compile and render the template
     const rawTemplate = fs.readFileSync(path.resolve(path.join(__dirname, '../../../views/subscribe.hbs'))).toString();
