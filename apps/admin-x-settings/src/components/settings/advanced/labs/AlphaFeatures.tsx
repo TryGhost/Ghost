@@ -59,6 +59,10 @@ const features = [{
     title: 'NestJS Playground',
     description: 'Wires up the Ghost NestJS App to the Admin API',
     flag: 'NestPlayground'
+},{
+    title: 'Additional payment methods',
+    description: 'Adds support for additional payment methods in Stripe Checkout',
+    flag: 'additionalPaymentMethods'
 }];
 
 const AlphaFeatures: React.FC = () => {
