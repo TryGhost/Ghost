@@ -1389,6 +1389,15 @@ Onboarding checklist */
     border: 1px solid var(--lightgrey);
 }
 
+.gh-onboarding-ghost-logo-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: hsl(216deg 11% 70% / 1%);
+}
+
 /* ---------------------------------
 Onboarding checklist: Share publication modal */
 
