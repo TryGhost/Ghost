@@ -2778,8 +2778,18 @@ Onboarding checklist */
 }
 
 .gh-onboarding-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
     margin-bottom: 40px;
+}
+
+.gh-onboarding-ghost-logo-wrapper {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 24px;
 }
 
 .gh-onboarding-header h2 {

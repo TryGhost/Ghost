@@ -1,20 +1,25 @@
 <div class="gh-onboarding-wrapper" data-test-dashboard="onboarding-checklist">
     <div class="gh-onboarding-header">
         {{#if (feature "nightShift")}}
-            <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;" class="gh-onboarding-ghost-logo--dark" {{autoplay}}>
-                <source src="assets/videos/logo-loader-dark.mp4" type="video/mp4" />
-            </video>
+            <div class="gh-onboarding-ghost-logo-wrapper">
+                <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px;" class="gh-onboarding-ghost-logo--dark" {{autoplay}}>
+                    <source src="assets/videos/logo-loader-dark.mp4" type="video/mp4" />
+                </video>
+                <div class="gh-onboarding-ghost-logo-overlay"></div>
+            </div>
         {{else}}
-            <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px; margin-bottom: 24px;" class="gh-onboarding-ghost-logo--light" {{autoplay}}>
-                <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
-            </video>
+            <div class="gh-onboarding-ghost-logo-wrapper">
+                <video width="80" height="80" loop autoplay muted playsinline preload="metadata" style="width: 80px; height: 80px;" class="gh-onboarding-ghost-logo--light" {{autoplay}}>
+                    <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
+                </video>
+            </div>
         {{/if}}
 
         {{#if this.onboarding.allStepsCompleted}}
             <h2 class="gh-canvas-title">You’re all set.</h2>
         {{else}}
             <h2 class="gh-canvas-title">Let’s get started!</h2>
-            <p>Welcome! It's time to set up {{get-setting "title"}}.</p>
+            <p>Welcome! It’s time to set up {{get-setting "title"}}.</p>
         {{/if}}
     </div>
 
