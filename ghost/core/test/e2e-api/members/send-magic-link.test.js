@@ -1,4 +1,4 @@
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, resetRateLimits} = require('../../utils/e2e-framework');
 const {mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
 const should = require('should');
 const settingsCache = require('../../../core/shared/settings-cache');
@@ -19,7 +19,7 @@ describe('sendMagicLink', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
-
+        resetRateLimits();
         // Reset settings
         settingsCache.set('members_signup_access', {value: 'all'});
     });
@@ -214,7 +214,7 @@ describe('sendMagicLink', function () {
     });
 
     it('triggers email alert for free member signup with membersSpamPrevention enabled', async function () {
-        const email = 'newly-created-user-magic-link-test@test.com';
+        const email = 'newly-created-user-magic-link-test-spam@test.com';
         await membersAgent.post('/api/send-magic-link')
             .body({
                 email,
@@ -242,7 +242,7 @@ describe('sendMagicLink', function () {
         // Check member alert is sent to site owners
         mockManager.assert.sentEmail({
             to: 'jbloggs@example.com',
-            subject: /🥳 Free member signup: newly-created-user-magic-link-test@test.com/
+            subject: /🥳 Free member signup: newly-created-user-magic-link-test-spam@test.com/
         });
 
         // Check the signin link is returned correctly
@@ -254,7 +254,7 @@ describe('sendMagicLink', function () {
     });
 
     it('Converts the urlHistory to the attribution and stores it in the token', async function () {
-        const email = 'newly-created-user-magic-link-test-2@test.com';
+        const email = 'newly-created-user-magic-link-test-10@test.com';
         await membersAgent.post('/api/send-magic-link')
             .body({
                 email,

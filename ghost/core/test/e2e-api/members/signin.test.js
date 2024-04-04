@@ -149,7 +149,7 @@ describe('Members Signin', function () {
     });
 
     it('Will not create a new member on signup if membersSpamPrevention is enabled', async function () {
-        const email = 'not-existent-member@test.com';
+        const email = 'not-existent-member-spam@test.com';
         const magicLink = await membersService.api.getMagicLink(email, 'signup');
         const magicLinkUrl = new URL(magicLink);
         const token = magicLinkUrl.searchParams.get('token');
@@ -157,7 +157,6 @@ describe('Members Signin', function () {
         await membersAgent.get(`/?token=${token}&action=signup`)
             .expectStatus(302)
             .expectHeader('Location', /success=false/);
-
 
         const member = await getMemberByEmail(email, false);
 
@@ -179,7 +178,7 @@ describe('Members Signin', function () {
             .expectHeader('Set-Cookie', /members-ssr.*/);
     });
 
-    it('Does not allow signin via a signup link', async function () {
+    it('Allows a signin via a signup link with membersSpamPrevention enabled', async function () {
         // This member should be created by the previous test
         const email = 'not-existent-member@test.com';
 
@@ -189,7 +188,7 @@ describe('Members Signin', function () {
 
         await membersAgent.get(`/?token=${token}&action=signup`)
             .expectStatus(302)
-            .expectHeader('Location', /\?action=signup&success=false$/);
+            .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/);
     });
 
     it('Will not create a new member on signin', async function () {

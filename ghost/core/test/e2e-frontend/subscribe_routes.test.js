@@ -9,7 +9,6 @@ const supertest = require('supertest');
 const cheerio = require('cheerio');
 const testUtils = require('../utils');
 const config = require('../../core/shared/config');
-const {DateTime} = require('luxon');
 let request;
 
 function assertCorrectFrontendHeaders(res) {
@@ -20,7 +19,6 @@ function assertCorrectFrontendHeaders(res) {
 }
 
 describe('Frontend Routing: Subscribe Routes', function () {
-
     afterEach(function () {
         sinon.restore();
     });
@@ -38,7 +36,7 @@ describe('Frontend Routing: Subscribe Routes', function () {
         await request.get('/confirm_signup/?action=signup')
             .expect(404);
 
-            await request.get('/confirm_signup/?token=123')
+        await request.get('/confirm_signup/?token=123')
             .expect(404);
     });
 
@@ -61,5 +59,4 @@ describe('Frontend Routing: Subscribe Routes', function () {
                 $('input[name="action"]').val().should.eql('signup');
             });
     });
-
 });
