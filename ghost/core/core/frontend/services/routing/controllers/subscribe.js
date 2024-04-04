@@ -17,7 +17,7 @@ module.exports = async function subscribeController(req, res) {
     const ref = query.r || null;
 
     if (!token || !action) {
-        return res.redirect(301, '/404/');
+        return res.send(404);
     }
 
     // Prepare context for rendering template
