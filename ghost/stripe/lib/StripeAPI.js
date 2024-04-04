@@ -565,6 +565,7 @@ module.exports = class StripeAPI {
         await this._rateLimitBucket.throttle();
         const session = await this._stripe.checkout.sessions.create({
             mode: 'setup',
+            currency: options.currency,
             payment_method_types: this.PAYMENT_METHOD_TYPES,
             success_url: options.successUrl || this._config.checkoutSetupSessionSuccessUrl,
             cancel_url: options.cancelUrl || this._config.checkoutSetupSessionCancelUrl,
