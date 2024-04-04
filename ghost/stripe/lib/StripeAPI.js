@@ -41,14 +41,19 @@ module.exports = class StripeAPI {
     /**
      * StripeAPI
      */
-    constructor() {
+    constructor(deps) {
         /** @type {Stripe} */
         this._stripe = null;
         this._configured = false;
+        this.labs = deps.labs;
     }
 
     get PAYMENT_METHOD_TYPES() {
-        return ['card'];
+        if (this.labs.isSet('additionalPaymentMethods')) {
+            return undefined;
+        } else {
+            return ['card'];
+        }
     }
 
     get configured() {

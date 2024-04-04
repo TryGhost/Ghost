@@ -2,12 +2,17 @@ const sinon = require('sinon');
 const should = require('should');
 const rewire = require('rewire');
 const StripeAPI = rewire('../../../lib/StripeAPI');
-const api = new StripeAPI();
 
 describe('StripeAPI', function () {
     const mockCustomerEmail = 'foo@example.com';
     const mockCustomerId = 'cust_mock_123456';
     const mockCustomerName = 'Example Customer';
+    let mockLabs = {
+        isSet() {
+            return false;
+        }
+    };
+    const api = new StripeAPI({labs: mockLabs});
 
     let mockStripe;
 
@@ -20,6 +25,7 @@ describe('StripeAPI', function () {
                     }
                 }
             };
+            sinon.stub(mockLabs, 'isSet');
             const mockStripeConstructor = sinon.stub().returns(mockStripe);
             StripeAPI.__set__('Stripe', mockStripeConstructor);
             api.configure({
@@ -33,6 +39,19 @@ describe('StripeAPI', function () {
 
         afterEach(function () {
             sinon.restore();
+        });
+
+        it('Sends card as payment method if labs flag not enabled', async function () {
+            await api.createCheckoutSession('priceId', null, {});
+
+            should.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.payment_method_types, ['card']);
+        });
+
+        it('Sends no payment methods if labs flag is enabled', async function () {
+            mockLabs.isSet.withArgs('additionalPaymentMethods').returns(true);
+            await api.createCheckoutSession('priceId', null, {});
+
+            should.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.payment_method_types, undefined);
         });
 
         it('sends success_url and cancel_url', async function () {
