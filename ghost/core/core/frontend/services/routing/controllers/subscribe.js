@@ -20,17 +20,13 @@ module.exports = async function subscribeController(req, res) {
         return res.redirect(301, '/404/');
     }
 
-    // Grab some metadata for rendering the template
-    const meta_title = settingsCache.get('title');
-    const accent_color = settingsCache.get('accent_color');
-
     // Prepare context for rendering template
     const context = {
         token,
         action,
         r: ref,
-        meta_title,
-        accent_color
+        meta_title: settingsCache.get('title'),
+        accent_color: settingsCache.get('accent_color')
     };
     // Compile and render the template
     const rawTemplate = fs.readFileSync(path.resolve(path.join(__dirname, '../../../views/subscribe.hbs'))).toString();

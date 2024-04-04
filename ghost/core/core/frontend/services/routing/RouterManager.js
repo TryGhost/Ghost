@@ -1,6 +1,5 @@
 const debug = require('@tryghost/debug')('frontend:routing');
 const _ = require('lodash');
-const labs = require('../../../shared/labs');
 const StaticRoutesRouter = require('./StaticRoutesRouter');
 const StaticPagesRouter = require('./StaticPagesRouter');
 const CollectionRouter = require('./CollectionRouter');
