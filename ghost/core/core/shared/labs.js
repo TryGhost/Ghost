@@ -36,6 +36,7 @@ const BETA_FEATURES = [
 ];
 
 const ALPHA_FEATURES = [
+    'additionalPaymentMethods',
     'NestPlayground',
     'urlCache',
     'lexicalMultiplayer',
