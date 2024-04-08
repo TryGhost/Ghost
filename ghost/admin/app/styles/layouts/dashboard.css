@@ -3085,6 +3085,12 @@ Share publication modal */
     transition: all .3s ease-in-out;
 }
 
+.gh-copy-publication-link span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .gh-copy-publication-link:hover {
     border: 1px solid var(--lightgrey);
 }
