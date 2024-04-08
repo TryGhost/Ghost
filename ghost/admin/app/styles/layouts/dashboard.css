@@ -2901,6 +2901,25 @@ Onboarding checklist */
     padding-right: 32px;
 }
 
+@media screen and (max-width: 480px) {
+    .gh-onboarding-item-title {
+        font-size: 1.5rem;
+    }
+
+    .gh-onboarding-item-description {
+        font-size: 1.4rem;
+        padding-right: 0;
+    }
+
+    .gh-onboarding-item-content {
+        padding-right: 16px;
+    }
+    
+    .gh-onboarding-item--next {
+        padding: 24px 20px;
+    }
+}
+
 .gh-onboarding-item-action {
     display: flex;
     flex-direction: row;
