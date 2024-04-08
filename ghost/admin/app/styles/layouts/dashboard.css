@@ -2801,6 +2801,17 @@ Onboarding checklist */
     font-size: 1.5rem;
 }
 
+@media screen and (max-width: 480px) {
+    .gh-onboarding-header h2 {
+        font-size: 2.4rem;
+    }
+
+    .gh-onboarding-header p {
+        font-size: 1.4rem;
+        margin: 0;
+    }
+}
+
 .gh-onboarding-items {
     max-width: 540px;
     width: 100%;
@@ -2984,6 +2995,12 @@ Onboarding checklist */
     font-size: 1.5rem;
 }
 
+@media screen and (max-width: 480px) {
+    .gh-onboarding-help {
+        font-size: 1.4rem;
+    }
+}
+
 .gh-onboarding-help a {
     color: #30cf43
 }
@@ -3032,6 +3049,12 @@ Onboarding checklist */
     max-width: 540px;
     width: 100%;
     transition: opacity .3s ease-in-out;
+}
+
+@media screen and (max-width: 480px) {
+    .gh-onboarding-explore-dashboard {
+        font-size: 1.5rem;
+    }
 }
 
 .gh-onboarding-explore-dashboard:hover {
