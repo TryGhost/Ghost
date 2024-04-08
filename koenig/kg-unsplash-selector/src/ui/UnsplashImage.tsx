@@ -32,7 +32,8 @@ const UnsplashImage: FC<UnsplashImageProps> = ({payload, srcUrl, links, likes, u
 
     return (
         <div
-            className={`bg-grey-100 relative mb-6 block ${zoomed ? 'h-full w-[max-content] cursor-zoom-out' : 'w-full cursor-zoom-in'}`}
+            className={`relative mb-6 block ${zoomed ? 'h-full w-[max-content] cursor-zoom-out' : 'w-full cursor-zoom-in'}`}
+            style={{backgroundColor: payload.color || 'transparent'}}
             data-kg-unsplash-gallery-item
             onClick={handleClick}>
             <img
