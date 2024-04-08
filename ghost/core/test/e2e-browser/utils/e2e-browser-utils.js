@@ -60,7 +60,7 @@ const setupGhost = async (page) => {
         await page.getByPlaceholder('At least 10 characters').fill(ownerUser.password);
 
         await page.getByPlaceholder('At least 10 characters').press('Enter');
-        await page.locator('.gh-done-pink').click();
+
         await page.locator('.gh-nav').waitFor(options);
     }
 };
