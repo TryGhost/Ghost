@@ -45,7 +45,7 @@ const ThemeInstalledModal: React.FC<{
     const handleError = useHandleError();
 
     let errorPrompt = null;
-    if (installedTheme.gscan_errors) {
+    if (installedTheme && installedTheme.gscan_errors) {
         errorPrompt = <div className="mt-6">
             <List hint={<>Highly recommended to fix, functionality <strong>could</strong> be restricted</>} title="Errors">
                 {installedTheme.gscan_errors?.map(error => <ThemeProblemView problem={error} />)}
@@ -54,7 +54,7 @@ const ThemeInstalledModal: React.FC<{
     }
 
     let warningPrompt = null;
-    if (installedTheme.warnings) {
+    if (installedTheme && installedTheme.warnings) {
         warningPrompt = <div className="mt-10">
             <List title="Warnings">
                 {installedTheme.warnings?.map(warning => <ThemeProblemView problem={warning} />)}
