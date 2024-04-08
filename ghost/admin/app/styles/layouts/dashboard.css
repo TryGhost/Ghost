@@ -2772,9 +2772,7 @@ Onboarding checklist */
     min-height: 100vh;
     margin-bottom: -48px;
     position: relative;
-    /* background: url(img/gradient-bg.png) no-repeat; */
-    background-size: contain;
-    background-position: center;
+    padding: 32px 0;
 }
 
 .gh-onboarding-header {
@@ -2782,7 +2780,7 @@ Onboarding checklist */
     flex-direction: column;
     align-items: center;
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 32px;
 }
 
 .gh-onboarding-ghost-logo-wrapper {
@@ -2808,9 +2806,7 @@ Onboarding checklist */
     width: 100%;
     border-radius: 6px;
     padding: 16px 24px;
-    /* box-shadow: 0px 0px 16px 4px rgba(0, 0, 0, 0.04); */
     border: 1px solid var(--whitegrey);
-    /* box-shadow: -7px -6px 42px 8px rgba(75,225,226,.28),7px 6px 42px 8px rgba(202,103,255,.32); */
     background: var(--white);
 }
 
@@ -2835,15 +2831,15 @@ Onboarding checklist */
     margin-bottom: -18px;
 }
 
-.gh-onboarding-item:hover {
+.gh-onboarding-item:not(:first-child):hover {
     cursor: pointer;
 }
 
-.gh-onboarding-item:hover .gh-onboarding-item-content {
+.gh-onboarding-item:not(:first-child):hover .gh-onboarding-item-content {
     opacity: .9;
 }
 
-.gh-onboarding-item--completed:hover .gh-onboarding-item-content {
+.gh-onboarding-item--completed:not(:first-child):hover .gh-onboarding-item-content {
     opacity: .24;
 }
 
@@ -2902,6 +2898,7 @@ Onboarding checklist */
     font-size: 1.5rem;
     line-height: 1.4;
     margin-top: 4px;
+    padding-right: 32px;
 }
 
 .gh-onboarding-item-action {
@@ -2964,7 +2961,7 @@ Onboarding checklist */
 
 .gh-onboarding-help {
     color: var(--midgrey);
-    margin-top: 24px;
+    margin: 32px 0 0;
     font-size: 1.5rem;
 }
 
@@ -2979,8 +2976,8 @@ Onboarding checklist */
 .gh-onboarding-skip {
     display: flex;
     align-items: center;
-    position: absolute;
     bottom: 32px;
+    margin-top: 24px;
     padding: 1px 14px;
     border: 1px solid var(--whitegrey);
     color: var(--middarkgrey);
@@ -2990,6 +2987,12 @@ Onboarding checklist */
     overflow: hidden;
     transition: opacity .1s linear;
 }
+
+@media (min-height: 900px) and (min-width: 480px) {
+    .gh-onboarding-skip {
+        position: absolute;
+    }
+  }
 
 .gh-onboarding-skip:hover {
     color: var(--darkgrey);
