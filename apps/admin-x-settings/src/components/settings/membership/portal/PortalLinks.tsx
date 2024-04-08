@@ -59,7 +59,7 @@ const PortalLinks: React.FC = () => {
     const homePageURL = getHomepageUrl(siteData!);
 
     return (
-        <ModalPage className='max-w-[920px] text-base text-black' heading='Links'>
+        <ModalPage className='max-w-[920px] text-base text-black dark:text-white' heading='Links'>
             <p className='-mt-6 mb-16'>Use these {isDataAttributes ? 'data attributes' : 'links'} in your theme to show pages of Portal.</p>
 
             <List actions={<Button color='green' label={isDataAttributes ? 'Links' : 'Data attributes'} link onClick={toggleIsDataAttributes}/>} title='Generic' titleSize='lg'>
