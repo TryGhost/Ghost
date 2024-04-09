@@ -60,7 +60,7 @@ const setupGhost = async (page) => {
         await page.getByPlaceholder('At least 10 characters').fill(ownerUser.password);
 
         await page.getByPlaceholder('At least 10 characters').press('Enter');
-        await page.locator('.gh-done-pink').click();
+
         await page.locator('.gh-nav').waitFor(options);
     }
 };
@@ -260,9 +260,14 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
         offerName = `${name} (${new ObjectID().toHexString().slice(0, 40 - name.length - 3)})`;
         // Tiers request can take time, so waiting until there is no connections before interacting with them
         await page.waitForLoadState('networkidle');
+        // ... and even so, the component updates can take a bit to trickle down, so we should verify that the Tier is fully loaded before proceeding
+        await page.getByTestId('tiers').getByText('No active tiers found').waitFor({state: 'hidden'});
+        await page.getByTestId('offers').getByRole('button', {name: 'Manage tiers'}).waitFor({state: 'hidden'});
 
+        // only one of these buttons is ever available - either 'Add offer' or 'Manage offers'
         const hasExistingOffers = await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).isVisible();
         const isCTA = await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).isVisible();
+        
         // Archive other offers to keep the list tidy
         // We only need 1 offer to be active at a time
         // Either the list of active offers loads, or the CTA when no offers exist
@@ -281,12 +286,13 @@ const createOffer = async (page, {name, tierName, offerType, amount, discountTyp
         if (isCTA) {
             await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).click();
         } else {
+            // ensure the modal is open
+            if (!page.getByTestId('offers-modal').isVisible()) {
+                await page.getByTestId('offers').getByRole('button', {name: 'Manage offers'}).click();
+            }
             await page.getByText('New offer').click();
         }
 
-        // const newOfferButton = await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}) || await page.getByTestId('offers').getByRole('button', {name: 'New offer'});
-        // await page.getByTestId('offers').getByRole('button', {name: 'Add offer'}).click();
-        // await newOfferButton.click();
         await page.getByLabel('Offer name').fill(offerName);
 
         if (offerType === 'freeTrial') {

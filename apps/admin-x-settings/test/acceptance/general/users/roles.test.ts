@@ -16,10 +16,10 @@ test.describe('User roles', async () => {
         await expect(section.getByTestId('owner-user')).toHaveText(/owner@test\.com/);
 
         await expect(section.getByRole('tab')).toHaveText([
-            'Administrators',
-            'Editors',
-            'Authors',
-            'Contributors',
+            'Administrators1',
+            'Editors1',
+            'Authors1',
+            'Contributors1',
             'Invited'
         ]);
 

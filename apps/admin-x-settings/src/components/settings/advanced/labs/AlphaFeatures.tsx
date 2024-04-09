@@ -52,10 +52,6 @@ const features = [{
     description: 'Adds a navigation link to the AdminX demo app',
     flag: 'adminXDemo'
 },{
-    title: 'New email addresses',
-    description: 'For self hosters, forces the usage of the mail.from config as from address for all outgoing emails',
-    flag: 'newEmailAddresses'
-},{
     title: 'Onboarding checklist',
     description: 'Onboarding checklist that helps new customers get started',
     flag: 'onboardingChecklist'
@@ -63,6 +59,10 @@ const features = [{
     title: 'NestJS Playground',
     description: 'Wires up the Ghost NestJS App to the Admin API',
     flag: 'NestPlayground'
+},{
+    title: 'Prevent Member Spam Signups',
+    description: 'Enables features to help combat spam member signups',
+    flag: 'membersSpamPrevention'
 }];
 
 const AlphaFeatures: React.FC = () => {

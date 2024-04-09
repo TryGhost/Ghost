@@ -111,10 +111,12 @@ export interface TabViewProps<ID = string> {
     buttonBorder?: boolean;
     width?: TabWidth;
     containerClassName?: string;
-    topRightContent?: React.ReactNode
+    topRightContent?: React.ReactNode;
+    testId?: string;
 }
 
 function TabView<ID extends string = string>({
+    testId,
     tabs,
     onTabChange,
     selectedTab,
@@ -138,7 +140,7 @@ function TabView<ID extends string = string>({
     };
 
     return (
-        <section className={containerClassName}>
+        <section className={containerClassName} data-testid={testId}>
             <TabList
                 border={border}
                 buttonBorder={buttonBorder}

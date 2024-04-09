@@ -37,6 +37,9 @@ module.exports = function setupMembersApp() {
     // Initializes members specific routes as well as assigns members specific data to the req/res objects
     // We don't want to add global bodyParser middleware as that interferes with stripe webhook requests on - `/webhooks`.
 
+    // Double opt-in subscription handling
+    membersApp.post('/api/member', membersService.api.middleware.createMemberFromToken);
+
     // Manage newsletter subscription via unsubscribe link
     membersApp.get('/api/member/newsletters', middleware.getMemberNewsletters);
     membersApp.put('/api/member/newsletters', bodyParser.json({limit: '50mb'}), middleware.updateMemberNewsletters);

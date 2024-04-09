@@ -1360,3 +1360,65 @@ kbd {
 .gh-update-banner {
     background: var(--main-color-content-greybg);
 }
+
+/* ---------------------------------
+Onboarding checklist */
+
+.gh-onboarding-wrapper {
+    background: none;
+}
+
+.gh-onboarding-items {
+    border-color: var(--lightgrey);
+}
+
+.gh-onboarding-item {
+    border-color: var(--lightgrey);
+}
+
+.gh-onboarding-item--next {
+    background: #1c1e21;
+}
+
+.gh-onboarding-help a:hover {
+    color: var(--black);
+}
+
+.gh-onboarding-skip {
+    color: var(--middarkgrey);
+    border: 1px solid var(--lightgrey);
+}
+
+.gh-onboarding-ghost-logo-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: hsl(216deg 11% 70% / 1%);
+}
+
+/* ---------------------------------
+Onboarding checklist: Share publication modal */
+
+.gh-share-card-container {
+    border: 1px solid #394047;
+}
+
+.gh-copy-publication-link {
+    background: #394047;
+    border: none;
+}
+
+.gh-copy-publication-link:hover {
+    border: none;
+    opacity: .8;
+}
+
+.gh-share-links li a { 
+    border: 1px solid #394047;
+}
+
+.gh-share-links li a:hover {
+    background: #394047;
+}

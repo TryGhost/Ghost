@@ -8,6 +8,7 @@ const PreviewRouter = require('./PreviewRouter');
 const ParentRouter = require('./ParentRouter');
 const EmailRouter = require('./EmailRouter');
 const UnsubscribeRouter = require('./UnsubscribeRouter');
+const SubscribeRouter = require('./SubscribeRouter');
 
 // This emits its own routing events
 const events = require('../../../server/lib/common/events');
@@ -109,6 +110,10 @@ class RouterManager {
         this.siteRouter.mountRouter(unsubscribeRouter.router());
         this.registry.setRouter('unsubscribeRouter', unsubscribeRouter);
 
+        const subscribeRouter = new SubscribeRouter();
+        this.siteRouter.mountRouter(subscribeRouter.router());
+        this.registry.setRouter('subscribeRouter', subscribeRouter);
+        
         if (RESOURCE_CONFIG.QUERY.email) {
             const emailRouter = new EmailRouter(RESOURCE_CONFIG);
             this.siteRouter.mountRouter(emailRouter.router());
