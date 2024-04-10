@@ -51,7 +51,8 @@ const ALPHA_FEATURES = [
     'lexicalIndicators',
     // 'adminXOffers',
     'adminXDemo',
-    'membersSpamPrevention'
+    'membersSpamPrevention',
+    'internalLinking'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
