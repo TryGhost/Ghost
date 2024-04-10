@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const generateFeed = require('./generate-feed');
+const logging = require('@tryghost/logging');
 const feedCache = {};
 
 module.exports.getXML = function getFeedXml(baseUrl, data) {
@@ -10,6 +11,8 @@ module.exports.getXML = function getFeedXml(baseUrl, data) {
             hash: dataHash,
             xml: generateFeed(baseUrl, data)
         };
+    } else {
+        logging.info('[RSS] Serving from in-memory cache');
     }
 
     return feedCache[baseUrl].xml;
