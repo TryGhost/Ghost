@@ -18,28 +18,28 @@ export default class SearchService extends Service {
         {
             name: 'Posts',
             model: 'post',
-            fields: ['id', 'title'],
+            fields: ['id', 'url', 'title'],
             idField: 'id',
             titleField: 'title'
         },
         {
             name: 'Pages',
             model: 'page',
-            fields: ['id', 'title'],
+            fields: ['id', 'url', 'title'],
             idField: 'id',
             titleField: 'title'
         },
         {
             name: 'Users',
             model: 'user',
-            fields: ['slug', 'name'],
+            fields: ['id', 'slug', 'url', 'name'], // id not used but required for API to have correct url
             idField: 'slug',
             titleField: 'name'
         },
         {
             name: 'Tags',
             model: 'tag',
-            fields: ['slug', 'name'],
+            fields: ['slug', 'url', 'name'],
             idField: 'slug',
             titleField: 'name'
         }
@@ -75,7 +75,7 @@ export default class SearchService extends Service {
             const matchedContent = this.content.filter((item) => {
                 const normalizedTitle = item.title.toString().toLowerCase();
                 return (
-                    item.searchable === searchable.name &&
+                    item.groupName === searchable.name &&
                     normalizedTitle.indexOf(normalizedTerm) >= 0
                 );
             });
@@ -125,8 +125,9 @@ export default class SearchService extends Service {
             const items = response[pluralize(searchable.model)].map(
                 item => ({
                     id: `${searchable.model}.${item[searchable.idField]}`,
+                    url: item.url,
                     title: item[searchable.titleField],
-                    searchable: searchable.name
+                    groupName: searchable.name
                 })
             );
 
