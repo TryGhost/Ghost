@@ -81,7 +81,13 @@ const BuiltInIntegrations: React.FC = () => {
     const pinturaEditor = usePinturaEditor();
 
     const {settings} = useGlobalData();
-    const [ampEnabled, unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, ['amp', 'unsplash', 'pintura', 'firstpromoter', 'slack_url', 'slack_username']);
+    const [ampEnabled, unsplashEnabled, firstPromoterEnabled, slackUrl, slackUsername] = getSettingValues<boolean>(settings, [
+        'amp',
+        'unsplash',
+        'firstpromoter',
+        'slack_url',
+        'slack_username'
+    ]);
 
     return (
         <List titleSeparator={false}>
@@ -102,6 +108,7 @@ const BuiltInIntegrations: React.FC = () => {
                 active={slackUrl && slackUsername}
                 detail='A messaging app for teams'
                 icon={<SlackIcon className='h-8 w-8' />}
+                testId='slack-integration'
                 title='Slack' />
 
             <IntegrationItem
@@ -111,6 +118,7 @@ const BuiltInIntegrations: React.FC = () => {
                 active={ampEnabled}
                 detail='Google AMP will be removed in Ghost 6.0'
                 icon={<AmpIcon className='h-8 w-8' />}
+                testId='amp-integration'
                 title='AMP' />
 
             <IntegrationItem
@@ -120,6 +128,7 @@ const BuiltInIntegrations: React.FC = () => {
                 active={unsplashEnabled}
                 detail='Beautiful, free photos'
                 icon={<UnsplashIcon className='h-8 w-8' />}
+                testId='unsplash-integration'
                 title='Unsplash' />
 
             <IntegrationItem
@@ -129,6 +138,7 @@ const BuiltInIntegrations: React.FC = () => {
                 active={firstPromoterEnabled}
                 detail='Launch your member referral program'
                 icon={<FirstPromoterIcon className='h-8 w-8' />}
+                testId='firstpromoter-integration'
                 title='FirstPromoter' />
 
             <IntegrationItem
@@ -136,9 +146,10 @@ const BuiltInIntegrations: React.FC = () => {
                     openModal('integrations/pintura');
                 }}
                 active={pinturaEditor.isEnabled}
-                detail='Advanced image editing' icon=
-                    {<PinturaIcon className='h-8 w-8' />} title
-                    ='Pintura' />
+                detail='Advanced image editing'
+                icon={<PinturaIcon className='h-8 w-8' />}
+                testId='pintura-integration'
+                title='Pintura' />
         </List>
     );
 };
