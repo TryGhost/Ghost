@@ -2,7 +2,7 @@ import AddRecommendationModal from './AddRecommendationModal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './RecommendationDescriptionForm';
-import trackEvent from '../../../../utils/plausible';
+import trackEvent from '../../../../utils/analytics';
 import {EditOrAddRecommendation, useAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
