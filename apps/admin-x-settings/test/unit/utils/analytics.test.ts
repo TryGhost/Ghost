@@ -1,11 +1,10 @@
 import * as assert from 'assert/strict';
 import trackEvent from '../../../src/utils/analytics';
 
-
 describe('trackEvent', function () {
     it('calls posthog.capture with the correct event name and properties', function () {
-        const eventName = 'Recommendation Added';
-        const props = {
+        const testEventName = 'Recommendation Added';
+        const testProps = {
             oneClickSubscribe: true
         };
 
@@ -18,12 +17,12 @@ describe('trackEvent', function () {
             }
         };
 
-        trackEvent(eventName, props);
+        trackEvent(testEventName, testProps);
     });
 
     it('calls plausible with the correct event name and properties', function () {
-        const eventName = 'Recommendation Added';
-        const props = {
+        const testEventName = 'Recommendation Added';
+        const testProps = {
             oneClickSubscribe: true
         };
 
@@ -34,6 +33,6 @@ describe('trackEvent', function () {
             });
         };
 
-        trackEvent(eventName, props);
+        trackEvent(testEventName, testProps);
     });
 });
