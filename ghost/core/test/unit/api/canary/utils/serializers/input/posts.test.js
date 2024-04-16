@@ -37,7 +37,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             should.equal(frame.options.filter, '(type:post)+status:[draft,published,scheduled,sent]');
         });
 
-        it('combine filters', function () {
+        it('combine status+tag filters', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -57,7 +57,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             frame.options.filter.should.eql('(status:published+tag:eins)+type:post');
         });
 
-        it('combine filters', function () {
+        it('only tag filters', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',

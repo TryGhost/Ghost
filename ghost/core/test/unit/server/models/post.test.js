@@ -883,60 +883,6 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     });
                 });
 
-                it('rejects if changing authors', function (done) {
-                    const mockPostObj = {
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {authors: [{id: 2}]};
-
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
-
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.related.calledTwice).be.true();
-                        done();
-                    });
-                });
-
-                it('rejects if changing authors', function (done) {
-                    const mockPostObj = {
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {authors: [{id: 2}]};
-
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
-
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        mockPostObj.related.callCount.should.eql(2);
-                        done();
-                    });
-                });
-
                 it('resolves if none of the above cases are true', function () {
                     const mockPostObj = {
                         related: sinon.stub()
