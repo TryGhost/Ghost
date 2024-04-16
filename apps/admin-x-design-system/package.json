@@ -49,7 +49,7 @@
     "storybook": "7.6.17",
     "ts-node": "10.9.2",
     "typescript": "5.4.5",
-    "vite": "4.5.2",
+    "vite": "4.5.3",
     "vite-plugin-svgr": "3.3.0"
   },
   "dependencies": {
