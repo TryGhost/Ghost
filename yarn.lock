@@ -27680,7 +27680,7 @@ socket.io-parser@~4.2.4:
     "@socket.io/component-emitter" "~3.1.0"
     debug "~4.3.1"
 
-socket.io@4.7.5, socket.io@^4.1.2:
+socket.io@4.7.5, socket.io@^4.5.4:
   version "4.7.5"
   resolved "https://registry.yarnpkg.com/socket.io/-/socket.io-4.7.5.tgz#56eb2d976aef9d1445f373a62d781a41c7add8f8"
   integrity sha512-DmeAkF6cwM9jSfmp6Dr/5/mfMwb5Z5qRrSXLpo3Fq5SqyU8CMF15jIN4ZhfSwu35ksM1qmHZDQ/DK5XTccSTvA==
@@ -28869,10 +28869,10 @@ test-exclude@^6.0.0:
     glob "^7.1.4"
     minimatch "^3.0.4"
 
-testem@3.11.0, testem@^3.2.0:
-  version "3.11.0"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-3.11.0.tgz#24f46528a9f7135eca88466b35ca8e09ad497399"
-  integrity sha512-q0U126/nnRH54ZDrr6j1Ai5zK6vOm2rdY/5VJrbqcEPQgOWoLB6zrymWUs7BqN2/yRsdorocl9E9ZEwm7LLIZQ==
+testem@3.13.0, testem@^3.2.0:
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-3.13.0.tgz#27d6b2c50e9607f2c2d4ea5f75c88b3434dac7a0"
+  integrity sha512-b4hdlkH2TR1TQJCOgBNbD7nz4TjeYF35MgUlzum3yfDaaR+lJDjmJNMgi72MKgg+SjkGZ1U3BCBOqLC85MsMmQ==
   dependencies:
     "@xmldom/xmldom" "^0.8.0"
     backbone "^1.1.2"
@@ -28898,7 +28898,7 @@ testem@3.11.0, testem@^3.2.0:
     npmlog "^6.0.0"
     printf "^0.6.1"
     rimraf "^3.0.2"
-    socket.io "^4.1.2"
+    socket.io "^4.5.4"
     spawn-args "^0.2.0"
     styled_string "0.0.1"
     tap-parser "^7.0.0"
