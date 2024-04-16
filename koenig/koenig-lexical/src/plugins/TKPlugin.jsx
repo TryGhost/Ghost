@@ -8,7 +8,7 @@ import {useKoenigTextEntity} from '../hooks/useKoenigTextEntity';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {useTKContext} from '../context/TKContext';
 
-const REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
+const REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK|Tk|tk)+[^\p{L}\p{N}\s]*)(.)?/u);
 const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
 
 function TKIndicator({editor, rootElement, parentKey, nodeKeys}) {

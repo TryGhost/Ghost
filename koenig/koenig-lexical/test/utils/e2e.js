@@ -24,7 +24,7 @@ export async function initialize({page, uri = '/#/?content=false'}) {
 
         await exposeLexicalEditor(page);
     } else {
-        // Subsequent pages nagivated to using react router
+        // Subsequent pages navigated to using react router
         await page.evaluate(async ([navigateTo, force]) => {
             window.lexicalEditor.blur();
             window.lexicalEditor.setEditorState(window.originalEditorState);
