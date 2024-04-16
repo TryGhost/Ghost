@@ -24,10 +24,13 @@ describe('Click Tracking', function () {
     });
 
     it('Full test', async function () {
-        const {body: {posts: [draft]}} = await agent.post('/posts/', {
+        const siteUrl = new URL(urlUtils.urlFor('home', true));
+
+        const {body: {posts: [draft]}} = await agent.post('/posts/?source=html', {
             body: {
                 posts: [{
-                    title: 'My Newsletter'
+                    title: 'My Newsletter',
+                    html: `<p>External link <a href="https://example.com/a">https://example.com/a</a>; Internal link <a href=${siteUrl.href}/about">${siteUrl.href}/about</a>;Ghost homepage <a href="https://ghost.org">https://ghost.org</a></p>`
                 }]
             }
         });
@@ -55,10 +58,10 @@ describe('Click Tracking', function () {
         /** @type {(url: string) => Promise<import('node-fetch').Response>} */
         const fetchWithoutFollowingRedirect = url => fetch(url, {redirect: 'manual'});
 
-        const siteUrl = new URL(urlUtils.urlFor('home', true));
-
         let internalRedirectHappened = false;
         let externalRedirectHappened = false;
+        let poweredByGhostIgnored = true;
+
         for (const link of links) {
             const res = await fetchWithoutFollowingRedirect(link.link.from);
             const redirectedToUrl = new URL(res.headers.get('location'));
@@ -66,7 +69,6 @@ describe('Click Tracking', function () {
             // startsWith is a little dirty, but we need this because siteUrl
             // can have a path when Ghost is hosted on a subdomain.
             const isInternal = redirectedToUrl.href.startsWith(siteUrl.href);
-
             if (isInternal) {
                 internalRedirectHappened = true;
 
@@ -80,10 +82,16 @@ describe('Click Tracking', function () {
             }
 
             assert(redirectedToUrl.searchParams.get('ref'), 'ref should be present on all redirects');
+
+            // Powered by Ghost link should not be replaced / tracked
+            if (link.link.to.includes('https://ghost.org/?via=pbg-newsletter')) {
+                poweredByGhostIgnored = false;
+            }
         }
 
         assert(internalRedirectHappened);
         assert(externalRedirectHappened);
+        assert(poweredByGhostIgnored);
 
         const {body: {members}} = await agent.get(
             `/members/`

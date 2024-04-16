@@ -124,9 +124,7 @@ module.exports = {
                     }
 
                     if (model.wasChanged()) {
-                        this.headers.cacheInvalidate = true;
-                    } else {
-                        this.headers.cacheInvalidate = false;
+                        frame.setHeader('X-Cache-Invalidate', '/*');
                     }
 
                     return model;

@@ -1,8 +1,10 @@
 /* eslint-disable ghost/ghost-custom/max-api-complexity */
-const storage = require('../../adapters/storage');
-const imageTransform = require('@tryghost/image-transform');
-const config = require('../../../shared/config');
 const path = require('path');
+const errors = require('@tryghost/errors');
+const imageTransform = require('@tryghost/image-transform');
+
+const storage = require('../../adapters/storage');
+const config = require('../../../shared/config');
 
 module.exports = {
     docName: 'images',
@@ -33,7 +35,16 @@ module.exports = {
                     width: config.get('imageOptimization:defaultMaxWidth')
                 }, imageOptimizationOptions);
 
-                await imageTransform.resizeFromPath(options);
+                try {
+                    await imageTransform.resizeFromPath(options);
+                } catch (err) {
+                    // If the image processing fails, we don't want to store the image because it's corrupted/invalid
+                    throw new errors.BadRequestError({
+                        message: 'Image processing failed',
+                        context: err.message,
+                        help: 'Please verify that the image is valid'
+                    });
+                }
 
                 // Store the processed/optimized image
                 const processedImageUrl = await store.save({

@@ -1,9 +1,9 @@
 import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {ButtonGroup, ButtonProps} from '@tryghost/admin-x-design-system';
+import {ButtonGroup, ButtonProps, showToast} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
 import {NoValueLabel} from '@tryghost/admin-x-design-system';
 import {SortMenu} from '@tryghost/admin-x-design-system';
-import {Tier, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {Tooltip} from '@tryghost/admin-x-design-system';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -93,7 +93,7 @@ export const CopyLinkButton: React.FC<{offerCode: string}> = ({offerCode}) => {
 export const OffersIndexModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
-    const {data: {offers: allOffers = []} = {}} = useBrowseOffers({
+    const {data: {offers: allOffers = []} = {}, isFetching: isFetchingOffers} = useBrowseOffers({
         searchParams: {
             limit: 'all'
         }
@@ -139,6 +139,8 @@ export const OffersIndexModal = () => {
                 return multiplier * ((offer1.created_at ? new Date(offer1.created_at).getTime() : 0) - (offer2.created_at ? new Date(offer2.created_at).getTime() : 0));
             }
         });
+
+    const paidActiveTiers = getPaidActiveTiers(allTiers || []);
 
     const listLayoutOutput = <div className='overflow-x-auto'>
         <table className='m-0 w-full'>
@@ -198,7 +200,16 @@ export const OffersIndexModal = () => {
             icon: 'add',
             label: 'New offer',
             color: 'green',
-            onClick: () => updateRoute('offers/new')
+            onClick: () => {
+                if (paidActiveTiers.length === 0) {
+                    showToast({
+                        type: 'neutral',
+                        message: 'You must have an active tier to create an offer.'
+                    });
+                } else {
+                    updateRoute('offers/new');
+                }
+            }
         }
     ];
 
@@ -260,13 +271,13 @@ export const OffersIndexModal = () => {
                     </div>
                 </div>
             </header>
-            {selectedTab === 'active' && activeOffers.length === 0 ?
+            {selectedTab === 'active' && activeOffers.length === 0 && !isFetchingOffers ?
                 <NoValueLabel icon='tags-block'>
                     No offers found.
                 </NoValueLabel> :
                 null
             }
-            {selectedTab === 'archived' && archivedOffers.length === 0 ?
+            {selectedTab === 'archived' && archivedOffers.length === 0 && !isFetchingOffers ?
                 <NoValueLabel icon='tags-block'>
                     No offers found.
                 </NoValueLabel> :

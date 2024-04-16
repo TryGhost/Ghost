@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "5.79.6",
+  "version": "5.82.2",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -39,14 +39,14 @@
     "@embroider/macros": "1.13.4",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
-    "@sentry/ember": "7.86.0",
-    "@sentry/integrations": "7.86.0",
+    "@sentry/ember": "7.110.1",
+    "@sentry/integrations": "7.110.1",
     "@tryghost/color-utils": "0.2.0",
     "@tryghost/ember-promise-modals": "2.0.1",
     "@tryghost/helpers": "1.1.88",
     "@tryghost/kg-clean-basic-html": "4.0.3",
     "@tryghost/kg-converters": "1.0.1",
-    "@tryghost/koenig-lexical": "1.0.20",
+    "@tryghost/koenig-lexical": "1.1.0",
     "@tryghost/limit-service": "1.2.12",
     "@tryghost/members-csv": "0.0.0",
     "@tryghost/nql": "0.12.1",
@@ -142,7 +142,7 @@
     "react-dom": "18.2.0",
     "reframe.js": "4.0.2",
     "semver": "7.5.4",
-    "testem": "3.11.0",
+    "testem": "3.13.0",
     "tracked-built-ins": "3.3.0",
     "util": "0.12.5",
     "validator": "7.2.0",
@@ -169,7 +169,7 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "jose": "4.15.4",
+    "jose": "4.15.5",
     "path-browserify": "1.0.1",
     "webpack": "5.90.2"
   },

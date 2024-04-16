@@ -61,6 +61,11 @@ export default class SetupController extends Controller.extend(ValidationEngine)
 
             return true;
         } catch (error) {
+            // handle setup/done route redirecting to dashboard
+            if (error.message === 'TransitionAborted') {
+                return true;
+            }
+
             if (error && error.payload && error.payload.errors) {
                 if (isVersionMismatchError(error)) {
                     return this.notifications.showAPIError(error);
@@ -141,6 +146,11 @@ export default class SetupController extends Controller.extend(ValidationEngine)
             let [apiError] = error.payload.errors;
             this.set('flowErrors', [apiError.message, apiError.context].join(' '));
         } else {
+            // ignore setup/done route redirecting to dashboard
+            if (error.message === 'TransitionAborted') {
+                return true;
+            }
+
             // Connection errors don't return proper status message, only req.body
             this.notifications.showAlert('There was a problem on the server.', {type: 'error', key: 'setup.authenticate.failed'});
         }

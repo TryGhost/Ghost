@@ -28,7 +28,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
     }
 
     // To fix pagination when we create new comments (or people post comments after you loaded the page, we need to only load comments creatd AFTER the page load)
-    let firstCommentsLoadedAt: null | string = null;
+    let firstCommentCreatedAt: null | string = null;
 
     const api = {
         site: {
@@ -122,17 +122,20 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 return json;
             },
             browse({page, postId}: {page: number, postId: string}) {
-                // use the most recent round 10sec timestamp to fetch comments so we can have some caching
-                const now = Date.now();
-                const timestamp = (new Date(now - (now % 10000))).toISOString();
+                let filter = null;
+                if (firstCommentCreatedAt) {
+                    filter = `created_at:<=${firstCommentCreatedAt}`;
+                }
 
-                firstCommentsLoadedAt = firstCommentsLoadedAt ?? timestamp;
+                const params = new URLSearchParams();
 
-                const filter = encodeURIComponent(`post_id:'${postId}'+created_at:<=${firstCommentsLoadedAt}`);
-                const order = encodeURIComponent('created_at DESC, id DESC');
-
-                const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=5&order=${order}&filter=${filter}&page=${page}`});
-                return makeRequest({
+                params.set('limit', '5');
+                if (filter) {
+                    params.set('filter', filter);
+                }
+                params.set('page', page.toString());
+                const url = endpointFor({type: 'members', resource: `comments/post/${postId}`, params: `?${params.toString()}`});
+                const response = makeRequest({
                     url,
                     method: 'GET',
                     headers: {
@@ -146,12 +149,22 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                         throw new Error('Failed to fetch comments');
                     }
                 });
+
+                if (!firstCommentCreatedAt) {
+                    response.then((body) => {
+                        const firstComment = body.comments[0];
+                        if (firstComment) {
+                            firstCommentCreatedAt = firstComment.created_at;
+                        }
+                    });
+                }
+
+                return response;
             },
             async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId: string; limit?: number | 'all'}) {
                 const filter = encodeURIComponent(`id:>'${afterReplyId}'`);
-                const order = encodeURIComponent('created_at ASC, id ASC');
 
-                const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?limit=${limit ?? 5}&order=${order}&filter=${filter}`});
+                const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?limit=${limit ?? 5}&filter=${filter}`});
                 const res = await makeRequest({
                     url,
                     method: 'GET',

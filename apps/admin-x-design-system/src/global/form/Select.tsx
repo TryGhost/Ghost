@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import React, {useId, useMemo} from 'react';
+import React, {useId, useMemo, useEffect} from 'react';
 import ReactSelect, {ClearIndicatorProps, DropdownIndicatorProps, GroupBase, OptionProps, OptionsOrGroups, Props, components} from 'react-select';
 import AsyncSelect from 'react-select/async';
 import {useFocusContext} from '../../providers/DesignSystemProvider';
@@ -117,6 +117,29 @@ const Select: React.FC<SelectProps> = ({
     const handleBlur = () => {
         setFocusState(false);
     };
+
+    useEffect(() => {
+        const handleEscapeKey = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                // Fix for Safari - if an element in the modal is focused, closing it will jump to
+                // the bottom of the page because Safari tries to focus the "next" element in the DOM
+                if (document.activeElement && document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                }
+                setFocusState(false);
+
+                // Prevent the event from bubbling up to the window level
+                event.stopPropagation();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscapeKey);
+
+        // Clean up the event listener when the modal is closed
+        return () => {
+            document.removeEventListener('keydown', handleEscapeKey);
+        };
+    }, [setFocusState]);
 
     let containerClasses = '';
     if (!unstyled) {

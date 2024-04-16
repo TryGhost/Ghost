@@ -127,19 +127,6 @@ Object {
 .post-title-link-left {
   text-align: left;
 }
-.comment-link {
-  color: #000000;
-  color: rgba(0, 0, 0, 0.5);
-  font-size: 13px;
-  letter-spacing: 0.1px;
-  text-decoration: none;
-}
-.comment-link img {
-  width: 16px;
-  height: 16px;
-  margin-bottom: 1px;
-  vertical-align: middle;
-}
 .view-online-link {
   word-wrap: none;
   white-space: nowrap;
@@ -276,7 +263,6 @@ table.body .post-meta-left.view-online-mobile .view-online {
   }
 
   table.body .view-online-link,
-table.body .comment-link,
 table.body .footer,
 table.body .footer a {
     font-size: 12px !important;
@@ -556,7 +542,7 @@ table.body h2 span {
                                         </tr>
 
                                             <tr>
-                                                <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
+                                                <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/?via=pbg-newsletter\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
                                             </tr>
                                     </table>
                                 </td>
@@ -700,7 +686,7 @@ Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-u
 
 
 
-https://ghost.org/
+https://ghost.org/?via=pbg-newsletter
 
 
 
@@ -725,7 +711,7 @@ exports[`Email Preview API Read can read post email preview with email card and 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23765",
+  "content-length": "23528",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -765,19 +751,6 @@ Object {
 }
 .post-title-link-left {
   text-align: left;
-}
-.comment-link {
-  color: #000000;
-  color: rgba(0, 0, 0, 0.5);
-  font-size: 13px;
-  letter-spacing: 0.1px;
-  text-decoration: none;
-}
-.comment-link img {
-  width: 16px;
-  height: 16px;
-  margin-bottom: 1px;
-  vertical-align: middle;
 }
 .view-online-link {
   word-wrap: none;
@@ -915,7 +888,6 @@ table.body .post-meta-left.view-online-mobile .view-online {
   }
 
   table.body .view-online-link,
-table.body .comment-link,
 table.body .footer,
 table.body .footer a {
     font-size: 12px !important;
@@ -1199,7 +1171,7 @@ table.body h2 span {
                                         </tr>
 
                                             <tr>
-                                                <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
+                                                <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/?via=pbg-newsletter\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
                                             </tr>
                                     </table>
                                 </td>
@@ -1359,7 +1331,7 @@ Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-u
 
 
 
-https://ghost.org/
+https://ghost.org/?via=pbg-newsletter
 
 
 
@@ -1384,7 +1356,7 @@ exports[`Email Preview API Read can read post email preview with fields 4: [head
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "28576",
+  "content-length": "28339",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1455,19 +1427,6 @@ Object {
 }
 .post-title-link-left {
   text-align: left;
-}
-.comment-link {
-  color: #000000;
-  color: rgba(0, 0, 0, 0.5);
-  font-size: 13px;
-  letter-spacing: 0.1px;
-  text-decoration: none;
-}
-.comment-link img {
-  width: 16px;
-  height: 16px;
-  margin-bottom: 1px;
-  vertical-align: middle;
 }
 .view-online-link {
   word-wrap: none;
@@ -1605,7 +1564,6 @@ table.body .post-meta-left.view-online-mobile .view-online {
   }
 
   table.body .view-online-link,
-table.body .comment-link,
 table.body .footer,
 table.body .footer a {
     font-size: 12px !important;
@@ -1885,7 +1843,7 @@ table.body h2 span {
                                         </tr>
 
                                             <tr>
-                                                <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
+                                                <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/?via=pbg-newsletter\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
                                             </tr>
                                     </table>
                                 </td>
@@ -2023,7 +1981,7 @@ Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-u
 
 
 
-https://ghost.org/
+https://ghost.org/?via=pbg-newsletter
 
 
 
@@ -2061,7 +2019,7 @@ exports[`Email Preview API Read has custom content transformations for email com
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "23519",
+  "content-length": "23282",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -2462,19 +2420,6 @@ Object {
 .post-title-link-left {
   text-align: left;
 }
-.comment-link {
-  color: #000000;
-  color: rgba(0, 0, 0, 0.5);
-  font-size: 13px;
-  letter-spacing: 0.1px;
-  text-decoration: none;
-}
-.comment-link img {
-  width: 16px;
-  height: 16px;
-  margin-bottom: 1px;
-  vertical-align: middle;
-}
 .view-online-link {
   word-wrap: none;
   white-space: nowrap;
@@ -2611,7 +2556,6 @@ table.body .post-meta-left.view-online-mobile .view-online {
   }
 
   table.body .view-online-link,
-table.body .comment-link,
 table.body .footer,
 table.body .footer a {
     font-size: 12px !important;
@@ -2898,7 +2842,7 @@ table.body h2 span {
                                         </tr>
 
                                             <tr>
-                                                <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
+                                                <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/?via=pbg-newsletter\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
                                             </tr>
                                     </table>
                                 </td>
@@ -3043,7 +2987,7 @@ Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-u
 
 
 
-https://ghost.org/
+https://ghost.org/?via=pbg-newsletter
 
 
 
@@ -3081,7 +3025,7 @@ exports[`Email Preview API Read uses the newsletter provided through ?newsletter
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24280",
+  "content-length": "24043",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3508,19 +3452,6 @@ Object {
 .post-title-link-left {
   text-align: left;
 }
-.comment-link {
-  color: #000000;
-  color: rgba(0, 0, 0, 0.5);
-  font-size: 13px;
-  letter-spacing: 0.1px;
-  text-decoration: none;
-}
-.comment-link img {
-  width: 16px;
-  height: 16px;
-  margin-bottom: 1px;
-  vertical-align: middle;
-}
 .view-online-link {
   word-wrap: none;
   white-space: nowrap;
@@ -3657,7 +3588,6 @@ table.body .post-meta-left.view-online-mobile .view-online {
   }
 
   table.body .view-online-link,
-table.body .comment-link,
 table.body .footer,
 table.body .footer a {
     font-size: 12px !important;
@@ -3944,7 +3874,7 @@ table.body h2 span {
                                         </tr>
 
                                             <tr>
-                                                <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
+                                                <td class=\\"footer-powered\\" style=\\"font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif, &#39;Apple Color Emoji&#39;, &#39;Segoe UI Emoji&#39;, &#39;Segoe UI Symbol&#39;; font-size: 18px; vertical-align: top; color: #000000; text-align: center; padding-top: 70px; padding-bottom: 40px;\\" valign=\\"top\\" align=\\"center\\"><a href=\\"https://ghost.org/?via=pbg-newsletter\\" style=\\"color: #FF1A75; text-decoration: none; overflow-wrap: anywhere;\\" target=\\"_blank\\"><img src=\\"https://static.ghost.org/v4.0.0/images/powered.png\\" border=\\"0\\" width=\\"142\\" height=\\"30\\" class=\\"gh-powered\\" alt=\\"Powered by Ghost\\" style=\\"border: none; -ms-interpolation-mode: bicubic; max-width: 100%; width: 142px; height: 30px;\\"></a></td>
                                             </tr>
                                     </table>
                                 </td>
@@ -4089,7 +4019,7 @@ Ghost © 2024 – Unsubscribe [http://127.0.0.1:2369/unsubscribe/?uuid=example-u
 
 
 
-https://ghost.org/
+https://ghost.org/?via=pbg-newsletter
 
 
 
@@ -4127,7 +4057,7 @@ exports[`Email Preview API Read uses the posts newsletter by default 4: [headers
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "24280",
+  "content-length": "24043",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

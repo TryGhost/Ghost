@@ -185,6 +185,20 @@ describe('Images API', function () {
         await uploadImageCheck({path: originalFilePath, filename: 'loadingcat_square.gif', contentType: 'image/gif'});
     });
 
+    it('Will error when filename is too long', async function () {
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
+        const fileContents = await fs.readFile(originalFilePath);
+        const loggingStub = sinon.stub(logging, 'error');
+        await uploadImageRequest({fileContents, filename: `${'a'.repeat(300)}.png`, contentType: 'image/png'})
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+        sinon.assert.calledOnce(loggingStub);
+    });
+
     it('Can not upload a json file', async function () {
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/data/redirects.json');
         const fileContents = await fs.readFile(originalFilePath);
@@ -286,5 +300,22 @@ describe('Images API', function () {
         });
         await uploadImageCheck({path: originalFilePath, filename: 'a.png', contentType: 'image/png'});
         clock.restore();
+    });
+
+    it('Does not return HTTP 500 when image processing fails', async function () {
+        sinon.stub(imageTransform, 'resizeFromPath').rejects(new Error('Image processing failed'));
+
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');
+        const fileContents = await fs.readFile(originalFilePath);
+
+        const loggingStub = sinon.stub(logging, 'error');
+        await uploadImageRequest({fileContents, filename: 'test.png', contentType: 'image/png'})
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+        sinon.assert.calledOnce(loggingStub);
     });
 });

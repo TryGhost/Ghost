@@ -24,18 +24,21 @@ const GA_FEATURES = [
     'listUnsubscribeHeader',
     'filterEmailDisabled',
     'newEmailAddresses',
-    'portalImprovements'
+    'portalImprovements',
+    'onboardingChecklist'
 ];
 
 // NOTE: this allowlist is meant to be used to filter out any unexpected
 //       input for the "labs" setting value
 const BETA_FEATURES = [
+    'additionalPaymentMethods',
     'i18n',
     'activitypub',
     'webmentions'
 ];
 
 const ALPHA_FEATURES = [
+    'NestPlayground',
     'urlCache',
     'lexicalMultiplayer',
     'websockets',
@@ -47,7 +50,9 @@ const ALPHA_FEATURES = [
     'importMemberTier',
     'lexicalIndicators',
     // 'adminXOffers',
-    'adminXDemo'
+    'adminXDemo',
+    'membersSpamPrevention',
+    'internalLinking'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

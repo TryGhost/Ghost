@@ -319,13 +319,11 @@ describe('Default Frontend routing', function () {
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders);
 
-            // The response here is a publicly documented format users rely on
-            // In case it's changed remember to update the docs at https://ghost.org/help/modifying-robots-txt/
             res.text.should.equal(
                 'User-agent: *\n' +
                 'Sitemap: http://127.0.0.1:2369/sitemap.xml\nDisallow: /ghost/\n' +
-                'Disallow: /p/\n' +
                 'Disallow: /email/\n' +
+                'Disallow: /members/api/comments/counts/\n' +
                 'Disallow: /r/\n' +
                 'Disallow: /webmentions/receive/\n'
             );

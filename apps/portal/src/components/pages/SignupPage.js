@@ -153,7 +153,7 @@ footer.gh-portal-signin-footer {
 
 .gh-portal-content.signup.single-field .gh-portal-input,
 .gh-portal-content.signin .gh-portal-input {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .gh-portal-content.signup.single-field + .gh-portal-signup-footer,
@@ -204,15 +204,27 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
 .gh-portal-signup-terms-wrapper {
     width: 100%;
     max-width: 420px;
-    margin: -16px auto 36px;
-}
-
-.gh-portal-signup-terms-wrapper.free-only {
     margin: 0 auto;
 }
 
-.gh-portal-products + .gh-portal-signup-terms-wrapper.free-only {
-    margin: 20px auto 0;
+.signup.single-field .gh-portal-signup-terms-wrapper {
+    margin-top: 12px;
+}
+
+.signup.single-field .gh-portal-products:not(:has(.gh-portal-product-card)) {
+    margin-top: -16px;
+}
+
+.gh-portal-signup-terms {
+    margin: -16px 0 36px;
+}
+
+.gh-portal-signup-terms-wrapper.free-only .gh-portal-signup-terms {
+    margin: -16px 0 24px;
+}
+
+.gh-portal-products:has(.gh-portal-product-card) + .gh-portal-signup-terms-wrapper.free-only {
+    margin: 20px auto 0 !important;
 }
 
 .gh-portal-signup-terms label {
@@ -499,6 +511,7 @@ class SignupPage extends React.Component {
 
     renderSignupTerms() {
         const {site} = this.context;
+
         if (site.portal_signup_terms_html === null || site.portal_signup_terms_html === '') {
             return null;
         }
@@ -690,6 +703,8 @@ class SignupPage extends React.Component {
         const hasOnlyFree = hasOnlyFreeProduct({site}) || showOnlyFree;
         const sticky = !showOnlyFree && (freeBenefits.length || freeDescription);
 
+        const signupTerms = this.renderSignupTerms();
+
         return (
             <section className="gh-portal-signup">
                 <div className='gh-portal-section'>
@@ -704,14 +719,18 @@ class SignupPage extends React.Component {
                         {(hasOnlyFree ?
                             <>
                                 {this.renderProducts()}
+                                {signupTerms &&
                                 <div className='gh-portal-signup-terms-wrapper free-only'>
-                                    {this.renderSignupTerms()}
+                                    {signupTerms}
                                 </div>
+                                }
                             </> :
                             <>
+                                {signupTerms &&
                                 <div className='gh-portal-signup-terms-wrapper'>
-                                    {this.renderSignupTerms()}
+                                    {signupTerms}
                                 </div>
+                                }
                                 {this.renderProducts()}
                             </>)}
 

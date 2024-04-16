@@ -41,10 +41,19 @@ module.exports = class StripeAPI {
     /**
      * StripeAPI
      */
-    constructor() {
+    constructor(deps) {
         /** @type {Stripe} */
         this._stripe = null;
         this._configured = false;
+        this.labs = deps.labs;
+    }
+
+    get PAYMENT_METHOD_TYPES() {
+        if (this.labs.isSet('additionalPaymentMethods')) {
+            return undefined;
+        } else {
+            return ['card'];
+        }
     }
 
     get configured() {
@@ -458,7 +467,7 @@ module.exports = class StripeAPI {
         }
 
         let stripeSessionOptions = {
-            payment_method_types: ['card'],
+            payment_method_types: this.PAYMENT_METHOD_TYPES,
             success_url: options.successUrl || this._config.checkoutSessionSuccessUrl,
             cancel_url: options.cancelUrl || this._config.checkoutSessionCancelUrl,
             // @ts-ignore - we need to update to latest stripe library to correctly use newer features
@@ -552,7 +561,7 @@ module.exports = class StripeAPI {
         await this._rateLimitBucket.throttle();
         const session = await this._stripe.checkout.sessions.create({
             mode: 'setup',
-            payment_method_types: ['card'],
+            payment_method_types: this.PAYMENT_METHOD_TYPES,
             success_url: options.successUrl || this._config.checkoutSetupSessionSuccessUrl,
             cancel_url: options.cancelUrl || this._config.checkoutSetupSessionCancelUrl,
             customer_email: customer.email,

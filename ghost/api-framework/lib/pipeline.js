@@ -160,6 +160,8 @@ const STAGES = {
     }
 };
 
+const controllerMap = new Map();
+
 /**
  * @description The pipeline runs the request through all stages (validation, serialisation, permissions).
  *
@@ -180,13 +182,19 @@ const STAGES = {
  * @return {Object}
  */
 const pipeline = (apiController, apiUtils, apiType) => {
+    if (controllerMap.has(apiController)) {
+        return controllerMap.get(apiController);
+    }
+
     const keys = Object.keys(apiController);
     const docName = apiController.docName;
 
     // CASE: api controllers are objects with configuration.
     //       We have to ensure that we expose a functional interface e.g. `api.posts.add` has to be available.
-    return keys.reduce((obj, method) => {
+    const result = keys.reduce((obj, method) => {
         const apiImpl = _.cloneDeep(apiController)[method];
+
+        Object.freeze(apiImpl.headers);
 
         obj[method] = async function wrapper() {
             const apiConfig = {docName, method};
@@ -265,6 +273,10 @@ const pipeline = (apiController, apiUtils, apiType) => {
         Object.assign(obj[method], apiImpl);
         return obj;
     }, {});
+
+    controllerMap.set(apiController, result);
+
+    return result;
 };
 
 module.exports = pipeline;

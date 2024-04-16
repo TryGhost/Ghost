@@ -32,6 +32,7 @@ describe('RecommendationMetadataService', function () {
 
     afterEach(function () {
         nock.cleanAll();
+        sinon.restore();
     });
 
     it('Returns metadata from the Ghost site', async function () {
@@ -179,6 +180,13 @@ describe('RecommendationMetadataService', function () {
             favicon: null,
             oneClickSubscribe: false
         });
+    });
+
+    it('does not throw an error even if fetching throws an error', async function () {
+        // TODO: simulate DNS resolution failures if possible
+        sinon.stub(got, 'get').rejects(new Error('Failed to fetch'));
+
+        await service.fetch(new URL('https://exampleghostsite.com/subdirectory'));
     });
 
     it('Nullifies empty oembed data', async function () {

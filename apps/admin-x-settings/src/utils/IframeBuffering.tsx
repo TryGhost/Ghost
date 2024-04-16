@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import React, {useEffect, useRef, useState} from 'react';
 
 type IframeBufferingProps = {
@@ -9,6 +10,19 @@ type IframeBufferingProps = {
   testId?: string;
   addDelay?: boolean;
 };
+
+function debounce(func: any, wait: number) { // eslint-disable-line
+    let timeout: NodeJS.Timeout;
+
+    return function executedFunction(...args: any) { // eslint-disable-line
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 
 const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, className, height, width, parentClassName, testId, addDelay = false}) => {
     const [visibleIframeIndex, setVisibleIframeIndex] = useState(0);
@@ -47,9 +61,10 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, class
 
     useEffect(() => {
         const iframe = iframes[visibleIframeIndex].current;
-        const onScroll = () => {
+
+        const onScroll = debounce(() => {
             setScrollPosition(iframe?.contentWindow?.scrollY || 0);
-        };
+        }, 250);
 
         iframe?.contentWindow?.addEventListener('scroll', onScroll);
 
@@ -62,7 +77,15 @@ const IframeBuffering: React.FC<IframeBufferingProps> = ({generateContent, class
         const iframe = iframes[visibleIframeIndex].current;
 
         if (iframe) {
-            iframe.contentWindow?.scrollTo(0, scrollPosition);
+            // refs https://ghost-foundation.sentry.io/issues/5024564293/
+            // Customer reported that code they injected caused Settings to crash.
+            // According to Sentry this the line that caused the crash.
+            // We are adding a try catch block to attempt to catch the error for further investigation and prevent the crash.
+            try {
+                iframe.contentWindow?.scrollTo(0, scrollPosition);
+            } catch (e) {
+                Sentry.captureException(e);
+            }
         }
     }, [scrollPosition, visibleIframeIndex, iframes]);
 
