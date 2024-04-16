@@ -29,9 +29,7 @@
         <img src="https://img.shields.io/github/contributors/TryGhost/Ghost.svg" alt="Contributors" />
     </a>
 </p>
-<p align="center">
-  Love open source? <a href="https://careers.ghost.org/devops-engineer">We're hiring</a> DevOps engineers to work on Ghost full-time.
-</p>
+
 
 &nbsp;
 
