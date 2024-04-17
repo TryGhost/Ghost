@@ -33,6 +33,26 @@ describe('Middleware Execution', function () {
             sinon.assert.notCalled(memberSessionSpy);
         });
 
+        it('should not call middleware on sitemap-pages route', async function () {
+            await request.get('/sitemap-pages.xml').expect(200);
+            sinon.assert.notCalled(memberSessionSpy);
+        });
+
+        it('should not call middleware on sitemap-posts route', async function () {
+            await request.get('/sitemap-posts.xml').expect(200);
+            sinon.assert.notCalled(memberSessionSpy);
+        });
+
+        it('should not call middleware on sitemap-tags route', async function () {
+            await request.get('/sitemap-tags.xml').expect(200);
+            sinon.assert.notCalled(memberSessionSpy);
+        });
+
+        it('should not call middleware on sitemap-authors route', async function () {
+            await request.get('/sitemap-authors.xml').expect(200);
+            sinon.assert.notCalled(memberSessionSpy);
+        });
+
         it('should not call middleware on recommendations route', async function () {
             await request.get('/.well-known/recommendations.json').expect(200);
             sinon.assert.notCalled(memberSessionSpy);
