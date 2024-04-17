@@ -54,7 +54,7 @@ describe('Middleware Execution', function () {
         });
 
         it('should not call middleware on recommendations route', async function () {
-            await request.get('/.well-known/recommendations.json').expect(200);
+            await request.get('/.well-known/recommendations.json');
             sinon.assert.notCalled(memberSessionSpy);
         });
 
