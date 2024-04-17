@@ -57,7 +57,7 @@ export function SnippetInput({
             if (suggestedList.length === 0) {
                 return;
             }
-            
+
             // handle first arrow down from input
             if (activeMenuItem === -1 && !isCreateButtonActive) {
                 setIsCreateButtonActive(true);
@@ -120,7 +120,13 @@ export function SnippetInput({
             ref={snippetRef}
             onClick={e => e.stopPropagation()} // prevents card from losing selected state
         >
-            <Input arrowStyles={arrowStyles} value={value} onChange={onChange} onClear={onClose} onKeyDown={handleInputKeyDown} />
+            <Input
+                arrowStyles={arrowStyles}
+                value={value}
+                onChange={onChange}
+                onClear={onClose}
+                onKeyDown={handleInputKeyDown}
+            />
             {
                 !!value && (
                     <Dropdown

@@ -30,7 +30,7 @@ const params = new URLSearchParams(url.search);
 const WEBSOCKET_ENDPOINT = params.get('multiplayerEndpoint') || 'ws://localhost:1234';
 const WEBSOCKET_ID = params.get('multiplayerId') || '0';
 
-const cardConfig = {
+const defaultCardConfig = {
     unsplash: defaultUnsplashHeaders,
     fetchEmbed: fetchEmbed,
     tenor: tenorConfig,
@@ -44,10 +44,35 @@ const cardConfig = {
     membersEnabled: true,
     feature: {
         collections: true,
-        collectionsCard: true
+        collectionsCard: true,
+        internalLinking: false // default off, can be enabled with `?labs=internalLinking
     },
     deprecated: {
         headerV1: process.env.NODE_ENV === 'test' ? false : true // show header v1 only for tests
+    },
+    searchLinks: async (term) => {
+        // default to showing latest posts when search is empty
+        // no delay to simulate posts being pre-loaded in editor
+        if (!term) {
+            return [
+                {id: '1', groupName: 'Latest posts', title: 'TK Reminders', url: 'https://ghost.org/changelog/tk-reminders/'},
+                {id: '2', groupName: 'Latest posts', title: '✨ Emoji autocomplete ✨', url: 'https://ghost.org/changelog/emoji-picker/'}
+            ];
+        }
+
+        // actual search, simulate a network request delay
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const items = [
+                    {id: '1', groupName: 'Posts', title: 'TK Reminders', url: 'https://ghost.org/changelog/tk-reminders/'},
+                    {id: '2', groupName: 'Posts', title: '✨ Emoji autocomplete ✨', url: 'https://ghost.org/changelog/emoji-picker/'},
+                    {id: '3', groupName: 'Pages', title: 'How to update Ghost', url: 'https://ghost.org/docs/update/'},
+                    {id: '4', groupName: 'Tags', title: 'Improved', url: 'https://ghost.org/changelog/tag/improved/'}
+                ].filter(item => item.title.toLowerCase().includes(term.toLowerCase()));
+
+                resolve(items);
+            }, 250);
+        });
     }
 };
 
@@ -244,9 +269,22 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
 
     const showTitle = !isMultiplayer && !['basic', 'minimal'].includes(editorType);
 
+    const cardConfig = {
+        ...defaultCardConfig,
+        snippets,
+        createSnippet,
+        deleteSnippet,
+        collections,
+        fetchCollectionPosts,
+        feature: {
+            ...defaultCardConfig.feature,
+            internalLinking: searchParams.get('labs')?.includes('internalLinking')
+        }
+    };
+
     return (
         <KoenigComposer
-            cardConfig={{...cardConfig, snippets, createSnippet, deleteSnippet, collections, fetchCollectionPosts}}
+            cardConfig={cardConfig}
             darkMode={darkMode}
             enableMultiplayer={isMultiplayer}
             fileUploader={{useFileUpload: useFileUpload({isMultiplayer}), fileTypes}}

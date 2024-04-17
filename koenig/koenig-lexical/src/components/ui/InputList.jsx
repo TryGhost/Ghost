@@ -3,6 +3,14 @@ import {DropdownContainer} from './DropdownContainer';
 import {Input} from './Input';
 import {KeyboardSelection} from './KeyboardSelection';
 
+function LoadingItem({dataTestId}) {
+    return (
+        <li className={`px-4 py-2 text-left`} data-testid={`${dataTestId}-loading`}>
+            <span className="block text-sm font-semibold leading-tight text-black dark:text-white">Loading...</span>
+        </li>
+    );
+}
+
 function Item({dataTestId, item, selected, onChange}) {
     let selectionClass = '';
 
@@ -36,7 +44,7 @@ function Item({dataTestId, item, selected, onChange}) {
  * @param {string} [options.list]
  * @returns
  */
-export function InputList({dataTestId, listOptions, value, placeholder, onChange}) {
+export function InputList({autoFocus, className, dataTestId, listOptions, isLoading, value, placeholder, onChange, onSelect}) {
     const [inputFocused, setInputFocused] = React.useState(false);
 
     const onFocus = () => {
@@ -57,12 +65,18 @@ export function InputList({dataTestId, listOptions, value, placeholder, onChange
         onChange(event.target.value);
     };
 
-    const showSuggestions = listOptions && !!listOptions.length && inputFocused;
+    const onSelectEvent = (item) => {
+        (onSelect || onChange)(item.value);
+    };
+
+    const showSuggestions = (isLoading || (listOptions && !!listOptions.length)) && inputFocused;
 
     return (
         <>
             <div className="relative z-0">
                 <Input
+                    autoFocus={autoFocus}
+                    className={className}
                     dataTestId={dataTestId}
                     placeholder={placeholder}
                     value={value}
@@ -72,10 +86,11 @@ export function InputList({dataTestId, listOptions, value, placeholder, onChange
                 />
                 {showSuggestions &&
                     <DropdownContainer>
+                        {isLoading && <LoadingItem dataTestId={dataTestId}/>}
                         <KeyboardSelection
                             getItem={getItem}
                             items={listOptions}
-                            onSelect={item => onChange(item.value)}
+                            onSelect={onSelectEvent}
                         />
                     </DropdownContainer>
                 }
