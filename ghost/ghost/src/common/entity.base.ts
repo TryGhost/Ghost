@@ -84,7 +84,7 @@ export class Entity<Data> {
     }
 
     get id() {
-        return this.attr.id;
+        return this.attr.id as ObjectID;
     }
 
     get createdAt() {
