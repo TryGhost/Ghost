@@ -67,6 +67,10 @@ const features = [{
     title: 'Internal Linking',
     description: 'Adds internal URL search to editor link inputs',
     flag: 'internalLinking'
+},{
+    title: 'ActivityPub',
+    description: '(Highly) Experimental support for ActivityPub.',
+    flag: 'ActivityPub'
 }];
 
 const AlphaFeatures: React.FC = () => {
