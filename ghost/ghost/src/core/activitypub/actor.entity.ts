@@ -13,16 +13,14 @@ type CreateActorData = ActorData & {
     id? : ObjectID
 };
 
-function makeUrl(base: URL, props: Map<string, string>): URL {
-    const url = new URL(base.href);
-    for (const [key, value] of props.entries()) {
-        url.searchParams.set(key, value);
+function makeUrl(base: URL, props: Record<string, string>): URL {
+    const url = new URL(`${props.type}`, base.href);
+    for (const [key, value] of Object.entries(props)) {
+        if (key !== 'type') {
+            url.searchParams.set(key, value);
+        }
     }
     return url;
-}
-
-function toMap(obj: Record<string, string>): Map<string, string> {
-    return new Map(Object.entries(obj));
 }
 
 export class Actor extends Entity<ActorData> {
@@ -31,25 +29,28 @@ export class Actor extends Entity<ActorData> {
     }
 
     getJSONLD(url: URL): ActivityPub.Actor & ActivityPub.RootObject {
-        const actor = makeUrl(url, toMap({
+        if (!url.href.endsWith('/')) {
+            url.href += '/';
+        }
+        const actor = makeUrl(url, {
             type: 'actor',
             id: this.id.toHexString()
-        }));
+        });
 
-        const publicKey = makeUrl(url, toMap({
+        const publicKey = makeUrl(url, {
             type: 'key',
             owner: this.id.toHexString()
-        }));
+        });
 
-        const inbox = makeUrl(url, toMap({
+        const inbox = makeUrl(url, {
             type: 'inbox',
             owner: this.id.toHexString()
-        }));
+        });
 
-        const outbox = makeUrl(url, toMap({
+        const outbox = makeUrl(url, {
             type: 'outbox',
             owner: this.id.toHexString()
-        }));
+        });
 
         return {
             '@context': 'https://www.w3.org/ns/activitystreams',
