@@ -122,7 +122,7 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(STATIC_FILES_URL_PREFIX, storage.getStorage('files').serve());
 
     // Global handling for member session, ensures a member is logged in to the frontend
-    siteApp.use(membersService.middleware.loadMemberSession);
+    // siteApp.use(membersService.middleware.loadMemberSession);
 
     // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
     siteApp.use(
@@ -150,17 +150,19 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(mw.staticTheme());
     debug('Static content done');
 
-    // Theme middleware
-    // This should happen AFTER any shared assets are served, as it only changes things to do with templates
-    siteApp.use(themeMiddleware);
-    debug('Themes done');
-
     // Serve robots.txt if not found in theme
     siteApp.use(mw.servePublicFile('static', 'robots.txt', 'text/plain', config.get('caching:robotstxt:maxAge')));
 
     // site map - this should probably be refactored to be an internal app
     sitemapHandler(siteApp);
     debug('Internal apps done');
+
+    siteApp.use(membersService.middleware.loadMemberSession);
+
+    // Theme middleware
+    // This should happen AFTER any shared assets are served, as it only changes things to do with templates
+    siteApp.use(themeMiddleware);
+    debug('Themes done');
 
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing
