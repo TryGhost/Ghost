@@ -37,8 +37,17 @@ module.exports = function setupApiApp() {
 
     apiApp.use(async (req, res, next) => {
         if (labs.isSet('NestPlayground') || labs.isSet('ActivityPub')) {
+            const originalExpressApp = req.app;
             const app = await GhostNestApp.getApp();
-            app.getHttpAdapter().getInstance()(req, res, next);
+
+            const instance = app.getHttpAdapter().getInstance();
+            instance(Object.assign({}, req, {
+                url: req.originalUrl,
+                baseUrl: ''
+            }), res, function (err) {
+                req.app = originalExpressApp;
+                next(err);
+            });
             return;
         }
         return next();

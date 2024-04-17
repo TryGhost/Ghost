@@ -1,19 +1,29 @@
 import {DynamicModule} from '@nestjs/common';
-import {APP_FILTER, APP_GUARD, APP_INTERCEPTOR} from '@nestjs/core';
+import {APP_FILTER, RouterModule} from '@nestjs/core';
 import {AdminAPIModule} from './admin-api.module';
 import {NotFoundFallthroughExceptionFilter} from '../filters/not-found-fallthrough.filter';
 import {ExampleListener} from '../../listeners/example.listener';
-import {AdminAPIAuthentication} from '../guards/admin-api-authentication.guard';
-import {PermissionsGuard} from '../guards/permissions.guard';
-import {LocationHeaderInterceptor} from '../interceptors/location-header.interceptor';
 import {GlobalExceptionFilter} from '../filters/global-exception.filter';
+import {ActivityPubModule} from './activitypub.module';
 
 class AppModuleClass {}
 
 export const AppModule: DynamicModule = {
     global: true,
     module: AppModuleClass,
-    imports: [AdminAPIModule],
+    imports: [
+        RouterModule.register([
+            {
+                path: 'ghost/api/admin',
+                module: AdminAPIModule
+            }, {
+                path: '',
+                module: ActivityPubModule
+            }
+        ]),
+        AdminAPIModule,
+        ActivityPubModule
+    ],
     exports: [],
     controllers: [],
     providers: [
@@ -24,15 +34,6 @@ export const AppModule: DynamicModule = {
         }, {
             provide: APP_FILTER,
             useClass: NotFoundFallthroughExceptionFilter
-        }, {
-            provide: APP_GUARD,
-            useClass: AdminAPIAuthentication
-        }, {
-            provide: APP_GUARD,
-            useClass: PermissionsGuard
-        }, {
-            provide: APP_INTERCEPTOR,
-            useClass: LocationHeaderInterceptor
         }
     ]
 };
