@@ -3,6 +3,7 @@ const path = require('path');
 const express = require('../../shared/express');
 const DomainEvents = require('@tryghost/domain-events');
 const {MemberPageViewEvent} = require('@tryghost/member-events');
+const GhostNestApp = require('@tryghost/ghost');
 
 // App requires
 const config = require('../../shared/config');
@@ -20,6 +21,7 @@ const siteRoutes = require('./routes');
 const shared = require('../../server/web/shared');
 const errorHandler = require('@tryghost/mw-error-handler');
 const mw = require('./middleware');
+const labs = require('../../shared/labs');
 
 const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
 const STATIC_MEDIA_URL_PREFIX = `/${constants.STATIC_MEDIA_URL_PREFIX}`;
@@ -100,6 +102,20 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // Recommendations well-known
     siteApp.use(mw.servePublicFile('built', '.well-known/recommendations.json', 'application/json', config.get('caching:publicAssets:maxAge'), {disableServerCache: true}));
+
+    siteApp.get('/.well-known/webfinger', async function (req, res, next) {
+        if (!labs.isSet('ActivityPub')) {
+            return next();
+        }
+        const webfingerService = await GhostNestApp.resolve('WebFingerService');
+
+        try {
+            const result = await webfingerService.getResource(req.query.resource);
+            res.json(result);
+        } catch (err) {
+            next(err);
+        }
+    });
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal apps
