@@ -1,9 +1,12 @@
-import {Module} from '@nestjs/common';
+import {DynamicModule} from '@nestjs/common';
 import {ExampleController} from '../../http/admin/controllers/example.controller';
 import {ExampleService} from '../../core/example/example.service';
 import {ExampleRepositoryInMemory} from '../../db/in-memory/example.repository.in-memory';
 
-@Module({
+class AdminAPIModuleClass {}
+
+export const AdminAPIModule: DynamicModule = {
+    module: AdminAPIModuleClass,
     controllers: [ExampleController],
     exports: [ExampleService],
     providers: [
@@ -13,5 +16,4 @@ import {ExampleRepositoryInMemory} from '../../db/in-memory/example.repository.i
             useClass: ExampleRepositoryInMemory
         }
     ]
-})
-export class AdminAPIModule {}
+};
