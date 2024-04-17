@@ -50,6 +50,21 @@ module.exports = function setupSiteApp(routerConfig) {
     // enable CORS headers (allows admin client to hit front-end when configured on separate URLs)
     siteApp.use(mw.cors);
 
+    siteApp.use(async (req, res, next) => {
+        if (labs.isSet('NestPlayground') || labs.isSet('ActivityPub')) {
+            const originalExpressApp = req.app;
+            const app = await GhostNestApp.getApp();
+
+            const instance = app.getHttpAdapter().getInstance();
+            instance(req, res, function (err) {
+                req.app = originalExpressApp;
+                next(err);
+            });
+            return;
+        }
+        return next();
+    });
+
     siteApp.use(offersService.middleware);
 
     siteApp.use(linkRedirects.service.handleRequest);
@@ -102,20 +117,6 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // Recommendations well-known
     siteApp.use(mw.servePublicFile('built', '.well-known/recommendations.json', 'application/json', config.get('caching:publicAssets:maxAge'), {disableServerCache: true}));
-
-    siteApp.get('/.well-known/webfinger', async function (req, res, next) {
-        if (!labs.isSet('ActivityPub')) {
-            return next();
-        }
-        const webfingerService = await GhostNestApp.resolve('WebFingerService');
-
-        try {
-            const result = await webfingerService.getResource(req.query.resource);
-            res.json(result);
-        } catch (err) {
-            next(err);
-        }
-    });
 
     // setup middleware for internal apps
     // @TODO: refactor this to be a proper app middleware hook for internal apps
