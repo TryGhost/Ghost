@@ -122,7 +122,7 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(STATIC_FILES_URL_PREFIX, storage.getStorage('files').serve());
 
     // Global handling for member session, ensures a member is logged in to the frontend
-    // siteApp.use(membersService.middleware.loadMemberSession);
+    // This is a conditional middleware, it will only run if the route is not in the bypass list to avoid un-necessary database queries
     siteApp.use(mw.conditionalMemberSessionMiddleware);
 
     // /member/.well-known/* serves files (e.g. jwks.json) so it needs to be mounted before the prettyUrl mw to avoid trailing slashes
