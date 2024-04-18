@@ -148,7 +148,7 @@ jobs:
           echo "$EOF" >> "$GITHUB_ENV"
 
       - name: Nx cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: cache_nx
         with:
           path: .nxcache
@@ -156,7 +156,7 @@ jobs:
           restore-keys: ${{needs.job_get_metadata.outputs.is_main == 'false' && env.NX_CACHE_RESTORE_KEYS || 'nx-never-restore'}}
 
       - name: Check dependency cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: cache_dependencies
         with:
           path: ${{ env.CACHED_DEPENDENCY_PATHS }}
@@ -164,7 +164,7 @@ jobs:
           restore-keys: ${{needs.job_get_metadata.outputs.is_main == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
 
       - name: Check build cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: cache_built_packages
         with:
           path: ${{ env.CACHED_BUILD_PATHS }}
@@ -207,7 +207,7 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
@@ -325,7 +325,7 @@ jobs:
     - name: Get Playwright version
       id: playwright-version
       run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       name: Check if Playwright browser is cached
       id: playwright-cache
       with:
@@ -658,7 +658,7 @@ jobs:
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: Check if Playwright browser is cached
         id: playwright-cache
         with:
@@ -711,7 +711,7 @@ jobs:
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: Check if Playwright browser is cached
         id: playwright-cache
         with:
@@ -764,7 +764,7 @@ jobs:
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: Check if Playwright browser is cached
         id: playwright-cache
         with:
