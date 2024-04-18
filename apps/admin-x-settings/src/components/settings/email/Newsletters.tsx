@@ -71,10 +71,10 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     onOk: confirmModal => confirmModal?.remove()
                 });
             } catch (e) {
-                let prompt = 'There was an error verifying your email address. Please try again.';
+                let prompt = 'There was an error verifying your email address. Try again later.';
 
                 if (e instanceof APIError && e.message === 'Token expired') {
-                    prompt = 'The verification link has expired. Please try again.';
+                    prompt = 'Verification link has expired.';
                 }
                 NiceModal.show(ConfirmationModal, {
                     title: 'Error verifying email address',

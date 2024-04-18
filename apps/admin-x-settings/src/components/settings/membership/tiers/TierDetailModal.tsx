@@ -32,7 +32,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
 
     const validators: {[key in keyof Tier]?: () => string | undefined} = {
-        name: () => (formState.name ? undefined : 'You must specify a name'),
+        name: () => (formState.name ? undefined : 'Enter a name for the tier'),
         monthly_price: () => (formState.type !== 'free' ? validateCurrencyAmount(formState.monthly_price || 0, formState.currency, {allowZero: false}) : undefined),
         yearly_price: () => (formState.type !== 'free' ? validateCurrencyAmount(formState.yearly_price || 0, formState.currency, {allowZero: false}) : undefined)
     };
