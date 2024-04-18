@@ -37,7 +37,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             const newErrors: Record<string, string> = {};
 
             if (!formState.name) {
-                newErrors.name = 'Name is required.';
+                newErrors.name = 'Enter integration title';
             }
 
             return newErrors;
@@ -88,14 +88,15 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
         okLabel={okProps.label || 'Save & close'}
         size='md'
         testId='custom-integration-modal'
-        title={formState.name}
+        title={formState.name || 'Custom integration'}
         stickyFooter
         onOk={async () => {
             toast.remove();
             if (!(await handleSave({fakeWhenUnchanged: true}))) {
                 showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save integration, please double check that you\'ve filled all mandatory fields.'
+                    type: 'error',
+                    title: 'Can\'t save integration',
+                    message: 'Make sure to fill in all required fields'
                 });
             }
         }}
