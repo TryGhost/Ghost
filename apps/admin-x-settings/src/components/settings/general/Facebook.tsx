@@ -95,12 +95,14 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className="flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
                         <TextField
                             inputRef={focusRef}
+                            maxLength={300}
                             placeholder={siteTitle}
                             title="Facebook title"
                             value={facebookTitle}
                             onChange={handleTitleChange}
                         />
                         <TextField
+                            maxLength={300}
                             placeholder={siteDescription}
                             title="Facebook description"
                             value={facebookDescription}
