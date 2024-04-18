@@ -1,4 +1,4 @@
-import {Controller, Get, Query} from '@nestjs/common';
+import {Controller, Get, Param} from '@nestjs/common';
 import {Roles} from '../../../common/decorators/permissions.decorator';
 import ObjectID from 'bson-objectid';
 import {JSONLDService} from '../../../core/activitypub/jsonld.service';
@@ -10,8 +10,8 @@ export class ActivityPubController {
     ) {}
 
     @Roles(['Anon'])
-    @Get('actor')
-    async getActor(@Query('id') id: unknown) {
+    @Get('actor/:id')
+    async getActor(@Param('id') id: unknown) {
         if (typeof id !== 'string') {
             throw new Error('Bad Request');
         }
@@ -19,8 +19,8 @@ export class ActivityPubController {
     }
 
     @Roles(['Anon'])
-    @Get('key')
-    async getKey(@Query('owner') owner: unknown) {
+    @Get('key/:owner')
+    async getKey(@Param('owner') owner: unknown) {
         if (typeof owner !== 'string') {
             throw new Error('Bad Request');
         }
@@ -28,8 +28,8 @@ export class ActivityPubController {
     }
 
     @Roles(['Anon'])
-    @Get('outbox')
-    async getOutbox(@Query('owner') owner: unknown) {
+    @Get('outbox/:owner')
+    async getOutbox(@Param('owner') owner: unknown) {
         if (typeof owner !== 'string') {
             throw new Error('Bad Request');
         }

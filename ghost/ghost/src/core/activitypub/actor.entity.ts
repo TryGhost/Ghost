@@ -13,16 +13,6 @@ type CreateActorData = ActorData & {
     id? : ObjectID
 };
 
-function makeUrl(base: URL, props: Record<string, string>): URL {
-    const url = new URL(`${props.type}`, base.href);
-    for (const [key, value] of Object.entries(props)) {
-        if (key !== 'type') {
-            url.searchParams.set(key, value);
-        }
-    }
-    return url;
-}
-
 export class Actor extends Entity<ActorData> {
     get username() {
         return this.attr.username;
@@ -32,25 +22,11 @@ export class Actor extends Entity<ActorData> {
         if (!url.href.endsWith('/')) {
             url.href += '/';
         }
-        const actor = makeUrl(url, {
-            type: 'actor',
-            id: this.id.toHexString()
-        });
-
-        const publicKey = makeUrl(url, {
-            type: 'key',
-            owner: this.id.toHexString()
-        });
-
-        const inbox = makeUrl(url, {
-            type: 'inbox',
-            owner: this.id.toHexString()
-        });
-
-        const outbox = makeUrl(url, {
-            type: 'outbox',
-            owner: this.id.toHexString()
-        });
+        const id = this.id.toHexString();
+        const actor = new URL(`actor/${id}`, url.href);
+        const publicKey = new URL(`key/${id}`, url.href);
+        const inbox = new URL(`inbox/${id}`, url.href);
+        const outbox = new URL(`outbox/${id}`, url.href);
 
         return {
             '@context': 'https://www.w3.org/ns/activitystreams',
