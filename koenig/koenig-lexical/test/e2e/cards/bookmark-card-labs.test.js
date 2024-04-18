@@ -115,8 +115,8 @@ test.describe('Bookmark card (labs: internalLinking)', async () => {
             await urlInput.fill('https://ghost.org/');
             await urlInput.press('Enter');
 
-            await expect(await page.getByTestId('bookmark-url-loading-container')).toBeVisible();
-            await expect(await page.getByTestId('bookmark-url-loading-spinner')).toBeVisible();
+            await expect(page.getByTestId('bookmark-url-loading-container')).toBeVisible();
+            await expect(page.getByTestId('bookmark-url-loading-spinner')).toBeVisible();
         });
 
         test('displays expected metadata', async function () {
@@ -127,9 +127,9 @@ test.describe('Bookmark card (labs: internalLinking)', async () => {
             await urlInput.fill('https://ghost.org/');
             await urlInput.press('Enter');
 
-            await expect(await page.getByTestId('bookmark-title')).toHaveText('Ghost: The Creator Economy Platform');
-            await expect(await page.getByTestId('bookmark-description')).toContainText('The former of the two songs addresses the issue of negative rumors in a relationship, while the latter, with a more upbeat pulse, is a classic club track; the single is highlighted by a hyped bridge.');
-            await expect(await page.getByTestId('bookmark-publisher')).toContainText('Ghost - The Professional Publishing Platform');
+            await expect(page.getByTestId('bookmark-title')).toHaveText('Ghost: The Creator Economy Platform');
+            await expect(page.getByTestId('bookmark-description')).toContainText('The former of the two songs addresses the issue of negative rumors in a relationship, while the latter, with a more upbeat pulse, is a classic club track; the single is highlighted by a hyped bridge.');
+            await expect(page.getByTestId('bookmark-publisher')).toContainText('Ghost - The Professional Publishing Platform');
         });
 
         // TODO: the caption editor is very nested, and we don't have an actual input field here, so we aren't testing for filling it
@@ -156,7 +156,7 @@ test.describe('Bookmark card (labs: internalLinking)', async () => {
             await expect(urlInput).toHaveValue('badurl');
             await urlInput.press('Enter');
 
-            await expect(await page.getByTestId('bookmark-url-error-message')).toContainText('There was an error when parsing the URL.');
+            await expect(page.getByTestId('bookmark-url-error-message')).toContainText('There was an error when parsing the URL.');
         });
 
         test('retry button bring back url input', async function () {
@@ -226,7 +226,7 @@ test.describe('Bookmark card (labs: internalLinking)', async () => {
         const urlInput = await page.getByTestId('bookmark-url');
         await urlInput.fill('https://ghost.org/');
         await urlInput.press('Enter');
-        await expect(await page.getByTestId('bookmark-description')).toBeVisible();
+        await expect(page.getByTestId('bookmark-description')).toBeVisible();
 
         // create snippet
         await page.keyboard.press('Escape');
@@ -237,7 +237,7 @@ test.describe('Bookmark card (labs: internalLinking)', async () => {
         await page.keyboard.type('/snippet');
         await page.waitForSelector('[data-kg-cardmenu-selected="true"]');
         await page.keyboard.press('Enter');
-        await expect(await page.locator('[data-kg-card="bookmark"]')).toHaveCount(2);
+        await expect(page.locator('[data-kg-card="bookmark"]')).toHaveCount(2);
     });
 
     test('can undo/redo without losing caption', async function () {
@@ -247,7 +247,7 @@ test.describe('Bookmark card (labs: internalLinking)', async () => {
         const urlInput = await page.getByTestId('bookmark-url');
         await urlInput.fill('https://ghost.org/');
         await urlInput.press('Enter');
-        await expect(await page.getByTestId('bookmark-description')).toBeVisible();
+        await expect(page.getByTestId('bookmark-description')).toBeVisible();
 
         await page.click('[data-testid="bookmark-caption"]');
         await page.keyboard.type('My test caption');
@@ -320,12 +320,30 @@ test.describe('Bookmark card (labs: internalLinking)', async () => {
         await page.keyboard.type('badurl');
         await page.keyboard.press('Enter');
 
-        await expect(await page.getByTestId('bookmark-url-error-message')).toContainText('There was an error when parsing the URL.');
+        await expect(page.getByTestId('bookmark-url-error-message')).toContainText('There was an error when parsing the URL.');
 
         await page.keyboard.press('Escape');
 
         await assertHTML(page, html`
             <p><br /></p>
         `, {ignoreCardContents: true});
+    });
+
+    // Searchable URL input ----------------------------------------------------
+
+    test.describe('Search', function () {
+        test.fixme('shows default options when first opening', async function () {});
+        test.fixme('filters options whilst typing', async function () {});
+        test.fixme('can change selected item with arrow keys', async function () {});
+        test.fixme('inserts selected item on enter', async function () {});
+
+        test('inserts item on click', async function () {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'bookmark'});
+            await page.click('[data-testid="bookmark-url-listOption"]:nth-child(2)');
+
+            await expect(page.getByTestId('bookmark-url-loading-spinner')).toBeVisible();
+            await expect(page.getByTestId('bookmark-container')).toBeVisible();
+        });
     });
 });

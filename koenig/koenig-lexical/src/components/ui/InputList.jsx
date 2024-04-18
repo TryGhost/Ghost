@@ -11,7 +11,7 @@ function LoadingItem({dataTestId}) {
     );
 }
 
-function Item({dataTestId, item, selected, onChange}) {
+function Item({dataTestId, item, selected, onClick}) {
     let selectionClass = '';
 
     if (selected) {
@@ -20,14 +20,14 @@ function Item({dataTestId, item, selected, onChange}) {
 
     // We use the capture phase of the mouse down event, otherwise the list option will be removed when blurring the input
     // before calling the click event
-    const handleOptionMouseDown = (event, v) => {
+    const handleMouseDown = (event) => {
         // Prevent losing focus when clicking an option
         event.preventDefault();
-        onChange(v);
+        onClick(item);
     };
 
     return (
-        <li className={`${selectionClass} cursor-pointer px-4 py-2 text-left hover:bg-grey-100 dark:hover:bg-black`} data-testid={`${dataTestId}-listOption`} onMouseDownCapture={event => handleOptionMouseDown(event, item.value)}>
+        <li className={`${selectionClass} cursor-pointer px-4 py-2 text-left hover:bg-grey-100 dark:hover:bg-black`} data-testid={`${dataTestId}-listOption`} onMouseDownCapture={handleMouseDown}>
             <span className="block text-sm font-semibold leading-tight text-black dark:text-white" data-testid={`${dataTestId}-listOption-${item.label}`}>{item.label}</span>
             <span className="block truncate text-xs leading-tight text-grey-700 dark:text-grey-600" data-testid={`${dataTestId}-listOption-${item.value}`}>
                 {item.value}
@@ -57,7 +57,7 @@ export function InputList({autoFocus, className, dataTestId, listOptions, isLoad
 
     const getItem = (item, selected) => {
         return (
-            <Item key={item.value} dataTestId={dataTestId} item={item} selected={selected} onChange={onChange}/>
+            <Item key={item.value} dataTestId={dataTestId} item={item} selected={selected} onClick={onSelectEvent}/>
         );
     };
 
