@@ -1,4 +1,4 @@
-import {Controller, Get, Param} from '@nestjs/common';
+import {Controller, Get, Header, Param} from '@nestjs/common';
 import {Roles} from '../../../common/decorators/permissions.decorator';
 import ObjectID from 'bson-objectid';
 import {JSONLDService} from '../../../core/activitypub/jsonld.service';
@@ -9,6 +9,7 @@ export class ActivityPubController {
         private readonly service: JSONLDService
     ) {}
 
+    @Header('Cache-Control', 'no-store')
     @Roles(['Anon'])
     @Get('actor/:id')
     async getActor(@Param('id') id: unknown) {
@@ -18,6 +19,7 @@ export class ActivityPubController {
         return this.service.getActor(ObjectID.createFromHexString(id));
     }
 
+    @Header('Cache-Control', 'no-store')
     @Roles(['Anon'])
     @Get('key/:owner')
     async getKey(@Param('owner') owner: unknown) {
@@ -27,6 +29,7 @@ export class ActivityPubController {
         return this.service.getPublicKey(ObjectID.createFromHexString(owner));
     }
 
+    @Header('Cache-Control', 'no-store')
     @Roles(['Anon'])
     @Get('outbox/:owner')
     async getOutbox(@Param('owner') owner: unknown) {
