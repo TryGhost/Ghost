@@ -1059,8 +1059,8 @@ export default class LexicalEditorController extends Controller {
         let deletedWithoutChanges = state.isDeleted
                 && (state.isSaving || !state.hasDirtyAttributes);
 
-        // If leaving the editor and the post has changed since we last saved a revision, always save a new revision
-        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes) {
+        // If leaving the editor and the post has changed since we last saved a revision (and it's not deleted), always save a new revision
+        if (!this._saveOnLeavePerformed && hasChangedSinceLastRevision && hasDirtyAttributes && !state.isDeleted) {
             transition.abort();
             if (this._autosaveRunning) {
                 this.cancelAutosave();
