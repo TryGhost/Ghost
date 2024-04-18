@@ -124,12 +124,13 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                     <TextField
                         error={Boolean(errors.name)}
                         hint={errors.name}
+                        maxLength={191}
                         title='Title'
                         value={formState.name}
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                         onKeyDown={() => clearError('name')}
                     />
-                    <TextField title='Description' value={formState.description || ''} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
+                    <TextField maxLength={2000} title='Description' value={formState.description || ''} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
                     <APIKeys keys={[
                         {
                             label: 'Content API key',
