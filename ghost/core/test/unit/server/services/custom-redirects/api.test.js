@@ -95,15 +95,29 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
 
     describe('setFromFilePath', function () {
         it('throws a syntax error when setting invalid JSON redirects file', async function () {
+            const invalidJSON = '{invalid json';
             const invalidFilePath = path.join(__dirname, '/invalid/redirects/path.json');
-            fs.readFile.withArgs(invalidFilePath, 'utf-8').resolves('{invalid json');
+            fs.readFile.withArgs(invalidFilePath, 'utf-8').resolves(invalidJSON);
+
+            let expectedErrorMessage;
+
+            try {
+                JSON.parse(invalidJSON);
+            } catch (err) {
+                expectedErrorMessage = err.message;
+            }
+
+            if (!expectedErrorMessage) {
+                // This should never happen because the JSON is invalid
+                should.fail('expectedErrorMessage is not set');
+            }
 
             try {
                 await customRedirectsAPI.setFromFilePath(invalidFilePath, '.json');
                 should.fail('setFromFilePath did not throw');
             } catch (err) {
                 should.exist(err);
-                err.message.should.eql('Could not parse JSON: Unexpected token i in JSON at position 1.');
+                err.message.should.eql(`Could not parse JSON: ${expectedErrorMessage}.`);
             }
         });
 
