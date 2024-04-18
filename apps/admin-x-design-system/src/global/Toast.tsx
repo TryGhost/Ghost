@@ -50,8 +50,8 @@ const Toast: React.FC<ToastProps> = ({
     }
 
     const classNames = clsx(
-        'z-[90] flex items-start justify-between gap-6 rounded bg-white px-4 py-3 text-sm font-medium text-black shadow-md',
-        (props?.type === 'success' || props?.type === 'neutral') && 'w-[360px] dark:bg-grey-950',
+        'z-[90] flex items-start justify-between gap-6 rounded bg-white px-4 py-3 text-sm font-medium text-black shadow-md-strong',
+        (props?.type === 'success' || props?.type === 'neutral' || props?.type === 'info') && 'w-[360px] dark:bg-grey-950',
         props?.type === 'error' && 'w-[360px]',
         props?.options?.position === 'top-center' && 'w-[520px] max-w-[520px]',
         t.visible ? (props?.options?.position === 'top-center' ? 'animate-toaster-top-in' : 'animate-toaster-in') : 'animate-toaster-out'
