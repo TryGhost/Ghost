@@ -39,6 +39,7 @@ const BrandSettings: React.FC<{ values: BrandSettingValues, updateSetting: (key:
                 <TextField
                     key='site-description'
                     hint='Used in your theme, meta data and search results'
+                    maxLength={200}
                     title='Site description'
                     value={siteDescription}
                     onChange={(event) => {
