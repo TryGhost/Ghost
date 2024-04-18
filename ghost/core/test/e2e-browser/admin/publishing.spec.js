@@ -646,3 +646,39 @@ test.describe('Updating post access', () => {
         ).toContainText(/\d+\s* subscriber/m);
     });
 });
+
+test.describe('Deleting a post', () => {
+    test('Delete a saved post', async ({page}) => {
+        await page.goto('/ghost');
+
+        await createPostDraft(page, {title: 'Delete a post test', body: 'This is the content'});
+
+        await expect(page.locator('[data-test-editor-post-status]')).toContainText('Draft - Saved');
+
+        await openPostSettingsMenu(page);
+
+        await page.locator('[data-test-button="delete-post"]').click();
+
+        await page.locator('[data-test-button="delete-post-confirm"]').click();
+        
+        await expect(
+            page.locator('[data-test-screen-title]')
+        ).toContainText('Posts');
+    });
+
+    test('Delete a post with unsaved changes', async ({page}) => {
+        await page.goto('/ghost');
+
+        await createPostDraft(page, {title: 'Delete a post test', body: 'This is the content'});
+
+        await openPostSettingsMenu(page);
+
+        await page.locator('[data-test-button="delete-post"]').click();
+
+        await page.locator('[data-test-button="delete-post-confirm"]').click();
+        
+        await expect(
+            page.locator('[data-test-screen-title]')
+        ).toContainText('Posts');
+    });
+});

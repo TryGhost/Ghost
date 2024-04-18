@@ -219,7 +219,7 @@
                 </form>
                 {{#unless this.post.isNew}}
                     <div class="settings-menu-delete-button">
-                        <button type="button" class="gh-btn gh-btn-outline gh-btn-icon gh-btn-fullwidth" {{action "deletePostInternal"}}>
+                        <button type="button" class="gh-btn gh-btn-outline gh-btn-icon gh-btn-fullwidth" {{action "deletePostInternal"}} data-test-button="delete-post">
                             <span>{{svg-jar "trash"}} Delete {{this.post.displayName}}</span>
                         </button>
                     </div>
