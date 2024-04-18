@@ -4,9 +4,9 @@ import React, {Suspense} from 'react';
 import fetch from 'fetch';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
+import {didCancel, task} from 'ember-concurrency';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
 
 export const fileTypes = {
     image: {
@@ -311,14 +311,23 @@ export default class KoenigLexicalEditor extends Component {
                 return this.defaultLinks;
             }
 
-            const results = await this.search.searchTask.perform(term);
+            let results = [];
+
+            try {
+                results = await this.search.searchTask.perform(term);
+            } catch (error) {
+                // don't surface task cancellation errors
+                if (!didCancel(error)) {
+                    throw error;
+                }
+            }
 
             // TODO: Add grouped results support to Koenig
             const flattenedResults = [];
             results.forEach(group => flattenedResults.push(...group.options));
 
             // only published posts/pages have URLs
-            const filteredResults = flattenedResults.filter(result => result.groupName === 'Posts');
+            const filteredResults = flattenedResults.filter(result => (result.groupName === 'Posts' || result.groupName === 'Pages') && result.status === 'published');
             return filteredResults;
         };
 
