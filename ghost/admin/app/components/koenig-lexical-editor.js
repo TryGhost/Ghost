@@ -97,15 +97,17 @@ export default class KoenigLexicalEditor extends Component {
     @service feature;
     @service ghostPaths;
     @service koenig;
-    @service session;
-    @service store;
-    @service settings;
     @service membersUtils;
+    @service search;
+    @service session;
+    @service settings;
+    @service store;
 
     @inject config;
 
     offers = null;
     contentKey = null;
+    defaultLinks = null;
 
     editorResource = this.koenig.resource;
 
@@ -290,6 +292,36 @@ export default class KoenigLexicalEditor extends Component {
             return labels.map(label => label.name);
         };
 
+        const searchLinks = async (term) => {
+            // when no term is present we should show latest 5 posts
+            if (!term) {
+                // we cache the default links to avoid fetching them every time
+                if (this.defaultLinks) {
+                    return this.defaultLinks;
+                }
+
+                const posts = await this.store.query('post', {filter: 'status:published', fields: 'id,url,title', order: 'published_at desc', limit: 5});
+                const results = posts.toArray().map(post => ({
+                    groupName: 'Latest posts',
+                    id: post.id,
+                    title: post.title,
+                    url: post.url
+                }));
+                this.defaultLinks = results;
+                return this.defaultLinks;
+            }
+
+            const results = await this.search.searchTask.perform(term);
+
+            // TODO: Add grouped results support to Koenig
+            const flattenedResults = [];
+            results.forEach(group => flattenedResults.push(...group.options));
+
+            // only published posts/pages have URLs
+            const filteredResults = flattenedResults.filter(result => result.groupName === 'Posts');
+            return filteredResults;
+        };
+
         const unsplashConfig = {
             defaultHeaders: {
                 Authorization: `Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980`,
@@ -303,18 +335,20 @@ export default class KoenigLexicalEditor extends Component {
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
-            fetchEmbed,
-            fetchCollectionPosts,
             fetchAutocompleteLinks,
+            fetchCollectionPosts,
+            fetchEmbed,
             fetchLabels,
             feature: {
-                collectionsCard: this.feature.get('collectionsCard'),
-                collections: this.feature.get('collections')
+                collectionsCard: this.feature.collectionsCard,
+                collections: this.feature.collections,
+                internalLinking: this.feature.internalLinking
             },
-            depreciated: {
+            deprecated: {
                 headerV1: true // if false, shows header v1 in the menu
             },
-            membersEnabled: this.settings.get('membersSignupAccess') === 'all',
+            membersEnabled: this.settings.membersSignupAccess === 'all',
+            searchLinks,
             siteTitle: this.settings.title,
             siteDescription: this.settings.description
         };
