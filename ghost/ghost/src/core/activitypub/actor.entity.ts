@@ -29,7 +29,10 @@ export class Actor extends Entity<ActorData> {
         const outbox = new URL(`outbox/${id}`, url.href);
 
         return {
-            '@context': 'https://www.w3.org/ns/activitystreams',
+            '@context': [
+                'https://www.w3.org/ns/activitystreams',
+                'https://w3id.org/security/v1'
+            ],
             type: 'Person',
             id: actor.href,
             inbox: inbox.href,
