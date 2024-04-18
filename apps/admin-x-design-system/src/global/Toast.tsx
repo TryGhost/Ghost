@@ -3,9 +3,10 @@ import React from 'react';
 import {Toast as HotToast, ToastOptions, toast} from 'react-hot-toast';
 import Icon from './Icon';
 
-export type ToastType = 'neutral' | 'success' | 'error' | 'pageError';
+export type ToastType = 'neutral' | 'info' | 'success' | 'error' | 'pageError';
 
 export interface ShowToastProps {
+    title?: string;
     message?: React.ReactNode;
     type?: ToastType;
     icon?: React.ReactNode | string;
@@ -31,20 +32,28 @@ const Toast: React.FC<ToastProps> = ({
     children,
     props
 }) => {
+    let iconColorClass = 'text-grey-500';
+
     switch (props?.type) {
+    case 'info':
+        props.icon = props.icon || 'info-fill';
+        iconColorClass = 'text-grey-500';
+        break;
     case 'success':
-        props.icon = props.icon || 'check-circle';
+        props.icon = props.icon || 'success-fill';
+        iconColorClass = 'text-green';
         break;
     case 'error':
-        props.icon = props.icon || 'warning';
+        props.icon = props.icon || 'error-fill';
+        iconColorClass = 'text-red';
         break;
     }
 
     const classNames = clsx(
-        'z-[90] flex items-start justify-between gap-6 rounded px-4 py-3 text-sm font-medium text-white',
-        (props?.type === 'success' || props?.type === 'neutral') && 'w-[300px] bg-black dark:bg-grey-950',
-        props?.type === 'error' && 'w-[300px] bg-red',
-        props?.options?.position === 'top-center' && 'w-full max-w-[520px] bg-red',
+        'z-[90] flex items-start justify-between gap-6 rounded bg-white px-4 py-3 text-sm font-medium text-black shadow-md',
+        (props?.type === 'success' || props?.type === 'neutral') && 'w-[360px] dark:bg-grey-950',
+        props?.type === 'error' && 'w-[360px]',
+        props?.options?.position === 'top-center' && 'w-[520px] max-w-[520px]',
         t.visible ? (props?.options?.position === 'top-center' ? 'animate-toaster-top-in' : 'animate-toaster-in') : 'animate-toaster-out'
     );
 
@@ -52,14 +61,14 @@ const Toast: React.FC<ToastProps> = ({
         <div className={classNames} data-testid={`toast-${props?.type}`}>
             <div className='flex items-start gap-3'>
                 {props?.icon && (typeof props.icon === 'string' ?
-                    <div className='mt-0.5'><Icon className='grow' colorClass={props.type === 'success' ? 'text-green' : 'text-white'} name={props.icon} size='sm' /></div> : props.icon)}
+                    <div className='mt-0.5'><Icon className='grow' colorClass={iconColorClass} name={props.icon} size='sm' /></div> : props.icon)}
                 {children}
             </div>
-            <button className='cursor-pointer' type='button' onClick={() => {
+            <button className='-mr-1.5 -mt-1.5 cursor-pointer p-2' type='button' onClick={() => {
                 toast.dismiss(t.id);
             }}>
                 <div className='mt-1'>
-                    <Icon colorClass='text-white' name='close' size='xs' />
+                    <Icon colorClass='text-black stroke-2' name='close' size='2xs' />
                 </div>
             </button>
         </div>
@@ -69,6 +78,7 @@ const Toast: React.FC<ToastProps> = ({
 export default Toast;
 
 export const showToast = ({
+    title,
     message,
     type = 'neutral',
     icon = '',
@@ -93,7 +103,10 @@ export const showToast = ({
             icon: icon,
             options: options
         }} t={t}>
-            {message}
+            <div>
+                {title && <div className='text-md font-semibold'>{title}</div>}
+                <div>{message}</div>
+            </div>
         </Toast>
     ),
     {

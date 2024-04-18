@@ -36,12 +36,34 @@ type Story = StoryObj<typeof ToastContainer>;
 
 export const Default: Story = {
     args: {
+        title: 'Toast title',
         message: 'Hello notification in a toast'
+    }
+};
+
+export const TitleOnly: Story = {
+    args: {
+        title: 'Hello notification in a toast'
+    }
+};
+
+export const MessageOnly: Story = {
+    args: {
+        message: 'Hello notification in a toast'
+    }
+};
+
+export const Info: Story = {
+    args: {
+        title: 'Toast title',
+        message: 'Hello success message in a toast',
+        type: 'info'
     }
 };
 
 export const Success: Story = {
     args: {
+        title: 'Toast title',
         message: 'Hello success message in a toast',
         type: 'success'
     }
@@ -49,6 +71,7 @@ export const Success: Story = {
 
 export const Error: Story = {
     args: {
+        title: 'Toast title',
         message: 'Hello error message in a toast',
         type: 'error'
     }
@@ -56,6 +79,7 @@ export const Error: Story = {
 
 export const PageError: Story = {
     args: {
+        title: 'Toast title',
         message: 'This is a page error which should not be automatically dismissed.',
         type: 'pageError'
     }
