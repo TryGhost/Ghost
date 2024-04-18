@@ -1,4 +1,4 @@
-import {Controller, Get, Query} from '@nestjs/common';
+import {Controller, Get, Header, Query} from '@nestjs/common';
 import {WebFingerService} from '../../../core/activitypub/webfinger.service';
 
 @Controller('.well-known/webfinger')
@@ -7,6 +7,7 @@ export class WebFingerController {
         private readonly service: WebFingerService
     ) {}
 
+    @Header('Cache-Control', 'no-store')
     @Get('')
     async getResource(@Query('resource') resource: unknown) {
         if (typeof resource !== 'string') {
