@@ -1,7 +1,7 @@
 import React from 'react';
 import {DropdownContainerCopy} from './DropdownContainerCopy';
 import {Input} from './Input';
-import {KeyboardSelection} from './KeyboardSelection';
+import {KeyboardSelectionWithGroups} from './KeyboardSelectionWithGroups';
 
 function LoadingItem({dataTestId}) {
     return (
@@ -33,6 +33,12 @@ function Item({dataTestId, item, selected, onClick}) {
     );
 }
 
+function Group({group}) {
+    return (
+        <span className="flex items-center justify-between px-4 py-2 text-[1.1rem] font-semibold uppercase tracking-wide text-grey-600">{group.label}</span>
+    );
+}
+
 /**
  * Little warning here: this has an onChange handler that doesn't have an event as parameter, but just the value.
  *
@@ -55,6 +61,12 @@ export function InputListCopy({autoFocus, className, dataTestId, listOptions, is
     const getItem = (item, selected) => {
         return (
             <Item key={item.value} dataTestId={dataTestId} item={item} selected={selected} onClick={onSelectEvent}/>
+        );
+    };
+
+    const getGroup = (group) => {
+        return (
+            <Group group={group} />
         );
     };
 
@@ -84,9 +96,10 @@ export function InputListCopy({autoFocus, className, dataTestId, listOptions, is
                 {showSuggestions &&
                     <DropdownContainerCopy>
                         {isLoading && <LoadingItem dataTestId={dataTestId}/>}
-                        <KeyboardSelection
+                        <KeyboardSelectionWithGroups
+                            getGroup={getGroup}
                             getItem={getItem}
-                            items={listOptions}
+                            groups={listOptions}
                             onSelect={onSelectEvent}
                         />
                     </DropdownContainerCopy>

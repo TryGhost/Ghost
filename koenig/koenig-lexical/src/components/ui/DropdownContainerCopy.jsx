@@ -57,7 +57,6 @@ export function DropdownContainerCopy({children}) {
 
     return (
         <ul ref={divRef} className={`absolute ${placementClasses} z-[-1] max-h-[30vh] w-full overflow-y-auto bg-white py-1 shadow-md dark:bg-grey-950`}>
-            <span className="flex items-center justify-between px-4 py-2 text-[1.1rem] font-semibold uppercase tracking-wide text-grey-600">Recent</span>
             {children}
         </ul>
     );

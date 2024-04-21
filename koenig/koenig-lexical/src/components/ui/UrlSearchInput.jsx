@@ -7,10 +7,14 @@ const DEBOUNCE_MS = 200;
 
 function convertSearchResultsToListOptions(results) {
     return results.map((result) => {
-        return {
-            label: result.title,
-            value: result.url
-        };
+        const items = result.items.map((item) => {
+            return {
+                label: item.title,
+                value: item.url
+            };
+        });
+
+        return {...result, items};
     });
 }
 

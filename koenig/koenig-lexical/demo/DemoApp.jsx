@@ -55,23 +55,43 @@ const defaultCardConfig = {
         // no delay to simulate posts being pre-loaded in editor
         if (!term) {
             return [
-                {id: '1', groupName: 'Latest posts', title: 'Remote Work\'s Impact on Job Markets and Employment', url: 'https://source.ghost.io/remote-works-impact-on-job-markets/'},
-                {id: '2', groupName: 'Latest posts', title: 'Robotics Renaissance: How Automation is Transforming Industries', url: 'https://source-newsletter.ghost.io/mental-health-awareness-in-the-workplace/'},
-                {id: '3', groupName: 'Latest posts', title: 'Biodiversity Conservation in Fragile Ecosystems', url: 'https://source.ghost.io/biodiversity-conservation-in-fragile-ecosystems/'}
+                {label: 'Latest posts', key: 'latest-posts', items: [
+                    {id: '1', groupName: 'Latest posts', title: 'Remote Work\'s Impact on Job Markets and Employment', url: 'https://source.ghost.io/remote-works-impact-on-job-markets/'},
+                    {id: '2', groupName: 'Latest posts', title: 'Robotics Renaissance: How Automation is Transforming Industries', url: 'https://source-newsletter.ghost.io/mental-health-awareness-in-the-workplace/'},
+                    {id: '3', groupName: 'Latest posts', title: 'Biodiversity Conservation in Fragile Ecosystems', url: 'https://source.ghost.io/biodiversity-conservation-in-fragile-ecosystems/'}
+                ]}
             ];
         }
 
         // actual search, simulate a network request delay
         return new Promise((resolve) => {
             setTimeout(() => {
-                const items = [
+                const posts = [
                     {id: '1', groupName: 'Posts', title: 'TK Reminders', url: 'https://ghost.org/changelog/tk-reminders/'},
-                    {id: '2', groupName: 'Posts', title: '✨ Emoji autocomplete ✨', url: 'https://ghost.org/changelog/emoji-picker/'},
-                    {id: '3', groupName: 'Pages', title: 'How to update Ghost', url: 'https://ghost.org/docs/update/'},
+                    {id: '2', groupName: 'Posts', title: '✨ Emoji autocomplete ✨', url: 'https://ghost.org/changelog/emoji-picker/'}
+                ].filter(item => item.title.toLowerCase().includes(term.toLowerCase()));
+
+                const pages = [
+                    {id: '3', groupName: 'Pages', title: 'How to update Ghost', url: 'https://ghost.org/docs/update/'}
+                ].filter(item => item.title.toLowerCase().includes(term.toLowerCase()));
+
+                const tags = [
                     {id: '4', groupName: 'Tags', title: 'Improved', url: 'https://ghost.org/changelog/tag/improved/'}
                 ].filter(item => item.title.toLowerCase().includes(term.toLowerCase()));
 
-                resolve(items);
+                const groups = [];
+
+                if (posts.length) {
+                    groups.push({label: 'Posts', key: 'posts', items: posts});
+                }
+                if (pages.length) {
+                    groups.push({label: 'Pages', key: 'pages', items: pages});
+                }
+                if (tags.length) {
+                    groups.push({label: 'Tags', key: 'tags', items: tags});
+                }
+
+                resolve(groups);
             }, 250);
         });
     }
