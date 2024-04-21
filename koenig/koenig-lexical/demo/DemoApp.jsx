@@ -55,8 +55,9 @@ const defaultCardConfig = {
         // no delay to simulate posts being pre-loaded in editor
         if (!term) {
             return [
-                {id: '1', groupName: 'Latest posts', title: 'TK Reminders', url: 'https://ghost.org/changelog/tk-reminders/'},
-                {id: '2', groupName: 'Latest posts', title: '✨ Emoji autocomplete ✨', url: 'https://ghost.org/changelog/emoji-picker/'}
+                {id: '1', groupName: 'Latest posts', title: 'Remote Work\'s Impact on Job Markets and Employment', url: 'https://source.ghost.io/remote-works-impact-on-job-markets/'},
+                {id: '2', groupName: 'Latest posts', title: 'Robotics Renaissance: How Automation is Transforming Industries', url: 'https://source-newsletter.ghost.io/mental-health-awareness-in-the-workplace/'},
+                {id: '3', groupName: 'Latest posts', title: 'Biodiversity Conservation in Fragile Ecosystems', url: 'https://source.ghost.io/biodiversity-conservation-in-fragile-ecosystems/'}
             ];
         }
 

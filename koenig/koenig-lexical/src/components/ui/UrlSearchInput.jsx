@@ -1,7 +1,7 @@
 import CloseIcon from '../../assets/icons/kg-close.svg?react';
 import React from 'react';
 import debounce from 'lodash/debounce';
-import {InputList} from './InputList';
+import {InputListCopy} from './InputListCopy';
 
 const DEBOUNCE_MS = 200;
 
@@ -109,9 +109,9 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
 
     return (
         <div className="not-kg-prose" onKeyDown={handleKeyDown}>
-            <InputList
+            <InputListCopy
                 autoFocus={true}
-                className={`w-full rounded border ${isSearching || displayedListOptions.length ? 'rounded-b-none border-b-0' : ''} border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-950 dark:text-grey-100 dark:placeholder:text-grey-800`}
+                className={`w-full rounded border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 placeholder:text-grey-500 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-950 dark:text-grey-100 dark:placeholder:text-grey-800`}
                 dataTestId={dataTestId}
                 isLoading={isSearching}
                 listOptions={displayedListOptions}
