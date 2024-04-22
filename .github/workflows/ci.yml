@@ -119,6 +119,7 @@ jobs:
       base_commit: ${{ env.BASE_COMMIT }}
       is_canary_branch: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/arch') }}
       is_main: ${{ github.ref == 'refs/heads/main' }}
+      is_fork: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
 
   job_install_deps:
@@ -291,7 +292,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
-    if: needs.job_get_metadata.outputs.changed_any_code == 'true' && (needs.job_get_metadata.outputs.is_main == 'true' || needs.job_get_metadata.outputs.has_browser_tests_label == 'true')
+    if: needs.job_get_metadata.outputs.changed_any_code == 'true' && needs.job_get_metadata.outputs.is_fork != 'true' && (needs.job_get_metadata.outputs.is_main == 'true' || needs.job_get_metadata.outputs.has_browser_tests_label == 'true')
     concurrency:
       group: ${{ github.workflow }}
     steps:
