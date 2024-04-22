@@ -13,11 +13,6 @@ export class JSONLDService {
         return actor?.getJSONLD(this.url);
     }
 
-    async getPublicKey(owner: ObjectID) {
-        const actor = await this.repository.getOne(owner);
-        return actor?.getJSONLD(this.url).publicKey;
-    }
-
     async getOutbox(owner: ObjectID) {
         const actor = await this.repository.getOne(owner);
         if (!actor) {

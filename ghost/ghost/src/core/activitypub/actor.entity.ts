@@ -4,7 +4,6 @@ import {ActivityPub} from './types';
 
 type ActorData = {
     username: string;
-    preferredUsername?: string;
     publicKey: string;
     privateKey: string;
 };
@@ -24,7 +23,7 @@ export class Actor extends Entity<ActorData> {
         }
         const id = this.id.toHexString();
         const actor = new URL(`actor/${id}`, url.href);
-        const publicKey = new URL(`key/${id}`, url.href);
+        const publicKey = new URL(`actor/${id}#main-key`, url.href);
         const inbox = new URL(`inbox/${id}`, url.href);
         const outbox = new URL(`outbox/${id}`, url.href);
 
@@ -37,8 +36,7 @@ export class Actor extends Entity<ActorData> {
             id: actor.href,
             inbox: inbox.href,
             outbox: outbox.href,
-            username: this.attr.username,
-            preferredUsername: this.attr.preferredUsername,
+            preferredUsername: this.username,
             publicKey: {
                 id: publicKey.href,
                 owner: actor.href,
@@ -51,7 +49,6 @@ export class Actor extends Entity<ActorData> {
         return new Actor({
             id: data.id instanceof ObjectID ? data.id : undefined,
             username: data.username,
-            preferredUsername: data.preferredUsername || data.username,
             publicKey: data.publicKey,
             privateKey: data.privateKey
         });

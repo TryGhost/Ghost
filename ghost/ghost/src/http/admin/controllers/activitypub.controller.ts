@@ -21,16 +21,6 @@ export class ActivityPubController {
 
     @Header('Cache-Control', 'no-store')
     @Roles(['Anon'])
-    @Get('key/:owner')
-    async getKey(@Param('owner') owner: unknown) {
-        if (typeof owner !== 'string') {
-            throw new Error('Bad Request');
-        }
-        return this.service.getPublicKey(ObjectID.createFromHexString(owner));
-    }
-
-    @Header('Cache-Control', 'no-store')
-    @Roles(['Anon'])
     @Get('outbox/:owner')
     async getOutbox(@Param('owner') owner: unknown) {
         if (typeof owner !== 'string') {
