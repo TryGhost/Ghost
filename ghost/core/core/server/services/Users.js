@@ -1,5 +1,6 @@
 // @ts-check
 const path = require('path');
+const ObjectId = require('bson-objectid').default;
 
 /**
  * @TODO: pass these in as dependencies
@@ -76,8 +77,8 @@ class Users {
     }
 
     async assignTagToUserPosts({id, context, transacting}) {
-        // create an internal tag to assign to reassigned posts
-        // in following format: `#{author_slug}`
+        let createdTag = false;
+        // get author slug
         const author = await this.models.User.findOne({
             id
         }, {
@@ -85,13 +86,14 @@ class Users {
             context,
             transacting
         });
+        // create an internal tag to assign to reassigned posts
+        // in following format: `#{author_slug}`
         let tag = await this.models.Tag.findOne({
             slug: `hash-${author.get('slug')}`
         }, {
             context,
             transacting
         });
-
         if (!tag) {
             tag = await this.models.Tag.add({
                 slug: `#${author.get('slug')}`
@@ -99,45 +101,48 @@ class Users {
                 context,
                 transacting
             });
+            createdTag = true;
         }
 
+        // get list of posts that need the tag assigned
         const userPosts = await this.models.Base.knex('posts_authors')
             .transacting(transacting)
             .where('author_id', id)
             .select('post_id');
-        const usersPostIds = userPosts.map(p => p.post_id);
 
-        // Add a tag to all posts that do not have the author tag yet
-        // NOTE: the method is implemented in an iterative way to avoid
-        //       memory consumption in case the user has thousands of posts
-        //       assigned to them. Also, didn't have any "bulk" way to add
-        //       a tag to multiple posts as the "sort_order" needs custom
-        //       logic to be run for each post.
-        //       Rewrite this bit if/when we hit a performance bottleneck here
-        for (const postId of usersPostIds) {
-            const post = await this.models.Post.findOne({
-                id: postId,
-                status: 'all'
-            }, {
-                id: postId,
-                withRelated: ['tags'],
-                context,
-                transacting
-            });
-
-            // check if tag already assigned to the post
-            const existingTagSlugs = post.relations.tags.models.map(t => t.get('slug'));
-
-            if (!existingTagSlugs.includes(tag.get('slug'))) {
-                await this.models.Post.edit({
-                    tags: [...post.relations.tags.models, tag]
-                }, {
-                    id: postId,
-                    context,
-                    transacting
-                });
-            }
+        // get the posts that do not have the tag already assigned
+        let usersPostIds = [];
+        if (createdTag) {
+            usersPostIds = userPosts.map(p => p.post_id);
+        } else {
+            const tagId = tag.get('id');
+            const taggedPostIds = await this.models.Base.knex('posts_tags')
+                .transacting(transacting)
+                .where('tag_id', tagId)
+                .select('post_id');
+            usersPostIds = userPosts
+                .map(p => p.post_id)
+                .filter(p => !taggedPostIds.includes(p));
         }
+
+        // assign tag to posts
+        //  do bulk insert for performance reasons
+        //  - go ahead and assign sort_order 0 to all of them
+        
+        // NOTE: bulk insert like this skips:
+        //   - entry in the Actions table for post edited
+        //   - entry in the Actions table for author updated
+        //   - entry in Post Revisions for the change (seems unnecessary for this case, but perhaps a logical flaw as the latest revision should always be the same as the post itself)
+        //   - no PostEdited event is fired, which has downstream impacts like updating the Collection(s) for the post
+        await this.models.Base.knex('posts_tags')
+            .transacting(transacting)
+            .insert(usersPostIds.map(postId => ({
+                id: (new ObjectId()).toHexString(),
+                post_id: postId,
+                tag_id: tag.get('id'),
+                sort_order: 0
+            })));
+        await this.models.Post.addActions('edited', usersPostIds, {transacting: transacting});
     }
 
     /**
@@ -159,26 +164,29 @@ class Users {
         return this.models.Base.transaction(async (t) => {
             frameOptions.transacting = t;
 
+            // null post revisions
             const postRevisions = new PostRevisions({
                 model: this.models.PostRevision
             });
-
             await postRevisions.removeAuthorFromRevisions(frameOptions.id, {
                 transacting: frameOptions.transacting
             });
 
+            // create a #author tag and assign it to their posts
             await this.assignTagToUserPosts({
                 id: frameOptions.id,
                 context: frameOptions.context,
                 transacting: frameOptions.transacting
             });
 
+            // reassign posts to owner user
             await this.models.Post.reassignByAuthor({
                 id: frameOptions.id,
                 context: frameOptions.context,
                 transacting: frameOptions.transacting
             });
 
+            // destory user
             try {
                 await this.models.ApiKey.destroy({
                     ...frameOptions,
