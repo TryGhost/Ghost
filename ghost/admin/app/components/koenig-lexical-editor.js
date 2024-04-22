@@ -307,7 +307,10 @@ export default class KoenigLexicalEditor extends Component {
                     title: post.title,
                     url: post.url
                 }));
-                this.defaultLinks = results;
+                this.defaultLinks = [{
+                    label: 'Latest posts',
+                    items: results
+                }];
                 return this.defaultLinks;
             }
 
@@ -322,12 +325,15 @@ export default class KoenigLexicalEditor extends Component {
                 }
             }
 
-            // TODO: Add grouped results support to Koenig
-            const flattenedResults = [];
-            results.forEach(group => flattenedResults.push(...group.options));
-
             // only published posts/pages have URLs
-            const filteredResults = flattenedResults.filter(result => (result.groupName === 'Posts' || result.groupName === 'Pages') && result.status === 'published');
+            const filteredResults = results.map((group) => {
+                const items = (group.groupName === 'Posts' || group.groupName === 'Pages') ? group.options.filter(i => i.status === 'published') : group.options;
+
+                return {
+                    label: group.groupName,
+                    items
+                };
+            });
             return filteredResults;
         };
 
