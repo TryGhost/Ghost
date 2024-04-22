@@ -10,6 +10,7 @@ export class ActivityPubController {
     ) {}
 
     @Header('Cache-Control', 'no-store')
+    @Header('Content-Type', 'application/ld+json')
     @Roles(['Anon'])
     @Get('actor/:id')
     async getActor(@Param('id') id: unknown) {
@@ -20,6 +21,7 @@ export class ActivityPubController {
     }
 
     @Header('Cache-Control', 'no-store')
+    @Header('Content-Type', 'application/ld+json')
     @Roles(['Anon'])
     @Get('outbox/:owner')
     async getOutbox(@Param('owner') owner: unknown) {
