@@ -30,7 +30,7 @@ export default class SearchService extends Service {
             titleField: 'title'
         },
         {
-            name: 'Users',
+            name: 'Staff',
             model: 'user',
             fields: ['id', 'slug', 'url', 'name'], // id not used but required for API to have correct url
             idField: 'slug',

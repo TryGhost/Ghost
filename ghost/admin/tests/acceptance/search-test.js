@@ -65,7 +65,7 @@ describe('Acceptance: Search', function () {
         expect(find('[data-test-modal="search"]'), 'search modal').to.not.exist;
     });
 
-    it('finds posts, pages, users, and tags when typing', async function () {
+    it('finds posts, pages, staff, and tags when typing', async function () {
         await visit('/dashboard');
         await click('[data-test-button="search"]');
         await typeInSearch('first'); // search is not case sensitive
@@ -73,7 +73,7 @@ describe('Acceptance: Search', function () {
         // all groups are present
         const groupNames = findAll('.ember-power-select-group-name');
         expect(groupNames, 'group names').to.have.length(4);
-        expect(groupNames.map(el => el.textContent.trim())).to.deep.equal(['Posts', 'Pages', 'Users', 'Tags']);
+        expect(groupNames.map(el => el.textContent.trim())).to.deep.equal(['Posts', 'Pages', 'Staff', 'Tags']);
 
         // correct results are found
         const options = findAll('.ember-power-select-option');
