@@ -6854,10 +6854,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.20.tgz#89bc878c2f8f5d31da55bf607f0c0c4aeaef503a"
   integrity sha512-HDM6ateszdBdh0D2BDXG7UeDRrPv1a+es4jB9UgijLe+GRa/gM09plDFVX63HC/dDeN+apuwH5S6PCBvLY8n2g==
 
-"@tryghost/database-info@0.3.21":
-  version "0.3.21"
-  resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.21.tgz#19343a7b193c744dce6e7d1d3bcb5fbcf5f1064f"
-  integrity sha512-7VKjozKwJAQLkNoz68wZ1pmBI0E8zv1wDak16CiMMy/EKA0Akw+WxOhoOfeB5BurMZTrSWfSdsm+umGniaR24w==
+"@tryghost/database-info@0.3.22":
+  version "0.3.22"
+  resolved "https://registry.yarnpkg.com/@tryghost/database-info/-/database-info-0.3.22.tgz#8db1433f35fcee8fbca182ba8b7ea7e682a45fcd"
+  integrity sha512-AwljcoXFUjSKFIoB/V9uohTLvWY8g+fIaHHjgPLH4Cq1tBZgcAlBIZR2ridhXiY1iDX7m3cws36uAxrN0KnoUw==
 
 "@tryghost/debug@0.1.26":
   version "0.1.26"
@@ -7246,15 +7246,15 @@
     moment "^2.29.1"
     prettyjson "^1.2.5"
 
-"@tryghost/promise@0.3.4":
-  version "0.3.4"
-  resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.3.4.tgz#b5437eb14a3d06e7d32f277e10975ff77061e16e"
-  integrity sha512-D8zxDpLuPfPjakMTj7o2dpcdi+luwC6ibQLDy6Z0ImQtBt4wZEbmAH1eAsYpk4JVviuGWzwkOM1cURmMEJO5Ig==
-
 "@tryghost/promise@0.3.6":
   version "0.3.6"
   resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.3.6.tgz#b6b36442100564eab3d3de46595646722754113c"
   integrity sha512-ZCNc3GUxMd8A7PXKso1s3kCfQfXZgm+e7TCZ2bog/mfpU08EHWVOnAeRTygzlbooTTxTRsqUnMfaXnD5ZyOAdw==
+
+"@tryghost/promise@0.3.8":
+  version "0.3.8"
+  resolved "https://registry.yarnpkg.com/@tryghost/promise/-/promise-0.3.8.tgz#3134a044e187f6d61393267c680c6cc75235aa96"
+  integrity sha512-ppcnLBWczpbo4sQcGWtjEA82kdZMv4NFF2MvZRi1MBP4lSOSgh9A636eUxlB1/FpIG+D5ixq84xlY4QJMqW2kA==
 
 "@tryghost/request@1.0.0":
   version "1.0.0"
@@ -20659,22 +20659,22 @@ klona@^2.0.4, klona@^2.0.6:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.6.tgz#85bffbf819c03b2f53270412420a4555ef882e22"
   integrity sha512-dhG34DXATL5hSxJbIexCft8FChFXtmskoZYnoPWjXQuebWYCNkVeV3KkGegCK9CP1oswI/vQibS2GY7Em/sJJA==
 
-knex-migrator@5.2.0:
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.2.0.tgz#d28b53e2d8e4396542198c703b8b9a2a10aa1c4e"
-  integrity sha512-G4jd9o/v5mEen56Tl8GpfrLM+QhR+FIoZz0SjRR6+BK9kDlRVbHCiYSCd+KggtVN6YvzaiEq9DGrivTT2zY91Q==
+knex-migrator@5.2.1:
+  version "5.2.1"
+  resolved "https://registry.yarnpkg.com/knex-migrator/-/knex-migrator-5.2.1.tgz#891e34eead500ddbee1fe90dc8a3be6e3151dbe1"
+  integrity sha512-GzuWFkrrVTrfF6v9VKnmx3gfUBh1iIa9Yl0kQTRqV5HNGjDA+tVyjwQEISiltVWuiRP7YTzsn1GKaB/Vl85HzA==
   dependencies:
-    "@tryghost/database-info" "0.3.21"
+    "@tryghost/database-info" "0.3.22"
     "@tryghost/errors" "1.3.1"
     "@tryghost/logging" "2.4.10"
-    "@tryghost/promise" "0.3.4"
+    "@tryghost/promise" "0.3.8"
     commander "5.1.0"
     compare-ver "2.0.2"
     debug "4.3.4"
     knex "2.4.2"
     lodash "4.17.21"
     moment "2.24.0"
-    mysql2 "3.2.0"
+    mysql2 "3.9.7"
     nconf "0.12.1"
     resolve "1.22.8"
   optionalDependencies:
@@ -22778,20 +22778,6 @@ mv@~2:
     mkdirp "~0.5.1"
     ncp "~2.0.0"
     rimraf "~2.4.0"
-
-mysql2@3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.2.0.tgz#3613a8903bcb7ade0ae35b29945a0378eb67da89"
-  integrity sha512-0Vn6a9WSrq6fWwvPgrvIwnOCldiEcgbzapVRDAtDZ4cMTxN7pnGqCTx8EG32S/NYXl6AXkdO+9hV1tSIi/LigA==
-  dependencies:
-    denque "^2.1.0"
-    generate-function "^2.3.1"
-    iconv-lite "^0.6.3"
-    long "^5.2.1"
-    lru-cache "^7.14.1"
-    named-placeholders "^1.1.3"
-    seq-queue "^0.0.5"
-    sqlstring "^2.3.2"
 
 mysql2@3.9.7:
   version "3.9.7"
