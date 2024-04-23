@@ -111,10 +111,8 @@ class Users {
             .select('post_id');
 
         // get the posts that do not have the tag already assigned
-        let usersPostIds = [];
-        if (createdTag) {
-            usersPostIds = userPosts.map(p => p.post_id);
-        } else {
+        let usersPostIds = userPosts.map(p => p.post_id);
+        if (!createdTag) {
             const tagId = tag.get('id');
             const taggedPostIds = await this.models.Base.knex('posts_tags')
                 .transacting(transacting)
@@ -128,7 +126,7 @@ class Users {
         // assign tag to posts
         //  do bulk insert for performance reasons
         //  - go ahead and assign sort_order 0 to all of them
-        
+
         // NOTE: bulk insert like this skips:
         //   - entry in the Actions table for post edited
         //   - entry in the Actions table for author updated
