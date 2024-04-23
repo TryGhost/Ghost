@@ -7,7 +7,6 @@ const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
 const settingsCache = require('../../shared/settings-cache');
-const sentry = require('../../shared/sentry');
 
 // Used to receive post.published model event
 const events = require('../lib/common/events');
@@ -110,7 +109,6 @@ function ping(post) {
                     });
                 }
                 logging.error(error);
-                sentry.captureException(error);
             });
     });
 }
