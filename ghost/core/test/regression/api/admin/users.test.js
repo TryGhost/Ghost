@@ -127,7 +127,7 @@ describe('User API', function () {
                     .expect(404);
             });
 
-            it.only('Destroy known user and reassign post tags', async function () {
+            it('Destroy known user and reassign post tags', async function () {
                 const otherAuthorPost = await testUtils.createPost({
                     post: {
                         tags: [{
