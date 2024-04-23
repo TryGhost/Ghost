@@ -232,7 +232,7 @@ const PortalModal: React.FC = () => {
             if (Object.values(errors).filter(Boolean).length) {
                 showToast({
                     title: 'Can\'t save Portal settings',
-                    type: 'pageError',
+                    type: 'error',
                     message: 'Make sure you filled all required fields.'
                 });
             } else {
