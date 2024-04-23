@@ -61,7 +61,7 @@
         "postcss-import": "15.1.0",
         "prop-types": "15.8.1",
         "rollup-plugin-node-builtins": "2.1.2",
-        "storybook": "7.6.17",
+        "storybook": "7.6.18",
         "stylelint": "15.10.3",
         "tailwindcss": "3.4.3",
         "vite": "4.5.3",
