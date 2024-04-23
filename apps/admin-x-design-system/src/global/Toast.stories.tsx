@@ -47,9 +47,22 @@ export const TitleOnly: Story = {
     }
 };
 
+export const MinWidth: Story = {
+    args: {
+        title: 'Min toast'
+    }
+};
+
+export const TitleWithIcon: Story = {
+    args: {
+        title: 'Hello notification in a toast',
+        type: 'info'
+    }
+};
+
 export const MessageOnly: Story = {
     args: {
-        message: 'Hello notification in a toast'
+        message: 'Hey, this is a message in a toast. Almost like a message in a bottle.'
     }
 };
 

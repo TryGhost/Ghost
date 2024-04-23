@@ -6,7 +6,7 @@ import Icon from './Icon';
 export type ToastType = 'neutral' | 'info' | 'success' | 'error' | 'pageError';
 
 export interface ShowToastProps {
-    title?: string;
+    title?: React.ReactNode;
     message?: React.ReactNode;
     type?: ToastType;
     icon?: React.ReactNode | string;
@@ -50,10 +50,8 @@ const Toast: React.FC<ToastProps> = ({
     }
 
     const classNames = clsx(
-        'z-[90] flex items-start justify-between gap-6 rounded bg-white px-4 py-3 text-sm font-medium text-black shadow-md-strong',
-        (props?.type === 'success' || props?.type === 'neutral' || props?.type === 'info') && 'w-[360px] dark:bg-grey-950',
-        props?.type === 'error' && 'w-[360px]',
-        props?.options?.position === 'top-center' && 'w-[520px] max-w-[520px]',
+        'z-[90] flex min-w-[220px] items-start justify-between gap-3 rounded bg-white px-4 py-3 text-sm font-medium text-black',
+        props?.options?.position === 'top-center' ? 'max-w-[520px] shadow-md' : 'max-w-[360px] shadow-md-strong',
         t.visible ? (props?.options?.position === 'top-center' ? 'animate-toaster-top-in' : 'animate-toaster-in') : 'animate-toaster-out'
     );
 
