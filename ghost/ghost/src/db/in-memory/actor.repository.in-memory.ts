@@ -3,7 +3,6 @@ import {ActorRepository} from '../../core/activitypub/actor.repository';
 import ObjectID from 'bson-objectid';
 import {Inject} from '@nestjs/common';
 import {SettingsCache} from '../../common/types/settings-cache.type';
-import {Activity} from '../../core/activitypub/activity.object';
 
 interface DomainEvents {
     dispatch(event: unknown): void
