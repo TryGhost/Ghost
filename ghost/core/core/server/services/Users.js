@@ -79,7 +79,6 @@ class Users {
     }
 
     async assignTagToUserPosts({id, context, transacting}) {
-        let createdTag = false;
         // get author slug
         const author = await this.models.User.findOne({
             id
@@ -88,8 +87,21 @@ class Users {
             context,
             transacting
         });
+
+        // get list of posts that need the tag assigned
+        const userPosts = await this.models.Base.knex('posts_authors')
+            .transacting(transacting)
+            .where('author_id', id)
+            .select('post_id');
+        let usersPostIds = userPosts.map(p => p.post_id);
+
+        if (usersPostIds.length === 0) {
+            return;
+        }
+
         // create an internal tag to assign to reassigned posts
         // in following format: `#{author_slug}`
+        let createdTag = false;
         let tag = await this.models.Tag.findOne({
             slug: `hash-${author.get('slug')}`
         }, {
@@ -106,14 +118,7 @@ class Users {
             createdTag = true;
         }
 
-        // get list of posts that need the tag assigned
-        const userPosts = await this.models.Base.knex('posts_authors')
-            .transacting(transacting)
-            .where('author_id', id)
-            .select('post_id');
-
-        // get the posts that do not have the tag already assigned
-        let usersPostIds = userPosts.map(p => p.post_id);
+        // filter out posts that already have the tag if we didn't need to create one
         if (!createdTag) {
             const tagId = tag.get('id');
             const taggedPostIds = await this.models.Base.knex('posts_tags')
@@ -136,8 +141,10 @@ class Users {
                 tag_id: tag.get('id'),
                 sort_order: 0
             })));
+
         // manually add an entry in the Actions table that specifies the number of posts edited; see #bulkAddTags for similar logic
         await this.models.Post.addActions('edited', usersPostIds, {transacting, context});
+
         // dispatch event to ensure collections are updated
         DomainEvents.dispatch(PostsBulkAddTagsEvent.create(usersPostIds));
     }
@@ -161,7 +168,7 @@ class Users {
         return this.models.Base.transaction(async (t) => {
             frameOptions.transacting = t;
 
-            // null post revisions
+            // null author field for users' post revisions
             const postRevisions = new PostRevisions({
                 model: this.models.PostRevision
             });
@@ -169,7 +176,7 @@ class Users {
                 transacting: frameOptions.transacting
             });
 
-            // create a #author tag and assign it to their posts
+            // create a #author-slug tag and assign it to their posts
             await this.assignTagToUserPosts({
                 id: frameOptions.id,
                 context: frameOptions.context,
@@ -183,7 +190,7 @@ class Users {
                 transacting: frameOptions.transacting
             });
 
-            // destory user
+            // delete user
             try {
                 await this.models.ApiKey.destroy({
                     ...frameOptions,
