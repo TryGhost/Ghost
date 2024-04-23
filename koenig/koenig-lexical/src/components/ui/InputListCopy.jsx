@@ -5,8 +5,8 @@ import {KeyboardSelectionWithGroups} from './KeyboardSelectionWithGroups';
 
 function LoadingItem({dataTestId}) {
     return (
-        <li className={`px-4 py-2 text-left`} data-testid={`${dataTestId}-loading`}>
-            <span className="block text-sm font-semibold leading-tight text-black dark:text-white">Loading...</span>
+        <li className={`mb-0 px-4 py-2 text-left`} data-testid={`${dataTestId}-loading`}>
+            <span className="block text-sm font-medium leading-tight text-grey-900 dark:text-white">Searching...</span>
         </li>
     );
 }
@@ -27,7 +27,7 @@ function Item({dataTestId, item, selected, onClick}) {
     };
 
     return (
-        <li className={`${selectionClass} mb-0 cursor-pointer px-4 py-2 text-left hover:bg-grey-100 dark:hover:bg-grey-900`} data-testid={`${dataTestId}-listOption`} onMouseDownCapture={handleMouseDown}>
+        <li className={`${selectionClass} my-[.2rem] cursor-pointer rounded px-4 py-2 text-left hover:bg-grey-100 dark:hover:bg-grey-900`} data-testid={`${dataTestId}-listOption`} onMouseDownCapture={handleMouseDown}>
             <span className="block text-sm font-medium leading-snug text-black dark:text-white" data-testid={`${dataTestId}-listOption-${item.label}`}>{item.label}</span>
         </li>
     );

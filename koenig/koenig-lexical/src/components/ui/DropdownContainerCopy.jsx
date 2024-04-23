@@ -56,7 +56,7 @@ export function DropdownContainerCopy({children}) {
     }, []);
 
     return (
-        <ul ref={divRef} className={`absolute ${placementClasses} z-[-1] max-h-[30vh] w-full overflow-y-auto bg-white py-1 shadow-md dark:bg-grey-950`}>
+        <ul ref={divRef} className={`absolute ${placementClasses} z-[-1] max-h-[30vh] w-full overflow-y-auto bg-white px-2 py-1 shadow-md dark:bg-grey-950`}>
             {children}
         </ul>
     );
