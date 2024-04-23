@@ -408,6 +408,12 @@ async function initNestDependencies() {
     }, {
         provide: 'SettingsCache',
         useValue: require('./shared/settings-cache')
+    }, {
+        provide: 'knex',
+        useValue: require('./server/data/db').knex
+    }, {
+        provide: 'UrlUtils',
+        useValue: require('./shared/url-utils')
     });
     for (const provider of providers) {
         GhostNestApp.addProvider(provider);

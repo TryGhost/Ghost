@@ -1,20 +1,12 @@
 import ObjectID from 'bson-objectid';
 import {ActivityPub} from './types';
+import {Post} from './post.repository';
 
 type ArticleData = {
     id: ObjectID
     name: string
     content: string
     url: URL
-};
-
-type Post = {
-    id: ObjectID;
-    title: string;
-    slug: string;
-    html: string;
-    lexical: string;
-    status: 'draft' | 'published' | 'scheduled' | 'sent';
 };
 
 export class Article {
