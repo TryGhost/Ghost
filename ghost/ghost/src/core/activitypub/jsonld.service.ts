@@ -24,23 +24,8 @@ export class JSONLDService {
             id: json.outbox,
             summary: `Outbox for ${actor.username}`,
             type: 'OrderedCollection',
-            totalItems: 1,
-            orderedItems: [{
-                type: 'Create',
-                actor: json.id,
-                to: [
-                    'https://www.w3.org/ns/activitystreams#Public'
-                ],
-                object: {
-                    type: 'Note',
-                    name: 'My First Note',
-                    content: '<p>Hello, world!</p>',
-                    attributedTo: json.id,
-                    to: [
-                        'https://www.w3.org/ns/activitystreams#Public'
-                    ]
-                }
-            }]
+            totalItems: actor.outbox.length,
+            orderedItems: actor.outbox.map(activity => activity.getJSONLD(this.url))
         };
     }
 }

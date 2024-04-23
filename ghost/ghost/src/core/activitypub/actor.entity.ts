@@ -1,11 +1,15 @@
 import ObjectID from 'bson-objectid';
 import {Entity} from '../../common/entity.base';
 import {ActivityPub} from './types';
+import {Activity} from './activity.object';
+import {Article} from './article.object';
+import {ActivityEvent} from './activity.event';
 
 type ActorData = {
     username: string;
     publicKey: string;
     privateKey: string;
+    outbox: Activity[];
 };
 
 type CreateActorData = ActorData & {
@@ -15,6 +19,29 @@ type CreateActorData = ActorData & {
 export class Actor extends Entity<ActorData> {
     get username() {
         return this.attr.username;
+    }
+
+    get outbox() {
+        return this.attr.outbox;
+    }
+
+    private activities: Activity[] = [];
+
+    static getActivitiesToSave(actor: Actor, fn: (activities: Activity[]) => void) {
+        const activities = actor.activities;
+        actor.activities = [];
+        fn(activities);
+    }
+
+    createArticle(article: Article) {
+        const activity = new Activity({
+            type: 'Create',
+            actor: this,
+            object: article
+        });
+        this.attr.outbox.push(activity);
+        this.activities.push(activity);
+        this.addEvent(ActivityEvent.create(activity));
     }
 
     getJSONLD(url: URL): ActivityPub.Actor & ActivityPub.RootObject {
@@ -95,7 +122,8 @@ export class Actor extends Entity<ActorData> {
             id: data.id instanceof ObjectID ? data.id : undefined,
             username: data.username,
             publicKey: data.publicKey,
-            privateKey: data.privateKey
+            privateKey: data.privateKey,
+            outbox: data.outbox
         });
     }
 }
