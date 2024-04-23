@@ -37,4 +37,32 @@ export namespace ActivityPub {
             publicKeyPem: string
         }
     };
+
+    export type Article = ActivityPub.Object & {
+        type: 'Article';
+        name: string;
+        content: string;
+        url: string;
+        attributedTo: string | object[];
+    };
+
+    export type Link = string | {
+        type: 'Link'
+        href: string
+        id?: string
+        hreflang?: string
+        mediaType?: string
+        rel?: string
+        height?: number
+        width?: number
+    };
+
+    export type ActivityType = 'Create' | 'Update' | 'Delete';
+
+    export type Activity = ActivityPub.Object & {
+        type: ActivityType;
+        summary: string;
+        actor: Link | Actor;
+        object: Link | ActivityPub.Object;
+    }
 }
