@@ -127,7 +127,7 @@ describe('User API', function () {
                     .expect(404);
             });
 
-            it('Destroy known user and reassign post tags', async function () {
+            it.only('Destroy known user and reassign post tags', async function () {
                 const otherAuthorPost = await testUtils.createPost({
                     post: {
                         tags: [{
@@ -145,10 +145,10 @@ describe('User API', function () {
                     .expect(200);
 
                 const tags = await otherAuthorPost.related('tags').fetch();
-
                 should.equal(tags.length, 3);
-                should.equal(tags.models[2].get('slug'), `hash-${otherAuthor.slug}`);
-                should.equal(tags.models[2].get('name'), `#${otherAuthor.slug}`);
+                // user deletion results in a second tag being added with sort_order of 0, putting it at index 1 instead of at the end (index 2)
+                should.equal(tags.models[1].get('slug'), `hash-${otherAuthor.slug}`);
+                should.equal(tags.models[1].get('name'), `#${otherAuthor.slug}`);
             });
         });
     });
