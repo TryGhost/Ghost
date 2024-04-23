@@ -113,8 +113,8 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
                 setEditing(false);
             } else {
                 showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save settings! One or more fields have errors, please double check that you\'ve filled all mandatory fields.'
+                    title: 'Can\'t save settings',
+                    type: 'error'
                 });
             }
             return result;

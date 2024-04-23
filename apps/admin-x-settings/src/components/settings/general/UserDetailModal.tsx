@@ -192,7 +192,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     setFormState(() => updatedUserData);
                     modal?.remove();
                     showToast({
-                        message: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
+                        title: _user.status === 'inactive' ? 'User un-suspended' : 'User suspended',
                         type: 'success'
                     });
                 } catch (e) {
@@ -220,7 +220,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     mainModal?.remove();
                     navigateOnClose();
                     showToast({
-                        message: 'User deleted',
+                        title: 'User deleted',
                         type: 'success'
                     });
                 } catch (e) {
@@ -241,7 +241,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                     await makeOwner(user.id);
                     modal?.remove();
                     showToast({
-                        message: 'Ownership transferred',
+                        title: 'Ownership transferred',
                         type: 'success'
                     });
                 } catch (e) {
@@ -365,8 +365,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 
                 if (!(await handleSave({fakeWhenUnchanged: true}))) {
                     showToast({
-                        type: 'pageError',
-                        message: 'Can\'t save user, please double check that you\'ve filled all mandatory fields.'
+                        title: 'Can\'t save staff user',
+                        type: 'error',
+                        message: 'Make sure you filled all required fields'
                     });
                 }
             }}

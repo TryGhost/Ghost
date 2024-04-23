@@ -67,7 +67,7 @@ const Sidebar: React.FC<{
                                 modal?.remove();
                                 showToast({
                                     type: 'success',
-                                    message: 'Offer archived successfully'
+                                    title: 'Offer archived successfully'
                                 });
                                 updateRoute('offers/edit');
                             } catch (e) {
@@ -88,7 +88,7 @@ const Sidebar: React.FC<{
                                 modal?.remove();
                                 showToast({
                                     type: 'success',
-                                    message: 'Offer reactivated successfully'
+                                    title: 'Offer reactivated successfully'
                                 });
                                 updateRoute('offers/edit');
                             } catch (e) {
@@ -299,10 +299,13 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
                 }
 
                 toast.remove();
-                showToast({
-                    type: 'pageError',
-                    message: message || 'Something went wrong while saving the offer, please try again'
-                });
+                if (message) {
+                    showToast({
+                        title: 'Can\'t save offer',
+                        type: 'error',
+                        message: 'Please try again later'
+                    });
+                }
             }
         }} /> : null;
 };

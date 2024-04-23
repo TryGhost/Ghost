@@ -127,7 +127,8 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                         setRevokeState('progress');
                         await deleteInvite(invite.id);
                         showToast({
-                            message: `Invitation revoked (${invite.email})`,
+                            title: `Invitation revoked`,
+                            message: invite.email,
                             type: 'success'
                         });
                     } catch (e) {
@@ -151,7 +152,8 @@ const UserInviteActions: React.FC<{invite: UserInvite}> = ({invite}) => {
                             roleId: invite.role_id
                         });
                         showToast({
-                            message: `Invitation resent! (${invite.email})`,
+                            title: `Invitation resent`,
+                            message: invite.email,
                             type: 'success'
                         });
                     } catch (e) {

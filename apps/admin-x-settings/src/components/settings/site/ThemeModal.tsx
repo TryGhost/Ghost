@@ -351,8 +351,9 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                         if (data?.themes[0]) {
                             await activateTheme(data.themes[0].name);
                             showToast({
+                                title: 'Theme activated',
                                 type: 'success',
-                                message: <div><span className='capitalize'>{data.themes[0].name}</span> is now your active theme.</div>
+                                message: <div><span className='capitalize'>{data.themes[0].name}</span> is now your active theme</div>
                             });
                         }
                         confirmModal?.remove();

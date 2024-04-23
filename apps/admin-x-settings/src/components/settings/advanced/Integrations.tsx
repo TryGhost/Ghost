@@ -185,7 +185,11 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
                                         confirmModal?.remove();
                                         showToast({
                                             title: 'Integration deleted',
-                                            type: 'info'
+                                            type: 'info',
+                                            options: {
+                                                position: 'bottom-left',
+                                                duration: Infinity
+                                            }
                                         });
                                     } catch (e) {
                                         handleError(e);

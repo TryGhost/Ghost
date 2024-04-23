@@ -225,8 +225,9 @@ const Direct: React.FC<{onClose: () => void}> = ({onClose}) => {
         } catch (e) {
             if (e instanceof JSONError) {
                 showToast({
-                    type: 'pageError',
-                    message: 'Failed to save settings. Please check you copied both keys correctly.'
+                    title: 'Failed to save settings',
+                    type: 'error',
+                    message: 'Check you copied both keys correctly'
                 });
                 return;
             }

@@ -231,8 +231,9 @@ const PortalModal: React.FC = () => {
         onOk={async () => {
             if (Object.values(errors).filter(Boolean).length) {
                 showToast({
+                    title: 'Can\'t save Portal settings',
                     type: 'pageError',
-                    message: 'Can\'t save settings, please double check that you\'ve filled all mandatory fields.'
+                    message: 'Make sure you filled all required fields.'
                 });
             } else {
                 await handleSave({force: true});

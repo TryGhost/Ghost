@@ -141,8 +141,7 @@ const InviteUserModal = NiceModal.create(() => {
             }
             showToast({
                 message,
-                type: 'neutral',
-                icon: 'warning'
+                type: 'error'
             });
             handleError(e, {withToast: false});
             return;

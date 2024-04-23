@@ -581,12 +581,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
         testId='newsletter-modal'
         title='Newsletter'
         onOk={async () => {
-            if (!(await handleSave({fakeWhenUnchanged: true}))) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save newsletter, please double check that you\'ve filled all mandatory fields.'
-                });
-            }
+            await handleSave({fakeWhenUnchanged: true});
         }}
     />;
 };
