@@ -4,6 +4,8 @@ import {ActivityPubController} from '../../http/frontend/controllers/activitypub
 import {WebFingerService} from '../../core/activitypub/webfinger.service';
 import {JSONLDService} from '../../core/activitypub/jsonld.service';
 import {WebFingerController} from '../../http/frontend/controllers/webfinger.controller';
+import {ActivityService} from '../../core/activitypub/activity.service';
+import {KnexPostRepository} from '../../db/knex/post.repository.knex';
 
 @Module({
     controllers: [ActivityPubController, WebFingerController],
@@ -12,6 +14,14 @@ import {WebFingerController} from '../../http/frontend/controllers/webfinger.con
         {
             provide: 'ActorRepository',
             useClass: ActorRepositoryInMemory
+        },
+        {
+            provide: 'ActivityService',
+            useClass: ActivityService
+        },
+        {
+            provide: 'PostRepository',
+            useClass: KnexPostRepository
         },
         WebFingerService,
         JSONLDService
