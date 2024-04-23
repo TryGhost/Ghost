@@ -10,7 +10,7 @@ export class ActorRepositoryInMemory implements ActorRepository {
     constructor(@Inject('SettingsCache') settingsCache: SettingsCache) {
         this.actors = [
             Actor.create({
-                id: ObjectID.createFromHexString('000000000000000000000000'),
+                id: ObjectID.createFromHexString('deadbeefdeadbeefdeadbeef'),
                 username: 'index',
                 publicKey: settingsCache.get('ghost_public_key'),
                 privateKey: settingsCache.get('ghost_private_key')
