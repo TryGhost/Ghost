@@ -128,8 +128,6 @@ class Users {
         //  - go ahead and assign sort_order 0 to all of them
 
         // NOTE: bulk insert like this skips:
-        //   - entry in the Actions table for post edited
-        //   - entry in the Actions table for author updated
         //   - entry in Post Revisions for the change (seems unnecessary for this case, but perhaps a logical flaw as the latest revision should always be the same as the post itself)
         //   - no PostEdited event is fired, which has downstream impacts like updating the Collection(s) for the post
         await this.models.Base.knex('posts_tags')
@@ -140,7 +138,8 @@ class Users {
                 tag_id: tag.get('id'),
                 sort_order: 0
             })));
-        await this.models.Post.addActions('edited', usersPostIds, {transacting: transacting});
+        // manually add an entry in the Actions table that specifies the number of posts edited; see #bulkAddTags for similar logic
+        await this.models.Post.addActions('edited', usersPostIds, {transacting: transacting, context});
     }
 
     /**
