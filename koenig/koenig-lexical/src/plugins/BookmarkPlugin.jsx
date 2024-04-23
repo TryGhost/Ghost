@@ -5,7 +5,7 @@ import {
     $isRangeSelection,
     COMMAND_PRIORITY_HIGH
 } from 'lexical';
-import {$insertAndSelectNode} from '../utils/$insertAndSelectNode';
+import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
@@ -29,8 +29,8 @@ export const BookmarkPlugin = () => {
 
                     const focusNode = selection.focus.getNode();
                     if (focusNode !== null) {
-                        const bookmarkNode = $createBookmarkNode(dataset);
-                        $insertAndSelectNode({selectedNode: focusNode, newNode: bookmarkNode});
+                        const cardNode = $createBookmarkNode(dataset);
+                        editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode});
                     }
 
                     return true;

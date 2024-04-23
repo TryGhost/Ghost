@@ -89,7 +89,7 @@ test.describe('Bookmark card', async () => {
 
         await assertHTML(page, html`
             <div data-lexical-decorator="true" contenteditable="false">
-                <div data-kg-card-editing="false" data-kg-card-selected="false" data-kg-card="bookmark"></div>
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="bookmark"></div>
             </div>
             <p><br /></p>
         `, {ignoreCardContents: true});
