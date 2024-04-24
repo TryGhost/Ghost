@@ -160,6 +160,15 @@
             </div>
         {{/unless}}
 
+        {{!-- <button {{on "click" (action "openFeaturedWhatsNewModal")}}>Open Featured Whats New</button> --}}
+
+        {{#if this.whatsNew.isShowingModal}}
+            <GhFullscreenModal @modal="featured-whats-new"
+                {{!-- @confirm={{this.refreshMembers}} --}}
+                @close={{this.closeFeaturedWhatsNewModal}}
+                @modifier="action" />
+        {{/if}}
+
         <GhNavMenu::Footer />
 
     </section>

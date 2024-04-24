@@ -1,0 +1,17 @@
+<div class="modal-content">
+    {{#let this.whatsNew.entries.firstObject as |entry|}}
+        <div>
+            {{#if entry.feature_image}}
+                <img class="mb5" src={{entry.feature_image}}>
+            {{/if}}
+            <h2>{{entry.title}}</h2>
+            {{#if entry.custom_excerpt}}
+                <p>{{entry.custom_excerpt}}</p>
+            {{/if}}
+            <div class="flex justify-end">
+                <button {{on "click" (action "closeFeaturedWhatsNew")}} class="mr-2">Dismiss</button>
+                <a href="{{entry.url}}" class="gh-btn"><span>Read on &rarr;</span></a>
+            </div>
+        </div>
+    {{/let}}
+</div>

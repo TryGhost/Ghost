@@ -1,0 +1,24 @@
+<header class="modal-header">
+    <h1>What's new dude</h1>
+</header>
+<button type="button" class="close" title="Close" {{on "click" this.close}}>
+    {{svg-jar "close"}}<span class="hidden">Close</span>
+</button>
+
+<form>
+    <div class="modal-body">
+        hello featured what's new
+    </div>
+</form>
+
+{{!-- <div class="modal-footer">
+    <button
+        class="gh-btn"
+        type="button"
+        {{on "click" this.close}}
+        {{on "mousedown" (optional this.noop)}}
+        data-test-button="cancel-webhook"
+    >
+        <span>Cancel</span>
+    </button>
+</div> --}}

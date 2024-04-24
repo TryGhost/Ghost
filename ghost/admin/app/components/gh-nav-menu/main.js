@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+// import FeaturedWhatsNewModal from '../modals/featured-whats-new';
 import SearchModal from '../modals/search';
 import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
 import classic from 'ember-classic-decorator';
@@ -75,6 +76,13 @@ export default class Main extends Component.extend(ShortcutsMixin) {
         this.registerShortcuts();
     }
 
+    didRender() {
+        super.didRender();
+        if (this.whatsNew.hasNewFeatured) {
+            this.whatsNew.openFeaturedModal();
+        }
+    }
+
     willDestroyElement() {
         this.removeShortcuts();
         super.willDestroyElement(...arguments);
@@ -97,6 +105,11 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @action
     openSearchModal() {
         return this.modals.open(SearchModal);
+    }
+
+    @action
+    closeFeaturedWhatsNewModal() {
+        this.whatsNew.closeFeaturedModal();
     }
 
     @action
