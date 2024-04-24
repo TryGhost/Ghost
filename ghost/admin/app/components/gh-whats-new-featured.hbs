@@ -1,0 +1,7 @@
+{{#if this.whatsNew.hasNewFeatured}}
+    <GhFullscreenModal
+        @modal="whats-new-featured"
+        @modifier="wide gh-wn-modal"
+        @close={{fn this.whatsNew.closeFeaturedModal}}
+    />
+{{/if}}
