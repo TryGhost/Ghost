@@ -16,16 +16,11 @@
     position: relative;
     display: flex;
     margin-top: 8px;
-    padding: 4px 8px;
-    width: 286px;
-    background: var(--black);
-    border-radius: 6px;
-    box-shadow:
-        0 1.1px 2.3px rgba(0, 0, 0, 0.028),
-        0 3.8px 7.8px rgba(0, 0, 0, 0.042),
-        0 17px 35px -7px rgba(0, 0, 0, 0.11)
-    ;
-    color: #fff;
+    width: 320px;
+    background: var(--white);
+    border-radius: 8px;
+    box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.28), 0px 100px 80px rgba(0, 0, 0, 0.0112458), 0px 41.7776px 33.4221px rgba(0, 0, 0, 0.0161557), 0px 22.3363px 17.869px rgba(0, 0, 0, 0.02), 0px 12.5216px 10.0172px rgba(0, 0, 0, 0.0238443), 0px 6.6501px 5.32008px rgba(0, 0, 0, 0.0287542), 0px 2.76726px 2.21381px rgba(0, 0, 0, 0.04);
+    color: var(--black);
     font-size: 1.3rem;
     line-height: 1.25em;
     opacity: 1.0;
@@ -33,7 +28,13 @@
 }
 
 .gh-notification-icon {
-    margin: 10px 0 0 6px;
+    margin-top: 1px;
+    line-height: 0;
+    color: #30CF43;
+}
+
+:is(.gh-notification-error, .gh-notification-warn) .gh-notification-icon {
+    color: #F50B23;
 }
 
 .gh-notification-icon svg {
@@ -41,22 +42,21 @@
     height: 16px;
 }
 
-.gh-notification-icon svg path {
-    stroke-width: 1.5px;
-    stroke: #fff;
-}
-
 .gh-notification-content {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    padding: 9px 15px 10px 10px;
+    padding: 16px;
     border-radius: 3px;
-    max-width: 215px;
 }
 
 .gh-notification-content p span {
     white-space: nowrap;
+}
+
+.gh-notification-header {
+    display: flex;
+    gap: 6px;
 }
 
 .gh-notification-title {
@@ -67,13 +67,13 @@
 }
 
 .gh-notification p {
-    margin: 6px 0 0;
+    margin: 8px 0 0;
     padding: 0;
     line-height: 1.35em;
 }
 
 .gh-notification a {
-    color: #fff;
+    color: inherit;
     text-decoration: underline;
     font-weight: 400;
 }
@@ -84,7 +84,7 @@
 }
 
 .gh-notification-actions {
-    margin-top: 6px;
+    margin-top: 12px;
     margin-bottom: 2px;
     display: flex;
 }
@@ -96,7 +96,7 @@
 
 .gh-notification-close {
     position: absolute;
-    top: 10px;
+    top: 13px;
     right: 10px;
     padding: 8px;
     background: none;
@@ -109,7 +109,11 @@
 .gh-notification-close svg {
     height: 8px;
     width: 8px;
-    stroke: #fff;
+    stroke: #7C8B9A;
+}
+
+.gh-notification-close:hover svg {
+    stroke: #394047;
 }
 
 .gh-notification-close svg path {
@@ -138,7 +142,7 @@
         transform: translateX(-232.05px);
     }
     26.52% {
-        opacity: 0.5;
+        opacity: 0.8;
         transform: translateX(5.90px);
     }
     63.26% {
