@@ -2,6 +2,7 @@ import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ImageUpload, SettingGroupContent, TextField, XLogo, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -41,7 +42,11 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
             const imageUrl = getImageUrl(await uploadImage({file}));
             updateSetting('twitter_image', imageUrl);
         } catch (e) {
-            handleError(e);
+            const error = e as APIError;
+            if (error.response!.status === 415) {
+                error.message = 'Unsupported file type';
+            }
+            handleError(error);
         }
     };
 
@@ -91,12 +96,14 @@ const Twitter: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className="flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
                         <TextField
                             inputRef={focusRef}
+                            maxLength={300}
                             placeholder={siteTitle}
                             title="X title"
                             value={twitterTitle}
                             onChange={handleTitleChange}
                         />
                         <TextField
+                            maxLength={300}
                             placeholder={siteDescription}
                             title="X description"
                             value={twitterDescription}
