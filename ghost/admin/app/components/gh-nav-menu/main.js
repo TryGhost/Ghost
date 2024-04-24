@@ -1,6 +1,7 @@
 import Component from '@ember/component';
 import SearchModal from '../modals/search';
 import ShortcutsMixin from 'ghost-admin/mixins/shortcuts';
+import WhatsNewFeatured from '../modals/whats-new-featured';
 import classic from 'ember-classic-decorator';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {action} from '@ember/object';
@@ -73,6 +74,12 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     didInsertElement() {
         super.didInsertElement(...arguments);
         this.registerShortcuts();
+
+        this.whatsNew.fetchLatest.perform().then(() => {
+            if (this.whatsNew.hasNewFeatured) {
+                this.openWhatsNewFeatured();
+            }
+        });
     }
 
     willDestroyElement() {
@@ -97,6 +104,11 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @action
     openSearchModal() {
         return this.modals.open(SearchModal);
+    }
+
+    @action
+    openWhatsNewFeatured() {
+        return this.modals.open(WhatsNewFeatured);
     }
 
     @action

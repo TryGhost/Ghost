@@ -5,7 +5,7 @@ export default class WhatsNewFeatured extends Component {
     @service whatsNew;
 
     willDestroy() {
-        super.willDestroy();
-        this.whatsNew.closeFeaturedModal();
+        super.willDestroy(...arguments);
+        this.whatsNew.seen();
     }
 }

@@ -1,0 +1,17 @@
+<div class="modal-content">
+    {{#let this.whatsNew.entries.firstObject as |entry|}}
+        {{#if entry.feature_image}}
+            <img class="mb5" src={{entry.feature_image}}>
+        {{/if}}
+
+        <h2>{{entry.title}}</h2>
+
+        {{#if entry.custom_excerpt}}
+            <p>{{entry.custom_excerpt}}</p>
+        {{/if}}
+
+        <div>
+            <a class="gh-btn" href={{entry.url}} target="_blank" rel="noopener noreferrer"><span>Read more &rarr;</span></a>
+        </div>
+    {{/let}}
+</div>
