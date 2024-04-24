@@ -57,6 +57,7 @@
 .gh-notification-header {
     display: flex;
     gap: 6px;
+    max-width: 260px;
 }
 
 .gh-notification-title {
@@ -84,7 +85,7 @@
 }
 
 .gh-notification-actions {
-    margin-top: 12px;
+    margin-top: 16px;
     margin-bottom: 2px;
     display: flex;
 }
@@ -97,7 +98,7 @@
 .gh-notification-close {
     position: absolute;
     top: 13px;
-    right: 10px;
+    right: 13px;
     padding: 8px;
     background: none;
     border-radius: 999px;
