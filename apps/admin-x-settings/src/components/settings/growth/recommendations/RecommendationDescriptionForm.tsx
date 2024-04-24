@@ -100,6 +100,7 @@ const RecommendationDescriptionForm: React.FC<Props<EditOrAddRecommendation | Re
             autoFocus={true}
             error={Boolean(errors.title)}
             hint={errors.title}
+            maxLength={2000}
             title="Title"
             value={formState.title ?? ''}
             onChange={(e) => {

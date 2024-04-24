@@ -97,7 +97,6 @@ const TextArea: React.FC<TextAreaProps> = ({
             </textarea>
             {title && <Heading className={'order-1'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             {hint && <Hint className='order-3' color={error ? 'red' : ''}>{hint}</Hint>}
-            {maxLength && <Hint>Max length is {maxLength}</Hint>}
         </div>
     );
 };

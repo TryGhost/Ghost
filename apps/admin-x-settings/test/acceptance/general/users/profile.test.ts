@@ -38,10 +38,6 @@ test.describe('User profile', async () => {
         await modal.getByRole('button', {name: 'Save & close'}).click();
         await expect(modal).toContainText('Name is required');
 
-        await modal.getByLabel('Full name').fill(new Array(195).join('a'));
-        await modal.getByRole('button', {name: 'Save & close'}).click();
-        await expect(modal).toContainText('Name is too long');
-
         await modal.getByLabel('Email').fill('test');
         await modal.getByRole('button', {name: 'Save & close'}).click();
         await expect(modal).toContainText('Please enter a valid email address');

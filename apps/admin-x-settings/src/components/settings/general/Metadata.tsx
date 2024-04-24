@@ -83,6 +83,7 @@ const Metadata: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <TextField
                 hint="Recommended: 70 characters"
                 inputRef={focusRef}
+                maxLength={300}
                 placeholder={siteTitle}
                 title="Meta title"
                 value={metaTitle}
@@ -90,6 +91,7 @@ const Metadata: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             <TextField
                 hint="Recommended: 156 characters"
+                maxLength={500}
                 placeholder={siteDescription}
                 title="Meta description"
                 value={metaDescription}

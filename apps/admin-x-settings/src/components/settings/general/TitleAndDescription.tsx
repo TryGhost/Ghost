@@ -49,6 +49,7 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <TextField
                 hint="The name of your site"
                 inputRef={focusRef}
+                maxLength={150}
                 placeholder="Site title"
                 title="Site title"
                 value={title}
@@ -56,6 +57,7 @@ const TitleAndDescription: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             <TextField
                 hint="A short description, used in your theme, meta data and search results"
+                maxLength={200}
                 placeholder="Site description"
                 title="Site description"
                 value={description}

@@ -97,6 +97,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 autoFocus={true}
                 error={Boolean(errors.name)}
                 hint={errors.name}
+                maxLength={191}
                 placeholder='Weekly roundup'
                 title='Name'
                 value={formState.name}
@@ -104,6 +105,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 onKeyDown={() => clearError('name')}
             />
             <TextArea
+                maxLength={2000}
                 title='Description'
                 value={formState.description}
                 onChange={e => updateForm(state => ({...state, description: e.target.value}))}

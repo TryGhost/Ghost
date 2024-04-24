@@ -2,6 +2,7 @@ import APIKeys from './APIKeys';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import WebhooksTable from './WebhooksTable';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {APIKey, useRefreshAPIKey} from '@tryghost/admin-x-framework/api/apiKeys';
 import {ConfirmationModal, Form, ImageUpload, Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {Integration, useBrowseIntegrations, useEditIntegration} from '@tryghost/admin-x-framework/api/integrations';
@@ -112,7 +113,11 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                             const imageUrl = getImageUrl(await uploadImage({file}));
                             updateForm(state => ({...state, icon_image: imageUrl}));
                         } catch (e) {
-                            handleError(e);
+                            const error = e as APIError;
+                            if (error.response!.status === 415) {
+                                error.message = 'Unsupported file type';
+                            }
+                            handleError(error);
                         }
                     }}
                 >
@@ -124,12 +129,13 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
                     <TextField
                         error={Boolean(errors.name)}
                         hint={errors.name}
+                        maxLength={191}
                         title='Title'
                         value={formState.name}
                         onChange={e => updateForm(state => ({...state, name: e.target.value}))}
                         onKeyDown={() => clearError('name')}
                     />
-                    <TextField title='Description' value={formState.description || ''} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
+                    <TextField maxLength={2000} title='Description' value={formState.description || ''} onChange={e => updateForm(state => ({...state, description: e.target.value}))} />
                     <APIKeys keys={[
                         {
                             label: 'Content API key',
