@@ -36,6 +36,7 @@ const NewsletterPreviewContent: React.FC<{
     backgroundColor?: string;
     borderColor?: string;
     secondaryBorderColor?: string;
+    accentColor?: string;
     textColor?: string;
     secondaryTextColor?: string;
     titleColor?: string;
@@ -66,6 +67,7 @@ const NewsletterPreviewContent: React.FC<{
     backgroundColor,
     borderColor,
     secondaryBorderColor,
+    accentColor,
     textColor,
     secondaryTextColor,
     titleColor
@@ -235,7 +237,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <p style={{color: textColor}}>Email: jamie@example.com</p>
                                             <p style={{color: textColor}}>Member since: 17 July 2023</p>
                                         </div>
-                                        <span className={clsx('w-full self-end whitespace-nowrap text-right text-base font-semibold', backgroundColorIsDark ? 'text-white underline' : 'text-pink')}>
+                                        <span className={clsx('w-full self-end whitespace-nowrap text-right text-base font-semibold', backgroundColorIsDark && 'text-white underline')} style={{color: accentColor}}>
                                             Manage subscription →
                                         </span>
                                     </div>
