@@ -1,3 +1,4 @@
+import CardContext from '../context/CardContext';
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
@@ -9,14 +10,12 @@ import {MAX_IMAGES, recalculateImageRows} from './GalleryNode';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {getImageDimensions} from '../utils/getImageDimensions';
-import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
 export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorInitialState}) {
     const [editor] = useLexicalComposerContext();
-    const {selectedCardKey} = useKoenigSelectedCardContext();
     const {fileUploader, cardConfig} = React.useContext(KoenigComposerContext);
-
+    const {isSelected} = React.useContext(CardContext);
     const fileInputRef = React.useRef();
     const [errorMessage, setErrorMessage] = React.useState(null);
     const [showSnippetToolbar, setShowSnippetToolbar] = React.useState(false);
@@ -27,8 +26,6 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
         });
         return existingImages;
     });
-
-    const isSelected = selectedCardKey === nodeKey;
 
     const galleryReorder = useGalleryReorder({images, updateImages: reorderImages, isSelected});
     const imageUploader = fileUploader.useFileUpload('image');
