@@ -12,7 +12,10 @@ const App: React.FC<AppProps> = ({framework, designSystem}) => {
         <FrameworkProvider {...framework}>
             <RoutingProvider basePath='playground-x'>
                 <DesignSystemApp className='admin-x-playground' {...designSystem}>
-                    <h1>Hello from Admin X React 🧪</h1>
+                    <div className='max-w-[1600px mx-auto my-0 w-full p-12'>
+                        <h1>ActivityPub Demo</h1>
+                        <div></div>
+                    </div>
                 </DesignSystemApp>
             </RoutingProvider>
         </FrameworkProvider>

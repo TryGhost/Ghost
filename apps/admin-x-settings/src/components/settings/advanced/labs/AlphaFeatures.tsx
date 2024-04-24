@@ -63,6 +63,10 @@ const features = [{
     title: 'Prevent Member Spam Signups',
     description: 'Enables features to help combat spam member signups',
     flag: 'membersSpamPrevention'
+},{
+    title: 'ActivityPub',
+    description: '(Highly) Experimental support for ActivityPub.',
+    flag: 'activityPub'
 }];
 
 const AlphaFeatures: React.FC = () => {
