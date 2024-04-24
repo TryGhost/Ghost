@@ -117,7 +117,7 @@ module.exports = class RouterController {
             return ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.get('status'));
         });
 
-        let currency = activeSubscription.get('plan_currency');
+        let currency = activeSubscription?.get('plan_currency') || undefined;
 
         let customer;
         if (!req.body.subscription_id) {
@@ -133,7 +133,7 @@ module.exports = class RouterController {
                 });
                 return res.end(`Could not find subscription ${req.body.subscription_id}`);
             }
-            currency = subscription.get('plan_currency');
+            currency = subscription.get('plan_currency') || undefined;
             customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
         }
 
