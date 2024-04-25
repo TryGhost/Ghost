@@ -55,10 +55,6 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
                     try {
                         await deleteRecommendation(recommendation);
                         deleteModal?.remove();
-                        showToast({
-                            message: 'Recommendation deleted',
-                            type: 'success'
-                        });
                     } catch (e) {
                         showToast({
                             title: 'Failed to delete the recommendation',

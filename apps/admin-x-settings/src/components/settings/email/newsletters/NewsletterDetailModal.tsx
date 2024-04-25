@@ -528,7 +528,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
                 showToast({
                     icon: 'email',
                     message: toastMessage,
-                    type: 'neutral'
+                    type: 'info'
                 });
             }
         },

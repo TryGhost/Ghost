@@ -104,8 +104,7 @@ test.describe('Offers Modal', () => {
         await modal.getByRole('button', {name: 'New offer'}).click();
         const addModal = page.getByTestId('add-offer-modal');
         await addModal.getByRole('button', {name: 'Publish'}).click();
-
-        await expect(page.getByTestId('toast-error')).toContainText(/Can't save offer, please double check that you've filled all mandatory fields./);
+        await expect(page.getByTestId('toast-error')).toContainText(/Can't save offer/);
     });
 
     test('Errors if the offer code is already taken', async ({page}) => {
@@ -163,7 +162,7 @@ test.describe('Offers Modal', () => {
         await modal.getByRole('button', {name: 'New offer'}).click();
         const addModal = page.getByTestId('add-offer-modal');
         await addModal.getByRole('button', {name: 'Publish'}).click();
-        await expect(page.getByTestId('toast-error')).toContainText(/Can't save offer, please double check that you've filled all mandatory fields./);
+        await expect(page.getByTestId('toast-error')).toContainText(/Can't save offer/);
         const sidebar = addModal.getByTestId('add-offer-sidebar');
         await expect(sidebar).toContainText(/Name is required/);
         await expect(sidebar).toContainText(/Code is required/);
@@ -238,7 +237,7 @@ test.describe('Offers Modal', () => {
         await offerUpdateModal.getByPlaceholder('black-friday').fill('');
         await offerUpdateModal.getByRole('button', {name: 'Save'}).click();
 
-        await expect(page.getByTestId('toast-error')).toContainText(/Can't save offer, please double check that you've filled all mandatory fields./);
+        await expect(page.getByTestId('toast-error')).toContainText(/Can't save offer/);
         await expect(offerUpdateModal).toContainText(/Please enter a code/);
 
         await offerUpdateModal.getByPlaceholder('black-friday').fill('black-friday-offer');

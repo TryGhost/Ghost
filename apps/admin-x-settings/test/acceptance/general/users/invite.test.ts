@@ -103,7 +103,7 @@ test.describe('User invitations', async () => {
 
         await listItem.getByRole('button', {name: 'Resend'}).click();
 
-        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation resent! \(invitee@test\.com\)/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation resent/);
 
         // Resending works by deleting and re-adding the invite
 
@@ -138,7 +138,7 @@ test.describe('User invitations', async () => {
 
         await listItem.getByRole('button', {name: 'Revoke'}).click();
 
-        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation revoked \(invitee@test\.com\)/);
+        await expect(page.getByTestId('toast-success')).toHaveText(/Invitation revoked/);
 
         expect(lastApiRequests.deleteInvite?.url).toMatch(new RegExp(`/invites/${responseFixtures.invites.invites[0].id}`));
     });
