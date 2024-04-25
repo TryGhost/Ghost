@@ -53,6 +53,7 @@ const ALPHA_FEATURES = [
     // 'adminXOffers',
     'adminXDemo',
     'membersSpamPrevention',
+    'ActivityPub',
     'internalLinking'
 ];
 
