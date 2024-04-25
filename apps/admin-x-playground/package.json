@@ -48,8 +48,16 @@
           {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
         ]
       },
+      "test:unit": {
+        "dependsOn": [
+          "build",
+          "test:unit",
+          {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
+        ]
+      },
       "test:acceptance": {
         "dependsOn": [
+          "build",
           "test:acceptance",
           {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
         ]
