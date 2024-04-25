@@ -88,7 +88,8 @@ describe('Transform', function () {
                 rotate: sinon.stub().returnsThis(),
                 toBuffer: sinon.stub(),
                 jpeg: sinon.stub().returnsThis(),
-                metadata: sinon.stub().returns({format: 'test'})
+                metadata: sinon.stub().returns({format: 'test'}),
+                timeout: sinon.stub().returnsThis()
             };
 
             sharp = sinon.stub().callsFake(() => {
@@ -155,6 +156,40 @@ describe('Transform', function () {
                 .catch((err) => {
                     (err instanceof errors.InternalServerError).should.be.true;
                     err.code.should.eql('IMAGE_PROCESSING');
+                });
+        });
+
+        it('uses the default processing timeout when resizing an image', function () {
+            sharpInstance.toBuffer.resolves('manipulated');
+
+            return transform.resizeFromPath({width: 1000})
+                .then(() => {
+                    sharpInstance.resize.calledOnce.should.be.true();
+                    sharpInstance.rotate.calledOnce.should.be.true();
+                    sharpInstance.timeout.calledOnce.should.be.true();
+
+                    sharpInstance.timeout.getCall(0).args[0].should.eql({seconds: transform.DEFAULT_PROCESSING_TIMEOUT_SECONDS});
+
+                    fs.writeFile.calledOnce.should.be.true();
+                    fs.writeFile.calledWith('manipulated');
+                });
+        });
+
+        it('uses the provided processing timeout when resizing an image', function () {
+            sharpInstance.toBuffer.resolves('manipulated');
+
+            const timeout = 10;
+
+            return transform.resizeFromPath({width: 1000, timeout})
+                .then(() => {
+                    sharpInstance.resize.calledOnce.should.be.true();
+                    sharpInstance.rotate.calledOnce.should.be.true();
+                    sharpInstance.timeout.calledOnce.should.be.true();
+
+                    sharpInstance.timeout.getCall(0).args[0].should.eql({seconds: timeout});
+
+                    fs.writeFile.calledOnce.should.be.true();
+                    fs.writeFile.calledWith('manipulated');
                 });
         });
     });
