@@ -388,6 +388,8 @@ async function initNestDependencies() {
     debug('Begin: initNestDependencies');
     const GhostNestApp = require('@tryghost/ghost');
     const providers = [];
+    const urlUtils = require('./shared/url-utils');
+    const activityPubBaseUrl = new URL('activitypub', urlUtils.urlFor('home', true));
     providers.push({
         provide: 'logger',
         useValue: require('@tryghost/logging')
@@ -400,6 +402,18 @@ async function initNestDependencies() {
     }, {
         provide: 'DomainEvents',
         useValue: require('@tryghost/domain-events')
+    }, {
+        provide: 'ActivityPubBaseURL',
+        useValue: activityPubBaseUrl
+    }, {
+        provide: 'SettingsCache',
+        useValue: require('./shared/settings-cache')
+    }, {
+        provide: 'knex',
+        useValue: require('./server/data/db').knex
+    }, {
+        provide: 'UrlUtils',
+        useValue: require('./shared/url-utils')
     });
     for (const provider of providers) {
         GhostNestApp.addProvider(provider);

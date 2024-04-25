@@ -36,11 +36,21 @@ module.exports = function setupApiApp() {
     apiApp.use(routes());
 
     apiApp.use(async (req, res, next) => {
-        if (!labs.isSet('NestPlayground')) {
-            return next();
+        if (labs.isSet('NestPlayground') || labs.isSet('ActivityPub')) {
+            const originalExpressApp = req.app;
+            const app = await GhostNestApp.getApp();
+
+            const instance = app.getHttpAdapter().getInstance();
+            instance(Object.assign({}, req, {
+                url: req.originalUrl,
+                baseUrl: ''
+            }), res, function (err) {
+                req.app = originalExpressApp;
+                next(err);
+            });
+            return;
         }
-        const app = await GhostNestApp.getApp();
-        app.getHttpAdapter().getInstance()(req, res, next);
+        return next();
     });
 
     // API error handling

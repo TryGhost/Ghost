@@ -7,7 +7,7 @@
                 <div class="gh-nav-menu-details-sitetitle">{{this.config.blogTitle}}</div>
             </div>
             <div class="gh-nav-menu-search">
-                <button class="gh-nav-btn-search" title="Search site (Ctrl/⌘ + K)" type="button" {{on "click" (action "openSearchModal")}}><span>{{svg-jar "search"}}</span></button>
+                <button class="gh-nav-btn-search" title="Search site (Ctrl/⌘ + K)" type="button" {{on "click" (action "openSearchModal")}} data-test-button="search"><span>{{svg-jar "search"}}</span></button>
             </div>
         </header>
     {{/unless}}

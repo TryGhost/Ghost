@@ -9,6 +9,7 @@ import clsx from 'clsx';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useStaffUsers from '../../../hooks/useStaffUsers';
 import validator from 'validator';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuItem, Modal, showToast} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
@@ -267,7 +268,11 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                 break;
             }
         } catch (e) {
-            handleError(e);
+            const error = e as APIError;
+            if (error.response!.status === 415) {
+                error.message = 'Unsupported file type';
+            }
+            handleError(error);
         }
     };
 
@@ -374,7 +379,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                         <div className='flex w-full max-w-[620px] flex-col gap-5 p-8 md:max-w-[auto] md:flex-row md:items-center'>
                             <div>
                                 <ImageUpload
-                                    deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-16 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
+                                    deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-10 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:!visible'
                                     deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
                                     editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:!visible z-20'
                                     fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'

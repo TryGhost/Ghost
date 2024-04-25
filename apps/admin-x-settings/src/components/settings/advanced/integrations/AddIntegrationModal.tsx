@@ -63,6 +63,7 @@ const AddIntegrationModal: React.FC<RoutingModalProps> = () => {
                     autoFocus={true}
                     error={!!errors.name}
                     hint={errors.name}
+                    maxLength={191}
                     placeholder='Custom integration'
                     title='Name'
                     value={name}

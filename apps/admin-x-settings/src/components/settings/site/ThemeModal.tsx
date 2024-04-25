@@ -468,6 +468,10 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
             testId='theme-modal'
             title=''
             scrolling
+            onCancel={() => {
+                modal.remove();
+                updateRoute('');
+            }}
         >
             <div className='flex h-full justify-between'>
                 <div className='grow'>

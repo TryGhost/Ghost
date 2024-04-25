@@ -13,6 +13,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, validateField, clearErr
             <TextField
                 error={!!errors?.name}
                 hint={errors?.name || 'Use real name so people can recognize you'}
+                maxLength={191}
                 title="Full name"
                 value={user.name}
                 onBlur={(e) => {
@@ -26,6 +27,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, validateField, clearErr
             <TextField
                 error={!!errors?.email}
                 hint={errors?.email || 'Used for notifications'}
+                maxLength={191}
                 title="Email"
                 value={user.email}
                 onBlur={(e) => {
@@ -38,6 +40,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({errors, validateField, clearErr
             />
             <TextField
                 hint="https://example.com/author"
+                maxLength={191}
                 title="Slug"
                 value={user.slug}
                 onChange={(e) => {

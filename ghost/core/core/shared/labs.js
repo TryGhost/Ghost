@@ -38,6 +38,7 @@ const BETA_FEATURES = [
 ];
 
 const ALPHA_FEATURES = [
+    'ActivityPub',
     'NestPlayground',
     'urlCache',
     'lexicalMultiplayer',
@@ -52,7 +53,8 @@ const ALPHA_FEATURES = [
     // 'adminXOffers',
     'adminXDemo',
     'membersSpamPrevention',
-    'ActivityPub'
+    'ActivityPub',
+    'internalLinking'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

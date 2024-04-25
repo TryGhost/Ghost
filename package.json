@@ -118,7 +118,7 @@
     "nx": "16.8.1",
     "rimraf": "5.0.5",
     "ts-node": "10.9.2",
-    "typescript": "5.4.3",
+    "typescript": "5.4.5",
     "inquirer": "8.2.6"
   }
 }

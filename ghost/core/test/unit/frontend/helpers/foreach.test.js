@@ -193,7 +193,7 @@ describe('{{#foreach}} helper', function () {
             resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
         });
 
-        it('should handle rowStart and rowEnd for multiple columns (array)', function () {
+        it('should handle rowStart and rowEnd for multiple columns (object)', function () {
             const expected = [
                 {first: true, last: false, even: false, odd: true, rowStart: true, rowEnd: false},
                 {first: false, last: false, even: true, odd: false, rowStart: false, rowEnd: true},
