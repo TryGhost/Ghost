@@ -1,10 +1,10 @@
 {
-  "name": "@tryghost/admin-x-playground",
+  "name": "@tryghost/admin-x-activitypub",
   "version": "0.0.1",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TryGhost/Ghost/tree/main/apps/admin-x-playground"
+    "url": "https://github.com/TryGhost/Ghost/tree/main/apps/admin-x-activitypub"
   },
   "author": "Ghost Foundation",
   "files": [
@@ -12,8 +12,8 @@
     "README.md",
     "dist/"
   ],
-  "main": "./dist/admin-x-playground.umd.cjs",
-  "module": "./dist/admin-x-playground.js",
+  "main": "./dist/admin-x-activitypub.umd.cjs",
+  "module": "./dist/admin-x-activitypub.js",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

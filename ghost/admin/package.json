@@ -182,7 +182,7 @@
             "projects": [
               "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings",
-              "@tryghost/admin-x-playground"
+              "@tryghost/admin-x-activitypub"
             ],
             "target": "build"
           }
@@ -195,7 +195,7 @@
             "projects": [
               "@tryghost/admin-x-demo",
               "@tryghost/admin-x-settings",
-              "@tryghost/admin-x-playground"
+              "@tryghost/admin-x-activitypub"
             ],
             "target": "build"
           }

@@ -11,8 +11,8 @@ interface AppProps {
 const App: React.FC<AppProps> = ({framework, designSystem}) => {
     return (
         <FrameworkProvider {...framework}>
-            <RoutingProvider basePath='playground-x'>
-                <DesignSystemApp className='admin-x-playground' {...designSystem}>
+            <RoutingProvider basePath='activitypub'>
+                <DesignSystemApp className='admin-x-activitypub' {...designSystem}>
                     <ListIndex />
                 </DesignSystemApp>
             </RoutingProvider>
