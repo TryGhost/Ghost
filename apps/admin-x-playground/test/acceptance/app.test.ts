@@ -3,14 +3,6 @@ import {expect, test} from '@playwright/test';
 
 test.describe('Demo', async () => {
     test('Renders the list page', async ({page}) => {
-        // await mockApi({page, requests: {
-        //     browseSettings: {
-        //         method: 'GET',
-        //         path: /^\/settings\/\?group=/,
-        //         response: responseFixtures.settings
-        //     }
-        // }});
-
         await page.goto('/');
 
         await expect(page.locator('body')).toContainText('ActivityPub Demo');
