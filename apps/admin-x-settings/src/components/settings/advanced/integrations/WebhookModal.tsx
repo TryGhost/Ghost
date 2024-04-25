@@ -78,6 +78,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                 <TextField
                     error={Boolean(errors.name)}
                     hint={errors.name}
+                    maxLength={191}
                     placeholder='Custom webhook'
                     title='Name'
                     value={formState.name}
@@ -101,6 +102,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                 <TextField
                     error={Boolean(errors.target_url)}
                     hint={errors.target_url}
+                    maxLength={2000}
                     placeholder='https://example.com'
                     title='Target URL'
                     type='url'
@@ -109,6 +111,7 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                     onKeyDown={() => clearError('target_url')}
                 />
                 <TextField
+                    maxLength={191}
                     placeholder='https://example.com'
                     title='Secret'
                     value={formState.secret || undefined}

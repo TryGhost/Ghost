@@ -32,7 +32,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
 
     const validators: {[key in keyof Tier]?: () => string | undefined} = {
-        name: () => (formState.name ? undefined : 'You must specify a name'),
+        name: () => (formState.name ? undefined : 'Enter a name for the tier'),
         monthly_price: () => (formState.type !== 'free' ? validateCurrencyAmount(formState.monthly_price || 0, formState.currency, {allowZero: false}) : undefined),
         yearly_price: () => (formState.type !== 'free' ? validateCurrencyAmount(formState.yearly_price || 0, formState.currency, {allowZero: false}) : undefined)
     };
@@ -213,6 +213,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         autoComplete='off'
                         error={Boolean(errors.name)}
                         hint={errors.name}
+                        maxLength={191}
                         placeholder={isFreeTier ? 'Free' : 'Bronze'}
                         title='Name'
                         value={formState.name || ''}
@@ -223,6 +224,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     <TextField
                         autoComplete='off'
                         autoFocus={isFreeTier}
+                        maxLength={191}
                         placeholder={isFreeTier ? `Free preview` : 'Full access to premium content'}
                         title='Description'
                         value={formState.description || ''}
@@ -297,6 +299,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     <URLTextField
                         baseUrl={siteData?.url}
                         hint={`Redirect to this URL after signup ${isFreeTier ? '' : ' for premium membership'}`}
+                        maxLength={2000}
                         placeholder={siteData?.url}
                         title='Welcome page'
                         value={formState.welcome_page_url || null}
@@ -315,10 +318,11 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 <div className='absolute left-[-32px] top-[7px] flex h-6 w-6 items-center justify-center bg-white group-hover:hidden dark:bg-black'><Icon name='check' size='sm' /></div>
                                 <TextField
                                     // className='grow border-b border-grey-500 py-2 focus:border-grey-800 group-hover:border-grey-600'
+                                    maxLength={191}
                                     value={item}
                                     onChange={e => benefits.updateItem(id, e.target.value)}
                                 />
-                                <Button className='absolute right-1 top-1 z-10' icon='trash' iconColorClass='opacity-0 group-hover:opacity-100' size='sm' onClick={() => benefits.removeItem(id)} />
+                                <Button className='absolute right-1 top-1 z-10 opacity-0 group-hover:opacity-100' color='grey' icon='trash' size='sm' onClick={() => benefits.removeItem(id)} />
                             </div>}
                             onMove={benefits.moveItem}
                         />
@@ -328,6 +332,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         <TextField
                             className='grow'
                             containerClassName='w-100'
+                            maxLength={191}
                             placeholder='Expert analysis'
                             title='New benefit'
                             value={benefits.newItem}
@@ -340,7 +345,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             }}
                         />
                         <Button
-                            className='absolute right-1 top-1 z-10'
+                            className='absolute right-[5px] top-[5px] z-10'
                             color='green'
                             icon='add'
                             iconColorClass='text-white'

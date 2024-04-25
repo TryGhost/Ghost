@@ -10,7 +10,7 @@ export class ActivityPubController {
     ) {}
 
     @Header('Cache-Control', 'no-store')
-    @Header('Content-Type', 'application/ld+json')
+    @Header('Content-Type', 'application/activity+json')
     @Roles(['Anon'])
     @Get('actor/:id')
     async getActor(@Param('id') id: unknown) {
@@ -21,7 +21,7 @@ export class ActivityPubController {
     }
 
     @Header('Cache-Control', 'no-store')
-    @Header('Content-Type', 'application/ld+json')
+    @Header('Content-Type', 'application/activity+json')
     @Roles(['Anon'])
     @Get('outbox/:owner')
     async getOutbox(@Param('owner') owner: unknown) {
@@ -29,5 +29,16 @@ export class ActivityPubController {
             throw new Error('Bad Request');
         }
         return this.service.getOutbox(ObjectID.createFromHexString(owner));
+    }
+
+    @Header('Cache-Control', 'no-store')
+    @Header('Content-Type', 'application/activity+json')
+    @Roles(['Anon'])
+    @Get('article/:id')
+    async getArticle(@Param('id') id: unknown) {
+        if (typeof id !== 'string') {
+            throw new Error('Bad Request');
+        }
+        return this.service.getArticle(ObjectID.createFromHexString(id));
     }
 }

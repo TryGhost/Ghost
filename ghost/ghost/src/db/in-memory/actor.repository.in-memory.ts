@@ -4,18 +4,29 @@ import ObjectID from 'bson-objectid';
 import {Inject} from '@nestjs/common';
 import {SettingsCache} from '../../common/types/settings-cache.type';
 
+interface DomainEvents {
+    dispatch(event: unknown): void
+}
+
 export class ActorRepositoryInMemory implements ActorRepository {
     actors: Actor[];
 
-    constructor(@Inject('SettingsCache') settingsCache: SettingsCache) {
+    private readonly domainEvents: DomainEvents;
+
+    constructor(
+        @Inject('SettingsCache') settingsCache: SettingsCache,
+        @Inject('DomainEvents') domainEvents: DomainEvents
+    ) {
         this.actors = [
             Actor.create({
-                id: ObjectID.createFromHexString('000000000000000000000000'),
+                id: ObjectID.createFromHexString('deadbeefdeadbeefdeadbeef'),
                 username: 'index',
                 publicKey: settingsCache.get('ghost_public_key'),
-                privateKey: settingsCache.get('ghost_private_key')
+                privateKey: settingsCache.get('ghost_private_key'),
+                outbox: []
             })
         ];
+        this.domainEvents = domainEvents;
     }
 
     private getOneByUsername(username: string) {
@@ -36,6 +47,16 @@ export class ActorRepositoryInMemory implements ActorRepository {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async save(actor: Actor) {
-        throw new Error('Not Implemented');
+        if (!this.actors.includes(actor)) {
+            this.actors.push(actor);
+        }
+        Actor.getActivitiesToSave(actor, (/* activities */) => {
+            // Persist activities
+        });
+        Actor.getEventsToDispatch(actor, (events) => {
+            for (const event of events) {
+                this.domainEvents.dispatch(event);
+            }
+        });
     }
 }
