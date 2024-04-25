@@ -66,7 +66,7 @@ const features = [{
 },{
     title: 'ActivityPub',
     description: '(Highly) Experimental support for ActivityPub.',
-    flag: 'activityPub'
+    flag: 'ActivityPub'
 }];
 
 const AlphaFeatures: React.FC = () => {
