@@ -2,6 +2,7 @@ const should = require('should');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
 const EventEmitter = require('events').EventEmitter;
+const LinkRedirect = require('@tryghost/link-redirects').LinkRedirect;
 
 const LinkRedirectRepository = require('../../../../../core/server/services/link-redirection/LinkRedirectRepository');
 
@@ -56,6 +57,9 @@ function createLinkRedirectRepository(deps = {}) {
                 select: sinon.stub().returns({
                     distinct: sinon.stub().returns(linkRows)
                 })
+            }),
+            add: sinon.stub().callsFake((data) => {
+                return createRedirectModel(data);
             })
         },
         urlUtils: deps.urlUtils || {
@@ -193,6 +197,23 @@ describe('UNIT: LinkRedirectRepository class', function () {
     });
 
     describe('caching', function () {
+
+        it('should add a new link redirect to the cache on save', async function () {
+            const cacheAdapterStub = {
+                set: sinon.stub()
+            };
+            linkRedirectRepository = createLinkRedirectRepository({
+                cacheAdapter: cacheAdapterStub
+            });
+
+            const linkRedirect = new LinkRedirect({
+                from: new URL('https://example.com/r/1234abcd'),
+                to: new URL('https://google.com')
+            });
+            await linkRedirectRepository.save(linkRedirect);
+            should(cacheAdapterStub.set.calledOnce).be.true();
+        });
+
         it('should clear cache on site.changed event', function () {
             const reset = sinon.stub();
             const cacheAdapterStub = {
