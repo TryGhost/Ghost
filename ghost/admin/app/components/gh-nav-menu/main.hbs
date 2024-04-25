@@ -123,6 +123,11 @@
                             <LinkTo @route="demo-x" @current-when="demo-x">{{svg-jar "star"}}AdminX Demo</LinkTo>
                         </li>
                     {{/if}}
+                    {{#if (feature "ActivityPub")}}
+                        <li>
+                            <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "star"}}ActivityPub Demo</LinkTo>
+                        </li>
+                    {{/if}}
                 </ul>
 
                 {{#if this.session.user.isOwnerOnly}}
