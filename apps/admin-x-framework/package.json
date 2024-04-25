@@ -74,8 +74,8 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "mocha": "10.2.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "react": "18.3.0",
+    "react-dom": "18.3.0",
     "sinon": "17.0.0",
     "ts-node": "10.9.2",
     "typescript": "5.4.5"
