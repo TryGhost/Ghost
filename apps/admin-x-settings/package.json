@@ -43,8 +43,8 @@
     "@tryghost/limit-service": "^1.2.10",
     "@tryghost/nql": "0.12.1",
     "@tryghost/timezone-data": "0.4.1",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "react": "18.3.0",
+    "react-dom": "18.3.0",
     "validator": "7.2.0"
   },
   "devDependencies": {
