@@ -16,7 +16,8 @@
     position: relative;
     display: flex;
     margin-top: 8px;
-    width: 320px;
+    max-width: 320px;
+    min-width: 280px;
     background: var(--white);
     border-radius: 8px;
     box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.28), 0px 100px 80px rgba(0, 0, 0, 0.0112458), 0px 41.7776px 33.4221px rgba(0, 0, 0, 0.0161557), 0px 22.3363px 17.869px rgba(0, 0, 0, 0.02), 0px 12.5216px 10.0172px rgba(0, 0, 0, 0.0238443), 0px 6.6501px 5.32008px rgba(0, 0, 0, 0.0287542), 0px 2.76726px 2.21381px rgba(0, 0, 0, 0.04);
@@ -48,6 +49,7 @@
     flex-direction: column;
     padding: 16px;
     border-radius: 3px;
+    margin-right: 28px;
 }
 
 .gh-notification-content p span {
@@ -56,8 +58,7 @@
 
 .gh-notification-header {
     display: flex;
-    gap: 6px;
-    max-width: 260px;
+    gap: 8px;
 }
 
 .gh-notification-title {
@@ -85,7 +86,7 @@
 }
 
 .gh-notification-actions {
-    margin-top: 16px;
+    margin-top: 10px;
     margin-bottom: 2px;
     display: flex;
 }
@@ -93,12 +94,17 @@
 .gh-notification-actions a {
     display: inline-block;
     margin-right: 10px;
+    color: var(--darkgrey);
+}
+
+.gh-notification-actions a:hover {
+    color: var(--black);
 }
 
 .gh-notification-close {
     position: absolute;
-    top: 13px;
-    right: 13px;
+    top: 14px;
+    right: 14px;
     padding: 8px;
     background: none;
     border-radius: 999px;
@@ -139,19 +145,16 @@
 
 @keyframes notification-fade-in-spring {
     0.00% {
-        opacity: 0;
-        transform: translateX(-232.05px);
+        transform: translateY(100%);
     }
     26.52% {
-        opacity: 0.8;
-        transform: translateX(5.90px);
+        transform: translateY(-3.90px);
     }
     63.26% {
-        transform: translateX(-1.77px);
-        opacity: 1;
+        transform: translateY(1.2px);
     }
     100.00% {
-        transform: translateX(0px);
+        transform: translateY(0px);
     }
 }
 

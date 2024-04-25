@@ -56,7 +56,10 @@ export const MinWidth: Story = {
 export const TitleWithIcon: Story = {
     args: {
         title: 'Hello notification in a toast',
-        type: 'info'
+        type: 'info',
+        options: {
+            duration: Infinity
+        }
     }
 };
 
@@ -87,6 +90,17 @@ export const Error: Story = {
         title: 'Toast title',
         message: 'Hello error message in a toast',
         type: 'error'
+    }
+};
+
+export const Infinite: Story = {
+    args: {
+        title: 'Toast title',
+        message: 'Hello error message in a toast',
+        type: 'error',
+        options: {
+            duration: Infinity
+        }
     }
 };
 

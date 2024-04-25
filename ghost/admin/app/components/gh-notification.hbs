@@ -16,16 +16,16 @@
                     {{/if}}
                 {{/if}}
             </div>
-            <span class="gh-notification-title">{{@message.message}}</span>
+            <div>
+                <span class="gh-notification-title">{{@message.message}}</span>
+                {{#if @message.description}}
+                    <p>{{@message.description}}</p>
+                {{/if}}
+                {{#if @message.actions}}
+                    <span class="gh-notification-actions">{{@message.actions}}</span>
+                {{/if}}
+            </div>
         </div>
-
-        {{#if @message.description}}
-            <p>{{@message.description}}</p>
-        {{/if}}
-
-        {{#if @message.actions}}
-            <span class="gh-notification-actions">{{@message.actions}}</span>
-        {{/if}}
     </div>
     <button class="gh-notification-close" data-test-button="close-notification" type="button" {{on "click" this.closeNotification}}>
         {{svg-jar "close"}}<span class="hidden">Close</span>

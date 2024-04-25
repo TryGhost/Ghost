@@ -50,23 +50,23 @@ const Toast: React.FC<ToastProps> = ({
     }
 
     const classNames = clsx(
-        'z-[90] flex min-w-[220px] items-start justify-between gap-3 rounded bg-white px-4 py-3 text-sm font-medium text-black',
+        'relative z-[90] mb-[14px] ml-[14px] flex min-w-[280px] items-start justify-between gap-3 rounded-lg bg-white p-4 text-sm text-black',
         props?.options?.position === 'top-center' ? 'max-w-[520px] shadow-md' : 'max-w-[360px] shadow-md-strong',
         t.visible ? (props?.options?.position === 'top-center' ? 'animate-toaster-top-in' : 'animate-toaster-in') : 'animate-toaster-out'
     );
 
     return (
         <div className={classNames} data-testid={`toast-${props?.type}`}>
-            <div className='flex items-start gap-3'>
+            <div className='mr-7 flex items-start gap-2'>
                 {props?.icon && (typeof props.icon === 'string' ?
-                    <div className='mt-0.5'><Icon className='grow' colorClass={iconColorClass} name={props.icon} size='sm' /></div> : props.icon)}
+                    <div className='mt-px'><Icon className='grow' colorClass={iconColorClass} name={props.icon} size='sm' /></div> : props.icon)}
                 {children}
             </div>
-            <button className='-mr-1.5 -mt-1.5 cursor-pointer p-2' type='button' onClick={() => {
+            <button className='absolute right-5 top-5 -mr-1.5 -mt-1.5 cursor-pointer p-2 text-grey-700 hover:text-black' type='button' onClick={() => {
                 toast.dismiss(t.id);
             }}>
-                <div className='mt-1'>
-                    <Icon colorClass='text-black stroke-2' name='close' size='2xs' />
+                <div>
+                    <Icon colorClass='stroke-2' name='close' size='2xs' />
                 </div>
             </button>
         </div>
@@ -102,8 +102,10 @@ export const showToast = ({
             options: options
         }} t={t}>
             <div>
-                {title && <div className='text-md font-semibold'>{title}</div>}
-                <div>{message}</div>
+                {title && <span className='mt-px block text-md font-semibold leading-tighter tracking-[0.1px]'>{title}</span>}
+                {message &&
+                    <div className={title ? 'mt-2' : ''}>{message}</div>
+                }
             </div>
         </Toast>
     ),
