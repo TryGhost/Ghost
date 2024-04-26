@@ -19,7 +19,7 @@ class LinkRedirectsServiceWrapper {
         this.linkRedirectRepository = new LinkRedirectRepository({
             LinkRedirect: models.Redirect,
             urlUtils,
-            cacheAdapter: config.get('hostSettings:linksPublicCache:enabled') ? adapterManager.getAdapter('cache:linksPublic') : null,
+            cacheAdapter: config.get('hostSettings:linkRedirectsPublicCache:enabled') ? adapterManager.getAdapter('cache:linkRedirectsPublic') : null,
             EventRegistry
         });
 
