@@ -197,7 +197,6 @@ describe('UNIT: LinkRedirectRepository class', function () {
     });
 
     describe('caching', function () {
-
         it('should add a new link redirect to the cache on save', async function () {
             const cacheAdapterStub = {
                 set: sinon.stub()
