@@ -1,7 +1,7 @@
 import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
 import {ButtonGroup, ButtonProps, showToast} from '@tryghost/admin-x-design-system';
+import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
-import {NoValueLabel} from '@tryghost/admin-x-design-system';
 import {SortMenu} from '@tryghost/admin-x-design-system';
 import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {Tooltip} from '@tryghost/admin-x-design-system';
@@ -89,6 +89,15 @@ export const CopyLinkButton: React.FC<{offerCode: string}> = ({offerCode}) => {
 
     return <Tooltip containerClassName='group-hover:opacity-100 opacity-0 inline-flex items-center -mr-1 justify-center leading-none w-5 h-5' content={isCopied ? 'Copied' : 'Copy link'} size='sm'><Button color='clear' hideLabel={true} icon={isCopied ? 'check-circle' : 'hyperlink-circle'} iconColorClass={isCopied ? 'text-green w-[14px] h-[14px]' : 'w-[18px] h-[18px]'} label={isCopied ? 'Copied' : 'Copy'} unstyled={true} onClick={handleCopyClick} /></Tooltip>;
 };
+
+export const EmptyState: React.FC<{title?: string, description: string, buttonAction: () => void, buttonLabel: string}> = ({title = 'No offers found', description, buttonAction, buttonLabel}) => (
+    <div className='flex h-full grow flex-col items-center justify-center text-center'>
+        <Icon className='-mt-14' colorClass='text-grey-700 -mt-6' name='tags-block' size='xl' />
+        <h1 className='mt-6 text-2xl'>{title}</h1>
+        <p className='mt-3 max-w-[420px] text-[1.6rem]'>{description}</p>
+        <Button className="mt-8" color="grey" label={buttonLabel} onClick={buttonAction}></Button>
+    </div>
+);
 
 export const OffersIndexModal = () => {
     const modal = useModal();
@@ -221,66 +230,68 @@ export const OffersIndexModal = () => {
         backDropClick={false}
         cancelLabel=''
         footer={false}
-        header={false}
         height='full'
         size='lg'
         testId='offers-modal'
+        title='Offers'
+        topRightContent={<ButtonGroup buttons={buttons} />}
         width={1140}
     >
-        <div className='pt-6'>
+        <div className='flex h-full flex-col pt-8'>
             <header>
-                <div className='flex items-center justify-between'>
-                    <div>
-                        <TabView
-                            border={false}
-                            selectedTab={selectedTab}
-                            tabs={offersTabs}
-                            width='wide'
-                            onTabChange={setSelectedTab}
-                        />
-                    </div>
-                    <ButtonGroup buttons={buttons} />
-                </div>
-                <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5 dark:border-b-grey-800'>
-                    <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
-                    <div>
-                        <SortMenu
-                            direction={sortDirection as 'asc' | 'desc'}
-                            items={[
-                                {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added', direction: sortDirection as 'asc' | 'desc'},
-                                {id: 'name', label: 'Name', selected: sortOption === 'name', direction: sortDirection as 'asc' | 'desc'},
-                                {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions', direction: sortDirection as 'asc' | 'desc'}
-                            ]}
-                            position='right'
-                            onDirectionChange={(selectedDirection) => {
-                                const newDirection = selectedDirection === 'asc' ? 'desc' : 'asc';
-                                setSortingState?.([{
-                                    type: 'offers',
-                                    option: sortOption,
-                                    direction: newDirection
-                                }]);
-                            }}
-                            onSortChange={(selectedOption) => {
-                                setSortingState?.([{
-                                    type: 'offers',
-                                    option: selectedOption,
-                                    direction: sortDirection
-                                }]);
-                            }}
-                        />
-                    </div>
-                </div>
+                <TabView
+                    selectedTab={selectedTab}
+                    tabs={offersTabs}
+                    topRightContent={
+                        (selectedTab === 'active' && activeOffers.length > 0) || (selectedTab === 'archived' && archivedOffers.length > 0) ?
+                            <div className='pt-1'>
+                                <SortMenu
+                                    direction={sortDirection as 'asc' | 'desc'}
+                                    items={[
+                                        {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added', direction: sortDirection as 'asc' | 'desc'},
+                                        {id: 'name', label: 'Name', selected: sortOption === 'name', direction: sortDirection as 'asc' | 'desc'},
+                                        {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions', direction: sortDirection as 'asc' | 'desc'}
+                                    ]}
+                                    position='right'
+                                    triggerButtonProps={{
+                                        link: true
+                                    }}
+                                    onDirectionChange={(selectedDirection) => {
+                                        const newDirection = selectedDirection === 'asc' ? 'desc' : 'asc';
+                                        setSortingState?.([{
+                                            type: 'offers',
+                                            option: sortOption,
+                                            direction: newDirection
+                                        }]);
+                                    }}
+                                    onSortChange={(selectedOption) => {
+                                        setSortingState?.([{
+                                            type: 'offers',
+                                            option: selectedOption,
+                                            direction: sortDirection
+                                        }]);
+                                    }}
+                                />
+                            </div> :
+                            null
+                    }
+                    onTabChange={setSelectedTab}
+                />
             </header>
             {selectedTab === 'active' && activeOffers.length === 0 && !isFetchingOffers ?
-                <NoValueLabel icon='tags-block'>
-                    No offers found.
-                </NoValueLabel> :
+                <EmptyState
+                    buttonAction={() => updateRoute('offers/new')}
+                    buttonLabel='Create an offer'
+                    description='Grow your audience with discounts or free trials.'
+                /> :
                 null
             }
             {selectedTab === 'archived' && archivedOffers.length === 0 && !isFetchingOffers ?
-                <NoValueLabel icon='tags-block'>
-                    No offers found.
-                </NoValueLabel> :
+                <EmptyState
+                    buttonAction={() => setSelectedTab('active')}
+                    buttonLabel='Back to active'
+                    description='All archived offers will be shown here.'
+                /> :
                 null
             }
             {listLayoutOutput}

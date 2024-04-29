@@ -61,7 +61,8 @@ export interface TabListProps<ID = string> {
     handleTabChange?: (e: React.MouseEvent<HTMLButtonElement>) => void;
     border: boolean;
     buttonBorder?: boolean;
-    selectedTab?: ID
+    selectedTab?: ID,
+    topRightContent?: React.ReactNode
 }
 
 export const TabList: React.FC<TabListProps> = ({
@@ -70,7 +71,8 @@ export const TabList: React.FC<TabListProps> = ({
     handleTabChange,
     border,
     buttonBorder,
-    selectedTab
+    selectedTab,
+    topRightContent
 }) => {
     const containerClasses = clsx(
         'no-scrollbar flex w-full overflow-x-auto',
@@ -93,6 +95,10 @@ export const TabList: React.FC<TabListProps> = ({
                     />
                 </div>
             ))}
+            {topRightContent !== null ?
+                <div className='ml-auto'>{topRightContent}</div> :
+                null
+            }
         </div>
     );
 };
@@ -105,6 +111,7 @@ export interface TabViewProps<ID = string> {
     buttonBorder?: boolean;
     width?: TabWidth;
     containerClassName?: string;
+    topRightContent?: React.ReactNode;
     testId?: string;
 }
 
@@ -116,7 +123,8 @@ function TabView<ID extends string = string>({
     border = true,
     buttonBorder = border,
     width = 'normal',
-    containerClassName
+    containerClassName,
+    topRightContent
 }: TabViewProps<ID>) {
     if (tabs.length !== 0 && selectedTab === undefined) {
         selectedTab = tabs[0].id;
@@ -139,6 +147,7 @@ function TabView<ID extends string = string>({
                 handleTabChange={handleTabChange}
                 selectedTab={selectedTab}
                 tabs={tabs}
+                topRightContent={topRightContent}
                 width={width}
             />
             {tabs.map((tab) => {

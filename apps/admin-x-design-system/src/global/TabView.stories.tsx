@@ -54,3 +54,10 @@ export const WithCounter: Story = {
         tabs: tabsWithCounters
     }
 };
+
+export const WithTopRightContent: Story = {
+    args: {
+        tabs: tabs,
+        topRightContent: <p>Some content</p>
+    }
+};
