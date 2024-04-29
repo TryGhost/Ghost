@@ -4,6 +4,10 @@
     background: #fff;
 }
 
+.gh-flow:has(form.gh-signin) .gh-flow-content {
+    max-width: 500px;
+}
+
 /* Sign in
 /* ---------------------------------------------------------- */
 .gh-signin, .gh-auth-email {
