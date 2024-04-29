@@ -9,8 +9,9 @@ const {imageSize} = require('../../../server/lib/image');
 
 const SIZE_PATH_REGEX = /^\/size\/([^/]+)\//;
 const FORMAT_PATH_REGEX = /^\/format\/([^./]+)\//;
-
 const TRAILING_SLASH_REGEX = /\/+$/;
+
+const RESIZE_TIMEOUT_SECONDS = 10;
 
 module.exports = function handleImageSizes(req, res, next) {
     // In admin we need to read images and calculate the average color (blocked by CORS otherwise)
@@ -123,7 +124,12 @@ module.exports = function handleImageSizes(req, res, next) {
                 if (originalImageBuffer.length <= 0) {
                     throw new NoContentError();
                 }
-                return imageTransform.resizeFromBuffer(originalImageBuffer, {withoutEnlargement: requestUrlFileExtension !== '.svg', ...imageDimensionConfig, format});
+                return imageTransform.resizeFromBuffer(originalImageBuffer, {
+                    withoutEnlargement: requestUrlFileExtension !== '.svg',
+                    ...imageDimensionConfig,
+                    format,
+                    timeout: RESIZE_TIMEOUT_SECONDS
+                });
             })
             .then((resizedImageBuffer) => {
                 return storageInstance.saveRaw(resizedImageBuffer, req.url);
@@ -147,3 +153,5 @@ module.exports = function handleImageSizes(req, res, next) {
         next(err);
     });
 };
+
+module.exports.RESIZE_TIMEOUT_SECONDS = RESIZE_TIMEOUT_SECONDS;
