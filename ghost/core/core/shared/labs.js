@@ -34,6 +34,8 @@ const BETA_FEATURES = [
     'additionalPaymentMethods',
     'i18n',
     'activitypub',
+    'internalLinking',
+    'stripeAutomaticTax',
     'webmentions'
 ];
 
@@ -43,17 +45,14 @@ const ALPHA_FEATURES = [
     'urlCache',
     'lexicalMultiplayer',
     'websockets',
-    'stripeAutomaticTax',
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
     'tipsAndDonations',
     'importMemberTier',
     'lexicalIndicators',
-    // 'adminXOffers',
     'adminXDemo',
-    'membersSpamPrevention',
-    'internalLinking'
+    'membersSpamPrevention'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
@@ -80,6 +79,10 @@ module.exports.getAll = () => {
     labs.members = settingsCache.get('members_signup_access') !== 'none';
 
     return labs;
+};
+
+module.exports.getAllFlags = function () {
+    return [...GA_FEATURES, ...BETA_FEATURES, ...ALPHA_FEATURES];
 };
 
 /**

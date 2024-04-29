@@ -80,15 +80,6 @@ export const ResizeDisabled: Story = {
     }
 };
 
-export const MaxLength: Story = {
-    args: {
-        title: 'Description',
-        placeholder: 'Try to enter more than 80 characters, I dare you...',
-        value: 'This is a nice text area that only accepts up to 80 characters. Try to add more:',
-        maxLength: 80
-    }
-};
-
 export const Error: Story = {
     args: {
         title: 'Description',

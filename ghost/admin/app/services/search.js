@@ -18,19 +18,19 @@ export default class SearchService extends Service {
         {
             name: 'Posts',
             model: 'post',
-            fields: ['id', 'url', 'title'],
+            fields: ['id', 'url', 'title', 'status'],
             idField: 'id',
             titleField: 'title'
         },
         {
             name: 'Pages',
             model: 'page',
-            fields: ['id', 'url', 'title'],
+            fields: ['id', 'url', 'title', 'status'],
             idField: 'id',
             titleField: 'title'
         },
         {
-            name: 'Users',
+            name: 'Staff',
             model: 'user',
             fields: ['id', 'slug', 'url', 'name'], // id not used but required for API to have correct url
             idField: 'slug',
@@ -127,7 +127,8 @@ export default class SearchService extends Service {
                     id: `${searchable.model}.${item[searchable.idField]}`,
                     url: item.url,
                     title: item[searchable.titleField],
-                    groupName: searchable.name
+                    groupName: searchable.name,
+                    status: item.status
                 })
             );
 

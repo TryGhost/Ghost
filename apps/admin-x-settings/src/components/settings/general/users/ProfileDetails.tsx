@@ -13,6 +13,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
             <TextField
                 error={!!errors?.location}
                 hint={errors?.location || 'Where in the world do you live?'}
+                maxLength={65535}
                 title="Location"
                 value={user.location || ''}
                 onBlur={(e) => {
@@ -25,6 +26,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
             <TextField
                 error={!!errors?.url}
                 hint={errors?.url || 'Have a website or blog other than this one? Link it!'}
+                maxLength={2000}
                 title="Website"
                 value={user.website || ''}
                 onBlur={(e) => {
@@ -37,6 +39,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
             <TextField
                 error={!!errors?.facebook}
                 hint={errors?.facebook || 'URL of your personal Facebook Profile'}
+                maxLength={2000}
                 title="Facebook profile"
                 value={facebookUrl}
                 onBlur={(e) => {
@@ -53,6 +56,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
             <TextField
                 error={!!errors?.twitter}
                 hint={errors?.twitter || 'URL of your X profile'}
+                maxLength={2000}
                 title="X (formerly Twitter) profile"
                 value={twitterUrl}
                 onBlur={(e) => {
@@ -69,6 +73,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
             <TextArea
                 error={!!errors?.bio}
                 hint={errors?.bio || <>Recommended: 200 characters. You&lsquo;ve used <span className='font-bold'>{user.bio?.length || 0}</span></>}
+                maxLength={65535}
                 title="Bio"
                 value={user.bio || ''}
                 onBlur={(e) => {

@@ -1,3 +1,13 @@
+/* Flow
+/* ---------------------------------------------------------- */
+.gh-flow:has(form.gh-signin) {
+    background: #fff;
+}
+
+.gh-flow:has(form.gh-signin) .gh-flow-content {
+    max-width: 500px;
+}
+
 /* Sign in
 /* ---------------------------------------------------------- */
 .gh-signin, .gh-auth-email {
@@ -47,12 +57,12 @@
 .gh-signin .gh-btn-reset,
 .gh-setup .gh-btn-signup,
 .gh-signup .gh-btn-signup {
-    height: 54px;
+    height: 52px;
     border-radius: 8px;
-    line-height: 54px;
+    line-height: 52px;
     margin-top: 40px;
     max-width: unset;
-    font-weight: 300;
+    font-weight: 400;
     transition: all 0.4s ease;
     -webkit-font-smoothing: subpixel-antialiased;
 }
@@ -105,7 +115,7 @@
     height: 19px;
     font-size: 1.4rem;
     line-height: 19px;
-    padding: 0 15px 0 16px;
+    padding: 0 16px;
     margin-top: -1px;
     color: var(--midlightgrey);
 }
@@ -124,6 +134,20 @@
     text-decoration: underline;
 }
 
+.gh-signin .form-group label {
+    font-size: 1.5rem;
+}
+
+.gh-signin .gh-input {
+    height: auto;
+    padding: 1.4rem 1.6rem;
+    border: 1px solid #f3f6f7;
+    background: #f3f6f7;
+    color: var(--black);
+    letter-spacing: -0.006em;
+    transition: border-color .15s linear;
+}
+
 .gh-signin input,
 .gh-signin input:-webkit-autofill::first-line {
     padding: 12px 16px;
@@ -134,8 +158,9 @@
 
 .gh-signin .gh-input:focus:not(.gh-signin .gh-input.reset-password:focus),
 .gh-signup .gh-input:focus {
-    border-color: var(--midgrey) !important;
-    box-shadow: none !important;
+    background-color: #fff;
+    border-color: #30cf43;
+    box-shadow: 0 0 0 3px rgba(48,207,67,.25);
 }
 
 /* Email notification */
