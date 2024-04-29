@@ -32,12 +32,13 @@ concurrency:
 jobs:
   job_get_metadata:
     name: Metadata
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    timeout-minutes: 1
     permissions:
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@9bb5618
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 2
@@ -47,22 +48,28 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
 
-      - name: Get metadata (push)
+      - name: Get number of commits (push)
         if: github.event_name == 'push'
-        run: |
-          NUMBER_OF_COMMITS=$(printf "%s\n" '${{ toJson(github.event.commits.*.id) }}' | jq length)
-          echo "There are $NUMBER_OF_COMMITS commits in this push."
-          echo "BASE_COMMIT=$(git rev-parse HEAD~$NUMBER_OF_COMMITS)" >> $GITHUB_ENV
+        run: NUMBER_OF_COMMITS=$(printf "%s\n" '${{ toJson(github.event.commits.*.id) }}' | jq length) >> $GITHUB_ENV
+      - name: Print number of commits
+        if: github.event_name == 'push'
+        run: echo "There are $NUMBER_OF_COMMITS commits in this push."
+      - name: Get base commit (push)
+        if: github.event_name == 'push'
+        run: echo "BASE_COMMIT=$(git rev-parse HEAD~$NUMBER_OF_COMMITS)" >> $GITHUB_ENV
 
       - name: Get metadata (pull_request)
-        if: github.event_name == 'pull_request'
-        run: |
-          BASE_COMMIT=$(curl --location --request GET 'https://api.github.com/repos/TryGhost/Ghost/pulls/${{ github.event.pull_request.number }}' --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | jq -r .base.sha)
-          echo "Setting BASE_COMMIT to $BASE_COMMIT"
-          echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
+        if: github.repository == 'tryghost/ghost' && github.event_name == 'pull_request'
+        run: 'echo "BASE_COMMIT=$(curl --location --request GET "https://api.github.com/repos/TryGhost/Ghost/pulls/${{ github.event.pull_request.number }}" --header "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" | jq -r .base.sha)" >> $GITHUB_ENV'
+      - name: Print current base commit (pull_request)
+        if: github.repository == 'tryghost/ghost' && github.event_name == 'pull_request'
+        run: echo "Setting BASE_COMMIT to $BASE_COMMIT"
+      - name: Get base commit (pull_request)
+        if: github.repository == 'tryghost/ghost' && github.event_name == 'pull_request'
+        run: echo "BASE_COMMIT=$BASE_COMMIT" >> $GITHUB_ENV
 
       - name: Determine added packages
-        uses: dorny/paths-filter@v2.12.0
+        uses: dorny/paths-filter@4512585
         id: added
         with:
           filters: |
@@ -70,7 +77,7 @@ jobs:
               - added: 'ghost/**/package.json'
 
       - name: Determine changed packages
-        uses: AurorNZ/paths-filter@v3.0.1
+        uses: AurorNZ/paths-filter@7c547bd
         id: changed
         with:
           filters: |
@@ -124,11 +131,13 @@ jobs:
   job_install_deps:
     name: Install Dependencies
     needs: job_get_metadata
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
+    permissions:
+      actions: write
     steps:
       - name: 'Checkout current commit'
-        uses: actions/checkout@v4
+        uses: actions/checkout@9bb5618
         with:
           ref: ${{ env.HEAD_COMMIT }}
 
@@ -139,16 +148,18 @@ jobs:
         run: echo "cachekey=dep-cache-${{ hashFiles('yarn.lock') }}-${{ env.HEAD_COMMIT }}" >> "$GITHUB_ENV"
 
       - name: Compute dependency cache restore key
-        run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "DEPENDENCY_CACHE_RESTORE_KEYS<<$EOF" >> "$GITHUB_ENV"
-          echo "dep-cache-${{ env.hash }}-${{ github.sha }}" >> "$GITHUB_ENV"
-          echo "dep-cache-${{ env.hash }}" >> "$GITHUB_ENV"
-          echo "dep-cache" >> "$GITHUB_ENV"
-          echo "$EOF" >> "$GITHUB_ENV"
+        run: echo "EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)" >> "$GITHUB_ENV"
+      - name: Add DEPENDENCY_CACHE_RESTORE_KEYS
+        run: echo "DEPENDENCY_CACHE_RESTORE_KEYS<<$EOF" >> "$GITHUB_ENV"
+      - name: Add dep-cache-${{ env.hash }}-${{ github.sha }}
+        run: echo "dep-cache-${{ env.hash }}-${{ github.sha }}" >> "$GITHUB_ENV"
+      - name: Add dep-cache-${{ env.hash }}
+        run: echo "dep-cache-${{ env.hash }}" >> "$GITHUB_ENV"
+      - name: Add dep-cache
+        run: echo "dep-cache" >> "$GITHUB_ENV"
 
       - name: Nx cache
-        uses: actions/cache@v4
+        uses: actions/cache@e12d46a
         id: cache_nx
         with:
           path: .nxcache
@@ -156,7 +167,7 @@ jobs:
           restore-keys: ${{needs.job_get_metadata.outputs.is_main == 'false' && env.NX_CACHE_RESTORE_KEYS || 'nx-never-restore'}}
 
       - name: Check dependency cache
-        uses: actions/cache@v4
+        uses: actions/cache@e12d46a
         id: cache_dependencies
         with:
           path: ${{ env.CACHED_DEPENDENCY_PATHS }}
@@ -164,14 +175,14 @@ jobs:
           restore-keys: ${{needs.job_get_metadata.outputs.is_main == 'false' && env.DEPENDENCY_CACHE_RESTORE_KEYS || 'dep-never-restore'}}
 
       - name: Check build cache
-        uses: actions/cache@v4
+        uses: actions/cache@e12d46a
         id: cache_built_packages
         with:
           path: ${{ env.CACHED_BUILD_PATHS }}
           key: ${{ env.HEAD_COMMIT }}
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@60edb5d
         env:
           FORCE_COLOR: 0
         with:
@@ -188,15 +199,20 @@ jobs:
       dependency_cache_key: ${{ env.cachekey }}
 
   job_lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [job_get_metadata, job_install_deps]
     if: needs.job_get_metadata.outputs.changed_any_code == 'true'
     name: Lint
+    timeout-minutes: 5
+    permissions:
+      actions: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@9bb5618
         with:
           fetch-depth: 100
-      - uses: actions/setup-node@v4
+      - name: Setup node 18.12.1
+        uses: actions/setup-node@60edb5d
         env:
           FORCE_COLOR: 0
         with:
@@ -207,14 +223,17 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - uses: actions/cache@v4
+      - name: Eslint cache
+        uses: actions/cache@e12d46a
         with:
           path: ghost/**/.eslintcache
           key: eslint-cache
 
-      - run: yarn nx affected -t lint --base=${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
+      - name: Run linter
+        run: yarn nx affected -t lint --base=${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - name: Send slack notification
+        uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -222,17 +241,21 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_i18n:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [job_get_metadata, job_install_deps]
     name: i18n
+    timeout-minutes: 2
+    permissions: {}
     if: |
         needs.job_get_metadata.outputs.changed_comments_ui == 'true'
         || needs.job_get_metadata.outputs.changed_signup_form == 'true'
         || needs.job_get_metadata.outputs.changed_portal == 'true'
         || needs.job_get_metadata.outputs.changed_core == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@9bb5618
+      - name: Setup node
+        uses: actions/setup-node@60edb5d
         with:
           node-version: "18.12.1"
 
@@ -245,18 +268,23 @@ jobs:
         run: yarn nx run @tryghost/i18n:test
 
   job_admin-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [job_get_metadata, job_install_deps]
     if: needs.job_get_metadata.outputs.changed_admin == 'true'
     name: Admin tests - Chrome
+    timeout-minutes: 5
+    permissions:
+      actions: write
     env:
       MOZ_HEADLESS: 1
       JOBS: 1
       CI: true
       COVERAGE: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@9bb5618
+      - name: Setup node
+        uses: actions/setup-node@60edb5d
         with:
           node-version: "18.12.1"
 
@@ -265,7 +293,8 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn nx run ghost-admin:test
+      - name: Run ghost-admin test
+        run: yarn nx run ghost-admin:test
         env:
           BROWSER: Chrome
 
@@ -273,12 +302,15 @@ jobs:
       - name: Merge Admin test coverage
         run: yarn ember coverage-merge
         working-directory: ghost/admin
-      - uses: actions/upload-artifact@v4
+      - name: Upload admin coverage
+        if: github.repository == 'tryghost/ghost'
+        uses: actions/upload-artifact@a8a3f3a
         with:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - name: Create a slack notification
+        uses: tryghost/actions/actions/slack-build@a722008
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -288,80 +320,71 @@ jobs:
   job_browser-tests:
     name: Browser tests
     timeout-minutes: 60
+    permissions:
+      actions: write
     runs-on:
       labels: ubuntu-latest
     needs: [job_get_metadata, job_install_deps]
     if: needs.job_get_metadata.outputs.changed_any_code == 'true' && (needs.job_get_metadata.outputs.is_main == 'true' || needs.job_get_metadata.outputs.has_browser_tests_label == 'true')
     concurrency:
       group: ${{ github.workflow }}
+    env:
+      STRIPE_VERSION: 1.13.5
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: true
-    - uses: actions/setup-node@v4
-      env:
-        FORCE_COLOR: 0
-      with:
-        node-version: '18.x'
-        cache: yarn
+      - name: Checkout repository with submodules
+        uses: actions/checkout@9bb5618
+        with:
+          submodules: true
+      - name: Setup node 18.x
+        uses: actions/setup-node@60edb5d
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: '18.x'
+          cache: yarn
 
-    - name: Install Stripe-CLI
-      run: |
-        export VERSION=1.13.5
-        wget "https://github.com/stripe/stripe-cli/releases/download/v$VERSION/stripe_${VERSION}_linux_x86_64.tar.gz"
-        tar -zxvf "stripe_${VERSION}_linux_x86_64.tar.gz"
-        mv stripe /usr/local/bin
-        stripe -v
+      - name: Install Stripe-CLI
+        run: wget "https://github.com/stripe/stripe-cli/releases/download/v${STRIPE_VERSION}/stripe_${STRIPE_VERSION}linux_x86_64.tar.gz"
 
-    - name: Restore caches
-      uses: ./.github/actions/restore-cache
-      env:
-        DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
+      - name: Unzip stripe tar
+        run: tar -zxvf "stripe_${STRIPE_VERSION}_linux_x86_64.tar.gz"
 
-    - name: Run migrations
-      working-directory: ghost/core
-      run: yarn knex-migrator init
+      - name: Move stripe to bin
+        run: mv stripe /usr/local/bin
 
-    - name: Get Playwright version
-      id: playwright-version
-      run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-    - uses: actions/cache@v4
-      name: Check if Playwright browser is cached
-      id: playwright-cache
-      with:
-        path: ~/.cache/ms-playwright
-        key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
-    - name: Install Playwright browser if not cached
-      if: steps.playwright-cache.outputs.cache-hit != 'true'
-      run: npx playwright install --with-deps
-    - name: Install OS dependencies of Playwright if cache hit
-      if: steps.playwright-cache.outputs.cache-hit == 'true'
-      run: npx playwright install-deps
+      - name: Run stripe
+        run: stripe -v
 
-    - name: Build Admin
-      run: yarn nx run ghost-admin:build:dev
+      - name: Restore caches
+        uses: ./.github/actions/restore-cache
+        env:
+          DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-    - name: Run Playwright tests locally
-      working-directory: ghost/core
-      run: yarn test:browser
-      env:
-        CI: true
-        STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
-        STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      - name: Run migrations
+        working-directory: ghost/core
+        run: yarn knex-migrator init
 
-    - uses: tryghost/actions/actions/slack-build@main
-      if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-      with:
-        status: ${{ job.status }}
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-    - uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: browser-tests-playwright-report
-        path: ghost/core/playwright-report
-        retention-days: 30
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
+      - uses: actions/cache@e12d46a
+        name: Check if Playwright browser is cached
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
+      - name: Install Playwright browser if not cached
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps
+      - name: Install OS dependencies of Playwright if cache hit
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
+      - uses: actions/upload-artifact@a8a3f3a
+        if: always() && github.repository == 'tryghost/ghost'
+        with:
+          name: browser-tests-playwright-report
+          path: ghost/core/playwright-report
+          retention-days: 30
 
   job_perf-tests:
     runs-on:
@@ -369,11 +392,17 @@ jobs:
     needs: [job_get_metadata, job_install_deps]
     if: needs.job_get_metadata.outputs.changed_core == 'true' && needs.job_get_metadata.outputs.is_main == 'true'
     name: Performance tests
+    timeout-minutes: 2
+    permissions: {}
+    env:
+      HYPERFINE_VERSION: 1.18.0
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@9bb5618
         with:
           submodules: true
-      - uses: actions/setup-node@v4
+      - name: Setup node 18.12.1
+        uses: actions/setup-node@60edb5d
         env:
           FORCE_COLOR: 0
         with:
@@ -385,12 +414,13 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
       - name: Install hyperfine
-        run: |
-          export HYPERFINE_VERSION=1.18.0
-          wget https://github.com/sharkdp/hyperfine/releases/download/v$HYPERFINE_VERSION/hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu.tar.gz
-          tar -zxvf hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu.tar.gz
-          mv hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu/hyperfine /usr/local/bin
-          chmod +x /usr/local/bin/hyperfine
+        run: wget https://github.com/sharkdp/hyperfine/releases/download/v$HYPERFINE_VERSION/hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu.tar.gz
+      - name: Unzip hyperfine
+        run: tar -zxvf hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu.tar.gz
+      - name: Move hyperfine to bin
+        run: mv hyperfine-v$HYPERFINE_VERSION-x86_64-unknown-linux-gnu/hyperfine /usr/local/bin
+      - name: Make hyperfine executable
+        run: chmod +x /usr/local/bin/hyperfine
 
       - name: Run hyperfine on boot
         working-directory: ghost/core
@@ -398,11 +428,11 @@ jobs:
 
       - name: Convert data
         working-directory: ghost/core
-        run: |
+        run: >
           jq '[{ name: "Boot time", unit: "s", value: .results[0].median, range: ((.results[0].max - .results[0].min) | tostring) }]' < boot-perf.json > boot-perf-formatted.json
 
       - name: Run analysis
-        uses: benchmark-action/github-action-benchmark@v1.18.0
+        uses: benchmark-action/github-action-benchmark@7040501
         with:
           tool: 'customSmallerIsBetter'
           output-file-path: ghost/core/boot-perf-formatted.json
@@ -412,18 +442,23 @@ jobs:
           auto-push: true
 
   job_unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [job_get_metadata, job_install_deps]
     if: needs.job_get_metadata.outputs.changed_any_code == 'true'
     strategy:
       matrix:
         node: [ '18.12.1', '20.11.1' ]
     name: Unit tests (Node ${{ matrix.node }})
+    permissions:
+      actions: write
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@9bb5618
         with:
           fetch-depth: 100
-      - uses: actions/setup-node@v4
+      - name: Setup node version ${{matrix.node}}
+        uses: actions/setup-node@60edb5d
         env:
           FORCE_COLOR: 0
         with:
@@ -434,15 +469,18 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: yarn nx affected -t test:unit --base=${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
+      - name: Run tests
+        run: yarn nx affected -t test:unit --base=${{ needs.job_get_metadata.outputs.BASE_COMMIT }}
 
-      - uses: actions/upload-artifact@v4
-        if: startsWith(matrix.node, '18')
+      - name: Upload test coverage
+        uses: actions/upload-artifact@a8a3f3a
+        if: startsWith(matrix.node, '18') && github.repository == 'tryghost/ghost'
         with:
           name: unit-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - name: Create slack notification
+        uses: tryghost/actions/actions/slack-build@a722008
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -450,7 +488,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_database-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [job_get_metadata, job_install_deps]
     if: needs.job_get_metadata.outputs.changed_core == 'true'
     strategy:
@@ -468,9 +506,14 @@ jobs:
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Database tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
+    timeout-minutes: 15
+    permissions:
+      actions: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@9bb5618
+      - name: Setup node ${{matrix.node}}
+        uses: actions/setup-node@60edb5d
         env:
           FORCE_COLOR: 0
         with:
@@ -480,7 +523,8 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql8'
 
-      - uses: daniellockyer/mysql-action@main
+      - name: Setup mysql database
+        uses: daniellockyer/mysql-action@93e477e
         if: matrix.env.DB == 'mysql8'
         with:
           authentication plugin: 'caching_sha2_password'
@@ -494,7 +538,7 @@ jobs:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
       - name: Record start time
-        run: date +%s > ${{ runner.temp }}/startTime # Get start time for test suite
+        run: date +%s > ${{ runner.temp }}/startTime  # Get start time for test suite
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
@@ -513,14 +557,16 @@ jobs:
         run: yarn test:ci:integration
 
       # Get runtime in seconds for test suite
-      - name: Record test duration
-        run: |
-          startTime="$(cat ${{ runner.temp }}/startTime)"
-          endTime="$(date +%s)"
-          echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
+      - name: Record start time
+        run: echo "startTime="$(cat ${{ runner.temp }}/startTime)"" >> $GITHUB_ENV
+      - name: Record end time
+        run: echo "endTime="$(date +%s)"" >> GITHUB_ENV
+      - name: Calculate test time
+        run: echo "test_time=$(($endTime-$startTime))" >> $GITHUB_ENV
 
-      - uses: actions/upload-artifact@v4
-        if: startsWith(matrix.node, '18') && contains(matrix.env.DB, 'mysql')
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@a8a3f3a
+        if: startsWith(matrix.node, '18') && contains(matrix.env.DB, 'mysql') && github.repository == 'tryghost/ghost'
         with:
           name: e2e-coverage
           path: |
@@ -533,14 +579,14 @@ jobs:
         timeout-minutes: 2
         continue-on-error: true
         if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
-        uses: tailscale/github-action@v1
+        uses: tailscale/github-action@bf5e14e
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
       # Report time taken to metrics service
       # Continue on error if previous TailScale step fails
       - name: Store test duration
-        uses: tryghost/actions/actions/trigger-metric@main
+        uses: tryghost/actions/actions/trigger-metric@a722008
         timeout-minutes: 1
         continue-on-error: true
         if: (github.event_name == 'push' && github.repository_owner == 'TryGhost') || (github.event_name == 'pull_request' && startsWith(github.head_ref, 'TryGhost/'))
@@ -563,7 +609,8 @@ jobs:
               }
             }
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - name: Create slack notification
+        uses: tryghost/actions/actions/slack-build@a722008
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -571,9 +618,12 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_regression-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [job_get_metadata, job_install_deps]
     if: needs.job_get_metadata.outputs.changed_core == 'true'
+    permissions:
+      actions: read
+    timeout-minutes: 5
     strategy:
       matrix:
         include:
@@ -590,10 +640,12 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Regression tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@9bb5618
         with:
           submodules: true
-      - uses: actions/setup-node@v4
+      - name: Setup node ${{matrix.node}}
+        uses: actions/setup-node@60edb5d
         env:
           FORCE_COLOR: 0
         with:
@@ -603,7 +655,8 @@ jobs:
         run: sudo service mysql stop
         if: matrix.env.DB == 'mysql8'
 
-      - uses: daniellockyer/mysql-action@main
+      - name: Setup mysql database
+        uses: daniellockyer/mysql-action@93e477e
         if: matrix.env.DB == 'mysql8'
         with:
           authentication plugin: 'caching_sha2_password'
@@ -628,7 +681,8 @@ jobs:
         working-directory: ghost/core
         run: yarn test:ci:regression
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - name: Create slack notification
+        uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -636,15 +690,20 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_admin_x_settings:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [job_get_metadata, job_install_deps]
     if: needs.job_get_metadata.outputs.changed_admin_x_settings == 'true'
     name: Admin-X Settings tests
     env:
       CI: true
+    timeout-minutes: 8
+    permissions:
+      actions: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@9bb5618
+      - name: Setup node 18.12.1
+        uses: actions/setup-node@60edb5d
         env:
           FORCE_COLOR: 0
         with:
@@ -658,7 +717,7 @@ jobs:
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
+      - uses: actions/cache@e12d46a
         name: Check if Playwright browser is cached
         id: playwright-cache
         with:
@@ -666,22 +725,24 @@ jobs:
           key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
       - name: Install Playwright browser if not cached
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
+        run: npx playwright@1.43.0 install --with-deps
       - name: Install OS dependencies of Playwright if cache hit
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - run: yarn nx run @tryghost/admin-x-settings:test:acceptance
+      - name: Run admin settings test
+        run: yarn nx run @tryghost/admin-x-settings:test:acceptance
 
       - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
+        if: always() && github.repository == 'tryghost/ghost'
+        uses: actions/upload-artifact@a8a3f3a
         with:
           name: admin-x-settings-playwright-report
           path: apps/admin-x-settings/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - name: Create slack notification
+        uses: tryghost/actions/actions/slack-build@main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -689,15 +750,20 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_comments_ui:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [job_get_metadata, job_install_deps]
     if: needs.job_get_metadata.outputs.changed_comments_ui == 'true'
     name: Comments-UI tests
+    timeout-minutes: 3
+    permissions:
+      actions: write
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@9bb5618
+      - name: Setup node 18.12.1
+        uses: actions/setup-node@60edb5d
         env:
           FORCE_COLOR: 0
         with:
@@ -711,7 +777,7 @@ jobs:
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
+      - uses: actions/cache@e12d46a
         name: Check if Playwright browser is cached
         id: playwright-cache
         with:
@@ -719,22 +785,24 @@ jobs:
           key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
       - name: Install Playwright browser if not cached
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
+        run: npx playwright@1.43.0 install --with-deps
       - name: Install OS dependencies of Playwright if cache hit
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - run: yarn nx run @tryghost/comments-ui:test
+      - name: Run comments-ui tests
+        run: yarn nx run @tryghost/comments-ui:test
 
       - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
+        if: always() && github.repository == 'tryghost/ghost'
+        uses: actions/upload-artifact@a8a3f3a
         with:
           name: comments-ui-playwright-report
           path: apps/comments-ui/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - name: Create slack notifications
+        uses: tryghost/actions/actions/slack-build@a722008
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -742,15 +810,20 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_signup_form:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [job_get_metadata, job_install_deps]
     if: needs.job_get_metadata.outputs.changed_signup_form == 'true'
     name: Signup-form tests
+    timeout-minutes: 3
+    permissions:
+      actions: write
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@9bb5618
+      - name: Setup node 18.12.1
+        uses: actions/setup-node@60edb5d
         env:
           FORCE_COLOR: 0
         with:
@@ -764,7 +837,7 @@ jobs:
       - name: Get Playwright version
         id: playwright-version
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
+      - uses: actions/cache@e12d46a
         name: Check if Playwright browser is cached
         id: playwright-cache
         with:
@@ -772,22 +845,24 @@ jobs:
           key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
       - name: Install Playwright browser if not cached
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
+        run: npx playwright@1.43.0 install --with-deps
       - name: Install OS dependencies of Playwright if cache hit
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - run: yarn nx run @tryghost/signup-form:test:e2e
+      - name: Run signup-form tests
+        run: yarn nx run @tryghost/signup-form:test:e2e
 
       - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
+        if: always() && github.repository == 'tryghost/ghost'
+        uses: actions/upload-artifact@a8a3f3a
         with:
           name: signup-form-playwright-report
           path: apps/signup-form/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - name: Create slack notification
+        uses: tryghost/actions/actions/slack-build@a722008
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -798,13 +873,17 @@ jobs:
     name: Ghost-CLI tests
     needs: [job_get_metadata, job_install_deps]
     if: needs.job_get_metadata.outputs.changed_core == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions: {}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@9bb5618
         with:
           fetch-depth: 0
           submodules: true
-      - uses: actions/setup-node@v4
+      - name: Setup node 16.14.0
+        uses: actions/setup-node@60edb5d
         env:
           FORCE_COLOR: 0
         with:
@@ -818,48 +897,54 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_install_deps.outputs.dependency_cache_key }}
 
-      - run: npm --no-git-tag-version version minor # We need to artificially bump the minor version to get migrations to run
+      - name: Bump minor version
+        run: npm --no-git-tag-version version minor  # We need to artificially bump the minor version to get migrations to run
         working-directory: ghost/core
 
-      - run: npm pack
+      - name: run pack
+        run: npm pack
         working-directory: ghost/core
 
-      - run: mv ghost-*.tgz ghost.tgz
+      - name: Move ghost files
+        run: mv ghost-*.tgz ghost.tgz
         working-directory: ghost/core
 
-      - name: Install latest v4
-        run: |
-          DIR=$(mktemp -d)
-          echo "V4_DIR=$DIR" >> $GITHUB_ENV
-          ghost install v4 --local -d $DIR
+      - name: Calculate dir variable
+        run: DIR=$(mktemp -d) >> $GITHUB_ENV
+      - name: Set v4 dir variable
+        run: echo "V4_DIR=$DIR" >> $GITHUB_ENV
+      - name: install latest v4
+        run: ghost install v4 --local -d $DIR
 
-      - uses: actions/setup-node@v4
+      - name: Setup node 18.12.1
+        uses: actions/setup-node@60edb5d
         env:
           FORCE_COLOR: 0
         with:
           node-version: '18.12.1'
 
       - name: Update from v4
-        run: |
-          ghost update -f -d $V4_DIR --archive $(pwd)/ghost/core/ghost.tgz
+        run: ghost update -f -d $V4_DIR --archive $(pwd)/ghost/core/ghost.tgz
 
       - name: Clean Install
-        run: |
-          DIR=$(mktemp -d)
-          ghost install local -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
+        run: ghost install local -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
 
-      - name: Latest Release
-        run: |
-          DIR=$(mktemp -d)
-          ghost install local -d $DIR
-          ghost update -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
+      - name: Install
+        run: ghost install local -d $DIR
+      - name: Update to latest
+        run: ghost update -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
+
+      - name: Check if log files exist
+        id: log_files
+        if: failure()
+        run: echo "exists=$([ -f ~/.ghost/logs/*.log ])" >> $GITHUB_OUTPUT
 
       - name: Print debug logs
-        if: failure()
-        run: |
-          [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
+        if: failure() && steps.log_files.outputs.exists
+        run: cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@main
+      - name: Create slack notification
+        uses: tryghost/actions/actions/slack-build@a722008
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -873,41 +958,44 @@ jobs:
       job_database-tests,
       job_unit-tests
     ]
-    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    runs-on: ubuntu-22.04
+    permissions:
+      actions: read
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@9bb5618
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@9bc31d5
         with:
           name: admin-coverage
 
       - name: Move coverage
         if: contains(needs.job_admin-tests.result, 'success')
-        run: |
-          rsync -av --remove-source-files admin/* ghost/admin
+        run: rsync -av --remove-source-files admin/* ghost/admin
 
       - name: Upload Admin test coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@ab904c4
+        if: github.repository == 'tryghost/ghost'
         with:
           flags: admin-tests
           move_coverage_to_trash: true
 
       - name: Restore E2E coverage
-        if: contains(needs.job_database-tests.result, 'success')
-        uses: actions/download-artifact@v4
+        if: contains(needs.job_database-tests.result, 'success') && github.repository == 'tryghost/ghost'
+        uses: actions/download-artifact@9bc31d5
         with:
           name: e2e-coverage
 
       - name: Move coverage
         if: contains(needs.job_database-tests.result, 'success')
-        run: |
-          rsync -av --remove-source-files core/* ghost/core
+        run: rsync -av --remove-source-files core/* ghost/core
 
       - name: Upload E2E test coverage
-        if: contains(needs.job_database-tests.result, 'success')
-        uses: codecov/codecov-action@v3
+        if: contains(needs.job_database-tests.result, 'success') && github.repository == 'tryghost/ghost'
+        uses: codecov/codecov-action@ab904c4
         with:
           flags: e2e-tests
           move_coverage_to_trash: true
@@ -931,34 +1019,39 @@ jobs:
         job_signup_form,
       ]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    permissions: {}
+    timeout-minutes: 1
     steps:
       - name: Output needs
         run: echo "${{ toJson(needs) }}"
 
       - name: Check if any required jobs failed or been cancelled
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
-        run: |
-          echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
+        run: echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it."
+      - name: Quit job with failure if any required job failed or cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
 
   canary:
     needs: [
       job_get_metadata,
       job_required_tests
     ]
+    timeout-minutes: 30
     name: Canary
-    runs-on: ubuntu-latest
+    permissions: {}
+    runs-on: ubuntu-22.04
     if: always() && needs.job_get_metadata.outputs.is_canary_branch == 'true' && needs.job_required_tests.result == 'success' && needs.job_get_metadata.result == 'success'
     steps:
       - name: Output needs (for debugging)
         run: echo "${{ toJson(needs) }}"
 
       - name: Set env variables
-        run: |
-          echo "CANARY_BUILD_INPUTS={\"version\":\"canary\",\"environment\":\"staging\"}" >> $GITHUB_ENV
+        run: echo "CANARY_BUILD_INPUTS={\"version\":\"canary\",\"environment\":\"staging\"}" >> $GITHUB_ENV
 
       - name: Invoke build
-        uses: aurelien-baudet/workflow-dispatch@v2
+        uses: aurelien-baudet/workflow-dispatch@93e95b1
         with:
           token: ${{ secrets.CANARY_DOCKER_BUILD }}
           workflow: .github/workflows/deploy-optimised.yml
