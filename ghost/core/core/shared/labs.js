@@ -34,6 +34,8 @@ const BETA_FEATURES = [
     'additionalPaymentMethods',
     'i18n',
     'activitypub',
+    'internalLinking',
+    'stripeAutomaticTax',
     'webmentions'
 ];
 
@@ -43,7 +45,6 @@ const ALPHA_FEATURES = [
     'urlCache',
     'lexicalMultiplayer',
     'websockets',
-    'stripeAutomaticTax',
     'emailCustomization',
     'mailEvents',
     'collectionsCard',
@@ -51,8 +52,7 @@ const ALPHA_FEATURES = [
     'importMemberTier',
     'lexicalIndicators',
     'adminXDemo',
-    'membersSpamPrevention',
-    'internalLinking'
+    'membersSpamPrevention'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
