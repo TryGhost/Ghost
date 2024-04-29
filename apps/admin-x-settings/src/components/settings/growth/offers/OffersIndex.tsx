@@ -282,15 +282,15 @@ export const OffersIndexModal = () => {
                 <EmptyState
                     buttonAction={() => updateRoute('offers/new')}
                     buttonLabel='Create an offer'
-                    description='Your active offers will show up here. Get started by creating your first offer!'
+                    description='Grow your audience with discounts or free trials.'
                 /> :
                 null
             }
             {selectedTab === 'archived' && archivedOffers.length === 0 && !isFetchingOffers ?
                 <EmptyState
                     buttonAction={() => setSelectedTab('active')}
-                    buttonLabel='See active offers'
-                    description='Your archived offers will show up here. Visit the active offers section to manage them.'
+                    buttonLabel='Back to active'
+                    description='All archived offers will be shown here.'
                 /> :
                 null
             }
