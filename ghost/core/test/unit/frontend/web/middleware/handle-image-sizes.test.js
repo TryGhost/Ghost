@@ -294,6 +294,47 @@ describe('handleImageSizes middleware', function () {
             });
         });
 
+        it('redirects if timeout is exceeded', function (done) {
+            sinon.stub(imageTransform, 'canTransformFiles').returns(true);
+
+            dummyStorage.exists = async function () {
+                return false;
+            };
+
+            dummyStorage.read = async function () {
+                return buffer;
+            };
+
+            const error = new Error('Resize timeout');
+            error.code = 'IMAGE_PROCESSING';
+
+            resizeFromBufferStub.throws(error);
+
+            const fakeReq = {
+                url: '/size/w1000/blank.png',
+                originalUrl: '/blog/content/images/size/w1000/blank.png'
+            };
+
+            const fakeRes = {
+                redirect(url) {
+                    try {
+                        url.should.equal('/blog/content/images/blank.png');
+                    } catch (e) {
+                        return done(e);
+                    }
+                    done();
+                },
+                setHeader() {}
+            };
+
+            handleImageSizes(fakeReq, fakeRes, function next(err) {
+                if (err) {
+                    return done(err);
+                }
+                done(new Error('Should not have called next'));
+            });
+        });
+
         it('continues if file exists', function (done) {
             dummyStorage.exists = async function (path) {
                 if (path === '/size/w1000/blank.png') {
@@ -526,7 +567,12 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    resizeFromBufferStub.calledOnceWithExactly(buffer, {withoutEnlargement: false, width: 1000, format: 'png'}).should.be.true();
+                    resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                        withoutEnlargement: false,
+                        width: 1000,
+                        format: 'png',
+                        timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
+                    }).should.be.true();
                     typeStub.calledOnceWithExactly('png').should.be.true();
                 } catch (e) {
                     return done(e);
@@ -561,7 +607,12 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    resizeFromBufferStub.calledOnceWithExactly(buffer, {withoutEnlargement: true, width: 1000, format: 'webp'}).should.be.true();
+                    resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                        withoutEnlargement: true,
+                        width: 1000,
+                        format: 'webp',
+                        timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
+                    }).should.be.true();
                     typeStub.calledOnceWithExactly('webp').should.be.true();
                 } catch (e) {
                     return done(e);
@@ -596,7 +647,12 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    resizeFromBufferStub.calledOnceWithExactly(buffer, {withoutEnlargement: true, width: 1000, format: 'avif'}).should.be.true();
+                    resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                        withoutEnlargement: true,
+                        width: 1000,
+                        format: 'avif',
+                        timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
+                    }).should.be.true();
                     typeStub.calledOnceWithExactly('image/avif').should.be.true();
                 } catch (e) {
                     return done(e);
@@ -631,7 +687,12 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    resizeFromBufferStub.calledOnceWithExactly(buffer, {withoutEnlargement: true, width: 1000, format: 'webp'}).should.be.true();
+                    resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                        withoutEnlargement: true,
+                        width: 1000,
+                        format: 'webp',
+                        timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
+                    }).should.be.true();
                     typeStub.calledOnceWithExactly('webp').should.be.true();
                 } catch (e) {
                     return done(e);
@@ -666,7 +727,12 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    resizeFromBufferStub.calledOnceWithExactly(buffer, {withoutEnlargement: true, width: 1000, format: 'gif'}).should.be.true();
+                    resizeFromBufferStub.calledOnceWithExactly(buffer, {
+                        withoutEnlargement: true,
+                        width: 1000,
+                        format: 'gif',
+                        timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
+                    }).should.be.true();
                     typeStub.calledOnceWithExactly('gif').should.be.true();
                 } catch (e) {
                     return done(e);
