@@ -38,11 +38,11 @@
   },
   "dependencies": {
     "@codemirror/lang-html": "^6.4.5",
-    "@tryghost/color-utils": "0.2.0",
+    "@tryghost/color-utils": "0.2.2",
     "@tryghost/kg-unsplash-selector": "^0.1.11",
     "@tryghost/limit-service": "^1.2.10",
     "@tryghost/nql": "0.12.1",
-    "@tryghost/timezone-data": "0.4.1",
+    "@tryghost/timezone-data": "0.4.3",
     "react": "18.3.0",
     "react-dom": "18.3.0",
     "validator": "7.2.0"
