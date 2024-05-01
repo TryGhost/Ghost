@@ -19,6 +19,12 @@ describe('EventRepository', function () {
             });
         });
 
+        it('throws when using invalid filter', function () {
+            should.throws(() => {
+                eventRepository.getNQLSubset('undefined');
+            }, errors.BadRequestError);
+        });
+
         it('throws when using properties that aren\'t in the allowlist', function () {
             should.throws(() => {
                 eventRepository.getNQLSubset('(types:1)');
