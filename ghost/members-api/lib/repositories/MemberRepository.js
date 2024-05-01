@@ -548,6 +548,14 @@ module.exports = class MemberRepository {
 
         for (const productId of productsToAdd) {
             const product = await this._productRepository.get({id: productId}, sharedOptions);
+            if (!product) {
+                throw new errors.BadRequestError({
+                    message: tpl(messages.productNotFound, {
+                        id: productId
+                    })
+                });
+            }
+
             if (product.get('active') !== true) {
                 throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
             }

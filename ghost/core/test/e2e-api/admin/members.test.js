@@ -1740,6 +1740,29 @@ describe('Members API', function () {
         should.deepEqual(memberWithPaidSubscription, readMember, 'Editing a member returns a different format than reading a member');
     });
 
+    it('Cannot add unknown tiers to a member', async function () {
+        const memberId = testUtils.DataGenerator.Content.members[0].id;
+        const unknownProductId = 'blahblahid';
+
+        sinon.stub(logging, 'error');
+
+        await agent
+            .put(`/members/${memberId}/`)
+            .body({
+                members: [{
+                    tiers: [{
+                        id: unknownProductId
+                    }]
+                }]
+            })
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
     it('Cannot add complimentary subscriptions to a member with an active subscription', async function () {
         if (!memberWithPaidSubscription) {
             // Previous test failed
