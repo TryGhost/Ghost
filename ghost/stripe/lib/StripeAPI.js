@@ -475,9 +475,7 @@ module.exports = class StripeAPI {
             automatic_tax: {
                 enabled: this._config.enableAutomaticTax
             },
-            customer_update: {
-                address: 'auto'
-            },
+            customer_update: this._config.enableAutomaticTax ? {address: 'auto'} : {},
             metadata,
             discounts,
             /*
@@ -529,9 +527,7 @@ module.exports = class StripeAPI {
             automatic_tax: {
                 enabled: this._config.enableAutomaticTax
             },
-            customer_update: {
-                address: 'auto'
-            },
+            customer_update: this._config.enableAutomaticTax ? {address: 'auto'} : {},
             metadata,
             customer: customer ? customer.id : undefined,
             customer_email: !customer && customerEmail ? customerEmail : undefined,
