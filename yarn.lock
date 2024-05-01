@@ -6894,7 +6894,7 @@
     focus-trap "^6.7.2"
     postcss-preset-env "^7.3.1"
 
-"@tryghost/errors@1.2.26", "@tryghost/errors@1.3.1", "@tryghost/errors@^1.2.26", "@tryghost/errors@^1.2.27", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.3.1":
+"@tryghost/errors@1.2.26", "@tryghost/errors@1.3.1", "@tryghost/errors@^1.2.26", "@tryghost/errors@^1.2.27", "@tryghost/errors@^1.2.3", "@tryghost/errors@^1.3.1", "@tryghost/errors@^1.3.2":
   version "1.3.1"
   resolved "https://registry.npmjs.org/@tryghost/errors/-/errors-1.3.1.tgz#32a00c5e5293c46e54d03a66da871ac34b2ab35c"
   integrity sha512-iZqT0vZ3NVZNq9o1HYxW00k1mcUAC+t5OLiI8O29/uQwAfy7NemY+Cabl9mWoIwgvBmw7l0Z8pHTcXMo1c+xMw==
@@ -7306,12 +7306,21 @@
   dependencies:
     p-wait-for "3.2.0"
 
-"@tryghost/zip@1.1.41", "@tryghost/zip@^1.1.38":
+"@tryghost/zip@1.1.41":
   version "1.1.41"
   resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.41.tgz#bcf9f15047e6d2486d062b7911e4006d00e4fe6a"
   integrity sha512-SYCVdQu3gh/kx3CMMdj4EvMNWu8UURINQdwrZN9/xMpu4hOkFZIwWSA/MG29ZxLDqnqopRf0ZwetSbcsVsS8QQ==
   dependencies:
     "@tryghost/errors" "^1.3.1"
+    archiver "^5.0.0"
+    extract-zip "^2.0.1"
+
+"@tryghost/zip@^1.1.42":
+  version "1.1.42"
+  resolved "https://registry.yarnpkg.com/@tryghost/zip/-/zip-1.1.42.tgz#33f8ebaed17339db89a8b165563709385ed7f041"
+  integrity sha512-liEO01q0vztvcBmCT4m8fDEsDjXHzPOqJlXboMHOw/gTrjUkLVfBTZzooIgERvBRPuw60ICcPTtI2/OhiAoNrw==
+  dependencies:
+    "@tryghost/errors" "^1.3.2"
     archiver "^5.0.0"
     extract-zip "^2.0.1"
 
@@ -18001,10 +18010,10 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha512-+xGQY0YyAWCnqy7Cd++hc2JqMYzlm0dG30Jd0beaA64sROr8C4nt8Yc9V5Ro3avlSUDTN0ulqP/VBKi1/lLygw==
 
-gscan@4.43.0:
-  version "4.43.0"
-  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.43.0.tgz#1711c232c3ff3f431c4e623f509ace347b873fb2"
-  integrity sha512-slk5kFRmvQMj1YwI/yEBe6CsBWAeViZHLki5v7h0w1/raKMwsACfRhp+t7KioGyGR0uvbaI8vb+ICFcy8ARJ7g==
+gscan@4.43.1:
+  version "4.43.1"
+  resolved "https://registry.yarnpkg.com/gscan/-/gscan-4.43.1.tgz#82e7ad14be753143313b8487f7846e1c85762468"
+  integrity sha512-++xxksUOrIljzNYoSzEMsKUDSnXVQJmaFcaWtenEP0xzKnga+i1UR1q3UF3Wf1jD+R/8poCBDcfmu13h+HA54Q==
   dependencies:
     "@sentry/node" "^7.73.0"
     "@tryghost/config" "^0.2.18"
@@ -18014,7 +18023,7 @@ gscan@4.43.0:
     "@tryghost/nql" "^0.12.0"
     "@tryghost/pretty-cli" "^1.2.38"
     "@tryghost/server" "^0.1.37"
-    "@tryghost/zip" "^1.1.38"
+    "@tryghost/zip" "^1.1.42"
     chalk "^4.1.2"
     common-tags "^1.8.2"
     express "^4.18.2"
