@@ -22,7 +22,7 @@ services:
       interval: 1s
       retries: 120
   redis:
-    image: redis:7.2
+    image: redis:7.0
     container_name: ghost-redis
     ports:
       - "6379:6379"
