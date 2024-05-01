@@ -475,6 +475,9 @@ module.exports = class StripeAPI {
             automatic_tax: {
                 enabled: this._config.enableAutomaticTax
             },
+            customer_update: {
+                address: 'auto'
+            },
             metadata,
             discounts,
             /*
@@ -525,6 +528,9 @@ module.exports = class StripeAPI {
             cancel_url: cancelUrl || this._config.checkoutSessionCancelUrl,
             automatic_tax: {
                 enabled: this._config.enableAutomaticTax
+            },
+            customer_update: {
+                address: 'auto'
             },
             metadata,
             customer: customer ? customer.id : undefined,
