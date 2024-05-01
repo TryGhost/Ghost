@@ -777,7 +777,15 @@ module.exports = class EventRepository {
         }
 
         const allowList = ['data.created_at', 'data.member_id', 'data.post_id', 'type', 'id'];
-        const parsed = nql(filter).parse();
+        let parsed;
+        try {
+            parsed = nql(filter).parse();
+        } catch (e) {
+            throw new errors.BadRequestError({
+                message: e.message
+            });
+        }
+
         const keys = getUsedKeys(parsed);
 
         for (const key of keys) {
