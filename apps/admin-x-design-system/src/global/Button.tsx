@@ -3,7 +3,7 @@ import React, {HTMLProps} from 'react';
 import clsx from 'clsx';
 import {LoadingIndicator, LoadingIndicatorColor, LoadingIndicatorSize} from './LoadingIndicator';
 
-export type ButtonColor = 'clear' | 'grey' | 'black' | 'green' | 'red' | 'white' | 'outline';
+export type ButtonColor = 'clear' | 'light-grey' | 'grey' | 'black' | 'green' | 'red' | 'white' | 'outline';
 export type ButtonSize = 'sm' | 'md';
 
 export interface ButtonProps extends Omit<HTMLProps<HTMLButtonElement>, 'label' | 'size' | 'children'> {
@@ -74,6 +74,13 @@ const Button: React.FC<ButtonProps> = ({
             );
             loadingIndicatorColor = 'light';
             iconColorClass = iconColorClass || 'text-white';
+            break;
+        case 'light-grey':
+            className = clsx(
+                link ? 'text-grey-800 hover:text-green-400 dark:text-white' : `bg-grey-200 text-black dark:bg-grey-900 dark:text-white ${!disabled && 'hover:!bg-grey-300 dark:hover:!bg-grey-800'}`,
+                className
+            );
+            loadingIndicatorColor = 'dark';
             break;
         case 'grey':
             className = clsx(

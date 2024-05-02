@@ -89,7 +89,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
             {
                 label,
                 key: 'edit',
-                color: 'grey',
+                color: 'light-grey',
                 size: 'sm',
                 onClick: handleEdit
             }
