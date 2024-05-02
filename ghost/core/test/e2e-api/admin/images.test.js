@@ -1,6 +1,7 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const FormData = require('form-data');
 const p = require('path');
+const fsExtra = require('fs-extra');
 const {promises: fs} = require('fs');
 const assert = require('assert/strict');
 const config = require('../../../core/shared/config');
@@ -300,6 +301,24 @@ describe('Images API', function () {
         });
         await uploadImageCheck({path: originalFilePath, filename: 'a.png', contentType: 'image/png'});
         clock.restore();
+    });
+
+    it('Does not try to delete non-existing file upon invalid request', async function () {
+        sinon.stub(logging, 'error');
+        const unlinkStub = sinon.stub(fsExtra, 'unlink');
+
+        await agent
+            .post('/images/upload/')
+            .body(JSON.stringify({}))
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+
+        // We didn't upload an image, so we shouldn't have called unlink
+        sinon.assert.notCalled(unlinkStub);
     });
 
     it('Does not return HTTP 500 when image processing fails', async function () {
