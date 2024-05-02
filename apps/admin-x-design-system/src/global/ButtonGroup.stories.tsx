@@ -17,7 +17,7 @@ type Story = StoryObj<typeof ButtonGroupMeta>;
 const defaultButtons: ButtonProps[] = [
     {
         label: 'Cancel',
-        key: 'cancel'
+        key: 'cancel' 
     },
     {
         label: 'Save',
@@ -30,6 +30,14 @@ export const Default: Story = {
     args: {
         buttons: defaultButtons,
         link: false
+    }
+};
+
+export const smallButtons: Story = {
+    args: {
+        buttons: defaultButtons,
+        link: false,
+        size: 'sm'
     }
 };
 

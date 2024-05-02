@@ -89,7 +89,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
             {
                 label,
                 key: 'edit',
-                color: 'green',
+                color: 'grey',
                 onClick: handleEdit
             }
         );
@@ -151,18 +151,36 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         styles
     );
 
-    return (
-        <div className={containerClasses} data-testid={testId}>
-            <div ref={ref} className='absolute' id={navid && navid}></div>
-            {customHeader ? customHeader :
-                <SettingGroupHeader beta={beta} description={description} title={title!}>
-                    {customButtons ? customButtons :
-                        (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link linkWithPadding />)}
-                </SettingGroupHeader>
-            }
-            {children}
-        </div>
-    );
+    if (isEditing === false) {
+        return (
+            <div className={containerClasses} data-testid={testId}>
+                <div ref={ref} className='absolute' id={navid && navid}></div>
+                {customHeader ? customHeader :
+                    <SettingGroupHeader beta={beta} description={description} title={title!}>
+                        {customButtons ? customButtons :
+                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link linkWithPadding />)}
+                    </SettingGroupHeader>
+                }
+                {children}
+            </div>
+        );
+    }
+
+    if (isEditing === true) {
+        return (
+            <div className={containerClasses} data-testid={testId}>
+                <div ref={ref} className='absolute' id={navid && navid}></div>
+                {customHeader ? customHeader :
+                    <SettingGroupHeader beta={beta} description={description} title={title!}>
+                        {customButtons ? customButtons :
+                            <ButtonGroup buttons={editButtons} size="sm" />
+                        }
+                    </SettingGroupHeader>
+                }
+                {children}
+            </div>
+        );
+    }
 });
 
 export default SettingGroup;
