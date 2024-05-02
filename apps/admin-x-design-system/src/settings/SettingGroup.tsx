@@ -126,7 +126,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
             {
                 label: 'Save',
                 key: 'save',
-                color: 'green',
+                color: 'light-grey',
                 size: 'sm',
                 onClick: handleSave
             }
