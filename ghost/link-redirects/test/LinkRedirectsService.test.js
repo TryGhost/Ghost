@@ -98,6 +98,7 @@ describe('LinkRedirectsService', function () {
             assert.equal(res.redirect.callCount, 1);
             assert.equal(res.redirect.getCall(0).args[0], 'https://localhost:2368/b');
             assert(res.setHeader.calledWith('X-Robots-Tag', 'noindex, nofollow'));
+            assert(res.setHeader.calledWith('Cache-Control', 'private'));
         });
 
         it('does not redirect if not found', async function () {

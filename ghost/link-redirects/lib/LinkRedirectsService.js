@@ -113,6 +113,8 @@ class LinkRedirectsService {
             DomainEvents.dispatch(event);
 
             res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+            // Don't cache redirects because we want to track the click events
+            res.setHeader('Cache-Control', 'private');
             return res.redirect(link.to.href);
         } catch (e) {
             return next(e);
