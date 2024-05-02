@@ -150,30 +150,29 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         !isEditing ? 'is-not-editing group/setting-group' : 'border-grey-200 shadow-sm',
         styles
     );
-
-    if (isEditing === false) {
+    
+    if (!isEditing) {
         return (
             <div className={containerClasses} data-testid={testId}>
                 <div ref={ref} className='absolute' id={navid && navid}></div>
                 {customHeader ? customHeader :
                     <SettingGroupHeader beta={beta} description={description} title={title!}>
                         {customButtons ? customButtons :
-                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link linkWithPadding />)}
+                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link linkWithPadding />)
+                        }
                     </SettingGroupHeader>
                 }
                 {children}
             </div>
         );
-    }
-
-    if (isEditing === true) {
+    } else {
         return (
             <div className={containerClasses} data-testid={testId}>
                 <div ref={ref} className='absolute' id={navid && navid}></div>
                 {customHeader ? customHeader :
                     <SettingGroupHeader beta={beta} description={description} title={title!}>
                         {customButtons ? customButtons :
-                            <ButtonGroup buttons={editButtons} size="sm" />
+                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} />)
                         }
                     </SettingGroupHeader>
                 }
