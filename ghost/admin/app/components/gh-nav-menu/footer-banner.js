@@ -79,7 +79,7 @@ export default class FooterBanner extends Component {
         event.stopPropagation();
 
         // Dismiss
-        console.log('Dismiss whats new toast!');
+        this.whatsNew.seen();
     }
 
     @action

@@ -9,7 +9,7 @@
     </div>
 {{/if}}
 
-{{!-- {{#if (and this.showWhatsNew this.whatsNew.hasNew)}} --}}
+{{#if (and this.showWhatsNew this.whatsNew.hasNew)}}
     <div class="gh-whatsnew-toast">
         <button class="gh-referral-toast-close" type="button" {{on "click" this.dismissWhatsNewToast}}>&#xd7;</button>
         <button class="gh-whatsnew-toast-container" type="button" {{on "click" (action "openWhatsNewFeatured")}}>
@@ -21,4 +21,4 @@
             <span class="gh-whatsnew-toast-more" type="button" {{on "click" (action "openWhatsNewFeatured")}}><span>Read more &rarr;</span></span>
         </button>
     </div>
-{{!-- {{/if}} --}}
+{{/if}}
