@@ -184,6 +184,43 @@ describe('APIVersionCompatibilityService', function () {
         assert.equal(sendEmail.calledTwice, false);
     });
 
+    it('Does not send email when unknown integration is detected', async function () {
+        const sendEmail = sinon.spy();
+        const findOneStub = sinon.stub();
+
+        findOneStub
+            .withArgs({
+                id: 'unknown_key'
+            }, {
+                withRelated: ['integration']
+            })
+            .resolves(null);
+
+        ApiKeyModel = {
+            findOne: findOneStub
+        };
+
+        const compatibilityService = new APIVersionCompatibilityService({
+            sendEmail,
+            ApiKeyModel,
+            UserModel,
+            settingsService,
+            getSiteUrl,
+            getSiteTitle
+        });
+
+        await compatibilityService.handleMismatch({
+            acceptVersion: 'v4.5',
+            contentVersion: 'v5.1',
+            userAgent: 'GhostAdminSDK/2.4.0',
+            requestURL: 'https://amazeballsghostsite.com/ghost/api/admin/posts/dew023d9203se4',
+            apiKeyValue: 'unknown_key',
+            apiKeyType: 'content'
+        });
+
+        assert.equal(sendEmail.called, false);
+    });
+
     it('Does NOT send an email to the instance owner when "internal" or "core" integration triggered version mismatch', async function () {
         const sendEmail = sinon.spy();
         const findOneStub = sinon.stub();
