@@ -91,12 +91,15 @@ if (sentryConfig && !sentryConfig.disabled) {
         environment = config.get('env');
     }
 
+    /** @type {import('@sentry/node').NodeOptions} */
     const sentryInitConfig = {
         dsn: sentryConfig.dsn,
         release: 'ghost@' + version,
         environment: environment,
         maxValueLength: 1000,
-        integrations: [],
+        integrations: [
+            Sentry.extraErrorDataIntegration()
+        ],
         beforeSend,
         beforeSendTransaction
     };
