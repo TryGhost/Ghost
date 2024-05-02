@@ -78,6 +78,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
 
     styles += ' border-grey-250 dark:border-grey-925';
 
+    // The links visible before editing
     const viewButtons: ButtonProps[] = [];
 
     if (!hideEditButton) {
@@ -106,6 +107,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         );
     }
 
+    // The buttons that show when you are editing 
     const editButtons: ButtonProps[] = [
         {
             label: 'Cancel',
@@ -122,7 +124,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         }
         editButtons.push(
             {
-                label,
+                label: 'Save',
                 key: 'save',
                 color: 'green',
                 size: 'sm',
