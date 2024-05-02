@@ -7103,10 +7103,10 @@
   dependencies:
     semver "^7.3.5"
 
-"@tryghost/koenig-lexical@1.1.6":
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.1.6.tgz#9e431b40ae0d5cc60ead8e679590c04c0a02bd36"
-  integrity sha512-BrUpMIjU4GrtsotruslhrcU2dRuWhpweEYVS19IhDqm/ShFYct6jBEpF7f/qOPgec1fZLuLOdvT6P5WNb08XOw==
+"@tryghost/koenig-lexical@1.1.7":
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.1.7.tgz#1084b873e65c73816c378bf5e801600f43fc7add"
+  integrity sha512-TuxmAJAn+XpY81/gHDaiHI3AHqiYBXRERJUI6bRJkxOIQvaONknV4qwjnbdhePguh4HPYuWpcS0yaJO0F8IIuw==
 
 "@tryghost/limit-service@1.2.14", "@tryghost/limit-service@^1.2.10":
   version "1.2.14"
