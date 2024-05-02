@@ -1,5 +1,13 @@
 import React from 'react';
 
+const Group = ({children}) => {
+    return (
+        <>
+            {children}
+        </>
+    );
+};
+
 /**
  * Renders a list of options, which are selectable by using the up and down arrow keys.
  * You pass in the template for each option via the getItem function, which is called for each option and also passes in whether the item is selected or not.
@@ -61,14 +69,14 @@ export function KeyboardSelectionWithGroups({groups, getItem, getGroup, onSelect
     return (
         <>
             {groups.map((group, groupIndex) => (
-                <div key={group.key}>
+                <Group key={group.label}>
                     {getGroup(group)}
                     {group.items.map((item, index) => {
                         const itemsBefore = groups.slice(0, groupIndex).reduce((sum, prevGroup) => sum + prevGroup.items.length, 0);
                         const absoluteIndex = itemsBefore + index;
                         return getItem(item, absoluteIndex === selectedIndex);
                     })}
-                </div>
+                </Group>
             ))}
         </>
     );

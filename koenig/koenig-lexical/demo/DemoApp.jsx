@@ -204,8 +204,9 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
     function maybeSkipFocusEditor(event) {
         const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
         const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
+        const clickedOnPortal = (event.target.closest('[data-kg-portal]') !== null) || event.target.hasAttribute('data-kg-portal');
 
-        if (clickedOnDecorator || clickedOnSlashMenu) {
+        if (clickedOnDecorator || clickedOnSlashMenu || clickedOnPortal) {
             skipFocusEditor.current = true;
         }
     }
@@ -213,8 +214,9 @@ function DemoComposer({editorType, isMultiplayer, setWordCount, setTKCount}) {
     function focusEditor(event) {
         const clickedOnDecorator = (event.target.closest('[data-lexical-decorator]') !== null) || event.target.hasAttribute('data-lexical-decorator');
         const clickedOnSlashMenu = (event.target.closest('[data-kg-slash-menu]') !== null) || event.target.hasAttribute('data-kg-slash-menu');
+        const clickedOnPortal = (event.target.closest('[data-kg-portal]') !== null) || event.target.hasAttribute('data-kg-portal');
 
-        if (!skipFocusEditor.current && editorAPI && !clickedOnDecorator && !clickedOnSlashMenu) {
+        if (!skipFocusEditor.current && editorAPI && !clickedOnDecorator && !clickedOnSlashMenu && !clickedOnPortal) {
             let editor = editorAPI.editorInstance;
 
             // if a mousedown and subsequent mouseup occurs below the editor

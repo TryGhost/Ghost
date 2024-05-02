@@ -1,55 +1,10 @@
 import CloseIcon from '../../assets/icons/kg-close.svg?react';
 import React from 'react';
-import debounce from 'lodash/debounce';
 import {InputListCopy} from './InputListCopy';
-
-const DEBOUNCE_MS = 200;
-
-function convertSearchResultsToListOptions(results) {
-    return results.map((result) => {
-        const items = result.items.map((item) => {
-            return {
-                label: item.title,
-                value: item.url
-            };
-        });
-
-        return {...result, items};
-    });
-}
+import {useSearchLinks} from '../../hooks/useSearchLinks';
 
 export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange, handleUrlSubmit, hasError, handlePasteAsLink, handleRetry, handleClose, isLoading, searchLinks}) {
-    const [defaultListOptions, setDefaultListOptions] = React.useState([]);
-    const [listOptions, setListOptions] = React.useState([]);
-    const [isSearching, setIsSearching] = React.useState(false);
-
-    const debouncedSearch = React.useMemo(() => {
-        return debounce(async (term) => {
-            setIsSearching(true);
-            const results = await searchLinks(term);
-            setListOptions(convertSearchResultsToListOptions(results));
-            setIsSearching(false);
-        }, DEBOUNCE_MS);
-    }, [searchLinks]);
-
-    // Fetch default search results when first rendering
-    // TODO: feels kinda hacky, check React best practices
-    React.useEffect(() => {
-        const urlMatch = value?.match(/^http.*$/);
-
-        if (!urlMatch) {
-            const fetchDefaultOptions = async () => {
-                setIsSearching(true);
-                const results = await searchLinks();
-                setDefaultListOptions(convertSearchResultsToListOptions(results));
-                setIsSearching(false);
-            };
-
-            fetchDefaultOptions()
-                .catch(console.error); // eslint-disable-line no-console
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const {isSearching, listOptions} = useSearchLinks(value, searchLinks);
 
     React.useEffect(() => {
         const handleKeyDown = (e) => {
@@ -87,15 +42,6 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
 
     const onChangeEvent = async (inputValue) => {
         handleUrlChange(inputValue);
-
-        // disable searching when a URL is entered to avoid unnecessary flashing
-        const urlMatch = value?.match(/^http.*$/);
-
-        if (urlMatch) {
-            setListOptions([]);
-        } else {
-            debouncedSearch(inputValue);
-        }
     };
 
     const onSelectEvent = (selectedValue) => {
@@ -109,16 +55,14 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
         }
     };
 
-    const displayedListOptions = value ? listOptions : defaultListOptions;
-
     return (
         <div className="not-kg-prose" onKeyDown={handleKeyDown}>
             <InputListCopy
                 autoFocus={true}
-                className={`w-full rounded border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 placeholder:text-grey-500 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-950 dark:text-grey-100 dark:placeholder:text-grey-800`}
                 dataTestId={dataTestId}
+                inputClassName={`w-full rounded border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 placeholder:text-grey-500 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-950 dark:text-grey-100 dark:placeholder:text-grey-800`}
                 isLoading={isSearching}
-                listOptions={displayedListOptions}
+                listOptions={listOptions}
                 placeholder={placeholder}
                 value={value}
                 onChange={onChangeEvent}

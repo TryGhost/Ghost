@@ -16,8 +16,8 @@ function Portal({children, to, className}) {
     }
 
     return createPortal(
-        <div className="koenig-lexical" style={{width: 'fit-content'}} onMouseDown={cancelEvents}>
-            <div className={`${darkMode ? 'dark' : ''} ${className}`}>
+        <div className="koenig-lexical" style={{width: 'fit-content'}} data-kg-portal onMouseDown={cancelEvents}>
+            <div className={`${darkMode ? 'dark' : ''} ${className || ''}`}>
                 {children}
             </div>
         </div>,

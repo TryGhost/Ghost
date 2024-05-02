@@ -194,7 +194,7 @@ export function BookmarkNodeComponent({author, nodeKey, url, icon, title, descri
 
     return (
         <>
-            {cardConfig.feature.internalLinking ? LabsBookmarkCard : DefaultBookmarkCard}
+            {cardConfig.feature?.internalLinking ? LabsBookmarkCard : DefaultBookmarkCard}
             <ActionToolbar
                 data-kg-card-toolbar="bookmark"
                 isVisible={showSnippetToolbar}

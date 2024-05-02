@@ -3,7 +3,7 @@ import {DropdownContainerCopy} from './DropdownContainerCopy';
 import {Input} from './Input';
 import {KeyboardSelectionWithGroups} from './KeyboardSelectionWithGroups';
 
-function LoadingItem({dataTestId}) {
+export function InputListLoadingItem({dataTestId}) {
     return (
         <li className={`mb-0 px-4 py-2 text-left`} data-testid={`${dataTestId}-loading`}>
             <span className="block text-sm font-medium leading-tight text-grey-900 dark:text-white">Searching...</span>
@@ -11,7 +11,7 @@ function LoadingItem({dataTestId}) {
     );
 }
 
-function Item({dataTestId, item, selected, onClick}) {
+export function InputListItem({dataTestId, item, selected, onClick}) {
     let selectionClass = '';
 
     if (selected) {
@@ -33,9 +33,9 @@ function Item({dataTestId, item, selected, onClick}) {
     );
 }
 
-function Group({group}) {
+export function InputListGroup({dataTestId, group}) {
     return (
-        <span className="flex items-center justify-between px-4 py-2 text-[1.1rem] font-semibold uppercase tracking-wide text-grey-600">{group.label}</span>
+        <li className="flex items-center justify-between px-4 py-2 text-[1.1rem] font-semibold uppercase tracking-wide text-grey-600" data-test-id={`${dataTestId}-listGroup-${group.label}`}>{group.label}</li>
     );
 }
 
@@ -47,7 +47,7 @@ function Group({group}) {
  * @param {string} [options.list]
  * @returns
  */
-export function InputListCopy({autoFocus, className, dataTestId, listOptions, isLoading, value, placeholder, onChange, onSelect}) {
+export function InputListCopy({autoFocus, className, inputClassName, dataTestId, listOptions, isLoading, value, placeholder, onChange, onSelect}) {
     const [inputFocused, setInputFocused] = React.useState(false);
 
     const onFocus = () => {
@@ -60,13 +60,13 @@ export function InputListCopy({autoFocus, className, dataTestId, listOptions, is
 
     const getItem = (item, selected) => {
         return (
-            <Item key={item.value} dataTestId={dataTestId} item={item} selected={selected} onClick={onSelectEvent}/>
+            <InputListItem key={item.value} dataTestId={dataTestId} item={item} selected={selected} onClick={onSelectEvent}/>
         );
     };
 
     const getGroup = (group) => {
         return (
-            <Group group={group} />
+            <InputListGroup key={group.label} dataTestId={dataTestId} group={group} />
         );
     };
 
@@ -82,10 +82,10 @@ export function InputListCopy({autoFocus, className, dataTestId, listOptions, is
 
     return (
         <>
-            <div className="relative z-0">
+            <div className={`relative z-0 ${className || ''}`}>
                 <Input
                     autoFocus={autoFocus}
-                    className={className}
+                    className={inputClassName}
                     dataTestId={dataTestId}
                     placeholder={placeholder}
                     value={value}
@@ -95,7 +95,7 @@ export function InputListCopy({autoFocus, className, dataTestId, listOptions, is
                 />
                 {showSuggestions &&
                     <DropdownContainerCopy>
-                        {isLoading && <LoadingItem dataTestId={dataTestId}/>}
+                        {isLoading && <InputListLoadingItem dataTestId={dataTestId}/>}
                         <KeyboardSelectionWithGroups
                             getGroup={getGroup}
                             getItem={getItem}
