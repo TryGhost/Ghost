@@ -1926,3 +1926,247 @@
     background: #fff;
     color: #151515;
 }
+
+/* What's new toast notification */
+.gh-whatsnew-toast {
+    position: relative;
+    display: block;
+    padding: 20px 25px 25px;
+    margin-bottom: 25px;
+    color: var(--black);
+    text-decoration: none;
+    background: var(--white);
+    border-radius: 10px;
+    box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.33), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02);
+    transition: all 0.6s ease;
+    cursor: pointer;
+    animation: whatsnew-toast-in;
+    animation-delay: 0s;
+    animation-duration: 0.8s;
+    animation-iteration-count: 1;
+    animation-timing-function: cubic-bezier(0.445, 0.050, 0.550, 0.950);
+}
+
+@keyframes whatsnew-toast-in {
+    0.00% {
+        opacity: 0;
+        transform: translateX(-232.05px);
+    }
+    26.52% {
+        opacity: 0.5;
+        transform: translateX(5.90px);
+    }
+    63.26% {
+        transform: translateX(-1.77px);
+        opacity: 1;
+    }
+    100.00% {
+        transform: translateX(0px);
+    }
+}
+
+.gh-whatsnew-toast:hover {
+    transform: translateY(-2px) scale(1.01);
+    transition: all 0.3s ease;
+}
+
+.gh-whatsnew-toast-columns {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.gh-whats-new-toast-icon {
+    width: 18px;
+    height: 18px;
+    margin-top: -2px;
+    color: var(--yellow);
+}
+
+.gh-whatsnew-toast-subhed {
+    font-size: 13px;
+    color: var(--midgrey);
+}
+
+.gh-whatsnew-toast-container {
+    display: block;
+    text-align: left;
+}
+
+.gh-whatsnew-toast-p {
+    line-height: 1.4em;
+    font-weight: 600;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    font-size: 15px;
+}
+
+.gh-whatsnew-toast-more {
+    color: var(--darkgrey);
+    font-weight: 500;
+}
+
+/* What's featured new modal */
+.gh-whatsnew-modal {
+    max-height: calc(100vh - 12vw);
+    overflow-y: auto;
+}
+
+.gh-whatsnew-featured-feature-image {
+    margin: -32px -32px 32px;
+    max-width: calc(100% + 64px);
+}
+
+.gh-whatsnew-featured-subhead {
+    margin-bottom: 12px;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.gh-whatsnew-featured-date {
+    font-weight: 500;
+    color: var(--midgrey);
+}
+
+.gh-whasnew-featured-title {
+    font-size: 2.8rem;
+}
+
+.gh-whatsnew-featured-excerpt {
+    margin-top: 0;
+    font-size: 1.6rem;
+    line-height: 1.35em;
+}
+
+.gh-whatsnew-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid var(--whitegrey);
+}
+
+.gh-whatsnew-featured-html {
+    margin-top: 24px;
+    line-height: 1.45em;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-card,
+.gh-whatsnew-featured-html .kg-bookmark-card * {
+    box-sizing: border-box;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-card,
+.gh-whatsnew-featured-html .kg-bookmark-publisher {
+    position: relative;
+    /* width: 100%; */
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-card a.kg-bookmark-container,
+.gh-whatsnew-featured-html .kg-bookmark-card a.kg-bookmark-container:hover {
+    display: flex;
+    text-decoration: none;
+    border-radius: 6px;
+    border: 1px solid rgb(124 139 154 / 25%);
+    overflow: hidden;
+    color: inherit;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    flex-basis: 100%;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-title {
+    font-size: 15px;
+    line-height: 1.4em;
+    font-weight: 600;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-description {
+    display: -webkit-box;
+    font-size: 14px;
+    line-height: 1.5em;
+    margin-top: 3px;
+    font-weight: 400;
+    max-height: 44px;
+    overflow-y: hidden;
+    opacity: 0.7;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-metadata {
+    display: flex;
+    align-items: center;
+    margin-top: 22px;
+    width: 100%;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-metadata > *:not(img) {
+    opacity: 0.7;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-author,
+.gh-whatsnew-featured-html .kg-bookmark-publisher {
+    display: inline;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-publisher {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 240px;
+    white-space: nowrap;
+    display: block;
+    line-height: 1.65em;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-metadata > span:nth-of-type(2) {
+    font-weight: 400;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-metadata > span:nth-of-type(2):before {
+    content: "•";
+    margin: 0 6px;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-metadata > span:last-of-type {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-thumbnail {
+    position: relative;
+    flex-grow: 1;
+    min-width: 33%;
+}
+
+.gh-whatsnew-featured-html .kg-bookmark-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 0 2px 2px 0;
+}
+
+.gh-whatsnew-featured-html .kg-card {
+    margin-bottom: 1.5em;
+}

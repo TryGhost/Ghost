@@ -6,7 +6,7 @@
     </button>
     {{/if}}
 
-    <GhReferralInvite @hasThemeErrors={{this.hasThemeErrors}} />
+    <GhNavMenu::FooterBanner @hasThemeErrors={{this.hasThemeErrors}} />
 
     <div class="flex items-center justify-between">
         <div class="pe-all">
@@ -45,12 +45,15 @@
                             <li class="divider" role="separator"></li>
                         {{else}}
                             <li>
-                                <LinkTo @route="whatsnew" @query={{hash entry=null}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="whatsnew">
+                                <button class="dropdown-item" tabindex="-1" data-test-nav="whatsnew" type="button" {{on "click" (action "openWhatsNew")}}>
                                     What's new?
                                     {{#if this.whatsNew.hasNew}}
                                         <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-green br-100"></span></div>
                                     {{/if}}
-                                </LinkTo>
+                                </button>
+                                {{!-- <LinkTo @route="whatsnew" @query={{hash entry=null}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="whatsnew">
+
+                                </LinkTo> --}}
                             </li>
                         {{/if}}
 
