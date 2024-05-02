@@ -1,5 +1,4 @@
-const {agentProvider, mockManager, fixtureManager, matchers, resetRateLimits} = require('../../utils/e2e-framework');
-const {mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
+const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const should = require('should');
 const settingsCache = require('../../../core/shared/settings-cache');
 const DomainEvents = require('@tryghost/domain-events');
@@ -19,7 +18,7 @@ describe('sendMagicLink', function () {
 
     beforeEach(function () {
         mockManager.mockMail();
-        resetRateLimits();
+
         // Reset settings
         settingsCache.set('members_signup_access', {value: 'all'});
     });
@@ -175,7 +174,6 @@ describe('sendMagicLink', function () {
     });
 
     it('triggers email alert for free member signup', async function () {
-        mockLabsDisabled('membersSpamPrevention');
         const email = 'newly-created-user-magic-link-test@test.com';
         await membersAgent.post('/api/send-magic-link')
             .body({
@@ -213,48 +211,8 @@ describe('sendMagicLink', function () {
         });
     });
 
-    it('triggers email alert for free member signup with membersSpamPrevention enabled', async function () {
-        const email = 'newly-created-user-magic-link-test-spam@test.com';
-        await membersAgent.post('/api/send-magic-link')
-            .body({
-                email,
-                emailType: 'signup'
-            })
-            .expectEmptyBody()
-            .expectStatus(201);
-
-        // Check email is sent
-        const mail = mockManager.assert.sentEmail({
-            to: email,
-            subject: /Complete your sign up to Ghost!/
-        });
-
-        // Get link from email
-        const [url] = mail.text.match(/https?:\/\/[^\s]+/);
-        const parsed = new URL(url);
-        const token = parsed.searchParams.get('token');
-
-        // Get member data from token
-        const signinLink = await membersService.api.createMemberFromToken(token);
-
-        // Wait for the dispatched events (because this happens async)
-        await DomainEvents.allSettled();
-        // Check member alert is sent to site owners
-        mockManager.assert.sentEmail({
-            to: 'jbloggs@example.com',
-            subject: /🥳 Free member signup: newly-created-user-magic-link-test-spam@test.com/
-        });
-
-        // Check the signin link is returned correctly
-        const parsedSigninLink = new URL(signinLink);
-        const signinToken = parsedSigninLink.searchParams.get('token');
-        const action = parsedSigninLink.searchParams.get('action');
-        should(action).equal('signin');
-        should(signinToken.length).equal(32);
-    });
-
     it('Converts the urlHistory to the attribution and stores it in the token', async function () {
-        const email = 'newly-created-user-magic-link-test-10@test.com';
+        const email = 'newly-created-user-magic-link-test-2@test.com';
         await membersAgent.post('/api/send-magic-link')
             .body({
                 email,

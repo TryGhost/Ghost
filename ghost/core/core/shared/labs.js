@@ -51,8 +51,7 @@ const ALPHA_FEATURES = [
     'tipsAndDonations',
     'importMemberTier',
     'lexicalIndicators',
-    'adminXDemo',
-    'membersSpamPrevention'
+    'adminXDemo'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
