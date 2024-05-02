@@ -38,7 +38,11 @@ module.exports = function setupMembersApp() {
     // We don't want to add global bodyParser middleware as that interferes with stripe webhook requests on - `/webhooks`.
 
     // Double opt-in subscription handling
-    membersApp.post('/api/member', membersService.api.middleware.createMemberFromToken);
+    membersApp.post(
+        '/api/member',
+        labs.enabledMiddleware('membersSpamPrevention'),
+        membersService.api.middleware.createMemberFromToken
+    );
 
     // Manage newsletter subscription via unsubscribe link
     membersApp.get('/api/member/newsletters', middleware.getMemberNewsletters);
