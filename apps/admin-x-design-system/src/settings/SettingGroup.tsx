@@ -90,6 +90,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
                 label,
                 key: 'edit',
                 color: 'grey',
+                size: 'sm',
                 onClick: handleEdit
             }
         );
@@ -99,6 +100,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
                 label: 'Saved',
                 key: 'edit',
                 color: 'green',
+                size: 'sm',
                 onClick: handleEdit
             }
         );
@@ -108,6 +110,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         {
             label: 'Cancel',
             key: 'cancel',
+            size: 'sm',
             onClick: handleCancel
         }
     ];
@@ -122,6 +125,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
                 label,
                 key: 'save',
                 color: 'green',
+                size: 'sm',
                 onClick: handleSave
             }
         );
