@@ -68,9 +68,9 @@
     "types"
   ],
   "devDependencies": {
-    "@testing-library/react": "14.1.0",
+    "@testing-library/react": "15.0.6",
     "@types/mocha": "10.0.1",
-    "c8": "8.0.1",
+    "c8": "9.1.0",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "mocha": "10.2.0",

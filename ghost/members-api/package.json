@@ -22,12 +22,12 @@
   "devDependencies": {
     "@tryghost/member-attribution": "0.0.0",
     "@types/node-jose": "1.1.13",
-    "c8": "8.0.1",
+    "c8": "9.1.0",
     "jwk-to-pem": "2.0.5",
     "mocha": "10.2.0",
     "nock": "13.3.3",
     "should": "13.2.3",
-    "sinon": "15.2.0"
+    "sinon": "17.0.1"
   },
   "dependencies": {
     "@tryghost/domain-events": "0.0.0",

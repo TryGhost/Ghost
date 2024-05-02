@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.38.1",
-    "@testing-library/react": "14.1.0",
+    "@testing-library/react": "15.0.6",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
     "@types/react": "18.3.1",
@@ -59,7 +59,7 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "eslint-plugin-tailwindcss": "3.13.0",
-    "stylelint": "15.10.3",
+    "stylelint": "16.5.0",
     "vite": "4.5.3",
     "vite-plugin-css-injected-by-js": "^3.3.0",
     "vite-plugin-svgr": "3.3.0",

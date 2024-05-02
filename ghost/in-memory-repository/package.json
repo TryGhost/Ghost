@@ -20,9 +20,9 @@
     "build"
   ],
   "devDependencies": {
-    "c8": "8.0.1",
+    "c8": "9.1.0",
     "mocha": "10.2.0",
-    "sinon": "15.2.0"
+    "sinon": "17.0.1"
   },
   "dependencies": {
     "@tryghost/nql": "0.12.1"

@@ -23,7 +23,7 @@
     "@nestjs/testing": "10.3.8",
     "@types/node": "^20.10.0",
     "@types/sinon": "^17.0.3",
-    "c8": "8.0.1",
+    "c8": "9.1.0",
     "mocha": "10.2.0",
     "reflect-metadata": "0.1.13",
     "sinon": "^17.0.1",
