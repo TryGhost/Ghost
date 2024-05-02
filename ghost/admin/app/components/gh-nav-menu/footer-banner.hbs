@@ -1,4 +1,4 @@
-{{#if this.showReferralInvite}}
+{{!-- {{#if this.showReferralInvite}} --}}
     <div class="gh-referral-toast">
         <button class="gh-referral-toast-close" type="button" {{on "click" this.dismissReferralInvite}}>&#xd7;</button>
         <a href="https://referrals.ghost.org/?ref=admin" target="_blank" rel="noopener noreferrer">
@@ -7,7 +7,7 @@
             <div class="gh-btn gh-btn-black gh-referral-toast-button" type="button"><span>Find out more &rarr;</span></div>
         </a>
     </div>
-{{/if}}
+{{!-- {{/if}} --}}
 
 {{#if (and this.showWhatsNew this.whatsNew.hasNew)}}
     <div class="gh-whatsnew-toast">

@@ -1940,11 +1940,11 @@
     box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.33), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02);
     transition: all 0.6s ease;
     cursor: pointer;
-    animation: whatsnew-toast-in;
+    /* animation: whatsnew-toast-in;
     animation-delay: 0s;
     animation-duration: 0.8s;
     animation-iteration-count: 1;
-    animation-timing-function: cubic-bezier(0.445, 0.050, 0.550, 0.950);
+    animation-timing-function: cubic-bezier(0.445, 0.050, 0.550, 0.950); */
 }
 
 @keyframes whatsnew-toast-in {
@@ -2007,6 +2007,10 @@
 }
 
 /* What's featured new modal */
+.fullscreen-modal-whatsnew {
+    max-width: 640px !important;
+}
+
 .gh-whatsnew-modal {
     max-height: calc(100vh - 12vw);
     overflow-y: auto;
@@ -2043,8 +2047,8 @@
     justify-content: space-between;
     align-items: center;
     margin-top: 32px;
-    padding-top: 32px;
-    border-top: 1px solid var(--whitegrey);
+    /* padding-top: 32px;
+    border-top: 1px solid var(--whitegrey); */
 }
 
 .gh-whatsnew-featured-html {
@@ -2169,4 +2173,50 @@
 
 .gh-whatsnew-featured-html .kg-card {
     margin-bottom: 1.5em;
+}
+
+.gh-whatsnew-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.gh-whasnew-modal-title {
+    font-size: 2.5rem;
+    margin-bottom: 28px;
+}
+
+.gh-whatsnew-modal-entry {
+    display: flex;
+    align-items: top;
+    gap: 24px;
+    color: var(--black);
+}
+
+.gh-whatsnew-modal-entry-featureimage {
+    max-width: 160px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.gh-whatsnew-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 1.4rem;
+}
+
+.gh-whatsnew-modal-content h2 {
+    font-size: 1.7rem;
+    margin: 0;
+}
+
+.gh-whatsnew-modal-content p {
+    line-height: 1.45em;
+    margin: 0;
+}
+
+.gh-whatsnew-modal-content span {
+    color: var(--midgrey);
 }
