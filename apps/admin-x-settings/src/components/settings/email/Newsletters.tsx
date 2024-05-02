@@ -90,7 +90,7 @@ const Newsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     }, [verifyEmailToken, handleError, verifyEmail]);
 
     const buttons = (
-        <Button color='green' label='Add newsletter' link linkWithPadding onClick={() => {
+        <Button color='grey' label='Add newsletter' link linkWithPadding onClick={() => {
             openNewsletterModal();
         }} />
     );

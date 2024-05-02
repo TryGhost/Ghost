@@ -10,7 +10,7 @@ const CodeInjection: React.FC<{ keywords: string[] }> = ({keywords}) => {
             customHeader={
                 <div className='z-10 flex items-start justify-between'>
                     <SettingGroupHeader description='Add custom code to your publication.' title='Code injection' />
-                    <Button color='green' label='Open' link linkWithPadding onClick={() => {
+                    <Button color='grey' label='Open' link linkWithPadding onClick={() => {
                         NiceModal.show(CodeModal);
                     }} />
                 </div>

@@ -11,7 +11,7 @@ const History: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button color='green' label='View history' link linkWithPadding onClick={openHistoryModal}/>}
+            customButtons={<Button color='grey' label='View history' link linkWithPadding onClick={openHistoryModal}/>}
             description="View system event log"
             keywords={keywords}
             navid='history'
