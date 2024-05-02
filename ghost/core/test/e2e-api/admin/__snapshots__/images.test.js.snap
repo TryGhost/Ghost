@@ -90,6 +90,24 @@ Object {
 }
 `;
 
+exports[`Images API Does not try to delete non-existing file upon invalid request 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Please select an image.",
+      "property": null,
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
 exports[`Images API Will error when filename is too long 1: [body] 1`] = `
 Object {
   "errors": Array [

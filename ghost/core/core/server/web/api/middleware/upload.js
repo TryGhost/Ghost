@@ -45,7 +45,13 @@ const messages = {
 const enabledClear = config.get('uploadClear') || true;
 const upload = multer({dest: os.tmpdir()});
 
-const deleteSingleFile = file => fs.unlink(file.path).catch(err => logging.error(err));
+const deleteSingleFile = (file) => {
+    if (!file.path) {
+        return;
+    }
+
+    fs.unlink(file.path).catch(err => logging.error(err));
+};
 
 const single = name => function singleUploadFunction(req, res, next) {
     const singleUpload = upload.single(name);
