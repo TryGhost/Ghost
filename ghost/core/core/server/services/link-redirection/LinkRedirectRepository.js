@@ -159,9 +159,9 @@ module.exports = class LinkRedirectRepository {
 
         if (this.#cache) {
             const cachedLink = await this.#cache.get(from);
+            debug(`getByUrl ${url}: Cache ${cachedLink ? 'HIT' : 'MISS'}`);
             // Cache hit, serve from cache
             if (cachedLink) {
-                debug('Cache hit for', from);
                 return this.#fromSerialized(cachedLink);
             }
         }
@@ -174,8 +174,6 @@ module.exports = class LinkRedirectRepository {
         if (linkRedirectModel) {
             const linkRedirect = this.fromModel(linkRedirectModel);
             if (this.#cache) {
-                debug('Cache miss for', from, '. Caching');
-                // Cache the link
                 this.#cache.set(from, this.#serialize(linkRedirect));
             }
             return linkRedirect;

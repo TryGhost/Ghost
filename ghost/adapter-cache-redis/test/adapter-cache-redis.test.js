@@ -59,6 +59,31 @@ describe('Adapter Cache Redis', function () {
 
             assert.equal(value, 'value from cache');
         });
+
+        it('returns null if getTimeoutMilliseconds is exceeded', async function () {
+            const redisCacheInstanceStub = {
+                get: sinon.stub().callsFake(async () => {
+                    return new Promise((resolve) => {
+                        setTimeout(() => {
+                            resolve('value from cache');
+                        }, 200);
+                    });
+                }),
+                store: {
+                    getClient: sinon.stub().returns({
+                        on: sinon.stub()
+                    })
+                }
+            };
+            const cache = new RedisCache({
+                cache: redisCacheInstanceStub,
+                getTimeoutMilliseconds: 100
+            });
+
+            const value = await cache.get('key');
+            assert.equal(value, null);
+        });
+
         it('can update the cache in the case of a cache miss', async function () {
             const KEY = 'update-cache-on-miss';
             let cachedValue = null;
