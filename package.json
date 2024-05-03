@@ -65,7 +65,8 @@
       "codemirror",
       "faker",
       "ember-cli-code-coverage",
-      "ember-cli-terser"
+      "ember-cli-terser",
+      "eslint"
     ],
     "ignorePaths": [
       "test",
@@ -110,15 +111,15 @@
   "devDependencies": {
     "chalk": "4.1.2",
     "concurrently": "8.2.2",
-    "eslint": "8.44.0",
+    "eslint": "8.57.0",
     "eslint-plugin-ghost": "3.4.0",
     "eslint-plugin-react": "7.33.0",
     "husky": "8.0.3",
+    "inquirer": "8.2.6",
     "lint-staged": "14.0.1",
     "nx": "16.8.1",
     "rimraf": "5.0.5",
     "ts-node": "10.9.2",
-    "typescript": "5.4.5",
-    "inquirer": "8.2.6"
+    "typescript": "5.4.5"
   }
 }
