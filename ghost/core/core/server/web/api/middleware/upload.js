@@ -58,7 +58,8 @@ const single = name => function singleUploadFunction(req, res, next) {
 
     singleUpload(req, res, (err) => {
         if (err) {
-            if (err instanceof multer.MulterError) {
+            // Multer or Dicer errors are usually caused by invalid file uploads
+            if (err instanceof multer.MulterError || err.stack?.includes('dicer')) {
                 return next(new errors.BadRequestError({
                     err
                 }));
@@ -100,7 +101,8 @@ const media = (fileName, thumbName) => function mediaUploadFunction(req, res, ne
 
     mediaUpload(req, res, (err) => {
         if (err) {
-            if (err instanceof multer.MulterError) {
+            // Multer or Dicer errors are usually caused by invalid file uploads
+            if (err instanceof multer.MulterError || err.stack?.includes('dicer')) {
                 return next(new errors.BadRequestError({
                     err
                 }));
