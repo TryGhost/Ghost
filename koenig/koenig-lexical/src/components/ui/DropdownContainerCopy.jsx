@@ -13,10 +13,10 @@ export function DropdownContainerCopy({children}) {
 
     const [placement, setPlacement] = React.useState('bottom');
 
-    let placementClasses = 'mt-1 rounded-md';
+    let placementClasses = 'mt-[.6rem] rounded-md';
 
     if (placement === 'top') {
-        placementClasses = '-translate-y-full rounded-md';
+        placementClasses = 'top-[-.6rem] -translate-y-full rounded-md';
     }
 
     const updatePlacement = () => {
