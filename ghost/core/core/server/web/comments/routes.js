@@ -7,6 +7,9 @@ const shared = require('../shared');
 const bodyParser = require('body-parser');
 const membersService = require('../../../server/services/members');
 
+/**
+ * @returns {import('express').Router}
+ */
 module.exports = function apiRoutes() {
     const router = express.Router('comment api');
     router.use(bodyParser.json({limit: '50mb'}));

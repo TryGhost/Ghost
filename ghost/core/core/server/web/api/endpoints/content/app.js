@@ -9,6 +9,9 @@ const routes = require('./routes');
 const errorHandler = require('@tryghost/mw-error-handler');
 const apiVersionCompatibility = require('../../../../services/api-version-compatibility');
 
+/**
+ * @returns {import('express').Application}
+ */
 module.exports = function setupApiApp() {
     debug('Content API setup start');
     const apiApp = express('content api');
