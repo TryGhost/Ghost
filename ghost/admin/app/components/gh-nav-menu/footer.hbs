@@ -20,7 +20,7 @@
                 <dropdown.Trigger class="outline-0 pointer">
                     <div class="flex-auto flex items-center">
                         <div class="gh-user-avatar relative" style={{background-image-style this.session.user.profileImageUrl}}>
-                            {{#if this.whatsNew.hasNew}}<span class="absolute dib ba b--white br-100 gh-whats-new-badge-account"></span>{{/if}}
+                            {{#if (and this.whatsNew.hasNew (not this.whatsNew.hasNewFeatured))}}<span class="absolute dib ba b--white br-100 gh-whats-new-badge-account"></span>{{/if}}
                         </div>
                         {{svg-jar "arrow-down" class="w3 mr1 fill-darkgrey"}}
                     </div>
@@ -42,7 +42,7 @@
                         {{#if this.session.user.isContributor}}
                             <li>
                                 <LinkTo @route="posts" @query={{hash entry=null}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="posts">
-                                    Posts
+                                    Posts's
                                 </LinkTo>
                             </li>
                             <li>
@@ -54,7 +54,7 @@
                                 <button class="dropdown-item" tabindex="-1" data-test-nav="whatsnew" type="button" {{on "click" (action "openWhatsNew")}}>
                                     What's new?
                                     {{#if this.whatsNew.hasNew}}
-                                        <div class="flex-grow-1 flex justify-end"><span class="dib w2 h2 top-0 right-0 bg-green br-100"></span></div>
+                                        <div class="flex-grow-1 flex justify-end">{{svg-jar "sparkle-fill" class="gh-whatsnew-banner-icon"}}</div>
                                     {{/if}}
                                 </button>
                                 {{!-- <LinkTo @route="whatsnew" @query={{hash entry=null}} class="dropdown-item" @role="menuitem" tabindex="-1" data-test-nav="whatsnew">

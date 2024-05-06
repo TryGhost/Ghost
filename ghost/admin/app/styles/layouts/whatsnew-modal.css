@@ -131,6 +131,10 @@
     color: var(--yellow);
 }
 
+.dropdown-item .gh-whatsnew-banner-icon {
+    margin-right: 0 !important;
+}
+
 
 /* Custom card styles for featured post
 /* ---------------------------------------------------------- */
