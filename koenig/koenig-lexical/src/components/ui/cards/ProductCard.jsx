@@ -37,7 +37,7 @@ export function ProductCard({
     const showButtonInEditMode = isButtonEnabled && isEditing;
     return (
         <>
-            <div className="mx-auto my-4 flex w-full max-w-[550px] flex-col rounded border border-grey/40 p-5 font-sans dark:border-grey/20">
+            <div className="mx-auto my-4 flex w-full max-w-[550px] flex-col rounded-md border border-grey/40 p-5 font-sans dark:border-grey/20">
                 <ProductCardImage
                     imgDragHandler={imgDragHandler}
                     imgMimeTypes={imgMimeTypes}

@@ -40,7 +40,7 @@ export function ToolbarMenu({children, hide, arrowStyles, ...props}) {
     }
 
     return (
-        <ul className="relative m-0 flex items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-md font-normal text-white dark:bg-grey-950" {...props}>
+        <ul className="relative m-0 flex items-center justify-evenly rounded-lg bg-black px-1 py-0 font-sans text-md font-normal text-white dark:bg-grey-950" {...props}>
             {children}
 
             {/* Arrow block. Used div instead of pseudo-element. Arrow requires dynamic values for position,

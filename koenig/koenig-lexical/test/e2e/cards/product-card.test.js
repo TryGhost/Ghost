@@ -52,7 +52,11 @@ test.describe('Product card', async () => {
                     data-kg-card-selected="false"
                     data-kg-card="product">
                     <div>
-                        <div><img src="/content/images/2022/11/koenig-lexical.jpg" /></div>
+                        <div>
+                            <img 
+                                alt="Product thumbnail"
+                                src="/content/images/2022/11/koenig-lexical.jpg" />
+                        </div>
                         <div>
                             <div>
                                 <div>

@@ -20,7 +20,7 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
 
     if (isLoading) {
         return (
-            <div className="flex w-full items-center justify-center rounded border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-900 dark:placeholder:text-grey-800" data-testid={`${dataTestId}-loading-container`}>
+            <div className="flex w-full items-center justify-center rounded-md border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-900 dark:placeholder:text-grey-800" data-testid={`${dataTestId}-loading-container`}>
                 <div className="-ml-1 mr-3 inline-block size-5 animate-spin rounded-full border-4 border-green/20 text-white after:mt-[11px] after:block after:size-1 after:rounded-full after:bg-green/70 after:content-['']" data-testid={`${dataTestId}-loading-spinner`}></div>
             </div>
         );
@@ -60,7 +60,7 @@ export function UrlSearchInput({dataTestId, value, placeholder, handleUrlChange,
             <InputListCopy
                 autoFocus={true}
                 dataTestId={dataTestId}
-                inputClassName={`w-full rounded border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 placeholder:text-grey-500 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-950 dark:text-grey-100 dark:placeholder:text-grey-800`}
+                inputClassName={`w-full rounded-md border border-grey-300 p-2 font-sans text-sm font-normal leading-snug text-grey-900 placeholder:text-grey-500 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-950 dark:text-grey-100 dark:placeholder:text-grey-800`}
                 isLoading={isSearching}
                 listOptions={listOptions}
                 placeholder={placeholder}

@@ -65,7 +65,7 @@ export function Dropdown({value, menu, onChange, dataTestId}) {
     return (
         <div className={`relative ${zIndex} font-sans text-sm font-normal`} data-testid={dataTestId}>
             <button
-                className={`relative w-full cursor-pointer border border-grey-300 px-3 py-2 text-left font-sans font-normal text-grey-900 focus-visible:outline-none dark:border-grey-900 dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800 ${open ? 'rounded-t' : 'rounded'}`}
+                className={`relative w-full cursor-pointer border border-grey-300 px-3 py-2 text-left font-sans font-normal text-grey-900 focus-visible:outline-none dark:border-grey-900 dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800 ${open ? 'rounded-t-md' : 'rounded-md'}`}
                 data-testid={`${dataTestId}-value`}
                 type="button"
                 onBlur={handleBlur}

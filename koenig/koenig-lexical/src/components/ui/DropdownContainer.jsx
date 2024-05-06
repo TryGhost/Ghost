@@ -13,10 +13,10 @@ export function DropdownContainer({children}) {
 
     const [placement, setPlacement] = React.useState('bottom');
 
-    let placementClasses = 'mt-[-2px] rounded-b border-t-0';
+    let placementClasses = 'mt-[-2px] rounded-b-md border-t-0';
 
     if (placement === 'top') {
-        placementClasses = 'top-[2px] -translate-y-full rounded-t border-b-0';
+        placementClasses = 'top-[2px] -translate-y-full rounded-t-md border-b-0';
     }
 
     const updatePlacement = () => {

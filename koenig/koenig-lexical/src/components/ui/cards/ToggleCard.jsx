@@ -15,7 +15,7 @@ export function ToggleCard({
 }) {
     return (
         <>
-            <div className='rounded border border-grey/40 px-6 py-4 dark:border-grey/30'>
+            <div className='rounded-md border border-grey/40 px-6 py-4 dark:border-grey/30'>
                 <div className='flex cursor-text items-start justify-between'>
                     <div className="mr-2 w-full">
                         <KoenigNestedEditor

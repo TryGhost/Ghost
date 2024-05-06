@@ -39,7 +39,7 @@ function EmptyFileCard({handleSelectorClick, fileDragHandler}) {
 function PopulatedFileCard({isEditing, title, titlePlaceholder, desc, descPlaceholder, name, size, handleFileTitle, handleFileDesc, ...args}) {
     return (
         <div>
-            <div className="flex justify-between rounded border border-grey/30 p-2">
+            <div className="flex justify-between rounded-md border border-grey/30 p-2">
                 <div className={`flex w-full flex-col px-2 font-sans ${((title || desc) || isEditing) ? 'justify-between' : 'justify-center'}`} {...args}>
                     {(isEditing || title || desc) && <div className="flex flex-col">
                         {
@@ -70,7 +70,7 @@ function PopulatedFileCard({isEditing, title, titlePlaceholder, desc, descPlaceh
                         <span className="text-grey-700"> • {size}</span>
                     </div>
                 </div>
-                <div className={`!mt-0 flex w-full max-w-[96px] items-center justify-center rounded bg-grey-200 dark:bg-grey-900 ${((title && desc) || isEditing) ? 'h-[96px]' : (title || desc) ? 'h-[64px]' : 'h-[40px]'}`}>
+                <div className={`!mt-0 flex w-full max-w-[96px] items-center justify-center rounded-md bg-grey-200 dark:bg-grey-900 ${((title && desc) || isEditing) ? 'h-[96px]' : (title || desc) ? 'h-[64px]' : 'h-[40px]'}`}>
                     <FileUploadIcon className={`text-green transition-all duration-75 ease-in ${((title || desc) || isEditing) ? 'size-6' : 'size-5'}`} />
                 </div>
             </div>

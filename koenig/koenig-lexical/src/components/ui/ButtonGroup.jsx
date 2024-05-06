@@ -6,7 +6,7 @@ import {usePreviousFocus} from '../../hooks/usePreviousFocus';
 export function ButtonGroup({buttons = [], selectedName, onClick}) {
     return (
         <div className="flex">
-            <ul className="flex items-center justify-evenly rounded bg-grey-100 font-sans text-md font-normal text-white dark:bg-black">
+            <ul className="flex items-center justify-evenly rounded-md bg-grey-100 font-sans text-md font-normal text-white dark:bg-black">
                 {buttons.map(({label, name, Icon, dataTestId}) => (
                     <IconButton
                         key={`${name}-${label}`}
@@ -32,7 +32,7 @@ export function IconButton({dataTestId, onClick, label, name, selectedName, Icon
         <li className="mb-0">
             <button
                 aria-label={label}
-                className={`m-[3px] flex h-7 w-8 cursor-pointer items-center justify-center ${isActive ? 'rounded bg-white text-black shadow-sm dark:bg-grey-900 dark:text-white' : 'text-grey-700 dark:text-white' } ${Icon || 'text-[1.3rem] font-bold'}`}
+                className={`m-[3px] flex h-7 w-8 cursor-pointer items-center justify-center ${isActive ? 'rounded-md bg-white text-black shadow-sm dark:bg-grey-900 dark:text-white' : 'text-grey-700 dark:text-white' } ${Icon || 'text-[1.3rem] font-bold'}`}
                 data-testid={dataTestId}
                 type="button"
                 onClick={handleClick}

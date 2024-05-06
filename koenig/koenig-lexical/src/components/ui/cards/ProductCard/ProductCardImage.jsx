@@ -30,7 +30,7 @@ export function ProductCardImage({
     };
 
     return (
-        <div className="not-kg-prose group relative mb-4 w-full rounded">
+        <div className="not-kg-prose group relative mb-4 w-full rounded-md">
             {
                 showPlaceholder
                     ? (
@@ -58,12 +58,12 @@ export function ProductCardImage({
                     )
                     : (
                         <>
-                            <img className="mx-auto max-h-[100%] rounded object-cover" data-testid="product-card-image" src={imgSrc} />
+                            <img alt="Product thumbnail" className="mx-auto max-h-[100%] rounded-md object-cover" data-testid="product-card-image" src={imgSrc} />
 
                             {
                                 isEditing && (
                                     <>
-                                        <div className="absolute inset-0 rounded bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100"></div>
+                                        <div className="absolute inset-0 rounded-md bg-gradient-to-t from-black/0 via-black/5 to-black/30 opacity-0 transition-all group-hover:opacity-100"></div>
                                     </>
                                 )
                             }

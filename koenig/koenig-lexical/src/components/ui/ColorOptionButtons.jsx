@@ -5,7 +5,7 @@ import {usePreviousFocus} from '../../hooks/usePreviousFocus';
 export function ColorOptionButtons({buttons = [], selectedName, onClick}) {
     return (
         <div className="flex">
-            <ul className="flex w-full items-center justify-between rounded font-sans text-md font-normal text-white">
+            <ul className="flex w-full items-center justify-between rounded-md font-sans text-md font-normal text-white">
                 {buttons.map(({label, name, color}) => (
                     name !== 'image' ?
                         <ColorButton

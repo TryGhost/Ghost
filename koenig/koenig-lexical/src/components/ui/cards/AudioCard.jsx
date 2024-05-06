@@ -96,7 +96,7 @@ function AudioThumbnail({
     if (isDraggedOver) {
         return (
             <div
-                className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-purple"
+                className="group relative flex aspect-square h-20 items-center justify-center rounded-md bg-purple"
                 data-testid="audio-thumbnail-dragover"
             >
                 <p className="font-sans text-sm font-semibold text-white">
@@ -106,14 +106,14 @@ function AudioThumbnail({
         );
     } else if (errors && errors.length > 0) {
         return (
-            <span className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-grey-200 px-1 text-center font-sans text-xs font-semibold leading-snug text-red" data-testid="thumbnail-errors">
+            <span className="group relative flex aspect-square h-20 items-center justify-center rounded-md bg-grey-200 px-1 text-center font-sans text-xs font-semibold leading-snug text-red" data-testid="thumbnail-errors">
                 {errors[0].message}
             </span>
         );
     } else if (src) {
         return (
-            <div className="group relative flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
-                <img alt="Audio thumbnail" className="size-full rounded-sm object-cover transition ease-in" data-testid="audio-thumbnail" src={src} />
+            <div className="group relative flex aspect-square h-20 items-center justify-center rounded-md bg-purple">
+                <img alt="Audio thumbnail" className="size-full rounded-md object-cover transition ease-in" data-testid="audio-thumbnail" src={src} />
                 {isEditing && (
                     <div className="absolute right-2 top-2 flex opacity-0 transition-all group-hover:opacity-100">
                         <IconButton dataTestId='remove-thumbnail' Icon={DeleteIcon} onClick={removeThumbnail} />
@@ -123,13 +123,13 @@ function AudioThumbnail({
         );
     } else if (isUploading) {
         return (
-            <div className="group flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
+            <div className="group flex aspect-square h-20 items-center justify-center rounded-md bg-purple">
                 <ProgressBar bgStyle='transparent' style={progressStyle} />
             </div>
         );
     } else {
         return (
-            <div className="group flex aspect-square h-20 items-center justify-center rounded-sm bg-purple">
+            <div className="group flex aspect-square h-20 items-center justify-center rounded-md bg-purple">
                 <button
                     className="flex size-20 items-center justify-center"
                     data-testid="upload-thumbnail"
@@ -181,7 +181,7 @@ function PopulatedAudioCard({
         <>
             <div
                 ref={thumbnailDragHandler.setRef}
-                className="flex rounded border border-grey/30 p-2"
+                className="flex rounded-md border border-grey/30 p-2"
                 data-testid="audio-card-populated"
             >
                 <AudioThumbnail

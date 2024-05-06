@@ -108,13 +108,13 @@ export function CalloutCard({
 
     return (
         <>
-            <div className={`flex rounded border px-7 py-5 ${CALLOUT_COLORS[color]} `} data-testid={`callout-bg-${color}`}>
+            <div className={`flex rounded-md border px-7 py-5 ${CALLOUT_COLORS[color]} `} data-testid={`callout-bg-${color}`}>
                 <div>
                     {hasEmoji &&
                     <>
                         <button
                             ref={emojiButtonRef}
-                            className={`mr-2 cursor-pointer rounded px-2 text-xl ${isEditing ? 'hover:bg-grey-500/20' : ''} ` }
+                            className={`mr-2 cursor-pointer rounded-md px-2 text-xl ${isEditing ? 'hover:bg-grey-500/20' : ''} ` }
                             data-testid="emoji-picker-button"
                             type="button"
                             onClick={toggleEmojiPicker}

@@ -49,10 +49,10 @@ export function LinkInput({href, update, cancel, arrowStyles}) {
     }, [onEscape]);
 
     return (
-        <div ref={containerRef} className="relative m-0 flex h-[36px] min-w-[240px] items-center justify-evenly rounded bg-black px-1 py-0 font-sans text-sm font-medium dark:bg-grey-950">
+        <div ref={containerRef} className="relative m-0 flex h-[36px] min-w-[240px] items-center justify-evenly rounded-md bg-black px-1 py-0 font-sans text-sm font-medium dark:bg-grey-950">
             <input
                 ref={inputRef}
-                className="mb-[1px] h-auto w-full rounded bg-black pl-3 pr-9 leading-loose text-white selection:bg-grey/40 dark:bg-grey-950"
+                className="mb-[1px] h-auto w-full rounded-md bg-black pl-3 pr-9 leading-loose text-white selection:bg-grey/40 dark:bg-grey-950"
                 data-testid="link-input"
                 placeholder="Enter url"
                 value={_href}

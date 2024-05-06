@@ -18,7 +18,7 @@ export function Button({color, dataTestId, href, size, width, rounded, shrink, v
                 'not-kg-prose inline-block grow cursor-pointer text-center font-sans font-medium',
                 (!shrink && 'shrink-0'), // This is for dynamic buttons that need to wrap onto a new line if width exceeds editor width, such as the ButtonCard
                 width === 'regular' || 'w-full',
-                rounded && 'rounded',
+                rounded && 'rounded-md',
                 value ? 'opacity-100' : 'opacity-50',
                 color === 'white' && 'bg-white text-black',
                 color === 'grey' && 'bg-grey-200 text-black',
