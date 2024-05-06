@@ -44,6 +44,11 @@ module.exports = function queueRequest(
         debug(`Request completed: ${job.data.req.path}`);
     });
 
+    /**
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+     * @param {import('express').NextFunction} next
+     */
     return function queueRequestMw(req, res, next) {
         req.queueDepth = queue.queue.getLength();
 

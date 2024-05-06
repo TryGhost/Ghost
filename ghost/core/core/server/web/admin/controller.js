@@ -20,8 +20,8 @@ const messages = {
  *
  * Every request to the admin panel will re-trigger the update check service.
  *
- * @param req
- * @param res
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
  */
 module.exports = function adminController(req, res) {
     debug('index called');

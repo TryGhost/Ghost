@@ -7,6 +7,9 @@ const mw = require('./middleware');
 const shared = require('../../../shared');
 const labs = require('../../../../../shared/labs');
 
+/**
+ * @returns {import('express').Router}
+ */
 module.exports = function apiRoutes() {
     const router = express.Router('admin api');
 

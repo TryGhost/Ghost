@@ -5,6 +5,9 @@ const {http} = require('@tryghost/api-framework');
 const mw = require('./middleware');
 const config = require('../../../../../shared/config');
 
+/**
+ * @returns {import('express').Router}
+ */
 module.exports = function apiRoutes() {
     const router = express.Router('content api');
 

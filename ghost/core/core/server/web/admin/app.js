@@ -10,6 +10,10 @@ const errorHandler = require('@tryghost/mw-error-handler');
 const sentry = require('../../../shared/sentry');
 const redirectAdminUrls = require('./middleware/redirect-admin-urls');
 
+/**
+ *
+ * @returns {import('express').Application}
+ */
 module.exports = function setupAdminApp() {
     debug('Admin setup start');
     const adminApp = express('admin');

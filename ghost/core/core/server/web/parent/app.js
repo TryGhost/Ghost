@@ -4,6 +4,9 @@ const express = require('../../../shared/express');
 const compress = require('compression');
 const mw = require('./middleware');
 
+/**
+ * @returns {import('express').Application}
+ */
 module.exports = function setupParentApp() {
     debug('ParentApp setup start');
     const parentApp = express('parent');

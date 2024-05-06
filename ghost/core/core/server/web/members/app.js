@@ -16,6 +16,9 @@ const api = require('../../api').endpoints;
 const commentRouter = require('../comments');
 const announcementRouter = require('../announcement');
 
+/**
+ * @returns {import('express').Application}
+ */
 module.exports = function setupMembersApp() {
     debug('Members App setup start');
     const membersApp = express('members');
