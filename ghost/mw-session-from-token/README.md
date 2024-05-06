@@ -23,9 +23,9 @@ const sessionFromTokenMiddleware = require('@tryghost/mw-session-from-token')({
     }
 });
 
-someExpressApp.get('/some/sso/url', someSessionMiddleware, sessionFromTokenMiddleware, (req, res, next) => {
+someExpressApp.get('/some/sso/url', someSessionMiddleware, sessionFromTokenMiddleware, function sessionFromTokenMiddleware(req, res, next) {
     res.redirect('/loggedin');
-}, (err, res, res, next) => {
+}, function nextMw(err, res, res, next) => {
     res.redirect('/error');
 });
 ```
