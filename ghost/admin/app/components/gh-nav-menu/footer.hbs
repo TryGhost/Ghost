@@ -1,9 +1,15 @@
 <div class="gh-nav-bottom">
     {{#if this.hasThemeErrors}}
-    <button type="button" class="gh-footer-toast gh-theme-error-toast" {{on "click" (fn this.openThemeErrors null)}}>
-        <span class="gh-footer-toast-title gh-notification-title">Your theme contains errors</span>
-        <span class="gh-footer-toast-p">Some functionality on your site may be limited &rarr;</span>
-    </button>
+    <div class="gh-sidebar-banner gh-error-banner">
+        <button class="gh-sidebar-banner-container" type="button" {{on "click" (fn this.openThemeErrors null)}}>
+            <div class="gh-sidebar-banner-head">
+                {{svg-jar "warning-fill" class="gh-sidebar-banner-icon"}}
+                <span class="gh-sidebar-banner-subhead">Your theme has errors</span>
+            </div>
+            <p class="gh-sidebar-banner-msg">Some functionality on your site may be limited</p>
+            <span class="gh-btn gh-sidebar-banner-button"><span>See theme errors &rarr;</span></span>
+        </button>
+    </div>
     {{/if}}
 
     <GhNavMenu::FooterBanner @hasThemeErrors={{this.hasThemeErrors}} />

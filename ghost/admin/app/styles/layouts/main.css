@@ -2206,8 +2206,64 @@ section.gh-ds h2 {
     padding: 0 12px;
     font-size: 1.4rem;
     text-align-last: center;
-    height: 40px;
-    line-height: 40px;
+    height: 38px;
+    line-height: 38px;
+}
+
+.gh-sidebar-banner-container {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.gh-sidebar-banner-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.gh-sidebar-banner-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    margin-top: 2px;
+}
+
+.gh-sidebar-banner-subhead {
+    font-size: 14px;
+    color: var(--midgrey);
+    font-weight: 500;
+    line-height: 1.3em;
+}
+
+.gh-sidebar-banner-msg {
+    line-height: 1.4em;
+    font-weight: 600;
+    margin-top: 4px;
+    margin-bottom: 0;
+    font-size: 1.6rem;
+}
+
+.gh-sidebar-banner-msg + .gh-sidebar-banner-button {
+    margin-top: 14px;
+}
+
+.gh-sidebar-banner.gh-error-banner {
+    box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.1), 0px 3px 8px 0px rgba(0, 0, 0, 0.06);
+    margin-bottom: 32px;
+}
+
+.gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-icon {
+    color: var(--red);
+}
+
+.gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-subhead {
+    color: var(--red);
+}
+
+.gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-button {
+    color: var(--white);
+    background-color: var(--red);
 }
 
 .admin-x-container-error {

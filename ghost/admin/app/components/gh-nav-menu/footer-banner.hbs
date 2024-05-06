@@ -9,16 +9,16 @@
     </div>
 {{/if}}
 
-{{!-- {{#if (and this.showWhatsNew this.whatsNew.hasNew)}} --}}
+{{#if (and this.showWhatsNew this.whatsNew.hasNew)}}
     <div class="gh-sidebar-banner gh-whatsnew-toast">
         <button class="gh-sidebar-banner-close" type="button" {{on "click" this.dismissWhatsNewToast}}>&#xd7;</button>
-        <button class="gh-whatsnew-toast-container" type="button" {{on "click" (action "openWhatsNewFeatured")}}>
-            <div class="gh-whatsnew-toast-columns">
-                {{svg-jar "sparkle-fill" class="gh-whatsnew-toast-icon"}}
-                <span class="gh-whatsnew-toast-subhed">What's new?</span>
+        <button class="gh-sidebar-banner-container" type="button" {{on "click" (action "openWhatsNewFeatured")}}>
+            <div class="gh-sidebar-banner-head">
+                {{svg-jar "sparkle-fill" class="gh-sidebar-banner-icon gh-whatsnew-banner-icon"}}
+                <span class="gh-sidebar-banner-subhead">What's new?</span>
             </div>
-            <p class="gh-whatsnew-toast-p">Joining the ActivityPub network</p>
-            <span class="gh-whatsnew-toast-more" type="button" {{on "click" (action "openWhatsNewFeatured")}}><span>Read more &rarr;</span></span>
+            <p class="gh-sidebar-banner-msg">Joining the ActivityPub network</p>
+            <span class="gh-btn gh-sidebar-banner-button"><span>Read more &rarr;</span></span>
         </button>
     </div>
-{{!-- {{/if}} --}}
+{{/if}}

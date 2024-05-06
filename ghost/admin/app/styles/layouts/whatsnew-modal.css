@@ -127,43 +127,8 @@
     height: auto;
 }
 
-
-/* What's new toast notification */
-/* ---------------------------------------------------------- */
-.gh-whatsnew-toast-columns {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.gh-whatsnew-toast-icon {
-    width: 18px;
-    height: 18px;
-    margin-top: -2px;
+.gh-whatsnew-banner-icon {
     color: var(--yellow);
-}
-
-.gh-whatsnew-toast-subhed {
-    font-size: 13px;
-    color: var(--midgrey);
-}
-
-.gh-whatsnew-toast-container {
-    display: block;
-    text-align: left;
-}
-
-.gh-whatsnew-toast-p {
-    line-height: 1.4em;
-    font-weight: 600;
-    margin-top: 12px;
-    margin-bottom: 12px;
-    font-size: 15px;
-}
-
-.gh-whatsnew-toast-more {
-    color: var(--darkgrey);
-    font-weight: 500;
 }
 
 
