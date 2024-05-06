@@ -344,6 +344,31 @@ describe('Images API', function () {
             });
     });
 
+    it('Errors when image request body is broken #2', async function () {
+        // Manually construct a broken request body
+        const blob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==').then(res => res.blob());
+
+        // Note: this differs from above test by not including the boundary at the end of the payload
+        const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n';
+
+        // eslint-disable-next-line no-undef
+        const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, blob.size / 2)], {
+            type: 'multipart/form-data; boundary=boundary'
+        })).text();
+
+        sinon.stub(logging, 'error');
+        await agent
+            .post('/images/upload/')
+            .header('Content-Type', 'multipart/form-data; boundary=boundary')
+            .body(brokenDataBlob)
+            .expectStatus(400)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            });
+    });
+
     it('Does not return HTTP 500 when image processing fails', async function () {
         sinon.stub(imageTransform, 'resizeFromPath').rejects(new Error('Image processing failed'));
 
