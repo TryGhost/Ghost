@@ -58,6 +58,12 @@ const single = name => function singleUploadFunction(req, res, next) {
 
     singleUpload(req, res, (err) => {
         if (err) {
+            if (err instanceof multer.MulterError) {
+                return next(new errors.BadRequestError({
+                    err
+                }));
+            }
+
             return next(err);
         }
         if (enabledClear) {
@@ -94,6 +100,12 @@ const media = (fileName, thumbName) => function mediaUploadFunction(req, res, ne
 
     mediaUpload(req, res, (err) => {
         if (err) {
+            if (err instanceof multer.MulterError) {
+                return next(new errors.BadRequestError({
+                    err
+                }));
+            }
+
             return next(err);
         }
 
