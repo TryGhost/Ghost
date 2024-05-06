@@ -1,9 +1,11 @@
+import crypto from 'crypto';
 import ObjectID from 'bson-objectid';
 import {Entity} from '../../common/entity.base';
 import {ActivityPub} from './types';
 import {Activity} from './activity.object';
 import {Article} from './article.object';
 import {ActivityEvent} from './activity.event';
+import {HTTPSignature} from './http-signature.service';
 
 type ActorData = {
     username: string;
@@ -23,6 +25,12 @@ export class Actor extends Entity<ActorData> {
 
     get outbox() {
         return this.attr.outbox;
+    }
+
+    async sign(request: Request, baseUrl: URL): Promise<Request> {
+        const keyId = new URL(this.getJSONLD(baseUrl).publicKey.id);
+        const key = crypto.createPrivateKey(this.attr.privateKey);
+        return HTTPSignature.sign(request, keyId, key);
     }
 
     private activities: Activity[] = [];
