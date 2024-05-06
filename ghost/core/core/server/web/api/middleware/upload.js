@@ -24,6 +24,10 @@ const messages = {
         missingFile: 'Please select a theme.',
         invalidFile: 'Please select a valid zip file.'
     },
+    members: {
+        missingFile: 'Please select a members CSV file.',
+        invalidFile: 'Please select a valid CSV file.'
+    },
     images: {
         missingFile: 'Please select an image.',
         invalidFile: 'Please select a valid image.'
