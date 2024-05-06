@@ -50,7 +50,7 @@ module.exports = function setupSiteApp(routerConfig) {
     // enable CORS headers (allows admin client to hit front-end when configured on separate URLs)
     siteApp.use(mw.cors);
 
-    siteApp.use(async (req, res, next) => {
+    siteApp.use(async function nestApp(req, res, next) {
         if (labs.isSet('NestPlayground') || labs.isSet('ActivityPub')) {
             const originalExpressApp = req.app;
             const app = await GhostNestApp.getApp();
@@ -112,7 +112,9 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(
         '/members/.well-known',
         shared.middleware.cacheControl('public', {maxAge: config.get('caching:wellKnown:maxAge')}),
-        (req, res, next) => membersService.api.middleware.wellKnown(req, res, next)
+        function lazyWellKnownMw(req, res, next) {
+            return membersService.api.middleware.wellKnown(req, res, next);
+        }
     );
 
     // Recommendations well-known

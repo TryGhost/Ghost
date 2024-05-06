@@ -44,7 +44,7 @@ module.exports = function queueRequest(
         debug(`Request completed: ${job.data.req.path}`);
     });
 
-    return (req, res, next) => {
+    return function queueRequestMw(req, res, next) {
         req.queueDepth = queue.queue.getLength();
 
         // Do not queue requests for static assets - We assume that any path
