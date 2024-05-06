@@ -285,6 +285,26 @@ describe('Resource Not Found', function () {
         });
     });
 
+    it('Returns 406 Request Not Acceptable Error for invalid version', function (done) {
+        const req = {
+            headers: {
+                'accept-version': 'foo'
+            }
+        };
+
+        const res = {
+            locals: {
+                safeVersion: '4.3'
+            }
+        };
+
+        resourceNotFound(req, res, (error) => {
+            assert.equal(error.statusCode, 400);
+            assert.equal(error.message, 'Requested version is not supported.');
+            done();
+        });
+    });
+
     it('Returns 406 Request Not Acceptable Error for when requested version is behind current version', function (done) {
         const req = {
             headers: {
