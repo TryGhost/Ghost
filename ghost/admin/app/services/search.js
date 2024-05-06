@@ -3,7 +3,7 @@ import Service from '@ember/service';
 import {isBlank, isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
-import {task, timeout, waitForProperty} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 
 export default class SearchService extends Service {
     @service ajax;
@@ -59,7 +59,7 @@ export default class SearchService extends Service {
 
         // wait for any on-going refresh to finish
         if (this.refreshContentTask.isRunning) {
-            yield waitForProperty(this, 'refreshContentTask.isIdle');
+            yield this.refreshContentTask.lastRunning;
         }
 
         const searchResult = this._searchContent(term);
