@@ -23,6 +23,28 @@ function extractTags(postAttrs, tags) {
     });
 }
 
+// TODO: handle authors filter
+export function getPosts({posts}, {queryParams}) {
+    let {filter, page, limit} = queryParams;
+
+    page = +page || 1;
+    limit = +limit || 15;
+
+    let statusFilter = extractFilterParam('status', filter);
+
+    let collection = posts.all().filter((post) => {
+        let matchesStatus = true;
+
+        if (!isEmpty(statusFilter)) {
+            matchesStatus = statusFilter.includes(post.status);
+        }
+
+        return matchesStatus;
+    });
+
+    return paginateModelCollection('posts', collection, page, limit);
+}
+
 export default function mockPosts(server) {
     server.post('/posts', function ({posts, users, tags}) {
         let attrs = this.normalizedRequestAttrs();
@@ -38,26 +60,7 @@ export default function mockPosts(server) {
     });
 
     // TODO: handle authors filter
-    server.get('/posts/', function ({posts}, {queryParams}) {
-        let {filter, page, limit} = queryParams;
-
-        page = +page || 1;
-        limit = +limit || 15;
-
-        let statusFilter = extractFilterParam('status', filter);
-
-        let collection = posts.all().filter((post) => {
-            let matchesStatus = true;
-
-            if (!isEmpty(statusFilter)) {
-                matchesStatus = statusFilter.includes(post.status);
-            }
-
-            return matchesStatus;
-        });
-
-        return paginateModelCollection('posts', collection, page, limit);
-    });
+    server.get('/posts/', getPosts);
 
     server.get('/posts/:id/', function ({posts}, {params}) {
         let {id} = params;
