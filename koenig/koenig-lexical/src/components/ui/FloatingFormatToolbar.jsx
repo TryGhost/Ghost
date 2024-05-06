@@ -1,15 +1,12 @@
 import FloatingToolbar from '../../components/ui/FloatingToolbar';
 import FormatToolbar from './FormatToolbar';
 import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
-import Portal from './Portal.jsx';
 import React from 'react';
 import debounce from 'lodash/debounce';
 import {$getSelection, $isRangeSelection, COMMAND_PRIORITY_LOW, DELETE_CHARACTER_COMMAND} from 'lexical';
-import {$getSelectionRangeRect} from '../../utils/$getSelectionRangeRect.js';
 import {LinkActionToolbar} from './LinkActionToolbar.jsx';
 import {LinkActionToolbarCopy} from './LinkActionToolbarCopy.jsx';
 import {SnippetActionToolbar} from './SnippetActionToolbar';
-import {getScrollParent} from '../../utils/getScrollParent.js';
 import {mergeRegister} from '@lexical/utils';
 
 // don't show the toolbar until the mouse has moved a certain distance,
@@ -36,7 +33,6 @@ export function FloatingFormatToolbar({
     const isInternalLinkingEnabled = cardConfig?.feature?.internalLinking || false;
 
     const toolbarRef = React.useRef(null);
-    const linkToolbarRef = React.useRef(null);
     const [arrowStyles, setArrowStyles] = React.useState(null);
 
     const internalLinkingToolbarVisible = toolbarItemType === toolbarItemTypes.link && isInternalLinkingEnabled;
@@ -141,62 +137,6 @@ export function FloatingFormatToolbar({
         };
     }, [editor, showToolbarIfHidden]);
 
-    // position the link input and search results when they open
-    // appears below the selected text, the full-width of the editor canvas
-    const updateLinkToolbarPosition = React.useCallback(() => {
-        if (internalLinkingToolbarVisible) {
-            editor.update(() => {
-                const toolbarElement = linkToolbarRef.current;
-                if (!toolbarElement) {
-                    return;
-                }
-
-                const selection = $getSelection();
-                const rangeRect = $getSelectionRangeRect({editor, selection});
-
-                // setFloatingElemPosition(rangeRect, toolbarElement, anchorElem, {controlOpacity});
-
-                const scrollerElem = anchorElem.parentElement;
-
-                if (!rangeRect || !scrollerElem || !toolbarElement) {
-                    return;
-                }
-
-                const editorScrollerRect = scrollerElem.getBoundingClientRect();
-
-                const top = rangeRect.bottom + 10;
-                const left = editorScrollerRect.left;
-                const right = editorScrollerRect.right;
-
-                toolbarElement.style.top = `${top}px`;
-                toolbarElement.style.left = `${left}px`;
-                toolbarElement.style.width = `${right - left}px`;
-            });
-        }
-    }, [anchorElem, editor, internalLinkingToolbarVisible]);
-
-    React.useEffect(() => {
-        if (internalLinkingToolbarVisible) {
-            updateLinkToolbarPosition();
-        }
-    }, [internalLinkingToolbarVisible, updateLinkToolbarPosition]);
-
-    React.useEffect(() => {
-        const scrollElement = getScrollParent(anchorElem);
-
-        window.addEventListener('resize', updateLinkToolbarPosition);
-        if (scrollElement) {
-            scrollElement.addEventListener('scroll', updateLinkToolbarPosition);
-        }
-
-        return () => {
-            window.removeEventListener('resize', updateLinkToolbarPosition);
-            if (scrollElement) {
-                scrollElement.removeEventListener('scroll', updateLinkToolbarPosition);
-            }
-        };
-    }, [anchorElem, updateLinkToolbarPosition]);
-
     const handleActionToolbarClose = () => {
         setToolbarItemType(null);
     };
@@ -250,14 +190,11 @@ export function FloatingFormatToolbar({
             </FloatingToolbar>
 
             {internalLinkingToolbarVisible && (
-                <Portal>
-                    <div ref={linkToolbarRef} className="not-kg-prose fixed z-[10000]">
-                        <LinkActionToolbarCopy
-                            href={href}
-                            onClose={handleActionToolbarClose}
-                        />
-                    </div>
-                </Portal>
+                <LinkActionToolbarCopy
+                    anchorElem={anchorElem}
+                    href={href}
+                    onClose={handleActionToolbarClose}
+                />
             )}
         </>
     );
