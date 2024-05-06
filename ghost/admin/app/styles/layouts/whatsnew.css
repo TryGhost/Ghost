@@ -1928,48 +1928,6 @@
 }
 
 /* What's new toast notification */
-.gh-whatsnew-toast {
-    position: relative;
-    display: block;
-    padding: 20px 25px 25px;
-    margin-bottom: 25px;
-    color: var(--black);
-    text-decoration: none;
-    background: var(--white);
-    border-radius: 10px;
-    box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.33), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.02);
-    transition: all 0.6s ease;
-    cursor: pointer;
-    /* animation: whatsnew-toast-in;
-    animation-delay: 0s;
-    animation-duration: 0.8s;
-    animation-iteration-count: 1;
-    animation-timing-function: cubic-bezier(0.445, 0.050, 0.550, 0.950); */
-}
-
-@keyframes whatsnew-toast-in {
-    0.00% {
-        opacity: 0;
-        transform: translateX(-232.05px);
-    }
-    26.52% {
-        opacity: 0.5;
-        transform: translateX(5.90px);
-    }
-    63.26% {
-        transform: translateX(-1.77px);
-        opacity: 1;
-    }
-    100.00% {
-        transform: translateX(0px);
-    }
-}
-
-.gh-whatsnew-toast:hover {
-    transform: translateY(-2px) scale(1.01);
-    transition: all 0.3s ease;
-}
-
 .gh-whatsnew-toast-columns {
     display: flex;
     align-items: center;

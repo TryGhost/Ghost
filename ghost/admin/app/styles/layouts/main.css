@@ -2137,8 +2137,8 @@ section.gh-ds h2 {
     background: var(--red);
 }
 
-/* Ghost Referrals invite toast */
-.gh-referral-toast {
+/* Sidebar banners like ghost Referrals invite toast */
+.gh-sidebar-banner {
     position: relative;
     display: block;
     padding: 25px;
@@ -2152,17 +2152,17 @@ section.gh-ds h2 {
     cursor: pointer;
 }
 
-.gh-referral-toast a {
+.gh-sidebar-banner a {
     color: var(--black);
 }
 
-.gh-referral-toast:hover {
+.gh-sidebar-banner:hover {
     transform: translateY(-2px) scale(1.01);
     box-shadow: rgb(75 225 226 / 38%) -7px -4px 42px 10px, rgb(202 103 255 / 42%) 7px 8px 42px 10px;
     transition: all 0.3s ease;
   }
 
-.gh-referral-toast-close {
+.gh-sidebar-banner-close {
     position: absolute;
     top: 7px;
     right: 10px;
@@ -2172,18 +2172,18 @@ section.gh-ds h2 {
     line-height: 1;
 }
 
-.gh-referral-toast-close:hover {
+.gh-sidebar-banner-close:hover {
     color: #15171A;
 }
 
-.gh-referral-toast a > strong {
+.gh-sidebar-banner a > strong {
     display: block;
     margin-bottom: 10px;
     font-size: 1.7rem;
     line-height: 1.2em;
 }
 
-.gh-referral-toast a > p {
+.gh-sidebar-banner a > p {
     margin: 0;
     font-size: 1.5rem;
     line-height: 1.35em;
@@ -2192,17 +2192,17 @@ section.gh-ds h2 {
     color: #666;
 }
 
-.gh-referral-toast a > p strong {
+.gh-sidebar-banner a > p strong {
     color: #ff247d;
 }
 
-.gh-referral-toast-button {
+.gh-sidebar-banner-button {
     margin-top: 20px;
     border-radius: 5px;
     width: 100%;
 }
 
-.gh-referral-toast-button span {
+.gh-sidebar-banner-button span {
     padding: 0 12px;
     font-size: 1.4rem;
     text-align-last: center;

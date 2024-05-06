@@ -1,17 +1,17 @@
-{{!-- {{#if this.showReferralInvite}} --}}
-    <div class="gh-referral-toast">
-        <button class="gh-referral-toast-close" type="button" {{on "click" this.dismissReferralInvite}}>&#xd7;</button>
+{{#if this.showReferralInvite}}
+    <div class="gh-sidebar-banner gh-referral-toast">
+        <button class="gh-sidebar-banner-close" type="button" {{on "click" this.dismissReferralInvite}}>&#xd7;</button>
         <a href="https://referrals.ghost.org/?ref=admin" target="_blank" rel="noopener noreferrer">
             <strong>You qualify for our invite-only referral program.</strong>
             <p class="gh-footer-toast-p">Refer people to Ghost and earn a <strong>30% share</strong> of the subscription revenue, every single month.</p>
-            <div class="gh-btn gh-btn-black gh-referral-toast-button" type="button"><span>Find out more &rarr;</span></div>
+            <div class="gh-btn gh-btn-black gh-sidebar-banner-button" type="button"><span>Find out more &rarr;</span></div>
         </a>
     </div>
-{{!-- {{/if}} --}}
+{{/if}}
 
-{{#if (and this.showWhatsNew this.whatsNew.hasNew)}}
-    <div class="gh-whatsnew-toast">
-        <button class="gh-referral-toast-close" type="button" {{on "click" this.dismissWhatsNewToast}}>&#xd7;</button>
+{{!-- {{#if (and this.showWhatsNew this.whatsNew.hasNew)}} --}}
+    <div class="gh-sidebar-banner gh-whatsnew-toast">
+        <button class="gh-sidebar-banner-close" type="button" {{on "click" this.dismissWhatsNewToast}}>&#xd7;</button>
         <button class="gh-whatsnew-toast-container" type="button" {{on "click" (action "openWhatsNewFeatured")}}>
             <div class="gh-whatsnew-toast-columns">
                 {{svg-jar "sparkle-fill" class="gh-whats-new-toast-icon"}}
@@ -21,4 +21,4 @@
             <span class="gh-whatsnew-toast-more" type="button" {{on "click" (action "openWhatsNewFeatured")}}><span>Read more &rarr;</span></span>
         </button>
     </div>
-{{/if}}
+{{!-- {{/if}} --}}
