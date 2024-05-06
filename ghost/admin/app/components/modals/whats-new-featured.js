@@ -5,7 +5,7 @@ export default class WhatsNewFeatured extends Component {
     @service whatsNew;
 
     static modalOptions = {
-        className: 'fullscreen-modal-action fullscreen-modal-wide fullscreen-modal-whatsnew'
+        className: 'fullscreen-modal-action fullscreen-modal-wide fullscreen-modal-whatsnew-featured'
     };
 
     willDestroy() {

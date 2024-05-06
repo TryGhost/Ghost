@@ -54,6 +54,7 @@
 @import "layouts/content.css";
 @import "layouts/editor.css";
 @import "layouts/whatsnew.css";
+@import "layouts/whatsnew-modal.css";
 @import "layouts/tags.css";
 @import "layouts/members.css";
 @import "layouts/member-activity.css";
