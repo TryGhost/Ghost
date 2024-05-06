@@ -43,7 +43,7 @@ class EmailEventStorage {
                 opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
 
-        await this.#db.knex('email')
+        await this.#db.knex('emails')
             .where('id', '=', event.emailId)
             .update({
                 latest_event_timestamp: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
@@ -60,7 +60,7 @@ class EmailEventStorage {
                 failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
 
-        await this.#db.knex('email')
+        await this.#db.knex('emails')
             .where('id', '=', event.emailId)
             .update({
                 latest_event_timestamp: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')

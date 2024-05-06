@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:email-analytics');
 const db = require('../../../data/db');
 
@@ -46,7 +45,7 @@ module.exports = {
         const startDate = new Date();
 
         // First, try to fetch the max latest_event_timestamp
-        let {maxTimestamp} = await db.knex('email').select(db.knex.raw('MAX(latest_event_timestamp) as maxTimestamp')).first() || {};
+        let {maxTimestamp} = await db.knex('emails').select(db.knex.raw('MAX(latest_event_timestamp) as maxTimestamp')).first() || {};
 
         if (maxTimestamp) {
             if (!(maxTimestamp instanceof Date)) {
