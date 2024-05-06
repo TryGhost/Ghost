@@ -21,6 +21,7 @@ const messages = {
         context: 'Provided client accept-version {acceptVersion} is behind current Ghost version {ghostVersion}.',
         help: 'Try upgrading your Ghost API client.'
     },
+    badVersion: 'Requested version is not supported.',
     actions: {
         images: {
             upload: 'upload image'
@@ -225,45 +226,53 @@ const prepareUserMessage = function prepareUserMessage(err, req) {
 };
 
 module.exports.resourceNotFound = function resourceNotFound(req, res, next) {
-    if (req && req.headers && req.headers['accept-version']
-        && res.locals && res.locals.safeVersion
-        && semver.compare(semver.coerce(req.headers['accept-version']), semver.coerce(res.locals.safeVersion)) !== 0) {
-        const versionComparison = semver.compare(
-            semver.coerce(req.headers['accept-version']),
-            semver.coerce(res.locals.safeVersion)
-        );
-
-        let notAcceptableError;
-        if (versionComparison === 1) {
-            notAcceptableError = new errors.RequestNotAcceptableError({
-                message: tpl(
-                    messages.methodNotAcceptableVersionAhead.message
-                ),
-                context: tpl(messages.methodNotAcceptableVersionAhead.context, {
-                    acceptVersion: req.headers['accept-version'],
-                    ghostVersion: `v${res.locals.safeVersion}`
-                }),
-                help: tpl(messages.methodNotAcceptableVersionAhead.help),
-                code: 'UPDATE_GHOST'
-            });
-        } else {
-            notAcceptableError = new errors.RequestNotAcceptableError({
-                message: tpl(
-                    messages.methodNotAcceptableVersionBehind.message
-                ),
-                context: tpl(messages.methodNotAcceptableVersionBehind.context, {
-                    acceptVersion: req.headers['accept-version'],
-                    ghostVersion: `v${res.locals.safeVersion}`
-                }),
-                help: tpl(messages.methodNotAcceptableVersionBehind.help),
-                code: 'UPDATE_CLIENT'
-            });
+    if (req?.headers?.['accept-version'] && res.locals?.safeVersion) {
+        // Protect against invalid `Accept-Version` headers
+        const acceptVersionSemver = semver.coerce(req.headers['accept-version']);
+        if (!acceptVersionSemver) {
+            return next(new errors.BadRequestError({
+                message: tpl(messages.badVersion)
+            }));
         }
 
-        next(notAcceptableError);
-    } else {
-        next(new errors.NotFoundError({message: tpl(messages.resourceNotFound)}));
+        if (semver.compare(acceptVersionSemver, semver.coerce(res.locals.safeVersion)) !== 0) {
+            const versionComparison = semver.compare(
+                acceptVersionSemver,
+                semver.coerce(res.locals.safeVersion)
+            );
+
+            let notAcceptableError;
+            if (versionComparison === 1) {
+                notAcceptableError = new errors.RequestNotAcceptableError({
+                    message: tpl(
+                        messages.methodNotAcceptableVersionAhead.message
+                    ),
+                    context: tpl(messages.methodNotAcceptableVersionAhead.context, {
+                        acceptVersion: req.headers['accept-version'],
+                        ghostVersion: `v${res.locals.safeVersion}`
+                    }),
+                    help: tpl(messages.methodNotAcceptableVersionAhead.help),
+                    code: 'UPDATE_GHOST'
+                });
+            } else {
+                notAcceptableError = new errors.RequestNotAcceptableError({
+                    message: tpl(
+                        messages.methodNotAcceptableVersionBehind.message
+                    ),
+                    context: tpl(messages.methodNotAcceptableVersionBehind.context, {
+                        acceptVersion: req.headers['accept-version'],
+                        ghostVersion: `v${res.locals.safeVersion}`
+                    }),
+                    help: tpl(messages.methodNotAcceptableVersionBehind.help),
+                    code: 'UPDATE_CLIENT'
+                });
+            }
+
+            return next(notAcceptableError);
+        }
     }
+
+    next(new errors.NotFoundError({message: tpl(messages.resourceNotFound)}));
 };
 
 module.exports.pageNotFound = function pageNotFound(req, res, next) {
