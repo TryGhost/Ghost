@@ -326,14 +326,20 @@ export default class KoenigLexicalEditor extends Component {
             }
 
             // only published posts/pages have URLs
-            const filteredResults = results.map((group) => {
+            const filteredResults = [];
+            results.forEach((group) => {
                 const items = (group.groupName === 'Posts' || group.groupName === 'Pages') ? group.options.filter(i => i.status === 'published') : group.options;
 
-                return {
+                if (items.length === 0) {
+                    return;
+                }
+
+                filteredResults.push({
                     label: group.groupName,
                     items
-                };
+                });
             });
+
             return filteredResults;
         };
 
