@@ -47,16 +47,15 @@ module.exports = function adminController(req, res) {
         }
 
         res.sendFile(templatePath, {headers});
-    } catch (error) {
-        if (error.code === 'ENOENT') {
+    } catch (err) {
+        if (err.code === 'ENOENT') {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.templateError.message, {templatePath}),
                 context: tpl(messages.templateError.context),
                 help: tpl(messages.templateError.help, {link: 'https://ghost.org/docs/install/source/'}),
-                error: error
+                err
             });
-        } else {
-            throw error;
         }
+        throw err;
     }
 };
