@@ -22,6 +22,7 @@ const shared = require('../../server/web/shared');
 const errorHandler = require('@tryghost/mw-error-handler');
 const mw = require('./middleware');
 const labs = require('../../shared/labs');
+const bodyParser = require('body-parser');
 
 const STATIC_IMAGE_URL_PREFIX = `/${urlUtils.STATIC_IMAGE_URL_PREFIX}`;
 const STATIC_MEDIA_URL_PREFIX = `/${constants.STATIC_MEDIA_URL_PREFIX}`;
@@ -49,6 +50,21 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // enable CORS headers (allows admin client to hit front-end when configured on separate URLs)
     siteApp.use(mw.cors);
+
+    const jsonParser = bodyParser.json({
+        type: ['application/activity+json', 'application/ld+json', 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'],
+        // TODO: The @RawBody decorator in nest isn't working without this atm...
+        verify: function (req, res, buf) {
+            req.rawBody = buf;
+        }
+    });
+    siteApp.use(async function nestBodyParser(req, res, next) {
+        if (labs.isSet('NestPlayground') || labs.isSet('ActivityPub')) {
+            jsonParser(req, res, next);
+            return;
+        }
+        return next();
+    });
 
     siteApp.use(async function nestApp(req, res, next) {
         if (labs.isSet('NestPlayground') || labs.isSet('ActivityPub')) {
