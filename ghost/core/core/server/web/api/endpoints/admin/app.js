@@ -35,7 +35,7 @@ module.exports = function setupApiApp() {
     // Routing
     apiApp.use(routes());
 
-    apiApp.use(async (req, res, next) => {
+    apiApp.use(async function nestApp(req, res, next) {
         if (labs.isSet('NestPlayground') || labs.isSet('ActivityPub')) {
             const originalExpressApp = req.app;
             const app = await GhostNestApp.getApp();

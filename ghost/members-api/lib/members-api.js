@@ -317,7 +317,7 @@ module.exports = function MembersAPI({
         return getMemberIdentityData(email);
     }
 
-    const forwardError = fn => async (req, res, next) => {
+    const forwardError = fn => async function forwardErrorMw(req, res, next) {
         try {
             await fn(req, res, next);
         } catch (err) {
