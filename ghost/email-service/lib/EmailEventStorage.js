@@ -23,6 +23,14 @@ class EmailEventStorage {
             .update({
                 delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
+
+        // We need an additional query to set the timestamp in email at latest_event_timestamp
+
+        await this.#db.knex('email')
+            .where('id', '=', event.emailId)
+            .update({
+                latest_event_timestamp: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
+            });
     }
 
     async handleOpened(event) {
@@ -33,6 +41,12 @@ class EmailEventStorage {
             .whereNull('opened_at')
             .update({
                 opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
+            });
+
+        await this.#db.knex('email')
+            .where('id', '=', event.emailId)
+            .update({
+                latest_event_timestamp: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
     }
 
@@ -45,6 +59,13 @@ class EmailEventStorage {
             .update({
                 failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
             });
+
+        await this.#db.knex('email')
+            .where('id', '=', event.emailId)
+            .update({
+                latest_event_timestamp: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
+            });
+
         await this.saveFailure('permanent', event);
     }
 

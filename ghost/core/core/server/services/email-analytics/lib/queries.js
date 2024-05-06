@@ -11,33 +11,70 @@ module.exports = {
         return emailCount && emailCount.count > 0;
     },
 
+    // async getLastSeenEventTimestamp() {
+    //     const startDate = new Date();
+
+    //     // here we will swap out the maxDeliveredAt, maxOpenedAt, maxFailedAt with a single query 
+
+    //     // three separate queries is much faster than using max/greatest (with coalesce to handle nulls) across columns
+    //     let {maxDeliveredAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(delivered_at) as maxDeliveredAt')).first() || {};
+    //     let {maxOpenedAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(opened_at) as maxOpenedAt')).first() || {};
+    //     let {maxFailedAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(failed_at) as maxFailedAt')).first() || {};
+
+    //     if (maxDeliveredAt && !(maxDeliveredAt instanceof Date)) {
+    //         // SQLite returns a string instead of a Date
+    //         maxDeliveredAt = new Date(maxDeliveredAt);
+    //     }
+
+    //     if (maxOpenedAt && !(maxOpenedAt instanceof Date)) {
+    //         // SQLite returns a string instead of a Date
+    //         maxOpenedAt = new Date(maxOpenedAt);
+    //     }
+
+    //     if (maxFailedAt && !(maxFailedAt instanceof Date)) {
+    //         // SQLite returns a string instead of a Date
+    //         maxFailedAt = new Date(maxFailedAt);
+    //     }
+
+    //     const lastSeenEventTimestamp = _.max([maxDeliveredAt, maxOpenedAt, maxFailedAt]);
+    //     debug(`getLastSeenEventTimestamp: finished in ${Date.now() - startDate}ms`);
+
+    //     return lastSeenEventTimestamp;
+    // },
+
     async getLastSeenEventTimestamp() {
         const startDate = new Date();
 
-        // three separate queries is much faster than using max/greatest (with coalesce to handle nulls) across columns
-        let {maxDeliveredAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(delivered_at) as maxDeliveredAt')).first() || {};
-        let {maxOpenedAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(opened_at) as maxOpenedAt')).first() || {};
-        let {maxFailedAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(failed_at) as maxFailedAt')).first() || {};
+        // First, try to fetch the max latest_event_timestamp
+        let {maxTimestamp} = await db.knex('email').select(db.knex.raw('MAX(latest_event_timestamp) as maxTimestamp')).first() || {};
 
-        if (maxDeliveredAt && !(maxDeliveredAt instanceof Date)) {
-            // SQLite returns a string instead of a Date
-            maxDeliveredAt = new Date(maxDeliveredAt);
+        if (maxTimestamp) {
+            if (!(maxTimestamp instanceof Date)) {
+                maxTimestamp = new Date(maxTimestamp);
+            }
+        } else {
+            let {maxDeliveredAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(delivered_at) as maxDeliveredAt')).first() || {};
+            let {maxOpenedAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(opened_at) as maxOpenedAt')).first() || {};
+            let {maxFailedAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(failed_at) as maxFailedAt')).first() || {};
+
+            if (maxDeliveredAt && !(maxDeliveredAt instanceof Date)) {
+                // SQLite returns a string instead of a Date
+                maxDeliveredAt = new Date(maxDeliveredAt);
+            }
+
+            if (maxOpenedAt && !(maxOpenedAt instanceof Date)) {
+                // SQLite returns a string instead of a Date
+                maxOpenedAt = new Date(maxOpenedAt);
+            }
+
+            if (maxFailedAt && !(maxFailedAt instanceof Date)) {
+                // SQLite returns a string instead of a Date
+                maxFailedAt = new Date(maxFailedAt);
+            }
         }
 
-        if (maxOpenedAt && !(maxOpenedAt instanceof Date)) {
-            // SQLite returns a string instead of a Date
-            maxOpenedAt = new Date(maxOpenedAt);
-        }
-
-        if (maxFailedAt && !(maxFailedAt instanceof Date)) {
-            // SQLite returns a string instead of a Date
-            maxFailedAt = new Date(maxFailedAt);
-        }
-
-        const lastSeenEventTimestamp = _.max([maxDeliveredAt, maxOpenedAt, maxFailedAt]);
         debug(`getLastSeenEventTimestamp: finished in ${Date.now() - startDate}ms`);
-
-        return lastSeenEventTimestamp;
+        return maxTimestamp;
     },
 
     async aggregateEmailStats(emailId) {
