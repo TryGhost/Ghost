@@ -3,6 +3,7 @@ import {authenticateSession} from 'ember-simple-auth/test-support';
 import {click, currentURL, find, findAll, triggerKeyEvent, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {getPosts} from '../../mirage/config/posts';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {typeInSearch} from 'ember-power-select/test-support/helpers';
@@ -141,5 +142,27 @@ describe('Acceptance: Search', function () {
         await click('[data-test-button="search"]');
         await typeInSearch('x');
         expect(find('.ember-power-select-option--no-matches-message'), 'no results message').to.contain.text('No results found');
+    });
+
+    // https://linear.app/tryghost/issue/MOM-103/search-stalls-on-query-when-refresh-occurs
+    it('handles refresh on first search being slow', async function () {
+        this.server.get('/posts/', getPosts, {timing: 200});
+
+        await visit('/dashboard');
+        await click('[data-test-button="search"]');
+        await typeInSearch('first'); // search is not case sensitive
+
+        // all groups are present
+        const groupNames = findAll('.ember-power-select-group-name');
+        expect(groupNames, 'group names').to.have.length(4);
+        expect(groupNames.map(el => el.textContent.trim())).to.deep.equal(['Posts', 'Pages', 'Staff', 'Tags']);
+
+        // correct results are found
+        const options = findAll('.ember-power-select-option');
+        expect(options, 'number of search results').to.have.length(4);
+        expect(options.map(el => el.textContent.trim())).to.deep.equal(['First post', 'First page', 'First user', 'First tag']);
+
+        // first item is selected
+        expect(options[0]).to.have.attribute('aria-current', 'true');
     });
 });
