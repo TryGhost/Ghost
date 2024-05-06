@@ -12,6 +12,9 @@ const routes = require('./routes');
 const APIVersionCompatibilityService = require('../../../../services/api-version-compatibility');
 const GhostNestApp = require('@tryghost/ghost');
 
+/**
+ * @returns {import('express').Application}
+ */
 module.exports = function setupApiApp() {
     debug('Admin API setup start');
     const apiApp = express('admin api');

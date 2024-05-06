@@ -156,10 +156,16 @@ const checkFileIsValid = (fileData, types, extensions) => {
  *
  * @param {Object} options
  * @param {String} options.type - type of the file
- * @returns {Function}
+ * @returns {import('express').RequestHandler}
  */
 const validation = function ({type}) {
     // if we finish the data/importer logic, we forward the request to the specified importer
+
+    /**
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+     * @param {import('express').NextFunction} next
+     */
     return function uploadValidation(req, res, next) {
         const extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
         const contentTypes = (config.get('uploads')[type] && config.get('uploads')[type].contentTypes) || [];
@@ -192,7 +198,7 @@ const validation = function ({type}) {
  *
  * @param {Object} options
  * @param {String} options.type - type of the file
- * @returns {Function}
+ * @returns {import('express').RequestHandler}
  */
 const mediaValidation = function ({type}) {
     return function mediaUploadValidation(req, res, next) {
