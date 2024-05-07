@@ -169,7 +169,7 @@
 
 .gh-nav-menu-icon {
     flex-shrink: 0;
-    margin-right: 12px;
+    margin-right: 10px;
     width: 32px;
     height: 32px;
     background-color: transparent;
@@ -436,7 +436,7 @@
 
 /* Icons */
 .gh-nav-list svg {
-    margin-right: 11px;
+    margin-right: 17px;
     width: 16px;
     height: 16px;
     /* fill: var(--midgrey); */
@@ -615,7 +615,7 @@
 
 .gh-nav-view-list a {
     position: relative;
-    padding-left: calc(var(--mainmenu-padding) + 34px);
+    padding-left: calc(var(--mainmenu-padding) + 40px);
 }
 
 .gh-nav-viewname {
