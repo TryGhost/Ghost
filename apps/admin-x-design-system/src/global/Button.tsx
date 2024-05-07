@@ -121,7 +121,7 @@ const Button: React.FC<ButtonProps> = ({
             break;
         default:
             className = clsx(
-                link ? ' text-black hover:text-grey-800 dark:text-white' : `text-black dark:text-white dark:hover:bg-grey-900 ${!disabled && 'hover:bg-grey-200'}`,
+                link ? ' text-black hover:text-grey-800 dark:text-white' : `text-grey-900 dark:text-white dark:hover:bg-grey-900 ${!disabled && 'hover:bg-grey-200 hover:text-black'}`,
                 (outlineOnMobile && !link) && 'border border-grey-300 hover:border-transparent md:border-transparent',
                 className
             );

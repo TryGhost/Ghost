@@ -90,7 +90,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
             {
                 label,
                 key: 'edit',
-                color: 'light-grey',
+                color: 'clear',
                 onClick: handleEdit
             }
         );
@@ -161,7 +161,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
                 {customHeader ? customHeader :
                     <SettingGroupHeader beta={beta} description={description} title={title!}>
                         {customButtons ? customButtons :
-                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : ''} size='sm' link linkWithPadding />)
+                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : '-mr-1 mt-[-5px]'} size='sm' />)
                         }
                     </SettingGroupHeader>
                 }
@@ -175,7 +175,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
                 {customHeader ? customHeader :
                     <SettingGroupHeader beta={beta} description={description} title={title!}>
                         {customButtons ? customButtons :
-                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : ''} size='sm' />)
+                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : '-mr-1 mt-[-5px]'} size='sm' />)
                         }
                     </SettingGroupHeader>
                 }
