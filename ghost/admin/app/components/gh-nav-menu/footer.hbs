@@ -2,12 +2,13 @@
     {{#if this.hasThemeErrors}}
     <div class="gh-sidebar-banner gh-error-banner">
         <button class="gh-sidebar-banner-container" type="button" {{on "click" (fn this.openThemeErrors null)}}>
-            <div class="gh-sidebar-banner-head">
+            <div>
                 {{svg-jar "warning-fill" class="gh-sidebar-banner-icon"}}
-                <span class="gh-sidebar-banner-subhead">Your theme has errors</span>
             </div>
-            <p class="gh-sidebar-banner-msg">Some functionality on your site may be limited</p>
-            <span class="gh-btn gh-sidebar-banner-button"><span>See theme errors &rarr;</span></span>
+            <div>
+                <span class="gh-sidebar-banner-subhead">Your theme has errors</span>
+                <p class="gh-sidebar-banner-msg">Some functionality on your site may be limited &rarr;</p>
+            </div>
         </button>
     </div>
     {{/if}}

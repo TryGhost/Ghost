@@ -169,7 +169,7 @@
 
 .gh-nav-menu-icon {
     flex-shrink: 0;
-    margin-right: 10px;
+    margin-right: 12px;
     width: 32px;
     height: 32px;
     background-color: transparent;
@@ -436,13 +436,17 @@
 
 /* Icons */
 .gh-nav-list svg {
-    margin-right: 17px;
+    margin-right: 11px;
     width: 16px;
     height: 16px;
     /* fill: var(--midgrey); */
     line-height: 1;
     transition: none;
     z-index: 999;
+}
+
+.gh-nav-list-home svg {
+    margin-top: -2px;
 }
 
 .gh-nav-list svg.force-fill path {
@@ -611,7 +615,7 @@
 
 .gh-nav-view-list a {
     position: relative;
-    padding-left: calc(var(--mainmenu-padding) + 40px);
+    padding-left: calc(var(--mainmenu-padding) + 34px);
 }
 
 .gh-nav-viewname {
@@ -2141,8 +2145,8 @@ section.gh-ds h2 {
 .gh-sidebar-banner {
     position: relative;
     display: block;
-    padding: 25px;
-    margin-bottom: 50px;
+    padding: 12px 16px 16px;
+    margin: 0 -7px 32px;
     color: var(--black);
     text-decoration: none;
     background: var(--white);
@@ -2164,8 +2168,8 @@ section.gh-ds h2 {
 
 .gh-sidebar-banner-close {
     position: absolute;
-    top: 7px;
-    right: 10px;
+    top: 4px;
+    right: 8px;
     padding: 5px;
     color: #ddd;
     font-size: 2.2rem;
@@ -2217,31 +2221,30 @@ section.gh-ds h2 {
 }
 
 .gh-sidebar-banner-icon {
-    width: 24px;
-    height: 24px;
+    width: 16px;
+    height: 16px;
 }
 
 .gh-sidebar-banner-head {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     margin-bottom: 6px;
     margin-top: 2px;
 }
 
 .gh-sidebar-banner-subhead {
-    font-size: 14px;
-    color: var(--midgrey);
-    font-weight: 500;
-    line-height: 1.3em;
+    font-size: 13px;
+    color: var(--midlightgrey);
+    font-weight: 400;
 }
 
 .gh-sidebar-banner-msg {
     line-height: 1.4em;
     font-weight: 600;
-    margin-top: 4px;
+    margin-top: -2px;
     margin-bottom: 0;
-    font-size: 1.6rem;
+    font-size: 1.4rem;
 }
 
 .gh-sidebar-banner-msg + .gh-sidebar-banner-button {
@@ -2251,6 +2254,12 @@ section.gh-ds h2 {
 .gh-sidebar-banner.gh-error-banner {
     box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.1), 0px 3px 8px 0px rgba(0, 0, 0, 0.06);
     margin-bottom: 32px;
+    padding: 16px;
+}
+
+.gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-container {
+    flex-direction: row;
+    gap: 10px;
 }
 
 .gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-icon {
@@ -2259,6 +2268,17 @@ section.gh-ds h2 {
 
 .gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-subhead {
     color: var(--red);
+    font-size: 1.4rem;
+    font-weight: 600;
+    display: block;
+    margin-top: -2px;
+}
+
+.gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-msg {
+    font-weight: 400;
+    font-size: 1.3rem;
+    margin-top: 4px;
+    color: var(--darkgrey);
 }
 
 .gh-sidebar-banner.gh-error-banner .gh-sidebar-banner-button {
