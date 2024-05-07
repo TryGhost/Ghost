@@ -2251,6 +2251,16 @@ section.gh-ds h2 {
     margin-top: 14px;
 }
 
+.gh-referral-toast {
+    padding: 25px;
+    margin: 0 0 50px;
+}
+
+.gh-referral-toast .gh-sidebar-banner-close {
+    top: 7px;
+    right: 10px;
+}
+
 .gh-sidebar-banner.gh-error-banner {
     box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.1), 0px 3px 8px 0px rgba(0, 0, 0, 0.06);
     margin-bottom: 32px;
