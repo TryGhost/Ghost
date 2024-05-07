@@ -1135,4 +1135,107 @@ describe('EmailEventStorage', function () {
         const result = await emailAnalytics.fetchLatest();
         assert.equal(result, 0);
     });
+
+    it('populates latest_event_timestamp in email when handleDelivered fires', async function () {
+        const emailBatch = fixtureManager.get('email_batches', 0);
+        const emailId = emailBatch.email_id;
+
+        const emailRecipient = fixtureManager.get('email_recipients', 0);
+        assert(emailRecipient.batch_id === emailBatch.id);
+        const providerId = emailBatch.provider_id;
+        const timestamp = new Date(2000, 0, 1);
+
+        events = [{
+            event: 'delivered',
+            recipient: emailRecipient.member_email,
+            'user-variables': {
+                'email-id': emailId
+            },
+            message: {
+                headers: {
+                    'message-id': providerId
+                }
+            },
+            // unix timestamp
+            timestamp: Math.round(timestamp.getTime() / 1000)
+        }];
+
+        const result = await emailAnalytics.fetchLatest();
+        assert.equal(result, 1);
+
+        await DomainEvents.allSettled();
+
+        const updatedEmail = await models.Email.findOne({
+            id: emailId
+        }, {require: true});
+
+        assert.equal(updatedEmail.get('latest_event_timestamp').toUTCString(), timestamp.toUTCString());
+    });
+
+    it('populates latest_event_timestamp in email when handleOpened fires', async function () {
+        const emailBatch = fixtureManager.get('email_batches', 0);
+        const emailId = emailBatch.email_id;
+
+        const emailRecipient = fixtureManager.get('email_recipients', 0);
+        assert(emailRecipient.batch_id === emailBatch.id);
+        const providerId = emailBatch.provider_id;
+        const timestamp = new Date(2000, 0, 1);
+
+        events = [{
+            event: 'opened',
+            recipient: emailRecipient.member_email,
+            'user-variables': {
+                'email-id': emailId
+            },
+            message: {
+                headers: {
+                    'message-id': providerId
+                }
+            },
+            // unix timestamp
+            timestamp: Math.round(timestamp.getTime() / 1000)
+        }];
+
+        const result = await emailAnalytics.fetchLatest();
+        assert.equal(result, 1);
+
+        await DomainEvents.allSettled();
+
+        const updatedEmail = await models.Email.findOne({
+            id: emailId
+        }, {require: true});
+
+        assert.equal(updatedEmail.get('latest_event_timestamp').toUTCString(), timestamp.toUTCString());
+    });
+
+    it('populates latest_event_timestamp in email when handlePermanentFailed fires', async function () {
+        const emailBatch = fixtureManager.get('email_batches', 0);
+        const emailId = emailBatch.email_id;
+
+        const emailRecipient = fixtureManager.get('email_recipients', 0);
+        assert(emailRecipient.batch_id === emailBatch.id);
+        const timestamp = new Date(2000, 0, 1);
+
+        events = [{
+            event: 'failed',
+            severity: 'permanent',
+            recipient: emailRecipient.member_email,
+            'user-variables': {
+                'email-id': emailId
+            },
+            // unix timestamp
+            timestamp: Math.round(timestamp.getTime() / 1000)
+        }];
+
+        const result = await emailAnalytics.fetchLatest();
+        assert.equal(result, 1);
+
+        await DomainEvents.allSettled();
+
+        const updatedEmail = await models.Email.findOne({
+            id: emailId
+        }, {require: true});
+
+        assert.equal(updatedEmail.get('latest_event_timestamp').toUTCString(), timestamp.toUTCString());
+    });
 });
