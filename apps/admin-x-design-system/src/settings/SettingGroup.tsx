@@ -107,7 +107,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         );
     }
 
-    // The buttons that show when you are editing 
+    // The buttons that show when you are editing
     const editButtons: ButtonProps[] = [
         {
             label: 'Cancel',
@@ -124,7 +124,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         }
         editButtons.push(
             {
-                label: 'Save',
+                label: label,
                 key: 'save',
                 color: 'light-grey',
                 size: 'sm',
@@ -156,7 +156,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         !isEditing ? 'is-not-editing group/setting-group' : 'border-grey-200 shadow-sm',
         styles
     );
-    
+
     if (!isEditing) {
         return (
             <div className={containerClasses} data-testid={testId}>
