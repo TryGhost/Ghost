@@ -21,7 +21,8 @@ async function getStripeConnectData(frame) {
     }
 }
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'settings',
 
     browse: {
@@ -179,3 +180,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

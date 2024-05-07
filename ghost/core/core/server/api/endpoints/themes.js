@@ -6,7 +6,8 @@ const models = require('../../models');
 const events = require('../../lib/common/events');
 const {settingsCache} = require('../../services/settings-helpers');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'themes',
 
     browse: {
@@ -180,3 +181,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;
