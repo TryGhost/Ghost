@@ -5,7 +5,7 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
-const {anyArray, anyContentVersion, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
+const {anyArray, anyContentVersion, anyErrorId, anyEtag, anyUuid, anyISODateTimeWithTZ} = matchers;
 
 const postMatcher = {
     published_at: anyISODateTimeWithTZ,
@@ -90,6 +90,21 @@ describe('Posts Content API', function () {
             .expectStatus(200)
             .matchBodySnapshot({
                 posts: new Array(11).fill(postMatcher)
+            });
+    });
+
+    it('Errors upon invalid filter value', async function () {
+        if (process.env.NODE_ENV !== 'testing-mysql') {
+            this.skip();
+        }
+
+        await agent
+            .get(`posts/?filter=published_at%3A%3C%271715091791890%27`)
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
             });
     });
 
