@@ -112,6 +112,7 @@ export default class LexicalEditorController extends Controller {
     @service notifications;
     @service router;
     @service slugGenerator;
+    @service search;
     @service session;
     @service settings;
     @service ui;
@@ -887,9 +888,12 @@ export default class LexicalEditorController extends Controller {
     @restartableTask
     *backgroundLoaderTask() {
         yield this.store.query('snippet', {limit: 'all'});
+
         if (this.post.displayName === 'page' && this.feature.get('collections') && this.feature.get('collectionsCard')) {
             yield this.store.query('collection', {limit: 'all'});
         }
+
+        this.search.refreshContentTask.perform();
         this.syncMobiledocSnippets();
     }
 

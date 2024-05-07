@@ -19,4 +19,13 @@ export default class UserSerializer extends ApplicationSerializer.extend(Embedde
 
         return super.extractSingle(...arguments);
     }
+
+    serialize() {
+        const json = super.serialize(...arguments);
+
+        // Read-only virtual properties
+        delete json.url;
+
+        return json;
+    }
 }

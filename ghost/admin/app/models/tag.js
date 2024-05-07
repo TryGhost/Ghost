@@ -4,10 +4,13 @@ import {equal} from '@ember/object/computed';
 import {inject as service} from '@ember/service';
 
 export default Model.extend(ValidationEngine, {
+    search: service(),
+
     validationType: 'tag',
 
     name: attr('string'),
     slug: attr('string'),
+    url: attr('string'),
     description: attr('string'),
     metaTitle: attr('string'),
     metaDescription: attr('string'),
@@ -40,9 +43,22 @@ export default Model.extend(ValidationEngine, {
     },
 
     save() {
-        if (this.get('changedAttributes.name') && !this.isDeleted) {
+        const nameChanged = !!this.changedAttributes().name;
+
+        if (nameChanged && !this.isDeleted) {
             this.updateVisibility();
         }
-        return this._super(...arguments);
+
+        const {url} = this;
+
+        return this._super(...arguments).then((savedModel) => {
+            const urlChanged = url !== savedModel.url;
+
+            if (nameChanged || urlChanged || this.isDeleted) {
+                this.search.expireContent();
+            }
+
+            return savedModel;
+        });
     }
 });

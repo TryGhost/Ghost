@@ -14,14 +14,13 @@ export default function mockTags(server) {
         return tags.create(attrs);
     });
 
-    server.get('/tags/', paginatedResponse('tags'));
-
     server.get('/tags/slug/:slug/', function ({tags}, {params: {slug}}) {
         // TODO: remove post_count unless requested?
         return tags.findBy({slug});
     });
 
+    server.get('/tags/', paginatedResponse('tags'));
+    server.get('/tags/:id/');
     server.put('/tags/:id/');
-
     server.del('/tags/:id/');
 }
