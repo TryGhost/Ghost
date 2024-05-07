@@ -68,7 +68,7 @@ export function LinkInputCopy({href, update, cancel}) {
         <div ref={containerRef} className="relative m-0 flex w-full flex-col rounded-lg bg-white p-1 px-2 font-sans text-sm font-medium shadow-md dark:bg-grey-950">
             <Input
                 autoFocus={true}
-                className="my-1 h-auto w-full rounded-md border border-transparent bg-grey-100 px-4 py-2 text-left text-sm font-medium leading-snug text-black placeholder:text-sm placeholder:font-medium placeholder:leading-snug placeholder:text-grey-500 focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:text-white"
+                className="my-1 h-auto w-full rounded-md border border-transparent bg-grey-100 px-4 py-2 text-left text-sm font-medium leading-snug text-black placeholder:text-sm placeholder:font-medium placeholder:leading-snug placeholder:text-grey-500 focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:border-grey-800/80 dark:bg-grey-900 dark:text-white dark:focus:border-green dark:focus:bg-grey-900"
                 dataTestId={testId}
                 placeholder="Paste URL or search posts and pages..."
                 value={_href}
