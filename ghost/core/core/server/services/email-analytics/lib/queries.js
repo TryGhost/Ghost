@@ -18,9 +18,11 @@ module.exports = {
 
         if (maxTimestamp) {
             if (!(maxTimestamp instanceof Date)) {
+                // SQLite returns a string instead of a Date
                 maxTimestamp = new Date(maxTimestamp);
             }
         } else {
+            // Legacy fallback for installations that don't have the latest_event_timestamp column nor have it populated, could potentially remove this in a few weeks.
             let {maxDeliveredAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(delivered_at) as maxDeliveredAt')).first() || {};
             let {maxOpenedAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(opened_at) as maxOpenedAt')).first() || {};
             let {maxFailedAt} = await db.knex('email_recipients').select(db.knex.raw('MAX(failed_at) as maxFailedAt')).first() || {};
