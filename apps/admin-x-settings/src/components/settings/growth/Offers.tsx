@@ -83,7 +83,7 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label={offerButtonText} link linkWithPadding onClick={offerButtonLink}/>}
+            customButtons={<Button className='mt-[-5px]' color='clear' disabled={!checkStripeEnabled(settings, config)} label={offerButtonText} size='sm' onClick={offerButtonLink}/>}
             description={<>Create discounts & coupons to boost new subscriptions. {allOffers.length === 0 && <><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">{descriptionButtonText}</a></>}</>}
             keywords={keywords}
             navid='offers'
