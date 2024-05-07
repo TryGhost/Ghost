@@ -1,5 +1,6 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
+import {action} from '@ember/object';
 import {isBlank, isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
@@ -11,8 +12,7 @@ export default class SearchService extends Service {
     @service store;
 
     content = [];
-    contentExpiresAt = false;
-    contentExpiry = 30000;
+    isContentStale = true;
 
     searchables = [
         {
@@ -44,6 +44,11 @@ export default class SearchService extends Service {
             titleField: 'name'
         }
     ];
+
+    @action
+    expireContent() {
+        this.isContentStale = true;
+    }
 
     @task({restartable: true})
     *searchTask(term) {
@@ -92,13 +97,12 @@ export default class SearchService extends Service {
     }
 
     @task({drop: true})
-    *refreshContentTask() {
-        const now = new Date();
-        const contentExpiresAt = this.contentExpiresAt;
-
-        if (contentExpiresAt > now) {
+    *refreshContentTask({forceRefresh = false} = {}) {
+        if (!forceRefresh && !this.isContentStale) {
             return true;
         }
+
+        this.isContentStale = true;
 
         const content = [];
         const promises = this.searchables.map(searchable => this._loadSearchable(searchable, content));
@@ -111,7 +115,7 @@ export default class SearchService extends Service {
             console.error(error);
         }
 
-        this.contentExpiresAt = new Date(now.getTime() + this.contentExpiry);
+        this.isContentStale = false;
     }
 
     async _loadSearchable(searchable, content) {
