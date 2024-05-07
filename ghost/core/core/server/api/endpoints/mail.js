@@ -35,7 +35,8 @@ _private.sendMail = (object) => {
     });
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'mail',
 
     send: {
@@ -66,3 +67,5 @@ module.exports = {
             });
     }
 };
+
+module.exports = controller;

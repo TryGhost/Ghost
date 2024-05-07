@@ -1,6 +1,7 @@
 const exploreService = require('../../services/explore');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'explore',
 
     read: {
@@ -13,3 +14,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

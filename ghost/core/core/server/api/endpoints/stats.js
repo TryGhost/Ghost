@@ -1,6 +1,7 @@
 const statsService = require('../../services/stats');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'stats',
     memberCountHistory: {
         headers: {
@@ -104,3 +105,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

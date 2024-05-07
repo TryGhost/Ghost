@@ -1,6 +1,7 @@
 const recommendations = require('../../services/recommendations');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'recommendations',
 
     browse: {
@@ -18,3 +19,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;
