@@ -839,8 +839,7 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
-        updated_by: {type: 'string', maxlength: 24, nullable: true},
-        latest_event_timestamp: {type: 'dateTime', nullable: true}
+        updated_by: {type: 'string', maxlength: 24, nullable: true}
     },
     email_batches: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
