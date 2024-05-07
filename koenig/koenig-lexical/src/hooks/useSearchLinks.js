@@ -1,8 +1,9 @@
+import EarthIcon from '../assets/icons/kg-earth.svg?react';
 import React from 'react';
 import debounce from 'lodash/debounce';
 
 const DEBOUNCE_MS = 200;
-const IGNORE_QUERY_REGEX = /^http/;
+const URL_QUERY_REGEX = /^http/;
 
 function convertSearchResultsToListOptions(results) {
     return results.map((result) => {
@@ -17,23 +18,43 @@ function convertSearchResultsToListOptions(results) {
     });
 }
 
+function urlQueryOptions(query) {
+    return [{
+        label: 'Link to web page',
+        items: [{
+            label: query,
+            value: query,
+            Icon: EarthIcon
+        }]
+    }];
+}
+
 export const useSearchLinks = (query, searchLinks) => {
     const [defaultListOptions, setDefaultListOptions] = React.useState([]);
     const [listOptions, setListOptions] = React.useState([]);
     const [isSearching, setIsSearching] = React.useState(false);
 
-    const debouncedSearch = React.useMemo(() => {
-        return debounce(async (term) => {
+    const search = React.useMemo(() => {
+        return async function _search(term) {
+            if (URL_QUERY_REGEX.test(term)) {
+                setListOptions(urlQueryOptions(term));
+                return;
+            }
+
             setIsSearching(true);
             const results = await searchLinks(term);
             setListOptions(convertSearchResultsToListOptions(results));
             setIsSearching(false);
-        }, DEBOUNCE_MS);
+        };
     }, [searchLinks]);
+
+    const debouncedSearch = React.useMemo(() => {
+        return debounce(search, DEBOUNCE_MS);
+    }, [search]);
 
     // Fetch default search results when first rendering
     React.useEffect(() => {
-        if (IGNORE_QUERY_REGEX.test(query)) {
+        if (URL_QUERY_REGEX.test(query)) {
             return;
         }
 
@@ -49,12 +70,14 @@ export const useSearchLinks = (query, searchLinks) => {
     }, []);
 
     React.useEffect(() => {
-        if (IGNORE_QUERY_REGEX.test(query)) {
-            setListOptions([]);
+        // perform a non-debounced search if the query is a URL so the
+        // "Link to web page" option updates more responsively
+        if (URL_QUERY_REGEX.test(query)) {
+            search(query);
         } else {
             debouncedSearch(query);
         }
-    }, [query, debouncedSearch]);
+    }, [query, search, debouncedSearch]);
 
     const displayedListOptions = query ? listOptions : defaultListOptions;
 
