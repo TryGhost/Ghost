@@ -1,7 +1,14 @@
 const should = require('should');
+const sinon = require('sinon');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
+const mobiledocLib = require('@tryghost/html-to-mobiledoc');
+
 describe('Unit: endpoints/utils/serializers/input/pages', function () {
+    afterEach(function () {
+        sinon.restore();
+    });
+
     describe('browse', function () {
         it('default', function () {
             const apiConfig = {};
@@ -177,6 +184,34 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
 
         serializers.input.pages.edit(apiConfig, frame);
         frame.data.pages[0].tags.should.eql([{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]);
+    });
+
+    it('throws error if HTML conversion fails', function () {
+        // JSDOM require is sometimes very slow on CI causing random timeouts
+        this.timeout(4000);
+
+        const frame = {
+            options: {
+                source: 'html'
+            },
+            data: {
+                posts: [
+                    {
+                        id: 'id1',
+                        html: '<bananarama>'
+                    }
+                ]
+            }
+        };
+
+        sinon.stub(mobiledocLib, 'toMobiledoc').throws(new Error('Some error'));
+
+        try {
+            serializers.input.posts.edit({}, frame);
+            should.fail('Error expected');
+        } catch (err) {
+            err.message.should.eql('Failed to convert HTML to Mobiledoc');
+        }
     });
 
     describe('Ensure relations format', function () {
