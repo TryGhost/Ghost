@@ -144,8 +144,8 @@ const controller = {
             }
         },
         permissions: true,
-        query(frame) {
-            return commentsService.controller.destroy(frame);
+        query() {
+            return commentsService.controller.destroy();
         }
     },
 
