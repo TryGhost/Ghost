@@ -15,7 +15,8 @@ const Email = ghostBookshelf.Model.extend({
             delivered_count: 0,
             opened_count: 0,
             failed_count: 0,
-            source_type: 'html'
+            source_type: 'html',
+            latest_event_timestamp: null
         };
     },
 
