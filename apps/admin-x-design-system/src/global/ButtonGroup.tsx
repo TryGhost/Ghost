@@ -33,7 +33,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({size = 'md', buttons, link, li
     return (
         <div className={groupColorClasses}>
             {buttons.map(({key, ...props}) => (
-                <Button key={key} link={link} linkWithPadding={linkWithPadding} {...props} />
+                <Button key={key} link={link} linkWithPadding={linkWithPadding} size={size} {...props} />
             ))}
         </div>
     );

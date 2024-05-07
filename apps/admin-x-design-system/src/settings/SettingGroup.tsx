@@ -91,7 +91,6 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
                 label,
                 key: 'edit',
                 color: 'light-grey',
-                size: 'sm',
                 onClick: handleEdit
             }
         );
@@ -101,7 +100,6 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
                 label: 'Saved',
                 key: 'edit',
                 color: 'green',
-                size: 'sm',
                 onClick: handleEdit
             }
         );
@@ -112,7 +110,6 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         {
             label: 'Cancel',
             key: 'cancel',
-            size: 'sm',
             onClick: handleCancel
         }
     ];
@@ -126,8 +123,8 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
             {
                 label: label,
                 key: 'save',
-                color: 'light-grey',
-                size: 'sm',
+                color: saveState === 'unsaved' ? 'green' : 'light-grey',
+                disabled: saveState !== 'unsaved',
                 onClick: handleSave
             }
         );
@@ -164,7 +161,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
                 {customHeader ? customHeader :
                     <SettingGroupHeader beta={beta} description={description} title={title!}>
                         {customButtons ? customButtons :
-                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} link linkWithPadding />)
+                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : ''} size='sm' link linkWithPadding />)
                         }
                     </SettingGroupHeader>
                 }
@@ -178,7 +175,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
                 {customHeader ? customHeader :
                     <SettingGroupHeader beta={beta} description={description} title={title!}>
                         {customButtons ? customButtons :
-                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} />)
+                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : ''} size='sm' />)
                         }
                     </SettingGroupHeader>
                 }

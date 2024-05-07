@@ -17,7 +17,7 @@ const SettingGroupHeader: React.FC<SettingGroupHeaderProps> = ({title, descripti
                     {description && <p className="mt-1 hidden max-w-md group-[.is-not-editing]/setting-group:!visible group-[.is-not-editing]/setting-group:!block md:!visible md:!block">{description}</p>}
                 </div>
             }
-            <div className='-mt-0.5'>
+            <div>
                 {children}
             </div>
         </div>
