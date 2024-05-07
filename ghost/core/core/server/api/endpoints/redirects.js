@@ -2,7 +2,8 @@ const path = require('path');
 
 const customRedirects = require('../../services/custom-redirects');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'redirects',
 
     download: {
@@ -44,3 +45,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

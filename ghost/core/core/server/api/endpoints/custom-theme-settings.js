@@ -1,6 +1,7 @@
 const customThemeSettingsService = require('../../services/custom-theme-settings');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'custom_theme_settings',
 
     browse: {
@@ -23,3 +24,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

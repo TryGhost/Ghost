@@ -8,7 +8,8 @@ const messages = {
     accessDenied: 'Access Denied.'
 };
 
-const session = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     read(frame) {
         /*
          * TODO
@@ -66,4 +67,4 @@ const session = {
     }
 };
 
-module.exports = session;
+module.exports = controller;

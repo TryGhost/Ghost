@@ -1,6 +1,7 @@
 const models = require('../../models');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'comments',
 
     edit: {
@@ -26,3 +27,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

@@ -3,7 +3,8 @@ const settingsService = require('../../services/settings/settings-service');
 const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
 const internalContext = {context: {internal: true}};
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'notifications',
 
     browse: {
@@ -101,3 +102,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

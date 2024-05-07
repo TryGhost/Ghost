@@ -29,7 +29,8 @@ const messages = {
 
 const allowedIncludes = ['email_recipients', 'products', 'tiers'];
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'members',
 
     browse: {
@@ -503,3 +504,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

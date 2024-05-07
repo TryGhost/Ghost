@@ -1,6 +1,7 @@
 const storage = require('../../adapters/storage');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'files',
     upload: {
         statusCode: 201,
@@ -20,3 +21,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

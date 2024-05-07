@@ -23,7 +23,8 @@ const sign = async (claims, options) => {
     }, options));
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'identities',
     read: {
         headers: {
@@ -36,3 +37,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

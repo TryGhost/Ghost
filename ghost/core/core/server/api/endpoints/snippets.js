@@ -7,7 +7,8 @@ const messages = {
     snippetAlreadyExists: 'Snippet already exists.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'snippets',
 
     browse: {
@@ -131,3 +132,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

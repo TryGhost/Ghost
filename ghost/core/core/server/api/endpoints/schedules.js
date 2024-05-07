@@ -1,8 +1,8 @@
 const models = require('../../models');
-
 const postSchedulingService = require('../../services/posts/post-scheduling-service')();
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'schedules',
     publish: {
         headers: {
@@ -85,3 +85,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

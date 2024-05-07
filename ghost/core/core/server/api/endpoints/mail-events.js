@@ -1,6 +1,7 @@
 const mailEvents = require('../../services/mail-events');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'mail_events',
     add: {
         headers: {
@@ -12,3 +13,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

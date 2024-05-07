@@ -2,7 +2,8 @@ const allowedIncludes = ['count.posts', 'count.members', 'count.active_members']
 
 const newslettersService = require('../../services/newsletters');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'newsletters',
 
     browse: {
@@ -121,3 +122,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

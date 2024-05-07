@@ -1,6 +1,7 @@
 const mentions = require('../../services/mentions');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'mentions',
     browse: {
         headers: {
@@ -37,3 +38,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;
