@@ -21,6 +21,7 @@ const messages = {
         context: 'Provided client accept-version {acceptVersion} is behind current Ghost version {ghostVersion}.',
         help: 'Try upgrading your Ghost API client.'
     },
+    badVersion: 'Requested version is not supported.',
     actions: {
         images: {
             upload: 'upload image'
@@ -63,7 +64,7 @@ function isDependencyInStack(dependency, err) {
 /**
  * Get an error ready to be shown the the user
  */
-module.exports.prepareError = (err, req, res, next) => {
+module.exports.prepareError = function prepareError(err, req, res, next) {
     debug(err);
 
     if (Array.isArray(err)) {
@@ -97,7 +98,7 @@ module.exports.prepareError = (err, req, res, next) => {
                 statusCode: err.statusCode,
                 code: 'UNEXPECTED_ERROR'
             });
-        // For everything else, create a generic 500 error, with context set to the original error message        
+        // For everything else, create a generic 500 error, with context set to the original error message
         } else {
             err = new errors.InternalServerError({
                 err: err,
@@ -118,7 +119,7 @@ module.exports.prepareError = (err, req, res, next) => {
     next(err);
 };
 
-module.exports.prepareStack = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+module.exports.prepareStack = function prepareStack(err, req, res, next) { // eslint-disable-line no-unused-vars
     const clonedError = prepareStackForUser(err);
 
     next(clonedError);
@@ -131,7 +132,7 @@ module.exports.prepareStack = (err, req, res, next) => { // eslint-disable-line 
  * @param {import('express').Response} res
  * @param {import('express').NextFunction} next
  */
-module.exports.jsonErrorRenderer = (err, req, res, next) => { // eslint-disable-line no-unused-vars
+module.exports.jsonErrorRenderer = function jsonErrorRenderer(err, req, res, next) { // eslint-disable-line no-unused-vars
     const userError = prepareUserMessage(err, req);
 
     res.json({
@@ -153,8 +154,8 @@ module.exports.jsonErrorRenderer = (err, req, res, next) => { // eslint-disable-
  *
  * @param {String} [cacheControlHeaderValue] cache-control header value
  */
-module.exports.prepareErrorCacheControl = (cacheControlHeaderValue) => {
-    return (err, req, res, next) => {
+module.exports.prepareErrorCacheControl = function prepareErrorCacheControl(cacheControlHeaderValue) {
+    return function prepareErrorCacheControlInner(err, req, res, next) {
         let cacheControl = cacheControlHeaderValue;
         if (!cacheControlHeaderValue) {
             // never cache errors unless it's a 404
@@ -174,7 +175,7 @@ module.exports.prepareErrorCacheControl = (cacheControlHeaderValue) => {
     };
 };
 
-const prepareUserMessage = (err, req) => {
+const prepareUserMessage = function prepareUserMessage(err, req) {
     const userError = {
         message: err.message,
         context: err.context
@@ -224,49 +225,57 @@ const prepareUserMessage = (err, req) => {
     return userError;
 };
 
-module.exports.resourceNotFound = (req, res, next) => {
-    if (req && req.headers && req.headers['accept-version']
-        && res.locals && res.locals.safeVersion
-        && semver.compare(semver.coerce(req.headers['accept-version']), semver.coerce(res.locals.safeVersion)) !== 0) {
-        const versionComparison = semver.compare(
-            semver.coerce(req.headers['accept-version']),
-            semver.coerce(res.locals.safeVersion)
-        );
-
-        let notAcceptableError;
-        if (versionComparison === 1) {
-            notAcceptableError = new errors.RequestNotAcceptableError({
-                message: tpl(
-                    messages.methodNotAcceptableVersionAhead.message
-                ),
-                context: tpl(messages.methodNotAcceptableVersionAhead.context, {
-                    acceptVersion: req.headers['accept-version'],
-                    ghostVersion: `v${res.locals.safeVersion}`
-                }),
-                help: tpl(messages.methodNotAcceptableVersionAhead.help),
-                code: 'UPDATE_GHOST'
-            });
-        } else {
-            notAcceptableError = new errors.RequestNotAcceptableError({
-                message: tpl(
-                    messages.methodNotAcceptableVersionBehind.message
-                ),
-                context: tpl(messages.methodNotAcceptableVersionBehind.context, {
-                    acceptVersion: req.headers['accept-version'],
-                    ghostVersion: `v${res.locals.safeVersion}`
-                }),
-                help: tpl(messages.methodNotAcceptableVersionBehind.help),
-                code: 'UPDATE_CLIENT'
-            });
+module.exports.resourceNotFound = function resourceNotFound(req, res, next) {
+    if (req?.headers?.['accept-version'] && res.locals?.safeVersion) {
+        // Protect against invalid `Accept-Version` headers
+        const acceptVersionSemver = semver.coerce(req.headers['accept-version']);
+        if (!acceptVersionSemver) {
+            return next(new errors.BadRequestError({
+                message: tpl(messages.badVersion)
+            }));
         }
 
-        next(notAcceptableError);
-    } else {
-        next(new errors.NotFoundError({message: tpl(messages.resourceNotFound)}));
+        if (semver.compare(acceptVersionSemver, semver.coerce(res.locals.safeVersion)) !== 0) {
+            const versionComparison = semver.compare(
+                acceptVersionSemver,
+                semver.coerce(res.locals.safeVersion)
+            );
+
+            let notAcceptableError;
+            if (versionComparison === 1) {
+                notAcceptableError = new errors.RequestNotAcceptableError({
+                    message: tpl(
+                        messages.methodNotAcceptableVersionAhead.message
+                    ),
+                    context: tpl(messages.methodNotAcceptableVersionAhead.context, {
+                        acceptVersion: req.headers['accept-version'],
+                        ghostVersion: `v${res.locals.safeVersion}`
+                    }),
+                    help: tpl(messages.methodNotAcceptableVersionAhead.help),
+                    code: 'UPDATE_GHOST'
+                });
+            } else {
+                notAcceptableError = new errors.RequestNotAcceptableError({
+                    message: tpl(
+                        messages.methodNotAcceptableVersionBehind.message
+                    ),
+                    context: tpl(messages.methodNotAcceptableVersionBehind.context, {
+                        acceptVersion: req.headers['accept-version'],
+                        ghostVersion: `v${res.locals.safeVersion}`
+                    }),
+                    help: tpl(messages.methodNotAcceptableVersionBehind.help),
+                    code: 'UPDATE_CLIENT'
+                });
+            }
+
+            return next(notAcceptableError);
+        }
     }
+
+    next(new errors.NotFoundError({message: tpl(messages.resourceNotFound)}));
 };
 
-module.exports.pageNotFound = (req, res, next) => {
+module.exports.pageNotFound = function pageNotFound(req, res, next) {
     next(new errors.NotFoundError({message: tpl(messages.pageNotFound)}));
 };
 

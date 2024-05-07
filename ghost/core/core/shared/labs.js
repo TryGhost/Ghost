@@ -51,8 +51,7 @@ const ALPHA_FEATURES = [
     'tipsAndDonations',
     'importMemberTier',
     'lexicalIndicators',
-    'adminXDemo',
-    'membersSpamPrevention'
+    'adminXDemo'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
@@ -143,7 +142,7 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
     return errString;
 };
 
-module.exports.enabledMiddleware = flag => (req, res, next) => {
+module.exports.enabledMiddleware = flag => function labsEnabledMw(req, res, next) {
     if (module.exports.isSet(flag) === true) {
         return next();
     } else {

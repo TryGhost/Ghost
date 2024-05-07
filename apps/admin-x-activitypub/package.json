@@ -37,29 +37,31 @@
     "@tryghost/admin-x-framework": "0.0.0",
     "@types/react": "18.3.1",
     "@types/react-dom": "18.3.0",
-    "react": "18.3.0",
-    "react-dom": "18.3.0"
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   },
   "nx": {
     "targets": {
       "build": {
         "dependsOn": [
-          "build",
-          {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
+          "^build"
+        ]
+      },
+      "dev": {
+        "dependsOn": [
+          "^build"
         ]
       },
       "test:unit": {
         "dependsOn": [
-          "build",
-          "test:unit",
-          {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
+          "^build",
+          "test:unit"
         ]
       },
       "test:acceptance": {
         "dependsOn": [
-          "build",
-          "test:acceptance",
-          {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
+          "^build",
+          "test:acceptance"
         ]
       }
     }

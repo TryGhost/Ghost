@@ -60,10 +60,6 @@ const features = [{
     description: 'Wires up the Ghost NestJS App to the Admin API',
     flag: 'NestPlayground'
 },{
-    title: 'Prevent Member Spam Signups',
-    description: 'Enables features to help combat spam member signups',
-    flag: 'membersSpamPrevention'
-},{
     title: 'Internal Linking (private beta)',
     description: 'Adds internal URL search to editor link inputs',
     flag: 'internalLinking'
