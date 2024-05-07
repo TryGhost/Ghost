@@ -147,6 +147,10 @@ module.exports = {
             Object.assign(headers, locationHeader);
         }
 
+        const headersFromFrame = frame.getHeaders();
+
+        Object.assign(headers, headersFromFrame);
+
         debug(headers);
         return headers;
     }

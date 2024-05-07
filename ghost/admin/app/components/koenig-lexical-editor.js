@@ -4,9 +4,9 @@ import React, {Suspense} from 'react';
 import fetch from 'fetch';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
+import {didCancel, task} from 'ember-concurrency';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
 
 export const fileTypes = {
     image: {
@@ -97,15 +97,17 @@ export default class KoenigLexicalEditor extends Component {
     @service feature;
     @service ghostPaths;
     @service koenig;
-    @service session;
-    @service store;
-    @service settings;
     @service membersUtils;
+    @service search;
+    @service session;
+    @service settings;
+    @service store;
 
     @inject config;
 
     offers = null;
     contentKey = null;
+    defaultLinks = null;
 
     editorResource = this.koenig.resource;
 
@@ -290,6 +292,57 @@ export default class KoenigLexicalEditor extends Component {
             return labels.map(label => label.name);
         };
 
+        const searchLinks = async (term) => {
+            // when no term is present we should show latest 5 posts
+            if (!term) {
+                // we cache the default links to avoid fetching them every time
+                if (this.defaultLinks) {
+                    return this.defaultLinks;
+                }
+
+                const posts = await this.store.query('post', {filter: 'status:published', fields: 'id,url,title', order: 'published_at desc', limit: 5});
+                const results = posts.toArray().map(post => ({
+                    groupName: 'Latest posts',
+                    id: post.id,
+                    title: post.title,
+                    url: post.url
+                }));
+                this.defaultLinks = [{
+                    label: 'Latest posts',
+                    items: results
+                }];
+                return this.defaultLinks;
+            }
+
+            let results = [];
+
+            try {
+                results = await this.search.searchTask.perform(term);
+            } catch (error) {
+                // don't surface task cancellation errors
+                if (!didCancel(error)) {
+                    throw error;
+                }
+            }
+
+            // only published posts/pages have URLs
+            const filteredResults = [];
+            results.forEach((group) => {
+                const items = (group.groupName === 'Posts' || group.groupName === 'Pages') ? group.options.filter(i => i.status === 'published') : group.options;
+
+                if (items.length === 0) {
+                    return;
+                }
+
+                filteredResults.push({
+                    label: group.groupName,
+                    items
+                });
+            });
+
+            return filteredResults;
+        };
+
         const unsplashConfig = {
             defaultHeaders: {
                 Authorization: `Client-ID 8672af113b0a8573edae3aa3713886265d9bb741d707f6c01a486cde8c278980`,
@@ -301,20 +354,22 @@ export default class KoenigLexicalEditor extends Component {
         };
 
         const defaultCardConfig = {
-            unsplash: this.settings.unsplash ? unsplashConfig : null,
+            unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
-            fetchEmbed,
-            fetchCollectionPosts,
             fetchAutocompleteLinks,
+            fetchCollectionPosts,
+            fetchEmbed,
             fetchLabels,
             feature: {
-                collectionsCard: this.feature.get('collectionsCard'),
-                collections: this.feature.get('collections')
+                collectionsCard: this.feature.collectionsCard,
+                collections: this.feature.collections,
+                internalLinking: this.feature.internalLinking
             },
-            depreciated: {
+            deprecated: {
                 headerV1: true // if false, shows header v1 in the menu
             },
-            membersEnabled: this.settings.get('membersSignupAccess') === 'all',
+            membersEnabled: this.settings.membersSignupAccess === 'all',
+            searchLinks,
             siteTitle: this.settings.title,
             siteDescription: this.settings.description
         };

@@ -21,7 +21,7 @@ const OfferContainer: React.FC<{offerTitle: string, tier: Tier, cadence: string,
                 <span className='text-grey-700'>{cadence === 'month' ? 'monthly' : 'yearly'}</span>
             </div>
             <div className='mt-2 flex items-end justify-between'>
-                <a className={`text-xs text-grey-700 hover:text-black ${redemptions === 0 ? 'pointer-events-none' : 'hover:underline'}`} href={createRedemptionFilterUrl(offerId)}>{numberWithCommas(redemptions)} {redemptions === 1 ? 'redemption' : 'redemptions'}</a>
+                <a className={`text-xs text-grey-700 hover:text-black ${redemptions === 0 ? 'pointer-events-none' : 'hover:underline'}`} data-test-offer={offerTitle} href={createRedemptionFilterUrl(offerId)}>{numberWithCommas(redemptions)} {redemptions === 1 ? 'redemption' : 'redemptions'}</a>
                 <CopyLinkButton offerCode={offerCode} />
             </div>
         </div>
@@ -57,15 +57,34 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateRoute('offers/new');
     };
 
+    const openTiers = () => {
+        updateRoute('/tiers');
+    };
+
     const goToOfferEdit = (offerId: string) => {
         sessionStorage.setItem('editOfferPageSource', 'offers');
         updateRoute(`offers/edit/${offerId}`);
     };
 
+    let offerButtonText = 'Manage offers';
+    let offerButtonLink = openOfferListModal;
+    let descriptionButtonText = 'Learn more';
+    if (allOffers.length > 0) {
+        offerButtonText = 'Manage offers';
+        offerButtonLink = openOfferListModal;
+    } else if (paidActiveTiers.length === 0 && allOffers.length === 0) {
+        offerButtonText = '';
+        offerButtonLink = openTiers;
+        descriptionButtonText = '';
+    } else if (paidActiveTiers.length > 0 && allOffers.length === 0) {
+        offerButtonText = 'Add offer';
+        offerButtonLink = openAddModal;
+    }
+
     return (
         <TopLevelGroup
-            customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label={allOffers.length > 0 ? 'Manage offers' : 'Add offer'} link linkWithPadding onClick={allOffers.length > 0 ? openOfferListModal : openAddModal}/>}
-            description={<>Create discounts & coupons to boost new subscriptions. {allOffers.length === 0 && <><br /><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">Learn more</a></>}</>}
+            customButtons={<Button color='green' disabled={!checkStripeEnabled(settings, config)} label={offerButtonText} link linkWithPadding onClick={offerButtonLink}/>}
+            description={<>Create discounts & coupons to boost new subscriptions. {allOffers.length === 0 && <><a className='text-green' href="https://ghost.org/help/offers" rel="noopener noreferrer" target="_blank">{descriptionButtonText}</a></>}</>}
             keywords={keywords}
             navid='offers'
             testId='offers'
@@ -93,6 +112,14 @@ const Offers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     </div>}
                 </div> :
                 null
+            }
+            {paidActiveTiers.length === 0 && allOffers.length === 0 ?
+                (<div>
+                    <span>You must have an active tier to create an offer.</span>
+                    {` `}
+                    <Button className='font-normal' color='green' label='Manage tiers' link linkWithPadding onClick={openTiers} />
+                </div>
+                ) : ''
             }
         </TopLevelGroup>
     );

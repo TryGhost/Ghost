@@ -35,10 +35,10 @@
     "@testing-library/react": "14.1.0",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",
-    "@types/react": "18.2.48",
-    "@types/react-dom": "18.2.18",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "@types/react": "18.3.1",
+    "@types/react-dom": "18.3.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   },
   "nx": {
     "targets": {

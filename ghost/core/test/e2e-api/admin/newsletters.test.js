@@ -14,6 +14,16 @@ const assertMemberRelationCount = async (newsletterId, expectedCount) => {
     assert.equal(relations.length, expectedCount);
 };
 
+// Change directly in database, to test edge cases
+async function editNewsletter(id, changes) {
+    await dbUtils.knex('newsletters').where({id}).update(changes);
+}
+
+// Get directly from the database
+async function getNewsletter(id) {
+    return (await dbUtils.knex('newsletters').where({id}))[0];
+}
+
 const newsletterSnapshot = {
     id: anyObjectId,
     uuid: anyUuid,
@@ -868,6 +878,175 @@ describe('Newsletters API', function () {
             configUtils.set('mail:from', 'default@email.com');
         });
 
+        describe('Auto correcting invalid domains', function () {
+            const id = fixtureManager.get('newsletters', 0).id;
+
+            beforeEach(async function () {
+                // Invalid situation in the database)
+                await editNewsletter(id, {
+                    sender_email: 'notvalid@acme.com',
+                    sender_reply_to: 'newsletter'
+                });
+            });
+
+            after(async function () {
+                // Reset
+                await editNewsletter(id, {
+                    sender_email: null,
+                    sender_reply_to: 'newsletter'
+                });
+            });
+
+            it('Read returns sender_email as sender_reply_to in case we cannot send from sender_email and sender_reply_to is set to newsletter', async function () {
+                const {body} = await agent.get(`newsletters/${id}`)
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                // Do a manual check to make sure we don't accidentally change snapshots
+                assert.equal(body.newsletters[0].sender_email, null);
+                assert.equal(body.newsletters[0].sender_reply_to, 'notvalid@acme.com');
+            });
+
+            it('Browse returns sender_email as sender_reply_to in case we cannot send from sender_email and sender_reply_to is set to newsletter', async function () {
+                const {body} = await agent.get(`newsletters`)
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                const newsletter = body.newsletters.find(n => n.id === id);
+
+                // Do a manual check to make sure we don't accidentally change snapshots
+                assert.equal(newsletter.sender_email, null);
+                assert.equal(newsletter.sender_reply_to, 'notvalid@acme.com');
+            });
+
+            it('Resets sender_email when editing the newsletter reply_to address', async function () {
+                await agent.put(`newsletters/${id}`)
+                    .body({
+                        newsletters: [{
+                            sender_reply_to: 'support'
+                        }]
+                    })
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                const newsletter = await getNewsletter(id);
+
+                // Do a manual check to make sure we don't accidentally change snapshots
+                assert.equal(newsletter.sender_email, null);
+                assert.equal(newsletter.sender_reply_to, 'support');
+            });
+
+            it('Resets sender_email when editing the newsletter reply_to address in combination with resetting sender email', async function () {
+                await agent.put(`newsletters/${id}`)
+                    .body({
+                        newsletters: [{
+                            sender_email: null,
+                            sender_reply_to: 'something@allowed.com'
+                        }]
+                    })
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                const newsletter = await getNewsletter(id);
+
+                // Do a manual check to make sure we don't accidentally change snapshots
+                assert.equal(newsletter.sender_email, null);
+                assert.equal(newsletter.sender_reply_to, 'newsletter'); // required validation
+            });
+
+            it('Resets sender_email when editing the newsletter reply_to address in combination with keeping sender email', async function () {
+                await agent.put(`newsletters/${id}`)
+                    .body({
+                        newsletters: [{
+                            sender_email: 'notvalid@acme.com',
+                            sender_reply_to: 'something@allowed.com'
+                        }]
+                    })
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                const newsletter = await getNewsletter(id);
+
+                // Do a manual check to make sure we don't accidentally change snapshots
+                assert.equal(newsletter.sender_email, null);
+                assert.equal(newsletter.sender_reply_to, 'newsletter'); // required validation
+            });
+
+            it('Can switch sender_email to sender_reply_to without validation', async function () {
+                // The frontend will try to do this because it gets the mapped values from the API
+                await agent.put(`newsletters/${id}`)
+                    .body({
+                        newsletters: [{
+                            sender_email: null,
+                            sender_reply_to: 'notvalid@acme.com'
+                        }]
+                    })
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                const newsletter = await getNewsletter(id);
+
+                // Do a manual check to make sure we don't accidentally change snapshots
+                assert.equal(newsletter.sender_email, null);
+                assert.equal(newsletter.sender_reply_to, 'notvalid@acme.com'); // did not require validation
+            });
+
+            it('Does not reset sender_email when editing the newsletter (not the reply-to address)', async function () {
+                await agent.put(`newsletters/${id}`)
+                    .body({
+                        newsletters: [{
+                            name: 'My changed newsletter name'
+                        }]
+                    })
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                const newsletter = await getNewsletter(id);
+                assert.equal(newsletter.name, 'My changed newsletter name');
+                assert.equal(newsletter.sender_email, 'notvalid@acme.com');
+                assert.equal(newsletter.sender_reply_to, 'newsletter');
+            });
+        });
+
         it('Can set newsletter reply-to to newsletter or support', async function () {
             const id = fixtureManager.get('newsletters', 0).id;
 
@@ -1061,6 +1240,12 @@ describe('Newsletters API', function () {
         it('Can keep sender_email', async function () {
             const id = fixtureManager.get('newsletters', 0).id;
 
+            // Invalid situation in the database)
+            await editNewsletter(id, {
+                sender_email: 'existing@acme.com',
+                sender_reply_to: 'newsletter'
+            });
+
             const before = await models.Newsletter.findOne({id});
             assert(before.get('sender_email'), 'This test requires a non empty sender_email');
 
@@ -1145,6 +1330,102 @@ describe('Newsletters API', function () {
         this.beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', true);
             configUtils.set('hostSettings:managedEmail:sendingDomain', 'sendingdomain.com');
+        });
+
+        describe('Auto correcting invalid domains', function () {
+            const id = fixtureManager.get('newsletters', 0).id;
+
+            beforeEach(async function () {
+                // Invalid situation in the database)
+                await editNewsletter(id, {
+                    sender_email: 'notvalid@acme.com',
+                    sender_reply_to: 'newsletter'
+                });
+            });
+
+            after(async function () {
+                // Reset
+                await editNewsletter(id, {
+                    sender_email: null,
+                    sender_reply_to: 'newsletter'
+                });
+            });
+
+            it('Read returns sender_email as sender_reply_to in case we cannot send from sender_email and sender_reply_to is set to newsletter', async function () {
+                const {body} = await agent.get(`newsletters/${id}`)
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                // Do a manual check to make sure we don't accidentally change snapshots
+                assert.equal(body.newsletters[0].sender_email, null);
+                assert.equal(body.newsletters[0].sender_reply_to, 'notvalid@acme.com');
+            });
+
+            it('Browse returns sender_email as sender_reply_to in case we cannot send from sender_email and sender_reply_to is set to newsletter', async function () {
+                const {body} = await agent.get(`newsletters`)
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                const newsletter = body.newsletters.find(n => n.id === id);
+
+                // Do a manual check to make sure we don't accidentally change snapshots
+                assert.equal(newsletter.sender_email, null);
+                assert.equal(newsletter.sender_reply_to, 'notvalid@acme.com');
+            });
+
+            it('Resets sender_email when editing the newsletter reply_to address', async function () {
+                await agent.put(`newsletters/${id}`)
+                    .body({
+                        newsletters: [{
+                            sender_reply_to: 'support'
+                        }]
+                    })
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                const newsletter = await getNewsletter(id);
+
+                // Do a manual check to make sure we don't accidentally change snapshots
+                assert.equal(newsletter.sender_email, null);
+                assert.equal(newsletter.sender_reply_to, 'support');
+            });
+
+            it('Does not reset sender_email when editing the newsletter (not the reply-to address)', async function () {
+                await agent.put(`newsletters/${id}`)
+                    .body({
+                        newsletters: [{
+                            name: 'My changed newsletter name'
+                        }]
+                    })
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        newsletters: [newsletterSnapshot]
+                    })
+                    .matchHeaderSnapshot({
+                        'content-version': anyContentVersion,
+                        etag: anyEtag
+                    });
+
+                const newsletter = await getNewsletter(id);
+                assert.equal(newsletter.name, 'My changed newsletter name');
+                assert.equal(newsletter.sender_email, 'notvalid@acme.com');
+                assert.equal(newsletter.sender_reply_to, 'newsletter');
+            });
         });
 
         it('Can set newsletter reply-to to newsletter or support', async function () {
@@ -1332,6 +1613,12 @@ describe('Newsletters API', function () {
 
         it('Can keep sender_email', async function () {
             const id = fixtureManager.get('newsletters', 0).id;
+
+            // Invalid situation in the database)
+            await editNewsletter(id, {
+                sender_email: 'existing@acme.com',
+                sender_reply_to: 'newsletter'
+            });
 
             const before = await models.Newsletter.findOne({id});
             assert(before.get('sender_email'), 'This test requires a non empty sender_email');

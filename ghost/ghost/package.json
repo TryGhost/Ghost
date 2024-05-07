@@ -1,0 +1,43 @@
+{
+  "name": "@tryghost/ghost",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/packages/ghost",
+  "author": "Ghost Foundation",
+  "private": true,
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput --sourceMap",
+    "build": "tsc",
+    "build:ts": "yarn build",
+    "test:unit": "NODE_ENV=testing c8 --src src --all --reporter text --reporter cobertura mocha -r ts-node/register/transpile-only './**/*.test.ts'",
+    "test": "yarn test:types && yarn test:unit",
+    "test:types": "tsc --noEmit",
+    "lint:code": "eslint src/ --ext .ts --cache",
+    "lint": "yarn lint:code"
+  },
+  "files": [
+    "build"
+  ],
+  "devDependencies": {
+    "@nestjs/testing": "10.3.8",
+    "@types/node": "^20.10.0",
+    "@types/sinon": "^17.0.3",
+    "c8": "8.0.1",
+    "mocha": "10.2.0",
+    "reflect-metadata": "0.1.13",
+    "sinon": "^17.0.1",
+    "ts-node": "10.9.2",
+    "typescript": "5.4.5"
+  },
+  "dependencies": {
+    "@nestjs/common": "10.3.8",
+    "@nestjs/core": "10.3.8",
+    "@nestjs/platform-express": "10.3.8",
+    "@tryghost/errors": "^1.2.27",
+    "bson-objectid": "2.0.4",
+    "express": "^4.18.2",
+    "reflect-metadata": "^0.1.14",
+    "rxjs": "^7.8.1"
+  }
+}

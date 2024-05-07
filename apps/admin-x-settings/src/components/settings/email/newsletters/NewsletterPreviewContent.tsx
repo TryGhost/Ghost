@@ -36,6 +36,7 @@ const NewsletterPreviewContent: React.FC<{
     backgroundColor?: string;
     borderColor?: string;
     secondaryBorderColor?: string;
+    accentColor?: string;
     textColor?: string;
     secondaryTextColor?: string;
     titleColor?: string;
@@ -66,6 +67,7 @@ const NewsletterPreviewContent: React.FC<{
     backgroundColor,
     borderColor,
     secondaryBorderColor,
+    accentColor,
     textColor,
     secondaryTextColor,
     titleColor
@@ -136,13 +138,8 @@ const NewsletterPreviewContent: React.FC<{
                                         <p className="pb-2" style={{color: secondaryTextColor}}>
                                             By {authorPlaceholder}
                                             <span className="before:pl-0.5 before:pr-1 before:content-['•']">{currentDate}</span>
-                                            {showCommentCta && (
-                                                <span className="before:pl-0.5 before:pr-1 before:content-['•']">
-                                                    <Icon className="mt-[-2px] inline-block" colorClass="text-grey-600" name="comment" size="sm"/>
-                                                </span>
-                                            )}
                                         </p>
-                                        <p className="pb-2" style={{color: secondaryTextColor}}><span>View in browser</span></p>
+                                        <p className="pb-2 underline" style={{color: secondaryTextColor}}><span>View in browser</span></p>
                                     </div>
                                 </div>
                             )}
@@ -240,7 +237,7 @@ const NewsletterPreviewContent: React.FC<{
                                             <p style={{color: textColor}}>Email: jamie@example.com</p>
                                             <p style={{color: textColor}}>Member since: 17 July 2023</p>
                                         </div>
-                                        <span className={clsx('w-full self-end whitespace-nowrap text-right text-base font-semibold', backgroundColorIsDark ? 'text-white underline' : 'text-pink')}>
+                                        <span className={clsx('w-full self-end whitespace-nowrap text-right text-base font-semibold', backgroundColorIsDark && 'text-white underline')} style={{color: accentColor}}>
                                             Manage subscription →
                                         </span>
                                     </div>

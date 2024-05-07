@@ -3,7 +3,7 @@ import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './TierDetailPreview';
 import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Button, ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Hint, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
+import {Button, ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
@@ -26,13 +26,13 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
     const [hasFreeTrial, setHasFreeTrial] = React.useState(!!tier?.trial_days);
     const handleError = useHandleError();
     const {localSettings, siteData} = useSettingGroup();
-    const [siteTitle, portalPlansJson] = getSettingValues(localSettings, ['title', 'portal_plans']) as string[];
+    const [portalPlansJson] = getSettingValues(localSettings, ['portal_plans']) as string[];
     const hasPortalImprovements = useFeatureFlag('portalImprovements');
     const allowNameChange = !isFreeTier || hasPortalImprovements;
     const portalPlans = JSON.parse(portalPlansJson?.toString() || '[]') as string[];
 
     const validators: {[key in keyof Tier]?: () => string | undefined} = {
-        name: () => (formState.name ? undefined : 'You must specify a name'),
+        name: () => (formState.name ? undefined : 'Enter a name for the tier'),
         monthly_price: () => (formState.type !== 'free' ? validateCurrencyAmount(formState.monthly_price || 0, formState.currency, {allowZero: false}) : undefined),
         yearly_price: () => (formState.type !== 'free' ? validateCurrencyAmount(formState.yearly_price || 0, formState.currency, {allowZero: false}) : undefined)
     };
@@ -213,7 +213,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         autoComplete='off'
                         error={Boolean(errors.name)}
                         hint={errors.name}
-                        placeholder='Bronze'
+                        maxLength={191}
+                        placeholder={isFreeTier ? 'Free' : 'Bronze'}
                         title='Name'
                         value={formState.name || ''}
                         autoFocus
@@ -223,7 +224,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     <TextField
                         autoComplete='off'
                         autoFocus={isFreeTier}
-                        placeholder={isFreeTier ? `Free preview of ${siteTitle}` : 'Full access to premium content'}
+                        maxLength={191}
+                        placeholder={isFreeTier ? `Free preview` : 'Full access to premium content'}
                         title='Description'
                         value={formState.description || ''}
                         onChange={e => updateForm(state => ({...state, description: e.target.value}))}
@@ -252,22 +254,24 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     <CurrencyField
                                         error={Boolean(errors.monthly_price)}
                                         hint={errors.monthly_price}
-                                        placeholder='1'
+                                        placeholder='5'
                                         rightPlaceholder={`${formState.currency}/month`}
                                         title='Monthly price'
                                         valueInCents={formState.monthly_price || ''}
                                         hideTitle
+                                        onBlur={event => ((event.target.value === '') ? updateForm(state => ({...state, monthly_price: 0})) : null)}
                                         onChange={price => updateForm(state => ({...state, monthly_price: price}))}
                                         onKeyDown={() => clearError('monthly_price')}
                                     />
                                     <CurrencyField
                                         error={Boolean(errors.yearly_price)}
                                         hint={errors.yearly_price}
-                                        placeholder='10'
+                                        placeholder='50'
                                         rightPlaceholder={`${formState.currency}/year`}
                                         title='Yearly price'
                                         valueInCents={formState.yearly_price || ''}
                                         hideTitle
+                                        onBlur={event => ((event.target.value === '') ? updateForm(state => ({...state, yearly_price: 0})) : null)}
                                         onChange={price => updateForm(state => ({...state, yearly_price: price}))}
                                         onKeyDown={() => clearError('yearly_price')}
                                     />
@@ -294,7 +298,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                     </>)}
                     <URLTextField
                         baseUrl={siteData?.url}
-                        hint='Redirect to this URL after signup for premium membership'
+                        hint={`Redirect to this URL after signup ${isFreeTier ? '' : ' for premium membership'}`}
+                        maxLength={2000}
                         placeholder={siteData?.url}
                         title='Welcome page'
                         value={formState.welcome_page_url || null}
@@ -313,10 +318,11 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                 <div className='absolute left-[-32px] top-[7px] flex h-6 w-6 items-center justify-center bg-white group-hover:hidden dark:bg-black'><Icon name='check' size='sm' /></div>
                                 <TextField
                                     // className='grow border-b border-grey-500 py-2 focus:border-grey-800 group-hover:border-grey-600'
+                                    maxLength={191}
                                     value={item}
                                     onChange={e => benefits.updateItem(id, e.target.value)}
                                 />
-                                <Button className='absolute right-1 top-1 z-10' icon='trash' iconColorClass='opacity-0 group-hover:opacity-100' size='sm' onClick={() => benefits.removeItem(id)} />
+                                <Button className='absolute right-1 top-1 z-10 opacity-0 group-hover:opacity-100' color='grey' icon='trash' size='sm' onClick={() => benefits.removeItem(id)} />
                             </div>}
                             onMove={benefits.moveItem}
                         />
@@ -326,6 +332,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                         <TextField
                             className='grow'
                             containerClassName='w-100'
+                            maxLength={191}
                             placeholder='Expert analysis'
                             title='New benefit'
                             value={benefits.newItem}
@@ -338,7 +345,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             }}
                         />
                         <Button
-                            className='absolute right-1 top-1 z-10'
+                            className='absolute right-[5px] top-[5px] z-10'
                             color='green'
                             icon='add'
                             iconColorClass='text-white'
@@ -352,16 +359,6 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
             </div>
             <div className='sticky top-[96px] hidden shrink-0 basis-[380px] min-[920px]:!visible min-[920px]:!block'>
                 <TierDetailPreview isFreeTier={isFreeTier} tier={formState} />
-
-                {hasPortalImprovements &&
-                    <Form className=' mt-0' gap='none'>
-                        <Hint className=''>
-                            <p className='inline-block'>{(formState.visibility === 'public') ? 'Visible' : 'Not visible'} at signup. You can change this in {tier ? <Button className='text-xs font-normal' color='green' label='Portal settings' link onClick={() => {
-                                updateRoute('portal/edit');
-                            }}/> : <span className='font-semibold'>Portal settings</span>}.</p>
-                        </Hint>
-                    </Form>
-                }
             </div>
         </div>
     </Modal>;

@@ -1,6 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
-import {Button, ButtonProps, ConfirmationModal, List, ListItem, Menu, ModalPage} from '@tryghost/admin-x-design-system';
+import {Button, ButtonProps, ConfirmationModal, List, ListItem, Menu, ModalPage, showToast} from '@tryghost/admin-x-design-system';
 import {Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -51,6 +51,10 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     const handleActivate = async () => {
         try {
             await activateTheme(theme.name);
+            showToast({
+                type: 'success',
+                message: <div><span className='capitalize'>{theme.name}</span> is now your active theme.</div>
+            });
         } catch (e) {
             handleError(e);
         }
@@ -147,7 +151,11 @@ const ThemeList:React.FC<ThemeSettingProps> = ({
             return 1; // b comes before a
         } else {
             // Both have the same active status, sort alphabetically
-            return a.name.localeCompare(b.name);
+            if (a.package?.name && b.package?.name) {
+                return a.package.name.localeCompare(b.package.name);
+            } else {
+                return a.name.localeCompare(b.name);
+            }
         }
     });
 

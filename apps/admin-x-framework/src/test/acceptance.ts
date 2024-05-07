@@ -72,8 +72,7 @@ const defaultLabFlags = {
     outboundLinkTagging: false,
     announcementBar: false,
     signupForm: false,
-    members: false,
-    adminXOffers: false
+    members: false
 };
 
 // Inject defaultLabFlags into responseFixtures.settings and config
@@ -224,7 +223,7 @@ export async function mockSitePreview({page, url, response}: {page: Page, url: s
     const lastRequest: {previewHeader?: string} = {};
 
     await page.route(url, async (route) => {
-        if (route.request().method() !== 'GET') {
+        if (route.request().method() !== 'POST') {
             return route.continue();
         }
 

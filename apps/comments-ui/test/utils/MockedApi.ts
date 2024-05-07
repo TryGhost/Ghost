@@ -62,10 +62,10 @@ export class MockedApi {
             const bDate = new Date(b.created_at).getTime();
 
             if (aDate === bDate) {
-                return a.id > b.id ? 1 : -1;
+                return a.id > b.id ? -1 : 1;
             }
 
-            return aDate > bDate ? 1 : -1;
+            return aDate > bDate ? -1 : 1;
         });
 
         let filteredComments = this.comments;
@@ -159,6 +159,14 @@ export class MockedApi {
                 });
             }
 
+            if (route.request().method() === 'PUT') {
+                const payload = JSON.parse(route.request().postData());
+                this.member = {
+                    ...this.member,
+                    ...payload
+                };
+            }
+
             await route.fulfill({
                 status: 200,
                 body: JSON.stringify(this.member)
@@ -166,29 +174,28 @@ export class MockedApi {
         });
 
         await page.route(`${path}/members/api/comments/*`, async (route) => {
-            if (route.request().method() === 'POST') {
-                const payload = JSON.parse(route.request().postData());
+            const payload = JSON.parse(route.request().postData());
 
-                this.#lastCommentDate = new Date();
-                this.addComment({
-                    ...payload.comments[0],
-                    member: this.member
-                });
-                return await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify({
-                        comments: [
-                            this.comments[this.comments.length - 1]
-                        ]
-                    })
-                });
-            }
+            this.#lastCommentDate = new Date();
+            this.addComment({
+                ...payload.comments[0],
+                member: this.member
+            });
+            return await route.fulfill({
+                status: 200,
+                body: JSON.stringify({
+                    comments: [
+                        this.comments[this.comments.length - 1]
+                    ]
+                })
+            });
+        });
 
+        await page.route(`${path}/members/api/comments/post/*/*`, async (route) => {
             const url = new URL(route.request().url());
 
             const p = parseInt(url.searchParams.get('page') ?? '1');
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
-            const order = url.searchParams.get('order') ?? '';
             const filter = url.searchParams.get('filter') ?? '';
 
             await route.fulfill({
@@ -196,14 +203,13 @@ export class MockedApi {
                 body: JSON.stringify(this.browseComments({
                     page: p,
                     limit,
-                    order,
                     filter
                 }))
             });
         });
 
-         // LIKE a single comment
-         await page.route(`${path}/members/api/comments/*/like/`, async (route) => {
+        // LIKE a single comment
+        await page.route(`${path}/members/api/comments/*/like/`, async (route) => {
             const url = new URL(route.request().url());
             const commentId = url.pathname.split('/').reverse()[2];
 
@@ -234,7 +240,6 @@ export class MockedApi {
                 }))
             });
         });
-
 
         // GET a single comment
         await page.route(`${path}/members/api/comments/*/`, async (route) => {

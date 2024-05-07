@@ -491,7 +491,7 @@ Object {
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "delivered_count": 1,
-      "email_count": 2,
+      "email_count": 6,
       "error": null,
       "error_data": null,
       "failed_count": 1,
@@ -499,6 +499,7 @@ Object {
       "from": null,
       "html": "<p>Look! I'm an email</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "latest_event_timestamp": null,
       "newsletter_id": null,
       "opened_count": 1,
       "plaintext": "Waba-daba-dab-da",
@@ -517,7 +518,7 @@ Object {
     },
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "delivered_count": 0,
+      "delivered_count": 3,
       "email_count": 3,
       "error": "Everything went south",
       "error_data": null,
@@ -526,6 +527,7 @@ Object {
       "from": null,
       "html": "<p>What's that? Another email!</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "latest_event_timestamp": null,
       "newsletter_id": null,
       "opened_count": 0,
       "plaintext": "yes this is an email",
@@ -560,7 +562,7 @@ exports[`Emails API Can browse emails 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1405",
+  "content-length": "1465",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -690,7 +692,7 @@ Object {
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "delivered_count": 1,
-      "email_count": 2,
+      "email_count": 6,
       "error": null,
       "error_data": null,
       "failed_count": 1,
@@ -698,6 +700,7 @@ Object {
       "from": null,
       "html": "<p>Look! I'm an email</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "latest_event_timestamp": null,
       "newsletter_id": null,
       "opened_count": 1,
       "plaintext": "Waba-daba-dab-da",
@@ -722,7 +725,7 @@ exports[`Emails API Can read an email 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "642",
+  "content-length": "672",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -736,7 +739,7 @@ Object {
   "emails": Array [
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "delivered_count": 0,
+      "delivered_count": 3,
       "email_count": 3,
       "error": "Everything went south",
       "error_data": null,
@@ -745,6 +748,7 @@ Object {
       "from": null,
       "html": "<p>What's that? Another email!</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "latest_event_timestamp": null,
       "newsletter_id": null,
       "opened_count": 0,
       "plaintext": "yes this is an email",
@@ -769,7 +773,7 @@ exports[`Emails API Can retry a failed email 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "688",
+  "content-length": "718",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -792,6 +796,7 @@ Object {
       "from": "support@example.com",
       "html": "<p style=\\"margin: 0 0 1.5em 0; line-height: 1.6em;\\">Hey Jamie, Hey Jamie,</p><a href=\\"http://127.0.0.1:2369/unsubscribe/?uuid=example-uuid&newsletter=preview\\">Unsubscribe</a>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "latest_event_timestamp": null,
       "newsletter_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "opened_count": 0,
       "plaintext": "Hey Jamie, Hey Jamie
@@ -817,7 +822,7 @@ exports[`Emails API Does default replacements on the HTML body of an old email 2
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "923",
+  "content-length": "953",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

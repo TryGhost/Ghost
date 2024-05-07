@@ -10,6 +10,7 @@ module.exports = {
             cacheInvalidate: false
         },
         options: [
+            'post_id',
             'include',
             'page',
             'limit',

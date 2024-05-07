@@ -4,7 +4,7 @@ const {BASE_API_PATH} = require('../../../shared/url-utils');
 
 /**
  *
- * @returns {import('express').RequestHandler}
+ * @returns {import('express').Application}
  */
 module.exports = () => {
     debug('BackendApp setup start');

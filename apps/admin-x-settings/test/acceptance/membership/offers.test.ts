@@ -1,16 +1,17 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi, responseFixtures, settingsWithStripe, toggleLabsFlag} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Offers Modal', () => {
-    test.beforeEach(async () => {
-        toggleLabsFlag('adminXOffers', true);
-    });
+    // test.beforeEach(async () => {
+    //     toggleLabsFlag('adminXOffers', true);
+    // });
 
     test('Offers Modal is available', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
-            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe}
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
         }});
         await page.goto('/');
         const section = page.getByTestId('offers');
@@ -155,7 +156,7 @@ test.describe('Offers Modal', () => {
         const section = page.getByTestId('offers');
         await section.getByRole('button', {name: 'Manage offers'}).click();
         const modal = page.getByTestId('offers-modal');
-        await expect(modal).toContainText('Active offers');
+        await expect(modal.getByText('Active')).toHaveAttribute('aria-selected', 'true');
         await expect(modal).toContainText('First offer');
         await expect(modal).toContainText('Second offer');
     });
@@ -174,7 +175,7 @@ test.describe('Offers Modal', () => {
         await section.getByRole('button', {name: 'Manage offers'}).click();
         const modal = page.getByTestId('offers-modal');
         await modal.getByText('Archived').click();
-        await expect(modal).toContainText('Archived offers');
+        await expect(modal.getByText('Archived')).toHaveAttribute('aria-selected', 'true');
         await expect(modal).toContainText('Third offer');
     });
 
@@ -199,7 +200,7 @@ test.describe('Offers Modal', () => {
         const section = page.getByTestId('offers');
         await section.getByRole('button', {name: 'Manage offers'}).click();
         const modal = page.getByTestId('offers-modal');
-        await expect(modal).toContainText('Active offers');
+        await expect(modal.getByText('Active')).toHaveAttribute('aria-selected', 'true');
         await expect(modal).toContainText('First offer');
         await modal.getByText('First offer').click();
 

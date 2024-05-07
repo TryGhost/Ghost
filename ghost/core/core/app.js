@@ -15,7 +15,7 @@ const isMaintenanceModeEnabled = (req) => {
 };
 
 // We never want middleware functions to be anonymous
-const maintenanceMiddleware = (req, res, next) => {
+const maintenanceMiddleware = function maintenanceMiddleware(req, res, next) {
     if (!isMaintenanceModeEnabled(req)) {
         return next();
     }

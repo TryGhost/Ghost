@@ -28,6 +28,7 @@ export interface TableProps {
     pagination?: PaginationData;
     showMore?: ShowMoreData;
     fillContainer?: boolean;
+    horizontalScroll?: boolean;
     paddingXClassName?: string;
 }
 
@@ -65,6 +66,7 @@ const Table: React.FC<TableProps> = ({
     showMore,
     isLoading,
     fillContainer = false,
+    horizontalScroll = false,
     paddingXClassName
 }) => {
     const table = React.useRef<HTMLTableSectionElement>(null);
@@ -145,7 +147,7 @@ const Table: React.FC<TableProps> = ({
     );
 
     const mainContainerClasses = clsx(
-        'overflow-x-auto',
+        horizontalScroll ? 'overflow-x-auto' : '',
         fillContainer ? 'absolute inset-0 min-w-full' : 'w-full'
     );
 

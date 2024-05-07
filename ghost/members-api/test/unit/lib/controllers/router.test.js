@@ -146,10 +146,10 @@ describe('RouterController', function () {
                 const newsletterNames = newsletters.map(newsletter => newsletter.name);
                 const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
                 const newslettersServiceStub = {
-                    browse: sinon.stub()
+                    getAll: sinon.stub()
                 };
 
-                newslettersServiceStub.browse
+                newslettersServiceStub.getAll
                     .withArgs({
                         filter: `name:[${newsletterNamesFilter}]`,
                         columns: ['id','name','status']
@@ -181,10 +181,10 @@ describe('RouterController', function () {
                 ];
 
                 const newslettersServiceStub = {
-                    browse: sinon.stub()
+                    getAll: sinon.stub()
                 };
 
-                newslettersServiceStub.browse
+                newslettersServiceStub.getAll
                     .withArgs({
                         filter: `name:['${INVALID_NEWSLETTER_NAME}']`,
                         columns: ['id','name','status']
@@ -221,10 +221,10 @@ describe('RouterController', function () {
 
                 const newsletterNames = newsletters.map(newsletter => `'${newsletter.name}'`);
                 const newslettersServiceStub = {
-                    browse: sinon.stub()
+                    getAll: sinon.stub()
                 };
 
-                newslettersServiceStub.browse
+                newslettersServiceStub.getAll
                     .withArgs({
                         filter: `name:[${newsletterNames}]`,
                         columns: ['id', 'name','status']

@@ -1,10 +1,26 @@
+const {BadRequestError} = require('@tryghost/errors');
 const localUtils = require('../../index');
+const nql = require('@tryghost/nql-lang');
+const tpl = require('@tryghost/tpl');
+
+const messages = {
+    invalidNQLFilter: 'The NQL filter you passed was invalid.'
+};
 
 const forceActiveFilter = (frame) => {
     if (frame.options.filter) {
-        frame.options.filter = `(${frame.options.filter})+active:true`;
+        frame.options.filter = {
+            $and: [
+                {
+                    active: true
+                },
+                frame.options.filter
+            ]
+        };
     } else {
-        frame.options.filter = 'active:true';
+        frame.options.filter = {
+            active: true
+        };
     }
 };
 
@@ -41,6 +57,18 @@ function convertTierInput(input) {
 
 module.exports = {
     all(_apiConfig, frame) {
+        if (frame.options.filter) {
+            try {
+                frame.options.filter = nql.parse(frame.options.filter);
+            } catch (err) {
+                throw new BadRequestError({
+                    message: tpl(messages.invalidNQLFilter)
+                });
+            }
+        } else {
+            frame.options.filter = null;
+        }
+
         if (localUtils.isContentAPI(frame)) {
             // CASE: content api can only have active tiers
             forceActiveFilter(frame);

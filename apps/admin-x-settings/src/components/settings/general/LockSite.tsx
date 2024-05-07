@@ -21,7 +21,7 @@ const LockSite: React.FC<{ keywords: string[] }> = ({keywords}) => {
         onValidate: () => {
             if (passwordEnabled && !password) {
                 return {
-                    password: 'Password must be supplied'
+                    password: 'Enter a password'
                 };
             }
 

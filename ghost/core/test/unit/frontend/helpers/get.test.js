@@ -1,3 +1,4 @@
+const assert = require('assert').strict;
 const should = require('should');
 const sinon = require('sinon');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
@@ -36,6 +37,45 @@ describe('{{#get}} helper', function () {
 
     afterEach(function () {
         sinon.restore();
+    });
+
+    describe('cacheability optimisation', function () {
+        it('Ignores non posts', function () {
+            const apiOptions = {
+                filter: 'id:-abcdef1234567890abcdef12'
+            };
+            const {
+                options,
+                parseResult
+            } = get.optimiseFilterCacheability('not-posts', apiOptions);
+            assert.equal(options.filter, 'id:-abcdef1234567890abcdef12');
+            assert.deepEqual(parseResult({not: 'modified'}), {not: 'modified'});
+        });
+        it('Changes the filter for simple id negations', function () {
+            const apiOptions = {
+                filter: 'id:-abcdef1234567890abcdef12',
+                limit: 1
+            };
+            const {
+                options,
+                parseResult
+            } = get.optimiseFilterCacheability('posts', apiOptions);
+            assert.equal(options.filter, 'id:-null');
+            assert.deepEqual(parseResult({
+                posts: [{
+                    id: 'abcdef1234567890abcdef12'
+                }, {
+                    id: '1234567890abcdef12345678'
+                }]
+            }), {
+                posts: [{
+                    id: '1234567890abcdef12345678'
+                }],
+                meta: {
+                    cacheabilityOptimisation: true
+                }
+            });
+        });
     });
 
     describe('context preparation', function () {
@@ -394,12 +434,13 @@ describe('{{#get}} helper', function () {
         it('should log an error and return safely if it hits the timeout threshold', async function () {
             configUtils.set('optimization:getHelper:timeout:threshold', 1);
 
-            await get.call(
+            const result = await get.call(
                 {},
                 'posts',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
             );
 
+            assert(result.toString().includes('data-aborted-get-helper'));
             // A log message will be output
             logging.error.calledOnce.should.be.true();
             // The get helper gets called with an empty array of results

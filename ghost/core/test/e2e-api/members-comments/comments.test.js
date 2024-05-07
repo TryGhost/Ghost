@@ -211,9 +211,21 @@ describe('Comments API', function () {
                 sinon.restore();
             });
 
-            it('Can browse all comments of a post', async function () {
+            it('Can browse all comments of a post (legacy)', async function () {
                 await membersAgent
                     .get(`/api/comments/?filter=post_id:'${postId}'`)
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        comments: [commentMatcherWithReplies({replies: 1})]
+                    });
+            });
+
+            it('Can browse all comments of a post', async function () {
+                await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
                         etag: anyEtag
@@ -306,15 +318,50 @@ describe('Comments API', function () {
                 await testCanCommentOnPost(member);
             });
 
-            it('Can browse all comments of a post', async function () {
+            it('Can browse all comments of a post (legacy)', async function () {
+                // uses explicit order to match db ordering
                 await membersAgent
-                    .get(`/api/comments/?filter=post_id:'${postId}'`)
+                    .get(`/api/comments/?filter=post_id:'${postId}'&order=id%20ASC`)
                     .expectStatus(200)
                     .matchHeaderSnapshot({
                         etag: anyEtag
                     })
                     .matchBodySnapshot({
-                        comments: [commentMatcherWithReplies({replies: 1}), commentMatcher]
+                        comments: [
+                            commentMatcherWithReplies({replies: 1}),
+                            commentMatcher
+                        ]
+                    });
+            });
+
+            it('Can browse all comments of a post', async function () {
+                // uses explicit order to match db ordering
+                await membersAgent
+                    .get(`/api/comments/post/${postId}/?order=id%20ASC`)
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        comments: [
+                            commentMatcherWithReplies({replies: 1}),
+                            commentMatcher
+                        ]
+                    });
+            });
+
+            it('Can browse all comments of a post with default order', async function () {
+                await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
+                    .expectStatus(200)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .matchBodySnapshot({
+                        comments: [
+                            commentMatcher,
+                            commentMatcherWithReplies({replies: 1})
+                        ]
                     });
             });
 
@@ -334,7 +381,10 @@ describe('Comments API', function () {
                     .expectStatus(201)
                     .matchHeaderSnapshot({
                         etag: anyEtag,
-                        location: anyLocationFor('comments')
+                        location: anyLocationFor('comments'),
+                        'x-cache-invalidate': matchers.stringMatching(
+                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
+                        )
                     })
                     .matchBodySnapshot({
                         comments: [commentMatcher]

@@ -1,5 +1,5 @@
 const ObjectID = require('bson-objectid').default;
-const {BadRequestError} = require('@tryghost/errors');
+const {BadRequestError, IncorrectUsageError} = require('@tryghost/errors');
 const Tier = require('./Tier');
 
 /**
@@ -42,11 +42,16 @@ module.exports = class TiersAPI {
 
     /**
      * @param {object} [options]
-     * @param {string} [options.filter] - An NQL filter string
+     * @param {any} [options.filter] - A mongo query object
      *
      * @returns {Promise<Page<Tier>>}
      */
     async browse(options = {}) {
+        if (typeof options.filter === 'string') {
+            throw new IncorrectUsageError({
+                message: 'filter must be a mongo query object'
+            });
+        }
         const tiers = await this.#repository.getAll(options);
 
         return {
@@ -83,7 +88,12 @@ module.exports = class TiersAPI {
      */
     async readDefaultTier(options = {}) {
         const [defaultTier] = await this.#repository.getAll({
-            filter: 'type:paid+active:true',
+            filter: {
+                $and: [
+                    {type: 'paid'},
+                    {active: true}
+                ]
+            },
             limit: 1,
             ...options
         });

@@ -169,7 +169,7 @@ describe('Unit: services/url/Queue', function () {
             });
         });
 
-        it('start twice', function (done) {
+        it('start twice with subscriber between starts', function (done) {
             let notified = 0;
             let called = 0;
 

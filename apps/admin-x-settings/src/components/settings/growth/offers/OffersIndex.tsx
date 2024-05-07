@@ -1,20 +1,19 @@
-import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Button, Tab, TabView} from '@tryghost/admin-x-design-system';
-import {ButtonGroup, ButtonProps} from '@tryghost/admin-x-design-system';
+import {ButtonGroup, ButtonProps, showToast} from '@tryghost/admin-x-design-system';
+import {Icon} from '@tryghost/admin-x-design-system';
 import {Modal} from '@tryghost/admin-x-design-system';
-import {NoValueLabel} from '@tryghost/admin-x-design-system';
 import {SortMenu} from '@tryghost/admin-x-design-system';
-import {Tier, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {Tier, getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {Tooltip} from '@tryghost/admin-x-design-system';
 import {currencyToDecimal, getSymbol} from '../../../../utils/currency';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {numberWithCommas} from '../../../../utils/helpers';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
-import {useEffect, useState} from 'react';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useModal} from '@ebay/nice-modal-react';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useSortingState} from '../../../providers/SettingsAppProvider';
+import {useState} from 'react';
 
 export type OfferType = 'percent' | 'fixed' | 'trial';
 
@@ -62,7 +61,6 @@ export const getOfferDiscount = (type: string, amount: number, cadence: string, 
         break;
     };
 
-    // Check if updatedPrice is negative, if so, set it to 0
     if (updatedPrice < 0) {
         updatedPrice = 0;
     }
@@ -92,11 +90,19 @@ export const CopyLinkButton: React.FC<{offerCode: string}> = ({offerCode}) => {
     return <Tooltip containerClassName='group-hover:opacity-100 opacity-0 inline-flex items-center -mr-1 justify-center leading-none w-5 h-5' content={isCopied ? 'Copied' : 'Copy link'} size='sm'><Button color='clear' hideLabel={true} icon={isCopied ? 'check-circle' : 'hyperlink-circle'} iconColorClass={isCopied ? 'text-green w-[14px] h-[14px]' : 'w-[18px] h-[18px]'} label={isCopied ? 'Copied' : 'Copy'} unstyled={true} onClick={handleCopyClick} /></Tooltip>;
 };
 
+export const EmptyState: React.FC<{title?: string, description: string, buttonAction: () => void, buttonLabel: string}> = ({title = 'No offers found', description, buttonAction, buttonLabel}) => (
+    <div className='flex h-full grow flex-col items-center justify-center text-center'>
+        <Icon className='-mt-14' colorClass='text-grey-700 -mt-6' name='tags-block' size='xl' />
+        <h1 className='mt-6 text-2xl'>{title}</h1>
+        <p className='mt-3 max-w-[420px] text-[1.6rem]'>{description}</p>
+        <Button className="mt-8" color="grey" label={buttonLabel} onClick={buttonAction}></Button>
+    </div>
+);
+
 export const OffersIndexModal = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
-    const hasOffers = useFeatureFlag('adminXOffers');
-    const {data: {offers: allOffers = []} = {}} = useBrowseOffers({
+    const {data: {offers: allOffers = []} = {}, isFetching: isFetchingOffers} = useBrowseOffers({
         searchParams: {
             limit: 'all'
         }
@@ -124,13 +130,6 @@ export const OffersIndexModal = () => {
     const sortOption = offersSorting?.option || 'date-added';
     const sortDirection = offersSorting?.direction || 'desc';
 
-    useEffect(() => {
-        if (!hasOffers) {
-            modal.remove();
-            updateRoute('');
-        }
-    }, [hasOffers, modal, updateRoute]);
-
     const handleOfferEdit = (id:string) => {
         // TODO: implement
         sessionStorage.setItem('editOfferPageSource', 'offersIndex');
@@ -146,10 +145,11 @@ export const OffersIndexModal = () => {
             case 'redemptions':
                 return multiplier * (offer1.redemption_count - offer2.redemption_count);
             default:
-                // 'date-added' or unknown option, use default sorting
                 return multiplier * ((offer1.created_at ? new Date(offer1.created_at).getTime() : 0) - (offer2.created_at ? new Date(offer2.created_at).getTime() : 0));
             }
         });
+
+    const paidActiveTiers = getPaidActiveTiers(allTiers || []);
 
     const listLayoutOutput = <div className='overflow-x-auto'>
         <table className='m-0 w-full'>
@@ -165,7 +165,6 @@ export const OffersIndexModal = () => {
             }
             {sortedOffers.filter((offer) => {
                 const offerTier = allTiers?.find(tier => tier.id === offer?.tier.id);
-                //Check to filter out offers with archived offerTier
                 return (selectedTab === 'active' && (offer.status === 'active' && offerTier && offerTier.active === true)) ||
                 (selectedTab === 'archived' && (offer.status === 'archived' || (offerTier && offerTier.active === false)));
             }).map((offer) => {
@@ -180,7 +179,7 @@ export const OffersIndexModal = () => {
                 const {discountOffer, originalPriceWithCurrency, updatedPriceWithCurrency} = getOfferDiscount(offer.type, offer.amount, offer.cadence, offer.currency || 'USD', offerTier);
 
                 return (
-                    <tr className={`group relative scale-100 border-b border-b-grey-200 dark:border-grey-800`}>
+                    <tr className={`group relative scale-100 border-b border-b-grey-200 dark:border-grey-800`} data-testid="offer-item">
                         <td className={`${isTierArchived ? 'opacity-50' : ''} p-0`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5 pl-0`} onClick={!isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {}}><span className='font-semibold'>{offer?.name}</span><br /><span className='text-sm text-grey-700'>{offerTier.name} {getOfferCadence(offer.cadence)}</span></a></td>
                         <td className={`${isTierArchived ? 'opacity-50' : ''} whitespace-nowrap p-0 text-sm`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5`} onClick={!isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {}}><span className='text-[1.3rem] font-medium uppercase'>{discountOffer}</span><br /><span className='text-grey-700'>{offer.type !== 'trial' ? getOfferDuration(offer.duration) : 'Trial period'}</span></a></td>
                         <td className={`${isTierArchived ? 'opacity-50' : ''} whitespace-nowrap p-0 text-sm`}><a className={`block ${isTierArchived ? 'cursor-default select-none' : 'cursor-pointer'} p-5`} onClick={!isTierArchived ? () => handleOfferEdit(offer?.id ? offer.id : '') : () => {}}><span className='font-medium'>{updatedPriceWithCurrency}</span> {offer.type !== 'trial' ? <span className='relative text-xs text-grey-700 before:absolute before:-inset-x-0.5 before:top-1/2 before:rotate-[-20deg] before:border-t before:content-[""]'>{originalPriceWithCurrency}</span> : null}</a></td>
@@ -210,7 +209,16 @@ export const OffersIndexModal = () => {
             icon: 'add',
             label: 'New offer',
             color: 'green',
-            onClick: () => updateRoute('offers/new')
+            onClick: () => {
+                if (paidActiveTiers.length === 0) {
+                    showToast({
+                        type: 'neutral',
+                        message: 'You must have an active tier to create an offer.'
+                    });
+                } else {
+                    updateRoute('offers/new');
+                }
+            }
         }
     ];
 
@@ -222,66 +230,68 @@ export const OffersIndexModal = () => {
         backDropClick={false}
         cancelLabel=''
         footer={false}
-        header={false}
         height='full'
         size='lg'
         testId='offers-modal'
+        title='Offers'
+        topRightContent={<ButtonGroup buttons={buttons} />}
         width={1140}
     >
-        <div className='pt-6'>
+        <div className='flex h-full flex-col pt-8'>
             <header>
-                <div className='flex items-center justify-between'>
-                    <div>
-                        <TabView
-                            border={false}
-                            selectedTab={selectedTab}
-                            tabs={offersTabs}
-                            width='wide'
-                            onTabChange={setSelectedTab}
-                        />
-                    </div>
-                    <ButtonGroup buttons={buttons} />
-                </div>
-                <div className='mt-12 flex items-center justify-between border-b border-b-grey-300 pb-2.5 dark:border-b-grey-800'>
-                    <h1 className='text-3xl'>{offersTabs.find(tab => tab.id === selectedTab)?.title} offers</h1>
-                    <div>
-                        <SortMenu
-                            direction={sortDirection as 'asc' | 'desc'}
-                            items={[
-                                {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added', direction: sortDirection as 'asc' | 'desc'},
-                                {id: 'name', label: 'Name', selected: sortOption === 'name', direction: sortDirection as 'asc' | 'desc'},
-                                {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions', direction: sortDirection as 'asc' | 'desc'}
-                            ]}
-                            position='right'
-                            onDirectionChange={(selectedDirection) => {
-                                const newDirection = selectedDirection === 'asc' ? 'desc' : 'asc';
-                                setSortingState?.([{
-                                    type: 'offers',
-                                    option: sortOption,
-                                    direction: newDirection
-                                }]);
-                            }}
-                            onSortChange={(selectedOption) => {
-                                setSortingState?.([{
-                                    type: 'offers',
-                                    option: selectedOption,
-                                    direction: sortDirection
-                                }]);
-                            }}
-                        />
-                    </div>
-                </div>
+                <TabView
+                    selectedTab={selectedTab}
+                    tabs={offersTabs}
+                    topRightContent={
+                        (selectedTab === 'active' && activeOffers.length > 0) || (selectedTab === 'archived' && archivedOffers.length > 0) ?
+                            <div className='pt-1'>
+                                <SortMenu
+                                    direction={sortDirection as 'asc' | 'desc'}
+                                    items={[
+                                        {id: 'date-added', label: 'Date added', selected: sortOption === 'date-added', direction: sortDirection as 'asc' | 'desc'},
+                                        {id: 'name', label: 'Name', selected: sortOption === 'name', direction: sortDirection as 'asc' | 'desc'},
+                                        {id: 'redemptions', label: 'Redemptions', selected: sortOption === 'redemptions', direction: sortDirection as 'asc' | 'desc'}
+                                    ]}
+                                    position='right'
+                                    triggerButtonProps={{
+                                        link: true
+                                    }}
+                                    onDirectionChange={(selectedDirection) => {
+                                        const newDirection = selectedDirection === 'asc' ? 'desc' : 'asc';
+                                        setSortingState?.([{
+                                            type: 'offers',
+                                            option: sortOption,
+                                            direction: newDirection
+                                        }]);
+                                    }}
+                                    onSortChange={(selectedOption) => {
+                                        setSortingState?.([{
+                                            type: 'offers',
+                                            option: selectedOption,
+                                            direction: sortDirection
+                                        }]);
+                                    }}
+                                />
+                            </div> :
+                            null
+                    }
+                    onTabChange={setSelectedTab}
+                />
             </header>
-            {selectedTab === 'active' && activeOffers.length === 0 ?
-                <NoValueLabel icon='tags-block'>
-                    No offers found.
-                </NoValueLabel> :
+            {selectedTab === 'active' && activeOffers.length === 0 && !isFetchingOffers ?
+                <EmptyState
+                    buttonAction={() => updateRoute('offers/new')}
+                    buttonLabel='Create an offer'
+                    description='Grow your audience with discounts or free trials.'
+                /> :
                 null
             }
-            {selectedTab === 'archived' && archivedOffers.length === 0 ?
-                <NoValueLabel icon='tags-block'>
-                    No offers found.
-                </NoValueLabel> :
+            {selectedTab === 'archived' && archivedOffers.length === 0 && !isFetchingOffers ?
+                <EmptyState
+                    buttonAction={() => setSelectedTab('active')}
+                    buttonLabel='Back to active'
+                    description='All archived offers will be shown here.'
+                /> :
                 null
             }
             {listLayoutOutput}
