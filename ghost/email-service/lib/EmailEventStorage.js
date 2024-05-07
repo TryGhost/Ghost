@@ -26,7 +26,7 @@ class EmailEventStorage {
 
         // We need an additional query to set the timestamp in email at latest_event_timestamp
 
-        await this.#db.knex('email')
+        await this.#db.knex('emails')
             .where('id', '=', event.emailId)
             .update({
                 latest_event_timestamp: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
