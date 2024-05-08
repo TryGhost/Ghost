@@ -1,13 +1,16 @@
 import React from 'react';
+import {Delayed} from './Delayed';
 import {DropdownContainerCopy} from './DropdownContainerCopy';
 import {Input} from './Input';
 import {KeyboardSelectionWithGroups} from './KeyboardSelectionWithGroups';
 
 export function InputListLoadingItem({dataTestId}) {
     return (
-        <li className={`mb-0 px-4 py-2 text-left`} data-testid={`${dataTestId}-loading`}>
-            <span className="block text-sm font-medium leading-tight text-grey-900 dark:text-white">Searching...</span>
-        </li>
+        <Delayed>
+            <li className={`mb-0 px-4 py-2 text-left`} data-testid={`${dataTestId}-loading`}>
+                <span className="block text-sm font-medium leading-tight text-grey-900 dark:text-white">Searching...</span>
+            </li>
+        </Delayed>
     );
 }
 
