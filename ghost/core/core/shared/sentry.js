@@ -125,8 +125,8 @@ if (sentryConfig && !sentryConfig.disabled) {
 
     // Enable tracing if sentry.tracing.enabled is true
     if (sentryConfig.tracing?.enabled === true) {
-        sentryInitConfig.integrations.push(new Sentry.Integrations.Http({tracing: true}));
         sentryInitConfig.tracesSampleRate = parseFloat(sentryConfig.tracing.sampleRate) || 0.0;
+
         // Enable profiling, if configured, only if tracing is also configured
         if (sentryConfig.profiling?.enabled === true) {
             // Import Sentry's profiling integration if available
@@ -147,9 +147,6 @@ if (sentryConfig && !sentryConfig.disabled) {
     Sentry.init(sentryInitConfig);
 
     module.exports = {
-        requestHandler: Sentry.Handlers.requestHandler(),
-        errorHandler: Sentry.Handlers.errorHandler(),
-        tracingHandler: Sentry.Handlers.tracingHandler(),
         captureException: Sentry.captureException,
         captureMessage: Sentry.captureMessage,
         beforeSend: beforeSend,
@@ -158,22 +155,16 @@ if (sentryConfig && !sentryConfig.disabled) {
             if (sentryConfig.tracing?.enabled === true) {
                 const integration = new SentryKnexTracingIntegration(knex);
 
-                Sentry.addIntegration(integration);
+                //  Sentry.addIntegration(integration);
             }
         }
     };
 } else {
-    const expressNoop = function (req, res, next) {
-        next();
-    };
-
     const noop = () => {};
 
     module.exports = {
-        requestHandler: expressNoop,
-        errorHandler: expressNoop,
-        tracingHandler: expressNoop,
         captureException: noop,
+        captureMessage: noop,
         initQueryTracing: noop
     };
 }

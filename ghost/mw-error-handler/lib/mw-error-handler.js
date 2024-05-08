@@ -294,8 +294,6 @@ module.exports.handleJSONResponse = sentry => [
     module.exports.prepareError,
     // Add cache-control header
     module.exports.prepareErrorCacheControl(),
-    // Handle the error in Sentry
-    sentry.errorHandler,
     // Format the stack for the user
     module.exports.prepareStack,
     // Render the error using JSON format
@@ -307,8 +305,6 @@ module.exports.handleHTMLResponse = sentry => [
     module.exports.prepareError,
     // Add cache-control header
     module.exports.prepareErrorCacheControl(cacheControlValues.private),
-    // Handle the error in Sentry
-    sentry.errorHandler,
     // Format the stack for the user
     module.exports.prepareStack
 ];

@@ -1,7 +1,7 @@
 const debug = require('@tryghost/debug')('shared:express');
 const express = require('express');
 const {createLazyRouter} = require('express-lazy-router');
-const sentry = require('./sentry');
+const Sentry = require('@sentry/node');
 
 const lazyLoad = createLazyRouter();
 
@@ -20,7 +20,7 @@ module.exports = (name) => {
     app.enable('trust proxy');
 
     // Sentry must be our first error handler. Mounting it here means all custom error handlers will come after
-    app.use(sentry.errorHandler);
+    Sentry.setupExpressErrorHandler(app);
 
     app.lazyUse = function lazyUse(mountPath, requireFn) {
         app.use(mountPath, lazyLoad(() => {
@@ -39,7 +39,7 @@ module.exports.Router = (name, options) => {
     debug('new Router start', name);
     const router = express.Router(options);
 
-    router.use(sentry.errorHandler);
+    Sentry.setupExpressErrorHandler(router);
 
     debug('new Router end', name);
     return router;
