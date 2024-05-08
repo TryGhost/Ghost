@@ -74,12 +74,12 @@ describe('Acceptance: Search', function () {
         // all groups are present
         const groupNames = findAll('.ember-power-select-group-name');
         expect(groupNames, 'group names').to.have.length(4);
-        expect(groupNames.map(el => el.textContent.trim())).to.deep.equal(['Posts', 'Pages', 'Staff', 'Tags']);
+        expect(groupNames.map(el => el.textContent.trim())).to.deep.equal(['Staff', 'Tags', 'Posts', 'Pages']);
 
         // correct results are found
         const options = findAll('.ember-power-select-option');
         expect(options, 'number of search results').to.have.length(4);
-        expect(options.map(el => el.textContent.trim())).to.deep.equal(['First post', 'First page', 'First user', 'First tag']);
+        expect(options.map(el => el.textContent.trim())).to.deep.equal(['First user', 'First tag', 'First post', 'First page']);
 
         // first item is selected
         expect(options[0]).to.have.attribute('aria-current', 'true');
@@ -88,7 +88,7 @@ describe('Acceptance: Search', function () {
     it('up/down arrows move selected item', async function () {
         await visit('/dashboard');
         await click('[data-test-button="search"]');
-        await typeInSearch('first');
+        await typeInSearch('first post');
         expect(findAll('.ember-power-select-option')[0], 'first option (initial)').to.have.attribute('aria-current', 'true');
         await triggerKeyEvent(trigger, 'keyup', 'ArrowDown');
         expect(findAll('.ember-power-select-option')[0], 'second option (after down)').to.have.attribute('aria-current', 'true');
@@ -99,7 +99,7 @@ describe('Acceptance: Search', function () {
     it('navigates to editor when post selected (Enter)', async function () {
         await visit('/dashboard');
         await click('[data-test-button="search"]');
-        await typeInSearch('first');
+        await typeInSearch('first post');
         await triggerKeyEvent(trigger, 'keydown', 'Enter');
         expect(currentURL(), 'url after selecting post').to.equal(`/editor/post/${firstPost.id}`);
     });
@@ -107,7 +107,7 @@ describe('Acceptance: Search', function () {
     it('navigates to editor when post selected (Clicked)', async function () {
         await visit('/dashboard');
         await click('[data-test-button="search"]');
-        await typeInSearch('first');
+        await typeInSearch('first post');
         await click('.ember-power-select-option[aria-current="true"]');
         expect(currentURL(), 'url after selecting post').to.equal(`/editor/post/${firstPost.id}`);
     });
@@ -155,12 +155,12 @@ describe('Acceptance: Search', function () {
         // all groups are present
         const groupNames = findAll('.ember-power-select-group-name');
         expect(groupNames, 'group names').to.have.length(4);
-        expect(groupNames.map(el => el.textContent.trim())).to.deep.equal(['Posts', 'Pages', 'Staff', 'Tags']);
+        expect(groupNames.map(el => el.textContent.trim())).to.deep.equal(['Staff', 'Tags', 'Posts', 'Pages']);
 
         // correct results are found
         const options = findAll('.ember-power-select-option');
         expect(options, 'number of search results').to.have.length(4);
-        expect(options.map(el => el.textContent.trim())).to.deep.equal(['First post', 'First page', 'First user', 'First tag']);
+        expect(options.map(el => el.textContent.trim())).to.deep.equal(['First user', 'First tag', 'First post', 'First page']);
 
         // first item is selected
         expect(options[0]).to.have.attribute('aria-current', 'true');
