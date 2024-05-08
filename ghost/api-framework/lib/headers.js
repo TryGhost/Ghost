@@ -99,8 +99,8 @@ module.exports = {
      *
      * @param {Object} result - API response
      * @param {Object} apiConfigHeaders
-     * @param {Object} frame
-     * @return {Promise}
+     * @param {import('@tryghost/api-framework').Frame} frame
+     * @return {Promise<object>}
      */
     async get(result, apiConfigHeaders = {}, frame) {
         let headers = {};

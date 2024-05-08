@@ -19,17 +19,25 @@ module.exports = {
      * is a Content API implementation -  see index.js file.
      *
      * @TODO: Move this helper function into a utils.js file.
-     * @param {Object} frame
+     * @param {import('@tryghost/api-framework').Frame} frame
      * @return {boolean}
      */
     isContentAPI: (frame) => {
         return frame.apiType === 'content';
     },
 
+    /**
+     * @param {import('@tryghost/api-framework').Frame} frame
+     * @returns {boolean}
+     */
     isMembersAPI: (frame) => {
         return frame.apiType === 'members';
     },
 
+    /**
+     * @param {import('@tryghost/api-framework').Frame} frame
+     * @returns {boolean}
+     */
     isInternal: (frame) => {
         return frame.options.context && frame.options.context.internal;
     }

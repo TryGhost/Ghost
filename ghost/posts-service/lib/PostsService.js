@@ -110,7 +110,7 @@ class PostsService {
 
     /**
      *
-     * @param {any} frame
+     * @param {import('@tryghost/api-framework').Frame} frame
      * @param {object} [options]
      * @param {(event: EventString, dto: any) => Promise<void> | void} [options.eventHandler] - Called before the editPost method resolves with an event string
      * @returns

@@ -28,7 +28,7 @@ module.exports = {
  *
  * @param {{data: import('bookshelf').Model[], meta: PageMeta}} page
  * @param {APIConfig} _apiConfig
- * @param {Frame} frame
+ * @param {import('@tryghost/api-framework').Frame} frame
  *
  * @returns {{members: SerializedMember[], meta: PageMeta}}
  */
@@ -42,7 +42,7 @@ function paginatedMembers(page, _apiConfig, frame) {
 /**
  * @param {import('bookshelf').Model} model
  * @param {APIConfig} _apiConfig
- * @param {Frame} frame
+ * @param {import('@tryghost/api-framework').Frame} frame
  *
  * @returns {{members: SerializedMember[]}}
  */
@@ -55,7 +55,7 @@ function singleMember(model, _apiConfig, frame) {
 /**
  * @param {object} bulkActionResult
  * @param {APIConfig} _apiConfig
- * @param {Frame} frame
+ * @param {import('@tryghost/api-framework').Frame} frame
  *
  * @returns {{bulk: SerializedBulkAction}}
  */
@@ -219,9 +219,9 @@ function passthrough(data) {
  * @template Data
  * @template Response
  * @param {string} debugString
- * @param {(data: Data, apiConfig: APIConfig, frame: Frame) => Response} serialize - A function to serialize the data into an object suitable for API response
+ * @param {(data: Data, apiConfig: APIConfig, frame: import('@tryghost/api-framework').Frame) => Response} serialize
  *
- * @returns {(data: Data, apiConfig: APIConfig, frame: Frame) => void}
+ * @returns {(data: Data, apiConfig: APIConfig, frame: import('@tryghost/api-framework').Frame) => void}
  */
 function createSerializer(debugString, serialize) {
     return function serializer(data, apiConfig, frame) {
@@ -354,9 +354,4 @@ function createSerializer(debugString, serialize) {
  * @typedef {Object} APIConfig
  * @prop {string} docName
  * @prop {string} method
- */
-
-/**
- * @typedef {Object<string, any>} Frame
- * @prop {Object} options
  */
