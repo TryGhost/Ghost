@@ -36,9 +36,9 @@ export function InputListItem({dataTestId, item, selected, onClick}) {
     const Icon = item.Icon;
 
     return (
-        <li className={`${selectionClass} my-[.2rem] flex cursor-pointer flex-row items-center rounded-md px-4 py-2 text-left hover:bg-grey-100 dark:hover:bg-grey-900`} data-testid={`${dataTestId}-listOption`} onMouseDownCapture={handleMouseDown}>
-            {Icon && <Icon className="pr-2" />}
-            <span className="block text-sm font-medium leading-snug text-black dark:text-white" data-testid={`${dataTestId}-listOption-${item.label}`}>{item.label}</span>
+        <li className={`${selectionClass} my-[.2rem] flex cursor-pointer items-center gap-[.6rem] rounded-md px-4 py-2 text-left text-black hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900`} data-testid={`${dataTestId}-listOption`} onMouseDownCapture={handleMouseDown}>
+            {Icon && <Icon className="size-[1.4rem] stroke-[1.5px]" />}
+            <span className="block text-sm font-medium leading-snug" data-testid={`${dataTestId}-listOption-${item.label}`}>{item.label}</span>
         </li>
     );
 }
