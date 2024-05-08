@@ -12,17 +12,17 @@ const errors = require('@tryghost/errors');
 const beforeSend = function (event, hint) {
     try {
         const exception = hint.originalException;
-        const code = (exception && exception.code) ? exception.code : null;
-        const context = (exception && exception.context) ? exception.context : null;
-        const errorType = (exception && exception.errorType) ? exception.errorType : null;
-        const id = (exception && exception.id) ? exception.id : null;
-        const statusCode = (exception && exception.statusCode) ? exception.statusCode : null;
+        const code = exception?.code ?? null;
+        const context = exception?.context ?? null;
+        const errorType = exception?.errorType ?? null;
+        const id = exception?.id ?? null;
+        const statusCode = exception?.statusCode ?? null;
         event.tags = event.tags || {};
 
         if (errors.utils.isGhostError(exception)) {
             // Unexpected errors have a generic error message, set it back to context if there is one
             if (code === 'UNEXPECTED_ERROR' && context !== null) {
-                if (event.exception.values && event.exception.values.length > 0) {
+                if (event.exception.values?.length > 0) {
                     event.exception.values[0].type = context;
                 }
             }
@@ -30,11 +30,12 @@ const beforeSend = function (event, hint) {
             // This is a mysql2 error — add some additional context
             if (exception.sql) {
                 const sql = exception.sql;
-                const errno = exception.errno ? exception.errno : null;
-                const sqlErrorCode = exception.sqlErrorCode ? exception.sqlErrorCode : null;
-                const sqlMessage = exception.sqlMessage ? exception.sqlMessage : null;
-                const sqlState = exception.sqlState ? exception.sqlState : null;
-                if (event.exception.values && event.exception.values.length > 0) {
+                const errno = exception.errno ?? null;
+                const sqlErrorCode = exception.sqlErrorCode ?? null;
+                const sqlMessage = exception.sqlMessage ?? null;
+                const sqlState = exception.sqlState ?? null;
+
+                if (event.exception.values?.length > 0) {
                     event.exception.values[0].type = `SQL Error ${errno}: ${sqlErrorCode}`;
                     event.exception.values[0].value = sqlMessage;
                     event.contexts = event.contexts || {};
