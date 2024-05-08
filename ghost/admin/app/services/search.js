@@ -16,20 +16,6 @@ export default class SearchService extends Service {
 
     searchables = [
         {
-            name: 'Posts',
-            model: 'post',
-            fields: ['id', 'url', 'title', 'status'],
-            idField: 'id',
-            titleField: 'title'
-        },
-        {
-            name: 'Pages',
-            model: 'page',
-            fields: ['id', 'url', 'title', 'status'],
-            idField: 'id',
-            titleField: 'title'
-        },
-        {
             name: 'Staff',
             model: 'user',
             fields: ['id', 'slug', 'url', 'name'], // id not used but required for API to have correct url
@@ -42,6 +28,20 @@ export default class SearchService extends Service {
             fields: ['slug', 'url', 'name'],
             idField: 'slug',
             titleField: 'name'
+        },
+        {
+            name: 'Posts',
+            model: 'post',
+            fields: ['id', 'url', 'title', 'status'],
+            idField: 'id',
+            titleField: 'title'
+        },
+        {
+            name: 'Pages',
+            model: 'page',
+            fields: ['id', 'url', 'title', 'status'],
+            idField: 'id',
+            titleField: 'title'
         }
     ];
 
