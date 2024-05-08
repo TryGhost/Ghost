@@ -4,6 +4,11 @@ const SentryKnexTracingIntegration = require('./SentryKnexTracingIntegration');
 const sentryConfig = config.get('sentry');
 const errors = require('@tryghost/errors');
 
+/**
+ * @param {import('@sentry/node').Event} event
+ * @param {import('@sentry/node').EventHint} hint
+ * @returns {import('@sentry/node').Event | null}
+ */
 const beforeSend = function (event, hint) {
     try {
         const exception = hint.originalException;
@@ -69,6 +74,10 @@ const ALLOWED_HTTP_TRANSACTIONS = [
     return new RegExp(`^(GET|POST|PUT|DELETE)\\s(?<path>${path}\\/.+|\\/$)`);
 });
 
+/**
+ * @param {import('@sentry/node').Event} event
+ * @returns {import('@sentry/node').Event | null}
+ */
 const beforeSendTransaction = function (event) {
     // Drop transactions that are not in the allowed list
     for (const transaction of ALLOWED_HTTP_TRANSACTIONS) {
