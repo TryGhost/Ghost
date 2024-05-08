@@ -37,6 +37,7 @@ interface MockRequestConfig {
     path: string | RegExp;
     response: unknown;
     responseStatus?: number;
+    responseHeaders?: {[key: string]: string};
 }
 
 interface RequestRecord {
@@ -189,7 +190,8 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
 
         await route.fulfill({
             status: matchingMock.responseStatus || 200,
-            body: typeof matchingMock.response === 'string' ? matchingMock.response : JSON.stringify(matchingMock.response)
+            body: typeof matchingMock.response === 'string' ? matchingMock.response : JSON.stringify(matchingMock.response),
+            headers: matchingMock.responseHeaders || {}
         });
     });
 

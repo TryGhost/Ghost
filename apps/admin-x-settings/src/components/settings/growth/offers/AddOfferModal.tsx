@@ -1,7 +1,9 @@
 import PortalFrame from '../../membership/portal/PortalFrame';
+import toast from 'react-hot-toast';
 import {Button} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
@@ -636,16 +638,35 @@ const AddOfferModal = () => {
             validate();
             const isErrorsEmpty = Object.values(errors).every(error => !error);
             if (!isErrorsEmpty) {
+                toast.remove();
                 showToast({
                     type: 'pageError',
                     message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields correctly'
                 });
                 return;
             }
-            if (!(await handleSave())) {
+
+            try {
+                if (await handleSave({force: true})) {
+                    return;
+                } else {
+                    toast.remove();
+                    showToast({
+                        type: 'pageError',
+                        message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields correctly'
+                    });
+                };
+            } catch (e) {
+                let message;
+
+                if (e instanceof JSONError && e.data && e.data.errors[0]) {
+                    message = e.data.errors[0].context || e.data.errors[0].message;
+                }
+
+                toast.remove();
                 showToast({
                     type: 'pageError',
-                    message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields.'
+                    message: message || 'Something went wrong while saving the offer, please try again'
                 });
             }
         }}
