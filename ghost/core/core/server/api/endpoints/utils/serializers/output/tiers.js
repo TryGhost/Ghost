@@ -131,7 +131,4 @@ function createSerializer(debugString, serialize) {
  * @prop {string} method
  */
 
-/**
- * @typedef {Object<string, any>} Frame
- * @prop {Object} options
- */
+/** @typedef {import('@tryghost/api-framework').Frame} Frame */
