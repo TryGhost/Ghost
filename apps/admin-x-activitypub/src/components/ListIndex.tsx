@@ -1,5 +1,7 @@
 import React, {useEffect, useState} from 'react';
+import {Heading, Icon, Page, ViewContainer} from '@tryghost/admin-x-design-system';
 import {SiteData, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface Activity {
     id: string;
@@ -21,14 +23,13 @@ const ActivityPubComponent: React.FC = () => {
     const [activities, setActivities] = useState<Activity[]>([]);
     const site = useBrowseSite();
     const siteData = site.data?.site;
+    const {updateRoute} = useRouting();
 
     useEffect(() => {
         const fetchActivities = async () => {
             try {
-                // TODO: Add dynamic site URL instead of the hard-coded one
-                console.log("This is my url: " + siteData?.url);
                 const response = await fetch(`${siteData?.url.replace(/\/$/, '')}/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
-                //const response = await fetch(`http://localhost:2368/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
+                // console.log('Fetching activities from:', siteData?.url.replace(/\/$/, '') + '/activitypub/outbox/deadbeefdeadbeefdeadbeef');
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -37,7 +38,7 @@ const ActivityPubComponent: React.FC = () => {
                     throw new Error('Failed to fetch activities');
                 }
             } catch (error) {
-                console.error('Error fetching activities:', error);
+                // console.error('Error fetching activities:', error);
             }
         };
 
@@ -50,20 +51,51 @@ const ActivityPubComponent: React.FC = () => {
     }, [siteData]);
 
     return (
-        <div className='mx-auto my-0 w-full max-w-3xl p-12'>
-            <h1 className='mb-6 text-black'>My own ActivityPub activities</h1>
-            <ul className='flex flex-col'>
-                {activities.slice().reverse().map((activity, index) => (
-                    // TODO: Fix linting error
-                    <li key={index} className='border-1 mb-4 flex flex-col rounded border border-grey-200 p-3'>
-                        <p className='text-grey-700'>Activity Type: {activity.type}</p>
-                        <p className='text-grey-700'>Summary: {activity.summary}</p>
-                        <p className='text-grey-700'>Actor: {activity.actor}</p>
-                        <ObjectContentDisplay objectUrl={activity.object} />
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <Page>
+            <ViewContainer
+                // actions={dummyActions}
+                primaryAction={{
+                    title: 'Follow',
+                    onClick: () => {
+                        updateRoute('follow-site');
+                    },
+                    icon: 'add'
+                }}
+                title='Outbox'
+                toolbarBorder={false}
+                type='page'
+            >
+                <div className='grid grid-cols-6 items-start gap-6'>
+                    <ul className='col-span-4 flex flex-col'>
+                        {activities.slice().reverse().map(activity => (
+                            <li key={activity.id}>
+                                {/* <p className='text-grey-700'>Activity Type: {activity.type}</p>
+                                <p className='text-grey-700'>Summary: {activity.summary}</p>
+                                <p className='text-grey-700'>Actor: {activity.actor}</p> */}
+                                <ObjectContentDisplay objectUrl={activity.object} />
+                            </li>
+                        ))}
+                    </ul>
+                    <div className='col-span-2 rounded-xl bg-grey-50 p-5'>
+                        <Heading className='mb-3' level={5}>Following</Heading>
+                        <ul>
+                            <li className='mb-4'>
+                                <span className='mb-2 text-md font-medium text-grey-800'>@fakeuser@fakehost</span>
+                            </li>
+                            <li className='mb-4'>
+                                <span className='mb-2 text-md font-medium text-grey-800'>@fakeuser@fakehost</span>
+                            </li>
+                            <li className='mb-4'>
+                                <span className='mb-2 text-md font-medium text-grey-800'>@fakeuser@fakehost</span>
+                            </li>
+                            <li className='mb-4'>
+                                <span className='mb-2 text-md font-medium text-grey-800'>@fakeuser@fakehost</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </ViewContainer>
+        </Page>
     );
 };
 
@@ -81,7 +113,7 @@ const ObjectContentDisplay: React.FC<{ objectUrl: string }> = ({objectUrl}) => {
                     throw new Error('Failed to fetch object content');
                 }
             } catch (error) {
-                console.error('Error fetching object content:', error);
+                // console.error('Error fetching object content:', error);
             }
         };
 
@@ -93,15 +125,24 @@ const ObjectContentDisplay: React.FC<{ objectUrl: string }> = ({objectUrl}) => {
         };
     }, [objectUrl]);
 
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(objectContent?.content || '', 'text/html');
+
+    const plainTextContent = doc.body.textContent;
+
     return (
         <>
             {objectContent && (
-                <div>
-                    <p className='mb-2 text-grey-700'>Object Type: {objectContent.type}</p>
-                    <p className='mb-2 text-2xl font-bold leading-tight tracking-tight text-black'>Name: {objectContent.name}</p>
-                    <p className='mb-2 text-grey-950'>Content: {objectContent.content}</p>
-                    <p className='mb-2 text-grey-950'>URL: {objectContent.url}</p>
-                </div>
+                <a className='border-1 group/article flex flex-col items-start justify-between border-b border-b-grey-200 py-5' href={`${objectContent.url}`} rel="noopener noreferrer" target="_blank">
+                    {/* <p className='mb-2 text-grey-700'>Object Type: {objectContent.type}</p> */}
+                    <div className='flex w-full justify-between gap-4'>
+                        <Heading className='mb-2' level={5}>{objectContent.name}</Heading>
+                        <Icon className='mb-2 opacity-0 transition-opacity group-hover/article:opacity-100' colorClass='text-grey-500' name='arrow-top-right' size='sm' />
+                    </div>
+                    <p className='mb-6 line-clamp-2 max-w-prose text-md text-grey-800'>{plainTextContent}</p>
+                    {/* <p className='mb-2 text-grey-950'>{objectContent.url}</p> */}
+                    <p className='text-md font-medium text-grey-800'>@fakeuser@fakehost</p>
+                </a>
             )}
         </>
     );
