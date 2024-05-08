@@ -32,14 +32,14 @@ export default class SearchService extends Service {
         {
             name: 'Posts',
             model: 'post',
-            fields: ['id', 'url', 'title', 'status'],
+            fields: ['id', 'url', 'title', 'status', 'published_at', 'visibility'],
             idField: 'id',
             titleField: 'title'
         },
         {
             name: 'Pages',
             model: 'page',
-            fields: ['id', 'url', 'title', 'status'],
+            fields: ['id', 'url', 'title', 'status', 'published_at', 'visibility'],
             idField: 'id',
             titleField: 'title'
         }
@@ -132,7 +132,9 @@ export default class SearchService extends Service {
                     url: item.url,
                     title: item[searchable.titleField],
                     groupName: searchable.name,
-                    status: item.status
+                    status: item.status,
+                    visibility: item.visibility,
+                    publishedAt: item.published_at
                 })
             );
 
