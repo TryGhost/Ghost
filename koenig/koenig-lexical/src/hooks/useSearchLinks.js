@@ -35,7 +35,10 @@ function convertSearchResultsToListOptions(results) {
         const items = result.items.map((item) => {
             return {
                 label: item.title,
-                value: item.url
+                value: item.url,
+                Icon: item.Icon,
+                metaText: item.metaText,
+                MetaIcon: item.MetaIcon
             };
         });
 

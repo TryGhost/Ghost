@@ -1,6 +1,7 @@
 import DarkModeToggle from './components/DarkModeToggle';
 import FloatingButton from './components/FloatingButton';
 import InitialContentToggle from './components/InitialContentToggle';
+import LockIcon from './assets/icons/kg-lock.svg?react';
 import React, {useState} from 'react';
 import Sidebar from './components/Sidebar';
 import TitleTextBox from './components/TitleTextBox';
@@ -56,9 +57,9 @@ const defaultCardConfig = {
         if (!term) {
             return [
                 {label: 'Latest posts', key: 'latest-posts', items: [
-                    {id: '1', groupName: 'Latest posts', title: 'Remote Work\'s Impact on Job Markets and Employment', url: 'https://source.ghost.io/remote-works-impact-on-job-markets/'},
-                    {id: '2', groupName: 'Latest posts', title: 'Robotics Renaissance: How Automation is Transforming Industries', url: 'https://source-newsletter.ghost.io/mental-health-awareness-in-the-workplace/'},
-                    {id: '3', groupName: 'Latest posts', title: 'Biodiversity Conservation in Fragile Ecosystems', url: 'https://source.ghost.io/biodiversity-conservation-in-fragile-ecosystems/'}
+                    {id: '1', groupName: 'Latest posts', title: 'Remote Work\'s Impact on Job Markets and Employment', url: 'https://source.ghost.io/remote-works-impact-on-job-markets/', metaText: 'Public • 8 May 2024'},
+                    {id: '2', groupName: 'Latest posts', title: 'Robotics Renaissance: How Automation is Transforming Industries', url: 'https://source-newsletter.ghost.io/mental-health-awareness-in-the-workplace/', metaText: 'Paid members • 2 May 2024', MetaIcon: LockIcon},
+                    {id: '3', groupName: 'Latest posts', title: 'Biodiversity Conservation in Fragile Ecosystems', url: 'https://source.ghost.io/biodiversity-conservation-in-fragile-ecosystems/', metaText: 'Members • 26 June 2024', MetaIcon: LockIcon}
                 ]}
             ];
         }
