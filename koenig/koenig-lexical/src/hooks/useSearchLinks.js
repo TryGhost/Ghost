@@ -2,21 +2,8 @@ import EarthIcon from '../assets/icons/kg-earth.svg?react';
 import React from 'react';
 import debounce from 'lodash/debounce';
 
-const DEBOUNCE_MS = 200;
+const DEBOUNCE_MS = 100;
 const URL_QUERY_REGEX = /^http/;
-
-function convertSearchResultsToListOptions(results) {
-    return results.map((result) => {
-        const items = result.items.map((item) => {
-            return {
-                label: item.title,
-                value: item.url
-            };
-        });
-
-        return {...result, items};
-    });
-}
 
 function urlQueryOptions(query) {
     return [{
@@ -27,6 +14,33 @@ function urlQueryOptions(query) {
             Icon: EarthIcon
         }]
     }];
+}
+
+function noResultOptions(query) {
+    return [{
+        label: 'Link to web page',
+        items: [{
+            label: `Enter URL to create link`,
+            value: null
+        }]
+    }];
+}
+
+function convertSearchResultsToListOptions(results) {
+    if (!results || !results.length) {
+        return noResultOptions();
+    }
+
+    return results.map((result) => {
+        const items = result.items.map((item) => {
+            return {
+                label: item.title,
+                value: item.url
+            };
+        });
+
+        return {...result, items};
+    });
 }
 
 export const useSearchLinks = (query, searchLinks) => {

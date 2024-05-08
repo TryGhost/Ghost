@@ -18,6 +18,10 @@ export function InputListItem({dataTestId, item, selected, onClick}) {
         selectionClass = 'bg-grey-100 dark:bg-grey-900';
     }
 
+    if (!item.value) {
+        selectionClass = 'pointer-events-none';
+    }
+
     // We use the capture phase of the mouse down event, otherwise the list option will be removed when blurring the input
     // before calling the click event
     const handleMouseDown = (event) => {
