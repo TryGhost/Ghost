@@ -25,6 +25,7 @@ const ActivityPubComponent: React.FC = () => {
     useEffect(() => {
         const fetchActivities = async () => {
             try {
+                // TODO: Add dynamic site URL instead of the hard-coded one
                 // const response = await fetch(`${siteData?.url.replace(/\/$/, '')}/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
                 const response = await fetch(`http://localhost:2368/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
                 
@@ -52,6 +53,7 @@ const ActivityPubComponent: React.FC = () => {
             <h1 className='mb-6 text-black'>My own ActivityPub activities</h1>
             <ul className='flex flex-col'>
                 {activities.slice().reverse().map((activity, index) => (
+                    // TODO: Fix linting error
                     <li key={index} className='border-1 mb-4 flex flex-col rounded border border-grey-200 p-3'>
                         <p className='text-grey-700'>Activity Type: {activity.type}</p>
                         <p className='text-grey-700'>Summary: {activity.summary}</p>
