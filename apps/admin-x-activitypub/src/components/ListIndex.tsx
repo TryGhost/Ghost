@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
-// import {SiteData} from '@tryghost/admin-x-framework/api/site';
-// import {useGlobalData} from '../../../admin-x-settings/src/components/providers/GlobalDataProvider';
+import {SiteData, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
 interface Activity {
     id: string;
@@ -8,6 +7,7 @@ interface Activity {
     summary: string;
     actor: string;
     object: string;
+    siteData: SiteData;
 }
 
 interface ObjectContent {
@@ -19,15 +19,16 @@ interface ObjectContent {
 
 const ActivityPubComponent: React.FC = () => {
     const [activities, setActivities] = useState<Activity[]>([]);
-    // const {siteData} = useGlobalData();
-    // console.log(siteData.url);
+    const site = useBrowseSite();
+    const siteData = site.data?.site;
 
     useEffect(() => {
         const fetchActivities = async () => {
             try {
                 // TODO: Add dynamic site URL instead of the hard-coded one
-                // const response = await fetch(`${siteData?.url.replace(/\/$/, '')}/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
-                const response = await fetch(`http://localhost:2368/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
+                console.log("This is my url: " + siteData?.url);
+                const response = await fetch(`${siteData?.url.replace(/\/$/, '')}/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
+                //const response = await fetch(`http://localhost:2368/activitypub/outbox/deadbeefdeadbeefdeadbeef`);
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -46,7 +47,7 @@ const ActivityPubComponent: React.FC = () => {
         return () => {
             // Any clean-up code here
         };
-    }, []);
+    }, [siteData]);
 
     return (
         <div className='mx-auto my-0 w-full max-w-3xl p-12'>
