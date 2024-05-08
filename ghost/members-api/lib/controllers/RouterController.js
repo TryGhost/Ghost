@@ -129,10 +129,14 @@ module.exports = class RouterController {
             customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
         }
 
+        const defaultTier = await this._tiersService.api.readDefaultTier();
+        const currency = defaultTier?.currency?.toLowerCase() || 'usd';
+
         const session = await this._stripeAPIService.createCheckoutSetupSession(customer, {
             successUrl: req.body.successUrl,
             cancelUrl: req.body.cancelUrl,
-            subscription_id: req.body.subscription_id
+            subscription_id: req.body.subscription_id,
+            currency
         });
         const publicKey = this._stripeAPIService.getPublicKey();
         const sessionInfo = {
