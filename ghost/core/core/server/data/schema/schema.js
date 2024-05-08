@@ -976,7 +976,8 @@ module.exports = {
         started_at: {type: 'dateTime', nullable: true},
         finished_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        metadata: {type: 'json', nullable: true}
     },
     redirects: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
