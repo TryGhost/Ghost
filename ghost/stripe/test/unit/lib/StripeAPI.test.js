@@ -198,7 +198,7 @@ describe('StripeAPI', function () {
             mockLabs.isSet.withArgs('additionalPaymentMethods').returns(true);
             await api.createCheckoutSetupSession('priceId', {currency: 'usd'});
 
-            should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.currency);
+            should.equal(mockStripe.checkout.sessions.create.firstCall.firstArg.currency, 'usd');
         });
     });
 
