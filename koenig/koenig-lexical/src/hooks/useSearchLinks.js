@@ -68,15 +68,14 @@ export const useSearchLinks = (query, searchLinks) => {
 
     // Fetch default search results when first rendering
     React.useEffect(() => {
-        if (URL_QUERY_REGEX.test(query)) {
-            return;
-        }
-
         const fetchDefaultOptions = async () => {
-            setIsSearching(true);
+            // if we have a query we don't want to show the searching state but
+            // we still want to load the default options in the background so
+            // they're available when the query is cleared
+            !query && setIsSearching(true);
             const results = await searchLinks();
             setDefaultListOptions(convertSearchResultsToListOptions(results));
-            setIsSearching(false);
+            !query && setIsSearching(false);
         };
 
         fetchDefaultOptions().catch(console.error); // eslint-disable-line no-console
