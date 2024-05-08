@@ -54,6 +54,14 @@ const beforeSend = function (event, hint) {
             event.tags.code = code;
             event.tags.id = id;
             event.tags.status_code = statusCode;
+
+            // Only handle 500 errors for now
+            // This is because the only other 5XX error should be 503, which are deliberate maintenance/boot errors
+            if (statusCode === 500) {
+                return event;
+            } else {
+                return null;
+            }
         }
         return event;
     } catch (error) {
@@ -140,19 +148,7 @@ if (sentryConfig && !sentryConfig.disabled) {
 
     module.exports = {
         requestHandler: Sentry.Handlers.requestHandler(),
-        errorHandler: Sentry.Handlers.errorHandler({
-            shouldHandleError(error) {
-                // Sometimes non-Ghost issues will come into here but they won't
-                // have a statusCode so we should always handle them
-                if (!errors.utils.isGhostError(error)) {
-                    return true;
-                }
-
-                // Only handle 500 errors for now
-                // This is because the only other 5XX error should be 503, which are deliberate maintenance/boot errors
-                return (error.statusCode === 500);
-            }
-        }),
+        errorHandler: Sentry.Handlers.errorHandler(),
         tracingHandler: Sentry.Handlers.tracingHandler(),
         captureException: Sentry.captureException,
         captureMessage: Sentry.captureMessage,
