@@ -14,7 +14,7 @@ export function InputListLoadingItem({dataTestId}) {
     );
 }
 
-export function InputListItem({dataTestId, item, selected, onClick}) {
+export function InputListItem({dataTestId, item, selected, onClick, onMouseOver}) {
     let selectionClass = '';
 
     if (selected) {
@@ -36,7 +36,7 @@ export function InputListItem({dataTestId, item, selected, onClick}) {
     const Icon = item.Icon;
 
     return (
-        <li className={`${selectionClass} my-[.2rem] flex cursor-pointer items-center gap-[.6rem] rounded-md px-4 py-2 text-left text-black hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900`} data-testid={`${dataTestId}-listOption`} onMouseDownCapture={handleMouseDown}>
+        <li className={`${selectionClass} my-[.2rem] flex cursor-pointer items-center gap-[.6rem] rounded-md px-4 py-2 text-left text-black dark:text-white`} data-testid={`${dataTestId}-listOption`} onMouseDownCapture={handleMouseDown} onMouseOver={onMouseOver}>
             {Icon && <Icon className="size-[1.4rem] stroke-[1.5px]" />}
             <span className="block text-sm font-medium leading-snug" data-testid={`${dataTestId}-listOption-${item.label}`}>{item.label}</span>
         </li>
@@ -68,9 +68,16 @@ export function InputListCopy({autoFocus, className, inputClassName, dataTestId,
         setInputFocused(false);
     };
 
-    const getItem = (item, selected) => {
+    const getItem = (item, selected, onMouseOver) => {
         return (
-            <InputListItem key={item.value} dataTestId={dataTestId} item={item} selected={selected} onClick={onSelectEvent}/>
+            <InputListItem
+                key={item.value}
+                dataTestId={dataTestId}
+                item={item}
+                selected={selected}
+                onClick={onSelectEvent}
+                onMouseOver={onMouseOver}
+            />
         );
     };
 

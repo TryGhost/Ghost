@@ -50,9 +50,16 @@ export function LinkInputCopy({href, update, cancel}) {
         update(item.value);
     };
 
-    const getItem = (item, selected) => {
+    const getItem = (item, selected, onMouseOver) => {
         return (
-            <InputListItem key={item.value} dataTestId={testId} item={item} selected={selected} onClick={onItemSelected}/>
+            <InputListItem
+                key={item.value}
+                dataTestId={testId}
+                item={item}
+                selected={selected}
+                onClick={onItemSelected}
+                onMouseOver={onMouseOver}
+            />
         );
     };
 

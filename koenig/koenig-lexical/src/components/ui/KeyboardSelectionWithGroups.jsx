@@ -74,7 +74,9 @@ export function KeyboardSelectionWithGroups({groups, getItem, getGroup, onSelect
                     {group.items.map((item, index) => {
                         const itemsBefore = groups.slice(0, groupIndex).reduce((sum, prevGroup) => sum + prevGroup.items.length, 0);
                         const absoluteIndex = itemsBefore + index;
-                        return getItem(item, absoluteIndex === selectedIndex && !!item.value);
+                        const isSelected = absoluteIndex === selectedIndex && !!item.value;
+                        const onMouseOver = () => !!item.value && setSelectedIndex(absoluteIndex);
+                        return getItem(item, isSelected, onMouseOver);
                     })}
                 </Group>
             ))}
