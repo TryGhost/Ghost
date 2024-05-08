@@ -186,7 +186,7 @@ const pipeline = (apiController, apiUtils, apiType) => {
         return controllerMap.get(apiController);
     }
 
-    const keys = Object.keys(apiController);
+    const keys = Object.keys(apiController).filter(key => key !== 'docName');
     const docName = apiController.docName;
 
     // CASE: api controllers are objects with configuration.
