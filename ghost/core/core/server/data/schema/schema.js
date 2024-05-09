@@ -94,6 +94,9 @@ module.exports = {
         show_title_and_feature_image: {type: 'boolean', nullable: false, defaultTo: true},
         '@@UNIQUE_CONSTRAINTS@@': [
             ['slug', 'type']
+        ],
+        '@@INDEXES@@': [
+            ['status', 'type']
         ]
     },
     posts_meta: {
