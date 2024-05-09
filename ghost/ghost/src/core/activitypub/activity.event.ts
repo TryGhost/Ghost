@@ -1,5 +1,5 @@
 import {BaseEvent} from '../../common/event.base';
-import {Activity} from './activity.object';
+import {Activity} from './activity.entity';
 
 type ActivityEventData = {
     activity: Activity

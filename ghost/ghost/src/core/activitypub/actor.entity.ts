@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import ObjectID from 'bson-objectid';
 import {Entity} from '../../common/entity.base';
 import {ActivityPub} from './types';
-import {Activity} from './activity.object';
+import {Activity} from './activity.entity';
 import {Article} from './article.object';
 import {ActivityEvent} from './activity.event';
 import {HTTPSignature} from './http-signature.service';
