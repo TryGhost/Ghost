@@ -15277,10 +15277,10 @@ ember-style-modifier@^0.7.0:
     ember-cli-babel "^7.26.11"
     ember-modifier "^3.2.7"
 
-ember-svg-jar@2.4.8:
-  version "2.4.8"
-  resolved "https://registry.yarnpkg.com/ember-svg-jar/-/ember-svg-jar-2.4.8.tgz#25a308f298665130d1a87986696cb858038c83d7"
-  integrity sha512-xXfPzpJ+aP9k4w6FOboAcABdoK1VF+12sTM6y8CJI4biLNzphmkQ0zFr+m+8w9U8PPTUlaRqeJShTGOa4y9z6g==
+ember-svg-jar@2.4.9:
+  version "2.4.9"
+  resolved "https://registry.yarnpkg.com/ember-svg-jar/-/ember-svg-jar-2.4.9.tgz#6be24801005a433cbca0c930674659e6fdabdd36"
+  integrity sha512-d/8rdE2nDUt6xVMpTqbohE4kHAaoY+P/7jWCWow3UQGtaGhvURXfKgo8TG/UVK+TfTgJInN6JcU76XLg+MWEtw==
   dependencies:
     "@embroider/macros" "^1.12.2"
     broccoli-caching-writer "^3.0.3"
@@ -21627,10 +21627,10 @@ magic-string@^0.30.0, magic-string@^0.30.1:
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.4.15"
 
-mailgun.js@9.4.1:
-  version "9.4.1"
-  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-9.4.1.tgz#9a56fd72a73788a514f6230c6c7feb202aef4288"
-  integrity sha512-PUXZvSR6MImDHIf/EhF7uajkv2pP0fbwVfKnRCQ2xDO8uR731U6pWkGHscUxebDkU8tsLb+0zCH5t1+KP6cX3g==
+mailgun.js@10.2.1:
+  version "10.2.1"
+  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-10.2.1.tgz#411fc39c9d2bd26fcb2445416deab81ebd87044f"
+  integrity sha512-lslXpLdwtLyavJGHsPKlpXLnd3XEuwWY5X/KaTAvv2UvHiOWSlUzqkGW21vVgcQQ9AKw0s5ayS5V9Cv8Ze2OIw==
   dependencies:
     axios "^1.6.0"
     base-64 "^1.0.0"
