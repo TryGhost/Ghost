@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@extractus/oembed-extractor": "3.2.1",
-    "@sentry/node": "7.112.1",
+    "@sentry/node": "7.114.0",
     "@tryghost/adapter-base-cache": "0.1.12",
     "@tryghost/adapter-cache-redis": "0.0.0",
     "@tryghost/adapter-manager": "0.0.0",
@@ -225,7 +225,7 @@
     "yjs": "13.6.15"
   },
   "optionalDependencies": {
-    "@sentry/profiling-node": "7.112.1",
+    "@sentry/profiling-node": "7.114.0",
     "@tryghost/html-to-mobiledoc": "3.0.5",
     "sqlite3": "5.1.7"
   },
@@ -237,7 +237,7 @@
     "@types/common-tags": "1.8.4",
     "c8": "8.0.1",
     "cli-progress": "3.12.0",
-    "cssnano": "6.1.2",
+    "cssnano": "7.0.1",
     "detect-indent": "6.1.0",
     "detect-newline": "3.1.0",
     "expect": "29.3.1",
@@ -251,7 +251,7 @@
     "nock": "13.3.3",
     "papaparse": "5.3.2",
     "postcss": "8.4.38",
-    "postcss-cli": "10.1.0",
+    "postcss-cli": "11.0.0",
     "rewire": "6.0.0",
     "should": "13.2.3",
     "sinon": "15.2.0",
