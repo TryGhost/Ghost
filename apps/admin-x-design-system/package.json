@@ -62,6 +62,7 @@
     "@dnd-kit/sortable": "7.0.2",
     "@ebay/nice-modal-react": "1.2.13",
     "@sentry/react": "7.118.0",
+    "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-tooltip": "^1.0.7",
     "@tailwindcss/forms": "0.5.7",
     "@tailwindcss/line-clamp": "0.4.4",
