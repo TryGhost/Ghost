@@ -6,6 +6,8 @@ import {JSONLDService} from '../../core/activitypub/jsonld.service';
 import {WebFingerController} from '../../http/frontend/controllers/webfinger.controller';
 import {ActivityService} from '../../core/activitypub/activity.service';
 import {KnexPostRepository} from '../../db/knex/post.repository.knex';
+import {ActivityListener} from '../../listeners/activity.listener';
+import {TheWorld} from '../../core/activitypub/tell-the-world.service';
 
 @Module({
     controllers: [ActivityPubController, WebFingerController],
