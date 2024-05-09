@@ -21,7 +21,8 @@ function noResultOptions(query) {
         label: 'Link to web page',
         items: [{
             label: `Enter URL to create link`,
-            value: null
+            value: null,
+            Icon: EarthIcon
         }]
     }];
 }
