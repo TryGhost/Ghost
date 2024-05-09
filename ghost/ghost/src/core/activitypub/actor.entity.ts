@@ -6,12 +6,16 @@ import {Activity} from './activity.entity';
 import {Article} from './article.object';
 import {ActivityEvent} from './activity.event';
 import {HTTPSignature} from './http-signature.service';
+import {URI} from './uri.object';
 
 type ActorData = {
     username: string;
     publicKey: string;
     privateKey: string;
     outbox: Activity[];
+    inbox: Activity[];
+    following: URI[];
+    followers: URI[];
 };
 
 type CreateActorData = ActorData & {
@@ -27,10 +31,70 @@ export class Actor extends Entity<ActorData> {
         return this.attr.outbox;
     }
 
+    get following() {
+        return this.attr.following;
+    }
+
+    get followers() {
+        return this.attr.followers;
+    }
+
+    get actorId() {
+        return new URI(`actor/${this.id.toHexString()}`);
+    }
+
     async sign(request: Request, baseUrl: URL): Promise<Request> {
         const keyId = new URL(this.getJSONLD(baseUrl).publicKey.id);
         const key = crypto.createPrivateKey(this.attr.privateKey);
         return HTTPSignature.sign(request, keyId, key);
+    }
+
+    public readonly publicAccount = true;
+
+    async postToInbox(activity: Activity) {
+        this.attr.inbox.unshift(activity);
+        if (activity.type === 'Follow') {
+            if (this.publicAccount) {
+                await this.acceptFollow(activity);
+                return;
+            }
+        }
+        if (activity.type === 'Accept') {
+            // TODO: Check that the Accept is for a real Follow activity
+            this.attr.following.push(activity.actorId);
+        }
+    }
+
+    async follow(actor: URI) {
+        const activity = new Activity({
+            activity: new URI(`activity/${(new ObjectID).toHexString()}`),
+            type: 'Follow',
+            actor: this.actorId,
+            object: actor,
+            to: actor
+        });
+        this.doActivity(activity);
+    }
+
+    async acceptFollow(activity: Activity) {
+        if (!activity.activityId) {
+            throw new Error('Cannot accept Follow of anonymous activity');
+        }
+        this.attr.followers.push(activity.actorId);
+        const accept = new Activity({
+            activity: new URI(`activity/${(new ObjectID).toHexString()}`),
+            type: 'Accept',
+            to: activity.actorId,
+            actor: this.actorId,
+            object: activity.activityId
+        });
+        this.doActivity(accept);
+    }
+
+    private doActivity(activity: Activity) {
+        this.attr.outbox.push(activity);
+        this.activities.push(activity);
+        this.addEvent(ActivityEvent.create(activity, this));
     }
 
     private activities: Activity[] = [];
@@ -43,13 +107,13 @@ export class Actor extends Entity<ActorData> {
 
     createArticle(article: Article) {
         const activity = new Activity({
+            activity: new URI(`activity/${new ObjectID().toHexString()}`),
+            to: new URI(`https://www.w3.org/ns/activitystreams#Public`),
             type: 'Create',
-            actor: this,
-            object: article
+            actor: this.actorId,
+            object: article.objectId
         });
-        this.attr.outbox.push(activity);
-        this.activities.push(activity);
-        this.addEvent(ActivityEvent.create(activity));
+        this.doActivity(activity);
     }
 
     getJSONLD(url: URL): ActivityPub.Actor & ActivityPub.RootObject {
@@ -125,13 +189,31 @@ export class Actor extends Entity<ActorData> {
         };
     }
 
-    static create(data: CreateActorData) {
+    static create(data: Partial<CreateActorData> & {username: string;}) {
+        let publicKey = data.publicKey;
+        let privateKey = data.privateKey;
+
+        if (!publicKey || !privateKey) {
+            const keypair = crypto.generateKeyPairSync('rsa', {
+                modulusLength: 512
+            });
+            publicKey = keypair.publicKey
+                .export({type: 'pkcs1', format: 'pem'})
+                .toString();
+            privateKey = keypair.privateKey
+                .export({type: 'pkcs1', format: 'pem'})
+                .toString();
+        }
+
         return new Actor({
             id: data.id instanceof ObjectID ? data.id : undefined,
             username: data.username,
-            publicKey: data.publicKey,
-            privateKey: data.privateKey,
-            outbox: data.outbox
+            publicKey: publicKey,
+            privateKey: privateKey,
+            outbox: data.outbox || [],
+            inbox: data.inbox || [],
+            followers: data.followers || [],
+            following: data.following || []
         });
     }
 }
