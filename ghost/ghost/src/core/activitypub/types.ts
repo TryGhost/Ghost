@@ -57,12 +57,12 @@ export namespace ActivityPub {
         width?: number
     };
 
-    export type ActivityType = 'Create' | 'Update' | 'Delete';
+    export type ActivityType = 'Create' | 'Update' | 'Delete' | 'Follow' | 'Accept' | 'Reject' | 'Undo';
 
     export type Activity = ActivityPub.Object & {
         type: ActivityType;
-        summary: string;
         actor: Link | Actor;
         object: Link | ActivityPub.Object;
+        to: Link | Actor | null;
     }
 }
