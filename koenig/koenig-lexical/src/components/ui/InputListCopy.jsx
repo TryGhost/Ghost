@@ -37,12 +37,12 @@ export function InputListItem({dataTestId, item, selected, onClick, onMouseOver}
 
     return (
         <li className={`${selectionClass} my-[.2rem] flex cursor-pointer items-center justify-between gap-3 rounded-md px-4 py-2 text-left text-black dark:text-white`} data-testid={`${dataTestId}-listOption`} onMouseDownCapture={handleMouseDown} onMouseOver={onMouseOver}>
-            <span className="flex items-center gap-[.6rem]">
+            <span className="line-clamp-1 flex items-center gap-[.6rem]">
                 {Icon && <Icon className="size-[1.4rem] stroke-[1.5px]" />}
                 <span className="block truncate text-sm font-medium leading-snug" data-testid={`${dataTestId}-listOption-${item.label}`}>{item.label}</span>
             </span>
             {selected && item.metaText && (
-                <span className="flex shrink-0 items-center gap-1 text-[1.3rem] leading-snug tracking-tight text-grey-600 dark:text-white">
+                <span className="flex shrink-0 items-center gap-1 text-[1.3rem] leading-snug tracking-tight text-grey-600 dark:text-grey-500">
                     {item.MetaIcon && <item.MetaIcon className="mb-[1px] size-3" />}
                     <span>{item.metaText}</span>
                 </span>
