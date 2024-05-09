@@ -10,6 +10,7 @@ import {URI} from './uri.object';
 
 type ActorData = {
     username: string;
+    displayName?: string;
     publicKey: string;
     privateKey: string;
     outbox: Activity[];
@@ -25,6 +26,13 @@ type CreateActorData = ActorData & {
 export class Actor extends Entity<ActorData> {
     get username() {
         return this.attr.username;
+    }
+
+    get displayName() {
+        if (this.attr.displayName) {
+            return this.attr.displayName;
+        }
+        return this.username;
     }
 
     get outbox() {
@@ -159,7 +167,7 @@ export class Actor extends Entity<ActorData> {
             ],
             type: 'Person',
             id: actor.href,
-            name: 'Display Name', // Full name
+            name: this.displayName, // Full name
             preferredUsername: this.username, // Username
             summary: 'The bio for the actor', // Bio
             url: actor.href, // Profile URL
@@ -208,6 +216,7 @@ export class Actor extends Entity<ActorData> {
         return new Actor({
             id: data.id instanceof ObjectID ? data.id : undefined,
             username: data.username,
+            displayName: data.displayName,
             publicKey: publicKey,
             privateKey: privateKey,
             outbox: data.outbox || [],

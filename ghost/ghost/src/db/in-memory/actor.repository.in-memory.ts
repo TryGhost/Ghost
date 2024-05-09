@@ -21,6 +21,7 @@ export class ActorRepositoryInMemory implements ActorRepository {
             Actor.create({
                 id: ObjectID.createFromHexString('deadbeefdeadbeefdeadbeef'),
                 username: 'index',
+                displayName: '',
                 publicKey: settingsCache.get('ghost_public_key'),
                 privateKey: settingsCache.get('ghost_private_key')
             })
