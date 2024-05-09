@@ -11,7 +11,8 @@ function urlQueryOptions(query) {
         items: [{
             label: query,
             value: query,
-            Icon: EarthIcon
+            Icon: EarthIcon,
+            highlight: false
         }]
     }];
 }
@@ -22,7 +23,8 @@ function noResultOptions(query) {
         items: [{
             label: `Enter URL to create link`,
             value: null,
-            Icon: EarthIcon
+            Icon: EarthIcon,
+            highlight: false
         }]
     }];
 }

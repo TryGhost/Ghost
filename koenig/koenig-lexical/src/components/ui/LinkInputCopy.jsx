@@ -55,6 +55,7 @@ export function LinkInputCopy({href, update, cancel}) {
             <InputListItem
                 key={item.value}
                 dataTestId={testId}
+                highlightString={_href}
                 item={item}
                 selected={selected}
                 onClick={onItemSelected}

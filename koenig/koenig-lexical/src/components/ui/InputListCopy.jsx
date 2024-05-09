@@ -14,7 +14,7 @@ export function InputListLoadingItem({dataTestId}) {
     );
 }
 
-export function InputListItem({dataTestId, item, selected, onClick, onMouseOver}) {
+export function InputListItem({dataTestId, item, selected, onClick, onMouseOver, highlightString}) {
     let selectionClass = '';
 
     if (selected) {
@@ -33,13 +33,34 @@ export function InputListItem({dataTestId, item, selected, onClick, onMouseOver}
         onClick(item);
     };
 
+    const HighlightedLabel = () => {
+        if (!highlightString || item.highlight === false) {
+            return item.label;
+        }
+
+        const parts = item.label.split(new RegExp(`(${highlightString})`, 'gi'));
+
+        return (
+            <>
+                {parts.map((part, index) => {
+                    if (part.toLowerCase() === highlightString.toLowerCase()) {
+                        // eslint-disable-next-line react/no-array-index-key
+                        return <span key={index} className="font-bold">{part}</span>;
+                    }
+
+                    return part;
+                })}
+            </>
+        );
+    };
+
     const Icon = item.Icon;
 
     return (
         <li className={`${selectionClass} my-[.2rem] flex cursor-pointer items-center justify-between gap-3 rounded-md px-4 py-2 text-left text-black dark:text-white`} data-testid={`${dataTestId}-listOption`} onMouseDownCapture={handleMouseDown} onMouseOver={onMouseOver}>
             <span className="line-clamp-1 flex items-center gap-[.6rem]">
                 {Icon && <Icon className="size-[1.4rem] stroke-[1.5px]" />}
-                <span className="block truncate text-sm font-medium leading-snug" data-testid={`${dataTestId}-listOption-${item.label}`}>{item.label}</span>
+                <span className="block truncate text-sm font-medium leading-snug" data-testid={`${dataTestId}-listOption-${item.label}`}><HighlightedLabel /></span>
             </span>
             {selected && item.metaText && (
                 <span className="flex shrink-0 items-center gap-1 text-[1.3rem] leading-snug tracking-tight text-grey-600 dark:text-grey-500">
@@ -81,6 +102,7 @@ export function InputListCopy({autoFocus, className, inputClassName, dataTestId,
             <InputListItem
                 key={item.value}
                 dataTestId={dataTestId}
+                highlightString={value}
                 item={item}
                 selected={selected}
                 onClick={onSelectEvent}
