@@ -1,12 +1,16 @@
-import {Controller, Get, Header, Param} from '@nestjs/common';
+import {Controller, Get, Header, Param, Post, RawBody, Headers as NestHeaders, Req, Body} from '@nestjs/common';
 import {Roles} from '../../../common/decorators/permissions.decorator';
 import ObjectID from 'bson-objectid';
 import {JSONLDService} from '../../../core/activitypub/jsonld.service';
+import {HTTPSignature} from '../../../core/activitypub/http-signature.service';
+import {InboxService} from '../../../core/activitypub/inbox.service';
+import {Activity} from '../../../core/activitypub/activity.entity';
 
 @Controller('activitypub')
 export class ActivityPubController {
     constructor(
-        private readonly service: JSONLDService
+        private readonly service: JSONLDService,
+        private readonly inboxService: InboxService
     ) {}
 
     @Header('Cache-Control', 'no-store')
@@ -18,6 +22,33 @@ export class ActivityPubController {
             throw new Error('Bad Request');
         }
         return this.service.getActor(ObjectID.createFromHexString(id));
+    }
+
+    @Header('Cache-Control', 'no-store')
+    @Header('Content-Type', 'application/activity+json')
+    @Roles(['Anon'])
+    @Post('inbox/:owner')
+    async handleActivity(
+        @Param('owner') owner: unknown,
+        @Body() body: unknown,
+        @RawBody() rawbody: Buffer,
+        @NestHeaders() headers: Record<string, string>,
+        @Req() req: any
+    ) {
+        if (typeof owner !== 'string') {
+            throw new Error('Bad Request');
+        }
+        if (typeof body !== 'object' || body === null) {
+            throw new Error('Bad Request');
+        }
+        if (!('id' in body) || !('type' in body) || !('actor' in body) || !('object' in body)) {
+            throw new Error('Bad Request');
+        }
+        const verified = await HTTPSignature.validate(req.method, req.url, new Headers(headers), rawbody);
+        if (!verified) {
+            throw new Error('Not Authorized');
+        }
+        this.inboxService.post(ObjectID.createFromHexString(owner), Activity.fromJSONLD(body));
     }
 
     @Header('Cache-Control', 'no-store')
