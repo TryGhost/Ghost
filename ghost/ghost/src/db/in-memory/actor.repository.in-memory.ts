@@ -22,11 +22,7 @@ export class ActorRepositoryInMemory implements ActorRepository {
                 id: ObjectID.createFromHexString('deadbeefdeadbeefdeadbeef'),
                 username: 'index',
                 publicKey: settingsCache.get('ghost_public_key'),
-                privateKey: settingsCache.get('ghost_private_key'),
-                outbox: [],
-                inbox: [],
-                followers: [],
-                following: []
+                privateKey: settingsCache.get('ghost_private_key')
             })
         ];
         this.domainEvents = domainEvents;
