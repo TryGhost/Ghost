@@ -101,7 +101,7 @@ class TableImporter {
         const filePath = path.join(rootFolder, `${this.name}.csv`);
         let now = Date.now();
 
-        if (data.length > 5000) {
+        if (data.length > 5000 && !process.env.DISABLE_FAST_IMPORT) {
             try {
                 await fs.promises.unlink(filePath);
             } catch (e) {
