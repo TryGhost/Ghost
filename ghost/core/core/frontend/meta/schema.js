@@ -118,6 +118,7 @@ function getHomeSchema(metaData) {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         publisher: schemaPublisherObject(metaData),
+        name: escapeExpression(metaData.site.title),
         url: metaData.url,
         image: schemaImageObject(metaData.coverImage),
         mainEntityOfPage: metaData.url,
