@@ -63,7 +63,7 @@
     "autoprefixer": "10.4.19",
     "clsx": "2.1.1",
     "postcss": "8.4.38",
-    "postcss-import": "15.1.0",
+    "postcss-import": "16.1.0",
     "react-colorful": "^5.1.2",
     "react-hot-toast": "2.4.1",
     "react-select": "5.8.0",
