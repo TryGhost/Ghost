@@ -1,9 +1,10 @@
 import RSVP from 'rsvp';
 import Service from '@ember/service';
+import {action} from '@ember/object';
 import {isBlank, isEmpty} from '@ember/utils';
 import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
-import {task, timeout, waitForProperty} from 'ember-concurrency';
+import {task, timeout} from 'ember-concurrency';
 
 export default class SearchService extends Service {
     @service ajax;
@@ -11,24 +12,9 @@ export default class SearchService extends Service {
     @service store;
 
     content = [];
-    contentExpiresAt = false;
-    contentExpiry = 30000;
+    isContentStale = true;
 
     searchables = [
-        {
-            name: 'Posts',
-            model: 'post',
-            fields: ['id', 'url', 'title', 'status'],
-            idField: 'id',
-            titleField: 'title'
-        },
-        {
-            name: 'Pages',
-            model: 'page',
-            fields: ['id', 'url', 'title', 'status'],
-            idField: 'id',
-            titleField: 'title'
-        },
         {
             name: 'Staff',
             model: 'user',
@@ -42,8 +28,27 @@ export default class SearchService extends Service {
             fields: ['slug', 'url', 'name'],
             idField: 'slug',
             titleField: 'name'
+        },
+        {
+            name: 'Posts',
+            model: 'post',
+            fields: ['id', 'url', 'title', 'status', 'published_at', 'visibility'],
+            idField: 'id',
+            titleField: 'title'
+        },
+        {
+            name: 'Pages',
+            model: 'page',
+            fields: ['id', 'url', 'title', 'status', 'published_at', 'visibility'],
+            idField: 'id',
+            titleField: 'title'
         }
     ];
+
+    @action
+    expireContent() {
+        this.isContentStale = true;
+    }
 
     @task({restartable: true})
     *searchTask(term) {
@@ -59,7 +64,7 @@ export default class SearchService extends Service {
 
         // wait for any on-going refresh to finish
         if (this.refreshContentTask.isRunning) {
-            yield waitForProperty(this, 'refreshContentTask.isIdle');
+            yield this.refreshContentTask.lastRunning;
         }
 
         const searchResult = this._searchContent(term);
@@ -92,13 +97,12 @@ export default class SearchService extends Service {
     }
 
     @task({drop: true})
-    *refreshContentTask() {
-        const now = new Date();
-        const contentExpiresAt = this.contentExpiresAt;
-
-        if (contentExpiresAt > now) {
+    *refreshContentTask({forceRefresh = false} = {}) {
+        if (!forceRefresh && !this.isContentStale) {
             return true;
         }
+
+        this.isContentStale = true;
 
         const content = [];
         const promises = this.searchables.map(searchable => this._loadSearchable(searchable, content));
@@ -111,7 +115,7 @@ export default class SearchService extends Service {
             console.error(error);
         }
 
-        this.contentExpiresAt = new Date(now.getTime() + this.contentExpiry);
+        this.isContentStale = false;
     }
 
     async _loadSearchable(searchable, content) {
@@ -128,7 +132,9 @@ export default class SearchService extends Service {
                     url: item.url,
                     title: item[searchable.titleField],
                     groupName: searchable.name,
-                    status: item.status
+                    status: item.status,
+                    visibility: item.visibility,
+                    publishedAt: item.published_at
                 })
             );
 

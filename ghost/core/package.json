@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.82.6",
+  "version": "5.82.8",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -215,7 +215,7 @@
     "probe-image-size": "7.2.3",
     "rss": "1.2.2",
     "sanitize-html": "2.13.0",
-    "semver": "7.6.0",
+    "semver": "7.6.1",
     "socket.io": "4.7.5",
     "stoppable": "1.1.0",
     "uuid": "9.0.1",

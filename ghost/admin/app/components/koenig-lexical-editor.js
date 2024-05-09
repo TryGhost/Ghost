@@ -3,6 +3,7 @@ import Component from '@glimmer/component';
 import React, {Suspense} from 'react';
 import fetch from 'fetch';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
+import moment from 'moment-timezone';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -39,6 +40,42 @@ export const fileTypes = {
         resourceName: 'files'
     }
 };
+
+function LockIcon({...props}) {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" {...props}>
+            <g transform="matrix(0.6666666666666666,0,0,0.6666666666666666,0,0)">
+                <path fill="currentColor" d="M19.5,9.5h-.75V6.75a6.75,6.75,0,0,0-13.5,0V9.5H4.5a2,2,0,0,0-2,2V22a2,2,0,0,0,2,2h15a2,2,0,0,0,2-2V11.5A2,2,0,0,0,19.5,9.5Zm-7.5,9a2,2,0,1,1,2-2A2,2,0,0,1,12,18.5ZM16.25,9a.5.5,0,0,1-.5.5H8.25a.5.5,0,0,1-.5-.5V6.75a4.25,4.25,0,0,1,8.5,0Z"></path>
+            </g>
+        </svg>
+    );
+}
+
+export function decoratePostSearchResult(item, settings) {
+    const date = moment.utc(item.publishedAt).tz(settings.timezone).format('D MMM YYYY');
+
+    if (settings.membersEnabled && item.visibility) {
+        let accessText;
+
+        if (item.visibility === 'public') {
+            accessText = 'Public';
+        } else if (item.visibility === 'members') {
+            accessText = 'Members';
+        } else if (item.visibility === 'paid') {
+            accessText = 'Paid members';
+        } else if (item.visibility === 'tiers'){
+            accessText = 'Specific tiers';
+        }
+
+        if (accessText && accessText !== 'Public') {
+            item.MetaIcon = LockIcon;
+        }
+
+        item.metaText = [accessText, date].filter(Boolean).join(' • ');
+    } else {
+        item.metaText = [date].join(' • ');
+    }
+}
 
 class ErrorHandler extends React.Component {
     state = {
@@ -300,13 +337,19 @@ export default class KoenigLexicalEditor extends Component {
                     return this.defaultLinks;
                 }
 
-                const posts = await this.store.query('post', {filter: 'status:published', fields: 'id,url,title', order: 'published_at desc', limit: 5});
+                const posts = await this.store.query('post', {filter: 'status:published', fields: 'id,url,title,visibility,published_at', order: 'published_at desc', limit: 5});
+                // NOTE: these posts are Ember Data models, not plain objects like the search results
                 const results = posts.toArray().map(post => ({
                     groupName: 'Latest posts',
                     id: post.id,
                     title: post.title,
-                    url: post.url
+                    url: post.url,
+                    visibility: post.visibility,
+                    publishedAt: post.publishedAtUTC.toISOString()
                 }));
+
+                results.forEach(item => decoratePostSearchResult(item, this.settings));
+
                 this.defaultLinks = [{
                     label: 'Latest posts',
                     items: results
@@ -326,14 +369,25 @@ export default class KoenigLexicalEditor extends Component {
             }
 
             // only published posts/pages have URLs
-            const filteredResults = results.map((group) => {
+            const filteredResults = [];
+            results.forEach((group) => {
                 const items = (group.groupName === 'Posts' || group.groupName === 'Pages') ? group.options.filter(i => i.status === 'published') : group.options;
 
-                return {
+                if (items.length === 0) {
+                    return;
+                }
+
+                // update the group items with metadata
+                if (group.groupName === 'Posts' || group.groupName === 'Pages') {
+                    items.forEach(item => decoratePostSearchResult(item, this.settings));
+                }
+
+                filteredResults.push({
                     label: group.groupName,
                     items
-                };
+                });
             });
+
             return filteredResults;
         };
 

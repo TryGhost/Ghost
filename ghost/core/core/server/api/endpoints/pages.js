@@ -11,7 +11,8 @@ const messages = {
 
 const postsService = getPostServiceInstance();
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'pages',
     browse: {
         headers: {
@@ -282,3 +283,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

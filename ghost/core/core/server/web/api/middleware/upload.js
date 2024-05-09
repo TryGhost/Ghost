@@ -24,6 +24,10 @@ const messages = {
         missingFile: 'Please select a theme.',
         invalidFile: 'Please select a valid zip file.'
     },
+    members: {
+        missingFile: 'Please select a members CSV file.',
+        invalidFile: 'Please select a valid CSV file.'
+    },
     images: {
         missingFile: 'Please select an image.',
         invalidFile: 'Please select a valid image.'
@@ -58,6 +62,13 @@ const single = name => function singleUploadFunction(req, res, next) {
 
     singleUpload(req, res, (err) => {
         if (err) {
+            // Busboy, Multer or Dicer errors are usually caused by invalid file uploads
+            if (err instanceof multer.MulterError || err.stack?.includes('dicer') || err.stack?.includes('busboy')) {
+                return next(new errors.BadRequestError({
+                    err
+                }));
+            }
+
             return next(err);
         }
         if (enabledClear) {
@@ -94,6 +105,13 @@ const media = (fileName, thumbName) => function mediaUploadFunction(req, res, ne
 
     mediaUpload(req, res, (err) => {
         if (err) {
+            // Busboy, Multer or Dicer errors are usually caused by invalid file uploads
+            if (err instanceof multer.MulterError || err.stack?.includes('dicer') || err.stack?.includes('busboy')) {
+                return next(new errors.BadRequestError({
+                    err
+                }));
+            }
+
             return next(err);
         }
 
@@ -138,10 +156,16 @@ const checkFileIsValid = (fileData, types, extensions) => {
  *
  * @param {Object} options
  * @param {String} options.type - type of the file
- * @returns {Function}
+ * @returns {import('express').RequestHandler}
  */
 const validation = function ({type}) {
     // if we finish the data/importer logic, we forward the request to the specified importer
+
+    /**
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+     * @param {import('express').NextFunction} next
+     */
     return function uploadValidation(req, res, next) {
         const extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
         const contentTypes = (config.get('uploads')[type] && config.get('uploads')[type].contentTypes) || [];
@@ -174,7 +198,7 @@ const validation = function ({type}) {
  *
  * @param {Object} options
  * @param {String} options.type - type of the file
- * @returns {Function}
+ * @returns {import('express').RequestHandler}
  */
 const mediaValidation = function ({type}) {
     return function mediaUploadValidation(req, res, next) {

@@ -10,6 +10,10 @@ const errorHandler = require('@tryghost/mw-error-handler');
 const sentry = require('../../../shared/sentry');
 const redirectAdminUrls = require('./middleware/redirect-admin-urls');
 
+/**
+ *
+ * @returns {import('express').Application}
+ */
 module.exports = function setupAdminApp() {
     debug('Admin setup start');
     const adminApp = express('admin');
@@ -34,7 +38,7 @@ module.exports = function setupAdminApp() {
     // request to the Admin API /users/me/ endpoint to check if the user is logged in.
     //
     // Used by comments-ui to add moderation options to front-end comments when logged in.
-    adminApp.use('/auth-frame', (req, res, next) => {
+    adminApp.use('/auth-frame', function authFrameMw(req, res, next) {
         // only render content when we have an Admin session cookie,
         // otherwise return a 204 to avoid JS and API requests being made unnecessarily
         try {

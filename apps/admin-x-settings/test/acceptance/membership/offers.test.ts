@@ -3,10 +3,6 @@ import {globalDataRequests} from '../../utils/acceptance';
 import {mockApi, responseFixtures, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Offers Modal', () => {
-    // test.beforeEach(async () => {
-    //     toggleLabsFlag('adminXOffers', true);
-    // });
-
     test('Offers Modal is available', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
@@ -108,7 +104,39 @@ test.describe('Offers Modal', () => {
         await modal.getByRole('button', {name: 'New offer'}).click();
         const addModal = page.getByTestId('add-offer-modal');
         await addModal.getByRole('button', {name: 'Publish'}).click();
+
         await expect(page.getByTestId('toast-error')).toContainText(/Can't save offer, please double check that you've filled all mandatory fields./);
+    });
+
+    test('Errors if the offer code is already taken', async ({page}) => {
+        await mockApi({page, requests: {
+            browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
+            ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
+            addOffer: {method: 'POST', path: `/offers/`, responseStatus: 400, responseHeaders: {'content-type': 'json'}, response: {
+                errors: [{
+                    message: 'Validation error, cannot edit offer.',
+                    context: 'Offer `code` must be unique. Please change and try again.'
+                }]
+            }}
+        }});
+
+        await page.goto('/');
+        const section = page.getByTestId('offers');
+        await section.getByRole('button', {name: 'Manage offers'}).click();
+        const modal = page.getByTestId('offers-modal');
+        await modal.getByRole('button', {name: 'New offer'}).click();
+        const addModal = page.getByTestId('add-offer-modal');
+        expect(addModal).toBeVisible();
+        const sidebar = addModal.getByTestId('add-offer-sidebar');
+        expect(sidebar).toBeVisible();
+        await sidebar.getByPlaceholder(/^Black Friday$/).fill('Coffee Tuesdays');
+        await sidebar.getByLabel('Amount off').fill('10');
+        await addModal.getByRole('button', {name: 'Publish'}).click();
+
+        await expect(page.getByTestId('toast-error')).toContainText(/Offer `code` must be unique. Please change and try again./);
     });
 
     test('Shows validation hints', async ({page}) => {

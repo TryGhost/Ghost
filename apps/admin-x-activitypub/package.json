@@ -44,22 +44,24 @@
     "targets": {
       "build": {
         "dependsOn": [
-          "build",
-          {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
+          "^build"
+        ]
+      },
+      "dev": {
+        "dependsOn": [
+          "^build"
         ]
       },
       "test:unit": {
         "dependsOn": [
-          "build",
-          "test:unit",
-          {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
+          "^build",
+          "test:unit"
         ]
       },
       "test:acceptance": {
         "dependsOn": [
-          "build",
-          "test:acceptance",
-          {"projects": ["@tryghost/admin-x-design-system", "@tryghost/admin-x-framework"], "target": "build"}
+          "^build",
+          "test:acceptance"
         ]
       }
     }

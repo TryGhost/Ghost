@@ -20,8 +20,8 @@ const STAGES = {
          *
          * @param {Object} apiUtils - Local utils of target API version.
          * @param {Object} apiConfig - Docname & Method of ctrl.
-         * @param {Object} apiImpl -  Controller configuration.
-         * @param {Object} frame
+         * @param {import('@tryghost/api-framework').ControllerMethod} apiImpl -  Controller configuration.
+         * @param {import('@tryghost/api-framework').Frame} frame
          * @return {Promise}
          */
         input(apiUtils, apiConfig, apiImpl, frame) {
@@ -57,8 +57,8 @@ const STAGES = {
          *
          * @param {Object} apiUtils - Local utils of target API version.
          * @param {Object} apiConfig - Docname & Method of ctrl.
-         * @param {Object} apiImpl -  Controller configuration.
-         * @param {Object} frame
+         * @param {import('@tryghost/api-framework').ControllerMethod} apiImpl -  Controller configuration.
+         * @param {import('@tryghost/api-framework').Frame} frame
          * @return {Promise}
          */
         input(apiUtils, apiConfig, apiImpl, frame) {
@@ -80,8 +80,8 @@ const STAGES = {
          *
          * @param {Object} apiUtils - Local utils of target API version.
          * @param {Object} apiConfig - Docname & Method of ctrl.
-         * @param {Object} apiImpl -  Controller configuration.
-         * @param {Object} frame
+         * @param {import('@tryghost/api-framework').ControllerMethod} apiImpl -  Controller configuration.
+         * @param {import('@tryghost/api-framework').Frame} frame
          * @return {Promise}
          */
         output(response, apiUtils, apiConfig, apiImpl, frame) {
@@ -99,8 +99,8 @@ const STAGES = {
      *
      * @param {Object} apiUtils - Local utils of target API version.
      * @param {Object} apiConfig - Docname & Method of ctrl.
-     * @param {Object} apiImpl -  Controller configuration.
-     * @param {Object} frame
+     * @param {import('@tryghost/api-framework').ControllerMethod} apiImpl -  Controller configuration.
+     * @param {import('@tryghost/api-framework').Frame} frame
      * @return {Promise}
      */
     permissions(apiUtils, apiConfig, apiImpl, frame) {
@@ -145,8 +145,8 @@ const STAGES = {
      *
      * @param {Object} apiUtils - Local utils of target API version.
      * @param {Object} apiConfig - Docname & Method of ctrl.
-     * @param {Object} apiImpl -  Controller configuration.
-     * @param {Object} frame
+     * @param {import('@tryghost/api-framework').ControllerMethod} apiImpl -  Controller configuration.
+     * @param {import('@tryghost/api-framework').Frame} frame
      * @return {Promise}
      */
     query(apiUtils, apiConfig, apiImpl, frame) {
@@ -176,7 +176,7 @@ const controllerMap = new Map();
  * 4. Controller - Execute the controller implementation & receive model response.
  * 5. Output Serialisation - Output formatting, Deprecations, Extra attributes etc...
  *
- * @param {Object} apiController
+ * @param {import('@tryghost/api-framework').Controller} apiController
  * @param {Object} apiUtils - Local utils (validation & serialisation) from target API version
  * @param {String} [apiType] - Content or Admin API access
  * @return {Object}
@@ -186,7 +186,7 @@ const pipeline = (apiController, apiUtils, apiType) => {
         return controllerMap.get(apiController);
     }
 
-    const keys = Object.keys(apiController);
+    const keys = Object.keys(apiController).filter(key => key !== 'docName');
     const docName = apiController.docName;
 
     // CASE: api controllers are objects with configuration.
