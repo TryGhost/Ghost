@@ -5,12 +5,14 @@ import {JSONLDService} from '../../../core/activitypub/jsonld.service';
 import {HTTPSignature} from '../../../core/activitypub/http-signature.service';
 import {InboxService} from '../../../core/activitypub/inbox.service';
 import {Activity} from '../../../core/activitypub/activity.entity';
+import {ActivityPubService} from '../../../core/activitypub/activitypub.service';
 
 @Controller('activitypub')
 export class ActivityPubController {
     constructor(
         private readonly service: JSONLDService,
-        private readonly inboxService: InboxService
+        private readonly inboxService: InboxService,
+        private readonly activitypub: ActivityPubService
     ) {}
 
     @Header('Cache-Control', 'no-store')
@@ -60,6 +62,17 @@ export class ActivityPubController {
             throw new Error('Bad Request');
         }
         return this.service.getOutbox(ObjectID.createFromHexString(owner));
+    }
+
+    @Header('Cache-Control', 'no-store')
+    @Header('Content-Type', 'application/activity+json')
+    @Roles(['Anon'])
+    @Get('following/:owner')
+    async getFollowing(@Param('owner') owner: unknown) {
+        if (typeof owner !== 'string') {
+            throw new Error('Bad Request');
+        }
+        return this.activitypub.getFollowing();
     }
 
     @Header('Cache-Control', 'no-store')

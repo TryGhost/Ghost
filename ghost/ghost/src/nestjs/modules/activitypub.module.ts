@@ -11,6 +11,7 @@ import {InboxService} from '../../core/activitypub/inbox.service';
 import {ActivityRepositoryInMemory} from '../../db/in-memory/activity.repository.in-memory';
 import {ActivityListener} from '../../listeners/activity.listener';
 import {TheWorld} from '../../core/activitypub/tell-the-world.service';
+import {ActivityPubService} from '../../core/activitypub/activitypub.service';
 
 @Global()
 @Module({
@@ -39,6 +40,7 @@ import {TheWorld} from '../../core/activitypub/tell-the-world.service';
         ActivityService,
         InboxService,
         ActivityListener,
+        ActivityPubService,
         TheWorld
     ]
 })

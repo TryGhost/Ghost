@@ -3,6 +3,7 @@ import {ActorRepository} from '../../core/activitypub/actor.repository';
 import ObjectID from 'bson-objectid';
 import {Inject} from '@nestjs/common';
 import {SettingsCache} from '../../common/types/settings-cache.type';
+import {URI} from '../../core/activitypub/uri.object';
 
 interface DomainEvents {
     dispatch(event: unknown): void
@@ -23,7 +24,11 @@ export class ActorRepositoryInMemory implements ActorRepository {
                 username: 'index',
                 displayName: settingsCache.get('title'),
                 publicKey: settingsCache.get('ghost_public_key'),
-                privateKey: settingsCache.get('ghost_private_key')
+                privateKey: settingsCache.get('ghost_private_key'),
+                following: [{
+                    id: new URI('https://ghost.org'),
+                    username: '@index@ghost.org'
+                }]
             })
         ];
         this.domainEvents = domainEvents;
