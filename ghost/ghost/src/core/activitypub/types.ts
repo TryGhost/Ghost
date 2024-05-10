@@ -12,7 +12,12 @@ export namespace ActivityPub {
         type: string | string[];
     };
 
-    export type Object = RootObject | AnonymousObject;
+    export type SubObject = {
+        id: string;
+        type: string | string[];
+    };
+
+    export type Object = RootObject | AnonymousObject | SubObject;
 
     export type Actor = ActivityPub.Object & {
         inbox: string;
@@ -35,7 +40,10 @@ export namespace ActivityPub {
             id: string,
             owner: string,
             publicKeyPem: string
-        }
+        },
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [x: string]: any
     };
 
     export type Article = ActivityPub.Object & {
@@ -61,7 +69,7 @@ export namespace ActivityPub {
 
     export type Activity = ActivityPub.Object & {
         type: ActivityType;
-        actor: Link | Actor;
+        actor: Link | Actor | ActivityPub.Object;
         object: Link | ActivityPub.Object;
         to: Link | Actor | null;
     }

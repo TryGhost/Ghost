@@ -103,7 +103,7 @@ const ActivityPubComponent: React.FC = () => {
                                 {/* <p className='text-grey-700'>Activity Type: {activity.type}</p>
                                 <p className='text-grey-700'>Summary: {activity.summary}</p>
                                 <p className='text-grey-700'>Actor: {activity.actor}</p> */}
-                                <ObjectContentDisplay objectUrl={activity.object} />
+                                <ObjectContentDisplay actor={activity.actor} objectUrl={activity.object} />
                             </li>
                         ))}
                     </ul>
@@ -123,7 +123,7 @@ const ActivityPubComponent: React.FC = () => {
     );
 };
 
-const ObjectContentDisplay: React.FC<{ objectUrl: string }> = ({objectUrl}) => {
+const ObjectContentDisplay: React.FC<{actor: {id: string, username?: string;}, objectUrl: string }> = ({actor, objectUrl}) => {
     const [objectContent, setObjectContent] = useState<ObjectContent | null>(null);
 
     useEffect(() => {
@@ -165,7 +165,7 @@ const ObjectContentDisplay: React.FC<{ objectUrl: string }> = ({objectUrl}) => {
                     </div>
                     <p className='mb-6 line-clamp-2 max-w-prose text-md text-grey-800'>{plainTextContent}</p>
                     {/* <p className='mb-2 text-grey-950'>{objectContent.url}</p> */}
-                    <p className='text-md font-medium text-grey-800'>@fakeuser@fakehost</p>
+                    <p className='text-md font-medium text-grey-800'>{actor.username}</p>
                 </a>
             )}
         </>

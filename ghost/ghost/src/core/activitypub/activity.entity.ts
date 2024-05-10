@@ -62,8 +62,12 @@ export class Activity extends Entity<ActivityData> {
             '@context': 'https://www.w3.org/ns/activitystreams',
             id: this.activityId?.getValue(url) || null,
             type: this.attr.type,
-            actor: this.attr.actor.getValue(url),
-            object: this.attr.object.getValue(url),
+            actor: {
+                type: 'Person',
+                id: this.actorId.getValue(url),
+                username: `@index@${this.actorId.hostname}`
+            },
+            object: this.objectId.getValue(url),
             to: this.attr.to?.getValue(url) || null
         };
     }
