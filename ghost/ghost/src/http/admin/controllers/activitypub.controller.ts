@@ -21,7 +21,7 @@ export class ActivityPubController {
         'Owner'
     ])
     @Post('follow/:username')
-    async follow(@Param('username') username: string): Promise<string[]> {
+    async follow(@Param('username') username: string): Promise<void> {
         await this.activitypub.follow(username);
     }
 
